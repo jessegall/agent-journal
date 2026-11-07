@@ -6,7 +6,7 @@ import TriggerConditionFields from "../../../triggers/web/src/TriggerConditionFi
 import {sentence} from "../../../triggers/web/src/triggerWords.js";
 const props = defineProps({skill: {type: String, default: ""}, trigger: {type: Object, default: null}, skills: {type: Array, required: true}});
 const emit = defineEmits(["saved", "cancel"]);
-const window = useWindow();
+const view = useWindow();
 const draft = reactive({skill: props.trigger?.skill || props.skill, name: props.trigger?.name || "", phrases: [...(props.trigger?.phrases || [])], places: [...(props.trigger?.watch_places || ["messages", "commands", "files"])], match: props.trigger?.match_mode || "word", conditions: JSON.parse(props.trigger?.conditions || "[]")});
 const sample = ref("");
 const trial = ref(null);
@@ -23,12 +23,12 @@ watch(() => [sample.value, draft.phrases.join(","), draft.match], () => {
     trial.value = null;
     if (!sample.value.trim() || !draft.phrases.length) return;
     timer = setTimeout(async () => {
-        window.state["trial.phrases"] = draft.phrases.join(",");
-        window.state["trial.sentence"] = sample.value;
-        window.state["trial.match-mode"] = draft.match;
-        await window.reload("trial");
+        view.state["trial.phrases"] = draft.phrases.join(",");
+        view.state["trial.sentence"] = sample.value;
+        view.state["trial.match-mode"] = draft.match;
+        await view.reload("trial");
         if (request !== checking) return;
-        trial.value = window.props.trial.failure.value ? {error: window.props.trial.failure.value} : window.props.trial.data.value;
+        trial.value = view.props.trial.failure.value ? {error: view.props.trial.failure.value} : view.props.trial.data.value;
     }, 150);
 });
 onUnmounted(() => {clearTimeout(timer); checking++;});
@@ -38,14 +38,14 @@ async function save() {
     busy.value = true;
     const flags = ["--name", draft.name.trim() || `Read ${draft.skill}`, "--skill", draft.skill, "--watch-places", ...draft.places, "--match-mode", draft.match, "--conditions", JSON.stringify(draft.conditions)];
     const line = props.trigger ? ["trigger", "edit", String(props.trigger.id), ...flags, ...draft.phrases.map((phrase) => `--phrases=${phrase}`)] : ["trigger", "make", "--do", "skill", ...flags, "--", draft.phrases.join(", ")];
-    const answer = await window.run(line);
+    const answer = await view.run(line);
     failure.value = answer.ok ? "" : answer.error;
     busy.value = false;
     if (answer.ok) emit("saved");
 }
 
 async function end() {
-    const answer = await window.run(["trigger", "strike", String(props.trigger.id)]);
+    const answer = await view.run(["trigger", "strike", String(props.trigger.id)]);
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) emit("saved");
 }

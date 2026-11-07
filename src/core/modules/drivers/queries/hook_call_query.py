@@ -63,6 +63,10 @@ class HookCallQuery(Query[HookCall]):
     def has_call_after(self, agent_id: int, hook: HookEventName, summary: str, cutoff_at: Timestamp) -> bool:
         return self.agent(agent_id).filter(hook=hook, summary=summary).matching(Minimum("created_at", cutoff_at.text)).exists()
 
+    def next_turn_event(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
+        events = (HookEventName.PROMPT, HookEventName.STOP, *TOOL_HOOKS)
+        return self.agent(agent_id).matching(Among("hook", events)).matching(Greater("created_at", cutoff_at.text)).oldest().first()
+
     def has_tool_hook_after(self, agent_id: int, cutoff_at: Timestamp) -> bool:
         return self.agent(agent_id).matching(Among("hook", TOOL_HOOKS)).matching(Greater("created_at", cutoff_at.text)).exists()
 

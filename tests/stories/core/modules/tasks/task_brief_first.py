@@ -9,6 +9,9 @@ from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from unittest.mock import patch
 
 from core.base.command.bus import Bus
+from core.base.query.queries import Queries
+from core.modules.tasks.models.task_read import TaskRead
+from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.base.database.database import Database
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
 from datetime import timedelta
@@ -153,3 +156,15 @@ def test_an_overview_that_cannot_read_its_context_records_no_task_read(new_story
     story.expect_refusal("task overview 1", "the context is unavailable", actor=story.agent)
     reads = story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id)
     story.expect_rows(not reads.exists())
+
+
+def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_story):
+    story = install_runner(new_story(fixture=BuilderWithUnreadTask))
+    part = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task")
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), BRIEF_REFUSAL)
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)
+    sink = ShellPart("cat", CommandCategory.READ, [])
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 && cat", piped, sink), "run the read command directly, without a pipe or redirect")
+    story.expect_rows(not story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists())
+    story.expect_success("task overview 1", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(TaskRead).filter(task_id=1, session_agent_id=story.agent.id).exists())

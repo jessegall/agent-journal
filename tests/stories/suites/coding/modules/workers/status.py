@@ -92,3 +92,16 @@ def test_worker_status_names_the_programs_skill_loading_method(worker_batch):
     story, _, worker = worker_batch
     story.expect_success(f"skill require {worker.id} journal-tasks")
     story.expect_text("worker status", "load this first with the Skill tool: journal-tasks", actor=worker)
+
+
+def test_a_refused_status_read_does_not_release_the_compaction_block(worker_batch):
+    story, _, worker = worker_batch
+    session = worker_session(story, worker)
+    story.hook(session, HookSamples.session_start().with_raw({"source": "compact"}))
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker", pipe_target=1)
+    reader = ShellPart("cat", CommandCategory.READ, [])
+    story.expect_hook_refusal(session, HookSamples.shell("journal worker status && cat", piped, reader), "run the read command directly, without a pipe or redirect")
+    story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), "run journal worker status first")
+    story.expect_success("worker status", actor=worker)
+    story.expect_hook_allowed(session, HookSamples.shell("journal worker status", ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker")))
+    story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))

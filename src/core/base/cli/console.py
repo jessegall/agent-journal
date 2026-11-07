@@ -95,7 +95,7 @@ class Console:
 
     def requested_run(self, argv: list[str], request: CallerRequest, stream: TextIO) -> int:
         try:
-            caller = self.resolver.caller(request)
+            caller = replace(self.resolver.caller(request), process_id=request.process_id)
         except UsageError as error:
             Output(self.tables, "--json" in argv, stream).error(str(error))
             return USAGE_CODE

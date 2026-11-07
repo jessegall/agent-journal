@@ -29,19 +29,19 @@ const foot = ref(null);
 const actions = ref(null);
 const time = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
-const window = useWindow();
+const view = useWindow();
 const cardKey = computed(() => `dock.${props.item.id}`);
-const card = computed(() => window.props[cardKey.value].data.value);
+const card = computed(() => view.props[cardKey.value].data.value);
 const noun = computed(() => cliOf(props.item.target_model ?? ""));
 const row = computed(() => ({...card.value, id: props.item.target_id, noun: noun.value}));
-const reloadCard = () => declaration.value?.reads?.length && window.reload(cardKey.value);
-provideDockCard(provide, {data: card, reload: reloadCard, readOutput: readOutputProp(window)});
+const reloadCard = () => declaration.value?.reads?.length && view.reload(cardKey.value);
+provideDockCard(provide, {data: card, reload: reloadCard, readOutput: readOutputProp(view)});
 
 watch(
     () => [props.item.type, props.item.target_model, props.item.target_id, declaration.value],
     (_, previous, cleanup) => {
         reloadCard();
-        const stop = window.subscriptions?.follow(`dock ${props.item.id}`, [`${noun.value.replaceAll("-", "_")}.*`], (event) => {
+        const stop = view.subscriptions?.follow(`dock ${props.item.id}`, [`${noun.value.replaceAll("-", "_")}.*`], (event) => {
             if (!event.row_id || event.row_id === props.item.target_id) reloadCard();
         });
         cleanup(() => stop?.());
@@ -56,7 +56,7 @@ async function press(button) {
     const isDeclared = button.action === "declared";
     if (isDeclared) pressed.value = new Set([...pressed.value, button.label]);
     failure.value = "";
-    const answer = await pressButton(button, {id: props.item.target_id}, window.environment);
+    const answer = await pressButton(button, {id: props.item.target_id}, view.environment);
     if (answer?.ok !== false) return;
     pressed.value = new Set([...pressed.value].filter((label) => label !== button.label));
     failure.value = `Could not ${button.label.toLowerCase()}: ${answer.error}`;
@@ -140,8 +140,8 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <ButtonSlot
                     :name="`dock.${item.type}`"
                     :row="row"
-                    :environment="window.environment"
-                    :read-only="window.readOnly"
+                    :environment="view.environment"
+                    :read-only="view.readOnly"
                     :object-name="cliOf(item.target_model)"
                     external-failure
                     @failure="failure = $event"

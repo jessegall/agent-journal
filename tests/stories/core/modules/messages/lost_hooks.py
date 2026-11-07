@@ -271,3 +271,46 @@ def test_a_lost_repeated_closing_line_stays_out_even_if_a_tool_follows(builder, 
     text = "The worker has task 7246 and its tests passed."
     run_hook(builder, transcript(tmp_path, agent_row(builder, text)), TOOL_FINISHED)
     expect_chat_count(builder, text, 1)
+
+
+@pytest.fixture
+def reaction_builder(builder):
+    builder.hook("s-1", HookSamples.prompt("[journal] the user reacted to message:1: act if it asks"))
+    builder.advance(timedelta(seconds=1))
+    return builder
+
+
+def test_a_reaction_turns_lost_closing_text_stays_out_of_chat(reaction_builder, tmp_path):
+    builder = reaction_builder
+    text = "Should I continue with this reaction? " * 15
+    run_hook(builder, transcript(tmp_path, agent_row(builder, text)))
+    expect_chat_count(builder, text, 0)
+
+
+def test_lost_text_before_a_tool_in_a_reaction_turn_can_reach_chat(reaction_builder, tmp_path):
+    builder = reaction_builder
+    text = "I will inspect the cart."
+    path = transcript(tmp_path, agent_row(builder, text))
+    builder.advance(timedelta(seconds=1))
+    builder.hook("s-1", TOOL_FINISHED)
+    run_hook(builder, path, HookSamples.stop())
+    expect_chat_count(builder, text, 1)
+
+
+def test_a_later_turns_tool_does_not_release_lost_reaction_closing_text(reaction_builder, tmp_path):
+    builder = reaction_builder
+    text = "Finished that reaction turn."
+    path = transcript(tmp_path, agent_row(builder, text))
+    builder.advance(timedelta(seconds=1))
+    builder.hook("s-1", HookSamples.prompt("A new request"))
+    builder.advance(timedelta(seconds=1))
+    builder.hook("s-1", TOOL_FINISHED)
+    run_hook(builder, path, HookSamples.stop())
+    expect_chat_count(builder, text, 0)
+
+
+def test_lost_reaction_text_reaches_chat_when_its_first_following_hook_is_a_tool(reaction_builder, tmp_path):
+    builder = reaction_builder
+    text = "I will check the cart now."
+    run_hook(builder, transcript(tmp_path, agent_row(builder, text)), TOOL_FINISHED)
+    expect_chat_count(builder, text, 1)

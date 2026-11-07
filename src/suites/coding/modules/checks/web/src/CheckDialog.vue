@@ -10,28 +10,28 @@ const VIEWS = [
 ];
 const props = defineProps({row: {type: Object, required: true}, running: Boolean});
 const emit = defineEmits(["close", "run"]);
-const window = useWindow();
-const view = ref("output");
+const view = useWindow();
+const tab = ref("output");
 const chosenRun = ref(null);
 const key = `runs.${props.row.id}`;
-const {rows: runs, failure} = window.props[key];
+const {rows: runs, failure} = view.props[key];
 const shownOutput = computed(() => chosenRun.value?.output ?? props.row.last_output);
 
 function showRun(run) {
     chosenRun.value = run;
-    view.value = "output";
+    tab.value = "output";
 }
 
-const readRuns = () => { if (view.value === "runs") return window.reload(key); };
-watch(view, readRuns);
-const stopFollowing = window.follow(["check.*"], readRuns);
+const readRuns = () => { if (tab.value === "runs") return view.reload(key); };
+watch(tab, readRuns);
+const stopFollowing = view.follow(["check.*"], readRuns);
 onUnmounted(() => stopFollowing?.());
 </script>
 
 <template>
     <Dialog :title="`Check ${row.id}: ${row.title}`" wide data-check-dialog @close="emit('close')">
         <div class="check-tools">
-            <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
+            <Segmented :options="VIEWS" :value="tab" @pick="tab = $event" />
             <span class="check-space" />
             <template v-if="!row.stopped">
                 <Btn small bordered data-check-run :disabled="running" @click="emit('run', row)">{{ running ? "Running" : "Run" }}</Btn>
@@ -44,7 +44,7 @@ onUnmounted(() => stopFollowing?.());
         <template v-if="failure">
             <p class="check-note">{{ failure }}</p>
         </template>
-        <template v-if="view === 'output'">
+        <template v-if="tab === 'output'">
             <template v-if="shownOutput">
                 <pre class="check-output" data-check-output>{{ shownOutput }}</pre>
             </template>

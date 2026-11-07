@@ -2,7 +2,7 @@
 import {computed, ref, watch} from "vue";
 import {Btn, TextArea, TextInput, useWindow} from "@journal/window-kit";
 
-const props = defineProps({profile: {type: String, required: true}});
+const props = defineProps({profile: {type: String, required: true}, programs: {type: Array, required: true}});
 const context = useWindow();
 const UNAVAILABLE = {can_start: false, reason: "", programs: [], idle_helpers: [], can_start_fresh: false, fresh_reason: ""};
 const availability = ref(UNAVAILABLE);
@@ -71,8 +71,8 @@ watch([() => props.profile, program], load, {immediate: true});
         <label class="field">
             <span>Program</span>
             <select v-model="program" :disabled="pending" data-helper-program>
-                <option value="">The profile's program</option>
-                <template v-for="name in availability.programs" :key="name"><option :value="name">{{ name }}</option></template>
+                <option value="">The profile program</option>
+                <template v-for="name in availability.programs" :key="name"><option :value="name">{{ programs.find((entry) => entry.name === name)?.title || name }}</option></template>
             </select>
         </label>
         <template v-for="helper in availability.idle_helpers" :key="helper.id"><div class="idle-helper" :data-helper-idle="helper.id">

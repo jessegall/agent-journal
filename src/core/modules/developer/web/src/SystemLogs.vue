@@ -4,18 +4,18 @@ import {READ_RATES, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 import {toggleFeedPause} from "./toggleFeedPause.js";
 import {usePausedProp} from "./usePausedProp.js";
 
-const window = useWindow();
+const view = useWindow();
 const source = ref("");
 const level = ref("");
 const page = ref(1);
 const paused = ref(false);
-const {data: listing, failure, loaded, reload} = usePausedProp(window, "logs", paused, {rows: [], total: 0, size: 50});
+const {data: listing, failure, loaded, reload} = usePausedProp(view, "logs", paused, {rows: [], total: 0, size: 50});
 const pages = computed(() => Math.max(1, Math.ceil(listing.value.total / listing.value.size)));
 function setFlags() {
-    window.state["logs.page"] = String(page.value);
+    view.state["logs.page"] = String(page.value);
     for (const [name, value] of [["source", source.value], ["level", level.value]]) {
-        if (value) window.state[`logs.${name}`] = value;
-        else delete window.state[`logs.${name}`];
+        if (value) view.state[`logs.${name}`] = value;
+        else delete view.state[`logs.${name}`];
     }
 }
 setFlags();
@@ -31,7 +31,7 @@ watch(page, () => { if (!paused.value) load(); });
 function togglePause() {
     toggleFeedPause(paused, load);
 }
-usePoll(() => loaded.value && load(), () => !paused.value && window.visible.value, READ_RATES.systemLogs);
+usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value, READ_RATES.systemLogs);
 </script>
 
 <template>

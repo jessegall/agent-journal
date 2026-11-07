@@ -6,8 +6,8 @@ import OutputLines from "../../../../viewer/src/kit/OutputLines.vue";
 
 const props = defineProps({call: {type: Number, required: true}});
 const emit = defineEmits(["command"]);
-const window = useWindow();
-const pages = useOutputPages((words) => window.readKey(`terminal-output.${props.call}`, words[3] ? {[words[3].slice(2)]: words[4]} : {}), () => props.call);
+const view = useWindow();
+const pages = useOutputPages((words) => view.readKey(`terminal-output.${props.call}`, words[3] ? {[words[3].slice(2)]: words[4]} : {}), () => props.call);
 const failure = ref("");
 const loaded = ref(false);
 pages.newest().then((answer) => {

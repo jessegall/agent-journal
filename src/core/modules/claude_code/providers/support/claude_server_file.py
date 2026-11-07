@@ -1,34 +1,36 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
 from core.base.json_settings import JsonSettings
 from core.base.type_guards import is_mapping
-from core.modules.mcp.models.mcp_server import McpServer
+from core.base.provider.tool_server import ToolServer
+from core.base.provider.program_server_file import ProgramServerFile
 
 FILE = Path(".mcp.json")
 SERVERS = "mcpServers"
 
 
-class ClaudeServerFile:
+class ClaudeServerFile(ProgramServerFile):
     """The project's .mcp.json, which Claude Code reads its servers from: the journal's servers written over
     their own names beside every other server and setting the file holds, a key only as ${VARIABLE}."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.path = home.project_folder / FILE
+    def __init__(self, folder: Path) -> None:
+        super().__init__(folder / FILE)
 
     def names(self) -> set[str]:
         return set(self.stored_servers(self.read()))
 
-    def write(self, servers: Sequence[McpServer], dropped: Sequence[str]) -> None:
-        self.write_file(self.path, servers, dropped)
+    def prepare(self, servers: Sequence[ToolServer]) -> None:
+        settings = self.read()
+        self.write_settings(settings, servers, tuple(self.stored_servers(settings)))
 
-    @staticmethod
-    def write_file(path: Path, servers: Sequence[McpServer], dropped: Sequence[str]) -> None:
-        settings = JsonSettings.read(path)
-        kept = {name: entry for name, entry in ClaudeServerFile.stored_servers(settings).items() if name not in dropped}
-        settings[SERVERS] = {**kept, **{server.name: ClaudeServerFile.entry(server) for server in servers}}
-        JsonSettings.write(path, settings)
+    def write(self, servers: Sequence[ToolServer], dropped: Sequence[str]) -> None:
+        self.write_settings(self.read(), servers, dropped)
+
+    def write_settings(self, settings: dict[str, object], servers: Sequence[ToolServer], dropped: Sequence[str]) -> None:
+        kept = {name: entry for name, entry in self.stored_servers(settings).items() if name not in dropped}
+        settings[SERVERS] = {**kept, **{server.name: self.entry(server) for server in servers}}
+        JsonSettings.write(self.path, settings)
 
     def read(self) -> dict[str, object]:
         return JsonSettings.read(self.path)
@@ -39,7 +41,7 @@ class ClaudeServerFile:
         return {str(key): value for key, value in servers.items()} if is_mapping(servers) else {}
 
     @staticmethod
-    def entry(server: McpServer) -> dict[str, object]:
+    def entry(server: ToolServer) -> dict[str, object]:
         reference = f"${{{server.key_variable}}}"
         if server.is_started:
             return ClaudeServerFile.present(command=server.command, args=list(server.args), env={server.key_variable: reference} if server.needs_key else None)

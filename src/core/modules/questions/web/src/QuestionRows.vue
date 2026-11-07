@@ -2,11 +2,11 @@
 import {ListTools, RowList, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 import QuestionCard from "./QuestionCard.vue";
 
-const window = useWindow();
-window.state.tab = window.shared ? "shared" : "list";
-const key = window.shared ? `question.${window.shared.id}` : "questions";
-const {rows, failure, loaded, load} = window.props[key];
-if (window.shared) window.reload(key);
+const view = useWindow();
+view.state.tab = view.shared ? "shared" : "list";
+const key = view.shared ? `question.${view.shared.id}` : "questions";
+const {rows, failure, loaded, load} = view.props[key];
+if (view.shared) view.reload(key);
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
 </script>
 

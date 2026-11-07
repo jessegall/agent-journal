@@ -4,6 +4,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
+from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -121,3 +122,38 @@ def test_a_reason_starts_the_next_round_of_three_reminders(new_story):
     expect_value(merge_block_rows(story, worker.id), [])
     remind(story, 1)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
+
+
+def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    worker = checked_worker(story, repository)
+    remind(story, 3)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    expect_value(merge_block_rows(story, worker.id), [])
+    story.expect_success(f'worker send {worker.id} "Another job"', actor=story.agent)
+    story.tick(MAIN_SESSION)
+    expect_value(merge_block_rows(story, worker.id), [])
+    remind(story, 3)
+    expect_value(merge_block_rows(story, worker.id), [])
+
+
+def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
+    worker = checked_worker(story, repository)
+    remind(story, 3)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    with monkeypatch.context() as old_server:
+        old_server.setattr(WorkerMergeBlockListener, "handle", lambda self, event, context: None)
+        story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    expect_value(len(merge_block_rows(story, worker.id)), 1)
+    story.tick(MAIN_SESSION)
+    expect_value(merge_block_rows(story, worker.id), [])

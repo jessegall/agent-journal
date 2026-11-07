@@ -13,13 +13,13 @@ const SETTING_KEY = "view";
 const AGENT_PAGE = "agent";
 const AGENT_VIEW = {lines: 5, flush: true};
 
-const window = useWindow();
-if (window.agent != null) window.state["edits.agent"] = String(window.agent);
-const {rows, failure, loaded, more, older} = window.props.edits;
-const {data: savedView} = window.props.view;
-const kept = window.option(SETTING_KEY);
-const startView = (own) => ({...DEFAULTS, ...(window.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
-const view = ref(startView({}));
+const view = useWindow();
+if (view.agent != null) view.state["edits.agent"] = String(view.agent);
+const {rows, failure, loaded, more, older} = view.props.edits;
+const {data: savedView} = view.props.view;
+const kept = view.option(SETTING_KEY);
+const startView = (own) => ({...DEFAULTS, ...(view.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
+const options = ref(startView({}));
 const filter = ref("");
 const folds = ref({});
 const wholes = ref({});
@@ -29,14 +29,14 @@ const listed = computed(() => {
     const words = filter.value.trim().toLowerCase();
     return words ? cards.value.filter((card) => card.path.toLowerCase().includes(words)) : cards.value;
 });
-const sizing = computed(() => ({"--diff-size": SIZES[view.value.size][0], "--diff-line": SIZES[view.value.size][1]}));
-const foldedOf = (card) => folds.value[card.id] ?? (!card.rows.length || view.value.headers || (view.value.collapse && !Number(view.value.lines) && card.added + card.removed > BIG_LINE_COUNT));
+const sizing = computed(() => ({"--diff-size": SIZES[options.value.size][0], "--diff-line": SIZES[options.value.size][1]}));
+const foldedOf = (card) => folds.value[card.id] ?? (!card.rows.length || options.value.headers || (options.value.collapse && !Number(options.value.lines) && card.added + card.removed > BIG_LINE_COUNT));
 const fold = (card) => (folds.value = {...folds.value, [card.id]: !foldedOf(card)});
 const expand = () => (folds.value = Object.fromEntries(cards.value.map((card) => [card.id, false])));
 
-function setOptions(options) {
-    view.value = options;
-    window.setOption(SETTING_KEY, options);
+function setOptions(chosen) {
+    options.value = chosen;
+    view.setOption(SETTING_KEY, chosen);
 }
 
 async function whole(card) {
@@ -46,19 +46,19 @@ async function whole(card) {
         wholes.value = rest;
         return;
     }
-    const file = window.props[`file.${card.id}`];
-    const reloaded = await window.reload(`file.${card.id}`);
+    const file = view.props[`file.${card.id}`];
+    const reloaded = await view.reload(`file.${card.id}`);
     folds.value = {...folds.value, [card.id]: false};
     wholes.value = {...wholes.value, [card.id]: !reloaded || file.failure.value ? {error: "The text of this file could not be read."} : {text: file.data.value.text}};
 }
 
 // this pane's own view, else the one version 5 first kept for every feed
-watch([kept, savedView], () => { view.value = startView(kept.value ?? savedView.value?.value ?? {}); }, {immediate: true});
+watch([kept, savedView], () => { options.value = startView(kept.value ?? savedView.value?.value ?? {}); }, {immediate: true});
 </script>
 
 <template>
-    <div :class="['file-feed', {flush: view.flush}]" :style="sizing" data-file-feed>
-        <FeedBar :options="view" :filter="filter" @options="setOptions" @filter="filter = $event" @expand="expand" />
+    <div :class="['file-feed', {flush: options.flush}]" :style="sizing" data-file-feed>
+        <FeedBar :options="options" :filter="filter" @options="setOptions" @filter="filter = $event" @expand="expand" />
         <AutoScrollPane :row-count="rows.length">
             <template v-if="failure">
                 <p class="file-feed-failure" role="alert">{{ failure }}</p>
@@ -76,12 +76,12 @@ watch([kept, savedView], () => { view.value = startView(kept.value ?? savedView.
                 </template>
                 <template v-for="card in listed" :key="card.id">
                     <DiffCard
-                        :flush="view.flush"
+                        :flush="options.flush"
                         :folded="foldedOf(card)"
-                        :edits-only="view.editsOnly"
-                        :hide-removals="!view.removals"
-                        :capped="view.capped"
-                        :lines="Number(view.lines) || 0"
+                        :edits-only="options.editsOnly"
+                        :hide-removals="!options.removals"
+                        :capped="options.capped"
+                        :lines="Number(options.lines) || 0"
                         :whole="wholes[card.id] || null"
                         :path="card.path"
                         :change="card.edit_type"
@@ -89,7 +89,7 @@ watch([kept, savedView], () => { view.value = startView(kept.value ?? savedView.
                         :removed="card.removed"
                         :at="card.created_at"
                         :rows="card.rows"
-                        :half="view.columns || card.half"
+                        :half="options.columns || card.half"
                         @fold="fold(card)"
                         @whole="whole(card)"
                     />

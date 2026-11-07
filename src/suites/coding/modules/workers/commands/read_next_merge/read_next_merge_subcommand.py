@@ -15,4 +15,4 @@ class ReadNextMergeSubcommand(Subcommand[ReadNextMerge, str]):
         return None
 
     def command(self, arguments: Namespace, caller: Caller) -> ReadNextMerge:
-        return ReadNextMerge()
+        return ReadNextMerge(caller.process_id, arguments.json)

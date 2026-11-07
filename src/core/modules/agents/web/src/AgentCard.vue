@@ -70,11 +70,11 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             </span>
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity data-agent-motion>{{ open ? roleLabel : identity }}</span>
-            <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First dispatched: <TimeAgo :at="row.created_at" /></span></template>
+            <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+            <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First started: <TimeAgo :at="row.created_at" /></span></template>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
-        <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+        <template v-if="open"><InformationBar :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
             <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>

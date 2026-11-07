@@ -145,3 +145,17 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     expect_states(story, task1="completed", task2="completed", task3="completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
+
+
+def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
+    story.expect_success("worker next --differences none", actor=worker)
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")

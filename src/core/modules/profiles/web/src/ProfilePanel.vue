@@ -2,20 +2,20 @@
 import {computed, ref, watch} from "vue";
 import {Btn, DiffCard, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} from "@journal/window-kit";
 
-const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}});
+const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}, programs: {type: Array, required: true}});
 const emit = defineEmits(["close", "save", "reset"]);
 
 const WRITING = "writing";
 const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
-const PROGRAMS = [{key: "", label: "The parent's program"}, {key: "claude", label: "Claude Code"}, {key: "codex", label: "Codex"}];
+const programs = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "model", "codex_model", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "program_models", "body"];
 
 const draft = ref({});
 watch(
     () => props.profile.name,
     () => {
-        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(",")};
+        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), program_models: {...props.profile.program_models}};
     },
     {immediate: true},
 );
@@ -33,7 +33,7 @@ const compared = computed(() => {
     return [...lineRows("del", yours, journal), ...lineRows("add", journal, yours)];
 });
 const saved = computed(() => ({...props.profile, mcp_tools: props.profile.mcp_tools.join(",")}));
-const dirty = computed(() => FIELDS.some((key) => draft.value[key] !== saved.value[key]) || !props.profile.name);
+const dirty = computed(() => FIELDS.some((key) => JSON.stringify(draft.value[key]) !== JSON.stringify(saved.value[key])) || !props.profile.name);
 const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.name || "") && draft.value.description.trim());
 </script>
 
@@ -64,20 +64,19 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField label="Access" for="profile-access" help="Whether it may change files.">
                 <Segmented data-profile-access :options="accesses" :value="draft.access" @pick="draft.access = $event" />
             </FormField>
-            <FormField label="Program" for="profile-program" help="Claude Code or Codex, or the same program as the agent that starts it.">
-                <Segmented :options="PROGRAMS" :value="draft.program" @pick="draft.program = $event" />
+            <FormField label="Program" for="profile-program" help="A registered program, or the same program as the agent that starts it.">
+                <Segmented :options="programs" :value="draft.program" @pick="draft.program = $event" />
             </FormField>
             <template v-if="draft.program">
                 <FormField label="When it cannot start" for="profile-program-choice" help="If possible: a start uses the other program, on its model, when this one is not installed or not ready, and says so.">
                     <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.program_if_possible ? 'possible' : 'always'" @pick="draft.program_if_possible = $event === 'possible'" />
                 </FormField>
             </template>
-            <FormField label="Model on Claude Code" for="profile-model" help="The least expensive model that reliably fits the work.">
-                <ModelPicker provider="claude" inherits :value="draft.model" data-profile-model="claude" @pick="draft.model = $event" />
-            </FormField>
-            <FormField label="Model on Codex" for="profile-codex-model" help="The model it runs on when the agent is Codex.">
-                <ModelPicker provider="codex" inherits :value="draft.codex_model" data-profile-model="codex" @pick="draft.codex_model = $event" />
-            </FormField>
+            <template v-for="program in props.programs" :key="program.name">
+                <FormField :label="`Model on ${program.title}`" :for="`profile-model-${program.name}`" help="The least expensive model that reliably fits the work.">
+                    <ModelPicker :title="program.title" :models="program.models" inherits :value="draft.program_models[program.name] || ''" :data-profile-model="program.name" @pick="draft.program_models[program.name] = $event" />
+                </FormField>
+            </template>
             <FormField label="Instructions" for="profile-body" help="What it is told each time it starts, after the brief.">
                 <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />
             </FormField>

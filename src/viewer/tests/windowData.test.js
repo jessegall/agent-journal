@@ -166,18 +166,18 @@ test("a window reads through its props: a list's rows, and a reload of what it n
         return {ok: true, value: {declared: {list: {tab: null, events: [], reload_seconds: 0, loading: "first", page_size: 50}}, keys: Object.fromEntries(names.map((name) => [name, {ok: true, value: {rows: [{id: 1}], page: 1, size: 50, total: 1}}]))}};
     };
     const context = {visible: ref(true), follow: () => {}, readKeys: async (request) => answer(request)};
-    let window;
+    let view;
     const app = createApp({setup() {
-        window = useWindow();
+        view = useWindow();
         return () => h("div");
     }});
     app.provide(WINDOW_CONTEXT, context);
     app.mount(document.createElement("div"));
-    const {rows} = window.props.list;
+    const {rows} = view.props.list;
     await settled();
     await vi.advanceTimersByTimeAsync(600);
     expect(rows.value).toEqual([{id: 1}]);
-    await Promise.all([window.reload("list"), window.reload({only: ["other"]}), vi.advanceTimersByTimeAsync(0)]);
+    await Promise.all([view.reload("list"), view.reload({only: ["other"]}), vi.advanceTimersByTimeAsync(0)]);
     expect(asked).toEqual([[], ["list", "other"]]);
 });
 

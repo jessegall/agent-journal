@@ -1,8 +1,8 @@
 <script setup>
 import {Icon, Skeleton, TimeAgo, useOpenRow, useWindow, ListTools, useListTools} from "@journal/window-kit";
 
-const window = useWindow();
-const {rows, failure, loaded} = window.props.templates;
+const view = useWindow();
+const {rows, failure, loaded} = view.props.templates;
 const tools = useListTools(rows, {title: (row) => row.title});
 const {opened, toggle} = useOpenRow();
 </script>

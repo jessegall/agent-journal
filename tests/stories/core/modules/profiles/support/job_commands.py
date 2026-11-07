@@ -4,6 +4,7 @@ from pathlib import Path
 
 from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import JournalHome
+from core.base.provider.providers import Providers
 from core.base.text_digest import TextDigest
 from core.base.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles
@@ -61,7 +62,7 @@ def expect_published_commands(story) -> None:
 
 def profile_definition(story, name: str):
     if name in PROJECT_COMMANDS:
-        files = ProfileFiles(JournalHome(ROOT / ".journal"), story.container.get(SettingValues), story.container.get(Registry), story.container.get(TextDigest))
+        files = ProfileFiles(JournalHome(ROOT / ".journal"), story.container.get(SettingValues), story.container.get(Registry), story.container.get(TextDigest), story.container.get(Providers))
         return files.read(ROOT / ".claude" / "agents" / f"{name}.md")
     return next(profile for profile in SHIPPED_PROFILES if profile.name == name)
 

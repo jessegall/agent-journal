@@ -18,3 +18,4 @@ class MergerLine(EnvironmentScoped, Model):
     fallback_source: str
     read_at: Timestamp | None = None
     nudge_json: str | None = None
+    read_output_id: int | None = None

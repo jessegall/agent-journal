@@ -4,11 +4,12 @@ import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useWindow} from
 import HelperStartForm from "./HelperStartForm.vue";
 import ProfilePanel from "./ProfilePanel.vue";
 
-const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", model: "sonnet", codex_model: "gpt-6.1-sol", body: "", shipped: false, uses: 0};
+const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], notes: [], problem: "", program_models: {}, body: "", shipped: false, uses: 0};
 const ACCESS_WORDS = {"read-only": "Read-only", writing: "Writing"};
 
 const context = useWindow();
 const {rows, listing, failure, loaded, act, actionFailure} = context.props.profiles;
+const programs = context.props.programs.rows;
 const types = computed(() => listing.value ? listing.value.types : []);
 const opened = ref("");
 const query = ref("");
@@ -22,7 +23,7 @@ const matching = computed(() => {
 const panel = computed(() => (making.value ? NEW_PROFILE : rows.value.find((row) => row.name === opened.value) || null));
 const typeLabel = (row) => types.value.find((type) => type.key === row.agent_type)?.label || row.agent_type;
 const origin = (row) => (row.shipped ? "Comes with the journal" : row.module);
-const rowLine = (row) => [`Type: ${typeLabel(row)}`, `Access: ${ACCESS_WORDS[row.access]}`, `${row.model || "chosen at start"} on Claude`, `${row.codex_model || "chosen at start"} on Codex`, row.changed.length ? "Changed" : "", origin(row)].filter(Boolean).join(" · ");
+const rowLine = (row) => [`Type: ${typeLabel(row)}`, `Access: ${ACCESS_WORDS[row.access]}`, ...programs.value.map((program) => `${row.program_models?.[program.name] || "chosen at start"} on ${program.title}`), row.changed.length ? "Changed" : "", origin(row)].filter(Boolean).join(" · ");
 const warnings = (row) => [row.problem, row.module_text_changed ? "Text changed: the journal's instructions have a new version" : "", ...row.notes].filter(Boolean);
 const usedWords = (row) => (row.uses ? `Uses: ${row.uses} ${row.uses === 1 ? "time" : "times"}, last ${ago(new Date(row.last_used * 1000).toISOString())}` : "Uses: none");
 
@@ -50,7 +51,7 @@ async function reset(profile) {
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.program_if_possible ? "--program-if-possible" : "--no-program-if-possible", "--model", fields.model, "--codex-model", fields.codex_model, "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
+    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.program_if_possible ? "--program-if-possible" : "--no-program-if-possible", ...programs.value.flatMap((program) => [program.model_option, fields.program_models[program.name] || ""]), "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
@@ -102,8 +103,8 @@ async function save(profile, fields) {
             </div>
         </template>
         <template v-if="panel">
-            <ProfilePanel :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset">
-                <template v-if="panel.name && panel.agent_type === 'helper'"><HelperStartForm :profile="panel.name" /></template>
+            <ProfilePanel :programs="programs" :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset">
+                <template v-if="panel.name && panel.agent_type === 'helper'"><HelperStartForm :programs="programs" :profile="panel.name" /></template>
             </ProfilePanel>
         </template>
     </section>

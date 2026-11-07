@@ -4,17 +4,17 @@ import { Btn, Icon, useDockCard, useWindow } from "@journal/window-kit";
 
 // the card above the chat while questions wait: how many the agent asked, and the way to the questions window
 const QUESTIONS_WINDOW = "questions.questions";
-const window = useWindow();
+const view = useWindow();
 const card = useDockCard();
-const head = window.option("head");
-const actions = window.option("actions");
+const head = view.option("head");
+const actions = view.option("actions");
 const count = computed(() => card.data.value?.rows.length ?? 0);
 const words = computed(
   () =>
     `Agent asked ${count.value} ${count.value === 1 ? "question" : "questions"}`,
 );
 
-window.follow(["question.*"], card.reload);
+view.follow(["question.*"], card.reload);
 </script>
 
 <template>
@@ -32,7 +32,7 @@ window.follow(["question.*"], card.reload);
         small
         bordered
         data-open-questions-window
-        @click="window.open(QUESTIONS_WINDOW)"
+        @click="view.open(QUESTIONS_WINDOW)"
         >Open</Btn
       ></Teleport
     ></template

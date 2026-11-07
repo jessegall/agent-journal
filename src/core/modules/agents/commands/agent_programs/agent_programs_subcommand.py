@@ -21,7 +21,7 @@ class AgentProgramsSubcommand(ReadSubcommand[AgentProgramList]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentProgramList:
-        return AgentProgramList(tuple(AgentProgramChoice(provider.name, provider.title, tuple(provider.models)) for provider in self.providers.all()))
+        return AgentProgramList(tuple(AgentProgramChoice(provider.name, provider.title, tuple(provider.models), provider.model_option) for provider in self.providers.all()))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentProgramList):

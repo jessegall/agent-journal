@@ -3,31 +3,35 @@ from pathlib import Path
 
 from core.base.query.queries import Queries
 from core.base.database.kept_rows import KeptRows
-from core.base.json_settings import JsonSettings
+from core.base.journal_home import JournalHome
+from core.base.provider.providers import Providers
+from core.base.provider.program_server_file import ProgramServerFile
 from core.modules.mcp.models.mcp_server import McpServer
-from core.modules.mcp.support.claude_server_file import FILE as CLAUDE_FILE, ClaudeServerFile
-from core.modules.mcp.support.codex_server_file import FILE as CODEX_FILE, CodexServerFile
 
 
 class ServerConfigs:
-    """The one writer of the agent programs' server configs: every installed server written into Claude Code's
-    .mcp.json and Codex's .codex/config.toml, and a removed one taken out of both."""
+    """Writes installed servers through each registered program's configuration files."""
 
-    def __init__(self, queries: Queries, claude: ClaudeServerFile, codex: CodexServerFile, kept: KeptRows) -> None:
-        self.queries, self.claude, self.codex = queries, claude, codex
-        self.kept = kept
+    def __init__(self, queries: Queries, providers: Providers, home: JournalHome, kept: KeptRows) -> None:
+        self.queries, self.providers, self.home, self.kept = queries, providers, home, kept
+
+    def files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
+        return tuple(file for provider in self.providers.all() for file in provider.server_files(folder))
+
+    def names(self) -> dict[str, set[str]]:
+        return {str(file.path.relative_to(self.home.project_folder)): file.names() for file in self.files(self.home.project_folder)}
 
     def write(self, dropped: Sequence[str] = ()) -> None:
         servers = self.installed(dropped)
-        self.claude.write(servers, dropped)
-        self.codex.write(servers)
+        for file in self.files(self.home.project_folder):
+            file.write(servers, dropped)
 
     def write_folder(self, folder: Path) -> tuple[Path, ...]:
         servers = self.installed()
-        previous = tuple(JsonSettings.read(folder / CLAUDE_FILE).get("mcpServers", {}))
-        ClaudeServerFile.write_file(folder / CLAUDE_FILE, servers, previous)
-        CodexServerFile.write_file(folder / CODEX_FILE, servers)
-        return CLAUDE_FILE, CODEX_FILE
+        files = self.files(folder)
+        for file in files:
+            file.prepare(servers)
+        return tuple(file.path.relative_to(folder) for file in files)
 
     def installed(self, dropped: Sequence[str] = ()) -> list[McpServer]:
         servers = self.kept.read("mcp_servers", lambda: tuple(self.queries.query(McpServer).oldest().all_rows()), name="mcp.installed_servers")

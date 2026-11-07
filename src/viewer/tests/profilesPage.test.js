@@ -3,7 +3,7 @@ import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {context, page, settle} from "./support/windowContext.js";
 import ProfileRows from "../../core/modules/profiles/web/src/ProfileRows.vue";
-import {profileWindowContext} from "./support/profileWindowContext.js";
+import {profileWindowContext, PROGRAMS} from "./support/profileWindowContext.js";
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -11,8 +11,8 @@ vi.stubGlobal("ResizeObserver", class {
     unobserve() {}
 });
 
-const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
-const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", body: "You build.", shipped: false, uses: 0, last_used: 0};
+const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", program_models: {claude: "sonnet", codex: "gpt-6.1-sol"}, body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
+const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
 const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: ""}, {key: "worker", label: "Worker", access: "writing", extends: "helper"}];
 let app;
 let host;
@@ -24,9 +24,9 @@ afterEach(() => {
 });
 
 // the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
-async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null})) {
+async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null}), programs = PROGRAMS) {
     const lines = [];
-    const window_ = {...profileWindowContext({"profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
+    const window_ = {...profileWindowContext({"agent programs": page(programs), "profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(ProfileRows)});
@@ -53,10 +53,10 @@ test("the page lists each profile with its description, type, models and use, un
     const first = host.querySelector('[data-profile="journal-researcher"]').textContent.replace(/\s+/g, " ");
     expect(first).toContain("journal-researcher");
     expect(first).toContain("Researches a question and reports what it found");
-    expect(first).toContain("Type: Helper · Access: Read-only · sonnet on Claude · gpt-6.1-sol on Codex · Comes with the journal");
+    expect(first).toContain("Type: Helper · Access: Read-only · sonnet on Claude Code · gpt-6.1-sol on Codex · Comes with the journal");
     expect(first).toContain("Uses: 3 times, last");
     const second = host.querySelector('[data-profile="builder"]').textContent.replace(/\s+/g, " ");
-    expect(second).toContain("Type: Worker · Access: Writing · chosen at start on Claude · gpt-6-luna on Codex");
+    expect(second).toContain("Type: Worker · Access: Writing · chosen at start on Claude Code · gpt-6-luna on Codex");
     expect(second).toContain("Uses: none");
     expect(host.querySelector("[data-profile-find]")).not.toBeNull();
     expect(host.querySelector("[data-profile-new]").textContent).toBe("New profile");
@@ -193,4 +193,20 @@ test("a journal with no profiles says what a profile is", async () => {
     await drawn([]);
     expect(host.textContent).toContain("No profiles yet");
     expect(host.textContent).toContain("A profile gives an agent its instructions, type and model");
+});
+
+
+test("a third provider supplies program and model choices and its save option", async () => {
+    const programs = [...PROGRAMS, {name: "sample", title: "Sample program", model_option: "--sample-model", models: [{name: "sample-fast", tier: "fast"}]}];
+    const lines = await drawn([RESEARCHER], undefined, programs);
+    await open(RESEARCHER.name);
+    expect(panel().textContent).toContain("The parent program");
+    expect(panel().textContent).toContain("Model on Sample program");
+    panel().querySelector('[data-profile-model="sample"] [data-drop-head]').click();
+    await settle();
+    document.querySelector('[data-drop-item="sample-fast"]').click();
+    await settle();
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    expect(lines[0]).toEqual(expect.arrayContaining(["--sample-model", "sample-fast"]));
 });

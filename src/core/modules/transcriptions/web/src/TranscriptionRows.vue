@@ -2,9 +2,9 @@
 import {computed, ref} from "vue";
 import {Btn, ListTools, RowList, TimeAgo, WindowRoom, ResourceLinks, peekRef, useListTools, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-const {rows, failure, loaded, act, actionFailure} = window.props.transcriptions;
-const sources = window.props.sources;
+const view = useWindow();
+const {rows, failure, loaded, act, actionFailure} = view.props.transcriptions;
+const sources = view.props.sources;
 const tools = useListTools(rows, {title: (row) => `${row.title} ${row.text}`});
 const drafting = ref(false);
 const draft = ref({title: "", text: ""});
@@ -35,7 +35,7 @@ function readLinks(line) {
         const index = line.indexOf(`--${name}`);
         if (index >= 0) flags[name] = line[index + 1];
     }
-    return window.readKey(`links.${opened.value.id}`, flags);
+    return view.readKey(`links.${opened.value.id}`, flags);
 }
 
 async function save() {

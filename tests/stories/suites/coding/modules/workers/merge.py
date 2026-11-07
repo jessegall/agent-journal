@@ -1,4 +1,10 @@
 from core.base.actor import Actor
+from core.base.caller.caller_request import CallerRequest
+from core.base.driver.command_category import CommandCategory
+from core.testing.shell_part import ShellPart
+from core.modules.processes.models.output import Output
+from suites.coding.modules.workers.models.worktree import Worktree
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from core.base.actor_type import ActorType
 from datetime import timedelta
 
@@ -487,3 +493,67 @@ def expect_stdout_subprocess(text, text_2, text_3, repository, worker) -> None:
 def expect_worktree_folder_repository_with(repository, worker, text, expected) -> None:
     actual = (repository.worktree_folder(worker.id) / text).read_text()
     assert expected in actual, actual
+
+
+def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_whole(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.expect_success(f'task log 1 "{"long important line " * 40}" --important', actor=worker)
+    process = start_process(story, f"journal worker logs {worker.id} && echo done")
+    request = CallerRequest({"JOURNAL_AGENT_SESSION": "s-1", "JOURNAL_PROCESS": str(process.id)}, str(repository.folder))
+    outcome = story.run_requested(f"worker logs {worker.id}", request)
+    outcome.expect_code(0)
+    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    story.expect_rows(worktree.logs_read_at is None, worktree.logs_output_id == process.id)
+    end_run(story, process, outcome.output_text)
+    story.expect_success(f"output read {process.id} --summary", actor=story.agent)
+    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    story.expect_rows(worktree.logs_read_at is None)
+    story.expect_success(f"output read {process.id} --all", actor=story.user)
+    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    story.expect_rows(worktree.logs_read_at is None)
+    story.advance(timedelta(seconds=1))
+    reader = start_process(story, f"journal output read {process.id} --all && echo done")
+    request = CallerRequest({"JOURNAL_AGENT_SESSION": "s-1", "JOURNAL_PROCESS": str(reader.id)}, str(repository.folder))
+    second = story.run_requested(f"output read {process.id} --all", request)
+    second.expect_code(0)
+    end_run(story, reader, second.output_text)
+    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    story.expect_rows(worktree.logs_read_at is None)
+    story.expect_success(f"output read {reader.id} --all", actor=story.agent)
+    worktree = story.container.get(Queries).query(Worktree).find(worktree.id)
+    output = story.container.get(Queries).query(Output).filter(process_id=process.id).first()
+    story.expect_rows(worktree.logs_read_at is not None, worktree.logs_output_id is None, output.fully_read_at is not None)
+
+
+def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
+    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    worker = delivered_worker(story, repository_environment(story))
+    part = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker")
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {worker.id} > /tmp/log", part, redirects=["> /tmp/log"]), "run the read command directly, without a pipe or redirect")
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker", pipe_target=1)
+    sink = ShellPart("cat", CommandCategory.READ, [])
+    story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {worker.id} && cat", piped, sink), "run the read command directly, without a pipe or redirect")
+    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    story.expect_rows(worktree.logs_read_at is None)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(Worktree).find(worktree.id).logs_read_at is not None)
+
+
+def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.expect_success('task log 1 "First decision" --important', actor=worker)
+    task_id = story.new_row_id('task make "A second task" --brief "Add tax"', actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --task {task_id}", actor=story.agent)
+    repository.changed(worker.id, "tax.py", "TAX = 1\n")
+    story.expect_success(f'task log {task_id} "Second decision" --important', actor=worker)
+    story.expect_success(f'proof make 1 --task {task_id} "tax.py:1, read the tax"', actor=worker)
+    story.expect_success("worker deliver --differences none", actor=worker)
+    story.expect_success(f"worker logs {worker.id} --task {task_id}", actor=story.agent)
+    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    story.expect_rows(worktree.logs_read_at is None)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(Worktree).find(worktree.id).logs_read_at is not None)

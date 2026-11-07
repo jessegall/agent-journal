@@ -10,3 +10,4 @@ class AgentProgramChoice:
     name: str
     title: str
     models: tuple[ProgramModel, ...]
+    model_option: str

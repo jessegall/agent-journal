@@ -3,17 +3,17 @@ import {computed, watch} from "vue";
 import {InspectorPart, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 
 // how many review rounds a plan had, and for each when it ran, who read it and its reports, newest first
-const window = useWindow();
-const row = window.option("row");
+const view = useWindow();
+const row = view.option("row");
 const key = computed(() => `rounds.${row.value.id}`);
-const rounds = computed(() => window.props[key.value].rows.value);
-const failure = computed(() => window.props[key.value].failure.value);
+const rounds = computed(() => view.props[key.value].rows.value);
+const failure = computed(() => view.props[key.value].failure.value);
 const newest = computed(() => [...rounds.value].reverse());
 const reviewerCount = (round) => (round.reviewers.length === 1 ? "1 reviewer" : `${round.reviewers.length} reviewers`);
 const reviewerNames = (round) => round.reviewers.map((reviewer) => reviewer.name).join(", ");
 const openReport = (report) => peekRef(`reports:${report.id}`);
-watch(key, (name) => window.reload(name), {immediate: true});
-window.follow(["plan.*"], () => window.reload(key.value));
+watch(key, (name) => view.reload(name), {immediate: true});
+view.follow(["plan.*"], () => view.reload(key.value));
 </script>
 
 <template>

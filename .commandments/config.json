@@ -222,7 +222,9 @@
         "ViewerVersionTextDetector",
         "ViewerVersionAttributeDetector",
         "ViewerVersionScriptDetector",
-        "architecture_nudges_stored_text"
+        "architecture_nudges_stored_text",
+        "WindowContextNamedWindowDetector",
+        "WindowContextAssignedWindowDetector"
     ],
     "parallel": 2,
     "configure": {

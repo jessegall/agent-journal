@@ -1,6 +1,6 @@
-import shutil
 from pathlib import Path
 
+from core.base.file_access import FileAccess
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.environment_names import EnvironmentNames
@@ -18,8 +18,6 @@ from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
-CODEX_HOOKS_FILE = Path(".codex") / "hooks.json"
-
 
 class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
     """Prepares a worktree's libraries, hooks and skills before running its setup commands. It saves no row, so
@@ -34,13 +32,16 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.skills = skills
         self.home, self.managed, self.providers = home, managed, providers
 
-    def place_codex_hooks(self, command: PrepareWorktree) -> None:
-        hooks = Path(command.source) / CODEX_HOOKS_FILE
-        if hooks.is_file():
-            target = Path(command.folder) / CODEX_HOOKS_FILE
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(hooks, target)
-            self.libraries.exclude(command.folder, [str(CODEX_HOOKS_FILE)])
+    def place_program_hooks(self, command: PrepareWorktree) -> None:
+        for provider in self.providers.all():
+            for file in provider.worktree_hook_files:
+                source = Path(command.source) / file
+                if not source.is_file():
+                    continue
+                target = Path(command.folder) / file
+                target.parent.mkdir(parents=True, exist_ok=True)
+                FileAccess.shared().write_binary(target, FileAccess.shared().binary(source))
+                self.libraries.exclude(command.folder, [str(file)])
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:
         environment_id = self.environment_names.environment_id(command.environment)
@@ -48,7 +49,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
         self.libraries.check(command.source, (*links, *copies))
         self.libraries.place(command.source, command.folder, links, copies)
-        self.place_codex_hooks(command)
+        self.place_program_hooks(command)
         rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
         manager = HookManager(self.home.project_folder, self.managed, rules)
         for provider in self.providers.all():
