@@ -49,7 +49,7 @@ def test_a_worker_cannot_allow_its_own_request_through_the_command(requested):
 
 def test_allow_test_allows_once_and_tells_the_worker(requested):
     requested.story.expect_success(ALLOW, actor=requested.story.agent)
-    requested.story.expect_rows(any("request 1" in line and "worker-test-request show 1" in line for line in requested.worker_lines()))
+    requested.story.expect_rows(any("request 1 is allowed" in line for line in requested.worker_lines()))
     requested.story.expect_refusal(ALLOW, "already allowed", actor=requested.story.agent)
 
 

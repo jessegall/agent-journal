@@ -227,7 +227,7 @@ def ended_worker_story(new_story):
 
 def test_a_dispatch_on_a_file_an_ended_worker_changed_is_refused_naming_it(new_story):
     story, worker = ended_worker_story(new_story)
-    story.expect_hook_refusal("s-1", dispatch_sample("2", "--model", "sonnet"), f"journal worker send {worker.id}")
+    story.expect_hook_refusal("s-1", dispatch_sample("2", "--model", "sonnet"), f"worker:{worker.id} changed these files")
 
 
 def test_fresh_passes_and_a_dispatch_on_other_files_goes_out(new_story):

@@ -192,7 +192,7 @@ def test_worker_on_an_out_program_does_not_restart(failed_worker_story):
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
     lines = story.run(f'agent-line list --agent {story.agent.id}').output_text
-    story.expect_rows(lines.count(f'journal worker status {worker.id}') == 1)
+    story.expect_rows(lines.count(f'worker:{worker.id} stopped') == 1)
     story.expect_text(f'worker status {worker.id}', 'Program: claude', 'rate limit', 'until', '09:15', f'journal worker release {worker.id}')
     story.expect_rows(len(launcher.requests) == 1)
     story.expect_text(f'agent show {worker.id}', 'ended_at:')
