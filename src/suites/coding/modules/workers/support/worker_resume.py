@@ -8,6 +8,7 @@ from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetT
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
+from core.base.listener.event_rows import EventRows
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.query.conditions.greater import Greater
@@ -41,9 +42,10 @@ class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
+        self.rows = rows
         self.states, self.reports, self.routes = states, reports, routes
         self.shares, self.environments, self.scopes = shares, environments, scopes
 
@@ -102,11 +104,13 @@ class WorkerResume:
             self.bus.run(BlockUntil(worker.id, TASK_BRIEF_FIRST.nudge(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
                          worker_actor, environment_id=worktree.environment_id)
         job = self.queries.query(AgentLine).find(job.id)
-        if job.state is AgentLineState.WAITING:
+        if job.state is AgentLineState.WAITING and self.rows.required(Agent, worker.id).pid is not None:
             self.bus.run(EnterAgentLine(job.id), actor, environment_id=worktree.environment_id)
         return answer
 
     def is_job_delivering(self, worker: Agent, ended_at: Timestamp) -> bool:
+        if worker.pid is None:
+            return False
         delivery_cutoff_at = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
 

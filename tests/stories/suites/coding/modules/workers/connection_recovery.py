@@ -148,7 +148,7 @@ def nested_recovery(recovery):
     recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
     recovery.launches.clear()
     recovery.on_launch = lambda: recovery.story.expect_success(
-        f'worker send {recovery.worker.id} "Continue the assigned task"', actor=recovery.story.agent)
+        f'worker send --wait {recovery.worker.id} "Continue the assigned task"', actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)
     recovery.tick()
     return recovery
@@ -211,7 +211,7 @@ def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(rec
     recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
     recovery.story.expect_text(f"agent show {recovery.worker.id}", f"pid: {WORKER_PID}")
     recovery.advance(121)
-    recovery.story.expect_success(f'worker send {recovery.worker.id} "Go on with task 1"', actor=recovery.story.agent)
+    recovery.story.expect_success(f'worker send --wait {recovery.worker.id} "Go on with task 1"', actor=recovery.story.agent)
     recovery.story.run_listeners()
     recovery.story.expect_rows(not recovery.launches, not recovery.stopped)
 
@@ -334,7 +334,7 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     GitRepository(repository_folder(story)).changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_success("worker deliver --differences none", actor=worker)
+    story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL WHERE session_agent_id = ?", [worker.id]))
     story.expect_success(f"agent end {worker.id}", actor=worker)
     recovery.advance(20 * 60)
@@ -374,7 +374,7 @@ def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_fr
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
     recovery.advance(1)
-    story.expect_success(f'worker send {worker.id} "Continue the task"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "Continue the task"', actor=story.agent)
     recovery.advance(20 * 60)
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")

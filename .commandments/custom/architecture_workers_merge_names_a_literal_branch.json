@@ -22,6 +22,9 @@
                             "is": "call"
                         },
                         {
+                            "name": "git"
+                        },
+                        {
                             "descendant": {
                                 "all": [
                                     {

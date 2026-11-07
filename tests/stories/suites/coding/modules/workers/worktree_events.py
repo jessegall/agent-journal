@@ -91,7 +91,7 @@ def test_s36_the_branch_keeps_a_hidden_folder_whole_after_the_merge(delivered_st
     story, repository, worker = delivered_story, delivered_story.repository, delivered_story.worker
     story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", False))
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
 
@@ -99,7 +99,7 @@ def test_s36_the_branch_keeps_a_hidden_folder_whole_after_the_merge(delivered_st
 def test_s36_the_branch_changes_the_hidden_folder_during_the_work_and_the_delivery_rebases(delivered_after_the_branch_moved):
     story, repository, worker = delivered_after_the_branch_moved, delivered_after_the_branch_moved.repository, delivered_after_the_branch_moved.worker
     story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", True))
-    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, CHANGED_RULES_TEXT)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
 
@@ -108,7 +108,7 @@ def test_s36_a_commit_script_on_the_delivery_lifts_the_mark_and_restores_the_fol
     story, repository, worker = lifting_story, lifting_story.repository, lifting_story.worker
     story.expect_rows(worktree_state(story) == (f"H {RULES}\n", "", True), plugin_row(story).fault_count == 0)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
 
 
@@ -117,12 +117,12 @@ def test_a_plugin_hears_one_event_for_a_merge_with_its_commits_and_none_for_a_re
     story.repository = repository_environment(story)
     story.worker = dispatched_worker(story, DISPATCH)
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    outcome = story.run(f"worker merge {story.worker.id}", actor=story.agent)
+    outcome = story.run(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()
     story.expect_rows(outcome.code != 0, not script_calls(story, "see.sh"))
     hand_in(story)
     original_commit = story.repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()
     calls = script_calls(story, "see.sh")
     story.expect_rows(len(calls) == 1)
@@ -141,7 +141,7 @@ def test_a_removal_event_fires_when_a_merge_removes_the_worktree(new_story):
     story = removal_story(new_story)
     hand_in(story)
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 

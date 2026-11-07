@@ -1,3 +1,5 @@
+from core.base.command.command import Command
+from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -10,7 +12,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 
 
-class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
+class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     """`journal worker send <n> ["<job>"] [--task <task> ...]`: a worker that reported takes its next job or
     tasks, with its memory of the last, and the answer says whether it runs, is started again or cannot be
     told."""
@@ -19,20 +21,32 @@ class SendWorkerSubcommand(Subcommand[SendWorker, AgentLine]):
     name = "send"
     outward = True
 
-    def __init__(self, home: JournalHome, agents: AgentRows) -> None:
+    def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest) -> None:
+        self.requests = requests
         self.home, self.agents = home, agents
 
     def arguments(self, parser: ArgumentParser) -> None:
+        WorkerCommandRequest.arguments(parser)
         parser.add_argument("worker_id", type=int)
         parser.add_argument("job", nargs="?", default="")
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")
 
-    def command(self, arguments: Namespace, caller: Caller) -> SendWorker:
-        return SendWorker(arguments.worker_id, arguments.job, tuple(arguments.task), tuple(arguments.library_link), tuple(arguments.library_copy))
+    def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
+        command = SendWorker(arguments.worker_id, arguments.job, tuple(arguments.task), tuple(arguments.library_link), tuple(arguments.library_copy))
+        argv = ["worker", "send", str(arguments.worker_id), arguments.job]
+        if arguments.task:
+            argv.extend(("--task", *(str(task) for task in arguments.task)))
+        for link in arguments.library_link:
+            argv.extend(("--library-link", link))
+        for copy in arguments.library_copy:
+            argv.extend(("--library-copy", copy))
+        return self.requests.command(command, arguments.worker_id, argv, arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
+        if WorkerCommandRequest.write_output(value, output):
+            return
         if isinstance(value, AgentLine):
             output.line(self.answer(self.agents.find(value.session_agent_id)))
 

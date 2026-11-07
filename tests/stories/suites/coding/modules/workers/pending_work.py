@@ -51,7 +51,7 @@ def waiting_place(new_story, monkeypatch, request):
     first = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(first.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=first)
-    story.expect_success("worker deliver --differences none", actor=first)
+    story.expect_success("worker deliver --wait --differences none", actor=first)
     story.run_listeners()
     task = story.new_row_id('task make "Next job" --brief "Change the next file" --environment main', actor=story.agent)
     second = Actor(story.new_row_id(f"worker dispatch --model sonnet {task}", actor=story.agent), ActorType.AGENT)
@@ -59,7 +59,7 @@ def waiting_place(new_story, monkeypatch, request):
     story.expect_success(f"agent end {second.id}", actor=story.agent)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 1 --environment main", actor=story.user)
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'worker send {second.id} "Continue the job"', actor=story.agent)
+    story.expect_success(f'worker send --wait {second.id} "Continue the job"', actor=story.agent)
     story.run_listeners()
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
@@ -105,7 +105,7 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
         story.expect_rows(merger is None)
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_success(f"worker logs {first.id}", actor=story.agent)
-        story.expect_success(f"worker merge {first.id}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {first.id}", actor=story.agent)
     WorkerResumeRetry()(story.container)
     story.expect_rows(launches.count(second.id) == 2)
 
@@ -123,7 +123,7 @@ def test_unchecked_work_keeps_its_status_and_place_when_sent_back(new_story, mon
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         expect_working(server, cookie, worker.id, "judging")
-        story.expect_success(f'worker send {worker.id} "Correct the calculation"', actor=story.agent)
+        story.expect_success(f'worker send --wait {worker.id} "Correct the calculation"', actor=story.agent)
         story.run_listeners()
         expect_working(server, cookie, worker.id, "changes requested")
         story.expect_rows(worker.id in launches)

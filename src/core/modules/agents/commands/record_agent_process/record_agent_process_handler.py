@@ -16,4 +16,4 @@ class RecordAgentProcessHandler(Handler[RecordAgentProcess, Agent]):
         self.rows, self.repository, self.chain = rows, repository, chain
 
     def handle(self, command: RecordAgentProcess, context: Context) -> Agent:
-        return self.repository.update(self.rows.required(Agent, command.agent_id), context, pid=command.pid, process_started_at=self.chain.started_at(command.pid))
+        return self.repository.update(self.rows.required(Agent, command.agent_id), context, pid=command.pid, ended_at=None, process_started_at=self.chain.started_at(command.pid))

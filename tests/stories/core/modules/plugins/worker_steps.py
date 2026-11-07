@@ -33,7 +33,7 @@ def test_a_plugin_holding_a_workers_delivery_also_refuses_its_move_to_the_next_t
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
-    story.expect_refusal("worker next --differences none", "[plugin steps] cart.py has a sin", actor=worker)
+    story.expect_refusal("worker next --wait --differences none", "[plugin steps] cart.py has a sin", actor=worker)
     story.expect_text("task show 1", "state: started", actor=story.agent)
 
 
@@ -57,7 +57,7 @@ def test_a_plugin_holding_a_merge_refuses_it_with_its_reason(new_story):
     story = step_plugin_story(new_story, "worker_merging")
     worker = checked_worker(story, story.repository)
     story.repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_refusal(f"worker merge {worker.id}", "[plugin steps] cart.py is not judged yet", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {worker.id}", "[plugin steps] cart.py is not judged yet", actor=story.agent)
 
 
 def delivered_with_file(new_story, name: str):

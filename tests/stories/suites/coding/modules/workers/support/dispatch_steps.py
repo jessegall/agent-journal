@@ -10,7 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 DISPATCH = "worker dispatch --model sonnet 1"
 CART_CHANGE = "TOTAL = 1\n"
 FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
-DELIVERY = "worker deliver --differences none"
+DELIVERY = "worker deliver --wait --differences none"
 
 
 def repository_folder(story: Story) -> Path:

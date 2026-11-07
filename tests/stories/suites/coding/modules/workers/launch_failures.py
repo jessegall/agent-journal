@@ -33,7 +33,7 @@ def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_s
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'worker send {worker.id} "Add the tax"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=story.agent)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)

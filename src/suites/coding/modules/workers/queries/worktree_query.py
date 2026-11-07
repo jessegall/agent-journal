@@ -2,6 +2,7 @@ from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.query import Query
+from core.base.query.conditions.less import Less
 from suites.coding.modules.workers.models.worktree import Worktree
 
 
@@ -15,6 +16,9 @@ class WorktreeQuery(Query[Worktree]):
     def worker_worktree(self, agent_id: int) -> Worktree | None:
         return self.kept.read(self.table.name, self.filter(session_agent_id=agent_id).first,
                               "session_agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
+
+    def is_first_worktree(self, worktree: Worktree) -> bool:
+        return not self.with_removed().filter(session_agent_id=worktree.session_agent_id).matching(Less("id", worktree.id)).exists()
 
     def newest_worktree(self, agent_id: int) -> Worktree | None:
         return self.kept.read_newest(self.table.name, self.with_removed().filter(session_agent_id=agent_id).newest().first, "session_agent_id = ?", [agent_id], name="workers.newest_worktree")

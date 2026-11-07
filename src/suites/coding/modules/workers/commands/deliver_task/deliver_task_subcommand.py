@@ -1,3 +1,5 @@
+from core.base.command.command import Command
+from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -12,7 +14,7 @@ from suites.coding.modules.workers.commands.deliver_task.deliver_task import Del
 from suites.coding.modules.workers.support.delivery_differences import differences_flag, required_differences
 
 
-class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
+class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
     """`journal worker deliver`: hands in all the worker's tasks, once none is queued and its last has a proof for
     every point of its brief."""
 
@@ -21,19 +23,24 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
+        WorkerCommandRequest.arguments(parser)
         differences_flag(parser)
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest) -> None:
+        self.requests = requests
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
-    def command(self, arguments: Namespace, caller: Caller) -> DeliverTask:
+    def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         differences = required_differences(arguments)
         worktree = self.worktrees.worker_worktree(caller.actor.id)
         if worktree is not None:
             self.step_check.check(worktree, DELIVERY_EVENTS, "put it right in your worktree, then journal worker deliver again")
-        return DeliverTask(differences)
+        return self.requests.command(DeliverTask(differences), caller.actor.id,
+                                     ["worker", "deliver", "--differences", differences], arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
+        if WorkerCommandRequest.write_output(value, output):
+            return
         if not isinstance(value, Task):
             return
         if value.state is TaskState.TESTING and self.phases.is_grouped(value):

@@ -92,26 +92,26 @@ def test_the_flag_after_a_failure_is_refused_with_no_need_to_ask(two_failed):
 def test_free_runs_end_at_the_next_hand_in(first_failed):
     for _ in range(5):
         expect_reply_allowed(first_failed.run_test())
-    first_failed.story.expect_success("worker deliver --differences none", actor=first_failed.worker)
+    first_failed.story.expect_success("worker deliver --wait --differences none", actor=first_failed.worker)
     expect_reply_refusal(first_failed.run_test(), "not started yet")
 
 
 def test_the_second_hand_in_runs_only_what_failed_and_what_passed_stays_checked(first_failed):
     first_failed.repository.changed(first_failed.worker.id, "cart.py", "TOTAL = 4\n")
-    first_failed.story.expect_success("worker deliver --differences none", actor=first_failed.worker)
+    first_failed.story.expect_success("worker deliver --wait --differences none", actor=first_failed.worker)
     first_failed.story.expect_text("proof show 1", "state: running", actor=first_failed.story.agent)
     first_failed.story.expect_text("proof show 3", "state: checked", actor=first_failed.story.agent)
     first_failed.story.expect_rows(len(first_failed.started) == 3 and first_failed.started_processes()[2].line == TEST_LINE)
 
 
 def test_several_failed_tasks_all_go_to_testing_at_the_next_hand_in(two_failed):
-    two_failed.story.expect_success("worker deliver --differences none", actor=two_failed.worker)
+    two_failed.story.expect_success("worker deliver --wait --differences none", actor=two_failed.worker)
     expect_task_state(two_failed, 1, "testing")
     expect_task_state(two_failed, 3, "testing")
 
 
 def test_worker_next_is_the_hand_in_after_a_failure_when_the_next_task_is_in_another_phase(plan_failed):
-    plan_failed.story.expect_text("worker next --differences none", "queued", actor=plan_failed.worker)
+    plan_failed.story.expect_text("worker next --wait --differences none", "queued", actor=plan_failed.worker)
     plan_failed.story.expect_rows(plan_failed.started_processes()[-1].line == TEST_LINE)
     plan_failed.end_test(plan_failed.started[-1])
     plan_failed.story.expect_rows(plan_failed.current_task() == 4)

@@ -43,8 +43,7 @@ class AgentLauncher:
             self.bus.run(RecordAgentLaunchFailure(agent.id), Actor.core(), environment_id=environment.id)
             return LaunchAnswer.FAILED
         pid = self.parse_pid(answer)
-        if pid is not None or agent.pid is not None:
-            self.bus.run(RecordAgentProcess(agent.id, pid), Actor.core(), environment_id=environment.id)
+        self.bus.run(RecordAgentProcess(agent.id, pid), Actor.core(), environment_id=environment.id)
         return LaunchAnswer.STARTED
 
     @staticmethod

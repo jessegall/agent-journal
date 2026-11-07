@@ -32,11 +32,11 @@ class WorkerRouting:
         self.providers, self.models, self.programs, self.routes = providers, models, programs, routes
 
     def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, context: Context | None = None) -> WorkerChoice:
+        if caller is None and not command.program:
+            raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         requested_program = command.program or (self.providers.model_program(command.program_model) if command.program_model else "")
         if not requested_program and profile.mcp_tools:
             requested_program = profile.program or (caller.program if caller is not None else "")
-        if caller is None and not requested_program:
-            raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         route = self.routes.common_route(tasks)
         if requested_program:
             self.check_program(command, tasks, caller, route, context, requested_program)

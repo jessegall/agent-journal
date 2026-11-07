@@ -22,6 +22,13 @@ class WorktreeGit:
         # @righteous architecture_workers_merge_names_a_literal_branch
         self.git(folder, "rebase", "--abort")
 
+    def queued_merge(self, worker_id: int) -> list[str]:
+        # @righteous architecture_workers_merge_names_a_literal_branch
+        return self.command(["worker", "merge", str(worker_id)])
+
+    def command(self, arguments: list[str]) -> list[str]:
+        return arguments
+
     def head(self, folder: str) -> str:
         # @righteous architecture_workers_checkout_head_read
         return self.git(folder, "symbolic-ref", "--short", "HEAD")

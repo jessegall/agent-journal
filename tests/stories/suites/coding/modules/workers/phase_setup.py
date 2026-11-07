@@ -59,7 +59,7 @@ def test_a_failed_selected_test_is_a_failure_and_a_task_outside_a_plan_holds_not
     outside.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=outside.story.agent)
     outside.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=outside.story.agent)
     outside.change_and_prove(TEST_LINE)
-    outside.story.expect_success("worker next --differences none", actor=outside.worker)
+    outside.story.expect_success("worker next --wait --differences none", actor=outside.worker)
     outside.end_test(outside.started[0])
     outside.story.container.get(OutputFolder).write_output(outside.started[1], 1, "tests/other.py\n")
     outside.end_test(outside.started[1])
