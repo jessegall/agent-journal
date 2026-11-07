@@ -19,10 +19,9 @@ class ExitReasons:
     def __init__(self, home: JournalHome, providers: Providers) -> None:
         self.home, self.providers = home, providers
 
-    def reason(self, agent: Agent, exit_code: int, launch_ended: bool) -> str:
+    def reason(self, agent: Agent, exit_code: int, launch_ended: bool, output: str) -> str:
         if launch_ended:
             return f"{ENDED_WITHOUT_REPORT}: the journal launch that ran it ended."
-        output = self.terminal_tail(agent)
         outcome = self.providers.provider(agent.program).helper_outcome(output, "")
         error = outcome.error or output
         matched = next((reason for pattern, reason, _ in PLAIN_REASONS if pattern.search(error)), None)
@@ -30,8 +29,8 @@ class ExitReasons:
             return f"{ENDED_WITHOUT_REPORT}: {matched}."
         return f"{ENDED_WITHOUT_REPORT}: its program exited with code {exit_code}." if exit_code else f"{ENDED_WITHOUT_REPORT}."
 
-    def program_problem(self, agent: Agent) -> str:
-        lines = self.terminal_tail(agent).strip().splitlines()
+    def program_problem(self, agent: Agent, output: str) -> str:
+        lines = output.strip().splitlines()
         if not lines:
             return ""
         last_line = lines[-1].strip()

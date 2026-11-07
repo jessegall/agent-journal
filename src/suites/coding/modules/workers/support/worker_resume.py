@@ -29,8 +29,7 @@ from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_states import ProgramStates
-from suites.coding.modules.workers.support.worker_program_wait import WorkerProgramWait
-from suites.coding.modules.workers.commands.report_worker_program_back.report_worker_program_back import ReportWorkerProgramBack
+from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 
 
 class WorkerResume:
@@ -86,7 +85,8 @@ class WorkerResume:
         answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
         if answer is not LaunchAnswer.STARTED:
             return answer
-        self.bus.run(ReportWorkerProgramBack(worker.id, WorkerProgramWait.source(worker)), Actor.core(), environment_id=worktree.environment_id)
+        stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
+        self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at), Actor.core(), environment_id=worktree.environment_id)
         if self.requirement.is_required:
             worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)

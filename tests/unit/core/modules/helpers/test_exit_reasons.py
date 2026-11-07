@@ -27,16 +27,10 @@ def exit_reason(tmp_path):
 ])
 def test_program_problem_only_reads_current_provider_failure(exit_reason, terminal, reason):
     reasons, _ = exit_reason
-    path = reasons.home.terminal_file(1)
-    path.parent.mkdir(parents=True)
-    path.write_text(terminal)
-    assert reasons.program_problem(SimpleNamespace(id=1, program='sample')) == reason
+    assert reasons.program_problem(SimpleNamespace(id=1, program='sample'), terminal) == reason
 
 
 def test_structured_error_is_used(exit_reason):
     reasons, providers = exit_reason
     providers.provider.return_value.helper_outcome.return_value = HelperOutcome('', '', 'Too many requests')
-    path = reasons.home.terminal_file(1)
-    path.parent.mkdir(parents=True)
-    path.write_text('{"error": "provider failure"}')
-    assert reasons.program_problem(SimpleNamespace(id=1, program='sample')) == 'it hit a rate limit'
+    assert reasons.program_problem(SimpleNamespace(id=1, program='sample'), '{"error": "provider failure"}') == 'it hit a rate limit'

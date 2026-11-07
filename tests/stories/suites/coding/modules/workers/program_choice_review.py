@@ -267,10 +267,15 @@ def test_agent_deletes_its_own_route_above_a_persons_deliberate_move_is_refused(
     story.expect_text('worker-route show 1', 'position: 1')
 
 
-def test_chat_says_once_when_a_program_goes_out(split_story):
-    story = split_story
-    worker = dispatch(story)
-    exit_program(story, worker, text='Please run /login')
+@pytest.fixture
+def provider_failure_story(split_story, request):
+    exit_program(split_story, dispatch(split_story), text=request.param)
+    return split_story
+
+
+@pytest.mark.parametrize('provider_failure_story', ['Please run /login'], indirect=True)
+def test_chat_says_once_when_a_program_goes_out(provider_failure_story):
+    story = provider_failure_story
     story.run_listeners()
     marks = story.run('chat-mark list --json').output_text
     story.expect_rows('login' in marks, 'claude' in marks, 'journal program' in marks or '/login' in marks)
@@ -279,12 +284,11 @@ def test_chat_says_once_when_a_program_goes_out(split_story):
     story.expect_rows(story.run('chat-mark list --json').output_text.count('login') == before)
 
 
-@pytest.mark.parametrize('text', ['The fixture prints "API Error: 429 rate limit reached" as sample data.\nAssertionError: bad cart total',
+@pytest.mark.parametrize('provider_failure_story', ['The fixture prints "API Error: 429 rate limit reached" as sample data.\nAssertionError: bad cart total',
                                  'Application request failed: HTTP 429 from cart.example.test\nAssertionError: retry test',
-                                 'Old output: Please run /login\nThe current job failed: AssertionError'])
-def test_outage_only_from_a_provider_failure(split_story, text):
-    story = split_story
-    exit_program(story, dispatch(story), text=text)
+                                 'Old output: Please run /login\nThe current job failed: AssertionError'], indirect=True)
+def test_outage_only_from_a_provider_failure(provider_failure_story):
+    story = provider_failure_story
     story.expect_text('provider-outage list', 'nothing found')
 
 

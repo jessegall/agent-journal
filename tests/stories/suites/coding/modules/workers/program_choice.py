@@ -1,6 +1,6 @@
 import json
 import shutil
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -132,7 +132,7 @@ def test_exit_on_a_limit_opens_an_outage(failed_worker_story):
     story, worker, launcher = failed_worker_story
     story.expect_text('provider-outage list', 'claude', 'rate limit')
     rows = json.loads(story.run('provider-outage list --json').output_text)['rows']
-    story.expect_rows(rows[0]['ends_at'] == (story.clock.timestamp().value + timedelta(minutes=15)).isoformat())
+    story.expect_rows(datetime.fromisoformat(rows[0]['ends_at']) == story.clock.timestamp().value + timedelta(minutes=15))
     story.expect_text(f'agent show {worker.id}', 'ended_at:')
     story.expect_rows(len(launcher.requests) == 1)
 

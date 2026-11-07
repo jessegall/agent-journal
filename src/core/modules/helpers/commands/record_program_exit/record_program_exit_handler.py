@@ -45,14 +45,15 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         if agent.role == AgentRole.MAIN or self.is_earlier_run(agent, command):
             return
         actor = Actor(agent.id, ActorType.AGENT)
+        terminal = self.reasons.terminal_tail(agent)
         if command.exit_code != 0 and not command.launch_ended:
-            problem = self.reasons.program_problem(agent)
+            problem = self.reasons.program_problem(agent, terminal)
             if problem:
                 ends_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=OUTAGE_MINUTES))
                 self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), actor, environment_id=agent.environment_id)
         job = self.jobs.open_job(agent.id)
         if job is not None and self.needs_exit_report(agent):
-            self.report_exit(agent, job, command, actor)
+            self.report_exit(agent, job, command, actor, terminal)
         if agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
 
@@ -66,7 +67,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
         return agent.parent_id is not None and not has_waiting_job
 
-    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor) -> None:
+    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor, terminal: str) -> None:
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
-        text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended)
+        text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
         self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)
