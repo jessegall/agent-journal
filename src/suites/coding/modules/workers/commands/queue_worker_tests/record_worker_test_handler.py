@@ -86,7 +86,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
                 self.repository.save_change(task, task.close(context.timestamp, context.actor, "its tests passed"), context)
 
     def has_passed(self, task: Task, proofs: list[Proof]) -> bool:
-        is_closable = self.phases.phase(task) is not None or any(row.test_command for row in proofs)
+        is_closable = self.phases.is_grouped(task) or any(row.test_command for row in proofs)
         return is_closable and task.state is TaskState.TESTING and all(row.state is ProofState.CHECKED for row in proofs)
 
     def start_next(self, worktree: Worktree, context: Context) -> None:
@@ -109,12 +109,12 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         current = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context) if worktree.state is WorktreeState.DELIVERED else worktree
         first_task_id = min(row.task_id for row in failed)
         phase = self.phases.phase(self.rows.required(Task, first_task_id))
+        if current.task_id != first_task_id:
+            current = self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=first_task_id), context)
         if phase is None:
             outputs = ", ".join(str(row.process_id) for row in failed)
             self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
             return
-        if current.task_id != first_task_id:
-            self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=first_task_id), context)
         failures = "; ".join(f"task {row.task_id} point {row.point}: {row.test_command}: journal output read {row.process_id} --summary" for row in failed)
         self.send_phase_failures(current, phase, failures, context)
 

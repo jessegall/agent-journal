@@ -63,8 +63,8 @@ def test_another_worker_in_the_same_phase_has_its_own_count(new_story, monkeypat
     first = worker_on_plan(new_story, monkeypatch, dispatch="worker dispatch --model sonnet 1")
     for remaining in (2, 1, 0):
         expect_counted(first, remaining)
-    other = first.added_worker("worker dispatch --model sonnet 2")
-    expect_counted(other, 2)
+    second_worker = first.added_worker("worker dispatch --model sonnet 2")
+    expect_counted(second_worker, 2)
 
 
 def test_only_a_person_can_change_the_allowance(worker):

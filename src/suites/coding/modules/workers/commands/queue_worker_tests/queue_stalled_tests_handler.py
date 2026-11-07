@@ -19,5 +19,5 @@ class QueueStalledTestsHandler(Handler[QueueStalledTests, None]):
 
     def handle(self, command: QueueStalledTests, context: Context) -> None:
         for worktree in self.worktrees.all_worktrees():
-            if not self.proof_queue.tests_pending(worktree) and not self.phases.has_phase_flow(worktree):
+            if not self.proof_queue.tests_pending(worktree) and not self.phases.has_group_flow(worktree):
                 self.proof_queue.queue_delivered(worktree, context)

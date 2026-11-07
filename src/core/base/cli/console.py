@@ -130,7 +130,8 @@ class Console:
         actor_events = [event for event in self.events.events_past(newest_event_id) if event.actor_id == caller.actor.id]
         command_timestamps = {event.timestamp for event in actor_events if event.command == command.label()}
         output.confirmation = "\n".join(TouchedRows.built(event for event in actor_events if event.timestamp in command_timestamps).lines())
-        subcommand.write_output(value, output)
+        with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
+            subcommand.write_output(value, output)
         self.run_commit_listeners(argv)
         return SUCCESS_CODE
 
