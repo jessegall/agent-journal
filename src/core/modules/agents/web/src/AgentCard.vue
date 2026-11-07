@@ -59,11 +59,11 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             <template v-else>
                 <span class="agent-time" data-agent-motion>{{ runTime }}</span>
             </template>
-                <template v-if="!open && row.role === 'worker' && tasksPerHour"><span class="agent-list-pace" data-agent-list-pace>{{ tasksPerHour }}</span></template>
             </span>
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+            <template v-if="!open && row.role === 'worker' && tasksPerHour"><span class="agent-list-pace" data-agent-list-pace>{{ tasksPerHour }}</span></template>
             <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First started: <TimeAgo :at="row.created_at" /></span></template>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
@@ -219,7 +219,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card { --agent-padding: 14px; gap: 2px; padding: 9px var(--agent-padding); }
 .agent-head { gap: 6px; }
 .agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
-.agent-list-pace { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+.agent-list-pace { flex: none; margin-left: auto; color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
 .agent-first-dispatched, .agent-last-heard { color: var(--text-4); font-size: 10px; white-space: nowrap; }
 .agent-first-dispatched .ico { margin-right: 4px; vertical-align: middle; }
 .agent-dot { margin-right: 3px; }
@@ -239,5 +239,5 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card.open .agent-job-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .agent-plan { flex: none; }
 
-.agent-work-start { margin-top: 0; padding: 7px 14px; background: none; }
+.agent-work-start { margin-top: 0; padding: 7px 0 0 16px; background: none; }
 </style>

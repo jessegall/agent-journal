@@ -1260,20 +1260,20 @@ const pa = ["disabled", "title"], ga = ["title"], ma = { class: "gauge usage" },
   key: 3,
   class: "agent-time",
   "data-agent-motion": ""
-}, Wa = {
-  key: 4,
-  class: "agent-list-pace",
-  "data-agent-list-pace": ""
-}, Fa = { class: "agent-line" }, Pa = {
+}, Wa = { class: "agent-line" }, Fa = {
   class: "agent-identity",
   "data-agent-identity": "",
   "data-agent-motion": ""
-}, Da = {
+}, Pa = {
   key: 0,
+  class: "agent-list-pace",
+  "data-agent-list-pace": ""
+}, Da = {
+  key: 1,
   class: "agent-first-dispatched",
   "data-agent-first-dispatched": ""
 }, Ua = {
-  key: 1,
+  key: 2,
   class: "agent-last-heard",
   "data-agent-last-heard": ""
 }, Ka = {
@@ -1387,12 +1387,12 @@ const pa = ["disabled", "title"], ga = ["title"], ma = { class: "gauge usage" },
               w(i(ye), {
                 at: e.row.ended_at
               }, null, 8, ["at"])
-            ])) : (a(), l("span", qa, p(E.value), 1)),
-            !e.open && e.row.role === "worker" && Z.value ? (a(), l("span", Wa, p(Z.value), 1)) : h("", !0)
+            ])) : (a(), l("span", qa, p(E.value), 1))
           ])
         ]),
-        v("span", Fa, [
-          v("span", Pa, p(j.value), 1),
+        v("span", Wa, [
+          v("span", Fa, p(j.value), 1),
+          !e.open && e.row.role === "worker" && Z.value ? (a(), l("span", Pa, p(Z.value), 1)) : h("", !0),
           e.open ? (a(), l("span", Da, [
             w(i(fe), {
               name: "time",
@@ -1473,7 +1473,7 @@ const pa = ["disabled", "title"], ga = ["title"], ma = { class: "gauge usage" },
       ], 42, Oa);
     };
   }
-}, _a = /* @__PURE__ */ te(Xa, [["__scopeId", "data-v-a345cf52"]]), en = ["data-edit-type"], tn = { key: 0 }, an = { class: "stepper" }, nn = ["disabled", "onClick"], ln = ["value", "disabled", "data-agent-limit-input", "onChange"], on = ["disabled", "onClick"], sn = { key: 0 }, rn = { key: 1 }, un = {
+}, _a = /* @__PURE__ */ te(Xa, [["__scopeId", "data-v-d97862c1"]]), en = ["data-edit-type"], tn = { key: 0 }, an = { class: "stepper" }, nn = ["disabled", "onClick"], ln = ["value", "disabled", "data-agent-limit-input", "onChange"], on = ["disabled", "onClick"], sn = { key: 0 }, rn = { key: 1 }, un = {
   __name: "AgentLimitEditor",
   props: { rows: { type: Array, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
