@@ -11,12 +11,12 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
-HELD_STATES = (TaskState.STARTED, TaskState.TESTING)
+WAITING_STATES = (TaskState.OPEN, TaskState.BLOCKED)
 
 
 class StartedWorkerTaskListener(SaveListener[Moved[Task]]):
-    """When a worker starts a task assigned to it, that task becomes the worker's current task unless the current one
-    is itself started or in testing, so the worker can make proofs for and hand in the task it works on."""
+    """When a worker starts a task assigned to it while its current task is still open or blocked, the started task
+    becomes its current task, so the worker can make proofs for and hand in the task it works on."""
 
     name = "workers.started-task"
     moves = tuple([TaskLifecycle.start])
@@ -30,6 +30,6 @@ class StartedWorkerTaskListener(SaveListener[Moved[Task]]):
         worktree = self.worktrees.worker_worktree(task.delegated_to) if task.delegated_to is not None else None
         if worktree is None or worktree.task_id == task.id or worktree.state is not WorktreeState.CUT:
             return
-        if self.queries.query(Task).find(worktree.task_id).state in HELD_STATES:
+        if self.queries.query(Task).find(worktree.task_id).state not in WAITING_STATES:
             return
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=task.id), context)
