@@ -25,7 +25,7 @@ def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_s
     hooks.parent.mkdir(parents=True)
     hooks.write_text('{"hooks": {}}')
     worker = dispatched_worker(story)
-    expect_worktree_folder_repository(repository, worker, ".codex", "hooks.json", '{"hooks": {}}')
+    expect_worktree_folder_repository(repository, worker, ".codex", "hooks.json", '{\n  "hooks": {}\n}\n')
     repository.expect_excluded(worker.id, ".codex/hooks.json")
 
 

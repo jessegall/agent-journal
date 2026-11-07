@@ -134,11 +134,12 @@ def test_an_allowed_run_never_used_does_not_carry_over_to_the_next_task(allowed)
     expect_reply_refusal(allowed.run_test(), FLAG)
 
 
-def test_the_main_agent_gets_one_line_with_the_exact_command_the_reason_and_the_way_to_allow(on_plan):
+def test_the_main_agent_reads_the_command_and_reason_from_the_request(on_plan):
     on_plan.run_test(asking_main(TEST_LINE, WHY))
     lines = on_plan.main_agent_lines()
     on_plan.story.expect_rows(len(lines) == 1)
-    on_plan.story.expect_rows(TEST_LINE in lines[0] and WHY in lines[0] and ALLOW in lines[0] and FLAG not in lines[0])
+    on_plan.story.expect_rows("worker-test-request show 1" in lines[0], TEST_LINE not in lines[0], WHY not in lines[0])
+    on_plan.story.expect_text("worker-test-request show 1", TEST_LINE, WHY, actor=on_plan.story.agent)
 
 
 def test_a_worker_cannot_allow_its_own_request(requested):

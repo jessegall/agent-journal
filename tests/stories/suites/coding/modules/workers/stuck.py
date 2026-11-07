@@ -224,7 +224,7 @@ def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_
     story.hook(MAIN_SESSION, HookSamples.sample("session_end"))
     story.expect_success("worker-worktree show 1", "state: cut")
     repository.expect_head(repository.worker_branch(worker.id), repository.worktree_folder(worker.id))
-    story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker:{worker.id} holds task:1")
+    story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker:{worker.id} has task:1")
 
 
 def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_their_own(new_story):

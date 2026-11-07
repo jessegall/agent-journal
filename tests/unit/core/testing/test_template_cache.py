@@ -68,7 +68,7 @@ def process_folder(checkout, cache):
     return Path(answer.stdout.strip())
 
 
-def test_identical_content_reuses_a_folder_across_checkouts_and_changed_bytes_do_not(tmp_path, monkeypatch):
+def test_each_checkout_has_its_own_folder_and_changed_bytes_use_a_new_one(tmp_path, monkeypatch):
     first = tmp_path / "first"
     first.mkdir()
     cache, sample = sample_cache(first, monkeypatch)
@@ -77,12 +77,13 @@ def test_identical_content_reuses_a_folder_across_checkouts_and_changed_bytes_do
     shared = tmp_path / "shared"
     initial = process_folder(first, shared)
     copied = process_folder(second, shared)
-    assert initial == copied
+    assert initial != copied
+    assert process_folder(second, shared) == copied
     changed = second / sample.relative_to(first)
     modified_at = changed.stat().st_mtime_ns
     changed.write_text("class Sample: None\n")
     os.utime(changed, ns=(modified_at, modified_at))
-    assert process_folder(second, shared) != initial
+    assert process_folder(second, shared) != copied
 
 
 def test_source_paths_participate_in_the_content_hash(tmp_path, monkeypatch):

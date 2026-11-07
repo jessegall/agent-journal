@@ -303,8 +303,9 @@ def test_a_silent_main_agent_is_not_woken_for_open_tasks_with_auto_mode_off(reco
 
 
 
-def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_five_minutes(recovery):
+def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_five_minutes(recovery, monkeypatch):
     story, worker = recovery.story, recovery.worker
+    monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
     story.expect_success(f"agent end {worker.id}", actor=worker)
     line = f"worker:{worker.id} has stopped: journal worker status {worker.id}"
     recovery.advance(14 * 60)
@@ -312,7 +313,8 @@ def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", line)
     recovery.advance(60)
     story.tick("s-1")
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 1)
+    notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_rows(notices.count(line) == 1, detail=notices)
     recovery.advance(5 * 60)
     story.tick("s-1")
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)
@@ -342,15 +344,17 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped: journal worker status {worker.id}")
 
 
-def test_the_stopped_worker_warning_intervals_are_settings(recovery):
+def test_the_stopped_worker_warning_intervals_are_settings(recovery, monkeypatch):
     story, worker = recovery.story, recovery.worker
+    monkeypatch.setattr(recovery, "request", lambda *_args: b"failed\n")
     story.expect_success("setting set journal.suites.coding.workers.idle-worker-minutes 2 --environment main", actor=story.user)
     story.expect_success("setting set journal.suites.coding.workers.idle-worker-repeat-minutes 1 --environment main", actor=story.user)
     story.expect_success(f"agent end {worker.id}", actor=worker)
     line = f"worker:{worker.id} has stopped: journal worker status {worker.id}"
     recovery.advance(2 * 60)
     story.tick("s-1")
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 1)
+    notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_rows(notices.count(line) == 1, detail=notices)
     recovery.advance(60)
     story.tick("s-1")
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)

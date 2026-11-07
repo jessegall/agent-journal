@@ -8,8 +8,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
-@pytest.mark.parametrize("command,notice", [("worker merge {worker}", "clashed on cart.py"),
-                                           ('worker send {worker} "Finish the total"', "takes the job")])
+@pytest.mark.parametrize("command,notice", [("worker merge --wait {worker}", "clashed on cart.py"),
+                                           ('worker send --wait {worker} "Finish the total"', "takes the job")])
 def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new_story, command, notice):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

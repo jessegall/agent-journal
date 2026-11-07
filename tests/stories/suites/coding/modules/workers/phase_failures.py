@@ -21,7 +21,7 @@ def expect_task_state(worker, task_id: int, state: str) -> None:
 
 @pytest.fixture
 def handed_in(new_story, monkeypatch):
-    return handed_in_with_tests(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH), "worker deliver --differences none")
+    return handed_in_with_tests(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH), "worker deliver --wait --differences none")
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def two_failed(handed_in):
 
 @pytest.fixture
 def plan_failed(new_story, monkeypatch):
-    worker = handed_in_with_tests(worker_on_plan(new_story, monkeypatch), "worker next --differences none")
+    worker = handed_in_with_tests(worker_on_plan(new_story, monkeypatch), "worker next --wait --differences none")
     worker.end_tests(1, 0)
     return worker
 
@@ -54,7 +54,7 @@ def selected_tests_handed_in(new_story, monkeypatch):
     worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
     worker.story.run('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=worker.story.agent)
     worker.story.run('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=worker.story.agent)
-    return handed_in_with_tests(worker, "worker deliver --differences none")
+    return handed_in_with_tests(worker, "worker deliver --wait --differences none")
 
 
 def test_the_worker_gets_every_failure_in_one_line_once_all_tests_have_ended(handed_in):
