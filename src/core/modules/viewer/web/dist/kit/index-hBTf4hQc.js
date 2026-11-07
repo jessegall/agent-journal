@@ -3008,36 +3008,132 @@ Et((e) => {
     { type: "text", text: n.tail }
   ] : null;
 });
-const Zf = /^(\}|\)|\]|end|fi|done|esac)[;,)\]}]*$/, Xf = /(=>|->|::|===?|!==?|&&|\|\||\+=|-=|\+\+|<<|>>|\?\?|:=)/, Qf = /[\w\]]\(/, eh = /^[\w$.[\]'"]+\s*=\s*[^=]/, th = /^(import|from|use|using|package|include|require|export|const|let|var|func|fn|def|class|struct|enum|impl|pub|public|private|protected|static|namespace|interface|type|async|if|else|elif|elseif|for|foreach|while|try|except|catch|finally|with|switch|case|return|raise|throw|yield|local|do|then|final|abstract|template|module)\b.*([:{(;=,<>'"]|\b\w+)$/, nh = /^(@\w+|<\?php|\$\w+|%\w+|<\/?[A-Za-z][^>]*>)/, ah = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b/, sh = /[[({,]$/, oh = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/, lh = /^(\t|\s{2,})\S/, rh = /^(\/\/|#(?!#|\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*(?!\*)\/?|<!--)/, ih = /`[^`]+`/, ch = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/, uh = /[{}()[\];=<>$&|*\\@+^~%]/g, Jl = /^\s*(?:[-*+]|\d+[.)])\s/, dh = /^\s*>/, fh = /^\s*\|/, hh = 0.6, mh = 0.4, ph = 5, gh = 0.03, Zl = (e) => {
-  const t = e.trim().split(/\s+/);
-  return t.length >= ph && t.every((n) => ch.test(n) || /^[\w'’-]+$/.test(n)) && (e.match(uh) ?? []).length / e.length < gh;
-}, ga = (e) => {
-  const t = e.trim();
-  return ih.test(t) ? !1 : [Zf, Xf, Qf, eh, th, nh, ah, sh, oh].some((n) => n.test(t)) || /[;{}]$/.test(t) || lh.test(e) && !Jl.test(e) && !Zl(e);
-};
-function vh(e) {
-  const t = e.filter((o) => o.trim());
-  if (!t.length || Jl.test(t[0]) || t.every((o) => dh.test(o) || fh.test(o))) return "text";
-  const n = t.filter((o) => !rh.test(o.trim()));
-  if (t.length === 1) return !n.length || ga(t[0]) ? "line" : "text";
-  if (!n.length) return "line";
-  const a = n.filter(ga).length, s = n.filter((o) => !ga(o) && Zl(o)).length;
-  return a >= n.length * hh && s <= n.length * mh ? "code" : "text";
+const Wn = (e) => typeof e == "number" ? e : e ? Date.parse(e) / 1e3 : 0, Jl = (e) => `${e.table}:${e.id}`, io = (e) => (e || "").split(`
+`).find((t) => t.trim()) || "", ga = 80;
+function co(e) {
+  return e.length <= ga ? e : `${e.slice(0, ga + 1).replace(/\s+\S*$/, "") || e.slice(0, ga)}…`;
 }
-const Qa = "if else for while do switch case default break continue return function class new this super extends import export from as const let var static public private protected readonly interface enum type namespace try catch finally throw await async yield typeof instanceof in of void delete null undefined true false abstract final implements package struct union int float double char bool string long short unsigned signed var fn pub use mod impl trait match where mut ref self crate func go defer chan map range nil select", yh = "if elif else for while def class return import from as with try except finally raise lambda yield pass break continue and or not in is None True False global nonlocal assert del async await match case", bh = `${Qa} echo print isset unset empty array list foreach endforeach endif endwhile elseif require require_once include include_once namespace use trait clone instanceof insteadof declare enddeclare goto fn match yield`, wh = "if then else elif fi for while until do done case esac in function return exit export local readonly set unset shift source true false", kh = "select from where insert into values update set delete create table drop alter index join left right inner outer on as and or not null primary key group by order limit offset having union distinct case when then else end exists between like is in", io = {
+const uo = {
+  messages: (e) => co(io(e.text)),
+  comments: (e) => co(io(e.text)),
+  questions: (e) => e.text,
+  memories: (e) => `${e.text} (weight ${e.weight})`,
+  rules: (e) => e.text,
+  reminders: (e) => e.text,
+  environments: (e) => e.name,
+  agents: (e) => e.session,
+  workers: (e) => e.name,
+  triggers: (e) => (e.phrases || []).join(", "),
+  reactions: (e) => e.face,
+  nudges: (e) => {
+    var t;
+    return ((t = e.data) == null ? void 0 : t.line) || "";
+  },
+  plugins: (e) => {
+    var t;
+    return ((t = e.manifest) == null ? void 0 : t.title) || e.name;
+  },
+  shares: (e) => `Share of ${e.target || "nothing"}`
+}, Zf = (e) => (uo[e.table] ? uo[e.table](e) : e.title || "") || "", St = (e) => Wn(e.created_at), Zl = (e) => Wn(e.updated_at) || St(e), Xf = /^\[\[chip ([a-z]+):(\d+)\|([^\]]*)\]\][.:]?$/m, Qf = /^([A-Za-z][\w-]*) #?(\d+)[.:]?$/m;
+function eh(e) {
+  const t = Xf.exec(e);
+  if (t && ct(t[1])) return { at: t.index, length: t[0].length, table: ct(t[1]), id: Number(t[2]), label: t[3] };
+  const n = Qf.exec(e), a = n && ct(n[1]);
+  return a ? { at: n.index, length: n[0].length, table: a, id: Number(n[2]), label: n[0] } : null;
+}
+function th(e, t, n, a) {
+  const s = Hl(a, e, t), o = un(s ? Zf(s) : n);
+  return `<a class="row-card" href="#" data-peek="${e}:${t}"><span class="row-card-type">${tt(qt(e).title)} ${t}</span><span class="row-card-title">${tt(o)}</span></a>`;
+}
+Et(
+  (e, t) => {
+    const n = eh(e);
+    return n ? [
+      { type: "text", text: e.slice(0, n.at) },
+      { type: "html", html: th(n.table, n.id, n.label, t) },
+      { type: "text", text: e.slice(n.at + n.length) }
+    ] : null;
+  },
+  { first: !0 }
+);
+const nh = /\.(png|jpe?g|gif|webp|svg)$/i, ah = (e) => nh.test(e), sh = /^(?:\[\[chip ([a-z]+):(\d+)\|[^\]]*\]\]|([A-Za-z][\w-]*) #?(\d+)) ([\w .()-]+\.[A-Za-z0-9]{1,8})$/m, oh = /^(?:\[\[file ([^|\]#]+)(?:#L\d+)?\|[^\]]*\]\]|(\/[\w .()/-]+\.[A-Za-z0-9]{1,8}))$/m;
+function lh(e, t) {
+  const n = sh.exec(e), [, a, s, o, l, r] = n || [], i = n && ct(a || o), u = i && Hl(t, i, Number(s || l));
+  if (i !== "messages" || !u || !(u.files || []).includes(r)) return null;
+  const d = `/api/files/message/${u.id}/${encodeURIComponent(r)}`, f = `${qt(i).title} ${u.id} · ${tt(r)}`, m = ah(r) ? `<img class="file-card-image" src="${d}" alt="${tt(r)}">` : "";
+  return { at: n.index, length: n[0].length, html: `<a class="file-card" href="${d}" data-attached="${tt(r)}">${m}<span class="file-card-name">${f}</span></a>` };
+}
+function rh(e) {
+  const t = oh.exec(e);
+  if (!t) return null;
+  const n = t[1] || t[2];
+  return { at: t.index, length: t[0].length, html: `<a class="file-card" href="#" data-file="${n}"><span class="file-card-name">${tt(n.split("/").pop())}</span><span class="file-card-line">${n}</span></a>` };
+}
+Et(
+  (e, t) => {
+    if (t.inline) return null;
+    const n = lh(e, t) || rh(e);
+    return n ? [
+      { type: "text", text: e.slice(0, n.at) },
+      { type: "html", html: n.html },
+      { type: "text", text: e.slice(n.at + n.length) }
+    ] : null;
+  },
+  { first: !0 }
+);
+const ih = /`([^`\n]+)`/g;
+Et((e) => e.replace(ih, (t, n) => `<code>${n}</code>`));
+const fo = {
+  chip: (e, t) => `<a class="row-pill" href="#" data-peek="${e}">${t.replace(/(\d+)$/, '<span class="row-pill-num">$1</span>')}</a>`,
+  file: (e, t) => {
+    const [n, a] = e.split("#L");
+    return `<a class="row-pill file-pill" href="${Ss.file(n, a)}">${t}</a>`;
+  },
+  url: (e, t) => `<a href="${e}" target="_blank" rel="noopener">${t}</a>`
+};
+Et(
+  (e, t) => e.replace(Kl, (n, a, s, o) => fo[a] ? fo[a](s, o, t) : o)
+);
+const ch = /(<code>.*?<\/code>|<a\s.*?<\/a>|\[[^\]\n]*\]\([^)\s]*\))/gs, Xl = new RegExp(`\\b(${Ll}) (?:#?(\\d+)(?::(\\d+(?:-\\d+)?|section \\d+))?\\b|\\((\\d+)\\))`, "gi"), Ql = new RegExp(`\\b(${Ll}) (\\d+(?:(?:,? (?:and|or) |, )\\d+)+)\\b`, "gi"), uh = new RegExp(`<code>((?:${Xl.source}|${Ql.source}))</code>`, "gi"), dh = (e) => e.replace(uh, "$1"), fh = (e, t) => `<a class="row-pill" href="#" data-peek="${ct(e)}:${t}">${e} <span class="row-pill-num">${t}</span></a>`, hh = (e) => e.replace(Ql, (t, n, a) => a.replace(/\d+/g, (s) => fh(n.replace(/s$/i, ""), s))), mh = (e) => hh(e).replace(
+  Xl,
+  (t, n, a, s = "", o) => {
+    const l = a || o;
+    return `<a class="row-pill" href="#" data-peek="${ct(n)}:${l}"${s ? ` data-sub="${s}"` : ""}>${n} <span class="row-pill-num">${l}${s ? `:${s}` : ""}</span></a>`;
+  }
+);
+Et(
+  (e, t) => t.rowNames === !1 ? e : dh(e).split(ch).map((n, a) => a % 2 ? n : mh(n)).join("")
+);
+const ph = /^(\}|\)|\]|end|fi|done|esac)[;,)\]}]*$/, gh = /(=>|->|::|===?|!==?|&&|\|\||\+=|-=|\+\+|<<|>>|\?\?|:=)/, vh = /[\w\]]\(/, yh = /^[\w$.[\]'"]+\s*=\s*[^=]/, bh = /^(import|from|use|using|package|include|require|export|const|let|var|func|fn|def|class|struct|enum|impl|pub|public|private|protected|static|namespace|interface|type|async|if|else|elif|elseif|for|foreach|while|try|except|catch|finally|with|switch|case|return|raise|throw|yield|local|do|then|final|abstract|template|module)\b.*([:{(;=,<>'"]|\b\w+)$/, wh = /^(@\w+|<\?php|\$\w+|%\w+|<\/?[A-Za-z][^>]*>)/, kh = /^#\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b/, $h = /[[({,]$/, xh = /^("[^"]*"|[a-z_][\w-]*)\s*:(\s+\S.{0,60})?$/, Mh = /^(\t|\s{2,})\S/, Sh = /^(\/\/|#(?!#|\s*(include|define|if|ifdef|ifndef|else|elif|endif|pragma|undef)\b)|--|\/\*|\*(?!\*)\/?|<!--)/, _h = /`[^`]+`/, Eh = /^[A-Za-z][A-Za-z'’-]*[,.;:!?)]?$/, Ah = /[{}()[\];=<>$&|*\\@+^~%]/g, er = /^\s*(?:[-*+]|\d+[.)])\s/, Ch = /^\s*>/, Oh = /^\s*\|/, Th = 0.6, Rh = 0.4, Ih = 5, Bh = 0.03, tr = (e) => {
+  const t = e.trim().split(/\s+/);
+  return t.length >= Ih && t.every((n) => Eh.test(n) || /^[\w'’-]+$/.test(n)) && (e.match(Ah) ?? []).length / e.length < Bh;
+}, va = (e) => {
+  const t = e.trim();
+  return _h.test(t) ? !1 : [ph, gh, vh, yh, bh, wh, kh, $h, xh].some((n) => n.test(t)) || /[;{}]$/.test(t) || Mh.test(e) && !er.test(e) && !tr(e);
+};
+function Lh(e) {
+  const t = e.filter((o) => o.trim());
+  if (!t.length || er.test(t[0]) || t.every((o) => Ch.test(o) || Oh.test(o))) return "text";
+  const n = t.filter((o) => !Sh.test(o.trim()));
+  if (t.length === 1) return !n.length || va(t[0]) ? "line" : "text";
+  if (!n.length) return "line";
+  const a = n.filter(va).length, s = n.filter((o) => !va(o) && tr(o)).length;
+  return a >= n.length * Th && s <= n.length * Rh ? "code" : "text";
+}
+const Qa = "if else for while do switch case default break continue return function class new this super extends import export from as const let var static public private protected readonly interface enum type namespace try catch finally throw await async yield typeof instanceof in of void delete null undefined true false abstract final implements package struct union int float double char bool string long short unsigned signed var fn pub use mod impl trait match where mut ref self crate func go defer chan map range nil select", Nh = "if elif else for while def class return import from as with try except finally raise lambda yield pass break continue and or not in is None True False global nonlocal assert del async await match case", Dh = `${Qa} echo print isset unset empty array list foreach endforeach endif endwhile elseif require require_once include include_once namespace use trait clone instanceof insteadof declare enddeclare goto fn match yield`, jh = "if then else elif fi for while until do done case esac in function return exit export local readonly set unset shift source true false", Ph = "select from where insert into values update set delete create table drop alter index join left right inner outer on as and or not null primary key group by order limit offset having union distinct case when then else end exists between like is in", ho = {
   js: { keywords: Qa, line: "//", block: ["/*", "*/"], quotes: ['"', "'", "`"] },
-  py: { keywords: yh, line: "#", triple: ['"""', "'''"], quotes: ['"', "'"] },
-  php: { keywords: bh, line: "//", hash: !0, block: ["/*", "*/"], quotes: ['"', "'"] },
+  py: { keywords: Nh, line: "#", triple: ['"""', "'''"], quotes: ['"', "'"] },
+  php: { keywords: Dh, line: "//", hash: !0, block: ["/*", "*/"], quotes: ['"', "'"] },
   c: { keywords: Qa, line: "//", block: ["/*", "*/"], quotes: ['"', "'"] },
-  sh: { keywords: wh, line: "#", quotes: ['"', "'"] },
+  sh: { keywords: jh, line: "#", quotes: ['"', "'"] },
   css: { keywords: "", block: ["/*", "*/"], quotes: ['"', "'"], property: !0 },
   html: { keywords: "", block: ["<!--", "-->"], quotes: ['"', "'"], tags: !0 },
   json: { keywords: "true false null", quotes: ['"'], keyed: !0 },
   yaml: { keywords: "true false null yes no", line: "#", quotes: ['"', "'"] },
-  sql: { keywords: kh, line: "--", block: ["/*", "*/"], quotes: ["'"], lower: !0 },
+  sql: { keywords: Ph, line: "--", block: ["/*", "*/"], quotes: ["'"], lower: !0 },
   md: { keywords: "", quotes: [], markdown: !0 },
   text: { keywords: "", quotes: [] }
-}, $h = {
+}, qh = {
   javascript: "js",
   mjs: "js",
   cjs: "js",
@@ -3074,11 +3170,11 @@ const Qa = "if else for while do switch case default break continue return funct
   yml: "yaml",
   markdown: "md"
 };
-function co(e, t, n) {
+function mo(e, t, n) {
   return n && e.startsWith(n, t);
 }
-function xh(e, t) {
-  const n = io[$h[t] ?? t] || io.text, a = new Set(n.keywords.split(" ").filter(Boolean)), s = [];
+function Fh(e, t) {
+  const n = ho[qh[t] ?? t] || ho.text, a = new Set(n.keywords.split(" ").filter(Boolean)), s = [];
   let o = 0;
   const l = (r, i) => i && s.push({ type: r, value: i });
   for (; o < e.length; ) {
@@ -3093,13 +3189,13 @@ function xh(e, t) {
 `), o = u < 0 ? e.length : u + 1;
       continue;
     }
-    if (co(e, o, n.line) || n.hash && r === "#") {
+    if (mo(e, o, n.line) || n.hash && r === "#") {
       const u = e.indexOf(`
 `, o);
       l("comment", e.slice(o, u < 0 ? e.length : u)), o = u < 0 ? e.length : u;
       continue;
     }
-    if (n.block && co(e, o, n.block[0])) {
+    if (n.block && mo(e, o, n.block[0])) {
       const u = e.indexOf(n.block[1], o + n.block[0].length), d = u < 0 ? e.length : u + n.block[1].length;
       l("comment", e.slice(o, d)), o = d;
       continue;
@@ -3141,9 +3237,9 @@ function xh(e, t) {
   }
   return s;
 }
-function Mh(e, t) {
+function Wh(e, t) {
   const n = [""];
-  for (const { type: a, value: s } of xh(e, t))
+  for (const { type: a, value: s } of Fh(e, t))
     s.split(`
 `).forEach((l, r) => {
       r && n.push(""), l && (n[n.length - 1] += a === "plain" ? tt(l) : `<span class="tok-${a}">${tt(l)}</span>`);
@@ -3151,26 +3247,26 @@ function Mh(e, t) {
   return e.endsWith(`
 `) && n.pop(), n;
 }
-async function Sh(e) {
+async function Hh(e) {
   try {
     return await navigator.clipboard.writeText(e), !0;
   } catch {
     return !1;
   }
 }
-const _h = 1500, uo = /* @__PURE__ */ new WeakMap();
-async function Eh(e) {
+const Uh = 1500, po = /* @__PURE__ */ new WeakMap();
+async function zh(e) {
   var n;
   const t = e.target instanceof Element ? e.target.closest(".chat-code-copy") : null;
-  t && (e.stopPropagation(), await Sh(((n = t.nextElementSibling) == null ? void 0 : n.textContent) || "") && (t.textContent = "Copied", t.classList.add("copied"), clearTimeout(uo.get(t)), uo.set(
+  t && (e.stopPropagation(), await Hh(((n = t.nextElementSibling) == null ? void 0 : n.textContent) || "") && (t.textContent = "Copied", t.classList.add("copied"), clearTimeout(po.get(t)), po.set(
     t,
     setTimeout(() => {
       t.textContent = "Copy", t.classList.remove("copied");
-    }, _h)
+    }, Uh)
   )));
 }
-typeof document < "u" && document.addEventListener("click", Eh, !0);
-const Ah = /\n\s*\n/, Ch = /^(\s*)(`{3,}|~{3,})\s*([\w+#.-]+)?[^`]*$/, Oh = /^\s*(`{3,}|~{3,})\s*$/, Th = /^\s{4,}\S/, Rh = /^\s{2,}(?![-*+]\s|\d+[.)]\s)\S/, es = /^\s*(?:[-*+]|\d+[.)])\s/, Xl = /^(@\w|(async\s+)?def |class |if |elif |else\b|for |while |try\b|except\b|finally\b|with |switch |function\b|[\w$.]+\s*\([^)]*\)\s*(:|\{)?\s*$)|[:{]\s*$|=>\s*\{?\s*$/, Ih = [
+typeof document < "u" && document.addEventListener("click", zh, !0);
+const Vh = /\n\s*\n/, Gh = /^(\s*)(`{3,}|~{3,})\s*([\w+#.-]+)?[^`]*$/, Kh = /^\s*(`{3,}|~{3,})\s*$/, Yh = /^\s{4,}\S/, Jh = /^\s{2,}(?![-*+]\s|\d+[.)]\s)\S/, es = /^\s*(?:[-*+]|\d+[.)])\s/, nr = /^(@\w|(async\s+)?def |class |if |elif |else\b|for |while |try\b|except\b|finally\b|with |switch |function\b|[\w$.]+\s*\([^)]*\)\s*(:|\{)?\s*$)|[:{]\s*$|=>\s*\{?\s*$/, Zh = [
   ["py", /\b(def |elif |None\b|self\b|lambda |print\(|import \w+$)|:\s*$/m],
   ["php", /<\?php|\$\w+->|\bforeach\b|\becho\b/],
   ["sh", /^\$ |^(cd|ls|git|npm|npx|python3?|pip|curl|grep|rg|cat|echo|export) /m],
@@ -3182,31 +3278,31 @@ const Ah = /\n\s*\n/, Ch = /^(\s*)(`{3,}|~{3,})\s*([\w+#.-]+)?[^`]*$/, Oh = /^\s
 function _s(e) {
   return e.replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 }
-function Bh(e) {
+function Xh(e) {
   const t = _s(e.join(`
 `));
-  return (Ih.find(([, n]) => n.test(t)) || ["text"])[0];
+  return (Zh.find(([, n]) => n.test(t)) || ["text"])[0];
 }
-const Lh = (e) => {
+const Qh = (e) => {
   const t = (e[e.length - 1] || "").trim();
-  return !!t && Xl.test(t) && !es.test(t);
-}, Nh = (e, t) => es.test(t) || es.test([...e].reverse().find((n) => n.trim()) || "");
+  return !!t && nr.test(t) && !es.test(t);
+}, em = (e, t) => es.test(t) || es.test([...e].reverse().find((n) => n.trim()) || "");
 function Es(e, t) {
-  const n = t || Bh(e), a = Mh(_s(e.join(`
+  const n = t || Xh(e), a = Wh(_s(e.join(`
 `)), n).map((s) => `<span class="code-line">${s}
 </span>`).join("");
   return { type: "html", html: `<div class="chat-code-block" data-language="${n}"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${a}</code></pre></div>` };
 }
-function Dh(e, t, n) {
-  const a = e.findIndex((s, o) => o > t && s.trim().startsWith(n) && Oh.test(s));
+function tm(e, t, n) {
+  const a = e.findIndex((s, o) => o > t && s.trim().startsWith(n) && Kh.test(s));
   return a < 0 ? e.length : a;
 }
-function jh(e, t, n) {
+function nm(e, t, n) {
   const a = e.map((s) => s.replace(new RegExp(`^\\s{0,${t.length}}`), ""));
   return Es(a.map(un), n ? n.toLowerCase() : "");
 }
-function Ph(e) {
-  const t = e.split(Ah).map((l) => ({ paragraph: l, type: vh(_s(l).split(`
+function am(e) {
+  const t = e.split(Vh).map((l) => ({ paragraph: l, type: Lh(_s(l).split(`
 `)) })), n = [];
   let a = [];
   const s = () => {
@@ -3230,30 +3326,30 @@ function Ph(e) {
   }
   return s(), n.length === 1 && n[0].type === "text" ? [{ type: "text", text: e }] : n;
 }
-function qh(e, t) {
+function sm(e, t) {
   const n = e.split(`
 `), a = [];
   let s = [];
   const o = () => {
     s.length && a.push(...t ? [{ type: "text", text: s.join(`
-`) }] : Ph(s.join(`
+`) }] : am(s.join(`
 `))), s = [];
   };
   let l = 0;
   for (; l < n.length; ) {
-    const r = n[l].match(Ch);
+    const r = n[l].match(Gh);
     if (r) {
-      const u = Dh(n, l, r[2]);
-      o(), a.push(jh(n.slice(l + 1, u), r[1], r[3])), l = u + 1;
+      const u = tm(n, l, r[2]);
+      o(), a.push(nm(n.slice(l + 1, u), r[1], r[3])), l = u + 1;
       continue;
     }
-    const i = Lh(s) ? Rh : Th;
-    if (!t && i.test(n[l]) && !Nh(s, n[l])) {
+    const i = Qh(s) ? Jh : Yh;
+    if (!t && i.test(n[l]) && !em(s, n[l])) {
       let u = l;
       for (; u < n.length && (i.test(n[u]) || !n[u].trim()); ) u += 1;
       for (; u > l && !n[u - 1].trim(); ) u -= 1;
       const d = [];
-      for (; s.length && s[s.length - 1].trim() && Xl.test(s[s.length - 1].trim()); ) d.unshift(s.pop());
+      for (; s.length && s[s.length - 1].trim() && nr.test(s[s.length - 1].trim()); ) d.unshift(s.pop());
       if (u - l + d.length >= 2) {
         o(), a.push(Es([...d, ...n.slice(l, u)].map(un), "")), l = u;
         continue;
@@ -3264,103 +3360,7 @@ function qh(e, t) {
   }
   return o(), a.length > 1 || a[0] && a[0].type === "html" ? a : null;
 }
-Et((e, t) => qh(e, t.document));
-const Wn = (e) => typeof e == "number" ? e : e ? Date.parse(e) / 1e3 : 0, Ql = (e) => `${e.table}:${e.id}`, fo = (e) => (e || "").split(`
-`).find((t) => t.trim()) || "", va = 80;
-function ho(e) {
-  return e.length <= va ? e : `${e.slice(0, va + 1).replace(/\s+\S*$/, "") || e.slice(0, va)}…`;
-}
-const mo = {
-  messages: (e) => ho(fo(e.text)),
-  comments: (e) => ho(fo(e.text)),
-  questions: (e) => e.text,
-  memories: (e) => `${e.text} (weight ${e.weight})`,
-  rules: (e) => e.text,
-  reminders: (e) => e.text,
-  environments: (e) => e.name,
-  agents: (e) => e.session,
-  workers: (e) => e.name,
-  triggers: (e) => (e.phrases || []).join(", "),
-  reactions: (e) => e.face,
-  nudges: (e) => {
-    var t;
-    return ((t = e.data) == null ? void 0 : t.line) || "";
-  },
-  plugins: (e) => {
-    var t;
-    return ((t = e.manifest) == null ? void 0 : t.title) || e.name;
-  },
-  shares: (e) => `Share of ${e.target || "nothing"}`
-}, Fh = (e) => (mo[e.table] ? mo[e.table](e) : e.title || "") || "", St = (e) => Wn(e.created_at), er = (e) => Wn(e.updated_at) || St(e), Wh = /^\[\[chip ([a-z]+):(\d+)\|([^\]]*)\]\][.:]?$/m, Hh = /^([A-Za-z][\w-]*) #?(\d+)[.:]?$/m;
-function Uh(e) {
-  const t = Wh.exec(e);
-  if (t && ct(t[1])) return { at: t.index, length: t[0].length, table: ct(t[1]), id: Number(t[2]), label: t[3] };
-  const n = Hh.exec(e), a = n && ct(n[1]);
-  return a ? { at: n.index, length: n[0].length, table: a, id: Number(n[2]), label: n[0] } : null;
-}
-function zh(e, t, n, a) {
-  const s = Hl(a, e, t), o = un(s ? Fh(s) : n);
-  return `<a class="row-card" href="#" data-peek="${e}:${t}"><span class="row-card-type">${tt(qt(e).title)} ${t}</span><span class="row-card-title">${tt(o)}</span></a>`;
-}
-Et(
-  (e, t) => {
-    const n = Uh(e);
-    return n ? [
-      { type: "text", text: e.slice(0, n.at) },
-      { type: "html", html: zh(n.table, n.id, n.label, t) },
-      { type: "text", text: e.slice(n.at + n.length) }
-    ] : null;
-  },
-  { first: !0 }
-);
-const Vh = /\.(png|jpe?g|gif|webp|svg)$/i, Gh = (e) => Vh.test(e), Kh = /^(?:\[\[chip ([a-z]+):(\d+)\|[^\]]*\]\]|([A-Za-z][\w-]*) #?(\d+)) ([\w .()-]+\.[A-Za-z0-9]{1,8})$/m, Yh = /^(?:\[\[file ([^|\]#]+)(?:#L\d+)?\|[^\]]*\]\]|(\/[\w .()/-]+\.[A-Za-z0-9]{1,8}))$/m;
-function Jh(e, t) {
-  const n = Kh.exec(e), [, a, s, o, l, r] = n || [], i = n && ct(a || o), u = i && Hl(t, i, Number(s || l));
-  if (i !== "messages" || !u || !(u.files || []).includes(r)) return null;
-  const d = `/api/files/message/${u.id}/${encodeURIComponent(r)}`, f = `${qt(i).title} ${u.id} · ${tt(r)}`, m = Gh(r) ? `<img class="file-card-image" src="${d}" alt="${tt(r)}">` : "";
-  return { at: n.index, length: n[0].length, html: `<a class="file-card" href="${d}" data-attached="${tt(r)}">${m}<span class="file-card-name">${f}</span></a>` };
-}
-function Zh(e) {
-  const t = Yh.exec(e);
-  if (!t) return null;
-  const n = t[1] || t[2];
-  return { at: t.index, length: t[0].length, html: `<a class="file-card" href="#" data-file="${n}"><span class="file-card-name">${tt(n.split("/").pop())}</span><span class="file-card-line">${n}</span></a>` };
-}
-Et(
-  (e, t) => {
-    if (t.inline) return null;
-    const n = Jh(e, t) || Zh(e);
-    return n ? [
-      { type: "text", text: e.slice(0, n.at) },
-      { type: "html", html: n.html },
-      { type: "text", text: e.slice(n.at + n.length) }
-    ] : null;
-  },
-  { first: !0 }
-);
-const Xh = /`([^`\n]+)`/g;
-Et((e) => e.replace(Xh, (t, n) => `<code>${n}</code>`));
-const po = {
-  chip: (e, t) => `<a class="row-pill" href="#" data-peek="${e}">${t.replace(/(\d+)$/, '<span class="row-pill-num">$1</span>')}</a>`,
-  file: (e, t) => {
-    const [n, a] = e.split("#L");
-    return `<a class="row-pill file-pill" href="${Ss.file(n, a)}">${t}</a>`;
-  },
-  url: (e, t) => `<a href="${e}" target="_blank" rel="noopener">${t}</a>`
-};
-Et(
-  (e, t) => e.replace(Kl, (n, a, s, o) => po[a] ? po[a](s, o, t) : o)
-);
-const Qh = /(<code>.*?<\/code>|<a\s.*?<\/a>|\[[^\]\n]*\]\([^)\s]*\))/gs, tr = new RegExp(`\\b(${Ll}) (?:#?(\\d+)(?::(\\d+(?:-\\d+)?|section \\d+))?\\b|\\((\\d+)\\))`, "gi"), nr = new RegExp(`\\b(${Ll}) (\\d+(?:(?:,? (?:and|or) |, )\\d+)+)\\b`, "gi"), em = new RegExp(`<code>((?:${tr.source}|${nr.source}))</code>`, "gi"), tm = (e) => e.replace(em, "$1"), nm = (e, t) => `<a class="row-pill" href="#" data-peek="${ct(e)}:${t}">${e} <span class="row-pill-num">${t}</span></a>`, am = (e) => e.replace(nr, (t, n, a) => a.replace(/\d+/g, (s) => nm(n.replace(/s$/i, ""), s))), sm = (e) => am(e).replace(
-  tr,
-  (t, n, a, s = "", o) => {
-    const l = a || o;
-    return `<a class="row-pill" href="#" data-peek="${ct(n)}:${l}"${s ? ` data-sub="${s}"` : ""}>${n} <span class="row-pill-num">${l}${s ? `:${s}` : ""}</span></a>`;
-  }
-);
-Et(
-  (e, t) => t.rowNames === !1 ? e : tm(e).split(Qh).map((n, a) => a % 2 ? n : sm(n)).join("")
-);
+Et((e, t) => sm(e, t.document), { first: !0 });
 const om = ["innerHTML"], lm = ["innerHTML"], rm = {
   __name: "TextDisplay",
   props: {
@@ -7532,7 +7532,7 @@ const ls = (e) => e.outcome, Ty = "plugin:code-commandments:sins:", No = (e) => 
   { beat: "answered", matches: (e) => e.type === "questions.answer" },
   { beat: "task_finished", matches: (e) => e.type === "tasks.task" && e.variant === "closed" },
   { beat: "fact_filed", matches: (e) => ["memories.memory", "memories.reminder"].includes(e.type) && e.variant === "made" }
-], h$ = (e, t) => e.filter((n) => n.author === "user" && Wn(n.read_at) > t).map((n) => ({ beat: "read_message", time: Wn(n.read_at), card: Ql(n) })).sort((n, a) => n.time - a.time), Do = { user: "reacted", agent: "agent_reacted" };
+], h$ = (e, t) => e.filter((n) => n.author === "user" && Wn(n.read_at) > t).map((n) => ({ beat: "read_message", time: Wn(n.read_at), card: Jl(n) })).sort((n, a) => n.time - a.time), Do = { user: "reacted", agent: "agent_reacted" };
 function m$(e, t) {
   return e.filter((n) => Do[n.author] && St(n) > t).map((n) => ({ beat: `${Do[n.author]}:${n.emoji}`, time: St(n), card: `message:${n.message_id}` })).sort((n, a) => n.time - a.time);
 }
@@ -7541,7 +7541,7 @@ function p$(e, t) {
   return e.filter((n) => n.author === "agent" && St(n) > t).map((n) => {
     var a;
     return { m: n, face: (a = Iy.map((s) => [s, n.text.indexOf(s)]).filter(([, s]) => s >= 0).sort((s, o) => s[1] - o[1])[0]) == null ? void 0 : a[0] };
-  }).filter(({ face: n }) => n).map(({ m: n, face: a }) => ({ beat: `agent_reacted:${a}`, time: St(n), card: Ql(n) })).sort((n, a) => n.time - a.time);
+  }).filter(({ face: n }) => n).map(({ m: n, face: a }) => ({ beat: `agent_reacted:${a}`, time: St(n), card: Jl(n) })).sort((n, a) => n.time - a.time);
 }
 const By = (e) => new Br(e).isTest(), Vn = (e) => {
   var t;
@@ -9767,7 +9767,7 @@ const m2 = {
           v("span", H2, [
             o[5] || (o[5] = ee(" since ", -1)),
             L(ia, {
-              at: P(er)(e.task)
+              at: P(Zl)(e.task)
             }, null, 8, ["at"])
           ])
         ], 2),
@@ -10330,7 +10330,7 @@ const I5 = { class: "top" }, B5 = {
           v("div", j5, [
             ee(" Task " + $(o.value.id) + " · updated ", 1),
             L(ia, {
-              at: P(er)(o.value)
+              at: P(Zl)(o.value)
             }, null, 8, ["at"])
           ]),
           v("h3", P5, $(o.value.title), 1),
@@ -11532,7 +11532,7 @@ function C8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const O8 = ki(() => import("./VoiceFigure-GgY2e-zU.js").then((e) => e.V)), T8 = "1.2.0", R8 = "3.5";
+const O8 = ki(() => import("./VoiceFigure-Cj92RgPr.js").then((e) => e.V)), T8 = "1.2.0", R8 = "3.5";
 export {
   Wd as $,
   _e as A,
@@ -11668,7 +11668,7 @@ export {
   qx as b_,
   mx as ba,
   Aa as bb,
-  Ql as bc,
+  Jl as bc,
   Gx as bd,
   Jx as be,
   tx as bf,
@@ -11769,7 +11769,7 @@ export {
   Pt as d7,
   g8 as d8,
   _8 as d9,
-  Mh as dA,
+  Wh as dA,
   n8 as dB,
   s4 as dC,
   b8 as dD,

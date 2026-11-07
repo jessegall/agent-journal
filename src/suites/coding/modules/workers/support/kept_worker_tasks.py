@@ -24,6 +24,7 @@ from suites.coding.modules.workers.support.worker_proof_queue import WorkerProof
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worker_assignments import WorkerAssignments
 
 
 class KeptWorkerTasks:
@@ -33,12 +34,13 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies,
-                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.advance, self.sources, self.copies, self.proof_queue = environments, advance, sources, copies, proof_queue
         self.scopes = scopes
         self.kept = kept
         self.dependency_waits = dependency_waits
+        self.assignments = assignments
 
     def read_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
@@ -86,10 +88,13 @@ class KeptWorkerTasks:
         return self.nudger.send_text(worker.id, f"{waiting} are yours once they open", WAITING_TASKS_SOURCE, context)
 
     def delegate(self, worker: Agent, tasks: list[Task], context: Context) -> None:
+        changed = [task for task in tasks if task.delegated_to != worker.id]
         for task in tasks:
             if task.delegated_to != worker.id:
                 self.repository.update(task, context, delegated_to=worker.id)
         self.dependency_waits.update_tasks([task.id for task in tasks], context)
+        if changed:
+            self.assignments.record(worker.id, changed, context)
 
     def record_sources(self, worktree: Worktree, tasks: list[Task], context: Context) -> None:
         with self.scopes.row_scope(worktree):
