@@ -11,9 +11,6 @@ from core.base.model.event_form import EventForm
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
-from core.modules.chat.commands.show_mark.show_mark import ShowMark
-from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
-from core.modules.plugins.models.enums.plugin_mark_variant import PluginMarkVariant
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_event_answer import PluginEventAnswer
@@ -50,15 +47,12 @@ class PluginEventRunner:
         request = PluginRunRequest(check.runnable, PluginEvent(key, data), form, subscription.limit_ms, location, environment, self.clock.timestamp(), agent_id, subscription.script, wait_callback=wait_callback)
         outcome = self.runs.recorded_run(request)
         if outcome.is_late:
-            self.note_late(plugin, form, key, subscription.limit_ms, agent_id)
+            self.note_late(plugin, form, key, subscription.limit_ms)
         answer = outcome.answer
         return None if answer is None else PluginEventAnswer(plugin.name, plugin.id, answer, subscription.allows_skip)
 
-    def note_late(self, plugin: Plugin, form: EventForm, key: str, limit_ms: int | None, agent_id: int | None) -> None:
-        text = f"Plugin {plugin.name} did not answer its {form.value} of {key} within {limit_ms} ms, so the change went through unjudged."
-        self.system_log.write(LogLevel.WARNING, text)
-        self.bus.run(ShowMark(PluginMarkType.HEALTH, PluginMarkVariant.FAILING, f"plugin-late:{plugin.id}:{key}:{self.clock.timestamp().text}", text, agent_id=agent_id),
-                     self.actors.actor(MODULE_NAME))
+    def note_late(self, plugin: Plugin, form: EventForm, key: str, limit_ms: int | None) -> None:
+        self.system_log.write(LogLevel.WARNING, f"Plugin {plugin.name} did not answer its {form.value} of {key} within {limit_ms} ms, so the change went through unjudged.")
 
     def may_try(self, plugin: Plugin, key: str, form: EventForm) -> bool:
         checked_at = self.clock.timestamp()
