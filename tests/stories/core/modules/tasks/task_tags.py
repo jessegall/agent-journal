@@ -103,6 +103,18 @@ def test_complexity_out_of_range_is_refused(tag_story, score):
     story.expect_text(f'task show {task}', 'complexity: 3')
 
 
+def test_complexity_out_of_range_is_refused_valid_scores_round_trip_on_cards(tag_story):
+    story = tag_story
+    task_id = story.new_row_id('task make "Scored task" --complexity 3 --environment main', actor=story.agent)
+    story.expect_success(f'task edit {task_id} --complexity 4', actor=story.agent)
+    plain_id = story.new_row_id('task make "Unscored task" --environment main', actor=story.agent)
+    answer = story.run('task board --environment main --json')
+    story.expect_rows(answer.code == 0)
+    cards = [row for group in json.loads(answer.output_text)['groups'] for row in group['rows']]
+    scores = {row['id']: row['complexity'] for row in cards}
+    story.expect_rows(scores == {task_id: 4, plain_id: None})
+
+
 def test_read_only_planner_tags_and_scores(tag_story):
     story = tag_story
     helper_id, _ = started(story, 'helper start journal-planner --brief "Plan the network queue" --environment main')

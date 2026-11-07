@@ -7,6 +7,7 @@ from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY, TaskPriority
+from core.modules.tasks.models.support.task_complexity import TaskComplexity
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 
 
@@ -31,6 +32,7 @@ class Task(EnvironmentScoped, Model, StateHolder):
     brief: str = ""
     state: TaskState = TaskState.OPEN
     priority: TaskPriority = NORMAL_PRIORITY
+    complexity: TaskComplexity | None = None
     reason: str = ""
     outcome: str = ""
     started_at: Timestamp | None = None

@@ -8,7 +8,7 @@ OPEN_DEPENDENCIES_SELECT = (
 )
 
 TASK_CARDS_SELECT = (
-    "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.reason, tasks.closed_at, tasks.delegated_to,"
+    "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.complexity, tasks.reason, tasks.closed_at, tasks.delegated_to,"
     " (SELECT coalesce(nullif(agents.given_name, ''), 'Agent ' || agents.id) FROM agents WHERE agents.id = tasks.delegated_to) AS delegated_name"
     " FROM tasks"
 )
