@@ -62,7 +62,8 @@ uses its `LastInsertId` or `RowsAffected` methods. A string named `result` has n
 
 ## Nudges name rows
 
-A nudge names a row, its number and the command that reads it. Keep stored text, reasons, commands,
+A nudge names a row, its number and what happened, and never a command: the agent knows the commands
+from its skills (`command-in-a-nudge`). Keep stored text, reasons, commands,
 reports and titles in their rows. Counts, row types and paths are allowed; `path_fields` preserves a path,
 never a command or a reason. `stored-text-in-a-nudge` checks templates, including plural templates and
 aliased imports. Driver opening lines are static code instructions, and rule failures are code diagnostics;
