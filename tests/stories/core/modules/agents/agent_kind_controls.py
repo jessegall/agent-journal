@@ -227,3 +227,19 @@ def test_failed_opening_releases_place_once(split_story, split_viewer):
     expect_program(split_story, dispatch(split_story), "claude")
     second = new_task(split_story, "Total the cart")
     split_story.expect_refusal(f"worker dispatch {second}", "1 workers are running", actor=split_story.agent)
+
+
+def test_special_designer_and_merger_profiles_each_show_once_with_the_common_helper_limits(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
+    names = [row["profile"] for row in next(row for row in rows if row["key"] == "helper")["profiles"]]
+    profiles = helper_profiles(story)
+    expect_value((names.count("journal-designer"), names.count("journal-merger")), (1, 1))
+    expect_value([(profiles[name]["run_limit"], profiles[name]["kept_limit"]) for name in ("journal-designer", "journal-merger")], [(4, 8), (4, 8)])
+
+
+def test_s49_special_profiles_with_no_agents_add_nothing_to_the_helper_totals(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
+    helper = next(row for row in rows if row["key"] == "helper")
+    expect_value((helper["running"], helper["kept"], sum(row["running"] + row["kept"] for row in helper["profiles"])), (0, 0, 0))
