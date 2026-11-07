@@ -39,19 +39,19 @@ try {
     const plan = plans.rows.find((row) => row.title === "Tax rules");
     assert.ok(plan);
     const card = page.locator('.chat-dock-card[aria-label^="Tax rules"]');
-    await card.getByRole("button", {name: "Approve the plan", exact: true}).waitFor();
-    assert.equal(await card.getByRole("button", {name: "Approve the plan", exact: true}).count(), 1);
-    assert.equal(await card.getByRole("button", {name: "Ask for a critique of the plan", exact: true}).count(), 1);
+    await card.getByRole("button", {name: "Approve", exact: true}).waitFor();
+    assert.equal(await card.getByRole("button", {name: "Approve", exact: true}).count(), 1);
+    assert.equal(await card.getByRole("button", {name: "Critique", exact: true}).count(), 1);
     await page.evaluate((id) => { location.hash = `#?open=plans:${id}`; }, plan.id);
     const panel = page.locator("[data-plan-inspector]");
-    await panel.getByRole("button", {name: "Approve the plan", exact: true}).waitFor();
-    assert.equal(await panel.getByRole("button", {name: "Approve the plan", exact: true}).count(), 1);
-    assert.equal(await panel.getByRole("button", {name: "Ask for a critique of the plan", exact: true}).count(), 1);
+    await panel.getByRole("button", {name: "Approve", exact: true}).waitFor();
+    assert.equal(await panel.getByRole("button", {name: "Approve", exact: true}).count(), 1);
+    assert.equal(await panel.getByRole("button", {name: "Critique", exact: true}).count(), 1);
     await panel.locator("[data-resource-close]").click();
     await panel.waitFor({state: "hidden"});
 
     console.log("Asking for a critique from the demo plan card");
-    await card.getByRole("button", {name: "Ask for a critique of the plan", exact: true}).click();
+    await card.getByRole("button", {name: "Critique", exact: true}).click();
     const form = page.locator("[data-button-form]");
     await form.getByRole("radio", {name: /Find what is missing/}).click();
     await form.getByRole("button", {name: "Send", exact: true}).click();
@@ -61,16 +61,16 @@ try {
     assert.equal((await run(["plan", "show", String(plan.id)])).state, "reviewing");
 
     console.log("Ending the review from the card");
-    const endReview = card.getByRole("button", {name: "End the review of the plan", exact: true});
+    const endReview = card.getByRole("button", {name: "End review", exact: true});
     await endReview.waitFor();
-    assert.equal(await card.getByRole("button", {name: "Approve the plan", exact: true}).count(), 0);
+    assert.equal(await card.getByRole("button", {name: "Approve", exact: true}).count(), 0);
     await endReview.click();
-    await card.getByRole("button", {name: "Approve the plan", exact: true}).waitFor();
+    await card.getByRole("button", {name: "Approve", exact: true}).waitFor();
     assert.equal((await run(["plan", "show", String(plan.id)])).state, "ready");
 
     console.log("Checking the phone title, reachable approval and approval message sheet");
     await page.setViewportSize({width: 360, height: 780});
-    const approve = card.getByRole("button", {name: "Approve the plan", exact: true});
+    const approve = card.getByRole("button", {name: "Approve", exact: true});
     await approve.scrollIntoViewIfNeeded();
     const bounds = await approve.boundingBox();
     const title = await card.locator(".dock-title").boundingBox();
@@ -93,11 +93,11 @@ try {
     const stale = await run(["plan", "make", "Stale approval", "--environment", "demo"]);
     await run(["plan", "ready", String(stale.id), "--environment", "demo"]);
     const staleCard = page.locator('.chat-dock-card[aria-label^="Stale approval"]');
-    await staleCard.getByRole("button", {name: "Approve the plan", exact: true}).waitFor();
+    await staleCard.getByRole("button", {name: "Approve", exact: true}).waitFor();
     await page.waitForLoadState("networkidle");
     await page.evaluate(() => { window.holdEvents = true; });
     await run(["plan", "cancel", String(stale.id), "--reason", "Replaced", "--environment", "demo"]);
-    await staleCard.getByRole("button", {name: "Approve the plan", exact: true}).click();
+    await staleCard.getByRole("button", {name: "Approve", exact: true}).click();
     await staleCard.getByRole("alert").getByText(`plan ${stale.id} is cancelled, so it cannot approve`, {exact: false}).waitFor();
     assert.equal((await run(["plan", "show", String(stale.id)])).state, "cancelled");
     console.log("Declared plan button browser stories passed");

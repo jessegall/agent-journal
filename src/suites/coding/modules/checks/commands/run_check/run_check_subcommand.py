@@ -3,7 +3,6 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
-from core.base.user_approval import UserApproval
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.checks.commands.record_check_run.record_check_run import RecordCheckRun
@@ -31,8 +30,7 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
     def command(self, arguments: Namespace, caller: Caller) -> RecordCheckRun:
         check = self.checks.find(arguments.id)
         if check.stopped:
-            raise UserApproval(f"Start and run the stopped check {check.id}?", ("check", "start", str(check.id)),
-                               continued_arguments=("check", "run", str(check.id)), returns_output=True)
+            raise Refusal(f"check {check.id} is stopped", "a person starts it first, then it runs")
         outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).read_line)
         return RecordCheckRun(check.id, outcome.passed, outcome.output)
 

@@ -20,4 +20,4 @@ MEMORY_MARKS = [
                     grouping=MarkGrouping.NONE, full_width=True),
 ]
 
-MEMORY_DOCKS = [DockDeclaration(MemoryDockType.MEMORY, "bulb", "{row_title}", "memory-dock.js", most=6, reads=["memory show"], word="Memory")]
+MEMORY_DOCKS = [DockDeclaration(MemoryDockType.MEMORY, "bulb", "{row_title}", "memory-dock.js", most=6, reads=["memory show"])]

@@ -14,12 +14,12 @@ def dock_actions(story) -> list[tuple[str, str, str]]:
     return [*on_marks, *on_docks, *on_slots]
 
 
-def test_every_dock_button_has_an_icon_in_the_set_and_a_label_naming_its_model(new_story):
+def test_every_dock_button_has_an_icon_in_the_set_and_a_short_plain_label(new_story):
     actions = dock_actions(new_story(fixture=MainEnvironment))
     assert actions
     icons = {icon.value for icon in WindowIcon}
     assert [action for action in actions if action[1] not in icons] == []
-    assert [action for action in actions if len(action[2].split()) < 2] == []
+    assert [action for action in actions if len(action[2].split()) > 2 or "please" in action[2].lower()] == []
 
 
 def test_no_dock_button_starts_with_a_panel_word(new_story):

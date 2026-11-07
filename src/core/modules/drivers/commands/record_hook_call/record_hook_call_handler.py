@@ -138,5 +138,5 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if tool is not None and tool.shell is not None:
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
-            return tool.files[0][:SUMMARY_CHARACTERS]
+            return tool.files[0][-SUMMARY_CHARACTERS:]
         return HookCall.summarize(command.event.prompt or command.event.displayed_text)

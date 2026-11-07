@@ -111,7 +111,7 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     docks = PLAN_DOCKS
-    buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve the plan", "plan approve {row_id}",
+    buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
                                  tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",
                                  menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",
