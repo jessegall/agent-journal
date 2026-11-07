@@ -21,14 +21,14 @@ function drawn() {
     };
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(InformationBar, {agent: {id: 9, program: "claude", session: "s"}, run, onOpen: (key) => opened.push(key)})}).mount(element);
+    createApp({render: () => h(InformationBar, {agent: {id: 9, program: "claude", session: "s"}, run, skills: SKILLS, onOpen: (key) => opened.push(key)})}).mount(element);
     return {element, ran, opened};
 }
 
 test("the bar counts the skills the agent has read, and its menu shows read and still to read", async () => {
     const {element, ran, opened} = drawn();
     await settle();
-    expect(ran).toContain("agent-skill list --agent 9");
+    expect(ran).toEqual([]);
     const button = element.querySelector('[data-fact="skills"]');
     expect(button.textContent.trim()).toBe("1");
     button.click();

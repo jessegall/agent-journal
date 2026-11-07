@@ -110,3 +110,43 @@ func TestAFollowerKeepsWritingTheHeartbeatOfARunThatMoved(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestSlowFileCommandsStayInTheForeground(t *testing.T) {
+	bin := t.TempDir()
+	if err := os.WriteFile(bin+"/cat", []byte("#!/bin/sh\nsleep 2\nprintf 'found\n'\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
+	setup := options(t, "cat file | cut -c1-; cat file")
+	setup.LimitSeconds = 1
+	setup.FileCommands = true
+	output, code := run(t, setup, newClient())
+	if code != 0 || strings.Count(output, "found") != 2 || strings.Contains(output, "moved to the background") {
+		t.Fatalf("printed %q with code %d", output, code)
+	}
+}
+
+func TestStuckFileCommandsAreStopped(t *testing.T) {
+	setup := options(t, "sleep 5")
+	setup.FileCommands = true
+	setup.FileCommandLimit = 100 * time.Millisecond
+	output, code := run(t, setup, newClient())
+	if code != 124 || !strings.Contains(output, "time limit") || strings.Contains(output, "moved to the background") {
+		t.Fatalf("printed %q with code %d", output, code)
+	}
+}
+
+func TestASlowTestRunMovesToTheBackground(t *testing.T) {
+	bin := t.TempDir()
+	if err := os.WriteFile(bin+"/pytest", []byte("#!/bin/sh\nsleep 3\necho done\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
+	setup := options(t, "cat /dev/null; pytest")
+	setup.LimitSeconds = 1
+	output, code := run(t, setup, newClient())
+	if code != 0 || !strings.Contains(output, "moved to the background") {
+		t.Fatalf("printed %q with code %d", output, code)
+	}
+	waitFor(t, 10*time.Second, "the end of the test run", func() bool { return exists(folderOf(setup) + "/end") })
+}

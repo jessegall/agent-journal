@@ -1,6 +1,6 @@
 <script setup>
-import {computed, onMounted, ref, watch} from "vue";
-import {AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {computed, ref, watch} from "vue";
+import {AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useWindow} from "@journal/window-kit";
 import FeedBar from "./FeedBar.vue";
 import {cardsOf} from "./fileCards.js";
 
@@ -13,10 +13,12 @@ const SETTING_KEY = "view";
 const AGENT_PAGE = "agent";
 const AGENT_VIEW = {lines: 5, flush: true};
 
-const context = useWindow();
-const {rows, failure, loaded, more, older} = useRows(context.agent == null ? "file-edit list" : `file-edit list --agent ${context.agent}`, ["file_edit.create"], {incremental: true});
-const kept = context.option(SETTING_KEY);
-const startView = (own) => ({...DEFAULTS, ...(context.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
+const window = useWindow();
+if (window.agent != null) window.state["edits.agent"] = String(window.agent);
+const {rows, failure, loaded, more, older} = window.props.edits;
+const {data: savedView} = window.props.view;
+const kept = window.option(SETTING_KEY);
+const startView = (own) => ({...DEFAULTS, ...(window.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
 const view = ref(startView({}));
 const filter = ref("");
 const folds = ref({});
@@ -34,7 +36,7 @@ const expand = () => (folds.value = Object.fromEntries(cards.value.map((card) =>
 
 function setOptions(options) {
     view.value = options;
-    context.setOption(SETTING_KEY, options);
+    window.setOption(SETTING_KEY, options);
 }
 
 async function whole(card) {
@@ -44,16 +46,14 @@ async function whole(card) {
         wholes.value = rest;
         return;
     }
-    const answer = await context.read(`project-file show ${JSON.stringify(card.path)}`);
+    const file = window.props[`file.${card.id}`];
+    const reloaded = await window.reload(`file.${card.id}`);
     folds.value = {...folds.value, [card.id]: false};
-    wholes.value = {...wholes.value, [card.id]: answer.ok ? {text: answer.value.text} : {error: "The text of this file could not be read."}};
+    wholes.value = {...wholes.value, [card.id]: !reloaded || file.failure.value ? {error: "The text of this file could not be read."} : {text: file.data.value.text}};
 }
 
 // this pane's own view, else the one version 5 first kept for every feed
-watch(kept, (own) => own && (view.value = startView(own)));
-onMounted(async () => {
-    view.value = startView(kept.value ?? (await context.setting(SETTING_KEY, {})));
-});
+watch([kept, savedView], () => { view.value = startView(kept.value ?? savedView.value?.value ?? {}); }, {immediate: true});
 </script>
 
 <template>

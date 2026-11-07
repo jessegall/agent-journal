@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {Btn, Icon, peekRef, Segmented, Skeleton, SearchBar, TimeAgo, steppedItem, useWindow} from "@journal/window-kit";
 import {grouped, searched, sorted} from "./libraryGroups.js";
 
@@ -21,11 +21,17 @@ const state = ref("open");
 const order = ref("newest");
 const words = ref("");
 const chosen = ref(null);
-const context = useWindow();
+const window = useWindow();
+window.state["library.type"] = noun.value;
+window.state["library.state"] = state.value;
+const library = window.props.library;
 const rows = ref([]);
 const total = ref(0);
-const failure = ref("");
-const loaded = ref(false);
+const {failure, loaded} = library;
+watch(library.data, (value) => {
+    rows.value = value.rows;
+    total.value = value.total;
+}, {once: true});
 const drafting = ref(false);
 const draft = ref({title: "", abstract: "", body: ""});
 const refusal = ref("");
@@ -36,20 +42,24 @@ const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 async function load() {
     const type = noun.value;
     const shown = state.value;
-    const answer = await context.read(`document library --type ${type} --state ${shown}`);
+    window.state["library.type"] = type;
+    window.state["library.state"] = shown;
+    delete window.state["library.after"];
+    const refreshed = await window.reload("library");
     if (type !== noun.value || shown !== state.value) return;
-    failure.value = answer.ok ? "" : answer.error;
-    rows.value = answer.ok ? answer.value.rows : [];
-    total.value = answer.ok ? answer.value.total : 0;
+    rows.value = refreshed && !failure.value ? library.data.value.rows : [];
+    total.value = refreshed && !failure.value ? library.data.value.total : 0;
     loaded.value = true;
 }
 
 async function more() {
     const type = noun.value;
     const shown = state.value;
-    const answer = await context.read(`document library --type ${type} --state ${shown} --after ${Math.max(...rows.value.map((row) => row.id))}`);
-    if (!answer.ok) return void (failure.value = answer.error);
-    if (type === noun.value && shown === state.value) rows.value = [...rows.value, ...answer.value.rows];
+    window.state["library.after"] = String(Math.max(...rows.value.map((row) => row.id)));
+    const refreshed = await window.reload("library");
+    delete window.state["library.after"];
+    if (!refreshed || failure.value) return;
+    if (type === noun.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
 }
 
 // a row opens in the panel, as every other row does
@@ -61,7 +71,7 @@ function open(row) {
 async function create() {
     const {title, abstract, body} = draft.value;
     if (!title.trim() || !abstract.trim()) return;
-    const answer = await context.run([noun.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
+    const answer = await window.run([noun.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     drafting.value = false;
@@ -91,8 +101,8 @@ watch([noun, state], () => {
     loaded.value = false;
     load();
 });
-context.follow(["doc.*", "report.*"], load);
-load();
+const stopFollowing = window.follow(["doc.*", "report.*"], load);
+onUnmounted(() => stopFollowing?.());
 </script>
 
 <template>

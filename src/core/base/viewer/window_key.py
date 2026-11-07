@@ -4,19 +4,14 @@ from dataclasses import dataclass, replace
 
 from core.base.viewer.key_loading import KeyLoading
 
-ID_KEY_SUFFIX = ".*"
-ID_PLACE = "{id}"
-NAMED_ID = re.compile(r"[\w@][\w./@-]*")
+ID_SUFFIX = ".*"
+ID_TOKEN = "{id}"
+NAME_PATTERN = re.compile(r"[\w@][\w./@-]*")
 
 
 @dataclass(frozen=True)
 class WindowKey:
-    """A named part of a window's data, a prop of the window: the read line that fills it, the tab it
-    belongs to if any, the events and the timer that reload it on its own, and the names in the window's
-    state it takes as flags of its line. A page_size makes it a list read a page at a time, and an argument
-    ids lets it read the rows with given ids together. A key named run.* is one key per id, such as run.12,
-    with {id} in its line, and named_ids lets that id be a name; another word in braces is one word from the
-    state under the key; answered_line means its read answers the line and window that fill it."""
+    """Declares how a window reads and refreshes a named part of its data."""
 
     name: str
     read: str
@@ -27,7 +22,8 @@ class WindowKey:
     loading: KeyLoading = KeyLoading.FIRST
     page_size: int = 0
     answered_line: bool = False
-    named_ids: bool = False
+    name_ids: bool = False
+    switches: Sequence[str] = ()
 
     def listed(self) -> Mapping[str, object]:
         return {"tab": self.tab, "events": list(self.events), "reload_seconds": self.reload_seconds, "loading": self.loading,
@@ -35,17 +31,17 @@ class WindowKey:
 
     @property
     def has_ids(self) -> bool:
-        return self.name.endswith(ID_KEY_SUFFIX)
+        return self.name.endswith(ID_SUFFIX)
 
     def with_id(self, name: str) -> "WindowKey | None":
         prefix = self.name.removesuffix("*")
         row_id = name.removeprefix(prefix)
         if not self.has_ids or row_id == name or not self.takes_id(row_id):
             return None
-        return replace(self, name=name, read=self.read.replace(ID_PLACE, row_id))
+        return replace(self, name=name, read=self.read.replace(ID_TOKEN, row_id))
 
     def takes_id(self, row_id: str) -> bool:
-        return row_id.isdigit() or (self.named_ids and NAMED_ID.fullmatch(row_id) is not None)
+        return row_id.isdigit() or (self.name_ids and NAME_PATTERN.fullmatch(row_id) is not None)
 
     def loads_first(self, tab: str) -> bool:
         return not self.has_ids and self.loading == KeyLoading.FIRST and (self.tab is None or self.tab == tab)
@@ -56,6 +52,7 @@ class WindowKey:
             flag_value = state.get(f"{self.name}.{flag_name}", state.get(flag_name))
             if flag_value is not None:
                 line += [f"--{flag_name}", flag_value]
+        line += [f"--{name}" for name in self.switches if state.get(f"{self.name}.{name}", state.get(name)) == "true"]
         if self.page_size and "--limit" not in line:
             line += ["--limit", str(self.page_size)]
         return line

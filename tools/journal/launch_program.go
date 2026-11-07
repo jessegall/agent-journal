@@ -21,6 +21,8 @@ import (
 // in the chosen environment's folder, with the launcher's socket open for the workers its session dispatches. Arguments
 // other than the worktree's go to the program, over the journal's own defaults.
 func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
+	binary := filepath.Join(home, "bin", "journal")
+	version, versionErr := launch.ReadBinaryVersion(binary)
 	request, err := launchRequest(argv)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
@@ -43,7 +45,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	_ = launch.SaveAnswers(home, choice.Answers)
 	prepareProgramHooks(journal, request.Program, choice.Folder, stderr)
 	inputs := launch.NewTerminalInputs()
-	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}, inputs); err == nil {
+	if listener, err := launch.ListenVersioned(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}, inputs, version.Digest); err == nil {
 		defer listener.Close()
 		defer inputs.StopAll()
 	}
@@ -59,10 +61,11 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	defer log.Close()
-	labels := launch.BandLabels{Start: "agent-journal", Middle: filepath.Base(request.Root) + " · " + choice.Environment, End: "viewer link unavailable"}
+	labels := launch.BandLabels{Project: filepath.Base(request.Root), Environment: choice.Environment, Address: "viewer link unavailable"}
 	if link, err := journal.Run("viewer"); err == nil {
-		labels.End = strings.TrimSpace(link)
-		if line := launch.OpenViewer(labels.End, launch.StartDetached); line != "" {
+		link = strings.TrimSpace(link)
+		labels.Address = launch.DisplayAddress(link)
+		if line := launch.OpenViewer(link, launch.StartDetached); line != "" {
 			fmt.Fprintln(stderr, line)
 		}
 	} else {
@@ -85,12 +88,20 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	go watcher.Watch(stopWatching)
 	restoreProgram := terminal.Raw()
 	programLog := io.MultiWriter(log, watcher)
+	stopReplacement := make(chan struct{})
+	defer close(stopReplacement)
 	err = runMainProgram(inputs, agentID, command, os.Stdin, func(input io.Reader, started func()) error {
-		if launch.ShowsBand() {
-			return launch.RunBelowBand(launch.NewBand(stdout, labels), command, input, programLog, started)
+		track := func() {
+			started()
+			if versionErr == nil {
+				go watchLauncher(home, binary, version, stopReplacement, stderr)
+			}
 		}
-		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.End))
-		return launch.RunInTerminal(command, input, stdout, programLog, started)
+		if launch.ShowsBand() {
+			return launch.RunBelowBand(launch.NewBand(stdout, labels), command, input, programLog, track)
+		}
+		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, labels.Address))
+		return launch.RunInTerminal(command, input, stdout, programLog, track)
 	})
 	restoreProgram()
 	if err != nil {

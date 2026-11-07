@@ -11,6 +11,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from suites.coding.modules.checks.support.check_searcher import CheckSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_icon import WindowIcon
 from core.base.periodic_checks import PeriodicChecks
@@ -78,6 +79,7 @@ class ChecksModule(Module):
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = {PeriodicChecks: DueCheckRuns, StepChecks: PassedChecks, TaskWaitAttempts: CheckTaskWaitAttempts}
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, skeleton=CHECKS_CHECKS_SKELETON, search=WindowSearch(CheckSearcher, "Search the checks"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.CHECK,
-                                 reads=["check list", "check runs"], runs=["check run", "check start"], events=["check.*"])]
+                                 reads=["check list", "check runs"], runs=["check run", "check start"], events=["check.*"],
+                                 keys=[WindowKey("checks", "check list", events=["check.*"]), WindowKey("runs.*", "check runs {id}")])]
     seeders = [ChecksSeeder]
     moves = [ChecksMove]

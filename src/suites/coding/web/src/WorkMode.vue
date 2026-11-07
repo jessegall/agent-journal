@@ -1,5 +1,5 @@
 <script setup>
-import {onUnmounted, ref} from "vue";
+import {onUnmounted, ref, watch} from "vue";
 import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journal/window-kit";
 
 const AUTO_MODE = "journal.suites.coding.auto-mode";
@@ -9,7 +9,8 @@ const MODES = [
     {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
     {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
 ];
-const context = useWindow();
+const window = useWindow();
+window.state["mode.environment"] = window.environment;
 const mode = ref(MODES[0].key);
 const auto = ref(true);
 const dispatches = ref(true);
@@ -19,22 +20,18 @@ const root = ref(null);
 useOutside(root, () => (open.value = false));
 const failure = ref("");
 
-const settingValue = async (key) => {
-    const answer = await context.read(`setting show ${key} --environment ${context.environment}`);
-    return answer.ok ? answer.value?.value : undefined;
-};
-
-async function load() {
-    const current = await context.read(`suite current ${context.environment}`);
-    const driver = current.ok ? MODES.find((one) => String(current.value?.drivers ?? "").includes(one.key)) : null;
+watch(window.props.mode.data, (current) => {
+    if (!current) return;
+    const driver = MODES.find((one) => current.drivers.includes(one.key));
     if (driver) mode.value = driver.key;
-    auto.value = (await settingValue(AUTO_MODE)) !== false;
-    dispatches.value = (await settingValue(DISPATCHES)) !== false;
-    merger.value = (await settingValue(MERGER)) !== false;
+}, {immediate: true});
+for (const [key, held] of [["auto", auto], ["dispatches", dispatches], ["merger", merger]]) {
+    watch(window.props[key].data, (answer) => { if (answer) held.value = answer.value; }, {immediate: true});
 }
+watch(open, (value) => (window.state.tab = value ? "settings" : ""));
 
 async function run(words) {
-    const answer = await context.run(words);
+    const answer = await window.run(words);
     failure.value = answer.ok ? "" : answer.error;
     return answer.ok;
 }
@@ -43,27 +40,29 @@ const asking = ref(null);
 
 async function switchMode(key) {
     asking.value = null;
-    if (await run(`driver choose ${key} --environment ${context.environment}`)) mode.value = key;
+    if (await run(`driver choose ${key} --environment ${window.environment}`)) mode.value = key;
 }
 
 // a switch while the agent works asks first, so a stray click never changes it; none while it is idle
 async function pickMode(key) {
     if (key === mode.value) return;
-    const bars = await context.read(`usage bars --environment ${context.environment}`);
+    const refreshed = await window.reload("bars");
+    const bars = window.props.bars;
     const label = MODES.find((one) => one.key === key).label;
-    const question = !bars.ok ? "" : bars.value.task_id ? `Switch to ${label}? The agent is working on task ${bars.value.task_id}.` : bars.value.helpers ? `Switch to ${label}? The agent has ${bars.value.helpers} helpers out.` : "";
+    const busy = refreshed && !bars.failure.value ? bars.data.value : null;
+    const question = !busy ? "" : busy.task_id ? `Switch to ${label}? The agent is working on task ${busy.task_id}.` : busy.helpers ? `Switch to ${label}? The agent has ${busy.helpers} helpers out.` : "";
     if (question) asking.value = {key, question};
     else await switchMode(key);
 }
 
-const setSetting = (key, value) => run(`setting set ${key} ${value} --environment ${context.environment}`);
+const setSetting = (key, value) => run(`setting set ${key} ${value} --environment ${window.environment}`);
 
 async function toggleAuto() {
     if (await setSetting(AUTO_MODE, !auto.value)) auto.value = !auto.value;
 }
 
-window.addEventListener("journal:toggle-auto", toggleAuto);
-onUnmounted(() => window.removeEventListener("journal:toggle-auto", toggleAuto));
+globalThis.addEventListener("journal:toggle-auto", toggleAuto);
+onUnmounted(() => globalThis.removeEventListener("journal:toggle-auto", toggleAuto));
 
 async function toggleDispatches() {
     if (await setSetting(DISPATCHES, !dispatches.value)) dispatches.value = !dispatches.value;
@@ -74,17 +73,13 @@ async function toggleMerger() {
 }
 
 
-context.follow(["setting.*"], load);
-
-async function toggleMenu() {
+function toggleMenu() {
     open.value = !open.value;
-    if (open.value) await load();
 }
 
 const closeOnEscape = (event) => event.key === "Escape" && (open.value = false);
-window.addEventListener("keydown", closeOnEscape);
-onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
-load();
+globalThis.addEventListener("keydown", closeOnEscape);
+onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>

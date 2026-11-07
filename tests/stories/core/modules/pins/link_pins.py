@@ -6,6 +6,8 @@ from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_reports import reported
 
 
 def shell_call(line: str, output: str = ""):
@@ -55,16 +57,40 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
     story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
 
 
-def test_a_link_a_helper_returned_is_offered(new_story):
+def test_a_design_link_a_helper_returned_is_pinned(new_story):
     story = new_story(fixture=UserJoined)
     response = {"content": [{"type": "text", "text": "Link: https://claude.ai/design/p/1"}]}
     sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_response": response})
-    expect_pin_lines(story.hook("s-1", sample))
+    expect_absent_pin_lines(story.hook("s-1", sample))
+    story.expect_text("pin list --environment main", "Design: 1", "https://claude.ai/design/p/1", actor=story.user)
+
+
+def test_a_helper_report_pins_a_design_only_once_even_after_it_is_closed(new_story):
+    address = "https://claude.ai/design/cart/checkout-screen"
+    story = reported(new_story, StartedHelper, f"Design: {address}")
+    story.expect_text("pin list --environment main", "Design: checkout screen", address, actor=story.user)
+    story.expect_success("pin close 1", actor=story.user)
+    story.hook("s-1", HookSamples.message_display(f"Design: {address}/"))
+    story.expect_absent("pin list --environment main", address, actor=story.user)
+
+
+def test_a_helper_tool_output_pins_a_pull_request(new_story):
+    story = new_story(fixture=StartedHelper)
+    address = "https://github.com/shop/cart/pull/23"
+    story.hook(helper_agent(story).session, shell_call("gh pr create", address))
+    story.expect_text("pin list --environment main", "Pull request 23", address, actor=story.user)
+
+
+def test_the_main_agents_text_pins_a_design(new_story):
+    story = new_story(fixture=UserJoined)
+    address = "https://claude.ai/design/cart/payment-page"
+    story.hook("s-1", HookSamples.message_display(f"The design: {address}"))
+    story.expect_text("pin list --environment main", "Design: payment page", address, actor=story.user)
 
 
 def test_a_link_in_a_message_the_agent_sends_is_offered(new_story):
     story = new_story(fixture=UserJoined)
-    expect_pin_lines(story.hook("s-1", shell_call('journal message send "see https://claude.ai/design/p/1"')))
+    expect_pin_lines(story.hook("s-1", shell_call('journal message send "see https://docs.example.com/pages/1"')))
 
 
 def test_a_link_in_a_file_the_agent_reads_is_not_offered(new_story):
@@ -75,7 +101,7 @@ def test_a_link_in_a_file_the_agent_reads_is_not_offered(new_story):
 
 def test_a_link_in_the_agents_text_is_offered(new_story):
     story = new_story(fixture=UserJoined)
-    expect_pin_lines(story.hook("s-1", HookSamples.message_display("Here: https://claude.ai/design/p/1")))
+    expect_pin_lines(story.hook("s-1", HookSamples.message_display("Here: https://docs.example.com/pages/1")))
 
 
 def test_words_that_a_link_is_pinned_with_no_pin_made_are_pointed_out(new_story):

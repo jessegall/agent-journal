@@ -1,5 +1,6 @@
 from core.modules.pins.rules.agent_text_pin_rule import AgentTextPinRule
 from core.modules.pins.rules.link_pin_rule import LinkPinRule
+from core.modules.pins.rules.automatic_link_pin_rule import AutomaticLinkPinRule
 from core.modules.pins.support.pin_nudges import PIN_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -22,7 +23,7 @@ class PinsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
     nudges = PIN_NUDGES
-    driver_rules = [LinkPinRule, AgentTextPinRule]
+    driver_rules = [LinkPinRule, AgentTextPinRule, AutomaticLinkPinRule]
     seeders = [PinsSeeder]
     models = [ModelDeclaration(Pin, query=PinQuery, excluded_subcommands=["make", "edit", "list", "delete"])]
     migrations = [PinsTableMigration]

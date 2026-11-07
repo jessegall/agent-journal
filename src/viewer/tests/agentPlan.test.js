@@ -1,7 +1,7 @@
 import {h} from "vue";
 import {expect, test} from "vitest";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
-import {context, mounted} from "./support/windowContext.js";
+import {context, mounted} from "./support/agentWindowContext.js";
 
 const row = {id: 6, role: "worker", access: "writing", session: "s-6", program: "claude"};
 

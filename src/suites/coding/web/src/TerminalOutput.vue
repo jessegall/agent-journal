@@ -18,8 +18,8 @@ pages.newest().then((answer) => {
 </script>
 
 <template>
-    <p v-if="failure" role="alert">{{ failure }}</p>
-    <OutputLines v-else-if="loaded" class="terminal-output" :lines="pages.lines.value" empty="No output recorded." data-terminal-output @older="pages.loadEarlier" />
+    <template v-if="failure"><p role="alert">{{ failure }}</p></template>
+    <template v-else-if="loaded"><OutputLines class="terminal-output" :lines="pages.lines.value" empty="No output recorded." data-terminal-output @older="pages.loadEarlier" /></template>
 </template>
 
 <style scoped>

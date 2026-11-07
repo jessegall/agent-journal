@@ -47,12 +47,18 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         parser.add_argument("--role", action="append", default=[])
         parser.add_argument("--profile", action="append", default=[])
         parser.add_argument("--program", action="append", default=[])
+        parser.add_argument("--roles", default="")
+        parser.add_argument("--profiles", default="")
+        parser.add_argument("--programs", default="")
         parser.add_argument("--show", type=AgentListState, choices=list(AgentListState), default=AgentListState.RUNNING)
         parser.add_argument("--search", default="")
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=25)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[AgentListingState] | AgentFilterOptions:
+        arguments.role += [value for value in arguments.roles.split(",") if value]
+        arguments.profile += [value for value in arguments.profiles.split(",") if value]
+        arguments.program += [value for value in arguments.programs.split(",") if value]
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         if arguments.options:
             options = self.queries.query(AgentFilterOptionsView).first()

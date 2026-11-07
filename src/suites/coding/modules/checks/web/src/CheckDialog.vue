@@ -1,6 +1,6 @@
 <script setup>
-import {computed, ref} from "vue";
-import {Btn, Dialog, Segmented, TimeAgo, useReadLine, useWindow} from "@journal/window-kit";
+import {computed, onUnmounted, ref, watch} from "vue";
+import {Btn, Dialog, Segmented, TimeAgo, useWindow} from "@journal/window-kit";
 import CheckRunBar from "./CheckRunBar.vue";
 
 // one check opened: its latest output and its runs, picked at the top, and the button that runs it
@@ -10,11 +10,11 @@ const VIEWS = [
 ];
 const props = defineProps({row: {type: Object, required: true}, running: Boolean});
 const emit = defineEmits(["close", "run"]);
-const context = useWindow();
+const window = useWindow();
 const view = ref("output");
 const chosenRun = ref(null);
-const {value: history, failure, load: readRuns} = useReadLine(() => `check runs ${props.row.id}`);
-const runs = computed(() => history.value?.rows ?? []);
+const key = `runs.${props.row.id}`;
+const {rows: runs, failure} = window.props[key];
 const shownOutput = computed(() => chosenRun.value?.output ?? props.row.last_output);
 
 function showRun(run) {
@@ -22,8 +22,10 @@ function showRun(run) {
     view.value = "output";
 }
 
-context.follow(["check.*"], readRuns);
-readRuns();
+const readRuns = () => { if (view.value === "runs") return window.reload(key); };
+watch(view, readRuns);
+const stopFollowing = window.follow(["check.*"], readRuns);
+onUnmounted(() => stopFollowing?.());
 </script>
 
 <template>

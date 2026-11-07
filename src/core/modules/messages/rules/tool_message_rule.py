@@ -11,8 +11,8 @@ from core.modules.messages.support.agent_text_filter import AgentTextFilter
 
 
 class ToolMessageRule(DriverRule):
-    """A text written after a reply by command and followed by a tool is no closing line, so it reaches the chat
-    when the tool's hook comes; one with no tool after it ended the turn and stays out."""
+    """A text held after a reply by command and followed by a tool is no closing line, so it reaches the chat when
+    the tool's hook comes; one with no tool after it ended the turn and stays out."""
 
     name = "messages.text-before-tool"
     hook = HookWildcard.ALL_HOOKS
@@ -32,6 +32,6 @@ class ToolMessageRule(DriverRule):
 
     def should_send(self, hook: AgentHook, call: HookCall) -> bool:
         text, displayed_at = call.displayed_text, call.creation_timestamp()
-        if not text or not self.texts.has_recent_reply(hook.agent_id, hook.timestamp) or self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
+        if not text or self.texts.is_duplicate_reply(hook.agent_id, text, displayed_at) or self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
             return False
         return not self.messages.has_text_after(hook.agent_id, text, displayed_at)

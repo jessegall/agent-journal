@@ -1,3 +1,5 @@
+import re
+
 from core.base.driver.hook_event_name import HookEventName
 from core.base.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
@@ -8,6 +10,10 @@ JOURNAL_LINE = "[journal] "
 USER_ACTION_PREFIXES = ("[journal] new message", "[journal] question:", "[journal] the user")
 MESSAGE_COUNT_TEXT = " new messages"
 SHORT_CHARACTERS = 240
+REPEATED_TOKEN_FRACTION = 0.6
+TOKENS = re.compile(r"[^\W_]+", re.UNICODE)
+REFERENCES = re.compile(r"\b([a-z][a-z0-9_-]*)\s*(?::\s*|\s+)(\d+)\b", re.IGNORECASE)
+NUMBERS = re.compile(r"\b\d+\b")
 
 
 class AgentTextFilter:
@@ -22,6 +28,25 @@ class AgentTextFilter:
             return False
         reply = self.messages.latest_reply(agent_id, prompt.creation_timestamp(), created_at)
         return reply is not None and not self.messages.has_person_message_past(reply.id)
+
+    def is_duplicate_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
+        if "?" in text or not self.has_recent_reply(agent_id, created_at):
+            return False
+        prompt = self.hook_calls.latest_prompt(agent_id, created_at)
+        if prompt is None:
+            return False
+        replies = self.messages.turn_replies(agent_id, prompt.creation_timestamp(), created_at)
+        reply_text = " ".join(reply.text for reply in replies).lower()
+        text = text.lower()
+        tokens = [token for token in TOKENS.findall(text) if len(token) >= 3 or token.isdecimal()]
+        if not tokens or not set(NUMBERS.findall(text)).issubset(NUMBERS.findall(reply_text)):
+            return False
+        refs = {(row_type.rstrip("s"), number) for row_type, number in REFERENCES.findall(text)}
+        reply_refs = {(row_type.rstrip("s"), number) for row_type, number in REFERENCES.findall(reply_text)}
+        if not refs.issubset(reply_refs):
+            return False
+        reply_tokens = set(TOKENS.findall(reply_text))
+        return sum(token in reply_tokens for token in tokens) / len(tokens) >= REPEATED_TOKEN_FRACTION
 
     def is_acknowledgement(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)

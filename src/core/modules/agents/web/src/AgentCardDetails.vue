@@ -4,9 +4,8 @@ import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, loadWindowCompo
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
-import AgentActions from "./AgentActions.vue";
 
-const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, tasks: {type: Array, required: true}, stoppedWithWork: Boolean, open: Boolean, totalCount: Number, tasksPerHour: String});
+const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}, progress: {type: Object, default: null}, waitReason: {type: String, default: ""}, tasks: {type: Array, required: true}, stoppedWithWork: Boolean, open: Boolean});
 const TASK_STATES = ["started", "blocked", "open", "completed"];
 const ENDED_WITHOUT_REPORT = "It ended without a report";
 const endedReason = computed(() => (props.row.ended_at && props.facts?.job_returned?.startsWith(ENDED_WITHOUT_REPORT) ? props.facts.job_returned : ""));
@@ -19,7 +18,6 @@ const fold = (state) => (folded.value = {...folded.value, [state]: sectionOpen(s
 const context = useWindow();
 const {rows: reports} = context.props.reports;
 context.state["reports.agent"] = String(props.row.id);
-context.reload("reports");
 const isReader = computed(() => props.row.access === "read-only");
 const retired = computed(() => Boolean(props.row.retired_at) || props.row.state === "retired");
 const tabOrder = ["tasks", "transcript", "terminal", "file-feed", "reports"];
@@ -29,19 +27,20 @@ const cardTabs = computed(() => {
 });
 const firstTab = () => isReader.value || retired.value ? cardTabs.value.find((item) => item.key === "transcript") : cardTabs.value[0];
 const tab = ref(firstTab());
+watch(tab, (value) => { context.state.tab = value?.key ?? ""; }, {immediate: true});
+onUnmounted(() => { context.state.tab = ""; });
 watch(cardTabs, (tabs) => { if (!tabs.some((item) => item.key === tab.value?.key)) tab.value = tabs[0]; });
 watch(() => props.open, (open) => { if (open) tab.value = firstTab(); });
 const components = Object.fromEntries(context.tabs.filter((tab) => tab.component).map((tab) => [tab.key, defineAsyncComponent(() => loadWindowComponent(tab.component))]));
 const instructionOpen = ref(false);
-const runningCommand = ref("");
-const noCommandNote = ref("");
+const {data: tool} = context.props.tool;
+const runningCommand = computed(() => tool.value?.tool ?? "");
+const noCommandNote = computed(() => tool.value?.note ?? "");
 const showsCommand = computed(() => props.row.role !== "main" && (!props.row.ended_at || props.stoppedWithWork || props.waitReason));
 async function readCommand() {
     if (!props.open || !showsCommand.value) return;
-    const answer = await context.read(`usage tool --agent ${props.row.id}`, {deferred: true});
-    if (!props.open) return;
-    runningCommand.value = answer.ok ? answer.value.tool : "";
-    noCommandNote.value = answer.ok ? answer.value.note : "";
+    context.state["tool.agent"] = String(props.row.id);
+    await context.reload("tool");
 }
 const stopFollowing = context.follow(["hook_call.*", "process_part.*"], coalesced(readCommand, READ_RATES.agentCommand));
 onUnmounted(() => stopFollowing?.());
@@ -52,8 +51,6 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
     <div class="agent-more" data-agent-more @click.stop>
         <template v-if="row.retirement_reason"><p class="agent-summary" data-agent-retirement-reason>Retirement reason: {{ row.retirement_reason }}</p></template>
         <template v-if="row.resume_reason"><p class="agent-summary" data-agent-resume-reason>{{ row.resume_reason }}</p></template>
-        <AgentActions :row="row" />
-        <template v-if="totalCount && tasksPerHour"><span class="agent-pace" data-agent-pace data-agent-motion>{{ tasksPerHour }}</span></template>
                 <template v-if="showsCommand"><AgentCommand class="agent-command" :wait-reason="waitReason" :stopped="stoppedWithWork" :command="runningCommand" :note="noCommandNote" /></template>
                 <template v-if="endedReason"><p class="agent-ended-reason" data-agent-ended-reason>{{ endedReason }}</p></template>
                 <InnerTabs class="agent-tabs" :tabs="cardTabs" :active="tab" :answer="{tasks: tasks.length, reports: reports.length}" @choose="tab = $event" />
@@ -61,7 +58,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
                     <SwitchCase :value="tab?.key">
                         <template #reports>
                             <template v-if="!reports.length"><EmptyState title="No reports">This agent has not sent any reports.</EmptyState></template>
-                            <button v-for="report in reports" :key="report.id" type="button" class="agent-report" :data-peek="`messages:${report.id}`" @click="peekRef(`messages:${report.id}`)">{{ report.text }}</button>
+                            <template v-for="report in reports" :key="report.id"><button type="button" class="agent-report" :data-peek="`messages:${report.id}`" @click="peekRef(`messages:${report.id}`)">{{ report.text }}</button></template>
                         </template>
                         <template #tasks>
                             <template v-if="!tasks.length"><EmptyState title="No tasks">No tasks have been assigned to this agent.</EmptyState></template>
@@ -86,7 +83,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
                                 <p class="agent-label" data-agent-no-job>No job recorded</p>
                             </template>
                             </template>
-                            <TranscriptRows :line="`agent transcript ${row.id}`" padding="0" />
+                            <TranscriptRows :name="`transcript.${row.id}`" padding="0" />
                         </template>
                         <template v-for="(component, key) in components" :key="key" #[key]>
                             <component :is="component" :agent="row.id" />
@@ -100,9 +97,8 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 .agent-more { display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; max-width: 100%; cursor: default; }
 .agent-summary { margin: 8px 14px; color: var(--text-2); font-size: 12px; white-space: pre-wrap; }
 .agent-report { padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: transparent; color: var(--text); text-align: left; white-space: pre-wrap; cursor: pointer; }
-.agent-pace { align-self: flex-end; color: var(--text-4); font-size: 10.5px; }
 .agent-ended-reason { margin: 4px 0; color: var(--danger, var(--text)); }
-.agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px 40% 6px 14px; border-bottom: 1px solid var(--border-inner); }
+.agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px 40% 6px 0; border-bottom: 1px solid var(--border-inner); }
 .agent-tab-body { position: relative; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; contain: inline-size; }
 .agent-tab-body:not([data-agent-tab-body="tasks"]) > :deep(*) { flex: 1; min-height: 0; }
 .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); }

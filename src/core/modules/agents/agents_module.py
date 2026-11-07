@@ -64,6 +64,7 @@ from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_shows import WindowShows
@@ -84,7 +85,15 @@ from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS
 CARD_READS = ["agent limits", "setting show", "agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "message agent-reports", "hook-call feed", "output hook-page", "task show", "task list", "process-part list"]
 CARD_EVENTS = ["setting.*", "agent.*", "hook_call.*", "task.*", "process_part.*", "message.*"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("reports", "Reports", "message agent-reports", "reports"), WindowTab("transcript", "Transcript", "agent transcript")]
-CARD_KEYS = [WindowKey("reports", "message agent-reports", events=["message.*"], arguments=["agent"]), WindowKey("terminal-output.*", "output hook-page {id}", arguments=["before", "after"])]
+CARD_KEYS = [WindowKey("reports", "message agent-reports", tab="reports", events=["message.*"], arguments=["agent"]),
+             WindowKey("agents", "agent cards", events=["agent.*", "task.*", "hook_call.*"], arguments=["show", "search", "limit", "roles", "profiles", "programs"]),
+             WindowKey("filters", "agent cards --options", events=["agent.*"]),
+             WindowKey("programs", "agent programs"),
+             WindowKey("limits", "agent limits", events=["agent.*", "setting.*"]),
+             WindowKey("tool", "usage tool", loading=KeyLoading.REQUESTED, arguments=["agent"]),
+             WindowKey("transcript.*", "agent transcript {id}"),
+             WindowKey("jobs", "task list --state open --limit 100", loading=KeyLoading.REQUESTED, arguments=["page"]),
+             WindowKey("terminal-output.*", "output hook-page {id}", arguments=["before", "after"])]
 
 
 class AgentsModule(Module):
@@ -106,7 +115,7 @@ class AgentsModule(Module):
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],
                                  events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
-                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"])]
+                                 reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript {id}")])]
     listeners = [MenuAnswerMarkListener, EndedAgentProgramListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

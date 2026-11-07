@@ -145,26 +145,26 @@ def test_an_idle_agents_lost_text_reaches_the_chat_at_a_tick(builder, tmp_path, 
     expect_chat_count(builder, AGENT_TEXT, 1)
 
 
-def test_text_after_a_reply_shows_once_a_tool_follows_it(reply_story):
+def test_text_after_a_reply_shows_at_once_and_a_following_tool_does_not_repeat_it(reply_story):
     reply_story.hook("s-1", HookSamples.message_display(AGENT_TEXT))
-    expect_chat_count(reply_story, AGENT_TEXT, 0)
+    expect_chat_count(reply_story, AGENT_TEXT, 1)
     reply_story.hook("s-1", TOOL_FINISHED)
     reply_story.hook("s-1", TOOL_FINISHED)
     expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_second_text_after_a_reply_is_still_held_until_its_tool(reply_story):
+def test_a_second_text_after_a_reply_shows_at_once_too(reply_story):
     reply_story.hook("s-1", HookSamples.message_display("First part."))
     reply_story.hook("s-1", TOOL_FINISHED)
     reply_story.hook("s-1", HookSamples.message_display("All of it is in."))
     expect_chat_count(reply_story, "First part.", 1)
-    expect_chat_count(reply_story, "All of it is in.", 0)
+    expect_chat_count(reply_story, "All of it is in.", 1)
 
 
-def test_a_closing_line_after_a_reply_stays_out_of_the_chat(reply_story):
+def test_a_closing_line_after_a_reply_reaches_the_chat(reply_story):
     reply_story.hook("s-1", HookSamples.message_display("I told you where it stands."))
     reply_story.hook("s-1", HookSamples.stop())
-    expect_chat_count(reply_story, "I told you where it stands.", 0)
+    expect_chat_count(reply_story, "I told you where it stands.", 1)
 
 
 def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(reply_story, tmp_path):
@@ -172,9 +172,9 @@ def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(reply_story, tm
     expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_lost_closing_line_after_a_reply_stays_out_of_the_chat(reply_story, tmp_path):
+def test_a_lost_closing_line_after_a_reply_reaches_the_chat(reply_story, tmp_path):
     run_hook(reply_story, transcript(tmp_path, agent_row(reply_story, "I told you where it stands.")))
-    expect_chat_count(reply_story, "I told you where it stands.", 0)
+    expect_chat_count(reply_story, "I told you where it stands.", 1)
 
 
 def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchecked(server):
@@ -223,7 +223,7 @@ def test_a_lost_answer_file_that_cannot_be_retried_is_logged_and_removed_and_the
     answers_folder = lost_answers_folder(server.story)
     (answers_folder / file_name).touch()
     server.expect_hook_answer("/hook", hook_body(f"after-{file_name}"), 200, "new message 1")
-    server.story.expect_rows(not list(answers_folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.error_log_text())
+    server.story.expect_rows(not list(answers_folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.system_log_text())
 
 
 def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(builder):
@@ -236,7 +236,7 @@ def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(b
         retries.retry(builder.container)
         writer.rollback()
     answers_folder = lost_answers_folder(builder)
-    builder.expect_rows(list(answers_folder.iterdir()), "will retry at the next hook" in builder.error_log_text())
+    builder.expect_rows(list(answers_folder.iterdir()), "will retry at the next hook" in builder.system_log_text())
     retries.retry(builder.container)
     builder.expect_rows(not list(answers_folder.iterdir()))
 
@@ -262,3 +262,12 @@ def test_a_prompt_typed_in_the_terminal_shows_in_the_chat_as_the_users_message(b
     builder.expect_text("message show 1", "type: user", "text: please look at the cart", actor=builder.user)
 
 
+
+
+def test_a_lost_repeated_closing_line_stays_out_even_if_a_tool_follows(builder, tmp_path):
+    builder.run('message send "What happened?" --environment main', actor=builder.user)
+    builder.hook("s-1", HookSamples.prompt("go on"))
+    builder.run('message reply 1 "The worker has task 7246 and its tests passed."', actor=builder.agent)
+    text = "The worker has task 7246 and its tests passed."
+    run_hook(builder, transcript(tmp_path, agent_row(builder, text)), TOOL_FINISHED)
+    expect_chat_count(builder, text, 1)

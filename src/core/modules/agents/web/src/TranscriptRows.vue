@@ -1,18 +1,22 @@
 <script setup>
-import {computed, ref} from "vue";
-import {AutoScrollPane, Btn, RowList, WindowRoom, useRows} from "@journal/window-kit";
+import {computed, onUnmounted, ref} from "vue";
+import {AutoScrollPane, Btn, RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
 // shows Newest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
-const props = defineProps({line: {type: String, required: true}, agent: {type: Number, default: null}, padding: {type: String, default: "8px 22px 8px 27px"}, helper: Boolean});
-const {rows, failure, loaded, context} = useRows(props.line, ["hook_call.*"]);
+const props = defineProps({name: {type: String, required: true}, agent: {type: Number, default: null}, padding: {type: String, default: "8px 22px 8px 27px"}, helper: Boolean});
+const window = useWindow();
+const {rows, failure, loaded} = window.props[props.name];
+window.reload(props.name);
+const stopFollowing = window.follow(["hook_call.*"], () => window.reload(props.name));
+onUnmounted(() => stopFollowing?.());
 const message = ref("");
 const sending = ref(false);
 const sendFailure = ref("");
 async function send() {
     if (props.agent === null || !message.value.trim() || sending.value) return;
     sending.value = true;
-    const answer = await context.run(props.helper ? ["helper", "send", String(props.agent), message.value] : ["message", "send", message.value, "--target-agent", String(props.agent)]);
+    const answer = await window.run(props.helper ? ["helper", "send", String(props.agent), message.value] : ["message", "send", message.value, "--target-agent", String(props.agent)]);
     sendFailure.value = answer.ok ? "" : answer.error;
     if (answer.ok) message.value = "";
     sending.value = false;
@@ -56,6 +60,8 @@ const timeOf = (row) => (row.time ? new Date(row.time).toLocaleTimeString([], {h
     height: 100%;
     min-height: 0;
 }
+
+.transcript :deep(.row-list-row) { padding: 8px 14px; }
 
 .agent-message { display: flex; flex-wrap: wrap; flex: none; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); }
 .agent-message textarea { flex: 1; min-width: 0; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font: inherit; resize: vertical; }

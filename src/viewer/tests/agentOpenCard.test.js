@@ -4,6 +4,7 @@ import {afterEach, expect, test, vi} from "vitest";
 import {h} from "vue";
 import {context, mounted, page, settleTransition as settle} from "./support/codingWindowContext.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
+import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
 
 vi.stubGlobal("matchMedia", () => ({matches: true}));
 
@@ -30,8 +31,8 @@ const TABS = [
 ];
 const OPTIONS = {working: true, waiting: true, idle: true, stopped: true, environment: true, worker: true, helper: true, order: "number", every: false};
 const drawn = async () => {
-    const element = await mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, {
-        ...context({"agent list --show running --search \"worker\"": page(AGENTS.filter((row) => row.role === "worker")), "agent list": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
+    const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, {
+        ...context({"agent cards --show running --search worker": page(AGENTS.filter((row) => row.role === "worker")), "agent cards": page(AGENTS), "agent running": page(AGENTS), "usage agents --closed": page([]), "agent transcript 4": page([{id: 1, author: "user", text: "Read the cart"}])}),
         tabs: TABS,
         option: (key) => ({value: OPTIONS[key]}),
     });
@@ -41,6 +42,16 @@ const drawn = async () => {
 const cardOf = (element, id) => element.querySelector(`[data-agent-open="${id}"]`);
 const cards = (element) => [...element.querySelectorAll("[data-agent-open]")].map((card) => Number(card.dataset.agentOpen));
 const band = (element) => element.querySelector("[data-agents-held]");
+
+test("the opened agent card places its actions in the information bar and pads transcript rows", async () => {
+    const row = {...AGENTS[2], ended_at: "2026-11-01T10:00:00Z", job_command: ["worker", "send"], job_task_flag: "--task"};
+    const element = await mounted({render: () => h(AgentCard, {row, facts: {tasks: []}, open: true})}, {...context({}), tabs: TABS});
+    const bar = element.querySelector("[data-information-bar]");
+    expect(bar.querySelector("[data-agent-send-job]")).not.toBeNull();
+    expect(bar.querySelector("[data-agent-retire]")).not.toBeNull();
+    const transcript = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/TranscriptRows.vue"), "utf8");
+    expect(transcript).toMatch(/\.transcript :deep\(\.row-list-row\)\s*\{\s*padding:\s*8px 14px/);
+});
 
 test("every card is listed and there is no band while none is open", async () => {
     const element = await drawn();

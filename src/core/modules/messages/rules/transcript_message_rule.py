@@ -68,4 +68,4 @@ class TranscriptMessageRule(DriverRule):
     def is_filtered(self, hook: AgentHook, text: str, created_at: Timestamp) -> bool:
         if self.texts.is_acknowledgement(hook.agent_id, text, created_at):
             return True
-        return self.texts.has_recent_reply(hook.agent_id, created_at) and hook.event.tool is None and not self.hook_calls.has_tool_hook_after(hook.agent_id, created_at)
+        return self.texts.is_duplicate_reply(hook.agent_id, text, created_at)

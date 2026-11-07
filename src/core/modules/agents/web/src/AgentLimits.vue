@@ -2,9 +2,8 @@
 import {computed, ref} from "vue";
 import {Btn, Icon, TextInput, useWindow} from "@journal/window-kit";
 
-const context = useWindow();
-const rows = ref([]);
-const sources = ref({});
+const window = useWindow();
+const {rows, failure: readFailure} = window.props.limits;
 const open = ref(false);
 const editing = ref(false);
 const pending = ref(false);
@@ -27,27 +26,11 @@ const statusText = (row) => {
 };
 const barWidth = (count, limit) => limit ? `${Math.min(count / Math.max(count, limit) * 100, 100)}%` : "0%";
 const overflowWidth = (count, limit) => limit && count > limit ? `${(count - limit) / count * 100}%` : "0%";
-let latestRead = 0;
-async function load() {
-    const turn = ++latestRead;
-    const answer = await context.read("agent limits");
-    if (turn !== latestRead) return;
-    rows.value = answer.ok ? answer.value.rows : [];
-    failure.value = answer.ok ? "" : answer.error;
-}
-async function loadSources(turn) {
-    const values = await Promise.all(rows.value.flatMap((row) => [row.run_setting, row.kept_setting]).map(async (key) => {
-        const current = await context.read(`setting show ${key}`);
-        return [key, current.ok ? current.value.source : ""];
-    }));
-    if (turn === latestRead) sources.value = Object.fromEntries(values);
-}
-async function toggleEditing() {
+function toggleEditing() {
     editing.value = !editing.value;
-    if (editing.value) await loadSources(latestRead);
 }
 async function change(row, key, previous, event) {
-    if (pending.value || context.readOnly) return;
+    if (pending.value || window.readOnly) return;
     const value = Number(event.target.value);
     if (!Number.isInteger(value) || value < 0 || !event.target.value.trim()) {
         failure.value = "Use a whole number of 0 or more.";
@@ -57,20 +40,18 @@ async function change(row, key, previous, event) {
     pending.value = true;
     notice.value = "";
     try {
-        const answer = await context.run(["setting", "set", key, String(value), "--environment", context.environment]);
+        const answer = await window.run(["setting", "set", key, String(value), "--environment", window.environment]);
         failure.value = answer.ok ? "" : answer.error;
         if (!answer.ok) {
             event.target.value = String(previous);
             return;
         }
-        await load();
+        await window.reload("limits");
         notice.value = `${row.label} limits saved.`;
     } finally {
         pending.value = false;
     }
 }
-context.follow(["agent.*", "setting.*"], load);
-load();
 </script>
 
 <template>
@@ -85,7 +66,7 @@ load();
                 <Icon name="caret" :size="12" />
             </button>
             <div v-show="open" class="limits-panel">
-                <div class="limits-head"><strong>Agent limits</strong><Btn small :disabled="pending || context.readOnly" data-agent-limits-edit @click="toggleEditing">{{ editing ? 'Done' : 'Edit limits' }}</Btn></div>
+                <div class="limits-head"><strong>Agent limits</strong><Btn small :disabled="pending || window.readOnly" data-agent-limits-edit @click="toggleEditing">{{ editing ? 'Done' : 'Edit limits' }}</Btn></div>
                 <template v-if="!editing">
                     <div class="table-head"><span>Agent</span><span>Running</span><span>Kept</span><span>Status</span></div>
                     <template v-for="row in entries" :key="row.key">
@@ -101,15 +82,15 @@ load();
                     <template v-for="row in rows" :key="row.key">
                         <div class="edit-row" :data-agent-limit-type="row.key">
                             <strong>{{ row.label }}</strong>
-                            <label class="limit-field"><span>Running<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.run_limit)" :disabled="pending || context.readOnly" :data-agent-run-limit="row.key" @change="change(row, row.run_setting, row.run_limit, $event)" /><small>{{ sources[row.run_setting] }}</small></label>
-                            <label class="limit-field"><span>Kept<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.kept_limit)" :disabled="pending || context.readOnly" :data-agent-kept-limit="row.key" @change="change(row, row.kept_setting, row.kept_limit, $event)" /><small>{{ sources[row.kept_setting] }}</small></label>
+                            <label class="limit-field"><span>Running<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.run_limit)" :disabled="pending || window.readOnly" :data-agent-run-limit="row.key" @change="change(row, row.run_setting, row.run_limit, $event)" /><small>{{ row.run_source }}</small></label>
+                            <label class="limit-field"><span>Kept<template v-if="row.per_profile"> per profile</template></span><TextInput type="number" min="0" :value="String(row.kept_limit)" :disabled="pending || window.readOnly" :data-agent-kept-limit="row.key" @change="change(row, row.kept_setting, row.kept_limit, $event)" /><small>{{ row.kept_source }}</small></label>
                         </div>
                     </template>
-                    <p>Running 0 starts no agents. Kept 0 means no limit. Changes apply to {{ context.environment }}.</p>
+                    <p>Running 0 starts no agents. Kept 0 means no limit. Changes apply to {{ window.environment }}.</p>
                 </template>
             </div>
         </template>
-        <template v-if="failure"><p role="alert">{{ failure }}</p></template>
+        <template v-if="failure || readFailure"><p role="alert">{{ failure || readFailure }}</p></template>
         <template v-if="notice"><p role="status">{{ notice }}</p></template>
     </section>
 </template>

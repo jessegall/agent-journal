@@ -29,7 +29,8 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
         if command.job_id is not None:
             job = self.rows.required(HelperJob, command.job_id)
             self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id), context)
-        self.notify_receiver(command, message, context)
+        if command.tells_receiver:
+            self.notify_receiver(command, message, context)
         return message
 
     def notify_receiver(self, command: RecordParentReport, message: Message, context: Context) -> None:

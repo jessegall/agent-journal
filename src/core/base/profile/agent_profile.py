@@ -14,6 +14,7 @@ class AgentProfile:
     agent_type: str = "helper"
     access: Access | None = None
     program: str = ""
+    program_if_possible: bool = False
     model: str = ""
     codex_model: str = ""
     independent: bool = False
@@ -29,6 +30,7 @@ class AgentProfile:
     uses: int = 0
     last_used: int = 0
     title: str = ""
+    reports_to_parent: bool = True
 
     @property
     def display_title(self) -> str:

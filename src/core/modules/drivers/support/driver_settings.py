@@ -13,7 +13,7 @@ ALLOWANCE_SETTINGS = f"{MODULE_KEY}.essential."
 DRIVERS_SETTINGS = [
     SettingValue("suite", "Suite", "The set of agent roles and workflows available in this environment.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT, person_set=True),
     SettingValue("hook-wait-seconds", "Tool call wait", "Seconds to wait for the journal before allowing a tool call without checks.", SettingType.NUMBER, default=5, scope=SettingScope.PROJECT),
-    SettingValue("block-card-seconds", "Hold before Blocked", "Seconds the journal holds an agent before its card says Blocked, unless its task is blocked.", SettingType.NUMBER, default=120,
+    SettingValue("block-card-seconds", "Hold before Blocked", "Seconds the journal holds an agent before its card shows Blocked, unless its task is blocked.", SettingType.NUMBER, default=120,
                  scope=SettingScope.PROJECT),
     SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=30,
                  scope=SettingScope.PROJECT),

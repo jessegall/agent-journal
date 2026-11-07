@@ -5,7 +5,7 @@ import AgentJobForm from "./AgentJobForm.vue";
 import AgentRetireForm from "./AgentRetireForm.vue";
 
 const props = defineProps({row: {type: Object, required: true}});
-const context = useWindow();
+const window = useWindow();
 const mode = ref("");
 const text = ref("");
 const reason = ref("");
@@ -42,12 +42,14 @@ async function readTasks() {
     if (loading.value) return;
     loading.value = true;
     try {
-        const answer = await context.read(`task list --state open --limit 100 --page ${taskPage.value + 1}`);
-        failure.value = answer.ok ? "" : answer.error;
-        if (answer.ok) {
-            tasks.value = [...tasks.value, ...answer.value.rows];
-            taskPage.value = answer.value.page;
-            moreTasks.value = answer.value.page * answer.value.size < answer.value.total;
+        window.state["jobs.page"] = String(taskPage.value + 1);
+        await window.reload("jobs");
+        const jobs = window.props.jobs;
+        failure.value = jobs.failure.value;
+        if (!failure.value) {
+            tasks.value = [...tasks.value, ...jobs.rows.value];
+            taskPage.value = jobs.data.value.page;
+            moreTasks.value = jobs.more.value;
         }
     } finally {
         loading.value = false;
@@ -58,7 +60,7 @@ async function run(command, success) {
     pending.value = true;
     failure.value = "";
     try {
-        const answer = await context.run(command);
+        const answer = await window.run(command);
         failure.value = answer.ok ? "" : answer.error;
         if (answer.ok) {
             choose("");
@@ -103,7 +105,7 @@ async function retire() {
 </template>
 
 <style scoped>
-.agent-actions { display: flex; flex-direction: column; gap: 6px; margin: 5px 0 0 16px; font-size: 12px; }
+.agent-actions { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
 .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
 p { margin: 0; color: var(--text-2); }
 [role="alert"] { color: var(--danger); }

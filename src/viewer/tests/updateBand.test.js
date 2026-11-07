@@ -1,15 +1,23 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import UpdateBand from "../src/shell/UpdateBand.vue";
-import {settle} from "./support/windowContext.js";
+import {WINDOW_CONTEXT} from "@journal/window-kit";
+import {context, settle} from "./support/windowContext.js";
 
-afterEach(() => (document.body.innerHTML = ""));
+const apps = [];
+afterEach(() => {
+    apps.splice(0).forEach((app) => app.unmount());
+    document.body.innerHTML = "";
+});
 
 
 async function drawn(answers) {
     const ran = [];
     const element = document.createElement("div");
-    createApp({render: () => h(UpdateBand, {run: async (line) => (ran.push(line.join(" ")), answers[line[1]])})}).mount(element);
+    const app = createApp({render: () => h(UpdateBand, {run: async (line) => (ran.push(line.join(" ")), answers[line[1]])})});
+    app.provide(WINDOW_CONTEXT, context({"update check": answers.check}, null, {update: {line: "update check"}}));
+    app.mount(element);
+    apps.push(app);
     await settle();
     return {element, ran};
 }

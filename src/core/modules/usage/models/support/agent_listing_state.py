@@ -24,9 +24,9 @@ class AgentListingState:
     started_task_id: int | None
     started_task_title: str
     tasks: str
-    blocked_since: str
+    block_started_at: str
     block_reason: str
-    holds_blocked_task: bool
+    task_blocked: bool
     last_activity: str
     job_model: str
     job_profile: str

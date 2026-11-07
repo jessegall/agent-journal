@@ -1,7 +1,7 @@
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.scope.actor_scope import ActorScope
-from core.modules.drivers.support.main_agent_line import MainAgentLine
+from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.base.change.moved import Moved
@@ -16,7 +16,7 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.block])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, main_agent_line: MainAgentLine) -> None:
+    def __init__(self, main_agent_line: MergerInbox) -> None:
         self.main_agent_line = main_agent_line
 
     def handle(self, event: Moved[Task], context: Context) -> None:

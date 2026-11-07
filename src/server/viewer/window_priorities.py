@@ -2,6 +2,7 @@ from core.base.journal_home import JournalHome
 from collections.abc import Sequence
 from functools import cached_property
 from core.base.module.module_finder import ModuleFinder
+from core.base.module.window_extensions import WindowExtensions
 from core.base.viewer.window_priority import WindowPriority
 from core.base.viewer.window_declaration import WindowDeclaration
 
@@ -14,7 +15,9 @@ class WindowPriorities:
 
     @cached_property
     def windows(self) -> tuple[WindowDeclaration, ...]:
-        return tuple(window for module in self.finder.modules() for window in module.windows)
+        modules = self.finder.modules()
+        extensions = WindowExtensions(modules)
+        return tuple(extensions.extend(window) for module in modules for window in module.windows)
 
     @cached_property
     def declared(self) -> dict[str, WindowPriority]:

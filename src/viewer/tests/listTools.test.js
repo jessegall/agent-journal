@@ -5,6 +5,7 @@ import {expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
 import {templateWindowContext} from "./support/templateWindowContext.js";
+import {checkWindowContext} from "./support/checkWindowContext.js";
 import {phoneWindowContext} from "./support/phoneWindowContext.js";
 import {useListTools} from "../kit/useListTools.js";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
@@ -82,6 +83,7 @@ test.each([
     const contexts = new Map([
         [DumpRows, dumpWindowContext],
         [TemplateCards, templateWindowContext],
+        [CheckCards, checkWindowContext],
         [PhoneRows, phoneWindowContext],
         [Outputs, commandsWindowContext],
         [ReviewerSteps, reviewerWindowContext],

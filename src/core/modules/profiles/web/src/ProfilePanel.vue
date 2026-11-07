@@ -6,9 +6,10 @@ const props = defineProps({profile: {type: Object, required: true}, used: {type:
 const emit = defineEmits(["close", "save", "reset"]);
 
 const WRITING = "writing";
+const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
 const PROGRAMS = [{key: "", label: "The parent's program"}, {key: "claude", label: "Claude Code"}, {key: "codex", label: "Codex"}];
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "independent", "mcp_tools", "model", "codex_model", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "model", "codex_model", "body"];
 
 const draft = ref({});
 watch(
@@ -66,6 +67,11 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField label="Program" for="profile-program" help="Claude Code or Codex, or the same program as the agent that starts it.">
                 <Segmented :options="PROGRAMS" :value="draft.program" @pick="draft.program = $event" />
             </FormField>
+            <template v-if="draft.program">
+                <FormField label="When it cannot start" for="profile-program-choice" help="If possible: a start uses the other program, on its model, when this one is not installed or not ready, and says so.">
+                    <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.program_if_possible ? 'possible' : 'always'" @pick="draft.program_if_possible = $event === 'possible'" />
+                </FormField>
+            </template>
             <FormField label="Model on Claude Code" for="profile-model" help="The least expensive model that reliably fits the work.">
                 <ModelPicker provider="claude" inherits :value="draft.model" data-profile-model="claude" @pick="draft.model = $event" />
             </FormField>

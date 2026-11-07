@@ -7,7 +7,8 @@ from core.modules.helpers.support.agent_use import AgentUse
 
 
 class AgentMixSubcommand(ReadSubcommand[str]):
-    """`journal agent mix`: the jobs of each kind of agent by model lately, and the agents kept of it, to decide what to retire."""
+    """`journal agent mix`: the jobs of each type of agent by model lately, and the agents kept of it, to decide
+    what to retire."""
 
     cli_name = "agent"
     name = "mix"

@@ -56,6 +56,7 @@ from core.modules.messages.listeners.allowed_stop_listener import AllowedStopLis
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.listeners.message_rows_listener import MessageRowsListener
+from core.modules.messages.listeners.report_pin_listener import ReportPinListener
 from core.modules.environments.support.environment_activity import EnvironmentActivity
 from core.modules.messages.bindings.message_environment_activity import MessageEnvironmentActivity
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
@@ -146,5 +147,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
+    listeners = [ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, AllowedStopListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener]
     seeders = [MessagesSeeder]

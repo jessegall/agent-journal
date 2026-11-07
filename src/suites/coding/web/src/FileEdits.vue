@@ -1,8 +1,9 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, SearchBar, WindowRoom, useRows} from "@journal/window-kit";
+import {RowList, SearchBar, WindowRoom, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded, more, older} = useRows("file-edit list", ["file_edit.create"], {incremental: true});
+const window = useWindow();
+const {rows, failure, loaded, more, older} = window.props.edits;
 const filter = ref("");
 const shown = computed(() => {
     const wanted = filter.value.trim().toLowerCase();

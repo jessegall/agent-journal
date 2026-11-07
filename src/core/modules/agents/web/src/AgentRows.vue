@@ -1,14 +1,15 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
-import {READ_RATES, coalesced, Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useDeclaredRows, useRows, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 import AgentLimits from "./AgentLimits.vue";
 
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
-const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
-const {rows: facts} = useRows("usage agents --closed", ["agent.*", "task.*", "hook_call.*", "helper_job.*"]);
-const {rows: waits} = useDeclaredRows("waits");
-const {rows: progress} = useDeclaredRows("progress");
+const props = defineProps({empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
+const window = useWindow();
+const {rows: waits} = window.props.waits;
+const {rows: progress} = window.props.progress;
+const {rows, failure, loaded, more} = window.props.agents;
 const progressOf = (row) => progress.value.find((progress) => progress.agent_id === row.id) ?? null;
 const waitReasonOf = (row) => waits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
 const show = ref("running");
@@ -16,54 +17,32 @@ const words = ref("");
 const FILTER_KEY = "journal.agents.filters";
 const savedFilters = JSON.parse(localStorage.getItem(FILTER_KEY) || '{"roles":[],"profiles":[],"programs":[]}');
 const filters = ref(savedFilters);
-const filterOptions = ref({roles: [], profiles: [], states: [], upgrade_retired: 0});
-const programs = ref([]);
+const filterOptions = computed(() => window.props.filters.data.value ?? {roles: [], profiles: [], states: [], upgrade_retired: 0});
+const {rows: programs} = window.props.programs;
 const filterCount = computed(() => filters.value.roles.length + filters.value.profiles.length + filters.value.programs.length);
 const updateFilter = (group, value) => { filters.value = toggleFilter(filters.value, group, value); };
 const clearFilters = () => { filters.value = {roles: [], profiles: [], programs: []}; };
 const label = (value) => value.slice(0, 1).toUpperCase() + value.slice(1);
 watch(filters, (value) => localStorage.setItem(FILTER_KEY, JSON.stringify(value)));
 
-const context = useWindow();
-async function readFilterOptions() {
-    const [options, installed] = await Promise.all([context.read("agent cards --options"), context.read("agent programs")]);
-    if (options.ok) filterOptions.value = options.value;
-    if (installed.ok) programs.value = installed.value.rows;
-}
-context.follow(["agent.*"], readFilterOptions);
-readFilterOptions();
-const rows = ref([]);
-const failure = ref("");
-const loaded = ref(false);
-const more = ref(false);
 const limit = ref(25);
-let latestRead = 0;
-async function load() {
-    const turn = ++latestRead;
-    const selected = [
-        ...filters.value.roles.map((value) => `--role ${JSON.stringify(value)}`),
-        ...filters.value.profiles.map((value) => `--profile ${JSON.stringify(value)}`),
-        ...filters.value.programs.map((value) => `--program ${JSON.stringify(value)}`),
-    ].join(" ");
-    const answer = await context.read(`${props.line} --show ${show.value} --search ${JSON.stringify(words.value)} --limit ${limit.value} ${selected}`);
-    if (turn !== latestRead) return;
-    rows.value = answer.ok ? answer.value.rows : [];
-    failure.value = answer.ok ? "" : answer.error;
-    more.value = answer.ok && answer.value.page * answer.value.size < answer.value.total;
-    loaded.value = true;
+function setState() {
+    Object.assign(window.state, {"agents.show": show.value, "agents.search": words.value, "agents.limit": String(limit.value),
+        "agents.roles": filters.value.roles.join(","), "agents.profiles": filters.value.profiles.join(","), "agents.programs": filters.value.programs.join(",")});
 }
 async function older() {
     limit.value += 25;
-    await load();
+    setState();
+    await window.reload("agents");
     return true;
 }
 watch([show, words, filters], () => {
     limit.value = 25;
-    load();
+    setState();
+    window.reload("agents");
 });
-context.follow(["agent.*", "task.*", ...context.sources.flatMap((source) => source.events)], coalesced(load, READ_RATES.pageOfAgents));
-load();
-const factsOf = (row) => facts.value.find((fact) => fact.id === row.id) ?? row.facts ?? null;
+setState();
+const factsOf = (row) => row.facts ?? null;
 const shown = rows;
 // a search is what makes an empty list mean nothing matches; the tab alone does not
 const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);
@@ -76,7 +55,7 @@ const list = ref(null);
 const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
-const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = () => globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let changing = false;
 let scrollTop = 0;
 async function open(row) {
@@ -131,8 +110,8 @@ const toggle = (row) => { if (openId.value === row.id) return close(); return op
 watch(words, (typed) => typed.trim() && (openId.value = null));
 watch(show, () => { openId.value = null; });
 const closeOnEscape = (event) => { if (event.key === "Escape") close(); };
-window.addEventListener("keydown", closeOnEscape);
-onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
+globalThis.addEventListener("keydown", closeOnEscape);
+onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>
