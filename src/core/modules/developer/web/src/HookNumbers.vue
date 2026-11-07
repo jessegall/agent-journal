@@ -1,24 +1,25 @@
 <script setup>
 import {computed, ref} from "vue";
-import {READ_RATES, Btn, WindowRoom, usePoll, useReadLine, useWindow} from "@journal/window-kit";
+import {Btn, WindowRoom, useWindow} from "@journal/window-kit";
 
-const context = useWindow();
+const window = useWindow();
 const costliestFirst = ref(false);
-const {value: numbers, failure, load} = useReadLine(() => `developer numbers${costliestFirst.value ? " --costliest" : ""}`);
+const {data: numbers, failure} = window.props.numbers;
+const load = () => window.reload("numbers");
 const rows = computed(() => numbers.value?.rows ?? []);
 
 function sortByCost() {
     costliestFirst.value = !costliestFirst.value;
+    window.state["numbers.costliest"] = String(costliestFirst.value);
     load();
 }
 
 async function reset() {
-    const answer = await context.run(["developer", "reset-numbers"]);
+    const answer = await window.run(["developer", "reset-numbers"]);
     failure.value = answer.ok ? "" : answer.error;
     load();
 }
 
-usePoll(load, () => true, READ_RATES.numbers);
 </script>
 
 <template>

@@ -20,7 +20,11 @@ const WINDOW_KEYS = {
 
 const ID_KEY_LINES = {dock: "dock-item read", output: "output page", run: "process card", question: "question show"};
 const keyLine = (name, keys) => keys[name]?.line ?? keys[`${name.split(".")[0]}.*`]?.line.replace("{id}", name.slice(name.indexOf(".") + 1)) ?? `${ID_KEY_LINES[name.split(".")[0]]} ${name.slice(name.indexOf(".") + 1)}`;
-const keyFlags = (name, state, line) => Object.entries(state).filter(([flag]) => flag.startsWith(`${name}.`) && !line.includes(`{${flag.slice(name.length + 1)}}`)).map(([flag, value]) => ` --${flag.slice(name.length + 1)} ${value}`).join("");
+const keyFlags = (name, state, line, switches) => Object.entries(state).filter(([flag]) => flag.startsWith(`${name}.`) && !line.includes(`{${flag.slice(name.length + 1)}}`)).flatMap(([flag, value]) => {
+    const field = flag.slice(name.length + 1);
+    if (switches.includes(field)) return value === "true" ? [` --${field}`] : [];
+    return [` --${field} ${value}`];
+}).join("");
 
 export function context(answers, agent = null, keys = WINDOW_KEYS) {
     const reads = [];
@@ -47,7 +51,7 @@ export function context(answers, agent = null, keys = WINDOW_KEYS) {
                 const key = keys[name] ?? keys[`${name.split(".")[0]}.*`];
                 const line = keyLine(name, keys);
                 const filled = line.replace(/\{([^}]+)\}/g, (place, flag) => state[`${name}.${flag}`] ?? state[flag] ?? place);
-                return this.read(`${filled}${keyFlags(name, state, line)}${key?.page_size && !(`${name}.limit` in state) ? ` --limit ${key.page_size}` : ""}`);
+                return this.read(`${filled}${keyFlags(name, state, line, key?.switches ?? [])}${key?.page_size && !(`${name}.limit` in state) ? ` --limit ${key.page_size}` : ""}`);
             }));
             const declared = Object.fromEntries(Object.entries(keys).map(([name, key]) => [name, {tab: key.tab ?? null, events: key.events ?? [], reload_seconds: 0, loading: key.loading ?? "first", page_size: key.page_size ?? 0}]));
             return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};
