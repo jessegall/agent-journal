@@ -1,10 +1,10 @@
 <script setup>
-import {computed, inject, nextTick, ref, watch} from "vue";
+import {computed, inject, nextTick, onBeforeUnmount, onMounted, ref, watch} from "vue";
 import Icon from "../src/kit/Icon.vue";
 import {WINDOW_CONTEXT} from "./windowContextKey.js";
 
-// a list that stays at the end its window declares as rows arrive: scrolling away stops that and shows a Newest button, and the button or
-// reaching that end again starts it
+// a list that stays at the end its window declares as rows arrive and as its content changes size (a saved view or a font that lands after
+// the rows): scrolling away stops that and shows a Newest button, and the button or reaching that end again starts it
 const EDGE_PIXELS = 40;
 const TOP = "top";
 const props = defineProps({rowCount: {type: Number, default: 0}, paneClass: {type: String, default: ""}});
@@ -24,6 +24,16 @@ watch(() => props.rowCount, async () => {
     await nextTick();
     if (!paused.value && pane.value) pane.value.scrollTop = edgeTop();
 }, {immediate: true, flush: "post"});
+
+let contentWatch = null;
+onMounted(() => {
+    if (typeof MutationObserver === "undefined") return;
+    contentWatch = new MutationObserver(() => {
+        if (!paused.value && pane.value) pane.value.scrollTop = edgeTop();
+    });
+    contentWatch.observe(pane.value, {childList: true, subtree: true, attributes: true, characterData: true});
+});
+onBeforeUnmount(() => contentWatch?.disconnect());
 
 defineExpose({pane});
 </script>

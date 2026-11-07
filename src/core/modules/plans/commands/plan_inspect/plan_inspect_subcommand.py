@@ -4,7 +4,9 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.plan import Plan
+from core.modules.plans.support.plan_assignee import PlanAssignee
 from core.modules.plans.support.plan_inspection import PlanInspection
 from core.modules.plans.support.plan_outlines import PlanOutlines
 
@@ -23,7 +25,10 @@ class PlanInspectSubcommand(ReadSubcommand[PlanInspection]):
         parser.add_argument("plan_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanInspection:
-        return PlanInspection(self.queries.query(Plan).find(arguments.plan_id), self.outlines.outline(arguments.plan_id))
+        plan = self.queries.query(Plan).find(arguments.plan_id)
+        assignee_id = PlanAssignee.agent_id(plan)
+        assignee = self.queries.query(Agent).find(assignee_id) if assignee_id is not None else None
+        return PlanInspection(plan, self.outlines.outline(arguments.plan_id), assignee)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanInspection):

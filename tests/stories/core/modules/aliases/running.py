@@ -117,3 +117,14 @@ def expect_tests(story, expected) -> None:
 def expect_shell_aliases(aliases, text, text_2, caller, worktree, expected) -> None:
     actual = aliases.shell_run([text, text_2], caller, worktree).line
     assert actual == expected, actual
+
+
+def test_a_workers_alias_runs_in_its_worktree_and_the_main_agents_in_the_folder_it_asked_from(new_story):
+    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    story.run('alias add sins "echo judged" --agents', actor=story.agent)
+    aliases = story.container.get(ShellAliases)
+    from_main = CallerRequest(folder=str(repository.folder))
+    expect_row(aliases.shell_run(["sins"], Caller(worker), from_main), folder=str(repository.worktree_folder(worker.id).resolve()))
+    expect_row(aliases.shell_run(["sins"], Caller(story.agent), from_main), folder=str(repository.folder))

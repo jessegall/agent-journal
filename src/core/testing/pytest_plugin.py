@@ -57,8 +57,9 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
     item: pytest.Item = getattr(request, "node")
     created = item.stash[STORY_RUNS]
 
-    def started(*modules: str, fixture: type[StoryFixture] | None = None) -> Story:
+    def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
+        story.environment = environment
         created.append(StorySteps(story))
         return story
     yield started

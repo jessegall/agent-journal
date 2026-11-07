@@ -55,3 +55,15 @@ test("a window that follows the top stays at the top", async () => {
     await scrolledTo(pane, 300);
     expect(newest(element).style.display).not.toBe("none");
 });
+
+test("content that changes size with no new row keeps a pane at its edge, and a pane scrolled away stays", async () => {
+    const {pane} = mountedPane("bottom");
+    pane.scrollTop = 0;
+    pane.appendChild(document.createElement("p"));
+    await settle();
+    expect(pane.scrollTop).toBe(1000);
+    await scrolledTo(pane, 200);
+    pane.appendChild(document.createElement("p"));
+    await settle();
+    expect(pane.scrollTop).toBe(200);
+});
