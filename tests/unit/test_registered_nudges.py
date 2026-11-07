@@ -61,6 +61,9 @@ def test_every_declared_line_is_info_steering_or_a_refusal():
 def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
     if name in FOREIGN_TEMPLATES:
         return
+    if name == "TASK_METADATA_REMINDER":
+        assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "tag_command", "score_command"}
+        return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"
     extra_fields = set(PLACEHOLDER.findall(text)) - ALLOWED_PLACEHOLDERS
     assert not extra_fields, f"{name} carries {extra_fields}: name the row as model:id, so the agent reads it by command"

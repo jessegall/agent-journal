@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from argparse import Namespace
 
 from core.base.agent_role import AgentRole
-from core.base.agent_work import AgentWork
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.caller.caller import Caller
@@ -30,15 +29,16 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, work: AgentWork) -> None:
-        self.activity, self.work = activity, work
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity) -> None:
+        self.activity = activity
         self.queries, self.agents, self.files = queries, agents, files
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
-        opened = tuple(self.agents.matching(self.activity).oldest().all_rows())
+        activity = self.activity.current()
+        opened = tuple(self.agents.matching(activity).oldest().all_rows())
         counted = (*opened, *self.ended_helpers(self.agents, opened))
         statuses = {agent.session: self.files.status(agent.session) for agent in counted}
-        return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses))
+        return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses), activity.pending)
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
@@ -49,7 +49,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         if not isinstance(value, EnvironmentUsage):
             return
         compactions = self.last_compactions([agent for agent, _ in value.agents])
-        pending = self.work.pending()
+        pending = value.pending_work
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
