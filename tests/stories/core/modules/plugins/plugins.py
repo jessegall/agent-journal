@@ -1,4 +1,6 @@
-from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
+import json
+
+from tests.stories.core.modules.plugins.support.plugin_samples import MANIFEST, sample_plugin_folder
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -51,3 +53,20 @@ def test_disable_switches_a_plugin_off_and_remove_keeps_its_data_unless_purged(n
 def test_with_no_plugin_installed_the_list_says_so(new_story):
     story = plugin_story(new_story)
     story.expect_text("plugin list", "no plugin is installed", actor=story.user)
+
+
+def test_a_plugin_with_a_manifest_for_this_journal_version_installs_from_that_manifest(new_story):
+    story = plugin_story(new_story)
+    (story.plugin_folder / "journal-plugin.5.json").write_text(json.dumps({**MANIFEST, "version": "2.0.0"}))
+    (story.plugin_folder / "journal-plugin.9.json").write_text(json.dumps({**MANIFEST, "version": "9.0.0"}))
+    story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
+    story.expect_text("plugin list", "sample", "2.0.0", actor=story.user)
+    installed = story.home.folder / "plugins" / "sample"
+    story.expect_rows((installed / "journal-plugin.json").is_file(), (installed / "journal-plugin.5.json").is_file(), (installed / "journal-plugin.9.json").is_file())
+
+
+def test_a_plugin_whose_manifests_are_all_for_a_newer_journal_is_refused_plainly(new_story):
+    story = plugin_story(new_story)
+    (story.plugin_folder / "journal-plugin.json").unlink()
+    (story.plugin_folder / "journal-plugin.9.json").write_text(json.dumps(MANIFEST))
+    story.expect_refusal(f"plugin install {story.plugin_folder} --yes", "is for a newer journal: the lowest is for 9, this journal is 5.0.0", actor=story.user)
