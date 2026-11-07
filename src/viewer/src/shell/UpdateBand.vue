@@ -1,17 +1,18 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {ref, watch} from "vue";
+import {useWindow} from "@journal/window-kit";
 import Btn from "../kit/Btn.vue";
 
 // the band that says a newer release is out, with the way to install it; a check that cannot answer shows nothing
 const props = defineProps({run: {type: Function, required: true}});
+const window = useWindow();
 const available = ref(false);
 const installing = ref(false);
 const failure = ref("");
 
-onMounted(async () => {
-    const answer = await props.run(["update", "check"]);
-    available.value = answer.ok && answer.value.is_current === false;
-});
+watch(window.props.update.data, (standing) => {
+    available.value = standing?.is_current === false;
+}, {immediate: true});
 
 async function install() {
     installing.value = true;

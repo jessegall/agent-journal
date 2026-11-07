@@ -1,7 +1,7 @@
 // a read asked for by events: it runs at once when the last run is older than `gap` milliseconds, and else once when the gap has passed, however many asked meanwhile
 // while a read is in flight none starts beside it: one asked meanwhile runs after it has answered or failed
-export function coalesced(read, gap) {
-    let last = 0;
+export function coalesced(read, gap, lastReadAt = 0) {
+    let last = lastReadAt;
     let timer = null;
     let flying = false;
     let again = false;

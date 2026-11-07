@@ -81,3 +81,16 @@ test("the wait counts from when the answer arrived, not from when the read began
     await vi.advanceTimersByTimeAsync(1);
     expect(read).toHaveBeenCalledTimes(2);
 });
+
+
+test("a read already made waits the full gap before an event reads again", async () => {
+    const read = vi.fn();
+    const ask = coalesced(read, 5000, Date.now());
+    ask();
+    ask();
+    await vi.advanceTimersByTimeAsync(4999);
+    expect(read).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(read).toHaveBeenCalledTimes(1);
+    ask.cancel();
+});

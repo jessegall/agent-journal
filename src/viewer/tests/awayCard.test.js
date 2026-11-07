@@ -1,9 +1,13 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import AwayCard from "../src/shell/AwayCard.vue";
+import {WINDOW_CONTEXT} from "@journal/window-kit";
+import {ref} from "vue";
 import SidebarPages from "../src/shell/SidebarPages.vue";
 
+const apps = [];
 afterEach(() => {
+    apps.splice(0).forEach((app) => app.unmount());
     document.body.innerHTML = "";
     vi.useRealTimers();
 });
@@ -20,7 +24,10 @@ function setHidden(hidden) {
 
 function drawn(rows) {
     const element = document.createElement("div");
-    createApp({render: () => h(AwayCard, {run: async () => ({ok: true, value: {rows}})})}).mount(element);
+    const app = createApp({render: () => h(AwayCard)});
+    app.provide(WINDOW_CONTEXT, {props: {pins: {data: ref(null), failure: ref("")}}, reload: async function () { this.props.pins.data.value = {rows}; }});
+    app.mount(element);
+    apps.push(app);
     return element;
 }
 

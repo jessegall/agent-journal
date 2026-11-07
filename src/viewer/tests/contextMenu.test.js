@@ -21,7 +21,7 @@ async function menu(last_compaction) {
     const run = async (line) => (line[1] === "controls" ? {ok: true, value: {groups: GROUPS}} : {ok: true, value: {rows: []}});
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, run, usage})}).mount(element);
+    createApp({render: () => h(InformationBar, {agent: {id: 7, ended_at: null, program: "claude", session: "s"}, run, usage, controlGroups: GROUPS})}).mount(element);
     await settle();
     element.querySelector('[data-fact="context"]').click();
     await settle();
