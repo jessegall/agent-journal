@@ -29,6 +29,9 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
+from tests.stories.core.modules.processes.support.process_samples import install_runner
+from core.base.driver.command_category import CommandCategory
+from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
@@ -356,3 +359,29 @@ def test_the_merger_is_told_to_read_a_merge_that_moved_to_the_background_before_
     story = new_story(fixture=OrchestratorWithOpenTask)
     profile = story.container.get(ProfileFiles).effective("journal-merger")
     story.expect_rows("journal output read <n> --summary" in profile.body, "never tell the main agent a merge is unconfirmed while its output still runs" in profile.body)
+
+
+def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_and_confirmed_by_next(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = merger_of(story)
+    install_runner(story)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    line = f"journal merger merge {worker.id}"
+    reply = story.hook(merger.session, HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, ["merger", "merge", str(worker.id)], subcommand="merger")))
+    rewritten = str(reply.updated_input)
+    story.expect_rows("--limit 0" in rewritten, "--queue" not in rewritten, "--background" not in rewritten)
+    actor = Actor(merger.id, ActorType.AGENT)
+    story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+    story.expect_text(f"merger merge {worker.id}", f"worker {worker.id} merged into", actor=actor)
+    story.expect_text("merger next", "no worker waits", actor=actor)
+    reports = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text]
+    story.expect_rows(len(reports) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
