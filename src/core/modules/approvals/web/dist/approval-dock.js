@@ -1,20 +1,20 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-4d58a6c44dda")) { const style = document.createElement("style"); style.id = "window-styles-4d58a6c44dda"; style.textContent = ".approval-question[data-v-846cdea4]{margin:4px 14px 8px 36px;white-space:pre-wrap}.approval-details[data-v-846cdea4]{margin:4px 14px 8px 36px}.approval-details pre[data-v-846cdea4]{white-space:pre-wrap;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-2effa0c7e648")) { const style = document.createElement("style"); style.id = "window-styles-2effa0c7e648"; style.textContent = ".approval-question[data-v-b72bd3c1]{margin:4px 14px 8px 36px;white-space:pre-wrap}.approval-details[data-v-b72bd3c1]{margin:4px 14px 8px 36px}.approval-details pre[data-v-b72bd3c1]{white-space:pre-wrap;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
 import { openBlock as i, createElementBlock as m, Fragment as d, createElementVNode as n, toDisplayString as c, unref as r, createCommentVNode as v } from "vue";
 import { useDockRow as f } from "@journal/window-kit";
-const g = (a, t) => {
-  const s = a.__vccOpts || a;
+const g = (s, t) => {
+  const a = s.__vccOpts || s;
   for (const [e, o] of t)
-    s[e] = o;
-  return s;
+    a[e] = o;
+  return a;
 }, k = {
   class: "approval-question",
   "data-approval-question": ""
 }, x = { class: "approval-details" }, y = { key: 0 }, D = {
   __name: "ApprovalDock",
-  setup(a) {
+  setup(s) {
     const t = f("approval");
-    return (s, e) => {
+    return (a, e) => {
       var o, p, l, u, _;
       return i(), m(d, null, [
         n("p", k, c((o = r(t)) == null ? void 0 : o.text), 1),
@@ -26,7 +26,7 @@ const g = (a, t) => {
       ], 64);
     };
   }
-}, A = /* @__PURE__ */ g(D, [["__scopeId", "data-v-846cdea4"]]);
+}, A = /* @__PURE__ */ g(D, [["__scopeId", "data-v-b72bd3c1"]]);
 export {
   A as default
 };
