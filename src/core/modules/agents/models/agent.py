@@ -3,11 +3,14 @@ from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import END_CHANGE, Model
 from core.base.timestamp import Timestamp
 from core.base.agent_policy import AgentPolicy
+from core.modules.agents.models.enums.agent_activity import AgentActivity
 
 AGENTS_TABLE = "agents"
 ENDED_FIELD = "ended_at"
 UPGRADE_RETIREMENT_REASON = "Over the kept limit at the upgrade to kept agents"
 PID_FIELD = "pid"
+MAIN_ROLE = "main"
+MAIN_TITLE = "Main agent"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -21,6 +24,7 @@ class Agent(EnvironmentScoped, Model):
     cli_name = "agent"
     search_fields = ["given_name", "program", "program_model", "profile", "session"]
     filter_fields = ["role"]
+    shown_properties = ("activity", "display_name")
 
     environment_id: int = 0
     parent_id: int | None = None
@@ -51,6 +55,18 @@ class Agent(EnvironmentScoped, Model):
 
     def retired(self, timestamp: Timestamp, reason: str, actor_id: int) -> "Agent":
         return self.changed(retired_at=timestamp, retirement_reason=reason, retiring_actor_id=actor_id)
+
+    @property
+    def activity(self) -> AgentActivity:
+        """Ended when its session ended, otherwise paused while it is held, otherwise working."""
+        if self.ended_at is not None:
+            return AgentActivity.ENDED
+        return AgentActivity.PAUSED if self.paused_at is not None else AgentActivity.WORKING
+
+    @property
+    def display_name(self) -> str:
+        """What the title band of its inspector says: the main agent has no number to say, any other says its role and number."""
+        return MAIN_TITLE if self.role == MAIN_ROLE else f"{self.role.capitalize()} {self.id}"
 
     @property
     def original_launch_name(self) -> str:
