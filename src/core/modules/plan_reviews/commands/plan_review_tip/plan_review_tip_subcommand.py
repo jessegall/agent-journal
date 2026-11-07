@@ -10,8 +10,8 @@ from core.modules.plans.models.plan import Plan
 
 
 class PlanReviewTipSubcommand(ReadSubcommand[ReviewTip]):
-    """`journal plan review-tip <n>`: how many reviewers are reading the plan, which have reported and which are still
-    reading in its latest review round; the tooltip of the 'under review' badge."""
+    """`journal plan review-tip <n>`: how many reviewers read the plan in its latest review round, which have
+    reported and which are still reading; the tooltip of the 'under review' badge."""
 
     cli_name = "plan"
     name = "review-tip"

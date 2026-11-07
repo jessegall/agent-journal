@@ -22,4 +22,4 @@ class MergerTestsPassedListener(CommitListener[Moved[Worktree]]):
         if not self.settings.flag(MERGER_ENABLED) or event.row.tests_passed_at is None or event.row.left_to_main_at is not None:
             return
         line = WORKER_TESTS_PASSED.nudge(worker=event.row.session_agent_id)
-        self.bus.run(StartMerger(line), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+        self.bus.run(StartMerger(line, event.row.tests_passed_at), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

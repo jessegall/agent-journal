@@ -9,7 +9,8 @@ from core.modules.drivers.models.agent_block import AgentBlock
 
 
 class CloseAgentBlockHandler(Handler[CloseAgentBlock, AgentBlock]):
-    """Keeps when a block ended and why it was skipped; only a block with a grace, or one declared skippable, is skipped, and a block ends once."""
+    """Keeps when a block ended and why it was skipped. Only a block with a grace, or one declared skippable,
+    is skipped, and a block ends once."""
 
     command = CloseAgentBlock
 

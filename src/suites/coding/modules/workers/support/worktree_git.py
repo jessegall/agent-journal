@@ -69,8 +69,8 @@ class WorktreeGit:
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
-    def commit_paths(self, folder: str, paths: tuple[str, ...], message: str) -> bool:
-        existing = tuple(path for path in paths if Path(folder, path).exists())
+    def commit_folders(self, folder: str, folders: tuple[str, ...], message: str) -> bool:
+        existing = tuple(name for name in folders if Path(folder, name).exists())
         if not existing:
             return False
         self.checked(folder, GIT_LIMIT_SECONDS, "add", "-A", "--", *existing)

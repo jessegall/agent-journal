@@ -22,8 +22,9 @@ class WindowLines:
     """Whether a window may run a command line for a person, or only a read for the main agent's own viewer
     session: the line parses, it is a read subcommand the window declares or a command it declares, or one of
     its own settings, it neither skips a guard nor names another environment, and the person has allowed it
-    unless the journal ships the window. Any window may read the line a state declares for its badge's tooltip. A line only a button allows answers to the module of that button, not
-    the window. It checks the parsed line, never its raw words."""
+    unless the journal ships the window. Any window may read the line a state declares for its badge's tooltip.
+    A line only a button allows answers to the module of that button, not the window. It checks the parsed line,
+    never its raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
                  active: ActiveModules, scopes: Scopes, exceptions: ExceptionSink) -> None:

@@ -93,6 +93,25 @@ def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
     story.expect_rows(lines.count(f"the tests of worker:{worker.id} all pass") == 1, detail=lines)
 
 
+def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_has_read_it(new_story, monkeypatch):
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
+    ended(story, started[0], 0)
+    main = hook_agent(story, story.hook("new-main", HookSamples.session_start()))
+    repository.checkout(ENVIRONMENT_BRANCH)
+
+    def fail_sandbox():
+        raise Refusal("sandbox unavailable")
+
+    monkeypatch.setattr(story.container.get(ShellSandbox), "check", fail_sandbox)
+    for _ in range(4):
+        MergerRetry()(story.container)
+        story.hook("new-main", HookSamples.prompt("go on"))
+        story.clock.advance(timedelta(minutes=1))
+    lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
+    story.expect_rows(lines.count(f"the tests of worker:{worker.id} all pass") == 1, detail=lines)
+
+
 @pytest.mark.parametrize("merger_on", [True, False])
 def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_on):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)

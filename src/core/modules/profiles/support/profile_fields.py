@@ -19,7 +19,7 @@ class ProfileFields(TypedDict, total=False):
     program_models: dict[str, str]
     independent: bool
     mcp_tools: tuple[str, ...]
-    write_paths: tuple[str, ...]
+    writable_folders: tuple[str, ...]
     module: str
     module_text: str
     source_digest: str

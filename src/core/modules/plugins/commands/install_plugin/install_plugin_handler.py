@@ -27,7 +27,8 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     requires are found and runs its setup
     steps there, before the install's transaction opens so a step may write to the journal itself, a
     failing one leaving nothing behind; then makes its data folder, saves the readers it ships and saves
-    it switched on with the settings its installed command answers. A name installed already is refused."""
+    it switched on with the digest of its files taken after its installed command ran, and with the settings
+    that command answers. A name installed already is refused."""
 
     command = InstallPlugin
     runs_once = True
@@ -63,10 +64,11 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
         self.readers.publish(folder, manifest.name, context)
+        settings = self.steps.installed_settings(manifest, folder)
         plugin = self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source,
                                              release=manifest.version, files_digest=PluginDigest.digest(folder, manifest)), context)
         declared = {setting.key for setting in manifest.settings}
-        for key, value in self.steps.installed_settings(manifest, folder).items():
+        for key, value in settings.items():
             if key in declared:
                 self.repository.save(PluginSetting(plugin_id=plugin.id, creator_id=context.actor.id, key=key, value=json.dumps(value)), context)
         return PluginInstall(manifest, command.source, True)

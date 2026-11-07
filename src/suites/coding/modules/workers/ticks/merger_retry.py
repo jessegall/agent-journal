@@ -42,4 +42,4 @@ class MergerRetry:
         if git.uncommitted_overlap(environment.folder, worktree):
             return
         line = WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id).text
-        container.get(Bus).run(StartMerger(line), Actor.core(), environment_id=worktree.environment_id)
+        container.get(Bus).run(StartMerger(line, worktree.tests_passed_at), Actor.core(), environment_id=worktree.environment_id)

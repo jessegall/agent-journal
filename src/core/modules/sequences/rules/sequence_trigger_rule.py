@@ -15,8 +15,7 @@ EMPTY_TRIGGERS = "[]"
 
 class SequenceTriggerRule(DriverRule):
     """A prompt or a finished tool call that matches a sequence's trigger starts that sequence for the agent whose
-    hook it is, whether main agent, helper or worker, on top of any run it has, unless that sequence already runs
-    for that agent."""
+    hook it is, on top of any run it has, unless that sequence already runs for that agent."""
 
     name = "sequences.triggers"
     hook = HookWildcard.ALL_HOOKS

@@ -21,7 +21,7 @@ class AgentProfile:
     tier: ModelTier | None = None
     independent: bool = False
     mcp_tools: tuple[str, ...] = ()
-    write_paths: tuple[str, ...] = ()
+    writable_folders: tuple[str, ...] = ()
     module: str = ""
     changed: tuple[str, ...] = ()
     module_text_changed: bool = False
@@ -49,4 +49,4 @@ class AgentProfile:
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "write_paths": tuple(fields.get("write_paths", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})
+        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "writable_folders": tuple(fields.get("writable_folders", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})
