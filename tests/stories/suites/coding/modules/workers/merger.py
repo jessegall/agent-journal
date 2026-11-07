@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.chat.models.chat_mark import ChatMark
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
@@ -64,6 +65,9 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
     story.expect_rows(f"worker:{worker.id}" not in lines, f"agent:{merger.id} reports" not in lines, detail=lines)
     story.expect_success(f'merger findings {worker.id} "Fix the merged code"', actor=actor)
+    story.run_listeners()
+    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
+    story.expect_rows(mark.detail == "Fix the merged code")
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=worker)
     story.expect_text("task list", "Fix the merged code", actor=worker)
 
@@ -89,6 +93,8 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     story.expect_text(f"agent-line list --agent {story.agent.id}", "Worker asks which reader to keep", actor=story.agent)
     story.expect_success(f'merger findings {worker.id} "The tax is added twice"', actor=merger)
     expect_marks_text(story, f"The merger sent Worker {worker.id} back")
+    mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
+    story.expect_rows(mark.detail == "The tax is added twice")
 
 
 def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(new_story):
@@ -120,22 +126,22 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         story.expect_success(f"agent exited {merger.id} 0")
         story.run_listeners()
         jobs = story.container.get(HelperJobRows)
-        before = len(jobs.helper_jobs(merger.id))
+        job_count = len(jobs.helper_jobs(merger.id))
         MergerRetry()(story.container)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
         lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
         story.expect_rows(lines.count("The merge waits for cart.py to be committed") == 1)
         repository.git("add", "cart.py")
         repository.git("commit", "-m", "Commit main change")
         repository.checkout("main")
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
         repository.checkout(ENVIRONMENT_BRANCH)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before + 1)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before + 1)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count + 1)
         story.expect_text("merger next", f"worker {worker.id}", actor=actor)
         story.expect_success(f"merger merge {worker.id}", actor=actor)
         story.expect_text("task show 1", "state: completed", actor=story.agent)

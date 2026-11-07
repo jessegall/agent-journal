@@ -125,14 +125,15 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         previous = self.task_sources.current(replace(context, actor=Actor(command.worker_id, ActorType.AGENT)))
         if self.is_gone:
             self.bus.dispatch(EndGoneWorker(command.worker_id), context)
+        if command.job:
+            self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
+                                         recipient=WorkerRecipient.text(command.worker_id)), context)
         if self.task_ids:
             return self.kept_tasks.handed(worker, worktree, self.task_ids, self.job_text(command, worktree), context)
         if worktree.state is WorktreeState.DELIVERED:
             self.advance.restart_task(worktree, self.rows.required(Task, worktree.task_id), context)
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
         job = self.job_text(command, worktree)
-        self.repository.save(Message(creator_id=context.actor.id, type=MessageType.PEER, text=command.job, read_at=context.timestamp, delivered_at=context.timestamp,
-                                     recipient=WorkerRecipient.text(command.worker_id)), context)
         line = self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)
         if resumed or source.changed(previous):
             self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=worktree.task_id,

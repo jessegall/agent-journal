@@ -28,4 +28,4 @@ class WorkerJobMarkListener(MarkListener[Created[Message]]):
         worker = self.event_rows.required(Agent, WorkerRecipient.worker_id(message.recipient))
         name = worker.given_name or f"Worker {worker.id}"
         text = f"The merger sent {name} back" if message.text.startswith(SENT_BACK_BY_MERGER) else f"{name} was sent its next job"
-        self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.NEXT_JOB, text, None, AGENTS_TABLE, worker.id, detail=message.text)
+        self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.NEXT_JOB, text, None, AGENTS_TABLE, worker.id, detail=message.text.removeprefix(SENT_BACK_BY_MERGER))
