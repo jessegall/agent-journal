@@ -24,7 +24,7 @@ const props = defineProps({
     events: {type: Function, default: followEvents},
 });
 
-const {catalogue, subscriptions, shellLine, prompts, stop, face} = startWindows(props);
+const {catalogue, subscriptions, shellLine, prompts, stop, face, journalVersion} = startWindows(props);
 provide(INSPECTOR_HOST, {catalogue, subscriptions, environment: props.environment, prompts, shellRead: shellLine});
 const {dock} = useViewTab(props.float);
 // the page shown: a click on another page in the sidebar changes only this, so the sidebar, the breadcrumb, the panel, the event stream and the
@@ -69,7 +69,7 @@ watchEffect(() => {
         <ButtonAllowance :prompts="prompts" />
         <template v-if="catalogue.offered.length">
             <template v-if="standalone">
-                <SidebarPages :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" />
+                <SidebarPages :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="page" :navigate="navigate" />
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">

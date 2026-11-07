@@ -13,7 +13,7 @@ const props = defineProps({
     session: {type: Function, default: readSession},
 });
 
-const {catalogue, subscriptions, shellLine, prompts, stop, face} = startWindows(props);
+const {catalogue, subscriptions, shellLine, prompts, stop, face, journalVersion} = startWindows(props);
 
 // a fixed list of windows (the windows query) is one row of panes in memory, never saved
 const row = (names) => (names.length < 2 ? {tabs: names, active: names[0]} : {dir: "row", r: 1 / names.length, a: {tabs: [names[0]], active: names[0]}, b: row(names.slice(1))});
@@ -34,7 +34,7 @@ store.load({environment: props.environment, person: 0, suite: "", page: "fixed",
 
 <template>
     <div class="window-shell" :data-face="face">
-        <PaneStage :face="face" :store="store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
+        <PaneStage :face="face" :journal-version="journalVersion" :store="store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
     </div>
 </template>
 
