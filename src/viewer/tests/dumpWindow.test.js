@@ -1,5 +1,6 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {dumpWindowContext} from "./support/dumpWindowContext.js";
 import DumpRows from "../../core/modules/dumps/web/src/DumpRows.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -12,7 +13,7 @@ const FILED = {id: 1, title: "Old notes", brief: "sort the old notes", outcome: 
 
 async function drawn(dumps = [FILING, FILED]) {
     const ran = [];
-    const window = context({"dump board": {ok: true, value: {total: dumps.length, dumps}}});
+    const window = dumpWindowContext({"dump board": {ok: true, value: {total: dumps.length, dumps}}});
     window.run = async (line) => (ran.push(line), {ok: true, value: null});
     return {element: await mounted(DumpRows, window), ran};
 }

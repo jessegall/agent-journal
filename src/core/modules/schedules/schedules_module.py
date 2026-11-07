@@ -5,6 +5,7 @@ from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -45,4 +46,5 @@ class SchedulesModule(Module):
     listeners = [EndedAgentJobsListener, JobRunMarkListener]
     marks = SCHEDULE_MARKS
     windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, skeleton=SCHEDULES_JOBS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.DROPDOWN, shows=WindowShows.SELECTED_AGENT,
-                                 reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"])]
+                                 reads=["scheduled-job running"], runs=["scheduled-job stop"], events=["scheduled_job.*"],
+                                 keys=[WindowKey("jobs", "scheduled-job running", arguments=["agent"], events=["scheduled_job.*"])])]
