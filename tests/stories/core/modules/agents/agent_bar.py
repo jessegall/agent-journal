@@ -97,12 +97,13 @@ def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(
     transaction_flags: list[bool] = []
     agent_id = story.new_row_id("agent start s-stopped claude worker --pid 4242 --environment main")
 
-    def stopped(pid: int, program: str) -> None:
+    def stopped(pid: int, program: str) -> bool:
         transaction_flags.append(database.has_transaction)
         story.expect_success(f"agent end {agent_id}", actor=Actor(agent_id, ActorType.AGENT))
+        return True
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)
-    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: ""))
+    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "claude" if pid == 4242 and not transaction_flags else ""))
     story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
     story.expect_rows(transaction_flags == [False])
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)

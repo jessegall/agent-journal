@@ -44,6 +44,8 @@ class ProfileFormat:
             fields["program_models"] = {name: "" if model == "inherit" else model for name, model in models.items()}
         if "mcp_tools" in fields:
             fields["mcp_tools"] = ProfileFormat.tools(fields["mcp_tools"])
+        if "write_paths" in fields:
+            fields["write_paths"] = ProfileFormat.tools(fields["write_paths"])
         return fields
 
     @staticmethod

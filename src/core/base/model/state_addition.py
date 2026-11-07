@@ -10,8 +10,8 @@ from core.base.model.move import Move
 @dataclass(frozen=True)
 class StateAddition:
     """A state a module adds to a state holder: its word, the existing state it looks like in the viewer, the state
-    its rows go to if the module leaves, whether a row in it can be edited or deleted, and the moves into and
-    out of it."""
+    its rows go to if the module leaves, whether a row in it can be edited or deleted, the moves into and
+    out of it, and the read line, with {row_id} for the row, that gives the tooltip of the state's badge."""
 
     holder: type[Model]
     state: AddedState
@@ -22,3 +22,4 @@ class StateAddition:
     editable: bool = False
     deletable: bool = False
     third_party: bool = False
+    tip_read: str = ""

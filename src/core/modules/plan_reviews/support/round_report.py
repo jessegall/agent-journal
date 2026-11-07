@@ -7,6 +7,7 @@ class RoundReport:
 
     id: int
     author: str
+    author_id: int
 
     def json(self) -> dict[str, object]:
         return {"id": self.id, "filed_by": self.author}

@@ -25,4 +25,4 @@ class TaskBlocksReviewed(BlockCondition):
     def pending(self, tasks: Sequence[TaskBlockReview]) -> bool:
         versions = dict(zip(self.numbers[::2], self.numbers[1::2]))
         return any(task.task_id in versions and task.state is TaskState.BLOCKED and not task.automatic
-                   and not task.user_wait and task.block_version <= versions[task.task_id] for task in tasks)
+                   and task.block_version <= versions[task.task_id] for task in tasks)

@@ -57,7 +57,7 @@ from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
-from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import LAUNCH_FAILURE_NUDGES
+from core.modules.agents.support.launch_nudges import LAUNCH_FAILURE_NUDGES
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure_handler import RecordAgentLaunchFailureHandler
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
 from core.base.access import Access

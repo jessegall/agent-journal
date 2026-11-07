@@ -15,6 +15,7 @@ from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.output_query import OutputQuery
+from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.rules.silent_run_rule import STALLED_SECONDS
 
@@ -53,6 +54,14 @@ def test_one_hook_reuses_the_ended_runs_output(ended_test_output):
     with story.repeated_work.request():
         rows = [(outputs.process_output(process.id), visibility.parts(process.id)) for _ in range(12)]
     story.expect_rows(all(row is not None and row.process_id == process.id and parts for row, parts in rows))
+
+
+def test_several_ended_runs_read_their_outputs_and_parts_once_each(ended_test_output):
+    story, first = ended_test_output
+    processes = (first, *[ended_run(story, f"pytest -q tests/test_{number}.py", TESTS_REPORT, exit_code=1) for number in range(11)])
+    with story.repeated_work.request():
+        nudges = story.container.get(EndedOutputText).nudges(processes)
+    story.expect_rows(len(nudges) >= len(processes))
 
 
 def test_only_the_part_that_ran_past_the_limit_sends_a_later_line_to_the_background(new_story):

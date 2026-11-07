@@ -13,6 +13,7 @@ from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_folders import AgentFolders
 from core.base.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, UNJUDGED_LINE
@@ -33,13 +34,13 @@ class AccessRule(ReadonlyRule):
     overlay_proof = True
     allowed_tools = (ToolType.READ, ToolType.SEARCH, ToolType.SHELL)
 
-    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors) -> None:
+    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors, folders: AgentFolders) -> None:
         self.registry, self.providers, self.profiles, self.queries, self.lookup = registry, providers, profiles, queries, lookup
-        self.plan_authors = plan_authors
+        self.plan_authors, self.folders = plan_authors, folders
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if hook.access != Access.READ or tool is None or self.is_listed(hook, tool):
+        if hook.access != Access.READ or tool is None or self.is_listed(hook, tool) or self.writes_within_paths(hook, tool):
             return RuleAnswer.allowed()
         if tool.category in LIMITED_TOOL_TYPES:
             return RuleAnswer.refused(LIMITED_TOOL.nudge(tool=tool.name))
@@ -80,6 +81,15 @@ class AccessRule(ReadonlyRule):
         if tool.name in self.providers.provider(hook.event.program).safe_tools:
             return True
         return tool.name.startswith(MCP_PREFIX) and tool.name in self.profile_tools(hook.agent_id)
+
+    def writes_within_paths(self, hook: AgentHook, tool: Tool) -> bool:
+        """A file change is allowed when every file it names lies in a folder the agent's profile may write."""
+        if not tool.category.writes_files or not tool.files:
+            return False
+        agent = self.queries.query(Agent).find(hook.agent_id)
+        root = self.folders.folder(agent)
+        allowed = [(root / path).resolve() for path in self.profiles.effective(agent.profile).write_paths]
+        return all(any((root / file).resolve().is_relative_to(folder) for folder in allowed) for file in tool.files)
 
     def profile_tools(self, agent_id: int) -> tuple[str, ...]:
         return self.profiles.effective(self.queries.query(Agent).find(agent_id).profile).mcp_tools

@@ -1,6 +1,6 @@
 from core.base.cli.row_links import RowLinks
 from core.base.metadata import Metadata
-from core.modules.messages.support.message_module import MESSAGES_MODULE
+from core.modules.messages.support.messages_module_name import MESSAGES_MODULE
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_text import MessageText
