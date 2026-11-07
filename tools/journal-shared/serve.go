@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"io"
+	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-shared/web"
@@ -17,6 +19,7 @@ func serve(arguments []string, errs io.Writer) error {
 	listen := flags.String("listen", defaultListen, "the host:port to listen on")
 	certificate := flags.String("tls-cert", "", "the certificate file, to serve HTTPS")
 	key := flags.String("tls-key", "", "the private key file of the certificate")
+	readyFile := flags.String("ready-file", "", "write a line when the server is listening")
 	if _, err := parse(flags, arguments, 0); err != nil {
 		return err
 	}
@@ -29,10 +32,26 @@ func serve(arguments []string, errs io.Writer) error {
 	}
 	defer database.Close()
 	server := newServer(*listen, web.Routes(database, protocol))
-	if *certificate != "" {
-		return server.ListenAndServeTLS(*certificate, *key)
+	listener, err := net.Listen("tcp", *listen)
+	if err != nil {
+		return err
 	}
-	return server.ListenAndServe()
+	defer listener.Close()
+	if *readyFile != "" {
+		ready, openErr := os.OpenFile(*readyFile, os.O_WRONLY, 0)
+		if openErr != nil {
+			return openErr
+		}
+		_, writeErr := ready.WriteString("ready\n")
+		ready.Close()
+		if writeErr != nil {
+			return writeErr
+		}
+	}
+	if *certificate != "" {
+		return server.ServeTLS(listener, *certificate, *key)
+	}
+	return server.Serve(listener)
 }
 
 // newServer limits how long a client may take to send its headers and its body, so a slow or stuck client cannot hold

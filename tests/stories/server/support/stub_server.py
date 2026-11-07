@@ -1,5 +1,4 @@
 import threading
-import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -15,7 +14,7 @@ class StubAnswer:
     code: int
     body: bytes = b""
     headers: Mapping[str, str] | None = None
-    delay_seconds: float = 0
+    wait_for_release: bool = False
 
 
 @dataclass(frozen=True)
@@ -33,12 +32,15 @@ class StubServer:
 
     def __init__(self, answer: StubAnswer) -> None:
         self.requests: list[StubRequest] = []
+        self.release = threading.Event()
         received, fixed = self.requests, answer
+        release = self.release
 
         class Handler(BaseHTTPRequestHandler):
             def respond(self) -> None:
                 received.append(StubRequest(self.command, self.path, dict(self.headers.items())))
-                time.sleep(fixed.delay_seconds)
+                if fixed.wait_for_release:
+                    release.wait()
                 self.send_response(fixed.code)
                 for name, value in (fixed.headers or {}).items():
                     self.send_header(name, value)
@@ -62,5 +64,6 @@ class StubServer:
         return self
 
     def __exit__(self, *details: object) -> None:
+        self.release.set()
         self.server.shutdown()
         self.server.server_close()

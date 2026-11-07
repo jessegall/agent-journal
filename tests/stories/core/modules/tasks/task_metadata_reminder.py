@@ -1,5 +1,8 @@
 import pytest
 
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 
@@ -37,3 +40,14 @@ def test_a_complete_task_has_no_reminder(story):
 def test_a_person_receives_no_reminder(story):
     result = story.run('task make "Fix networking" --environment main', actor=story.user)
     story.expect_rows("needs tags" not in result.output_text, "needs complexity" not in result.output_text)
+
+
+def test_a_read_only_helper_is_told_how_to_set_metadata_next_time(story):
+    helper_id, _ = started(story, 'helper start journal-planner --brief "Review tasks" --environment main')
+    helper = Actor(helper_id, ActorType.AGENT)
+    result = story.run('task make "Review networking" --environment main', actor=helper)
+    story.expect_rows(result.code == 0, "needs tags and complexity" in result.output_text,
+                      "ask the main agent to set them" in result.output_text,
+                      "journal task make <title> --tag <word> --complexity <1-5>" in result.output_text,
+                      "journal task tag" not in result.output_text, "journal task edit" not in result.output_text)
+    story.expect_success('task make "Review linux" --tag linux --complexity 2 --environment main', actor=helper)

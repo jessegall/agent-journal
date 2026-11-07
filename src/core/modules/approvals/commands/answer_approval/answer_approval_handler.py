@@ -29,16 +29,20 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
         if context.actor.type is not ActorType.USER:
             raise Refusal("an agent cannot decide an approval request")
         request = self.bus.run(MoveApproval(command.row_id, ApprovalLifecycle.begin), context.actor, environment_id=context.environment_id)
-        arguments = command.decision.choose(request.arguments, request.refused_arguments)
-        output = io.StringIO()
-        with self.scopes.opened(None):
-            caller = Caller(context.actor, context.environment_id)
-            code = self.run_action(arguments, caller, output)
-            continued = command.decision.choose(request.continued_arguments, ())
-            if code == SUCCESS_CODE and continued:
-                code = self.run_action(continued, caller, output)
-        move = command.decision.choose(ApprovalLifecycle.accept, ApprovalLifecycle.refuse) if code == SUCCESS_CODE else ApprovalLifecycle.retry
-        ended = self.bus.run(MoveApproval(request.id, move), context.actor, environment_id=context.environment_id)
+        try:
+            arguments = command.decision.choose(request.arguments, request.refused_arguments)
+            output = io.StringIO()
+            with self.scopes.opened(None):
+                caller = Caller(context.actor, context.environment_id)
+                code = self.run_action(arguments, caller, output)
+                continued = command.decision.choose(request.continued_arguments, ())
+                if code == SUCCESS_CODE and continued:
+                    code = self.run_action(continued, caller, output)
+            move = command.decision.choose(ApprovalLifecycle.accept, ApprovalLifecycle.refuse) if code == SUCCESS_CODE else ApprovalLifecycle.retry
+            ended = self.bus.run(MoveApproval(request.id, move), context.actor, environment_id=context.environment_id)
+        except Exception:
+            self.bus.run(MoveApproval(request.id, ApprovalLifecycle.retry), context.actor, environment_id=context.environment_id)
+            raise
         if code != SUCCESS_CODE:
             raise Refusal("the requested action failed", output.getvalue().strip())
         return ApprovalResult(ended, output.getvalue())

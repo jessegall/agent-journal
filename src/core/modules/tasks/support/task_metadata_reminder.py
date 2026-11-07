@@ -1,10 +1,12 @@
 from core.base.actor_type import ActorType
+from core.base.access import Access
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
+from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.models.task_tag_word import TaskTagWord
-from core.modules.tasks.support.task_nudges import TASK_METADATA_REMINDER
+from core.modules.tasks.support.task_nudges import TASK_METADATA_REMINDER, TASK_READ_ONLY_METADATA_REMINDER
 
 
 class TaskMetadataReminder:
@@ -30,4 +32,7 @@ class TaskMetadataReminder:
             score_command = f"{'; ' if tag_command else ''}journal task edit {task.id} --complexity <1-5>"
         if not missing:
             return ""
+        if self.queries.query(Agent).find(task.creator_id).access == Access.READ:
+            options = ["--tag <word>" if name == "tags" else "--complexity <1-5>" for name in missing]
+            return TASK_READ_ONLY_METADATA_REMINDER.nudge(task=task.id, missing=" and ".join(missing), options=" ".join(options)).text
         return TASK_METADATA_REMINDER.nudge(task=task.id, missing=" and ".join(missing), tag_command=tag_command, score_command=score_command).text
