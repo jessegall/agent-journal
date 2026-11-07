@@ -1,3 +1,5 @@
+from core.base.query.conditions.is_null import IsNull
+from pathlib import Path
 from argparse import ArgumentParser, Namespace
 import json
 
@@ -47,6 +49,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         parser.add_argument("--options", action="store_true")
         parser.add_argument("--id", type=int, default=None)
         parser.add_argument("--include-main", action="store_true")
+        parser.add_argument("--kept", action="store_true")
         parser.add_argument("--role", action="append", default=[])
         parser.add_argument("--profile", action="append", default=[])
         parser.add_argument("--program", action="append", default=[])
@@ -70,6 +73,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
             return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
         rows = self.queries.query(AgentListing)
+        if arguments.kept:
+            rows = rows.matching(IsNull("retired_at"))
         if arguments.id is not None:
             rows = rows.filter(id=arguments.id)
         if not arguments.include_main and (not arguments.role or AgentRole.MAIN not in arguments.role):
@@ -95,23 +100,24 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         idle = {row.id for row in selected.matching(AvailableAgents(self.activity)).all_rows()}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
+        locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))
         job_roles = self.usage.suites.agent_policy().job_roles
         pending = self.work.pending()
         job_commands = {entry.key: entry.job_command for entry in self.registry.agent_types}
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
-                                           resume_reason=self.resume_reason(agents[row.id]) if row.id in idle else None,
+                                           resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
                                            facts=self.usage.facts(row, job_roles, titles, pending.get(row.id)).json(),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)
 
-    def resume_reason(self, agent: Agent) -> str | None:
+    def resume_reason(self, agent: Agent, has_folder: bool, folder: Path) -> str | None:
         if agent.role == AgentRole.HELPER and not agent.profile:
             return "This helper ran as a program subagent and cannot resume."
-        if not self.folders.has_folder(agent):
+        if not has_folder:
             return "The folder this agent worked in is gone."
-        if not self.providers.provider(agent.program).session_matches_folder(self.folders.resume_folder(agent), agent.session):
+        if not self.providers.provider(agent.program).session_matches_folder(folder, agent.session):
             return "The saved session is gone; this agent cannot resume."
         return None
 

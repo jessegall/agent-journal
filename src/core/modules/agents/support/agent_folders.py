@@ -13,6 +13,9 @@ class AgentFolders:
     def __init__(self, agents: AgentRows, environments: EnvironmentRows) -> None:
         self.agents, self.environments = agents, environments
 
+    def resume_locations(self, agents: tuple[Agent, ...]) -> dict[int, tuple[bool, Path]]:
+        return {agent.id: (self.has_folder(agent), self.resume_folder(agent)) for agent in agents}
+
     def has_folder(self, agent: Agent) -> bool:
         return True
 
