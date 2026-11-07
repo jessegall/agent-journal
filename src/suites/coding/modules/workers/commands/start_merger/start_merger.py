@@ -8,4 +8,6 @@ from core.base.driver.nudge import Nudge
 class StartMerger(Command[None]):
     """Something waits for the merger: it is given the job, or the main agent hears when no merger can start."""
 
+    lock = False
+
     fallback_line: str | Nudge

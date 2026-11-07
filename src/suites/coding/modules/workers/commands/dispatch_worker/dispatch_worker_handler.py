@@ -44,8 +44,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     tasks delegated after it. Its rows are saved in short transactions before and after the git and prepare
     work, which run with no write open; a failure undoes the first."""
 
+    runs_once = True
     command = DispatchWorker
-    transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
                  providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, waits: TaskWaits) -> None:

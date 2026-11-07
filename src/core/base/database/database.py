@@ -82,15 +82,18 @@ class Database:
         if len(self.nested) >= NESTING_LIMIT_LEVELS:
             raise NestingError((*self.nested, label))
         name = f"nested_{len(self.nested)}"
+        locked = self.has_transaction
         self.nested.append(label)
         changes = self.connection.total_changes
-        self.connection.execute(f"SAVEPOINT {name}")
+        if locked:
+            self.connection.execute(f"SAVEPOINT {name}")
         try:
             yield
-            self.connection.execute(f"RELEASE {name}")
+            if locked:
+                self.connection.execute(f"RELEASE {name}")
         except BaseException:
             self.record_rollback(changes)
-            if self.connection.in_transaction:
+            if locked and self.connection.in_transaction:
                 self.connection.execute(f"ROLLBACK TO {name}")
                 self.connection.execute(f"RELEASE {name}")
             raise

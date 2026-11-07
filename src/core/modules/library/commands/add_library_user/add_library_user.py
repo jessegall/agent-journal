@@ -9,5 +9,7 @@ from core.modules.library.support.new_library_user import NewLibraryUser
 class AddLibraryUser(Command[NewLibraryUser]):
     """Adds a user to the shared server with a role, and gets the first token of that user."""
 
+    lock = False
+
     name: str
     role: LibraryRole

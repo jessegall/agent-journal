@@ -23,8 +23,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
     """Prepares a worktree's libraries, hooks and skills before running its setup commands. It saves no row, so
     its setup commands hold no write lock."""
 
+    runs_once = True
     command = PrepareWorktree
-    transactional = False
 
     def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
                  skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers) -> None:

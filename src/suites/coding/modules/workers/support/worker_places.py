@@ -35,7 +35,8 @@ class WorkerPlaces:
 
     def running(self) -> tuple[Agent, ...]:
         running = self.agents.running(CodingAgentRole.WORKER)
-        pending = self.queries.query(Agent).find_many(tuple(self.work.pending()))
+        pending_ids = tuple(self.work.pending())
+        pending = self.kept.scoped_current(lambda: tuple(self.queries.query(Agent).find_many(pending_ids)), name=f"workers.pending_agents:{pending_ids}")
         return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:
@@ -49,9 +50,10 @@ class WorkerPlaces:
 
     def can_start_new(self) -> bool:
         workers = self.kept_workers()
-        running_ids = {worker.id for worker in self.running()}
+        running = self.running()
+        running_ids = {worker.id for worker in running}
         all_kept_run = self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit() and all(worker.id in running_ids for worker in workers)
-        return not all_kept_run and len(self.running()) < self.run_limit()
+        return not all_kept_run and len(running) < self.run_limit()
 
     def check_new_place(self) -> None:
         if len(self.running()) + self.resuming_count() >= self.run_limit():

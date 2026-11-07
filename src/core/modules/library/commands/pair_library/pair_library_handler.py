@@ -27,7 +27,6 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
     writes the connection; only a person connects, and nothing is sent before that is checked."""
 
     command = PairLibrary
-    transactional = False
 
     def __init__(self, client: LibraryClient, certificate: LibraryCertificate, values: SecretValues, settings: SettingValues, bus: Bus) -> None:
         self.client, self.certificate, self.values, self.settings, self.bus = client, certificate, values, settings, bus

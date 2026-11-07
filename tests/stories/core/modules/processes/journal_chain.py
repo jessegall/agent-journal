@@ -157,13 +157,13 @@ def test_a_read_command_can_follow_an_unrelated_redirect(new_story):
 
 def test_a_read_command_inside_a_redirected_group_is_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    group = ShellPart("{", CommandCategory.UNKNOWN, [])
+    group = ShellPart("{", CommandCategory.UNKNOWN, [], nested_journal_commands=[["worker", "logs", "2"]])
     story.expect_hook_refusal("s-1", HookSamples.shell("{ journal worker logs 2; } > /tmp/log", group, redirects=["> /tmp/log"]), "run the read command directly, without a pipe or redirect")
 
 
 def test_a_read_command_inside_command_substitution_is_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    command = ShellPart("echo", CommandCategory.UNKNOWN, [])
+    command = ShellPart("echo", CommandCategory.UNKNOWN, [], nested_journal_commands=[["message", "read", "3"]])
     story.expect_hook_refusal("s-1", HookSamples.shell("echo $(journal message read 3)", command), "run the read command directly, without a pipe or redirect")
 
 
@@ -171,3 +171,9 @@ def test_words_about_a_read_command_do_not_refuse_a_shell_line(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     command = ShellPart("echo", CommandCategory.READ, ["journal message read 3"])
     story.expect_hook_allowed("s-1", HookSamples.shell("echo 'journal message read 3'", command))
+
+
+def test_a_message_reply_can_name_an_overview_and_a_greater_than_sign(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    command = ShellPart("journal", CommandCategory.JOURNAL, ["message", "reply", "1", "Use `journal task overview 1` when 2 > 1"], subcommand="message")
+    story.expect_hook_allowed("s-1", HookSamples.shell("journal message reply 1 'Use `journal task overview 1` when 2 > 1'", command))

@@ -353,13 +353,19 @@ def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
     expect_command_requests_launcher_with(launcher, 1, "--resume")
 
 
-def test_a_worker_with_no_worktree_is_not_sent_a_job(new_story):
+def test_a_job_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
-    story.expect_refusal(f'worker send {worker.id} "Add the tax"', f"worker {worker.id} has no worktree", actor=story.agent)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    story.expect_success(f'worker send {worker.id} "Add the tax"', actor=story.agent)
+    story.run_listeners()
+    worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first()
+    story.expect_rows(worktree is not None)
+    story.expect_text(f"task show {worktree.task_id}", "Add the tax", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    launcher.expect_started(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
 
 
 def ended_worker(new_story):

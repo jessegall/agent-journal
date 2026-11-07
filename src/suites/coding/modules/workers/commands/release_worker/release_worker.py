@@ -8,5 +8,7 @@ from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 class ReleaseWorker(Command[ReleaseOutcome]):
     """Takes a worker off its task: the task goes back to open and its worktree is removed."""
 
+    lock = False
+
     worker_id: int
     reason: str

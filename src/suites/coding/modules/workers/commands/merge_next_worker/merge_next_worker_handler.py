@@ -14,7 +14,6 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
     """Merges a worker after the merger reviews its logs."""
 
     command = MergeNextWorker
-    transactional = False
 
     def __init__(self, agents: AgentRows, bus: Bus) -> None:
         self.agents, self.bus = agents, bus

@@ -14,8 +14,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...]]):
     """Removes only unoccupied worktrees merged into their own environment's branch."""
 
+    runs_once = True
     command = RemoveOrphanWorktrees
-    transactional = False
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit) -> None:
         self.queries, self.worktrees, self.git = queries, worktrees, git

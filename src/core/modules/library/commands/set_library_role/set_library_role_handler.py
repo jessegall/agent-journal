@@ -11,7 +11,6 @@ class SetLibraryRoleHandler(Handler[SetLibraryRole, LibraryUser]):
     admin."""
 
     command = SetLibraryRole
-    transactional = False
 
     def __init__(self, people: LibraryPeople) -> None:
         self.people = people

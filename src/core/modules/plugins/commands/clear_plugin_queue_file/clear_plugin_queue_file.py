@@ -8,5 +8,7 @@ from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 class ClearPluginQueueFile(Command[PluginQueueFile]):
     """Records a queue file a hook reserved, for its listener to delete once the hook has committed."""
 
+    lock = False
+
     plugin_id: int
     name: str

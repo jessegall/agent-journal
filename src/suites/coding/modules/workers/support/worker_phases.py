@@ -80,6 +80,7 @@ class WorkerPhases:
 
     def advanced(self, worker_id: int) -> tuple[Task, ...]:
         testing = self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()
+        self.plans.prepare([task.id for task in testing])
         return tuple(task for task in testing if self.is_grouped(task))
 
     def has_phase_wait(self, worker_id: int) -> bool:

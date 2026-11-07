@@ -11,9 +11,9 @@ class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
     """Removes the folder for a person, keeping its branch; the main checkout, a worker's worktree and one an
     agent runs in stay, and git refuses one with changes."""
 
+    runs_once = True
     command = RemoveProjectWorktree
     disabled_scopes = [EnvironmentScope]
-    transactional = False
 
     def __init__(self, worktrees: ProjectWorktrees, git: WorktreeGit) -> None:
         self.worktrees, self.git = worktrees, git

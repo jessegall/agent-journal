@@ -21,7 +21,6 @@ class ChooseLibraryVersionHandler(Handler[ChooseLibraryVersion, LibraryCopy]):
     copying the row to the item. Both ask the server with no write lock held; only a person chooses."""
 
     command = ChooseLibraryVersion
-    transactional = False
 
     def __init__(self, queries: Queries, shares: LibraryShares, connections: LibraryConnectionQuery, sync: LibrarySync, browse: LibraryBrowse, bus: Bus) -> None:
         self.queries, self.shares, self.connections, self.sync, self.browse, self.bus = queries, shares, connections, sync, browse, bus

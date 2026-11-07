@@ -23,7 +23,6 @@ class StartMergerHandler(Handler[StartMerger, None]):
     agent hears as it did before."""
 
     command = StartMerger
-    transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, profiles: ProfileFiles, providers: Providers) -> None:
         self.queries, self.bus, self.agents, self.profiles, self.providers = queries, bus, agents, profiles, providers

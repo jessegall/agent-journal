@@ -21,8 +21,8 @@ class ReadCommandOutputRule(DriverRule):
         if shell is None or shell.parse_error:
             return RuleAnswer.allowed()
         for part in shell.parts:
-            nested = part.text.lstrip().startswith(("(", "{")) or part.program in ("eval", "sh", "bash", "zsh") or "$(" in part.text or "`" in part.text
-            if nested and any(f"journal {command}" in part.text for command in self.commands.names()):
+            if any(arguments[:len(words)] == words for arguments in part.nested_journal_commands
+                   for words in (tuple(command.split()) for command in self.commands.names())):
                 return RuleAnswer.refused(READ_COMMAND_OUTPUT.nudge())
         for part in shell.parts_running_journal_command(*self.commands.names()):
             if part.pipe_target is not None or any(redirect in part.text for redirect in shell.redirects):

@@ -33,6 +33,7 @@ test("the context menu shows how full the context is as a bar and the exact time
     expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
     expect(page.querySelector("[data-context-menu-meter] .gauge span").style.width).toBe("95%");
     expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe(`Last compacted ${EXACT}, from 92% to 18%, 74% taken off`);
+    expect(page.querySelector("[data-context-menu-compaction]").nextElementSibling).toBe(page.querySelector("[data-context-menu-meter]"));
     expect(page.body.textContent).toContain("Compact context");
 });
 
