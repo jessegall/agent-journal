@@ -8,7 +8,7 @@ from core.modules.suggestions.models.enums.suggestion_mark_variant import Sugges
 
 SUGGESTIONS_FAMILY = MarkFamily("suggestions.suggestions", "Suggestions", "bulb", MarkGroup.JOURNAL)
 
-ACCEPT = MarkButton("tick", "Accept", "suggestion answer {row_id} accepted")
-DECLINE = MarkButton("close", "No, and do not suggest it again", "suggestion answer {row_id} declined")
+ACCEPT = MarkButton("tick", "Accept the suggestion", "suggestion answer {row_id} accepted")
+DECLINE = MarkButton("close", "Decline the suggestion", "suggestion answer {row_id} declined")
 
 SUGGESTION_MARKS = [MarkDeclaration(SuggestionMarkType.SUGGESTION, SuggestionMarkVariant, SUGGESTIONS_FAMILY, "Suggestion", "bulb", click=MarkClick.OPEN_ROW, process=True, buttons=[ACCEPT, DECLINE])]
