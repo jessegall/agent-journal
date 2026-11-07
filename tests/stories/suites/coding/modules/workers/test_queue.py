@@ -13,7 +13,7 @@ from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from core.modules.processes.support.runner_binary import RunnerBinary
-from core.modules.processes.support.runner_not_installed_error import RunnerNotInstalledError
+from core.modules.processes.support.missing_runner_error import MissingRunnerError
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -172,7 +172,7 @@ def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monk
     expect_value_with(command, "--background")
     expect_cwd_options(options, "/work/worktree")
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: False)
-    with pytest.raises(RunnerNotInstalledError, match="not installed"):
+    with pytest.raises(MissingRunnerError, match="not installed"):
         story.container.get(WorkerTestLaunch).start(8, "pytest tests/cart.py", "/work/worktree", "s-1")
 
 

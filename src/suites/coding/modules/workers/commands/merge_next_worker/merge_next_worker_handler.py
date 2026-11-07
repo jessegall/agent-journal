@@ -8,7 +8,7 @@ from suites.coding.modules.workers.commands.merge_next_worker.merge_next_worker 
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
 from suites.coding.modules.workers.commands.send_merger_report.send_merger_report import SendMergerReport
 from suites.coding.modules.workers.support.merger_nudges import MERGER_MERGED
-from suites.coding.modules.workers.support.worker_operations import WorkerOperations
+from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 
 class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
@@ -16,7 +16,7 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
 
     command = MergeNextWorker
 
-    def __init__(self, agents: AgentRows, bus: Bus, operations: WorkerOperations) -> None:
+    def __init__(self, agents: AgentRows, bus: Bus, operations: WorkerOperationQuery) -> None:
         self.agents, self.bus, self.operations = agents, bus, operations
 
     def handle(self, command: MergeNextWorker, context: Context) -> MergeOutcome:

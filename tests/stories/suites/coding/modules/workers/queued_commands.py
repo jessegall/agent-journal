@@ -1,9 +1,15 @@
 from core.base.cli.shell_handoff import RUNNER_VARIABLE
-from time import monotonic, sleep
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
+from threading import Event
+from time import monotonic
+from typing import NamedTuple
 
 import pytest
 
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
+from core.base.actor import Actor
+from core.base.command.bus import Bus
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -11,14 +17,23 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
+from core.modules.processes.support.queued_process_start import QueuedProcessStart
 from core.testing.fake_launcher import FakeLauncher
+from core.testing.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
+
+
+class WorkerCommandStory(NamedTuple):
+    story: Story
+    repository: GitRepository
+    worker: Actor
+    launches: list[QueuedProcessStart]
 
 
 @pytest.fixture
@@ -29,8 +44,8 @@ def worker_command(new_story, monkeypatch):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     launches = []
-    monkeypatch.setattr(QueuedProcessLaunch, "start", lambda _launch, *args: launches.append(args))
-    return story, repository, worker, launches
+    monkeypatch.setattr(QueuedProcessLaunch, "start", lambda _launch, start, _run: launches.append(start))
+    return WorkerCommandStory(story, repository, worker, launches)
 
 
 def run_operation(story, operation):
@@ -43,6 +58,20 @@ def run_operation(story, operation):
 
 def end_operation(story, operation, exit_code=0):
     story.expect_success(f"process end {operation.process_id} --exit-code {exit_code} --bytes 0 --lines 0")
+
+
+@contextmanager
+def operation_story(story):
+    running_story = Story.opened(story.home, story.state)
+    try:
+        yield running_story
+    finally:
+        running_story.close()
+
+
+def run_operation_copy(story, operation):
+    with operation_story(story) as running_story:
+        return run_operation(running_story, operation)
 
 
 @pytest.mark.parametrize(("name", "method"), [("next", "rebased_commit"), ("deliver", "rebased_commit"),
@@ -59,13 +88,26 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, 
         repository.checkout(ENVIRONMENT_BRANCH)
     calls = []
     original = getattr(WorktreeGit, method)
+    git_blocked, git_continue = Event(), Event()
 
     def slow_git(git, *args, **kwargs):
         calls.append(method)
-        sleep(0.15)
+        git_blocked.set()
+        story.expect_rows(git_continue.wait(10), detail="the test did not release git")
         return original(git, *args, **kwargs)
 
     monkeypatch.setattr(WorktreeGit, method, slow_git)
+    original_result = Bus.result
+    completed_commands = []
+
+    def checked_result(bus, value, command):
+        if type(command).__name__ in ("StartNextWorkerTask", "DeliverTask", "SendWorker", "MergeWorker"):
+            story.expect_rows(bus.database.has_transaction == command.lock,
+                              detail=f"{command.label()} must own its transaction setting")
+            completed_commands.append(command)
+        return original_result(bus, value, command)
+
+    monkeypatch.setattr(Bus, "result", checked_result)
     line = f"worker {name} --differences none" if name in ("next", "deliver") else f'worker {name} {worker.id}'
     if name == "send":
         line += ' "Add the receipt"'
@@ -76,11 +118,21 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, 
     story.expect_rows(calls == [], len(launches) == 1)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     started_at = monotonic()
-    outcome = run_operation(story, operation)
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(run_operation_copy, story, operation)
+        try:
+            if not git_blocked.wait(10):
+                future.result(timeout=10)
+            story.expect_rows(git_blocked.is_set(), not future.done())
+        finally:
+            git_continue.set()
+        outcome = future.result(timeout=10)
     finished_seconds = monotonic() - started_at
-    story.expect_rows(outcome.code == 0, calls == [method], detail=outcome.output_text)
+    story.expect_rows(outcome.code == 0, calls == [method], len(completed_commands) == 1,
+                      detail=outcome.output_text)
     print(f"{name}: accepted {accepted_seconds:.3f}s; synchronous work {finished_seconds:.3f}s")
-    end_operation(story, operation)
+    with operation_story(story) as ending_story:
+        end_operation(ending_story, operation)
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=actor.id).all_rows()
     notifications = [line for line in lines if line.nudge.key.startswith("workers.operation_")]
     story.expect_rows(len(notifications) == 1, story.row(WorkerOperation, operation.id).ended_at is not None)

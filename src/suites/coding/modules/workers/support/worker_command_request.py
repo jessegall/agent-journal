@@ -8,13 +8,13 @@ from core.base.subcommand.output import Output
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation, WorkerCommand
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
-from suites.coding.modules.workers.support.worker_operations import WorkerOperations
+from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 
 class WorkerCommandRequest:
     """Queues public worker commands and preserves explicit waits for scripts."""
 
-    def __init__(self, operations: WorkerOperations, flags: WriteFlags) -> None:
+    def __init__(self, operations: WorkerOperationQuery, flags: WriteFlags) -> None:
         self.operations, self.flags = operations, flags
 
     @staticmethod

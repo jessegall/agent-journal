@@ -1,1 +1,1 @@
-ROUTE_HOLDS = "workers.route-holds"
+ROUTE_GUARD = "workers.route-holds"

@@ -13,4 +13,5 @@ def test_each_provider_names_the_model_of_a_profile_for_its_own_program(new_stor
 
 def test_a_provider_that_names_no_model_field_of_its_own_gets_the_profile_model(new_story):
     story = new_story()
-    story.expect_rows(Provider.profile_model(story.container.get(Providers).provider("claude"), PROFILE) == "sonnet")
+    profile = AgentProfile("sample", "A sample", "Do the work.", program_models={"claude": "sonnet"})
+    story.expect_rows(Provider.profile_model(story.container.get(Providers).provider("claude"), profile) == "sonnet")

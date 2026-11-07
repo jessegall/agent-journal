@@ -14,15 +14,15 @@ from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
-from suites.coding.modules.workers.support.worker_route_policy import ROUTE_HOLDS
+from suites.coding.modules.workers.support.worker_route_policy import ROUTE_GUARD
 from suites.coding.modules.workers.support.worker_routes import WorkerRoutes
 
 
 class WorkerRouteGuard(Guard[Updated[Task] | Moved[Task]]):
     """Holds direct assignments to their ready program, with a person's exception."""
 
-    name = ROUTE_HOLDS
-    moves = (TaskLifecycle.release,)
+    name = ROUTE_GUARD
+    moves = tuple([TaskLifecycle.release])
 
     def __init__(self, routes: WorkerRoutes, rows: EventRows, states: ProgramStates, environments: EnvironmentRows) -> None:
         self.routes, self.rows, self.states, self.environments = routes, rows, states, environments

@@ -37,20 +37,20 @@ def test_a_program_no_module_provides_is_refused_by_its_name(providers):
 
 def test_a_named_model_finds_the_provider_that_offers_it(providers, monkeypatch):
     monkeypatch.setattr(providers.provider("sample"), "models", [ProgramModel("sample-model", ModelTier.GENERAL)])
-    assert providers.program_for_model("sample-model") == "sample"
+    assert providers.model_program("sample-model") == "sample"
 
 
 def test_a_model_no_provider_offers_is_refused(providers):
     with pytest.raises(Refusal, match="no program offers model missing"):
-        providers.program_for_model("missing")
+        providers.model_program("missing")
 
 
 def test_a_model_offered_twice_needs_an_explicit_program(providers, monkeypatch):
     provider = providers.provider("sample")
     monkeypatch.setattr(provider, "models", [ProgramModel("shared", ModelTier.GENERAL)])
-    other = copy(provider)
-    other.name = "other"
-    monkeypatch.setattr(providers, "all", lambda: [provider, other])
+    second_provider = copy(provider)
+    second_provider.name = "other"
+    monkeypatch.setattr(providers, "all", lambda: [provider, second_provider])
     with pytest.raises(Refusal, match="model shared is offered by sample, other") as caught:
-        providers.program_for_model("shared")
+        providers.model_program("shared")
     assert caught.value.suggestion == "name --program explicitly"

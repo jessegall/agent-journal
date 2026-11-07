@@ -13,7 +13,7 @@ from core.modules.messages.support.work_sources import WorkSources
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.support.worker_operations import WorkerOperations
+from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 
 
 class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]):
@@ -22,7 +22,7 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
     command = QueueWorkerOperation
     disabled_scopes = [ActorScope]
 
-    def __init__(self, operations: WorkerOperations, bus: Bus, repository: Repository,
+    def __init__(self, operations: WorkerOperationQuery, bus: Bus, repository: Repository,
                  rows: EventRows, environments: EnvironmentRows, sources: WorkSources) -> None:
         self.operations, self.bus, self.repository = operations, bus, repository
         self.rows, self.environments = rows, environments

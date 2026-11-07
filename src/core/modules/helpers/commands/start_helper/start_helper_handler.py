@@ -102,7 +102,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         if command.program:
             return command.program
         if command.program_model:
-            return self.providers.program_for_model(command.program_model)
+            return self.providers.model_program(command.program_model)
         if profile.program:
             return profile.program
         if profile.mcp_tools:

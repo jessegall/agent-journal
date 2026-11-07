@@ -8,6 +8,7 @@ from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.query.queries import Queries
 from core.modules.codex.providers.codex_provider import CodexProvider
+from core.modules.codex.providers.support.codex_trust import CodexTrust
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.helper_resume import HelperResume
@@ -83,9 +84,14 @@ def test_both_plans_reuse_stays_on_the_chosen_program_repeated_dispatch(split_st
     expect_program(story, dispatch(story, str(task_id)), 'codex')
 
 
-def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(split_story, split_viewer, monkeypatch):
-    story = split_story
-    helper_id, _ = started(story)
+@pytest.fixture
+def started_split_helper(split_story):
+    helper_id, _ = started(split_story)
+    return split_story, helper_id
+
+
+def test_both_plans_reuse_stays_on_the_chosen_program_for_a_helper(started_split_helper, split_viewer, monkeypatch):
+    story, helper_id = started_split_helper
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     helper = story.container.get(Queries).query(Agent).find(helper_id)
     resumable_session(story, helper, monkeypatch)
@@ -186,9 +192,8 @@ def test_helper_send_on_an_out_program_says_until_when_reuse_names_it(outage_hel
     story.expect_rows(f'journal helper send {helper_id}' in story.results[-1].output_text)
 
 
-def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(split_story):
-    story = split_story
-    helper_id, _ = started(story)
+def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(started_split_helper):
+    story, helper_id = started_split_helper
     story.expect_success(f'helper send {helper_id} "Read the next file" --steer', actor=story.agent)
     outage(story, 'claude')
     launcher = FakeLauncher(story.home.socket('launcher'), request_count=2)
@@ -225,7 +230,7 @@ def test_mark_a_program_out(split_story):
 
 def test_mark_a_program_out_in_the_tab(split_story, split_viewer):
     story = split_story
-    ends_at = (story.clock.timestamp().value + timedelta(minutes=30)).isoformat()
+    ends_at = (story.clock.timestamp().value + timedelta(minutes=30)).isoformat(timespec='microseconds')
     split_viewer.value('workers.workers', ['provider-outage', 'make', 'codex', 'out of credit', '--ends-at', ends_at])
     rows = split_viewer.value('workers.workers', ['worker', 'split'])['rows']
     story.expect_rows('out of credit' in str(rows), ends_at in str(rows))
@@ -431,20 +436,28 @@ def test_rare_model_is_never_automatic(split_story, split_viewer, program, model
     expect_program(story, dispatch(story, flags=f'--program {program} --model {model}'), program, model)
 
 
-@pytest.mark.parametrize('reset_seconds', [0, -1])
-def test_program_states_copes(split_story, reset_seconds, split_viewer):
+@pytest.fixture
+def expired_window_story(split_story, split_viewer, reset_seconds):
     story = split_story
     set_split(story, 'claude 100,codex 0', viewer=split_viewer)
     resets_at = int((story.clock.timestamp().value + timedelta(seconds=reset_seconds)).timestamp())
     save_status_file(story, 's-1', {'rate_limits': {'five_hour': {'used_percentage': 99, 'resets_at': resets_at}}})
-    expect_program(story, dispatch(story), 'claude')
+    return story, dispatch(story)
 
 
-def test_program_states_copes_with_a_removed_program(split_story, split_viewer):
+@pytest.mark.parametrize('reset_seconds', [0, -1])
+def test_program_states_copes(expired_window_story, reset_seconds):
+    story, worker = expired_window_story
+    expect_program(story, worker, 'claude')
+
+
+def test_program_states_copes_with_a_removed_program(split_story, split_viewer, monkeypatch):
     story = split_story
     story.expect_sync_success(SAMPLE_MODULE)
     set_split(story, 'sample 50,claude 50', viewer=split_viewer)
     uninstall_sample_module(story)
+    for provider in story.container.get(Providers).all():
+        monkeypatch.setattr(provider, 'hook_trust', lambda folder: HookTrust.READY)
     expect_program(story, dispatch(story), 'claude')
 
 
@@ -458,15 +471,27 @@ def test_program_states_copes_with_a_stale_file(split_story, split_viewer):
 
 
 
-def test_codex_hooks_run_in_the_worker_folder_changed_hooks_are_not_trusted(split_story, tmp_path, monkeypatch):
+@pytest.fixture
+def trusted_codex_story(split_story, tmp_path, monkeypatch):
     story = split_story
     monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'codex-home'))
     real_program_checks(story)
-    story.expect_success('program trust codex --environment main', actor=story.user)
     provider = story.container.get(Providers).provider('codex')
     folder = story.home.folder.parent / 'project'
-    hooks = folder / '.codex' / 'hooks.json'
-    hooks.write_text(hooks.read_text().replace('journal-hook', 'changed-journal-hook'))
+    hooks = ProgramHooks.hooks(CodexProvider, folder)
+    hooks.write('journal-hook', story.home.project_folder)
+    config = provider.trust_record().config_file
+    config.parent.mkdir(parents=True, exist_ok=True)
+    config.write_text(''.join(CodexTrust.state_table(key, {'trusted_hash': digest}) for key, digest in CodexTrust.hashes(hooks.path.resolve()).items()))
+    story.expect_rows(provider.hook_trust(folder) is HookTrust.READY)
+    return story, provider, folder, hooks
+
+
+def test_codex_hooks_run_in_the_worker_folder_changed_hooks_are_not_trusted(trusted_codex_story):
+    story, provider, folder, hooks = trusted_codex_story
+    settings = hooks.settings()
+    settings['hooks']['PreToolUse'][0]['hooks'][0]['timeout'] += 1
+    ProgramHooks.store(hooks.path, settings)
     story.expect_rows(provider.hook_trust(folder) is HookTrust.CHANGED)
 
 

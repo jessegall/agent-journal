@@ -1,17 +1,19 @@
 from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
+from core.base.database.database import Database
+from core.base.model.tables import Tables
+from core.base.query.query import Query
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 
 
-class WorkerOperations:
+class WorkerOperationQuery(Query[WorkerOperation]):
     """Finds the command currently using a worker's worktree."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, database: Database, tables: Tables) -> None:
+        super().__init__(database, tables, WorkerOperation)
 
     def active(self, worker_id: int) -> WorkerOperation | None:
-        return self.queries.query(WorkerOperation).filter(worker_id=worker_id).matching(IsNull("ended_at")).first()
+        return self.filter(worker_id=worker_id).matching(IsNull("ended_at")).first()
 
     def check_available(self, worker_id: int, process_id: int | None = None) -> None:
         operation = self.active(worker_id)

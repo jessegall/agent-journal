@@ -19,19 +19,22 @@ class RunWorkerOperationHandler(Handler[RunWorkerOperation, str]):
 
     command = RunWorkerOperation
     disabled_scopes = [ActorScope]
+    runs_once = True
 
     def __init__(self, console: Console, rows: EventRows, sources: WorkSources) -> None:
         self.console, self.rows, self.sources = console, rows, sources
+        self.output = io.StringIO()
 
-    def handle(self, command: RunWorkerOperation, context: Context) -> str:
+    def prepare(self, command: RunWorkerOperation, actor: Actor) -> None:
         operation = command.operation
         process = self.rows.required(Process, operation.process_id)
         caller = Caller(Actor(operation.creator_id, operation.actor_type), process.environment_id,
                         operation.plugin_script, operation.process_id)
-        stream = io.StringIO()
+        self.output = io.StringIO()
         with self.sources.source_scope(operation.source_copy(process.environment_id), caller.actor):
-            code = self.console.run(shlex.split(operation.line), caller, stream)
-        text = stream.getvalue().strip()
+            code = self.console.run(shlex.split(operation.line), caller, self.output)
         if code:
-            raise Refusal(text)
-        return text
+            raise Refusal(self.output.getvalue().strip())
+
+    def handle(self, command: RunWorkerOperation, context: Context) -> str:
+        return self.output.getvalue().strip()
