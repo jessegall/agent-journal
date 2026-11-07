@@ -21,7 +21,7 @@ class MergeCheckoutRule(DriverRule):
 
     name = "workers.merge-waits-for-checkout"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, rows: EventRows, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: HookHistory) -> None:

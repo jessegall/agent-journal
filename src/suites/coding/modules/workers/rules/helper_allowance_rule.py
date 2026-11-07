@@ -16,7 +16,7 @@ class HelperAllowanceRule(DriverRule):
 
     name = "workers.helper-allowed"
     hook = HookEventName.PRE_TOOL_USE
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, settings: SettingValues) -> None:

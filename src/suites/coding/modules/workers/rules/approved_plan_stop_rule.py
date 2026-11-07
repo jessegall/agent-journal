@@ -17,7 +17,7 @@ class ApprovedPlanStopRule(DriverRule):
 
     name = "workers.approved-plan-at-stop"
     hook = HookEventName.STOP
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
     roles = [AgentRole.MAIN]
     priority = -10
 
