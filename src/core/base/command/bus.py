@@ -21,14 +21,15 @@ from core.base.command.explanation_rollback_error import ExplanationRollbackErro
 
 R = TypeVar("R")
 class Bus:
-    """Runs commands with the outermost lock setting and savepoints for nested locked work."""
+    """Runs commands in transactions: a locked command opens one unless it already runs inside one, and an unlocked
+    command opens none; nested commands use savepoints inside a transaction."""
 
     def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock, deadline: Deadline, timing: Timing, scopes: Scopes, policy: ScriptPolicy) -> None:
         self.container, self.database, self.registry, self.clock, self.deadline, self.timing, self.scopes, self.policy = container, database, registry, clock, deadline, timing, scopes, policy
 
     def run(self, command: Command[R], actor: Actor, skipped_guards: frozenset[str] = frozenset(), cause_id: int | None = None,
             environment_id: int | None = None, plugin_script: str = "") -> R:
-        if self.database.nested:
+        if self.database.nested and (self.database.has_transaction or not command.lock):
             return self.dispatch(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id, outside_runs=OutsideRuns(True, plugin_script, SINGLE_RUN_REASON)))
         if self.database.has_transaction:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
@@ -75,8 +76,9 @@ class Bus:
             return explanation
 
     def dispatch(self, command: Command[R], context: Context) -> R:
-        if not self.database.nested and not self.database.has_transaction:
-            return self.run_with_context(command, context)
+        if not self.database.has_transaction and (command.lock or not self.database.nested):
+            return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id,
+                            environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script)
         handler = self.handler(command)
         if type(handler).prepare is not Handler.prepare and not handler.caller_prepares:
             if self.database.has_transaction:

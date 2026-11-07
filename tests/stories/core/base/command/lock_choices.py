@@ -47,9 +47,9 @@ def test_an_unlocked_command_allows_another_connection_to_write_while_it_reads(n
     ("write", ["Existing pin"]),
     ("write-unlocked", ["Existing pin", "First pin"]),
     ("write-nested", ["Existing pin"]),
-    ("write-unlocked-nested", ["Existing pin", "First pin"]),
+    ("write-unlocked-nested", ["Existing pin"]),
 ])
-def test_only_the_outer_command_decides_whether_failure_rolls_back_the_writes(new_story, monkeypatch, line, remaining):
+def test_a_locked_command_rolls_back_its_own_writes_also_inside_an_unlocked_one(new_story, monkeypatch, line, remaining):
     story = new_story(fixture=WithLockCommands)
     original = Repository.save
 

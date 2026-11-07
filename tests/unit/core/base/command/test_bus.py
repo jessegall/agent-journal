@@ -403,9 +403,9 @@ def test_a_rolled_back_row_is_not_read_back_from_kept_rows(outside_container):
     assert CACHED_COUNTS == [0, 0, 1]
 
 
-def test_a_nested_command_uses_the_outer_commands_unlocked_mode(outside_container):
+def test_a_locked_command_inside_an_unlocked_one_runs_as_it_does_at_the_top(outside_container):
     outside_container.get(Bus).run(CreateItemsWithOutsideWork("First", "Second"), AGENT)
-    assert ROUNDS == [0] and WORK_RUNS == []
+    assert ROUNDS == [1, 2] and WORK_RUNS == ["item.create"]
     assert titles(outside_container) == ["First", "Second"]
 
 
