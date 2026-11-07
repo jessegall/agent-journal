@@ -1,19 +1,29 @@
 from core.base.driver.command_category import CommandCategory
 from core.base.setting.setting_scope import SettingScope
+from core.base.setting.ruled_settings import ruled_settings
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
+from core.base.setting.list_rule import ListRule
 
 
 MODULE_KEY = "journal.suites.coding"
 STARTS_HELPERS_SETTING = f"{MODULE_KEY}.builder-starts-helpers"
 AUTO_MODE_SETTING = f"{MODULE_KEY}.auto-mode"
 COMMAND_TYPES = f"{MODULE_KEY}.worker-command-types"
-CODING_SETTINGS = [
-    SettingValue("auto-mode", "Auto mode", "Assign the next open task when the builder finishes its current work.", SettingType.FLAG, default=True,
+KEEP_RUNNING_SETTING = f"{MODULE_KEY}.continue-while-delegatable"
+DESIGNER_ENABLED_SETTING = f"{MODULE_KEY}.designer-enabled"
+CODING_SETTING_VALUES = [
+    SettingValue("auto-mode", "Auto mode", "The main agent may also write code itself", SettingType.FLAG, default=True,
                  scope=SettingScope.ENVIRONMENT, person_set=True),
-    SettingValue("builder-starts-helpers", "Builder starts helpers", "Whether the builder may start helpers.",
+    SettingValue("builder-starts-helpers", "Use ordinary helpers", "Whether the main agent may start ordinary helpers.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True),
+    SettingValue("continue-while-delegatable", "Keep going while work can be delegated", "Keep the main agent working while open tasks can still be sent to workers.",
+                 SettingType.FLAG, default=False, person_set=True),
+    SettingValue("designer-enabled", "Use a designer", "Whether the main agent may start a designer, which writes a design document and changes no code.",
+                 SettingType.FLAG, default=False, person_set=True),
     SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run.", SettingType.LIST,
                  default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.TEST_RUN.value,
                           CommandCategory.BUILD.value), person_set=True),
 ]
+CODING_SETTING_RULES = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}
+CODING_SETTINGS = ruled_settings(MODULE_KEY, CODING_SETTING_VALUES, CODING_SETTING_RULES)

@@ -11,7 +11,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 
 class CodingEnvironment(StoryFixture):
-    """Environment main runs the coding suite, whose builder drives the main agent."""
+    """Environment main runs the coding suite, whose main driver drives the main agent."""
 
     parent = MainEnvironment
 
@@ -19,11 +19,11 @@ class CodingEnvironment(StoryFixture):
         story.run("suite choose coding --environment main")
 
     def expect(self, story: Story) -> None:
-        story.expect_text(lines.CURRENT_SUITE, "suite: coding", "main: coding.builder")
+        story.expect_text(lines.CURRENT_SUITE, "suite: coding", "main: coding.main")
 
 
 class BuilderStarted(StoryFixture):
-    """Session s-1 sent its first hook, which started story.agent under the builder."""
+    """Session s-1 sent its first hook, which started story.agent under the main driver."""
 
     parent = CodingEnvironment
 
@@ -47,19 +47,20 @@ class BuilderWithOpenTask(StoryFixture):
 
 
 class OrchestratorWithOpenTask(StoryFixture):
-    """The orchestrator drives the main agent in main, and task 1, Fix the cart, is open."""
+    """The main agent in main has Auto off and Keep going on, so it sends tasks to workers, and task 1, Fix the cart, is open."""
 
     parent = BuilderWithOpenTask
 
     def steps(self, story: Story) -> None:
-        story.run("driver choose coding.orchestrator --environment main")
+        story.run("setting set journal.suites.coding.auto-mode off --environment main")
+        story.run("setting set journal.suites.coding.continue-while-delegatable on --environment main")
 
     def expect(self, story: Story) -> None:
-        story.expect_text(lines.CURRENT_SUITE, "main: coding.orchestrator")
+        story.expect_text("setting show journal.suites.coding.auto-mode --environment main", "value: False")
 
 
 class HelperUnderBuilder(HelperExpectation, StoryFixture):
-    """The builder's session s-1 has a helper with session sub-1 under it: story.helper."""
+    """The main agent's session s-1 has a helper with session sub-1 under it: story.helper."""
 
     parent = BuilderStarted
 
@@ -68,7 +69,7 @@ class HelperUnderBuilder(HelperExpectation, StoryFixture):
 
 
 class BuilderWithStartedTask(StoryFixture):
-    """The builder's agent started task 1, Fix the cart, and holds it."""
+    """The main agent started task 1, Fix the cart, and holds it."""
 
     parent = BuilderWithOpenTask
 
@@ -104,7 +105,7 @@ class BuilderWithBriefedTask(StoryFixture):
 
 
 class BuilderWithUnreadTask(StoryFixture):
-    """The builder's agent started task 1 and has not read its brief, so it is blocked."""
+    """The main agent started task 1 and has not read its brief, so it is blocked."""
 
     parent = BuilderWithBriefedTask
 

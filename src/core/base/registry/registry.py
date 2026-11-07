@@ -5,7 +5,9 @@ from core.base.registry.profile_entry import ProfileEntry
 from core.base.refusal import Refusal
 from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
+from core.base.agent_group_book import AgentGroupBook
 from core.base.agent_type_book import AgentTypeBook
+from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.agent_type_entry import AgentTypeEntry
 from dataclasses import asdict, dataclass, field, replace
 from functools import cached_property, lru_cache
@@ -82,6 +84,7 @@ class Registry:
     inspector_slots: tuple[str, ...] = ()
     state_additions: tuple[StateAdditionEntry, ...] = ()
     agent_types: tuple[AgentTypeEntry, ...] = ()
+    agent_groups: tuple[AgentGroupEntry, ...] = ()
     profiles: tuple[ProfileEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
@@ -159,6 +162,7 @@ class Registry:
             inspectors=tuple(InspectorEntry.restored(inspector) for inspector in entries.get("inspectors", [])),
             state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
             agent_types=tuple(AgentTypeEntry.restored(entry) for entry in entries.get("agent_types", [])),
+            agent_groups=tuple(AgentGroupEntry.restored(entry) for entry in entries.get("agent_groups", [])),
             profiles=tuple(ProfileEntry.restored(entry) for entry in entries.get("profiles", [])),
             button_slots=tuple(entries.get("button_slots", [])),
             inspector_slots=tuple(entries.get("inspector_slots", [])),
@@ -216,6 +220,7 @@ class Registry:
             "inspectors": [inspector.stored() for inspector in self.inspectors],
             "state_additions": [asdict(addition) for addition in self.state_additions],
             "agent_types": [asdict(entry) for entry in self.agent_types],
+            "agent_groups": [asdict(entry) for entry in self.agent_groups],
             "profiles": [asdict(entry) for entry in self.profiles],
             "button_slots": list(self.button_slots),
             "inspector_slots": list(self.inspector_slots),
@@ -260,6 +265,9 @@ class Registry:
 
     def state_book(self) -> StateBook:
         return StateBook(tuple(entry.addition() for entry in self.state_additions))
+
+    def agent_group_book(self) -> AgentGroupBook:
+        return AgentGroupBook(self.agent_groups)
 
     def agent_type_book(self) -> AgentTypeBook:
         return AgentTypeBook(self.agent_types)

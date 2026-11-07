@@ -13,3 +13,4 @@ class MergeWorker(Command[MergeOutcome]):
 
     worker_id: int
     important_answer: str = ""
+    reconciled: str = ""

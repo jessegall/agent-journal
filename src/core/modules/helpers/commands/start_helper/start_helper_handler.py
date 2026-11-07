@@ -65,6 +65,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         self.limits.checked_launcher()
         parent = self.limits.checked_parent(context)
         self.limits.checked_new_place(profile.name)
+        self.limits.checked_new_session(profile.name)
         reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
         if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
@@ -77,7 +78,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         helper = self.bus.dispatch(start, context)
         self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=selection.model,
                                        description=command.given_name or profile.name, brief=command.brief, new_agent_reason=INDEPENDENT_REASON if profile.independent and not command.new_agent_reason.strip() else command.new_agent_reason.strip(), review_plan_id=command.review_plan_id, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
-                                       source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
+                                       source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=0.0), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
         return HelperStarted(helper, selection.note)
@@ -126,7 +127,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         return f"{program} is out{availability}: {state.line}; started as requested"
 
     def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
-        model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier))
+        model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name)
         self.programs.checked(program, self.folders.folder(parent))
         return model
 

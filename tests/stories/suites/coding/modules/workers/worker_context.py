@@ -30,7 +30,7 @@ class AssignedWorker:
 @pytest.fixture
 def worker_scenario(new_story):
     story = new_story(fixture=SelectedTrail)
-    story.expect_success("driver choose coding.orchestrator --environment main")
+    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
     repository = repository_environment(story)
     return WorkerTrail(story, repository)
 

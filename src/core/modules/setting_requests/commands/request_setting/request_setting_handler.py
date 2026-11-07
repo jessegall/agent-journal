@@ -10,6 +10,7 @@ from core.modules.setting_requests.commands.request_setting.request_setting impo
 from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.setting_revision import SettingRevision
 from core.modules.settings.support.setting_text import SettingText
 
 APPROVE_OPTION = "Yes, approve"
@@ -21,8 +22,8 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
 
     command = RequestSetting
 
-    def __init__(self, declared: SettingCatalogue, values: SettingReader, bus: Bus) -> None:
-        self.declared, self.values, self.bus = declared, values, bus
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, bus: Bus, revision: SettingRevision) -> None:
+        self.declared, self.values, self.bus, self.revision = declared, values, bus, revision
 
     def handle(self, command: RequestSetting, context: Context) -> ApprovalRequest:
         if context.actor.type is not ActorType.AGENT:
@@ -38,4 +39,5 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
         arguments = ("setting", "set", entry.key, command.text)
         if command.project:
             arguments = (*arguments, "--project")
+        arguments = (*arguments, "--expected-revision", self.revision.current(entry.key))
         return self.bus.dispatch(RequestUserApproval(UserApproval(f"Change {entry.title}?\n{details}"), arguments), context)

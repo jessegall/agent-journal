@@ -15,7 +15,7 @@ def test_a_removed_driver_uses_the_default_without_changing_settings(new_story, 
     story.container.get(ModuleRemoval).remove("samples")
     code, text = story.synced()
     story.expect_rows(code == 0)
-    story.expect_text("suite current main", "suite: coding", "main: coding.builder")
+    story.expect_text("suite current main", "suite: coding", "main: coding.main")
     story.expect_text("setting show journal.core.drivers.suite --environment main", f"value: {saved_suite}")
     story.expect_text("setting show journal.core.drivers.driver.main --environment main", "value: samples.lead")
     story.expect_rows({"messages.chat", "coding.files"}.issubset({window.name for window in WindowsRoute(story.home).windows("main")}))

@@ -98,7 +98,7 @@ def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(lead_server
 def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_decides(builder_server):
     story = builder_server
     story.expect_hook_answer("/hook", lead_stop("server-5"), 200, "task:1 is yours now")
-    story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.builder", "answer: refused")
+    story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.main", "answer: refused")
 
 
 def test_a_stop_that_waits_past_its_limit_for_another_hook_is_held(lead_server):

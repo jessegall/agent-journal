@@ -35,6 +35,7 @@ from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_shares import ProgramShares
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.base.scope.scopes import Scopes
+from core.modules.helpers.support.agent_admission import AgentAdmission
 from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 
@@ -43,7 +44,8 @@ class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission) -> None:
+        self.admission = admission
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
         self.rows = rows
@@ -57,7 +59,9 @@ class WorkerResume:
             return self.states.outage_state(worker.program)
 
     def may_resume(self, worker: Agent) -> bool:
-        return self.program_state(worker).is_ready
+        with self.scopes.row_scope(worker):
+            permitted = not self.admission.resume_reasons("worker", worker.profile) and not self.admission.model_reasons("worker", worker.profile, worker.program, worker.program_model)
+        return permitted and self.program_state(worker).is_ready
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
         if self.resume(worker, actor) is not LaunchAnswer.RUNNING:

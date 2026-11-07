@@ -22,7 +22,7 @@ class IdleWorkerStopRule(DriverRule):
 
     name = "workers.idle-worker-stop"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 

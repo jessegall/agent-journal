@@ -15,7 +15,7 @@ class WorkersOutRule(DriverRule):
     name = "workers.workers-out-at-start"
     start_line_rule = True
     hook = HookEventName.SESSION_START
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, worktrees: WorktreeQuery) -> None:

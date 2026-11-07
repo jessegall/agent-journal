@@ -36,10 +36,9 @@ def test_the_terminal_window_is_a_page_window_of_one_agent_that_reads_its_termin
     window.expect_window_allowed("coding.terminal", "agent terminal 2 --after 0")
 
 
-def test_the_coding_suite_gives_the_orchestrator_its_own_home_layout_and_every_other_driver_the_plain_one(new_story):
+def test_the_coding_suite_gives_the_main_driver_the_plain_home_layout(new_story):
     story = new_story(fixture=CodingEnvironment)
-    story.expect_success("suite layout main home --driver coding.orchestrator", "suite: coding", "page: home", "driver: coding.orchestrator")
-    story.expect_success("suite layout main home --driver coding.builder", "suite: coding", "page: home", "driver: coding.builder")
+    story.expect_success("suite layout main home --driver coding.main", "suite: coding", "page: home", "driver: coding.main")
     story.expect_success("suite layout main agent --driver coding.worker", "suite: coding", "page: agent", "driver: coding.worker")
 
 

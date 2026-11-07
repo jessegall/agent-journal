@@ -12,6 +12,7 @@ export default windowBuild({
         "file-edits": here("./src/file-edits.js"),
         terminal: here("./src/terminal.js"),
         "work-mode": here("./src/work-mode.js"),
+        "agent-settings": here("./src/agent-settings.js"),
     },
     outDir: here("./dist"),
 });

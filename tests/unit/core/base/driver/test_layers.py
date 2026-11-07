@@ -42,7 +42,7 @@ def layers() -> Layers:
 
 
 def test_layers_go_newest_activation_first_so_a_resumed_row_is_on_top_and_two_rows_of_one_overlay_are_two_layers():
-    assert [layer.row.ref for layer in layers().active(7, "coding.builder")] == ["wait:1", "sequence_run:5", "wait:2"]
+    assert [layer.row.ref for layer in layers().active(7, "coding.main")] == ["wait:1", "sequence_run:5", "wait:2"]
 
 
 def test_an_overlay_whose_drivers_do_not_name_the_driver_adds_no_layer():

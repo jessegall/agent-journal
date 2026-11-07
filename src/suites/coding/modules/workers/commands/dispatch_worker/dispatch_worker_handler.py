@@ -25,6 +25,7 @@ from suites.coding.modules.workers.support.worker_settings import LIBRARY_LINKS
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
+from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
@@ -46,8 +47,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers) -> None:
-        self.places, self.copies, self.available_workers = places, copies, available_workers
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission) -> None:
+        self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
@@ -67,9 +68,10 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         caller = self.rows.find(Agent, context.actor.id)
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
+        self.admission.checked_new("worker", profile.name)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
-        self.check_model(program, model)
+        self.check_model(program, model, profile.name)
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
@@ -108,7 +110,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
         return profile
 
-    def check_model(self, program: str, model: str) -> None:
-        names = self.models.allowed(self.providers.provider(program))
+    def check_model(self, program: str, model: str, profile: str) -> None:
+        names = self.models.allowed(self.providers.provider(program), "worker", profile)
         if model not in names:
             raise Refusal(f"{model} cannot run on {program}; choose a model {program} may run: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")

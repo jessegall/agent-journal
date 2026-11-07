@@ -10,7 +10,7 @@ agent what to do next at the moments it would get wrong, so the next session pic
 - **Chat, questions and dumps.** You leave messages in the viewer or on a paired phone. An agent asks a question with
   choices when it needs a decision. A dump is notes and files you pour in for the agent to file as rows.
 - **Memory.** Facts, rules and reminders reach the agent at every start and after every compaction.
-- **Workers and reviews.** A builder hands tasks to workers, each in its own git worktree; a worker proves each point of
+- **Workers and reviews.** The main agent hands tasks to workers, each in its own git worktree; a worker proves each point of
   its task and its work is merged only once each proof is checked.
 - **Processes.** Long shell lines move to the background; every output is numbered so the agent reads the part it needs.
 - **Documents, reports, sequences and templates**, **phones** and **share links**, and **plugins**.

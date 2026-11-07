@@ -34,7 +34,7 @@ def test_a_button_names_its_module_and_requires_a_persons_allowance(third_party,
 
 def test_a_third_party_suite_adds_its_window_without_changing_the_default(third_party, third_party_cookie):
     story = third_party.story
-    story.expect_success("suite current main", "suite: coding", "drivers: helper: coding.helper, main: coding.builder, worker: coding.worker")
+    story.expect_success("suite current main", "suite: coding", "drivers: helper: coding.helper, main: coding.main, worker: coding.worker")
     offered = json.loads(viewer_body(third_party, "/api/windows?environment=main", third_party_cookie))
     story.expect_rows("findings.findings" not in json.dumps(offered))
     story.expect_success("suite choose acme --environment main", actor=story.user)

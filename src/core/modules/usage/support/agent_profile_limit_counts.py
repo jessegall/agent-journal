@@ -9,3 +9,4 @@ class AgentProfileLimitCounts:
     kept: int
     run_limit: int
     kept_limit: int
+    group: str = ""

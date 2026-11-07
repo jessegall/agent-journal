@@ -239,7 +239,7 @@ def test_a_launcher_failure_is_kept_in_the_output_and_releases_the_reservation(w
 def test_a_queued_send_keeps_the_request_selected_when_it_was_accepted(new_story, monkeypatch, requester_ends):
     story = new_story(fixture=SelectedTrail)
     scenario = Scenario(story)
-    story.expect_success("driver choose coding.orchestrator --environment main")
+    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
     repository_environment(story)
     worker = dispatched_worker(story)
     scenario.switch(1)

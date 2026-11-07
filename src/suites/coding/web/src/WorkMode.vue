@@ -6,12 +6,12 @@ const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
 const MERGER = "journal.suites.coding.workers.merger-on";
 const MODES = [
-    {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
-    {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
+    {key: "builder", label: "Builder", tip: {title: "Builder", line: "Auto on: the agent writes code and assigns work to workers when useful."}},
+    {key: "orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "Auto off: the agent plans, hands the work to workers, then reviews and merges it; it writes no project file."}},
 ];
 const view = useWindow();
-view.state["mode.environment"] = view.environment;
-const mode = ref(MODES[0].key);
+const mode = ref("");
+const revision = ref("");
 const auto = ref(true);
 const dispatches = ref(true);
 const merger = ref(true);
@@ -20,10 +20,10 @@ const root = ref(null);
 useOutside(root, () => (open.value = false));
 const failure = ref("");
 
-watch(view.props.mode.data, (current) => {
+watch(view.props.work.data, (current) => {
     if (!current) return;
-    const driver = MODES.find((one) => current.drivers.includes(one.key));
-    if (driver) mode.value = driver.key;
+    mode.value = MODES.some((one) => one.key === current.workflow) ? current.workflow : "";
+    revision.value = current.revision;
 }, {immediate: true});
 for (const [key, held] of [["auto", auto], ["dispatches", dispatches], ["merger", merger]]) {
     watch(view.props[key].data, (answer) => { if (answer) held.value = answer.value; }, {immediate: true});
@@ -40,7 +40,7 @@ const asking = ref(null);
 
 async function switchMode(key) {
     asking.value = null;
-    if (await run(`driver choose ${key} --environment ${view.environment}`)) mode.value = key;
+    if (await run(`work-settings preset ${key} --revision ${revision.value}`)) await view.reload("work");
 }
 
 // a switch while the agent works asks first, so a stray click never changes it; none while it is idle

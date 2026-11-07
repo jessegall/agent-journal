@@ -32,6 +32,12 @@ CODING_WORK_MODE_SKELETON = [
     SkeletonPart.row([SkeletonPart.block(24, "70px"), SkeletonPart.block(24, "200px"), SkeletonPart.block(24, "24px")], spacing=10, padding="8px 12px"),
 ]
 
+CODING_AGENT_SETTINGS_SKELETON = [
+    SkeletonPart.row([SkeletonPart.block(24, "120px")], padding="8px 12px"),
+    SkeletonPart.row([SkeletonPart.block(24, "100%")], padding="4px 12px"),
+    SkeletonPart.row([SkeletonPart.block(24, "100%")], padding="4px 12px"),
+]
+
 CODING_FILE_FEED_SKELETON = [
     SkeletonPart.row([SkeletonPart.block(32)], padding="8px 12px"),
     SkeletonPart.grid([

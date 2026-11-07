@@ -3,6 +3,7 @@ import inspect
 from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
+from core.base.agent_group import AgentGroup
 from core.base.agent_type import AgentType
 from core.base.profile.agent_profile import AgentProfile
 
@@ -87,6 +88,7 @@ class Module:
     inspectors: ClassVar[list[InspectorDeclaration]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
     agent_types: ClassVar[list[AgentType]] = []
+    agent_groups: ClassVar[list[AgentGroup]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
     settings: ClassVar[Sequence[SettingNode]] = []

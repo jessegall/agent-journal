@@ -10,9 +10,9 @@ EVENT = HookEvent(1, "claude", "stop", "s1", "f1", 1, "agent", "main", None, Non
 
 
 def test_a_hook_names_its_event_and_the_layer_it_is_asked_for():
-    hook = AgentHook(EVENT, 3, 1, "main", "coding.builder", TIMESTAMP, OpenRow("wait", 7, TIMESTAMP))
+    hook = AgentHook(EVENT, 3, 1, "main", "coding.main", TIMESTAMP, OpenRow("wait", 7, TIMESTAMP))
     assert (hook.hook_name, hook.layer_ref) == ("stop", "wait:7")
 
 
 def test_a_hook_asked_for_the_driver_has_no_layer():
-    assert AgentHook(EVENT, 3, 1, "main", "coding.builder", TIMESTAMP).layer_ref == ""
+    assert AgentHook(EVENT, 3, 1, "main", "coding.main", TIMESTAMP).layer_ref == ""

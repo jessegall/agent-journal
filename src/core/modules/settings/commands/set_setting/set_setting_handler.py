@@ -7,8 +7,9 @@ from core.modules.settings.commands.set_setting.set_setting import SetSetting
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.setting_revision import SettingRevision
 from core.modules.settings.support.current_setting import CurrentSetting
-from core.modules.settings.support.setting_text import SettingText
+from core.modules.settings.support.checked_setting_value import CheckedSettingValue
 
 
 class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
@@ -17,12 +18,14 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
 
     command = SetSetting
 
-    def __init__(self, declared: SettingCatalogue, values: SettingReader, store: SettingStore) -> None:
-        self.declared, self.values, self.store = declared, values, store
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, store: SettingStore, revision: SettingRevision) -> None:
+        self.declared, self.values, self.store, self.revision = declared, values, store, revision
 
     def handle(self, command: SetSetting, context: Context) -> CurrentSetting:
         entry = self.declared.value(command.key)
-        value =SettingText().value(entry, command.text)
+        if command.expected_revision and command.expected_revision != self.revision.current(entry.key):
+            raise Refusal(f"{entry.key} changed since this change was asked for", "ask for the change again")
+        value = CheckedSettingValue().value(entry, command.text)
         environment_id = self.environment(entry, command.project, context.environment_id)
         if entry.secret:
             self.store.write_secret(entry.key, str(value), environment_id, context)

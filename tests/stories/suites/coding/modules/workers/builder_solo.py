@@ -8,4 +8,4 @@ WORKER_DISPATCH = HookSamples.shell("journal worker dispatch --model sonnet 1", 
 def test_a_builder_whose_setting_keeps_it_solo_is_refused_a_dispatch(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_success("setting make journal.suites.coding.workers.builder-dispatches-workers false", "key: journal.suites.coding.workers.builder-dispatches-workers")
-    story.expect_hook_refusal("s-1", WORKER_DISPATCH, "this builder builds its tasks itself")
+    story.expect_hook_refusal("s-1", WORKER_DISPATCH, "the main agent sends no workers here")

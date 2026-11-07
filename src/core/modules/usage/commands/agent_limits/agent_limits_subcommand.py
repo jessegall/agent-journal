@@ -35,7 +35,8 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         kept = tuple(self.queries.query(AgentCounts).all_rows())
         pending_ids = tuple(self.work.pending())
         pending = tuple(self.queries.query(Agent).matching(Among("id", pending_ids)).matching(IsNull("retired_at")).all_rows()) if pending_ids else ()
-        titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
+        installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
+        titles = {name: profile.display_title for name, profile in installed_profiles.items()}
         counts = []
         for entry in self.registry.agent_types:
             if not entry.run_limit_key:
@@ -44,14 +45,19 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
             extra = tuple(agent for agent in pending if agent.role == entry.key and agent.ended_at is not None)
             limits = self.limits.read(entry)
             profiles = []
-            for profile in sorted({agent.profile for agent in agents if agent.profile and entry.profile_limits_key}):
+            installed = {name for name, profile in installed_profiles.items() if profile.agent_type == entry.key} if entry.profile_limits_key else set()
+            for profile in sorted({agent.profile for agent in agents if agent.profile and entry.profile_limits_key} | installed):
                 matching = tuple(agent for agent in agents if agent.profile == profile)
                 profile_limits = self.limits.read(entry, profile)
-                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.running for agent in matching) + sum(agent.profile == profile for agent in extra), sum(agent.kept for agent in matching), profile_limits.run, profile_limits.kept))
+                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.running for agent in matching) + sum(agent.profile == profile for agent in extra), sum(agent.kept for agent in matching), profile_limits.run, profile_limits.kept, self.group_key(entry.key, profile)))
             counts.append(AgentLimitCounts(entry.key, entry.label, sum(agent.running for agent in agents) + len(extra), sum(agent.kept for agent in agents), limits.run, limits.kept,
                                           entry.run_limit_key, entry.kept_limit_key, bool(entry.profile_limits_key), tuple(profiles),
                                           self.settings.current(entry.run_limit_key).source, self.settings.current(entry.kept_limit_key).source))
         return tuple(counts)
+
+    def group_key(self, agent_type: str, profile: str) -> str:
+        group = self.registry.agent_group_book().group(agent_type, profile)
+        return group.key if group else ""
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, tuple):

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from core.base.setting.setting_declaration import GROUP_TYPE, SettingDefault
+from core.base.setting.setting_rule import SettingRuleText
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 
@@ -28,11 +29,15 @@ class SettingEntry:
     enabled: bool
     target: str = ""
     person_set: bool = False
+    rule: str = ""
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SettingEntry":
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
-                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False))
+                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""))
+
+    def problems(self, value: object) -> list[str]:
+        return list(SettingRuleText().problems(self.rule, self.key, value))
 
     def accepts(self, value: object) -> bool:
         if self.type == GROUP_TYPE:

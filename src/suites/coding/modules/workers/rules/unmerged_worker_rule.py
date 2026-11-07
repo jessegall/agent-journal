@@ -29,7 +29,7 @@ class UnmergedWorkerRule(DriverRule):
 
     name = "workers.unmerged-worker"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: NudgeRecords, settings: SettingValues, queries: Queries) -> None:

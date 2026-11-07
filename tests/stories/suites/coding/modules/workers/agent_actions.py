@@ -13,7 +13,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 @pytest.fixture
 def agent_task_server(new_story, monkeypatch):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_success("driver choose coding.orchestrator --environment main", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main", actor=story.user)
     repository_environment(story)
     first = story.new_row_id('task make "First calculation" --brief "Check the cart calculation"', actor=story.agent)
     worker_id = story.new_row_id(f"worker dispatch --model sonnet {first}", actor=story.agent)

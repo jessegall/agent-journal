@@ -40,8 +40,8 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     record = stop_record(stop_server)
     checks = {check["rule"]: check for check in record["stop_checks"]}
     story.expect_rows(record["answer"] == "refused", "task:1 is in hand" in checks["tasks.carry-on-at-stop"]["reason"],
-                      not checks["coding.builder-next-task-at-stop"]["applied"],
-                      checks["coding.builder-next-task-at-stop"]["reason"] == "the agent already has a started task")
+                      not checks["coding.main-stop"]["applied"],
+                      checks["coding.main-stop"]["reason"] == "no task can be handed to the main agent or sent to a worker")
 
 
 @pytest.mark.parametrize("places,answer", [(0, "allowed"), (1, "refused")])
@@ -62,11 +62,11 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, pla
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):
     story = new_story(fixture=OrchestratorWithReadyPlanTask)
-    story.expect_success("driver choose coding.builder --environment main")
+    story.expect_success("setting set journal.suites.coding.auto-mode on --environment main")
     story.expect_success("plan approve 1 --environment main", actor=story.user)
     story.expect_success('task make "Loose task" --brief "Do this after the plan starts" --environment main', actor=story.agent)
     with server_story(story) as server:
         record = stop_record(server)
-        check = next(check for check in record["stop_checks"] if check["rule"] == "coding.builder-next-task-at-stop")
+        check = next(check for check in record["stop_checks"] if check["rule"] == "coding.main-stop")
         story.expect_rows(record["answer"] == "refused", check["outcome"] == "refused", not check["applied"])
         story.expect_text("task show 3", "state: open")

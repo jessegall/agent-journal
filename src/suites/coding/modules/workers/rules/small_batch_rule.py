@@ -16,7 +16,7 @@ class SmallBatchRule(DriverRule):
 
     name = "workers.small-batch"
     hook = HookEventName.POST_TOOL_USE
-    drivers = ["coding.builder", "coding.orchestrator"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, settings: SettingValues) -> None:

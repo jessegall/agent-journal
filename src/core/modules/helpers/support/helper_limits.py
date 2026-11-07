@@ -14,6 +14,7 @@ from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.helpers.support.agent_use import AgentUse
+from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.agents.support.launcher_link import LauncherLink
@@ -28,8 +29,8 @@ class HelperLimits:
     """Who may start a helper, on which model, and how many of a profile run or are kept. A helper with an open job
     holds a run place while its resume is on its way, before its session binds."""
 
-    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits, kept: KeptHelpers, use: AgentUse) -> None:
-        self.use = use
+    def __init__(self, queries: Queries, settings: SettingValues, suites: SuiteChoice, models: AllowedModels, providers: Providers, agents: AgentRows, launcher: LauncherLink, limits: AgentTypeLimits, kept: KeptHelpers, use: AgentUse, admission: AgentAdmission) -> None:
+        self.use, self.admission = use, admission
         self.limits, self.kept = limits, kept
         self.launcher = launcher
         self.queries, self.settings, self.suites, self.models, self.providers, self.agents = queries, settings, suites, models, providers, agents
@@ -72,10 +73,19 @@ class HelperLimits:
     def helpers(self, profile: str) -> Query[Agent]:
         return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)
 
-    def checked_model(self, program: str, model: str) -> str:
+    def checked_new_session(self, profile: str) -> None:
+        self.admission.checked_new("helper", profile)
+
+    def checked_resume_session(self, helper: Agent) -> None:
+        self.admission.checked_resume("helper", helper.profile)
+        self.admission.checked_model("helper", helper.profile, helper.program, helper.program_model)
+
+    def checked_model(self, program: str, model: str, profile: str = "") -> str:
         if not model:
             raise Refusal(f"this profile has no model for {program}", "add --model <model>")
-        names = self.models.allowed(self.providers.provider(program))
+        if profile:
+            self.admission.checked_provider("helper", profile, program)
+        names = self.models.allowed(self.providers.provider(program), "helper" if profile else "", profile)
         if model not in names:
             raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model

@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from core.base.setting.setting_declaration import SettingDeclaration, SettingDefault
 from core.base.setting.setting_node import SettingNode
 from core.base.setting.setting_limits import length_problems
+from core.base.setting.setting_rule import SettingRule, SettingRuleText
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.type_guards import is_list, is_text_list, is_tuple
@@ -25,6 +26,7 @@ class SettingValue:
     scope: SettingScope = SettingScope.LAYERED
     choices: Sequence[str] = ()
     person_set: bool = False
+    rule: SettingRule | None = None
 
     def accepts(self, value: object) -> bool:
         match self.type:
@@ -46,7 +48,7 @@ class SettingValue:
 
     def declaration(self) -> SettingDeclaration:
         return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
-                                  tuple(self.choices), False, True, person_set=self.person_set)
+                                  tuple(self.choices), False, True, person_set=self.person_set, rule=SettingRuleText.to_text(self.rule))
 
     def members(self) -> Sequence[SettingNode]:
         return ()
