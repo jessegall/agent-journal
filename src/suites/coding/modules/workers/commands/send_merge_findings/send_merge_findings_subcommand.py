@@ -1,0 +1,19 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.subcommand.subcommand import Subcommand
+from suites.coding.modules.workers.commands.send_merge_findings.send_merge_findings import SendMergeFindings
+
+
+class SendMergeFindingsSubcommand(Subcommand[SendMergeFindings, None]):
+    """`journal merger findings <worker> "<findings>"`: sends the judge's findings back to the worker."""
+
+    cli_name = "merger"
+    name = "findings"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("worker_id", type=int)
+        parser.add_argument("findings")
+
+    def command(self, arguments: Namespace, caller: Caller) -> SendMergeFindings:
+        return SendMergeFindings(arguments.worker_id, arguments.findings)
