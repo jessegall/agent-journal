@@ -11,7 +11,6 @@ class RemoveLibraryItemHandler(Handler[RemoveLibraryItem, LibraryItem]):
     for an admin."""
 
     command = RemoveLibraryItem
-    transactional = False
 
     def __init__(self, writes: LibraryWrites) -> None:
         self.writes = writes

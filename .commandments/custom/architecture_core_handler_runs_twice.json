@@ -98,8 +98,7 @@
                         },
                         {
                             "nameIn": [
-                                "runs_once",
-                                "transactional"
+                                "runs_once"
                             ]
                         }
                     ]

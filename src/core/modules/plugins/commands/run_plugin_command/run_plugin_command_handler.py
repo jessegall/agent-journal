@@ -9,7 +9,6 @@ class RunPluginCommandHandler(Handler[RunPluginCommand, PluginCommandRun]):
     """Holds no write lock, so a slow command makes nobody else wait."""
 
     command = RunPluginCommand
-    transactional = False
 
     def __init__(self, runner: PluginCommandRunner) -> None:
         self.runner = runner

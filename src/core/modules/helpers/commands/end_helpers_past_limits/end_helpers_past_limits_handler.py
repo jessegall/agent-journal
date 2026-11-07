@@ -27,7 +27,6 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
     the status files outside any transaction, and leaves every other type of agent alone."""
 
     command = EndHelpersPastLimits
-    transactional = False
 
     def __init__(self, queries: Queries, agents: AgentRows, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus) -> None:
         self.queries, self.agents, self.jobs, self.settings, self.files, self.scopes = queries, agents, jobs, settings, files, scopes

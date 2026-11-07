@@ -11,7 +11,6 @@ class RevokeLibraryTokenHandler(Handler[RevokeLibraryToken, LibraryToken]):
     admin or the token's owner."""
 
     command = RevokeLibraryToken
-    transactional = False
 
     def __init__(self, people: LibraryPeople) -> None:
         self.people = people

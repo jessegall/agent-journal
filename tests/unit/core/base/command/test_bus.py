@@ -221,6 +221,7 @@ class KeptItemHandler(CreateItemWithOutsideWorkHandler):
 
 @dataclass(frozen=True)
 class CreateItemsWithOutsideWork(Command[Item]):
+    lock = False
     first: str
     second: str
 
@@ -229,13 +230,12 @@ class CreateItemsWithOutsideWorkHandler(Handler[CreateItemsWithOutsideWork, Item
     """Runs two commands of its own, as a handler with outside work between them does."""
 
     command = CreateItemsWithOutsideWork
-    transactional = False
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
     def handle(self, command: CreateItemsWithOutsideWork, context: Context) -> Item:
-        self.bus.run_with_context(MakeItem(title=command.first), context)
+        self.bus.run(MakeItem(title=command.first), context.actor)
         return self.bus.run_with_context(CreateItemWithOutsideWork(command.second), context)
 
 
@@ -254,12 +254,11 @@ class RecordContextHandler(Handler[RecordContext, int]):
 
 @dataclass(frozen=True)
 class PassedOn(Command[int]):
-    pass
+    lock = False
 
 
 class PassedOnHandler(Handler[PassedOn, int]):
     command = PassedOn
-    transactional = False
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
@@ -353,8 +352,8 @@ def test_a_command_is_run_at_the_top_outside_a_transaction_and_nested_only_insid
     with container.get(Database).transaction():
         with pytest.raises(TransactionError, match="dispatch it"):
             bus.run(MakeItem(title="Dune"), AGENT)
-    with pytest.raises(TransactionError, match="run it instead"):
-        bus.dispatch(MakeItem(title="Dune"), Context(AGENT, bus.clock.timestamp(), MakeItem(title="Dune")))
+    item = bus.dispatch(MakeItem(title="Dune"), Context(AGENT, bus.clock.timestamp(), MakeItem(title="Dune")))
+    assert item.title == "Dune"
 
 
 def test_a_command_no_handler_carries_out_is_a_clear_fault(container):
@@ -404,9 +403,9 @@ def test_a_rolled_back_row_is_not_read_back_from_kept_rows(outside_container):
     assert CACHED_COUNTS == [0, 0, 1]
 
 
-def test_a_nested_command_of_a_handler_with_no_transaction_rolls_back_alone(outside_container):
+def test_a_nested_command_uses_the_outer_commands_unlocked_mode(outside_container):
     outside_container.get(Bus).run(CreateItemsWithOutsideWork("First", "Second"), AGENT)
-    assert ROUNDS == [1, 2]
+    assert ROUNDS == [0] and WORK_RUNS == []
     assert titles(outside_container) == ["First", "Second"]
 
 
@@ -434,3 +433,9 @@ def test_a_dispatch_refuses_a_handler_with_a_prepare_step(container):
     command = PreparedItem("Dune")
     with container.get(Database).transaction(), pytest.raises(TransactionError, match="has a prepare step"):
         bus.dispatch(command, Context(AGENT, bus.clock.timestamp(), command))
+
+
+def test_lock_is_command_metadata_and_defaults_to_true():
+    assert MakeItem.lock is True
+    assert CreateItemsWithOutsideWork.lock is False
+    assert CreateItemsWithOutsideWork("First", "Second").field_values(()) == {"first": "First", "second": "Second"}

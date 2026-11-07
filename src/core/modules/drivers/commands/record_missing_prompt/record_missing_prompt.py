@@ -9,4 +9,6 @@ class RecordMissingPrompt(Command[HookCall]):
     """Keeps a prompt typed in the caller's terminal whose own hook never reached the journal, as the prompt hook
     call it would have made."""
 
+    lock = False
+
     text: str

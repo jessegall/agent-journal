@@ -9,7 +9,6 @@ class LogoutTunlerHandler(Handler[LogoutTunler, str]):
     """Asks the tunler program to log out."""
 
     command = LogoutTunler
-    transactional = False
 
     def __init__(self, client: TunlerClient) -> None:
         self.client = client

@@ -8,6 +8,8 @@ from core.modules.pins.models.pin import Pin
 class MakePin(Command[Pin]):
     """Pins a link above the chat of the caller's environment."""
 
+    lock = False
+
     title: str
     link: str
     button_label: str

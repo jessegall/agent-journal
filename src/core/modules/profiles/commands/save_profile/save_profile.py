@@ -8,4 +8,6 @@ from core.base.profile.agent_profile import AgentProfile
 class SaveProfile(Command[AgentProfile]):
     """A person writes a profile: a new one, or new words for one that exists."""
 
+    lock = False
+
     profile: AgentProfile

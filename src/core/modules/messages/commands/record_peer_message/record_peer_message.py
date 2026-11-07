@@ -8,6 +8,8 @@ from core.modules.messages.models.message import Message
 class RecordPeerMessage(Command[Message]):
     """Keep a message another agent sent to this agent, or this agent sent to another, in its environment's chat."""
 
+    lock = False
+
     agent_id: int
     sender: str
     text: str

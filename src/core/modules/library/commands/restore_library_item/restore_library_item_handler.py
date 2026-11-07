@@ -12,7 +12,6 @@ class RestoreLibraryItemHandler(Handler[RestoreLibraryItem, RestoredLibraryItem]
     person restores, and the server asks for edit rights, or admin rights for a removed item."""
 
     command = RestoreLibraryItem
-    transactional = False
 
     def __init__(self, writes: LibraryWrites) -> None:
         self.writes = writes

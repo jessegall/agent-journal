@@ -8,5 +8,7 @@ from core.modules.memories.models.memory_mark import MemoryMark
 class OpenMemoryMark(Command[MemoryMark]):
     """Opens a context mark for an agent at the percent its context window passed."""
 
+    lock = False
+
     agent_id: int
     percent: int

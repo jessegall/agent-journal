@@ -18,7 +18,6 @@ class ReadTaskBriefHandler(Handler[ReadTaskBrief, TaskBrief]):
     """Answers the task's brief with its comments, and keeps a read of the task for the agent that asked, once."""
 
     command = ReadTaskBrief
-    transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, comments: RowComments, reader: TaskContextReader) -> None:
         self.queries, self.bus, self.comments = queries, bus, comments
