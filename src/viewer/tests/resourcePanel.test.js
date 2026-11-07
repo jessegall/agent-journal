@@ -226,6 +226,8 @@ test("a question opens with its text and a button for each option, and a pick an
     expect(lines).toContainEqual(["question", "answer", "4", "--answer", "Cart"]);
 });
 
+const leaving = () => new Promise((resolve) => setTimeout(resolve, 450));
+
 test("focus moves into the panel when a row opens and back to what opened it when it closes", async () => {
     const opener = document.createElement("button");
     document.body.append(opener);
@@ -239,20 +241,50 @@ test("focus moves into the panel when a row opens and back to what opened it whe
 });
 
 test("Escape closes an open action form first, then the top row, then the panel", async () => {
-    await opened("#?open=plans:5,tasks:7", answering(PLAN));
+    await opened("#?open=plans:5,memories:3", answering(PLAN));
     const form = document.createElement("div");
     form.setAttribute("role", "dialog");
     form.setAttribute("aria-modal", "true");
     document.body.append(form);
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     await later();
-    expect(location.hash).toContain("tasks:7");
+    expect(location.hash).toContain("memories:3");
     form.remove();
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     await later();
     expect(location.hash).toContain("plans:5");
-    expect(location.hash).not.toContain("tasks:7");
+    expect(location.hash).not.toContain("memories:3");
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     await later();
+    await leaving();
     expect(shown()).toBeNull();
+});
+
+test("a declared noun closes on Escape and on a click on the veil, and Back unpeeks", async () => {
+    const {DECLARED_NOUNS} = await import("../src/resource/declaredNouns.js");
+    DECLARED_NOUNS.add("plan");
+    try {
+        const catalogue = {inspector: () => ({noun: "plan", module: "journal.core.plans", fingerprint: "a", reads: "plan inspect {row_id}", label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}), window: () => null, sectionsAt: () => []};
+        location.hash = "#?open=memories:3,plans:5";
+        await later();
+        const element = document.createElement("div");
+        document.body.append(element);
+        app = createApp({render: () => h(ResourcePanel, {read: answering(PLAN), catalogue, environment: "main"})});
+        app.mount(element);
+        await later();
+        expect(shown().getAttribute("style")).toContain("min(640px, 100vw)");
+        shown().querySelector("[data-resource-back]").click();
+        await later();
+        expect(location.hash).not.toContain("plans:5");
+        window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+        await leaving();
+        expect(shown()).toBeNull();
+        location.hash = "#?open=plans:5";
+        await later();
+        document.body.querySelector(".veil").click();
+        await leaving();
+        expect(shown()).toBeNull();
+    } finally {
+        DECLARED_NOUNS.delete("plan");
+    }
 });

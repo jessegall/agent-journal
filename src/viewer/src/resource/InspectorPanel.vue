@@ -23,8 +23,8 @@ const listing = computed(() => props.catalogue.inspector(props.noun));
 
 <template>
     <aside
-        :class="['panel', {opening}]"
-        :style="{width: inspectorWidth(listing?.width)}"
+        :class="['panel', 'declared', {opening}]"
+        :style="{'--inspector-width': inspectorWidth(listing?.width)}"
         role="dialog"
         :aria-label="`${noun} ${id}`"
         data-resource-panel
@@ -55,6 +55,10 @@ const listing = computed(() => props.catalogue.inspector(props.noun));
 </template>
 
 <style scoped>
+.panel.declared {
+    width: var(--inspector-width);
+}
+
 .missing {
     margin: 0;
     padding: 16px;
