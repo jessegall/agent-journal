@@ -210,6 +210,10 @@ def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_worker):
 
 def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_worker):
     worker = ended_worker.worker
+    stop_launcher = start_launcher(ended_worker, b"stopped\n")
+    ended_worker.run_listeners()
+    stop_launcher.thread.join(10)
+    stop_launcher.server.close()
     new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
     ended_worker.use_processes(new_process)
     launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
