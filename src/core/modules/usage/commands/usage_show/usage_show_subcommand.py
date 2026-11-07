@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from argparse import Namespace
+from argparse import ArgumentParser, Namespace
 
 from core.base.agent_role import AgentRole
 from core.base.query.conditions.excluding import Excluding
@@ -22,8 +22,9 @@ from core.modules.agents.queries.agent_query import AgentQuery
 
 
 class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
-    """`journal usage show [--environment <name>]`: each open session of the environment with the model,
-    context and cost its status line last reported, the plan's windows and the sessions' cost added up."""
+    """`journal usage show [--open] [--environment <name>]`: each open session of the environment with the model,
+    context and cost its status line last reported, the plan's windows and the sessions' cost added up. The
+    ended helpers of the open sessions count too, unless --open asks for the open sessions alone."""
 
     cli_name = "usage"
     name = "show"
@@ -33,10 +34,13 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         self.activity = activity
         self.queries, self.agents, self.files = queries, agents, files
 
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--open", action="store_true", dest="open_only", help="only the open sessions, without their ended helpers")
+
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
         activity = self.activity.current()
         opened = tuple(self.agents.matching(activity).oldest().all_rows())
-        counted = (*opened, *self.ended_helpers(self.agents, opened))
+        counted = opened if arguments.open_only else (*opened, *self.ended_helpers(self.agents, opened))
         statuses = {agent.session: self.files.status(agent.session) for agent in counted}
         return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses), activity.pending)
 
