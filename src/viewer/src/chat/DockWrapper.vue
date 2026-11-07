@@ -91,6 +91,9 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
                     <span class="dock-title" :title="look.title">{{ look.title }}</span>
                 </span>
             </template>
+            <span ref="time" class="dock-age" data-dock-age>
+                <template v-if="!declaration?.leaves_after_seconds">{{ age }}</template>
+            </span>
             <template v-if="controls.length">
                 <span class="dock-controls" @click.stop>
                     <template v-for="button in controls" :key="button.action + button.runs">
@@ -115,9 +118,6 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
                     </template>
                 </span>
             </template>
-            <span ref="time" class="dock-age" data-dock-age>
-                <template v-if="!declaration?.leaves_after_seconds">{{ age }}</template>
-            </span>
         </template>
         <template #still>
             <template v-if="failure || refusal">
@@ -213,6 +213,8 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
     flex: none;
     align-items: center;
     align-self: center;
+    justify-content: flex-end;
+    width: 64px;
     margin-left: 6px;
     line-height: 20px;
     color: var(--text-3);
@@ -223,9 +225,6 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
     display: flex;
     flex: none;
     gap: 2px;
-}
-.dock-controls + .dock-age {
-    margin-left: 0;
 }
 .dock-controls .kept {
     color: var(--accent-text);
