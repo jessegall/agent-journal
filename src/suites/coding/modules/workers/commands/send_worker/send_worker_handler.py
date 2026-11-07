@@ -67,7 +67,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     def prepare(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
         if worker.retired_at is not None:
-            raise RetiredWorkerRefusal.for_worker(worker.id)
+            raise RetiredWorkerRefusal.named(worker.id)
         if not command.job.strip() and not command.task_ids:
             raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
         task_ids = command.task_ids
