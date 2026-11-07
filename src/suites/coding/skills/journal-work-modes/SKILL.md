@@ -24,6 +24,16 @@ The coding suite drives the main agent in one of two modes. Your first line of a
   (`coding.workers.worker-run-limit`, 2 by default) you can send no more, so you may stop until a worker ends.
 - Send related tasks to the worker that knows them: see journal-workers.
 
+## Auto mode
+
+- `coding.auto-mode` ("The main agent may also write code itself") is one setting for each environment. It is the only
+  switch for your own code writing.
+- With it on, you may write project files and start tasks yourself, or hand a task to a worker.
+- With it off, every edit of a project file is refused, whether by a file tool or a shell line, and `journal task start`
+  is refused. Documents, plans and journal records stay allowed, and you may still send workers, start allowed helpers,
+  report, test and release. Send the work to a worker instead.
+- It does not pause receiving tasks. Workers you already sent keep their work and may be resumed.
+
 ## Changing mode
 
 - `journal driver choose coding.builder` or `journal driver choose coding.orchestrator` changes the mode of an

@@ -21,3 +21,8 @@ def test_s46_a_custom_opening_follows_each_control_and_never_names_a_work_prefer
     custom = MainOptions(auto=False, sends_workers=False, keeps_going=False, merger=True, helpers=False, designer=True, may_merge=False)
     lines = MainOpening(custom).lines()
     expect_value((CODE_FORBIDDEN in lines, NO_WORKERS in lines, any("preference" in line for line in lines)), (True, True, False))
+
+
+def test_s45_the_work_modes_skill_names_the_single_auto_setting_and_what_it_leaves_allowed():
+    text = open("src/suites/coding/skills/journal-work-modes/SKILL.md").read()
+    expect_value(("The main agent may also write code itself" in text, "does not pause receiving tasks" in text, "work preference" in text), (True, True, False))
