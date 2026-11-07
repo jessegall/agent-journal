@@ -2,6 +2,7 @@ from core.base.shell_sandbox import ShellSandbox
 from core.modules.processes.support.stock_reader import STOCK_READERS
 from core.modules.processes.support.output_folder import OutputFolder
 from datetime import timedelta
+import pytest
 
 from core.base.command.bus import Bus
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
@@ -43,9 +44,18 @@ def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story.expect_rows(page["lines"] == ["server started"])
 
 
-def test_a_journal_only_line_has_limit_0(new_story):
+def test_a_journal_only_line_has_the_same_foreground_limit(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    expect_updated_input_hook(story, "s-1", JOURNAL, {"command": runner_line(story, 1, "journal task show 1", limit=0)})
+    expect_updated_input_hook(story, "s-1", JOURNAL, {"command": runner_line(story, 1, "journal task show 1")})
+
+
+@pytest.mark.parametrize("program,category", [("cat", CommandCategory.READ), ("touch", CommandCategory.EDIT), ("custom", CommandCategory.UNKNOWN)])
+def test_a_read_write_or_unknown_command_gets_the_fifteen_second_limit(new_story, program, category):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    sample = HookSamples.shell(f"{program} file", ShellPart(program, category, ["file"]))
+    reply = story.hook("s-1", sample)
+    story.expect_rows("--limit 15" in str(reply.updated_input))
+    story.expect_text("process show 1", "limit_seconds: 15", actor=story.agent)
 
 
 def test_a_test_run_and_a_build_run_in_line_and_keep_more_of_their_output(new_story):
@@ -126,7 +136,7 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
-    expected = runner_line(story, 1, line, queue_run=False).replace(" JOURNAL_RUN_MOST_OUTPUT", " JOURNAL_RUN_FILE_COMMANDS=1 JOURNAL_RUN_MOST_OUTPUT")
+    expected = runner_line(story, 1, line, queue_run=False)
     expect_updated_input_reply(reply, {"command": expected})
     expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")

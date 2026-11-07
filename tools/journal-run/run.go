@@ -29,8 +29,6 @@ type Options struct {
 	QueueWait            time.Duration
 	SlotWaitLimitSeconds int
 	OnlyReads            bool
-	FileCommands         bool
-	FileCommandLimit     time.Duration
 	ReadOnlyShell        bool
 	WriteFolder          string
 	ReadFolders          []string
@@ -98,7 +96,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		parent := os.Getppid()
 		options.ShellAlive = func() bool { return os.Getppid() == parent }
 	}
-	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), LastJournal: LastJournal(parts, options.Aliases), Reported: map[int]bool{}, Positions: map[int]bool{}, ShownBytes: map[int]int{}}
+	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: PartCount(parts), Reported: map[int]bool{}, Positions: map[int]bool{}, ShownBytes: map[int]int{}}
 	for _, part := range parts {
 		tracker.Positions[part.Position] = true
 		if part.JoinedBy == "&" {

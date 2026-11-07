@@ -16,7 +16,6 @@ class ForegroundRun:
     category: CommandCategory | None = None
     queued: bool = False
     read_command: bool = False
-    file_commands: bool = False
     shell_sandbox: bool = False
     folder: Path | None = None
     read_folders: tuple[Path, ...] = ()
