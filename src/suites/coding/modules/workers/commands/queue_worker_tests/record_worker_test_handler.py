@@ -79,7 +79,10 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id), LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
-        for task_id in sorted({row.task_id for row in proofs}):
+        task_ids = sorted({row.task_id for row in proofs})
+        self.rows.prepare(Task, task_ids)
+        self.phases.plans.prepare(task_ids)
+        for task_id in task_ids:
             task = self.rows.required(Task, task_id)
             task_proofs = [row for row in proofs if row.task_id == task_id]
             if self.has_passed(task, task_proofs):

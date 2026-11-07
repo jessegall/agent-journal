@@ -1,3 +1,4 @@
+import json
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -17,9 +18,9 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.modules.processes.support.process_samples import start_process
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
 
 RECOVERY_SOURCE = "workers.silent-agent"
 FAILED_SOURCE = "workers.silent-agent-failed"
@@ -77,7 +78,7 @@ class RecoveryCase:
 def recovery(new_story, monkeypatch):
     from core.base.connection_probe import ConnectionProbe
 
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -98,6 +99,21 @@ def offline_recovery(recovery):
     recovery.tick()
     recovery.advance(SILENT_SECONDS)
     return recovery
+
+
+@pytest.fixture
+def running_command_recovery(recovery):
+    recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    recovery.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    return recovery
+
+
+@pytest.fixture
+def reconnected_recovery(offline_recovery):
+    offline_recovery.online = True
+    offline_recovery.tick()
+    offline_recovery.tick()
+    return offline_recovery
 
 
 @pytest.fixture
@@ -133,18 +149,14 @@ def nested_recovery(recovery):
     recovery.tick()
     return recovery
 
-def test_a_reconnection_resumes_a_silent_worker_once(offline_recovery):
-    recovery = offline_recovery
-    recovery.online = True
-    recovery.tick()
-    recovery.tick()
+def test_a_reconnection_resumes_a_silent_worker_once(reconnected_recovery):
+    recovery = reconnected_recovery
     recovery.story.expect_rows(len(recovery.launches) == 1, len(recovery.lines(recovery.worker.id)) == 1)
     recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.terminal_lines))
 
 
-def test_a_running_or_queued_shell_command_prevents_recovery(recovery):
-    recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
-    recovery.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+def test_a_running_or_queued_shell_command_prevents_recovery(running_command_recovery):
+    recovery = running_command_recovery
     recovery.story.agent = recovery.worker
     process = start_process(recovery.story, "sleep 30", category=CommandCategory.TEST_RUN)
     recovery.online = False
@@ -172,7 +184,10 @@ def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(
     recovery.tick()
     recovery.story.expect_rows(len(recovery.launches) == 3)
     notices = recovery.lines(recovery.story.agent.id, FAILED_SOURCE)
-    recovery.story.expect_rows(sum(f"agent:{recovery.worker.id} " in line.text for line in notices) == 1)
+    rows = json.loads(recovery.story.run("merger-line list --json", actor=recovery.story.agent).output_text)["rows"]
+    matching = [row for row in rows if f"agent:{recovery.worker.id} could not resume" in row["text"]]
+    recovery.story.expect_rows(len(matching) == 1, "three waking lines got no hook" in matching[0]["text"],
+                               any(f'merger-line:{matching[0]["id"]}' in line.text for line in notices))
 
 
 
@@ -324,11 +339,10 @@ def test_the_stopped_worker_warning_intervals_are_settings(recovery):
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)
 
 
-def test_a_stopped_worker_with_a_running_command_is_not_reported(recovery):
+def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command_recovery):
+    recovery = running_command_recovery
     story, worker = recovery.story, recovery.worker
     main = story.agent
-    story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     story.agent = worker
     start_process(story, "sleep 30", category=CommandCategory.TEST_RUN)
     story.agent = main

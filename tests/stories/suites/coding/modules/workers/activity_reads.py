@@ -19,15 +19,15 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.output_reading import OutputReading
 from core.testing.hook_samples import HookSamples
 from tests.stories.support.story_checks import expect_value
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session, repository_environment
+from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
 
 BATCH_READS = 2
 
 
 @pytest.fixture
 def four_tasks(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     story.run("setting set journal.suites.coding.workers.worker-run-limit 4 --environment main")
     for number in range(2, 5):
@@ -43,13 +43,15 @@ def four_workers(four_tasks):
     return story
 
 
-def test_a_tick_reads_one_activity_set_for_four_workers(four_workers):
+def test_a_tick_reads_its_family_and_environment_activity_once_each(four_workers):
     story = four_workers
     story.advance(timedelta(minutes=15))
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.tick("s-1")
     activity_reads = [call for call in reads.call_args_list if "FROM agent_activities" in call.args[1].sql]
-    expect_value(len(activity_reads), 1)
+    expect_value(len(activity_reads), 2)
+    story.expect_rows(any("parent_id" in call.args[1].sql for call in activity_reads),
+                      any("id IN" in call.args[1].sql for call in activity_reads))
     story.expect_text(f"agent-line list --agent {story.agent.id}", "has used no tool for 15 minutes")
 
 
@@ -63,9 +65,12 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
         story.tick("s-1")
     activity_reads = [call for call in reads.call_args_list if "FROM agent_activities" in call.args[1].sql]
-    expect_value(len(activity_reads), 1)
+    expect_value(len(activity_reads), 2)
+    story.expect_rows(any("parent_id" in call.args[1].sql for call in activity_reads),
+                      any("id IN" in call.args[1].sql for call in activity_reads))
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{workers[0].id} has used no tool")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{workers[1].id}, {workers[2].id}, {workers[3].id} has used no tool")
+    for worker in workers[1:]:
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has used no tool")
 
 
 def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_tasks):
