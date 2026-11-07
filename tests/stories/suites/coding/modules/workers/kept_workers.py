@@ -1,3 +1,6 @@
+from core.modules.messages.commands.read_message.read_message import ReadMessage
+from core.modules.drivers.support.nudger import Nudger
+from core.base.command.context import Context
 from core.modules.tasks.models.task import Task
 from core.testing.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
@@ -277,3 +280,15 @@ def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_
     story.expect_text(f"agent-line list --agent {worker.id}", "Fix the findings", actor=worker)
     story.expect_rows(worker_session(story, worker) == session)
     repository.expect_link(worker.id, "node_modules")
+
+
+def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    stopped(story, worker)
+    with story.container.get(Database).transaction():
+        story.container.get(Nudger).send_text(worker.id, "A line the worker never took", "sample.raw", Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
+    story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "waiting"', actor=story.user)
+    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "hidden"', actor=story.user)
