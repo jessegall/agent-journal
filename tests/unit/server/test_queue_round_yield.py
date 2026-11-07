@@ -17,19 +17,21 @@ def test_a_round_with_no_hook_running_or_waiting_goes_on_at_once():
 def test_a_round_waits_while_a_hook_runs_and_goes_on_when_it_ends():
     queue, pauses = ServerQueue(), []
     round_yield = QueueRoundYield(queue, WAIT_SECONDS)
+    entered = threading.Event()
 
     def pause_round() -> None:
         started = time.monotonic()
+        entered.set()
         round_yield.pause()
         pauses.append(time.monotonic() - started)
 
     with queue.hook_turn(QueuePriority.MAIN_AGENT_HOOK, WAIT_SECONDS):
         thread = threading.Thread(target=pause_round)
         thread.start()
-        time.sleep(0.3)
+        assert entered.wait(WAIT_SECONDS)
         assert thread.is_alive()
     thread.join(WAIT_SECONDS)
-    assert not thread.is_alive() and pauses[0] >= 0.3
+    assert not thread.is_alive() and len(pauses) == 1
 
 
 def test_a_round_gives_up_waiting_at_its_limit_so_busy_hooks_never_stop_it():

@@ -144,5 +144,5 @@ def test_the_idle_stop_asks_the_launcher_to_stop_the_program(new_story):
     story.advance(hours(DEFAULT_HOURS))
     story.tick(MAIN_SESSION)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     story.expect_rows({"agent_id": worker.id, "stop": True} in launcher.requests)

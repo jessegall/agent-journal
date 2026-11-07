@@ -1,5 +1,5 @@
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {useNow} from "../composables/now.js";
 import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {pressButton} from "./markButtons.js";
@@ -56,21 +56,31 @@ const sizeChoice = rememberedRef(`dock-size:${store.identity?.root || location.h
 const waitsOnPerson = (item) => Boolean(dockDeclaration(item.type)?.needs_user);
 // a card that waits on the person, or the only card in the dock, docks open whatever the chat's scroll or the others' size choice says, until the person folds it
 const handFolded = ref(new Set());
+const scrollFolded = ref(new Set());
 const alone = computed(() => docked.value.length === 1);
 const opensUnfolded = (item) => waitsOnPerson(item) || alone.value;
-const collapsedFor = (item) => opensUnfolded(item) ? handFolded.value.has(item.id) : sizeChoice.value ? sizeChoice.value.collapsed && !sizeChoice.value.opened.includes(item.id) : props.collapsed;
+const collapsedFor = (item) => opensUnfolded(item) ? handFolded.value.has(item.id) || scrollFolded.value.has(item.id) : sizeChoice.value ? sizeChoice.value.collapsed && !sizeChoice.value.opened.includes(item.id) : props.collapsed;
 const anyCollapsed = computed(() => docked.value.some(collapsedFor));
 const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value && !docked.value.some(collapsedFor));
+
+watch(() => props.collapsed, (collapsed) => {
+    scrollFolded.value = new Set(collapsed ? docked.value.filter(waitsOnPerson).map((item) => item.id) : []);
+});
 
 function changeAll() {
     const folding = !anyCollapsed.value;
     sizeChoice.value = {collapsed: folding, opened: []};
     handFolded.value = new Set(folding ? docked.value.filter(waitsOnPerson).map((item) => item.id) : []);
+    scrollFolded.value = new Set();
 }
 
 function openCard(item) {
     if (!collapsedFor(item)) return;
-    if (opensUnfolded(item)) return void (handFolded.value = new Set([...handFolded.value].filter((id) => id !== item.id)));
+    if (opensUnfolded(item)) {
+        handFolded.value = new Set([...handFolded.value].filter((id) => id !== item.id));
+        scrollFolded.value = new Set([...scrollFolded.value].filter((id) => id !== item.id));
+        return;
+    }
     const opened = sizeChoice.value?.collapsed ? sizeChoice.value.opened : [];
     sizeChoice.value = {collapsed: true, opened: [...opened, item.id]};
 }

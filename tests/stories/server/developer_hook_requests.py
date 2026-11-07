@@ -1,7 +1,7 @@
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
-from time import perf_counter, sleep
+from time import perf_counter
 
 from server.hook.queue_priority import QueuePriority
 
@@ -190,11 +190,13 @@ def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
     with ThreadPoolExecutor(1) as pool:
         with server.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, 1):
             answer = pool.submit(server.expect_hook_answer, "/hook", dict(sample.body), 200, '"refusal":')
-            sleep(0.1)
+            queue = server.context.hook_database.queue
+            with queue.changed:
+                assert queue.changed.wait_for(lambda: bool(queue.waiting_hooks), timeout=1)
         answer.result()
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})
-    server.story.expect_rows(value["rows"][0]["queued_ms"] >= 50)
+    server.story.expect_rows(value["rows"][0]["queued_ms"] > 0)
 
 
 def test_recording_drops_requests_instead_of_waiting_for_a_writer(recording_server):

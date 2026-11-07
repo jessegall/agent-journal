@@ -1,6 +1,6 @@
 import http.client
 import json
-from time import perf_counter, sleep
+from time import perf_counter
 from unittest.mock import patch
 
 import pytest
@@ -67,14 +67,15 @@ def test_each_line_of_a_batch_logs_its_own_time(recording_server):
     server = recording_server
     cookie = logged_in(server)
     answered = LineRoute.batch_answer
+    offset = [0.0]
 
     def delayed_batch_answer(route, container, request, person_id, shared):
         if request.line == SLOW_LINE:
-            sleep(SLOW_SECONDS)
+            offset[0] += SLOW_SECONDS + 0.01
         return answered(route, container, request, person_id, shared)
 
     lines = [{"window": "viewer.shell", "line": line, "environment": "main"} for line in (SLOW_LINE, QUICK_LINE)]
-    with patch.object(LineRoute, "batch_answer", delayed_batch_answer):
+    with patch.object(LineRoute, "batch_answer", delayed_batch_answer), patch("server.viewer.line_route.perf_counter", lambda: perf_counter() + offset[0]):
         status, _, body = viewer_answer(server.viewer_port(), "/api/lines", cookie, "", {"lines": lines})
     expect_answered(status, body)
     rows = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})["rows"]

@@ -110,7 +110,7 @@ def test_agents_edit_while_the_sync_tick_runs_on_its_own_thread_with_bulk_copies
         def tick_often() -> None:
             while not stopped.is_set():
                 ticker.tick()
-                time.sleep(0.05)
+                stopped.wait(0.05)
 
         def library_changes() -> None:
             for number in itertools.count():
@@ -120,7 +120,7 @@ def test_agents_edit_while_the_sync_tick_runs_on_its_own_thread_with_bulk_copies
                     code = server.send(tokens.admin, "GET", f"/items/doc/{item_id}")[1]
                     server.send(tokens.admin, "PUT", f"/items/doc/{item_id}", {"fields": doc_fields(f"Copy {item_id}", f"Changed {number}")}, {"If-Match": f'"{code["version"]}"'})
                     changed_on_server.append(item_id)
-                time.sleep(1)
+                stopped.wait(1)
 
         threads = [threading.Thread(target=tick_often, daemon=True), threading.Thread(target=library_changes, daemon=True)]
         for thread in threads:

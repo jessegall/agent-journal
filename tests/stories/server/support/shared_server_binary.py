@@ -1,9 +1,10 @@
 import json
+import os
+import select
 import shlex
 import socket
 import ssl
 import subprocess
-import time
 import urllib.error
 import urllib.request
 from collections.abc import Mapping
@@ -14,7 +15,6 @@ from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.tls_files import TlsFiles
 
 READY_TIMEOUT_SECONDS = 30
-READY_POLL_SECONDS = 0.01
 RUN_TIMEOUT_SECONDS = 30
 REQUEST_TIMEOUT_SECONDS = 10
 HOST = "127.0.0.1"
@@ -37,9 +37,18 @@ class SharedServerBinary:
     def __enter__(self) -> "SharedServerBinary":
         GoBuild.built("journal-shared", self.binary)
         self.data.mkdir(exist_ok=True)
-        self.process = subprocess.Popen([str(self.binary), "serve", "--data", str(self.data), "--listen", f"{HOST}:{self.port}", *self.tls_arguments()], env=GoBuild.environment(),
-                                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True)
-        self.wait_until_ready()
+        ready = self.data / "server-ready"
+        os.mkfifo(ready)
+        reader = os.open(ready, os.O_RDONLY | os.O_NONBLOCK)
+        try:
+            self.process = subprocess.Popen([str(self.binary), "serve", "--data", str(self.data), "--listen", f"{HOST}:{self.port}", "--ready-file", str(ready), *self.tls_arguments()], env=GoBuild.environment(),
+                                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True)
+            readable, _, _ = select.select([reader], [], [], READY_TIMEOUT_SECONDS)
+            if not readable or os.read(reader, 6) != b"ready\n":
+                raise TimeoutError(f"the shared server did not listen on {self.address}")
+        finally:
+            os.close(reader)
+            ready.unlink()
         return self
 
     def __exit__(self, *details: object) -> None:
@@ -77,16 +86,6 @@ class SharedServerBinary:
     def server_key(self) -> str:
         with urllib.request.urlopen(self.address + "/info", timeout=REQUEST_TIMEOUT_SECONDS, context=self.tls_context) as answer:
             return str(json.load(answer)["server_key"])
-
-    def wait_until_ready(self) -> None:
-        deadline = time.monotonic() + READY_TIMEOUT_SECONDS
-        while time.monotonic() < deadline:
-            try:
-                self.server_key()
-                return
-            except OSError:
-                time.sleep(READY_POLL_SECONDS)
-        raise TimeoutError(f"the shared server did not answer on {self.address}")
 
     @staticmethod
     def free_port() -> int:

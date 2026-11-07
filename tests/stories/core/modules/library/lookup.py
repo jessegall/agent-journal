@@ -86,7 +86,7 @@ def test_the_server_is_asked_again_after_a_minute(new_story):
 
 
 def test_a_slow_server_is_waited_on_for_two_seconds_and_no_longer(new_story):
-    with StubServer(StubAnswer(200, EMPTY_PAGE, JSON_HEADERS, delay_seconds=4)) as stub:
+    with StubServer(StubAnswer(200, EMPTY_PAGE, JSON_HEADERS, wait_for_release=True)) as stub:
         story = saved_connection(new_story, stub.address, "jsl_token")
         lookup = story.container.get(LibraryLookup)
         started = time.monotonic()

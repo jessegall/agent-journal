@@ -27,5 +27,5 @@ ENVIRONMENT_MENU_ROWS_SELECT = (
     "SELECT environments.id, environments.name, environments.folder, environments.branch,"
     " coalesce((SELECT json_extract(settings.value, '$') FROM settings WHERE settings.environment_id = environments.id AND settings.key = 'journal.core.drivers.suite'),"
     " (SELECT json_extract(settings.value, '$') FROM settings WHERE settings.environment_id IS NULL AND settings.key = 'journal.core.drivers.suite'), '') AS suite_setting,"
-    " EXISTS (SELECT 1 FROM agents WHERE agents.environment_id = environments.id AND agents.role = 'main' AND agents.ended_at IS NULL) AS main_running FROM environments"
+    " EXISTS (SELECT 1 FROM agents WHERE agents.environment_id = environments.id AND agents.role = 'main' AND agents.ended_at IS NULL) AS main_running FROM environments WHERE environments.test = 0"
 )

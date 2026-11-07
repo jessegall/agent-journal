@@ -41,6 +41,7 @@ from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.model.state_book import StateBook
+from core.base.registry.lazy_loading import LazyLoading
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.state_addition_entry import StateAdditionEntry
 from core.base.registry.suite_entry import SuiteEntry
@@ -54,13 +55,15 @@ from core.base.viewer.layout_shape import loaded_layout, stored_layout
 # a registry saved before windows were split into where they are drawn and whose work they show: an environment or agent window was drawn in a pane
 LEGACY_PLACES = {"environment": "pane", "agent": "pane"}
 LEGACY_SHOWS = {"agent": "one-agent"}
-KEPT_REGISTRIES = 8
+KEPT_REGISTRIES = 32
 BUILT_READS = ("make", "show", "list")
 
 
 @dataclass(frozen=True)
 class Registry:
-    """The module entries found by sync, kept by database, fingerprint and sync timestamp."""
+    """The module entries found by sync, kept by database, fingerprint and sync timestamp. Journals whose registry rows
+    hold the same fingerprint and entries share one registry, so its event lookup, built in full when it loads, is
+    built once per process however many journals open."""
 
     fingerprint: str
     models: dict[str, ModelEntry]
@@ -122,7 +125,9 @@ class Registry:
         return cls.parsed(row["fingerprint"], row["entries"])
 
     @classmethod
+    @lru_cache(maxsize=KEPT_REGISTRIES)
     def parsed(cls, fingerprint: str, entries_text: str) -> "Registry":
+        LazyLoading.registry_built(hash((fingerprint, entries_text)))
         entries = json.loads(entries_text)
         return cls(
             fingerprint=fingerprint,
