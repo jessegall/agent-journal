@@ -44,6 +44,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     library_links: str = "[]"
     task_count: int = 1
     route_reason: str = ""
+    starts_program: bool = True
 
     def cut(self, timestamp: Timestamp, actor: Actor, base_commit: str, task_count: int = 1) -> "Worktree":
         return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp, task_count=task_count)

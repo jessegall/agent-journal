@@ -35,7 +35,7 @@ class OpenWorkerWorktreeHandler(Handler[OpenWorkerWorktree, OpenedWorker]):
         try:
             worktree = self.repository.save(Worktree(session_agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
                                                      folder=str(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name),
-                                                     branch=f"journal/{environment.name}/{name}", base_branch=environment.branch, new_agent_reason=command.new_agent_reason, route_reason=command.route_reason), context)
+                                                     branch=f"journal/{environment.name}/{name}", base_branch=environment.branch, new_agent_reason=command.new_agent_reason, route_reason=command.route_reason, starts_program=command.starts_program), context)
         except Refusal:
             self.opening.remove_agent(worker.id, context)
             raise

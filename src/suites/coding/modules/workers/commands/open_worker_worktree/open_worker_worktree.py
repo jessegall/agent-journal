@@ -13,3 +13,4 @@ class OpenWorkerWorktree(Command[OpenedWorker]):
     task_id: int
     new_agent_reason: str = ""
     route_reason: str = ""
+    starts_program: bool = True
