@@ -1,6 +1,6 @@
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
-import DocumentInspector from "../src/resource/document/DocumentInspector.vue";
+import DocumentBody from "../src/resource/document/DocumentBody.vue";
 import {drawMarks, numbered, selectionIn} from "../src/resource/document/documentMarks.js";
 import {settle, typeInto} from "./support/windowContext.js";
 
@@ -33,21 +33,19 @@ function drawn(comments = [onWords, whole], width = 980) {
     };
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(DocumentInspector, {table: "docs", id: 4, read})}).mount(element);
+    createApp({render: () => h(DocumentBody, {noun: "doc", id: 4, read})}).mount(element);
     return {element, ran};
 }
 
-test("the top bar holds Share, Edit and Needs no action, and the comment box stays at the foot", async () => {
+test("the body holds Edit above its tabs, and the comment box stays at the foot", async () => {
     const {element} = drawn();
     await settle();
     const actions = element.querySelector("[data-document-actions]");
     expect(element.querySelector("[data-comment-input]")).not.toBeNull();
-    expect(actions.textContent).toContain("Share");
     expect(actions.textContent).toContain("Edit");
-    expect(actions.textContent).toContain("Needs no action");
     expect(actions.textContent).not.toContain("Close");
     expect(actions.compareDocumentPosition(element.querySelector("[data-document-tab]")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(element.querySelector("[data-resource-close]")).not.toBeNull();
+    expect(element.querySelector("[data-resource-close]")).toBeNull();
 });
 
 test("a comment on a selection is tinted with its number and its card shows the words it is on", async () => {
@@ -116,12 +114,9 @@ test("under 760 wide the number opens its comment under its selection", async ()
     expect(element.querySelector(".inline-comment [data-comment]").textContent).toBe("Why cents?");
 });
 
-test("links and revisions are tabs, and a revision opens its text", async () => {
+test("revisions are a tab, and a revision opens its text", async () => {
     const {element} = drawn();
     await settle();
-    element.querySelector('[data-document-tab="links"]').click();
-    await settle();
-    expect(element.querySelector("[data-text-link]").textContent).toContain("plan:3");
     element.querySelector('[data-document-tab="revisions"]').click();
     await settle();
     element.querySelector('[data-text-revision="2"]').click();

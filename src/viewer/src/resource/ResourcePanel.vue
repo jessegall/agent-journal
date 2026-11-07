@@ -7,7 +7,6 @@ import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentInspector from "./agent/AgentInspector.vue";
-import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import {cliOf, titleOf} from "../domain/resourceNouns.js";
@@ -20,10 +19,9 @@ const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 // every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "doc", "report"]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent"]);
 const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
 const wide = computed(() => noun.value === "plan");
-const isDocument = computed(() => noun.value === "doc" || noun.value === "report");
 const title = computed(() => titleOf(noun.value, null, opened.value?.id));
 
 const close = () => opening([]);
@@ -67,7 +65,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 />
                 <aside
                     v-else
-                    :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', document: isDocument, queue: noun === 'test-queue', agent: noun === 'agent'}]"
+                    :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', queue: noun === 'test-queue', agent: noun === 'agent'}]"
                     ref="panel"
                     tabindex="-1"
                     role="dialog"
@@ -107,26 +105,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         </template>
                         <template #test-queue>
                             <ProcessQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
-                        </template>
-                        <template #doc>
-                            <DocumentInspector
-                                :table="opened.table"
-                                :id="opened.id"
-                                :backed="route.stack.length > 1"
-                                :read="read"
-                                @close="close"
-                                @back="unpeek"
-                            />
-                        </template>
-                        <template #report>
-                            <DocumentInspector
-                                :table="opened.table"
-                                :id="opened.id"
-                                :backed="route.stack.length > 1"
-                                :read="read"
-                                @close="close"
-                                @back="unpeek"
-                            />
                         </template>
                     </SwitchCase>
                 </aside>
@@ -201,10 +179,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 .panel.wide {
     width: min(760px, 100vw);
-}
-
-.panel.document {
-    width: min(1130px, 100vw);
 }
 
 .side-enter-active,

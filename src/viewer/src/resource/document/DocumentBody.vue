@@ -1,38 +1,26 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {shareAddress} from "../../route.js";
 import {render} from "../../text/index.js";
-import {cliOf} from "../../domain/resourceNouns.js";
 import Btn from "../../kit/Btn.vue";
-import CloseButton from "../../kit/CloseButton.vue";
-import ResourceHeading from "../ResourceHeading.vue";
 import DropList from "../../kit/DropList.vue";
-import Icon from "../../kit/Icon.vue";
 import Skeleton from "../../kit/Skeleton.vue";
 import TimeAgo from "../../../kit/TimeAgo.vue";
 import {useMeasuredWidth} from "../../composables/measuredWidth.js";
-import RowMoves from "../RowMoves.vue";
-import InspectorActions from "../../kit/InspectorActions.vue";
 import CommentCard from "./CommentCard.vue";
 import CommentComposer from "./CommentComposer.vue";
 import DocumentSidebar from "./DocumentSidebar.vue";
 import DocumentEditDialog from "./DocumentEditDialog.vue";
-import InspectorSections from "../../windows/InspectorSections.vue";
-import DocumentLinks from "./DocumentLinks.vue";
 import {useTextComments} from "../../composables/textComments.js";
 import DocumentRevisions from "./DocumentRevisions.vue";
 import DocumentText from "./DocumentText.vue";
 import {numbered} from "./documentMarks.js";
 
-// a document or a report: its title, its tabs, its text with the comments beside it, and at the foot the comment box and the actions, which never scroll away
+// the body of a document or a report: its tabs, its text with the comments beside it, and at the foot the comment box; the head, the actions and the links belong to the shared inspector layout
 const NARROW_WIDTH = 760;
-const NOUN_LABELS = {doc: "Document", report: "Report"};
-const props = defineProps({table: {type: String, required: true}, id: {type: Number, required: true}, backed: Boolean, read: {type: Function, required: true}});
-const emit = defineEmits(["close", "back"]);
+const props = defineProps({noun: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true}});
 const panel = ref(null);
 const width = useMeasuredWidth(panel);
 const narrow = computed(() => width.value !== null && width.value < NARROW_WIDTH);
-const noun = computed(() => cliOf(props.table));
 const row = ref(null);
 const failure = ref("");
 const revisions = ref([]);
@@ -50,7 +38,7 @@ const words = ref(null);
 const composer = ref(null);
 let reading = 0;
 
-const textComments = useTextComments(() => row.value ? {noun: noun.value, id: props.id, title: row.value.title} : {}, (line) => props.read(line));
+const textComments = useTextComments(() => row.value ? {noun: props.noun, id: props.id, title: row.value.title} : {}, (line) => props.read(line));
 const comments = computed(() => numbered(textComments.comments.value));
 const annotations = computed(() => notesMode.value === "questions" ? numbered(questions.value) : comments.value);
 const annotationTotal = computed(() => notesMode.value === "questions" ? annotations.value.length : textComments.total.value);
@@ -63,12 +51,12 @@ const rowsOf = (answer) => (answer.ok ? answer.value.rows ?? [] : []);
 
 async function load() {
     const turn = ++reading;
-    const answer = await props.read([noun.value, "inspect", String(props.id)]);
+    const answer = await props.read([props.noun, "inspect", String(props.id)]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
-    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${noun.value}:${props.id}`]);
-    const revisionsAnswer = noun.value === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
+    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${props.noun}:${props.id}`]);
+    const revisionsAnswer = props.noun === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
     if (turn !== reading) return;
     questions.value = rowsOf(questionsAnswer);
     questionFailure.value = questionsAnswer.ok ? "" : questionsAnswer.error;
@@ -77,7 +65,7 @@ async function load() {
 
 async function send(words) {
     const flags = selection.value ? ["--quote", selection.value.quote, "--position", String(selection.value.position), "--selection-type", selection.value.selection_type] : [];
-    const answer = await props.read([noun.value, "comment", String(props.id), ...flags, "--", words]);
+    const answer = await props.read([props.noun, "comment", String(props.id), ...flags, "--", words]);
     if (!answer.ok) throw new Error(answer.error);
     selection.value = null;
     await Promise.all([load(), textComments.load()]);
@@ -115,7 +103,7 @@ function saved() {
     load();
 }
 
-watch(() => `${props.table}:${props.id}`, () => {
+watch(() => `${props.noun}:${props.id}`, () => {
     row.value = null;
     tab.value = "text";
     hot.value = 0;
@@ -134,26 +122,16 @@ watch(notesMode, () => {
 
 <template>
     <div ref="panel" class="document-inspector" data-document-inspector>
-        <header class="document-head">
-            <template v-if="backed">
-                <button type="button" class="document-back" data-resource-back aria-label="Back" @click="emit('back')">←</button>
-            </template>
-            <ResourceHeading :label="`${NOUN_LABELS[noun]} ${id}${row ? ` · ${stateLabel}` : ''}`" :title="row?.title" :abstract="row?.abstract" />
-            <CloseButton title="Close the panel" data-resource-close @click="emit('close')" />
-        </header>
         <template v-if="row">
-            <InspectorActions data-document-actions>
-                <a class="document-share" data-resource-share :href="shareAddress(`${table}:${id}`)"><Icon name="share" :size="12" />Share</a>
+            <div class="document-edit" data-document-actions>
                 <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
-                <RowMoves inline :noun="noun" :id="id" :row="row" :read="read" @done="load" />
-            </InspectorActions>
+            </div>
         </template>
         <nav class="document-tabs">
             <button type="button" :class="['document-tab-button', {on: shownTab === 'text'}]" data-document-tab="text" @click="tab = 'text'">Text</button>
             <template v-if="narrow">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'comments'}]" data-document-tab="comments" @click="tab = 'comments'">{{ notesMode === 'questions' ? 'Questions' : 'Comments' }} <em>{{ annotationTotal || "" }}</em></button>
             </template>
-            <button type="button" :class="['document-tab-button', {on: shownTab === 'links'}]" data-document-tab="links" @click="tab = 'links'">Links</button>
             <template v-if="noun === 'doc'">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'revisions'}]" data-document-tab="revisions" @click="tab = 'revisions'">Revisions <em>{{ revisions.length || "" }}</em></button>
             </template>
@@ -168,9 +146,6 @@ watch(notesMode, () => {
             </template>
             <template v-else-if="!row">
                 <div class="document-loading"><Skeleton /></div>
-            </template>
-            <template v-else-if="shownTab === 'links'">
-                <DocumentLinks :model="noun" :id="id" :read="read" />
             </template>
             <template v-else-if="shownTab === 'revisions'">
                 <DocumentRevisions :id="id" :revisions="revisions" :text="row.body" :read="read" :editing="row.open_author_id !== null && row.open_author_id !== undefined" @close-revision="closeRevision" @restored="load" />
@@ -194,7 +169,6 @@ watch(notesMode, () => {
                         <dt>Created</dt><dd><TimeAgo :at="row.created_at" /></dd>
                         <dt>Updated</dt><dd><TimeAgo :at="row.updated_at" /></dd>
                     </dl>
-                    <InspectorSections :slot-name="`inspector.${noun}`" :row="row" />
                 </DocumentText>
                 <template v-if="!narrow">
                     <DocumentSidebar v-model:mode="notesMode" :comments="comments" :questions="questions" :hot="hot" :lost="lost" :failure="questionFailure" :read="read" :comment-more="Boolean(textComments.nextPage.value)" :comment-loading="textComments.loading.value" :comment-failure="textComments.failure.value" :comment-total="textComments.total.value" @more="textComments.loadMore" @show="showInText" @changed="load" />
@@ -218,46 +192,11 @@ watch(notesMode, () => {
     min-height: 0;
 }
 
-.document-head {
+.document-edit {
     display: flex;
     flex: none;
-    gap: 12px;
-    align-items: flex-start;
-    padding: 18px 14px 12px 24px;
-}
-
-.document-back {
-    flex: none;
-    width: 28px;
-    height: 28px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-3);
-    font-size: 16px;
-    cursor: pointer;
-}
-
-:deep(.resource-noun) {
-    margin: 0 0 4px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-:deep(.resource-title) {
-    margin: 0;
-    font-size: 19px;
-    font-weight: 600;
-    line-height: 1.3;
-    letter-spacing: -0.01em;
-}
-
-:deep(.resource-abstract) {
-    max-width: 640px;
-    margin: 6px 0 0;
-    color: var(--text-2);
-    font-size: 13px;
-    line-height: 1.5;
+    justify-content: flex-end;
+    padding: 8px 16px 0;
 }
 
 .document-tabs {
@@ -345,33 +284,7 @@ watch(notesMode, () => {
     color: var(--text-2);
 }
 
-.document-share {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    height: 28px;
-    padding: 0 11px;
-    border: 1px solid var(--border-2);
-    border-radius: 7px;
-    color: var(--text-2);
-    font-size: 12.5px;
-    text-decoration: none;
-}
-
-.document-share:hover {
-    background: var(--hover);
-    color: var(--text);
-}
-
 @media (max-width: 760px) {
-    .document-head {
-        padding: 16px 10px 10px 16px;
-    }
-
-    :deep(.resource-title) {
-        font-size: 17px;
-    }
-
     .document-tabs {
         padding: 0 10px 0 12px;
     }

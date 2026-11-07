@@ -146,7 +146,7 @@ onUnmounted(() => watcher?.disconnect());
                                     </template>
                                     <ResourceFields :fields="fields" @peek="emit('open', $event)" />
                                 </div>
-                                <InspectorSections :slot-name="`inspector.${noun}`" :names="partsOf('')" :row="{...row, id}" />
+                                <InspectorSections :slot-name="`inspector.${noun}`" :names="partsOf('')" :row="{...row, id, noun}" />
                             </template>
                             <template #comments>
                                 <CommentSide
@@ -161,7 +161,7 @@ onUnmounted(() => watcher?.disconnect());
                                 />
                             </template>
                             <template #default>
-                                <InspectorSections :names="partsOf(tab)" :row="{...row, id}" />
+                                <InspectorSections :names="partsOf(tab)" :row="{...row, id, noun}" />
                             </template>
                         </SwitchCase>
                         <template v-if="listing.links">

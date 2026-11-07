@@ -1,7 +1,7 @@
 import {afterEach, expect, test} from "vitest";
 import MessageCard from "../kit/MessageCard.vue";
 import PlanLinks from "../src/resource/PlanLinks.vue";
-import DocumentInspector from "../src/resource/document/DocumentInspector.vue";
+import DocumentBody from "../src/resource/document/DocumentBody.vue";
 import TranscriptionRows from "../../core/modules/transcriptions/web/src/TranscriptionRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {linkPage} from "./support/linkPages.js";
@@ -120,8 +120,8 @@ test("a migrated comment keeps a native button for its original target", async (
 
 async function documentRequests() {
     const requests = [];
-    const element = await mounted(DocumentInspector, context({}), {
-        table: "docs", id: 4,
+    const element = await mounted(DocumentBody, context({}), {
+        noun: "doc", id: 4,
         read: async (line) => {
             requests.push(line);
             if (line[1] === "inspect") return {ok: true, value: {id: 4, title: "Cart", abstract: "Totals", body: "Use cents", revision: 1, comments: []}};
@@ -129,23 +129,9 @@ async function documentRequests() {
             return page([]);
         },
     });
-    element.querySelector('[data-document-tab="links"]').click();
     await settle();
     return {requests, element};
 }
-
-test("task 6894: the document inspector reads incoming as well as outgoing relations", async () => {
-    const {requests, element} = await documentRequests();
-    expect(requests.some((line) => line[0] === "link" && line.includes("--row") && line.includes("doc:4") && line.includes("--group-counterparts"))).toBe(true);
-    expect(element.querySelector("[data-document-links]").textContent).toContain("Incoming review");
-});
-
-test("task 6894: the document inspector bounds every relation read", async () => {
-    const {requests} = await documentRequests();
-    const links = requests.filter((line) => line[0] === "link");
-    expect(links.length).toBeGreaterThan(0);
-    expect(links.every((line) => line.includes("--page") && line.includes("--page-size"))).toBe(true);
-});
 
 test("task 6894: document comments use their own bounded read", async () => {
     const {requests} = await documentRequests();
