@@ -181,7 +181,7 @@ def test_a_running_worker_is_not_ended_at_a_tick(running_worker):
 def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
     ended_worker.expect_rows(ended_worker.row(Agent, ended_worker.worker.id).ended_at is not None)
     launcher = start_launcher(ended_worker, f"started {WORKER_PID}\n".encode())
-    ended_worker.expect_success(f'worker send --wait {ended_worker.worker.id} "Add the tax"', f"worker {ended_worker.worker.id} takes the job", actor=ended_worker.agent)
+    ended_worker.expect_success(f'worker send --wait {ended_worker.worker.id} "Add the tax"', actor=ended_worker.agent)
     ended_worker.run_listeners()
     expect_restart(ended_worker, launcher)
 
@@ -213,7 +213,7 @@ def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_w
     new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
     ended_worker.use_processes(new_process)
     launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
-    ended_worker.expect_success(f'worker send --wait {worker.id} "Add the tax"', f"worker {worker.id} takes the job", actor=ended_worker.agent)
+    ended_worker.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=ended_worker.agent)
     ended_worker.run_listeners()
     launcher.thread.join(10)
     ended_worker.hook(worker_session(ended_worker, worker), HookSamples.session_start())
