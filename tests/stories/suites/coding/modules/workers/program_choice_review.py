@@ -30,6 +30,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.helpers.start_helper import START, started
+from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.program_choice import failed_worker_story
 from tests.stories.suites.coding.modules.workers.worker_routes import merged_worker_story
@@ -135,22 +136,26 @@ def test_split_with_none_eligible_differs_from_unset(unavailable_split, agent_ro
     story.expect_text('agent list --role helper', 'nothing found')
 
 
-def test_helper_send_on_an_out_program_says_until_when(split_story):
+@pytest.fixture
+def outage_helper_story(split_story, monkeypatch):
     story = split_story
     helper_id, _ = started(story)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
+    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    resumable_session(story, helper, monkeypatch)
     _, ends_at = outage(story, 'claude')
     FakeLauncher(story.home.socket('launcher'))
+    return story, helper_id, ends_at
+
+
+def test_helper_send_on_an_out_program_says_until_when(outage_helper_story):
+    story, helper_id, ends_at = outage_helper_story
     story.expect_refusal(f'helper send {helper_id} "Read the listener"', ends_at, actor=story.agent)
     story.expect_text(f'agent show {helper_id}', 'ended_at:')
 
 
-def test_helper_send_on_an_out_program_says_until_when_reuse_names_it(split_story):
-    story = split_story
-    helper_id, _ = started(story)
-    story.expect_success(f'agent end {helper_id}', actor=story.user)
-    _, ends_at = outage(story, 'claude')
-    FakeLauncher(story.home.socket('launcher'))
+def test_helper_send_on_an_out_program_says_until_when_reuse_names_it(outage_helper_story):
+    story, helper_id, ends_at = outage_helper_story
     story.expect_refusal(START, ends_at, actor=story.agent)
     story.expect_rows(f'journal helper send {helper_id}' in story.results[-1].output_text)
 
@@ -160,16 +165,16 @@ def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(spli
     helper_id, _ = started(story)
     story.expect_success(f'helper send {helper_id} "Read the next file" --steer', actor=story.agent)
     outage(story, 'claude')
-    launcher = FakeLauncher(story.home.socket('launcher'))
+    launcher = FakeLauncher(story.home.socket('launcher'), request_count=2)
     story.expect_success(f'agent end {helper_id}', actor=story.user)
     story.run_listeners()
     helper = story.container.get(Queries).query(Agent).find(helper_id)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).newest().first()
-    story.expect_rows(helper.ended_at is not None, job.ended_at is None, len(launcher.requests) == 0)
+    story.expect_rows(helper.ended_at is not None, job.ended_at is None, len(launcher.starts) == 0)
     story.advance(timedelta(minutes=16))
     story.container.get(HelperResume).resume(helper, job.brief)
     story.run_listeners()
-    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_rows(len(launcher.starts) == 1)
 
 
 def test_back_now_ends_all_outages_of_a_program(split_story, split_viewer):

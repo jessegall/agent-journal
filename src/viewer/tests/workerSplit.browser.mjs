@@ -3,10 +3,12 @@ import {chromium} from "playwright-core";
 
 const [address, capture] = process.argv.slice(2);
 const browser = await chromium.launch({headless: true, executablePath: process.env.CHROMIUM_PATH});
+const page = await browser.newPage({viewport: {width: 1280, height: 1000}});
+const errors = [];
+page.on("pageerror", (error) => errors.push(error.message));
+page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+page.on("requestfailed", (request) => { if (new URL(request.url()).pathname.startsWith("/viewer/")) errors.push(`${request.url()}: ${request.failure()?.errorText}`); });
 try {
-    const page = await browser.newPage({viewport: {width: 1280, height: 1000}});
-    const errors = [];
-    page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(address);
     await page.locator("[data-workers]").click();
     const dropdown = page.locator('[data-dropdown="workers.workers"]');
@@ -43,6 +45,9 @@ try {
     await program.getByText("out of credit", {exact: false}).waitFor({state: "hidden"});
     assert.equal(writes.length, 1);
     assert.deepEqual(errors, []);
+} catch (error) {
+    await page.screenshot({path: capture});
+    throw new Error(`${error.message}\nPage errors: ${JSON.stringify(errors)}\n${(await page.locator("body").innerText()).slice(-3500)}`);
 } finally {
     await browser.close();
 }

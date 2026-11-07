@@ -7,7 +7,7 @@ import {peekRef} from "../route.js";
 import {useAgentPause} from "../composables/agentPause.js";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
-const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, processes: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
+const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, workersShown: Boolean, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, processes: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
 const emit = defineEmits(["open", "changed"]);
 const LOADING_BARS = [{width: "220px", height: 12}];
 const {failure, paused, toggle} = useAgentPause(toRef(props, "agent"), props.run, () => emit("changed"));
@@ -50,7 +50,7 @@ const word = computed(() => (pendingWork.value ? `Status: ${pendingWork.value}` 
             <span class="agent-space" />
         </template>
         <slot />
-        <Btn variant="icon" data-workers aria-label="Workers" title="Workers" @click="emit('open', 'workers', $event.currentTarget)"><Icon name="agents" :size="12" />{{ workers }}</Btn>
+        <template v-if="workersShown"><Btn variant="icon" data-workers aria-label="Workers" title="Workers" @click="emit('open', 'workers', $event.currentTarget)"><Icon name="agents" :size="12" />{{ workers }}</Btn></template>
         <button type="button" class="agent-helpers agent-helpers-count" data-process-queue aria-label="Process queue" title="Process queue: processes running now" @click="peekRef('test_queue:0')">
             <Icon name="terminal" :size="12" />
             {{ processes }}

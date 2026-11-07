@@ -149,6 +149,7 @@ const COUNT_WINDOWS = {workers: "workers.workers", skills: "skills.skills", jobs
 // the agents an agent sends off, one umbrella in the bar: each type is a group of its dropdown
 const HELPER_WINDOW = "agents.helpers";
 const usage = propData("usage", {agents: [], windows: []});
+const workerCount = computed(() => usage.value.agents.filter((row) => row.role === "worker").length);
 const fitness = propData("fitness", null);
 const branchData = propData("branch", {branch: ""});
 const branch = computed(() => branchData.value.branch);
@@ -338,7 +339,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :processes="facts.processes" :run="shellRead" @open="openCount" @changed="readFacts">
+            <AgentBar :workers-shown="Boolean(catalogue.dropdown('workers.workers'))" :workers="workerCount" :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :processes="facts.processes" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
