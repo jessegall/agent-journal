@@ -3,6 +3,9 @@ import pytest
 from core.base.driver.command_category import CommandCategory
 from core.base.actor import Actor
 from core.base.command.bus import Bus
+from core.base.query.queries import Queries
+from core.modules.chat.models.chat_mark import ChatMark
+from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.nudge import Nudge
@@ -211,3 +214,17 @@ def test_a_line_refused_by_another_rule_does_not_use_up_an_allowed_run(allowed):
     expect_reply_allowed(allowed.run_test())
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "used"))
     expect_reply_refusal(allowed.run_test(), FLAG)
+
+
+def test_a_test_request_and_approval_show_marks_for_the_worker(requested):
+    story = requested.story
+    story.run_listeners()
+    marks = story.container.get(Queries).query(ChatMark)
+    request = marks.filter(variant=WorkerMarkVariant.TEST_REQUEST).first()
+    story.expect_rows(request is not None, request.target_model == "agents", request.target_id == requested.worker.id,
+                      TEST_LINE in request.detail, WHY in request.detail, "asks to run a test" in request.text)
+    story.expect_success(ALLOW, actor=story.agent)
+    story.run_listeners()
+    allowed = marks.filter(variant=WorkerMarkVariant.TEST_ALLOWED).first()
+    story.expect_rows(allowed is not None, allowed.target_id == requested.worker.id, TEST_LINE in allowed.detail,
+                      WHY in allowed.detail, "may run the test" in allowed.text)
