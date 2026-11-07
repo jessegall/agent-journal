@@ -26,7 +26,7 @@ class AgentProgram:
         self.launcher.request_stop(agent.terminal_id)
 
     def stop_tree(self, pid: int, program: str) -> bool:
-        if program not in LeftoverProcess.command_line(pid):
+        if not LeftoverProcess.runs_program(pid, program):
             return True
         children = self.descendants(pid)
         commands = {child: LeftoverProcess.command_line(child) for child in children}
@@ -52,4 +52,4 @@ class AgentProgram:
 
     @staticmethod
     def running(commands: dict[int, str]) -> bool:
-        return any(command and command in LeftoverProcess.command_line(pid) for pid, command in commands.items())
+        return any(LeftoverProcess.runs_program(pid, command) for pid, command in commands.items())
