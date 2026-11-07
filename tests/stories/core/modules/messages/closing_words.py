@@ -165,7 +165,7 @@ def test_a_closing_text_with_a_question_in_other_words_reaches_chat(reply_ready)
 def test_a_closing_text_naming_a_new_file_in_other_words_reaches_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
-    text = "The reminder change is already filed as task 7413, it edits src/reminder.py."
+    text = "Everything described there lives in src/reminder.py, per task 7413."
     story.hook("s-1", HookSamples.message_display(text))
     expect_chat(story, text)
 
