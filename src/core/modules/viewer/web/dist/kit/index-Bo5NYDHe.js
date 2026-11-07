@@ -8392,7 +8392,7 @@ const Ew = { class: "dock-text" }, Aw = ["title"], Ow = {
     const V = A(() => h.value.actions.filter((k) => !H.value.has(k.label))), j = A(() => {
       var k;
       return mw((k = s.value) == null ? void 0 : k.badge, O.value);
-    }), L = A(() => h.value.controls.filter((k) => !(a.collapsed && ["keep", "unkeep"].includes(k.action)))), S = A(() => {
+    }), L = A(() => h.value.controls), S = A(() => {
       var k;
       return !!((k = s.value) != null && k.draws_head) && !a.collapsed;
     });
@@ -8567,7 +8567,7 @@ const Ew = { class: "dock-text" }, Aw = ["title"], Ow = {
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, el = /* @__PURE__ */ U(Lw, [["__scopeId", "data-v-31d05361"]]), Nw = ["title", "aria-label"], qw = { class: "run-chip-in" }, Dw = {
+}, el = /* @__PURE__ */ U(Lw, [["__scopeId", "data-v-5c6ac3c0"]]), Nw = ["title", "aria-label"], qw = { class: "run-chip-in" }, Dw = {
   key: 0,
   class: "run-chip-ring"
 }, Pw = { class: "run-chip-name" }, jw = { class: "run-chip-bar" }, Fw = {
@@ -13568,7 +13568,7 @@ function TM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const IM = Zr(() => import("./VoiceFigure-B2yy62Hd.js").then((e) => e.V)), RM = "1.2.0", BM = "3.5";
+const IM = Zr(() => import("./VoiceFigure-DtXmdaOc.js").then((e) => e.V)), RM = "1.2.0", BM = "3.5";
 export {
   Sf as $,
   Ae as A,

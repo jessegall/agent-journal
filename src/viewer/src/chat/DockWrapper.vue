@@ -65,8 +65,8 @@ async function press(button) {
 }
 const buttons = computed(() => look.value.actions.filter((button) => !pressed.value.has(button.label)));
 const badge = computed(() => dockBadgeOf(declaration.value?.badge, row.value));
-// a folded or collapsed card keeps its Open and X icons; the pin waits until the card is open
-const controls = computed(() => look.value.controls.filter((button) => !(props.collapsed && ["keep", "unkeep"].includes(button.action))));
+// a folded or collapsed card keeps all its head icons: Open, the pin and X
+const controls = computed(() => look.value.controls);
 const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props.collapsed);
 </script>
 
