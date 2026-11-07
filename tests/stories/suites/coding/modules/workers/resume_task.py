@@ -35,7 +35,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} 1")
     if merged:
         repository.checkout(ENVIRONMENT_BRANCH)
-        story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     else:
         story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
@@ -65,7 +65,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     monkeypatch.setattr(AgentLauncher, "hand", start_once)
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=answer, request_count=1)
     try:
-        story.expect_success(f"worker send {worker.id} --task {task_id}", actor=story.agent)
+        story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
         story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1, launches == [worker.id], detail=str(launches))
         launch = launcher.starts[0]
@@ -100,7 +100,7 @@ def test_an_entered_line_without_a_process_does_not_block_a_new_task_start(new_s
     task_id = story.new_row_id('task make "Another task" --brief "Read the totals"', actor=story.agent)
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")
     try:
-        story.expect_success(f"worker send {worker.id} --task {task_id}", actor=story.agent)
+        story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
         story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1)
         story.expect_rows(story.row(Agent, worker.id).ended_at is None)

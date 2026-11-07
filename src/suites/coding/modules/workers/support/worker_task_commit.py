@@ -20,11 +20,13 @@ class WorkerTaskCommit:
     def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus) -> None:
         self.proofs, self.git, self.queries, self.bus = proofs, git, queries, bus
 
-    def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
+    def check_proofs(self, worktree: Worktree, task: Task) -> None:
         proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
+    def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
+        self.check_proofs(worktree, task)
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:

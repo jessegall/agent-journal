@@ -35,13 +35,17 @@ class KeptWorkerTasks:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.advance, self.sources, self.copies, self.waits, self.proof_queue = environments, advance, sources, copies, waits, proof_queue
 
-    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
+    def check_tasks(self, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
         tasks = tuple(self.queries.query(Task).find_many(list(task_ids)))
         if tasks[0].state is TaskState.BLOCKED and self.waits.waits_target_tasks(tasks[0].id):
             raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
         for task in tasks:
             if task.state is not TaskState.OPEN and not (task.state is TaskState.BLOCKED and self.waits.waits_target_tasks(task.id)):
                 raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
+        return tasks
+
+    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
+        tasks = self.check_tasks(task_ids)
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):

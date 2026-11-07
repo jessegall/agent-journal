@@ -1,3 +1,7 @@
+from core.base.query.queries import Queries
+from core.base.repository.repository import Repository
+from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.support.worker_nudges import WORKER_OPERATION_ENDED, WORKER_OPERATION_FAILED
 from core.modules.processes.events.process_ended import ProcessEnded
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.listener.save_listener import SaveListener
@@ -20,11 +24,19 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     name = "workers.run-ended"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop) -> None:
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, nudger: Nudger, stop: WorkerStop, queries: Queries, repository: Repository) -> None:
+        self.queries, self.repository = queries, repository
         self.agents, self.worktrees, self.nudger, self.stop = agents, worktrees, nudger, stop
 
     def handle(self, event: ProcessEnded, context: Context) -> None:
         process = event.row
+        operation = self.queries.query(WorkerOperation).filter(process_id=process.id).first()
+        if operation is not None:
+            if operation.ended_at is None:
+                self.repository.update(operation, context, ended_at=context.timestamp)
+                declaration = WORKER_OPERATION_ENDED if process.exit_code == 0 else WORKER_OPERATION_FAILED
+                self.nudger.send(process.session_agent_id, declaration, WORKER_JOB_SOURCE, context, output=process.id)
+            return
         agent = self.agents.find(process.session_agent_id)
         if agent.role != AgentRole.WORKER or agent.ended_at is None:
             return

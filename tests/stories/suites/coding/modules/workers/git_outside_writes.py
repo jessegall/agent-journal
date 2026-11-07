@@ -65,7 +65,7 @@ def test_a_merge_runs_git_with_no_write_open(git_in_writes):
     repository.checkout(ENVIRONMENT_BRANCH)
     git_calls.clear()
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     expect_git_calls_outside(git_calls)
 
 

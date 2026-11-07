@@ -40,6 +40,17 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
+    def check_rows(self, command: StartNextWorkerTask, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(actor.id)
+        if worktree is None or worktree.state is not WorktreeState.CUT:
+            raise Refusal("only a worker with a started task moves to its next", "journal worker-worktree list shows the worktrees")
+        task = self.rows.required(Task, worktree.task_id)
+        if task.state is not TaskState.STARTED:
+            return
+        if self.tasks.next_delegated(actor.id) is None:
+            raise Refusal(f"task {task.id} is your last", "journal worker deliver hands in all your tasks")
+        self.task_commit.check_proofs(worktree, task)
+
     def prepare(self, command: StartNextWorkerTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:

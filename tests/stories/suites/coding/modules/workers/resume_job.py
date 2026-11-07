@@ -45,7 +45,7 @@ def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_d
 
     monkeypatch.setattr(Bus, "run", record_enter)
     monkeypatch.setattr(AgentLauncher, "hand", record_launch)
-    story.expect_success(f'worker send {worker.id} "Continue the task"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "Continue the task"', actor=story.agent)
     story.run_listeners()
 
     story.expect_rows(len(job_ids) == 1, len(entered) == 1)

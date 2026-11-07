@@ -23,7 +23,7 @@ def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(new
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
 
-    story.expect_success("worker deliver --differences none", actor=worker)
+    story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.run_listeners()
 
     processes, folder = story.container.get(Queries).query(Process), story.container.get(OutputFolder)

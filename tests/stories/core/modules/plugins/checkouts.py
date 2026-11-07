@@ -167,7 +167,7 @@ def test_s50_from_base_reads_from_the_merged_branch(new_story):
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {story.worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge {story.worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.expect_text(f"plugin file {ORDER} --agent {story.worker.id} --from base", CHANGED_ORDER_TEXT.strip(), actor=story.user)
 
 

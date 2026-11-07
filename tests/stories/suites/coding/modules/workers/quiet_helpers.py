@@ -166,7 +166,7 @@ def worker_ended_with_a_job(new_story):
     story, worker = idle_worker(new_story)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.advance(minutes(1))
-    story.run(f'worker send {worker.id} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {worker.id} "Add the tax"', actor=story.agent)
     story.worker = worker
     return story
 
@@ -187,7 +187,7 @@ def test_an_ended_worker_whose_job_has_not_started_is_named_after_the_grace_and_
 
 def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_story):
     story, worker = idle_worker(new_story)
-    story.run(f'worker send {worker.id} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {worker.id} "Add the tax"', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)

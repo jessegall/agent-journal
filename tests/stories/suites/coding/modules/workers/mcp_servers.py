@@ -42,7 +42,7 @@ def test_workers_receive_the_main_agents_servers_and_keys_outside_the_prompt(new
     story.run_listeners()
     story.expect_success("mcp remove github", actor=story.user)
     story.expect_success("mcp install context7", actor=story.user)
-    story.expect_success(f'worker send {worker.id} "Continue with the updated servers"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "Continue with the updated servers"', actor=story.agent)
     story.run_listeners()
     launcher.expect_started(worker.id, worker_session(story, worker), folder)
     story.expect_rows(len(launcher.starts) == 2,

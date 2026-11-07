@@ -19,6 +19,9 @@ class Handler(Generic[C, R]):
     caller_prepares: ClassVar[bool] = False
     disabled_scopes: ClassVar[WholeScopes] = ()
 
+    def check_rows(self, command: C, actor: Actor) -> None:
+        return None
+
     def prepare(self, command: C, actor: Actor) -> None:
         return None
 

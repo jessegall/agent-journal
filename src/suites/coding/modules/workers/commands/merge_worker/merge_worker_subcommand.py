@@ -1,3 +1,5 @@
+from core.base.command.command import Command
+from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -11,7 +13,7 @@ from suites.coding.modules.workers.commands.support.worker_step_check import Wor
 MERGE_EVENTS = ["worker_merging"]
 
 
-class MergeWorkerSubcommand(Subcommand[MergeWorker, MergeOutcome]):
+class MergeWorkerSubcommand(Subcommand[Command[object], MergeOutcome]):
     """`journal worker merge <worker>`: the worker's checked work goes into the environment's branch."""
 
     cli_name = "worker"
@@ -19,19 +21,25 @@ class MergeWorkerSubcommand(Subcommand[MergeWorker, MergeOutcome]):
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
+        WorkerCommandRequest.arguments(parser)
         parser.add_argument("worker_id", type=int)
         parser.add_argument("--read-important", default="", help="what you make of the worker's important log lines")
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, requests: WorkerCommandRequest) -> None:
+        self.requests = requests
         self.worktrees, self.step_check = worktrees, step_check
 
-    def command(self, arguments: Namespace, caller: Caller) -> MergeWorker:
+    def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         worktree = self.worktrees.worker_worktree(arguments.worker_id)
         if worktree is not None:
             self.step_check.check(worktree, MERGE_EVENTS, "the worker puts it right: journal worker send it the reason, then merge again")
-        return MergeWorker(arguments.worker_id, arguments.read_important)
+        command = MergeWorker(arguments.worker_id, arguments.read_important)
+        return self.requests.command(command, arguments.worker_id,
+                                     ["worker", "merge", str(arguments.worker_id), "--read-important", arguments.read_important], arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
+        if WorkerCommandRequest.write_output(value, output):
+            return
         if not isinstance(value, MergeOutcome):
             return
         output.row(value.worktree)

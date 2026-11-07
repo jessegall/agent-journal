@@ -51,7 +51,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
     story.expect_success("proof check 1", actor=story.agent)
     launcher = FakeLauncher(story.home.socket("launcher"))
     try:
-        story.expect_success("worker deliver --differences none", actor=worker)
+        story.expect_success("worker deliver --wait --differences none", actor=worker)
         story.run_listeners()
     finally:
         launcher.server.close()
@@ -72,7 +72,7 @@ def test_with_the_setting_off_the_main_agent_hears_that_the_tests_passed(new_sto
     worker = checked_worker(story, repository)
     story.expect_rows(merger_of(story) is None)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
 
 
 def test_only_the_merger_runs_its_commands(new_story):

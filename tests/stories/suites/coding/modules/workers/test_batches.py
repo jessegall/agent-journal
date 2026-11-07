@@ -57,7 +57,7 @@ def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch):
         batch.change_and_prove(TEST_LINE)
         task = batch.current_task()
         batch.story.expect_success(f"proof check {task}", actor=batch.story.agent)
-        batch.story.expect_success("worker next --differences none", actor=batch.worker)
+        batch.story.expect_success("worker next --wait --differences none", actor=batch.worker)
     batch.story.expect_rows(batch.current_task() == 5, not batch.started)
 
 
@@ -68,7 +68,7 @@ def test_a_short_batch_runs_at_the_workers_last_task(new_story, monkeypatch):
     worker.prove_and_move_on(TEST_LINE)
     worker.story.expect_rows(worker.current_task() == 2, len(worker.started) == 0)
     worker.prove(TEST_LINE)
-    worker.story.expect_text("worker deliver --differences none", "tests of batch", actor=worker.worker)
+    worker.story.expect_text("worker deliver --wait --differences none", "tests of batch", actor=worker.worker)
     worker.story.expect_rows(len(worker.started) == 1)
     worker.end_all_tests()
     worker.story.expect_rows(len(worker.started) == 2)
@@ -82,7 +82,7 @@ def test_failures_of_the_batch_return_together_and_only_failures_run_again(submi
     submitted.story.expect_rows(len(lines) == 1, str(submitted.started[0]) in lines[0], str(submitted.started[2]) in lines[0], submitted.current_task() == 1)
     for _ in range(4):
         expect_reply_allowed(submitted.run_test())
-    submitted.story.expect_text("worker next --differences none", "queued", actor=submitted.worker)
+    submitted.story.expect_text("worker next --wait --differences none", "queued", actor=submitted.worker)
     submitted.story.expect_rows(len(submitted.started) == 5)
     submitted.end_test(submitted.started[4])
     submitted.story.expect_rows(len(submitted.started) == 6)
@@ -96,7 +96,7 @@ def test_the_phase_setting_off_tests_each_task_at_its_own_hand_in(new_story, mon
     for _ in range(4):
         expect_reply_allowed(worker.run_test())
     worker.change_and_prove(TEST_LINE)
-    worker.story.expect_text("worker next --differences none", "tests of task 1", actor=worker.worker)
+    worker.story.expect_text("worker next --wait --differences none", "tests of task 1", actor=worker.worker)
     worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
     worker.end_all_tests()
     worker.story.expect_rows(worker.current_task() == 2, all(process.line == TEST_LINE for process in worker.started_processes()))
@@ -129,7 +129,7 @@ def test_worker_next_with_a_checked_proof_starts_the_next_task_without_a_test(ne
     worker = worker_outside_plan(new_story, monkeypatch)
     worker.change_and_prove(TEST_LINE)
     worker.story.expect_success("proof check 1", actor=worker.story.agent)
-    worker.story.expect_success("worker next --differences none", actor=worker.worker)
+    worker.story.expect_success("worker next --wait --differences none", actor=worker.worker)
     worker.story.expect_rows(worker.current_task() == 2, not worker.started)
 
 
@@ -145,7 +145,7 @@ def test_a_large_batch_moves_on_without_repeated_row_reads(new_story, monkeypatc
     for _ in range(11):
         worker.prove_and_move_on()
     worker.prove()
-    story.expect_success("worker next --differences none", actor=worker.worker)
+    story.expect_success("worker next --wait --differences none", actor=worker.worker)
     reads = story.repeated_work.read_texts
     story.expect_rows(reads["SELECT * FROM tasks WHERE id = ? AND environment_id = ? LIMIT 1 OFFSET 0"] < 12,
                       reads["SELECT * FROM phase_tasks WHERE task_id = ? LIMIT 1 OFFSET 0"] < 12)

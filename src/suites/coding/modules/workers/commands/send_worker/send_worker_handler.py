@@ -64,12 +64,23 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         self.is_gone = False
         self.task_ids: tuple[int, ...] = ()
 
-    def prepare(self, command: SendWorker, actor: Actor) -> None:
-        worker = self.rows.required(Agent, command.worker_id)
+    def check_job(self, command: SendWorker, worker: Agent) -> None:
         if worker.retired_at is not None:
             raise RetiredWorkerRefusal.create(worker.id)
         if not command.job.strip() and not command.task_ids:
             raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
+
+    def check_rows(self, command: SendWorker, actor: Actor) -> None:
+        worker = self.rows.required(Agent, command.worker_id)
+        self.check_job(command, worker)
+        if command.task_ids:
+            self.kept_tasks.check_tasks(command.task_ids)
+        if self.worktrees.newest_worktree(worker.id) is None:
+            raise Refusal(f"worker {worker.id} has no worktree", "journal worker dispatch <task> starts a new one")
+
+    def prepare(self, command: SendWorker, actor: Actor) -> None:
+        worker = self.rows.required(Agent, command.worker_id)
+        self.check_job(command, worker)
         task_ids = command.task_ids
         if not task_ids and self.worktrees.worker_worktree(worker.id) is None:
             self.kept_tasks.check_recut(worker)

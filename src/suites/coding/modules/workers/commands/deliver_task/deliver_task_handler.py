@@ -32,6 +32,15 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
+    def check_rows(self, command: DeliverTask, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(actor.id)
+        if worktree is None or worktree.state is not WorktreeState.CUT:
+            raise Refusal("only a worker with a started task delivers", "journal worker-worktree list shows the worktrees")
+        following = self.tasks.next_delegated(actor.id)
+        if following is not None:
+            raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", "journal worker next")
+        self.task_commit.check_proofs(worktree, self.rows.required(Task, worktree.task_id))
+
     def prepare(self, command: DeliverTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:

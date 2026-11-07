@@ -1,3 +1,4 @@
+from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
@@ -39,6 +40,15 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.log_lines = log_lines
         self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
         self.environments, self.bus, self.settings, self.commands = environments, bus, settings, commands
+
+    def check_rows(self, command: MergeWorker, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(command.worker_id)
+        if worktree is None or worktree.state is not WorktreeState.DELIVERED:
+            raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
+        self.checks.check_proofs(worktree)
+        self.checks.check_logs(worktree)
+        self.checks.check_base_branch(worktree)
+        self.checks.check_important_lines(worktree, self.log_lines.review(worktree), command.important_answer)
 
     def handle(self, command: MergeWorker, context: Context) -> MergeOutcome:
         worktree = self.worktrees.worker_worktree(command.worker_id)
