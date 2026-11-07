@@ -27,7 +27,8 @@ const asking = ref(null);
 const confirming = ref(null);
 const failure = ref("");
 const sending = ref(false);
-const tip = (button) => [button.from ? `From ${button.from}` : "", button.tip].filter(Boolean).join(" · ");
+const tip = (button) => [button.from ? `From ${button.from}` : "", button.tip, button.warning].filter(Boolean).join(" · ");
+const iconOf = (button) => button.icon || (button.warning ? "dot" : "");
 
 function press(button) {
     if (sending.value || props.readOnly) return;
@@ -97,7 +98,7 @@ async function run(button) {
                         :variant="button.primary ? 'primary' : 'ghost'"
                         :bordered="!button.primary"
                         :class="{danger: button.danger}"
-                        :icon="button.icon"
+                        :icon="iconOf(button)"
                         :disabled="sending"
                         :title="tip(button)"
                         :data-button="button.name"

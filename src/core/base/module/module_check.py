@@ -85,6 +85,9 @@ class ModuleCheck:
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 
+    def button_warnings(self, modules: Sequence[type[Module]]) -> dict[str, str]:
+        return self.buttons.declared_warnings(modules, frozenset(module.name for module in self.finder.default_modules()))
+
     def models(self, modules: Sequence[type[Module]]) -> tuple[type[Model], ...]:
         return tuple(declaration.model for module in modules for declaration in module.models)
 

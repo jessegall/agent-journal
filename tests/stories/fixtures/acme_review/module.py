@@ -15,5 +15,5 @@ class AcmeReviewModule(Module):
     subcommands = [AuditPlanSubcommand]
     templates = [TemplateDeclaration(title="Security review", targets=tuple(["plan"]), purpose="critique",
                                      brief="Read the plan as an attacker. Name each way in and what closes it.")]
-    buttons = [ButtonDeclaration("review.audit", ("dock.plans.waiting", "row.plan"), "Audit", "acme audit {row_id}",
+    buttons = [ButtonDeclaration("review.audit", ("dock.plans.waiting", "row.plan"), "Audit", "acme audit {row_id}", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])))]

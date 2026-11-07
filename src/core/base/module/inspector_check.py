@@ -1,6 +1,5 @@
 from collections.abc import Sequence
 
-from core.base.declaration_names import DeclarationNames
 from core.base.module.module import Module
 from core.base.module.window_check import WindowCheck
 from core.base.viewer.inspector_declaration import InspectorDeclaration
@@ -66,5 +65,4 @@ class InspectorCheck:
         for action in declaration.actions:
             name = f"the inspector of {declaration.noun}, action {action.label},"
             problems += [f"{name} is on {slot}, which is another model's row" for slot in action.slots if slot.startswith("row.") and slot != own_slot]
-            problems += DeclarationNames.icon_problems(name, action.icon) if action.icon else [f"{name} shows no icon, and an action has one"]
         return problems

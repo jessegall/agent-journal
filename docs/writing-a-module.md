@@ -30,7 +30,7 @@ class AcmeReviewModule(Module):
     subcommands = [AuditPlanSubcommand]
     templates = [TemplateDeclaration(title="Security review", targets=tuple(["plan"]), purpose="critique",
                                      brief="Read the plan as an attacker. Name each way in and what closes it.")]
-    buttons = [ButtonDeclaration("review.audit", ("dock.plans.waiting", "row.plan"), "Audit", "acme audit {row_id}",
+    buttons = [ButtonDeclaration("review.audit", ("dock.plans.waiting", "row.plan"), "Audit", "acme audit {row_id}", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])))]
 ```
 
@@ -188,7 +188,7 @@ class AcmePlanNotesModule(Module):
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]
-    buttons = [ButtonDeclaration("plan_notes.note", tuple(["row.plan"]), "Note it", "plan-notes add {row_id}")]
+    buttons = [ButtonDeclaration("plan_notes.note", tuple(["row.plan"]), "Note it", "plan-notes add {row_id}", icon="plan")]
     windows = [WindowDeclaration("plan_notes.notes", "Notes", "notes.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
                                  slots=tuple(["inspector.plan"]), icon=WindowIcon.PLAN, reads=["plan show"], events=["plan.*"],
                                  skeleton=tuple([SkeletonPart.line()]))]

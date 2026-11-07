@@ -74,6 +74,13 @@ test("a danger button has the danger class", async () => {
     expect(plain.querySelector('[data-button="tasks.lock"]').classList.contains("danger")).toBe(false);
 });
 
+test("a button with a warning says it in its tip and has a fallback icon", async () => {
+    const element = await slot({...BASE, icon: "", warning: "shows no icon"});
+    const button = element.querySelector('[data-button="tasks.lock"]');
+    expect(button.title).toContain("shows no icon");
+    expect(button.querySelector("svg")).not.toBeNull();
+});
+
 test("a button without a confirm line runs at once", async () => {
     const element = await slot(BASE);
     await click(element, '[data-button="tasks.lock"]');

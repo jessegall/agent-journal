@@ -121,7 +121,7 @@ class ModuleSync:
             for listener in listeners:
                 self.cursors.start(listener)
         FileAccess.shared().write(self.home.program_table, ProgramTable([provider for module in modules for provider in module.providers]).text())
-        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules)))
+        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, (*retired, *self.notes.lines(modules), *(f"warning: {text}" for text in self.check.button_warnings(modules).values())))
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
         return tuple(migration() for migration in module.migrations)
@@ -214,7 +214,8 @@ class ModuleSync:
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:
         shipped = set(self.finder.default_modules())
-        return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.declared_buttons())
+        warnings = self.check.button_warnings(modules)
+        return tuple(ButtonEntry(module.name, button, module in shipped, warnings.get(button.name, "")) for module in modules for button in module.declared_buttons())
 
     def inspectors(self, modules: tuple[type[Module], ...]) -> tuple[InspectorEntry, ...]:
         shipped = set(self.finder.default_modules())
