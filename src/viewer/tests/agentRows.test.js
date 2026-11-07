@@ -625,6 +625,8 @@ test("the task line names its plan after the title, and a task outside a plan ha
         if (planId) {
             expect(plan.textContent).toBe("plan 7");
             expect(plan.closest("[data-agent-job]")).toBe(job);
+            const source = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCard.vue"), "utf8");
+            expect(source).toMatch(/\.agent-job\s*\{[^}]*display:\s*flex;[^}]*gap:\s*6px;/);
             expect(plan.dataset.peek).toBe("plans:7");
         } else expect(plan).toBeNull();
         expect(job.textContent).not.toContain("Cart plan");
