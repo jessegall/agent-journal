@@ -68,7 +68,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
         if command.task_ids:
-            self.kept_tasks.check_tasks(command.task_ids)
+            self.kept_tasks.check_tasks(command.task_ids, plan=command.plan_id is not None)
         if self.worktrees.newest_worktree(worker.id) is None:
             raise Refusal(f"worker {worker.id} has no worktree", "journal worker dispatch <task> starts a new one")
 
@@ -83,7 +83,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             task_ids = tuple([task.id])
         self.task_ids = task_ids
         if task_ids:
-            tasks = self.kept_tasks.checked_cut(worker, task_ids)
+            tasks = self.kept_tasks.checked_cut(worker, task_ids, plan=command.plan_id is not None)
             if tasks:
                 self.cut(worker, tasks, command, actor)
         self.is_gone = worker.ended_at is None and bool(self.missing_agents.find([worker]))

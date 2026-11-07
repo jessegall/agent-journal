@@ -54,9 +54,9 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
             if task_ids:
                 worker = self.agents.find(arguments.worker_id)
-                self.policy.check_tasks(self.tasks.check_tasks(task_ids),
+                self.policy.check_tasks(self.tasks.check_tasks(task_ids, plan=arguments.plan is not None),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
-        command = SendWorker(arguments.worker_id, arguments.job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy))
+        command = SendWorker(arguments.worker_id, arguments.job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), arguments.plan)
         argv = ["worker", "send", str(arguments.worker_id), arguments.job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))

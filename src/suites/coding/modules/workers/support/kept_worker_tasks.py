@@ -45,23 +45,25 @@ class KeptWorkerTasks:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
                                         name=f"workers.sent_tasks:{task_ids}")
 
-    def check_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
+    def check_tasks(self, task_ids: tuple[int, ...], *, plan: bool = False) -> list[Task]:
         tasks = self.read_tasks(task_ids)
-        if tasks[0].state is TaskState.BLOCKED and self.waits.waits_target_tasks(tasks[0].id):
+        if not plan and tasks[0].state is TaskState.BLOCKED and self.waits.waits_target_tasks(tasks[0].id):
             raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
         for task in tasks:
-            if task.state is not TaskState.OPEN and not (task.state is TaskState.BLOCKED and self.waits.waits_target_tasks(task.id)):
+            if task.state is not TaskState.OPEN and not (task.state is TaskState.BLOCKED and (plan or self.waits.waits_target_tasks(task.id))):
                 raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
         return tasks
 
-    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> list[Task]:
-        tasks = self.check_tasks(task_ids)
+    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...], *, plan: bool = False) -> list[Task]:
+        tasks = self.check_tasks(task_ids, plan=plan)
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):
                 raise Refusal(f"the tests of worker {worker.id} are running", "send the task when they have passed")
             return []
         self.check_recut(worker)
+        if tasks[0].state is TaskState.BLOCKED:
+            raise Refusal(f"task {tasks[0].id} is blocked", "send the plan when a task is open")
         return tasks
 
     def check_recut(self, worker: Agent) -> None:

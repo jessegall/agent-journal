@@ -12,3 +12,4 @@ class SendWorker(Command[AgentLine], TasksChangedTogether):
     task_ids: tuple[int, ...] = ()
     library_links: tuple[str, ...] = ()
     library_copies: tuple[str, ...] = ()
+    plan_id: int | None = None
