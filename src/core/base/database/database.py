@@ -113,7 +113,7 @@ class Database:
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
         if not statement.is_read:
             self.tally.count_write(statement.sql)
-        self.tally.before_read()
+        self.tally.take_read_mark()
         rows = statement.result(self.connection).fetchall()
         self.tally.loaded(rows, statement)
         return rows

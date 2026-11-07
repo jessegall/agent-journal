@@ -24,7 +24,7 @@ VERSION_FOUR_CHILD_ROLE = "subagent"
 
 class AgentsMove(VersionFourMove):
     """Carries each version 4 agent with its session, program (version 4's provider), role and environment;
-    each environment's most recently active main agent stays open, so Continue resumes it, and older main agents end,
+    each environment's most recently active main agent stays open, so Continue resumes it, and older ones end,
     as an agent whose number is its new actor's; a session that ended stays an ended agent so the rows
     it made keep their owner. An early session that has no role was a main session and moves as one. A
     session that made rows but has no agent row moves ended, as the helper version 4 sent it as with
@@ -80,11 +80,11 @@ class AgentsMove(VersionFourMove):
             report.note(f"{moved} sessions that made rows but had no version 4 agent row moved as ended agents")
 
     @staticmethod
-    def ended_at(row: sqlite3.Row, role: str, created: str, newest_mains: set[int]) -> str | None:
+    def ended_at(row: sqlite3.Row, role: str, created_at: str, newest_mains: set[int]) -> str | None:
         if row["id"] in newest_mains:
             return None
         if role == AgentRole.MAIN.value or row["state"] == ENDED or role == AgentRole.HELPER:
-            return row["updated_at"] or created
+            return row["updated_at"] or created_at
         return None
 
     @classmethod
