@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLabel, stateLook, useWindow} from "@journal/window-kit";
+import {Btn, Icon, InnerTabs, Skeleton, StateBadge, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLook, useWindow} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
@@ -71,7 +71,7 @@ if (view.shared) {
                 <div class="plans-grid">
                     <template v-for="row in shown" :key="row.id">
                         <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
-                            <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span :class="['plan-state', stateLook('plan', row.state)]" data-plan-state>{{ stateLabel('plan', row.state) }}</span></span>
+                            <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<StateBadge type="plan" :state="row.state" :row-id="row.id" :class="['plan-state', stateLook('plan', row.state)]" data-plan-state /></span>
                             <span class="plan-title" :title="row.title">{{ row.title }}</span>
                             <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row, row.completed_count)}%`}" /><span class="plan-bar-testing" data-plan-testing :style="{width: `${share(row, row.testing_count)}%`}" /></span>
                             <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>

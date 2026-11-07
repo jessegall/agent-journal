@@ -69,6 +69,16 @@ class WorktreeGit:
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
+    def commit_paths(self, folder: str, paths: tuple[str, ...], message: str) -> bool:
+        existing = tuple(path for path in paths if Path(folder, path).exists())
+        if not existing:
+            return False
+        self.checked(folder, GIT_LIMIT_SECONDS, "add", "-A", "--", *existing)
+        if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet", "--", *existing).returncode == 0:
+            return False
+        self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "--", *existing)
+        return True
+
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
         self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)

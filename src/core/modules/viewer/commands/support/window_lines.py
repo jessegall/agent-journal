@@ -22,7 +22,7 @@ class WindowLines:
     """Whether a window may run a command line for a person, or only a read for the main agent's own viewer
     session: the line parses, it is a read subcommand the window declares or a command it declares, or one of
     its own settings, it neither skips a guard nor names another environment, and the person has allowed it
-    unless the journal ships the window. A line only a button allows answers to the module of that button, not
+    unless the journal ships the window. Any window may read the line a state declares for its badge's tooltip. A line only a button allows answers to the module of that button, not
     the window. It checks the parsed line, never its raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
@@ -65,6 +65,8 @@ class WindowLines:
             if parsed.arguments.window != window_name:
                 raise WindowRefusal(f"{window_name} may use only its own search")
             return
+        if parsed.is_read and parsed.line in self.state_tip_lines():
+            return
         declared = window.reads if parsed.is_read else window.runs
         if parsed.line not in declared:
             self.check_button(window_name, argv, parsed, person, environment)
@@ -72,6 +74,9 @@ class WindowLines:
         permission_type = WindowPermissionType.READS if parsed.is_read else WindowPermissionType.RUNS
         if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, window_name, permission_type):
             raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
+
+    def state_tip_lines(self) -> frozenset[str]:
+        return frozenset(" ".join(entry.tip_read.split()[:2]) for entry in self.registry.state_additions if entry.tip_read and self.active.is_active(entry.module))
 
     def check_button(self, window_name: str, argv: list[str], parsed: ParsedLine, person: Actor, environment: str) -> None:
         environment_id = self.environment_names.environment_id(environment)

@@ -3,8 +3,8 @@ from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
+from core.base.driver.reminder_declaration import ReminderDeclaration
 from core.modules.drivers.support.write_span import WriteSpan
-from core.modules.drivers.support.stops import Stops
 from core.modules.tasks.support.closed_tasks import ClosedTasks
 
 LOG_REQUEST_WRITES = 25
@@ -24,10 +24,10 @@ MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.STEERING, 'log what 
 WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.STEERING, "a wait is a block, on a task, a question, a plan or a command", interval=Interval(Seconds(1800)))
 PLAIN_BLOCK = NudgeDeclaration("tasks.plain_block", NudgeType.STEERING, "use --on {targets}, or --until; a plain reason waits for a person", turn_limited=False)
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.STEERING, "task {task} names open task {other}; if it waits on it, block it on that task", turn_limited=False)
-BLOCK_REVIEW_INTERVAL = Interval(Seconds(3600), ClosedTasks(5), Stops(5))
-BLOCK_REVIEW = NudgeDeclaration("tasks.block_review", NudgeType.NOTICE, 'review blocked task {task}: renew its block with a reason, unblock it, or close it', interval=BLOCK_REVIEW_INTERVAL, turn_limited=False,
+BLOCK_REVIEW_REMINDER = ReminderDeclaration("tasks.block_review", Interval(Seconds(900), ClosedTasks(5)), 2)
+BLOCK_REVIEW = NudgeDeclaration("tasks.block_review", NudgeType.NOTICE, 'review blocked task {task}: renew its block with a reason, unblock it, or close it', interval=BLOCK_REVIEW_REMINDER.interval, turn_limited=False,
                                plural_text='review blocked tasks {task}: renew each block with a reason, unblock it, or close it', id_field="task")
-BLOCK_REVIEW_REQUIRED = NudgeDeclaration("tasks.block_review_hold", NudgeType.REFUSAL, 'review blocked task {tasks}: renew each with --reason "<why>", unblock it, or close it')
+BLOCK_REVIEW_REQUIRED = NudgeDeclaration("tasks.block_review_hold", NudgeType.REFUSAL, 'review blocked task {tasks}: act on each, or skip block {block} with a reason')
 USER_BLOCK_REVIEW = NudgeDeclaration("tasks.user_block_review", NudgeType.NOTICE, 'task {task} waits on the user: tell the user what is still needed', turn_limited=False,
                                     plural_text='tasks {task} wait on the user: tell the user what is still needed', id_field="task")
 TASK_BRIEF_FIRST = NudgeDeclaration("tasks.brief_first", NudgeType.REFUSAL, "read task {task} first")
