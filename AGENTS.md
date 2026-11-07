@@ -94,3 +94,5 @@ is how a finding gets "fixed" by silencing it.
 **Leave it cleaner than you found it.** A finding on code you touch, or read past while working, is
 yours to resolve at its source.
 <!-- END: code-commandments briefing -->
+
+To look at any screen you change, run `journal look-at-screen --window <window> --setup "<journal line, with --environment main>"` (a worker needs its sandbox off): it saves a screenshot in the worktree, prints its path and stops its server.
