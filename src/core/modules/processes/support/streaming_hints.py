@@ -1,4 +1,9 @@
+import re
+
 from core.modules.processes.support.reader_selection import ReaderSelection
+
+GO_TEST_PATTERN = re.compile(r"\bgo test\b([^|;&]*)")
+SERIAL_PACKAGES_PATTERN = re.compile(r"(^|\s)-p[= ]1(\s|$)")
 
 GENERAL_HINT = "make it print its steps as it goes; stdbuf -oL makes a C program write each line"
 
@@ -34,3 +39,12 @@ class StreamingHints:
     @staticmethod
     def hint(command: str) -> str:
         return next((hint for patterns, hint in STREAMING_HINTS if ReaderSelection.matches(patterns, command)), GENERAL_HINT)
+
+    @staticmethod
+    def holds_back_packages(command: str) -> bool:
+        """Whether a go test line runs several packages at once, which holds back the output of each until it is done."""
+        found = GO_TEST_PATTERN.search(command)
+        if found is None or SERIAL_PACKAGES_PATTERN.search(found.group(1)):
+            return False
+        arguments = found.group(1).split()
+        return any("..." in argument for argument in arguments) or sum(argument.startswith("./") for argument in arguments) > 1

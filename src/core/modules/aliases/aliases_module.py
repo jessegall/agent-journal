@@ -27,7 +27,7 @@ from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcomm
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
 from core.modules.aliases.rules.unknown_command_rule import UnknownCommandRule
-from core.modules.aliases.support.alias_nudges import (COMMAND_KIND_UNKNOWN, ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_HELPER,
+from core.modules.aliases.support.alias_nudges import (COMMAND_KIND_UNKNOWN, ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SILENT, SAVED_COMMAND_HELPER,
                                                        SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT)
 
 
@@ -48,4 +48,4 @@ class AliasesModule(Module):
     listeners = [AliasFileListener, PluginAliasesListener]
     guards = [ReaderAliasGuard, SavedCommandGuard]
     driver_rules = [AliasExpansionRule, UnknownCommandRule, SavedCommandRule]
-    nudges = [COMMAND_KIND_UNKNOWN, ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_MIXED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_HELPER, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT]
+    nudges = [COMMAND_KIND_UNKNOWN, ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_MIXED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_HELPER, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD, SAVED_COMMAND_SILENT, SAVED_COMMAND_TIMEOUT]
