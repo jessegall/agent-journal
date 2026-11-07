@@ -31,11 +31,16 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
         if command.job_id is not None:
             job = self.rows.required(HelperJob, command.job_id)
             self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id), context)
-        agent = self.rows.required(Agent, command.agent_id)
-        profile = self.profiles.registered(agent.profile)
-        if command.tells_receiver and (profile is None or profile.reports_to_parent):
+        if self.should_notify(command):
             self.notify_receiver(command, message, context)
         return message
+
+    def should_notify(self, command: RecordParentReport) -> bool:
+        if not command.tells_receiver:
+            return False
+        agent = self.rows.required(Agent, command.agent_id)
+        profile = self.profiles.registered(agent.profile)
+        return profile is None or profile.reports_to_parent
 
     def notify_receiver(self, command: RecordParentReport, message: Message, context: Context) -> None:
         receiver = self.receivers.receiver(command.parent_id)

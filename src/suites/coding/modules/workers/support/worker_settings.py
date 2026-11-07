@@ -13,6 +13,8 @@ WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
+IDLE_WORKER_MINUTES = f"{MODULE_KEY}.idle-worker-minutes"
+IDLE_WORKER_REPEAT_MINUTES = f"{MODULE_KEY}.idle-worker-repeat-minutes"
 INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
@@ -25,6 +27,8 @@ WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
 AFFECTED_TESTS_COMMAND = f"{MODULE_KEY}.affected-tests-command"
 PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
 WORKER_SETTINGS = [
+    SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True),
+    SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default=""),
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default=""),

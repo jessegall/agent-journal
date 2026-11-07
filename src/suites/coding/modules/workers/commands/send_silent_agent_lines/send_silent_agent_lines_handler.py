@@ -14,6 +14,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
+from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.reviews.models.review import Review
@@ -29,9 +30,12 @@ from suites.coding.modules.workers.commands.report_silent_agent.report_silent_ag
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
-from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE, RESUMING_SOURCES
+from suites.coding.modules.workers.support.worker_places import WorkerPlaces
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
+from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
+from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.support.coding_agent_role import CodingAgentRole
 
@@ -45,21 +49,23 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 processes: ProcessQuery, nudger: Nudger, bus: Bus, stop: WorkerStop) -> None:
+                 processes: ProcessQuery, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces) -> None:
         self.home, self.queries, self.settings = home, queries, settings
-        self.processes, self.nudger, self.bus, self.stop = processes, nudger, bus, stop
+        self.processes, self.nudger, self.bus, self.stop, self.main_line, self.places = processes, nudger, bus, stop, main_line, places
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
-        connection = InternetConnection.shared(self.home)
-        if connection.status is not ConnectionStatus.ONLINE:
-            return
         agents = tuple(self.queries.query(Agent).all_rows())
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
         tasks = tuple(self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED])).all_rows())
         working = {agent_id for task in tasks for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
-        workers = {row.session_agent_id for row in self.queries.query(Worktree).all_rows()}
+        worktrees = tuple(self.queries.query(Worktree).all_rows())
+        workers = {row.session_agent_id for row in worktrees}
         excluded = self.waiting(agent_ids, context)
+        self.report_idle_workers(context, agents, activities, working, worktrees, excluded)
+        connection = InternetConnection.shared(self.home)
+        if connection.status is not ConnectionStatus.ONLINE:
+            return
         lines: dict[int, list[AgentLine]] = defaultdict(list)
         for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
             lines[line.session_agent_id].append(line)
@@ -81,6 +87,28 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
                 continue
             declaration = SILENT_WORKER_CONTINUE if agent.id in workers else SILENT_AGENT_CONTINUE
             self.nudger.send(agent.id, declaration, SILENT_AGENT_SOURCE, context)
+
+    def report_idle_workers(self, context: Context, agents: tuple[Agent, ...], activities: dict[int, AgentActivity], working: set[int],
+                            worktrees: tuple[Worktree, ...], excluded: set[int]) -> None:
+        workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT and row.left_to_main_at is None}
+        waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
+        notices = tuple(self.queries.query(AgentLine).filter(source=IDLE_WORKER.key).oldest().all_rows())
+        grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
+        repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
+        for worker in agents:
+            if worker.ended_at is None or worker.paused_at is not None or worker.id not in workers or worker.id not in working or worker.id in excluded:
+                continue
+            if worker.id in waiting_jobs and not self.places.can_resume(worker):
+                continue
+            activity = activities[worker.id]
+            activity_at = max(worker.ended_at, activity.last_hook_at or activity.created_at)
+            if activity_at.elapsed_seconds(context.timestamp) < grace:
+                continue
+            line = IDLE_WORKER.nudge(worker=worker.id)
+            previous = [row for row in notices if row.text == line.text and row.creation_timestamp() >= activity_at]
+            if previous and previous[-1].creation_timestamp().elapsed_seconds(context.timestamp) < repeat:
+                continue
+            self.main_line.send(line.text, IDLE_WORKER.key, context)
 
     def waiting(self, agent_ids: tuple[int, ...], context: Context) -> set[int]:
         excluded = {row.session_agent_id for row in self.processes.running().all_rows()}

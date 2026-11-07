@@ -1,4 +1,5 @@
 import pytest
+from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
 from core.base.access import Access
@@ -191,3 +192,22 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
     story.expect_rows((f"agent:{merger.id} program exited with code 137" in lines) == fault)
     story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
+
+
+def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    story.expect_success(f'merger pass {worker.id} "A decision is needed"', actor=merger)
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
