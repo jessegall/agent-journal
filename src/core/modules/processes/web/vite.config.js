@@ -8,6 +8,7 @@ export default windowBuild({
         "outputs": here("./src/outputs.js"),
         "output": here("./src/output.js"),
         "output-dock": here("./src/output-dock.js"),
+        "queue-body": here("./src/queue-body.js"),
     },
     outDir: here("./dist"),
 });

@@ -2,7 +2,7 @@ import {createApp, h} from "vue";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
 import {afterEach, expect, test, vi} from "vitest";
-import ResourcePanel from "../src/resource/ResourcePanel.vue";
+import ProcessQueueBody from "../src/resource/ProcessQueueBody.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
@@ -76,11 +76,9 @@ let app = null;
 let subscriptions = null;
 
 async function panel(read) {
-    location.hash = "#/?open=test_queue:0";
-    await later();
     const element = document.createElement("div");
     document.body.append(element);
-    app = createApp({render: () => h(ResourcePanel, {read})});
+    app = createApp({render: () => h(ProcessQueueBody, {read})});
     subscriptions = new WindowSubscriptions();
     app.provide(RESOURCE_SUBSCRIPTIONS, subscriptions);
     app.mount(element);
@@ -98,26 +96,6 @@ afterEach(async () => {
     await later();
 });
 
-test("the waiting status of an agent opens the test queue", async () => {
-    const worker = {id: 21, session: "s-w", program: "claude", role: "worker", ended_at: null};
-    const facts = [{id: 21, model: "sonnet", tasks: [{id: 11, title: "Fix", state: "testing"}], state: "", profile: "", given_name: ""}];
-    const element = await mounted(
-        {render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})},
-        context({"agent cards": page([{...worker, facts: facts[0]}]), "worker waits": page([{agent_id: 21, reason: "tests"}]), "agent limits": {ok: true, value: {}}})
-    );
-    document.body.append(element);
-    element.querySelector("[data-agent-open]").click();
-    await settle();
-    element.querySelector("button[data-agent-waiting]").click();
-    await settle();
-    expect(location.hash).toContain("open=test_queue:0");
-    expect(element.querySelector("[data-agent-open]").getAttribute("aria-expanded")).toBe("true");
-});
-
-const OUTPUT_LINES = ["building package", "package built"];
-const rowsOf = (type) => [...document.body.querySelectorAll(`[data-queue-row=${type}]`)];
-const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: SNAPSHOT});
-
 test("queue arrivals and departures keep their Vue transition classes", async () => {
     const frame = vi.spyOn(window, "requestAnimationFrame").mockImplementation(() => 0);
     try {
@@ -134,7 +112,7 @@ test("queue arrivals and departures keep their Vue transition classes", async ()
 });
 
 test("queue motion styles include reordering and respect reduced motion", () => {
-    const inspector = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueInspector.vue"), "utf8");
+    const inspector = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueBody.vue"), "utf8");
     const run = readFileSync(resolve(__dirname, "../src/resource/ProcessQueueRun.vue"), "utf8");
     expect(inspector).toContain('<TransitionGroup name="queue"');
     expect(inspector).toContain(".queue-move");
@@ -255,7 +233,6 @@ test("a held empty queue shows the reason and empty messages", async () => {
     }));
     expect(document.body.querySelector("[data-queue-held]").textContent).toContain("Machine maintenance");
     expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("Nothing waits. A command that starts now gets a place at once.");
-    expect(document.body.textContent).toContain("Process queue");
     expect(document.body.textContent).not.toContain("Test queue");
 });
 

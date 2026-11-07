@@ -205,6 +205,11 @@ WINDOW_RUNS = ["output stop", "output watch"]
 WINDOW_EVENTS = ["process.*", "output.*"]
 
 
+from core.modules.processes.support.queue_inspector import QUEUE_INSPECTOR
+from core.base.viewer.window_place import WindowPlace
+from core.base.viewer.skeleton_part import SkeletonPart
+
+
 class ProcessesModule(Module):
     """Adds processes: every shell line an agent runs is kept as a numbered process with its parts and its
     output."""
@@ -241,5 +246,8 @@ class ProcessesModule(Module):
                                        WindowKey("run.*", "process feed --id {id}", loading=KeyLoading.REQUESTED),
                                        WindowKey("summary.*", "output peek {id} --summary", loading=KeyLoading.REQUESTED),
                                        WindowKey("output.*", "output page {id}", arguments=["after", "before"], loading=KeyLoading.REQUESTED)],
-                                 runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
+                                 runs=WINDOW_RUNS, events=WINDOW_EVENTS),
+               WindowDeclaration("processes.queue-body", "Test queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
+                                 reads=["queue list"], runs=["setting set"])]
+    inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]

@@ -1,9 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import {useResourceEvents} from "./resourceEvents.js";
-import BackButton from "../kit/BackButton.vue";
-import CloseButton from "../kit/CloseButton.vue";
-import Icon from "../kit/Icon.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import ProcessQueueControls from "./ProcessQueueControls.vue";
 import ProcessQueueRun from "./ProcessQueueRun.vue";
@@ -11,8 +8,7 @@ import ProcessQueueBand from "./ProcessQueueBand.vue";
 
 const RECENT_PAGE = 20;
 
-const props = defineProps({read: {type: Function, required: true}, backed: Boolean});
-const emit = defineEmits(["close", "back"]);
+const props = defineProps({read: {type: Function, required: true}});
 const queue = ref(null);
 const failure = ref("");
 const open = ref([]);
@@ -51,12 +47,6 @@ onMounted(load);
 
 <template>
     <article class="process-queue" data-test-queue>
-        <header class="top">
-            <template v-if="backed"><BackButton @back="emit('back')" /></template>
-            <Icon name="terminal" :size="13" /><h1>Process queue</h1>
-            <span class="environment">Environment {{ queue?.environment_name }}</span>
-            <CloseButton title="Close the process queue" data-resource-close @click="emit('close')" />
-        </header>
         <p class="lead">Commands from workers wait here for a free place. Reading and editing never wait.</p>
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>

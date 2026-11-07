@@ -5,7 +5,6 @@ import {DECLARED_NOUNS} from "./declaredNouns.js";
 import InspectorPanel from "./InspectorPanel.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import {cliOf, titleOf} from "../domain/resourceNouns.js";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -16,7 +15,7 @@ const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 // every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
-const OWN_INSPECTORS = new Set(["test-queue"]);
+const OWN_INSPECTORS = new Set();
 const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
 const title = computed(() => titleOf(noun.value, null, opened.value?.id));
 
@@ -61,7 +60,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 />
                 <aside
                     v-else
-                    :class="['panel', {opening: !fullyOpen, queue: noun === 'test-queue'}]"
+                    :class="['panel', {opening: !fullyOpen}]"
                     ref="panel"
                     tabindex="-1"
                     role="dialog"
@@ -72,9 +71,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <div class="panel-opening" data-resource-opening><Skeleton /></div>
                     </template>
                     <SwitchCase :value="noun">
-                        <template #test-queue>
-                            <ProcessQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
-                        </template>
                     </SwitchCase>
                 </aside>
             </div>
@@ -118,11 +114,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 .panel.opening > :deep(:not(.panel-opening)) {
     opacity: 0;
     transition: none;
-}
-
-.panel.queue {
-    width: min(640px, 100vw);
-    border-left-color: var(--border-2);
 }
 
 .veil.fades { background: rgba(0, 0, 0, .45); }

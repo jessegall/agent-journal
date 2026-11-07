@@ -10,16 +10,16 @@ def inspectors_of(story):
 
 
 def test_a_model_without_a_declaration_is_listed_with_the_default_inspector(new_story):
-    task = inspectors_of(new_story(fixture=MainEnvironment))["task"]
-    assert (task.reads, task.label, task.title, task.description, task.width, task.components, task.comments, task.events) == ("task show {row_id}", "", "{title}", "", "small", [], False, [])
+    task = inspectors_of(new_story(fixture=MainEnvironment))["pin"]
+    assert (task.reads, task.label, task.title, task.description, task.width, task.components, task.comments, task.events) == ("pin show {row_id}", "", "{title}", "", "small", [], False, [])
     assert task.links == {"kinds": [], "open": False, "outside_plan": False, "page_size": 10}
 
 
 def test_a_declared_inspector_is_listed_with_its_width_and_components(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{PATH}:DeclaringModule")
-    task = inspectors_of(story)["task"]
-    assert (task.module, task.label, task.description, task.width, task.comments) == ("declaring", "Task {id}", "{brief}", "large", True)
+    task = inspectors_of(story)["reminder"]
+    assert (task.module, task.label, task.description, task.width, task.comments) == ("declaring", "Reminder {id}", "{text}", "large", True)
     assert task.components == [{"window": "declaring.chain", "tab": "Chain"}]
 
 
@@ -37,6 +37,6 @@ def test_an_inactive_module_lists_no_inspector(new_story):
 
 def test_the_windows_list_is_unchanged(new_story):
     story = new_story(fixture=MainEnvironment)
-    before = WindowsRoute(story.home).windows("main")
+    before = sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name)
     story.expect_sync_success(f"{PLAIN_PATH}:InspectorModule")
-    assert WindowsRoute(story.home).windows("main") == before
+    assert sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name) == before
