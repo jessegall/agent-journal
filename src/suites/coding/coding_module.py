@@ -84,7 +84,10 @@ class CodingModule(Module):
     driver_rules = [WaitingItemsRule, IntroductionRule]
     listeners = [FullTestRunListener]
     subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
-    windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
+    windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
+                                 keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
+                                       WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),
+                                       WindowKey("pulls", "git-overview pulls")]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, skeleton=CODING_FILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"], search=WindowReadSearch("project-file find", "Find a file in the project"),
                                  keys=[WindowKey("entries", "project-file list {folder}"),
                                        WindowKey("matches", "project-file find {words}", loading=KeyLoading.REQUESTED),
