@@ -14,6 +14,7 @@ const (
 	reportAttempts      = 60
 	reportRetryInterval = time.Second
 	keepCuttingInterval = time.Second
+	fileCommandLimit    = 10 * time.Minute
 	// lateOutputWait gives a part with & that ends the line a moment to print before the agent is answered.
 	lateOutputWait = 100 * time.Millisecond
 )
@@ -56,6 +57,17 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 			started = time.Now()
 			continue
 		}
+		if tracker.Options.FileCommands {
+			limit := tracker.Options.FileCommandLimit
+			if limit == 0 {
+				limit = fileCommandLimit
+			}
+			if time.Since(started) >= limit {
+				return tracker.stopFileCommands(stdout)
+			}
+			time.Sleep(pollInterval)
+			continue
+		}
 		if tracker.mayMove(started) {
 			return tracker.move(stdout)
 		}
@@ -83,6 +95,15 @@ func (tracker *Tracker) mayMove(started time.Time) bool {
 	}
 	limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
 	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && time.Since(started) >= limit)
+}
+
+func (tracker *Tracker) stopFileCommands(stdout io.Writer) int {
+	if pid, recorded := tracker.Folder.Pid(); recorded {
+		_ = syscall.Kill(-pid, syscall.SIGKILL)
+	}
+	fmt.Fprintln(stdout, "file commands exceeded their time limit and were stopped")
+	_ = tracker.Folder.WriteEnd(124)
+	return tracker.finish(stdout, 124)
 }
 
 // Watch follows a moved run as a program of its own until the run ends or its folder has been pruned.
