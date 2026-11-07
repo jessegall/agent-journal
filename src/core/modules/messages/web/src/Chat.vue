@@ -102,6 +102,7 @@ onMounted(() => {
         // the history shrinks each frame while the composer grows: a chat at its foot stays there
         footWatch = new ResizeObserver(() => atFoot && scroller.value && (scroller.value.scrollTop = scroller.value.scrollHeight));
         footWatch.observe(scroller.value);
+        footWatch.observe(historyContent.value);
     }
 });
 onUnmounted(() => {
@@ -112,6 +113,7 @@ onUnmounted(() => {
 const text = ref("");
 const sendFailure = ref("");
 const scroller = ref(null);
+const historyContent = ref(null);
 const atTop = ref(true);
 const awayFromFoot = ref(false);
 const arrived = ref(0);
@@ -440,6 +442,7 @@ async function runCommand(pin) {
             <PinsToggle :pin-rows="pins" />
         </div>
         <div ref="scroller" class="history" data-figure-scroll @scroll="followScroll">
+          <div ref="historyContent">
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
@@ -461,6 +464,7 @@ async function runCommand(pin) {
                     </SwitchCase>
                 </template>
             </RowList>
+          </div>
         </div>
         <div class="jump-holder">
             <Transition name="rise">

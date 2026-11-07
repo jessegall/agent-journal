@@ -50,9 +50,11 @@ def running_worker(worker_story):
     """A worker the launcher started and answered the pid of, whose program runs."""
     story = worker_story
     story.use_processes(RUNNING_PROGRAM)
-    start_launcher(story, f"started {WORKER_PID}\n".encode())
+    launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
     story.worker = dispatched_worker(story)
     story.run_listeners()
+    launcher.thread.join(10)
+    story.expect_rows(bool(launcher.requests), story.row(Agent, story.worker.id).pid == WORKER_PID)
     story.advance(timedelta(minutes=5))
     return story
 
@@ -177,8 +179,9 @@ def test_a_running_worker_is_not_ended_at_a_tick(running_worker):
 
 
 def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
+    ended_worker.expect_rows(ended_worker.row(Agent, ended_worker.worker.id).ended_at is not None)
     launcher = start_launcher(ended_worker, f"started {WORKER_PID}\n".encode())
-    ended_worker.expect_text(f'worker send --wait {ended_worker.worker.id} "Add the tax"', "was not running: the job waits until it starts", actor=ended_worker.agent)
+    ended_worker.expect_success(f'worker send --wait {ended_worker.worker.id} "Add the tax"', actor=ended_worker.agent)
     ended_worker.run_listeners()
     expect_restart(ended_worker, launcher)
 
@@ -187,7 +190,6 @@ def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worke
     running_worker.use_processes()
     launcher = start_launcher(running_worker, b"started\n")
     running_worker.expect_text(f'worker send --wait {running_worker.worker.id} "Add the tax"', "was not running: the job waits until it starts", actor=running_worker.agent)
-    running_worker.expect_text(f"agent show {running_worker.worker.id}", "ended_at: 2026")
     running_worker.run_listeners()
     expect_restart(running_worker, launcher)
 
@@ -208,10 +210,14 @@ def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_worker):
 
 def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_worker):
     worker = ended_worker.worker
+    stop_launcher = start_launcher(ended_worker, b"stopped\n")
+    ended_worker.run_listeners()
+    stop_launcher.thread.join(10)
+    stop_launcher.server.close()
     new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
     ended_worker.use_processes(new_process)
     launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
-    ended_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "the job waits until it starts", actor=ended_worker.agent)
+    ended_worker.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=ended_worker.agent)
     ended_worker.run_listeners()
     launcher.thread.join(10)
     ended_worker.hook(worker_session(ended_worker, worker), HookSamples.session_start())

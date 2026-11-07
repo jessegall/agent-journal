@@ -19,13 +19,14 @@ from core.modules.agents.support.agent_program import AgentProgram
 from suites.coding.modules.workers.support.worker_recovery_reports import WorkerRecoveryReports
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
-from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
+from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -76,8 +77,9 @@ class WorkerResume:
         if worktree is None or self.is_job_delivering(worker, worker.ended_at):
             return LaunchAnswer.SKIPPED
         lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
-        job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE) if line.source in RESUMING_SOURCES), None)
-        job = job or self.lost_job(worker, worker.ended_at)
+        job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
+                    if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
+        job = job or self.lost_job(worker) or next((line for line in lines if line.source == UNFINISHED_TASKS_SOURCE), None)
         if job is None:
             return LaunchAnswer.SKIPPED
         return self.launch_job(worker, worktree, job, actor)
@@ -114,6 +116,8 @@ class WorkerResume:
         delivery_cutoff_at = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
 
-    def lost_job(self, worker: Agent, ended_at: Timestamp) -> AgentLine | None:
-        entered = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", ended_at.text)).newest().all_rows()
+    def lost_job(self, worker: Agent) -> AgentLine | None:
+        activity = self.queries.query(AgentActivity).find(worker.id)
+        last_hook = activity.last_hook_at if activity.last_hook_at is not None else activity.created_at
+        entered = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", last_hook.text)).newest().all_rows()
         return next((line for line in entered if line.source in RESUMING_SOURCES), None)

@@ -8,6 +8,7 @@ from core.testing.expect_reply import expect_reply_allowed, expect_reply_line
 def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=worker)
@@ -16,7 +17,7 @@ def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_sto
     stop = story.hook(session, HookSamples.stop())
     expect_reply_allowed(stop)
     expect_reply_line(stop, notice)
-    story.expect_text("task show 1", "state: blocked")
+    story.expect_text("task show 1", "state: blocked", "the build tool is missing")
 
 
 def test_a_main_agent_blocking_a_task_gets_no_line(new_story):

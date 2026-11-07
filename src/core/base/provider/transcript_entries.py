@@ -28,6 +28,10 @@ class TranscriptEntries:
         self.notes[path] = []
         return notes
 
+    def recent(self, provider: Provider, path: Path, cutoff_at: Timestamp) -> Sequence[TranscriptEntry]:
+        self.read(provider, path)
+        return [row for row in self.waiting[path] if row.created_at >= cutoff_at]
+
     def read(self, provider: Provider, path: Path) -> None:
         lines = self.growth.setdefault(path, TranscriptGrowth(path)).new_lines()
         self.waiting.setdefault(path, []).extend(row for row in map(provider.transcript_entry, lines) if row is not None)

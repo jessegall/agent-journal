@@ -73,7 +73,7 @@ def test_a_task_that_waits_on_an_open_task_is_not_given_next(new_story):
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     expect_started_holder(story, 2, "state: started")
-    expect_started_holder(story, 3, "state: open")
+    expect_started_holder(story, 3, "state: blocked")
 
 
 def test_a_released_task_is_not_given_back_at_once(new_story):

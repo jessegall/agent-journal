@@ -93,6 +93,31 @@ def test_text_the_display_hook_recorded_is_not_recorded_again(builder, tmp_path)
     expect_chat_count(builder, AGENT_TEXT, 1)
 
 
+def test_a_displayed_part_and_its_complete_transcript_reach_chat_once(builder, tmp_path):
+    first = "The first paragraph is here."
+    second = "The second paragraph is here."
+    builder.hook("s-1", HookSamples.message_display(second))
+    row = agent_row(builder, first)
+    row["message"]["content"].append({"type": "text", "text": second})
+    run_hook(builder, transcript(tmp_path, row), TOOL_FINISHED)
+    output = chat(builder)
+    builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
+
+
+def test_a_displayed_part_uses_the_whole_transcript_at_once(builder, tmp_path):
+    first = "The first paragraph is here."
+    second = "The second paragraph is here."
+    row = agent_row(builder, first)
+    row["message"]["content"].append({"type": "text", "text": second})
+    path = transcript(tmp_path, row)
+    builder.hook("s-1", HookSamples.message_display(second).with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": True, "delta": second, "transcript_path": path}))
+    output = chat(builder)
+    builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
+    run_hook(builder, path, TOOL_FINISHED)
+    output = chat(builder)
+    builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
+
+
 def test_a_few_words_the_display_hook_kept_out_of_the_chat_stay_out(builder, tmp_path):
     builder.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
     builder.hook("s-1", HookSamples.message_display("The stories are running."))

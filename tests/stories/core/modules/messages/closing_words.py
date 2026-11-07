@@ -92,6 +92,22 @@ def test_a_closing_text_repeating_the_reply_stays_out_of_chat(reply_ready):
     expect_absent_chat(story, text)
 
 
+def test_a_closing_text_repeating_a_sent_message_stays_out_of_chat(reply_ready):
+    story = reply_ready
+    story.run('message send "Task 7246 is with worker 672 and its tests passed." --environment main', actor=story.agent)
+    text = "Task 7246 is with worker 672 and its tests passed."
+    story.hook("s-1", HookSamples.message_display(text))
+    story.expect_rows(chat(story).count(text) == 1)
+
+
+def test_new_facts_after_a_sent_message_reach_chat(reply_ready):
+    story = reply_ready
+    story.run('message send "Task 7246 is with worker 672." --environment main', actor=story.agent)
+    text = "Task 7246 is with worker 672; task 7344 is next."
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_chat(story, text)
+
+
 def test_new_worker_and_task_numbers_after_a_reply_reach_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Yes. Looking at it."', actor=story.agent)

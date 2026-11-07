@@ -21,6 +21,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.environments.models.environment import Environment
 from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt
 from core.modules.messages.commands.send_message.send_message import SendMessage
+from core.modules.messages.commands.edit_message_text.edit_message_text import EditMessageText
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
 
 HOOK_DELAY = timedelta(seconds=15)
@@ -61,7 +62,12 @@ class TranscriptMessageRule(DriverRule):
             has_hook = self.hook_calls.has_call_after(hook.agent_id, HookEventName.PROMPT, HookCall.summarize(row.text), cutoff_at)
             return [] if has_hook else [RecordMissingPrompt(row.text), RecordTypedPrompt(row.text.strip())]
         text = row.text.strip()
-        if self.texts.is_displayed(hook.agent_id, text, cutoff_at) or self.is_filtered(hook, text, row.created_at):
+        if self.texts.is_displayed(hook.agent_id, text, cutoff_at):
+            return []
+        message = next((message for message in self.texts.messages.recent_agent_messages(hook.agent_id, cutoff_at) if text.endswith("\n" + message.text)), None)
+        if message is not None and self.hook_calls.has_call_after(hook.agent_id, HookEventName.MESSAGE_DISPLAY, HookCall.summarize(message.text), cutoff_at):
+            return [EditMessageText(message.id, text)]
+        if self.is_filtered(hook, text, row.created_at):
             return []
         return [SendMessage(text)]
 

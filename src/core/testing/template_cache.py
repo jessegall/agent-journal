@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+import hashlib
 import shutil
 import time
 from pathlib import Path
@@ -14,14 +15,17 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates across checkouts with identical sources, and when a new one is made removes
+    """Shares complete story templates within a checkout, and when a new one is made removes
     the ones unused for an hour and then the least recently used until the cache is under its size limit."""
 
     def __init__(self, root: Path = CACHE_FOLDER, limit_bytes: int = CACHE_LIMIT_BYTES) -> None:
         self.root, self.limit_bytes = root, limit_bytes
 
     def folder(self) -> Path:
-        current = self.root / SourceHash.text((CORE_FOLDER.parent, CORE_FOLDER.parent.parent / "tests"))[:HASH_CHARACTERS]
+        checkout = CORE_FOLDER.parent.parent.resolve()
+        source_hash = SourceHash.text((CORE_FOLDER.parent, checkout / "tests"))
+        checkout_hash = hashlib.sha256(str(checkout).encode()).hexdigest()[:HASH_CHARACTERS]
+        current = self.root / f"{checkout_hash}-{source_hash[:HASH_CHARACTERS]}"
         if not current.is_dir():
             self.remove_old()
         current.mkdir(parents=True, exist_ok=True)

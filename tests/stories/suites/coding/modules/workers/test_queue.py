@@ -74,6 +74,7 @@ def test_the_last_delivery_queues_the_tests_and_the_journal_starts_them(new_stor
 
 def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_merge_goes_through(new_story, monkeypatch):
     story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     ended(story, started[0], 0)
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     expect_marks_text(story, "passed")

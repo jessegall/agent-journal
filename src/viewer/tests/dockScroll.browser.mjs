@@ -22,6 +22,23 @@ try {
         await page.waitForTimeout(1200);
     };
     await addDocument("First dock");
+    const geometry = await page.evaluate(() => {
+        const history = document.querySelector(".history").getBoundingClientRect();
+        const dock = document.querySelector(".chat-foot").getBoundingClientRect();
+        return {historyBottom: history.bottom, dockTop: dock.top};
+    });
+    assert.ok(geometry.historyBottom <= geometry.dockTop, JSON.stringify(geometry));
+    const message = `A new message with the dock open ${Date.now()}`;
+    const sent = await page.evaluate(async (text) => {
+        const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window: "messages.chat", environment: "main", line: ["message", "send", text, "--environment", "main"]})});
+        return response.json();
+    }, message);
+    assert.equal(sent.code, 0, JSON.stringify(sent));
+    await history.getByText(message, {exact: true}).waitFor();
+    await page.waitForFunction(() => {
+        const history = document.querySelector(".history");
+        return history.scrollHeight - history.scrollTop - history.clientHeight < 2;
+    });
     const distance = await history.evaluate((element) => element.scrollHeight - element.scrollTop - element.clientHeight);
     assert.ok(distance < 2, `chat moved ${distance} pixels from the bottom`);
     await history.evaluate((element) => {element.scrollTop = element.scrollHeight / 3;});
