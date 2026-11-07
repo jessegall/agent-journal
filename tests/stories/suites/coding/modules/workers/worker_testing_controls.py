@@ -1,4 +1,6 @@
 import json
+import subprocess
+from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -18,12 +20,14 @@ from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.important_lines import WORKER_RUN_LINE, proved_worker
+from tests.stories.suites.coding.modules.workers.merge_followup_plan import merge_story
 from tests.stories.suites.coding.modules.workers.merger import merger_of
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, worker_on_plan, worker_outside_plan
 from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
 from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
+from tests.stories.support.story_checks import expect_value
 
 
 def test_s32_the_phase_setting_off_tests_each_plan_task_whatever_the_outside_batch_size(new_story, monkeypatch):
@@ -142,3 +146,36 @@ def test_s42_the_own_test_failure_limit_is_a_setting_and_counts_failures_already
     story.expect_success("setting set journal.suites.coding.workers.own-test-failures-to-flag 3 --environment main", actor=story.user)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.expect_text(f"worker logs {worker.id}", "! its own runs failed 3 times: tests/stories/cart.py", actor=story.agent)
+
+
+def commit_count(folder) -> int:
+    return int(subprocess.run(["git", "-C", str(folder), "rev-list", "--count", "HEAD"], capture_output=True, text=True, check=True).stdout)
+
+
+def test_after_merge_failure_keeps_task_open(new_story):
+    story, worker, _ = merge_story(new_story, ["false"])
+    story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+
+
+def test_after_merge_resume_does_not_merge_twice(new_story):
+    story, worker, repository = merge_story(new_story, ["test -f marker.txt"])
+    story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)
+    merged = commit_count(repository.folder)
+    Path(repository.folder, "marker.txt").write_text("")
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+    expect_value(commit_count(repository.folder), merged)
+
+
+def test_after_merge_empty_list_preserves_completion(new_story):
+    story, worker, _ = merge_story(new_story, [])
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_s56_existing_merge_commands_survive_upgrade(new_story):
+    story, worker, repository = merge_story(new_story, ["echo kept >> kept.txt"])
+    story.expect_text("setting show journal.suites.coding.workers.merge-commands", "echo kept >> kept.txt", actor=story.user)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    expect_value(Path(repository.folder, "kept.txt").read_text().splitlines(), ["kept"])
