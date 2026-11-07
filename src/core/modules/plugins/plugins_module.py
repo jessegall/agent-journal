@@ -6,6 +6,7 @@ from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit_handler i
 from core.base.project_reads import ProjectReads
 from core.modules.plugins.guards.plugin_event_guard import PluginEventGuard
 from core.modules.plugins.migrations.m006_plugin_output_environment import PluginOutputEnvironmentMigration
+from core.modules.plugins.migrations.m007_plugin_setting_environments import PluginSettingEnvironmentsMigration
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries_handler import PrunePluginDeliveriesHandler
 from core.modules.plugins.ticks.delivery_pruning import DeliveryPruning
 from core.modules.plugins.listeners.plugin_event_listener import PluginEventListener
@@ -114,7 +115,7 @@ class PluginsModule(Module):
                                        WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
                                        WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
-    migrations = [PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
+    migrations = [PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration]
     handlers = [PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]

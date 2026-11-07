@@ -11,3 +11,4 @@ class ConfigurePlugin(Command[PluginSetting]):
     name: str
     key: str
     value: str
+    environment_id: int | None = None
