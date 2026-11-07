@@ -171,6 +171,57 @@ plain JavaScript source there inside the temporary package before installation. 
 component before installing it. A component's code has its own trust requirements; registering a
 button does not grant trust to a component.
 
+## Declare an inspector
+
+An inspector is the panel that opens when a person picks a row. The module that adds a model declares
+its inspector in `inspectors`, and the journal draws it: the head, the action bar, your parts and the
+links section. A model with no declaration still gets a small inspector that reads `<noun> show`.
+
+```python
+class AcmeThingModule(Module):
+    name = "acme.things"
+    requires_core = ">=5,<6"
+    models = [ModelDeclaration(Thing)]
+    inspectors = [InspectorDeclaration(
+        Thing,
+        reads="thing show {row_id}",
+        label="Thing {id} · {state}",
+        title="{title}",
+        description="{summary}",
+        width=InspectorWidth.MEDIUM,
+        actions=[ButtonDeclaration("things.retire", (), "Retire the thing", "thing retire {row_id}", icon="stop", danger=True,
+                                   confirm="Retire the thing? It stays in the list.", condition=ButtonCondition("state", ("active",)))],
+        components=[InspectorComponent("things.history", tab="History")],
+        comments=True,
+        events=("thing.*",),
+        links=InspectorLinks(kinds=("doc",), page_size=10),
+    )]
+```
+
+- **Words.** `label`, `title` and `description` are written with the row's fields in braces. A field
+  the row lacks draws as nothing. An empty `label` draws the noun and the id.
+- **Width.** `InspectorWidth` has four words: `SMALL` (480), `MEDIUM` (640), `LARGE` (960) and `WIDE`
+  (1130, for a document). The viewer holds the pixels, so a module never writes a number. The default
+  is small.
+- **Actions.** Each one is a `ButtonDeclaration` that acts on the model. It needs an icon from
+  `WindowIcon` and a label of a verb and what it acts on, such as "Retire the thing". It gets the slot
+  `row.thing` on its own, and may also list a `dock.` slot of a card. `confirm` asks first, with a Yes
+  and a Back, and `danger` draws it in the danger colour.
+- **Panel words.** The journal draws the actions on the panel itself, as icons: the X, Back, the
+  arrows between rows, Open, Dismiss and Share. A label that starts with `close`, `open`, `hide`,
+  `dismiss` or `back` is refused for a module the journal ships and warned for any other. "Complete
+  the plan" passes, "Close the plan" does not.
+- **Components.** An `InspectorComponent` names a section window of your module (or of a module you
+  depend on) with the place `WindowPlace.SECTION`. It draws on the main page, or under a tab when it
+  names one. Sections that other modules add through `inspector.<noun>` draw after yours.
+- **Links.** `InspectorLinks` sets the kinds that get a tab, whether the section starts open, whether
+  it leaves out the rows of the row's own plan, and the page size. `links=None` draws no links section.
+- **Share.** A row can be shared when a window lists a read of its model in `shared_reads`. The journal
+  draws the Share icon then, and a module cannot add or remove it.
+
+Sync refuses two inspectors for one model, a component that is not a section, a `reads` line that is
+no read subcommand, and events no model raises or of a model the inspector does not read.
+
 ## Add a section to an inspector
 
 A section is a part of an inspector that your module adds, without the module that owns the row
