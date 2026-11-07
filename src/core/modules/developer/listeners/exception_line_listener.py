@@ -2,6 +2,7 @@ from core.base.actor import Actor
 from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
+from core.base.exception_sink import CLOCK_TICK_SOURCE
 from core.base.listener.commit_listener import CommitListener
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.support.agent_rows import AgentRows
@@ -12,7 +13,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class ExceptionLineListener(CommitListener[Created[JournalException]]):
-    """With the setting on, an exception that shows in the chat reaches the running main agent, once per text."""
+    """Sends exception lines to the main agent, repeating tick warnings as they arrive."""
 
     name = "developer.exception-line"
     disabled_scopes = [ActorScope]
@@ -23,8 +24,9 @@ class ExceptionLineListener(CommitListener[Created[JournalException]]):
 
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:
         main_agent = self.agents.main_agent()
-        if main_agent is None or event.row.message in self.told_messages or not self.settings.flag(EXCEPTION_LINES_SETTING):
+        if main_agent is None or (event.row.source != CLOCK_TICK_SOURCE and event.row.message in self.told_messages) or not self.settings.flag(EXCEPTION_LINES_SETTING):
             return
-        self.told_messages.add(event.row.message)
+        if event.row.source != CLOCK_TICK_SOURCE:
+            self.told_messages.add(event.row.message)
         command = SendExceptionLine(main_agent.id, event.row.source, event.row.message)
         self.bus.run(command, Actor.core(), cause_id=logged.id, environment_id=main_agent.environment_id)
