@@ -99,3 +99,24 @@ def test_reading_running_worker_output_stays_within_the_tick_limit(four_workers)
     assert cost is not None
     assert cost.total < 50, (cost.line(), cost.statements)
     assert cost.tables["outputs"] < 27, cost.line()
+
+
+def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_workers):
+    story = four_workers
+    story.run("setting set journal.suites.coding.workers.worker-run-limit 5 --environment main")
+    task_id = story.new_row_id('task make "Job 5" --brief "Finish job 5" --environment main', actor=story.agent)
+    story.expect_success(f"worker dispatch --fresh 'A new worker' --model sonnet {task_id}", actor=story.agent)
+    workers = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows()
+    folder = story.container.get(OutputFolder)
+    bus = story.container.get(Bus)
+    for worker in workers:
+        for _ in range(2):
+            command = StartProcess(worker.id, None, "make build", "/work/main", "sh", CommandCategory.BUILD, 30, [PartSpec("make build", "make")])
+            process = bus.run(command, Actor(worker.id, ActorType.AGENT), environment_id=1)
+            folder.write_output(process.id, 1, "building\n[ 40%]\n")
+    tools = story.container.get(PerformanceTools)
+    start = tools.begin()
+    OutputReading().read(story.container)
+    cost = tools.cost(start)
+    assert cost is not None
+    assert cost.total < 50, (cost.line(), cost.statements)
