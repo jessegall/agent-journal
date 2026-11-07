@@ -155,6 +155,10 @@ class Provider(ABC):
     def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
         pass
 
+    @classmethod
+    def hooks_written(cls, path: Path, hooks: Mapping[str, object]) -> None:
+        pass
+
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()
 
