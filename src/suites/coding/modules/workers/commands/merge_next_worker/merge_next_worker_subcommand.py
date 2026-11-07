@@ -10,7 +10,7 @@ from suites.coding.modules.workers.commands.merge_next_worker.merge_next_worker 
 
 
 class MergeNextWorkerSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
-    """`journal merger merge <worker>`: takes the worker's work into the branch."""
+    """`journal merger merge <worker> [--read-important "<answer>"]`: takes the worker's work into the branch."""
 
     cli_name = "merger"
     name = "merge"
@@ -20,9 +20,10 @@ class MergeNextWorkerSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int)
+        parser.add_argument("--read-important", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MergeNextWorker:
-        return MergeNextWorker(arguments.worker_id)
+        return MergeNextWorker(arguments.worker_id, arguments.read_important)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MergeOutcome):

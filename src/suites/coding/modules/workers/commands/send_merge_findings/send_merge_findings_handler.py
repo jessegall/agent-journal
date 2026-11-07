@@ -8,10 +8,11 @@ from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.commands.send_merge_findings.send_merge_findings import SendMergeFindings
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
+from suites.coding.modules.workers.support.merger_nudges import SENT_BACK_BY_MERGER
 
 
 class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
-    """Sends the findings on a merge back to the worker that wrote the work."""
+    """Sends what the merger found back to the worker that wrote the work."""
 
     command = SendMergeFindings
     transactional = False
@@ -24,5 +25,5 @@ class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
         main_agent = self.agents.main_agent()
         if main_agent is None:
             raise Refusal("no main agent runs")
-        self.bus.run(SendWorker(command.worker_id, f"Findings from the judge on your merged work, please fix them: {command.findings}"),
+        self.bus.run(SendWorker(command.worker_id, f"{SENT_BACK_BY_MERGER}{command.findings}"),
                      Actor(main_agent.id, ActorType.AGENT), environment_id=context.environment_id)
