@@ -139,11 +139,11 @@ const uptime = computed(() => {
                 <template v-else-if="group">
                     <MenuLabel>{{ group.label }}</MenuLabel>
                     <template v-if="opened === 'context'">
+                        <p class="context-compaction" data-context-menu-compaction>{{ compactionLine(status?.last_compaction ?? null) }}</p>
                         <div class="context-meter" data-context-menu-meter>
                             <span class="gauge"><span :style="{width: `${context}%`}" /></span>
                             <span class="context-used">{{ context }}%</span>
                         </div>
-                        <p class="context-compaction" data-context-menu-compaction>{{ compactionLine(status?.last_compaction ?? null) }}</p>
                     </template>
                     <template v-for="choice in group.choices" :key="choice.value">
                         <MenuItem :data-agent-choice="choice.value" @click="controls.choose(group.key, choice), closeMenu()">{{ choice.label }}</MenuItem>
