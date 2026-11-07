@@ -9,12 +9,15 @@ from core.base.setting.list_rule import ListRule
 MODULE_KEY = "journal.suites.coding"
 STARTS_HELPERS_SETTING = f"{MODULE_KEY}.builder-starts-helpers"
 AUTO_MODE_SETTING = f"{MODULE_KEY}.auto-mode"
+WRITES_CODE_SETTING = f"{MODULE_KEY}.main-writes-code"
 COMMAND_TYPES = f"{MODULE_KEY}.worker-command-types"
 KEEP_RUNNING_SETTING = f"{MODULE_KEY}.continue-while-delegatable"
 DESIGNER_ENABLED_SETTING = f"{MODULE_KEY}.designer-enabled"
 CODING_SETTING_VALUES = [
-    SettingValue("auto-mode", "Auto mode", "The main agent may also write code itself", SettingType.FLAG, default=True,
-                 scope=SettingScope.ENVIRONMENT, person_set=True),
+    SettingValue("auto-mode", "Auto mode", "The journal hands the main agent its tasks, and it keeps going while tasks are left", SettingType.FLAG,
+                 default=True, scope=SettingScope.ENVIRONMENT, person_set=True),
+    SettingValue("main-writes-code", "Main agent writes code", "The main agent may change project files itself; off sends every change to a worker",
+                 SettingType.FLAG, default=True, scope=SettingScope.ENVIRONMENT, person_set=True),
     SettingValue("builder-starts-helpers", "Use ordinary helpers", "Whether the main agent may start ordinary helpers.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True),
     SettingValue("continue-while-delegatable", "Keep going while work can be delegated", "Keep the main agent working while open tasks can still be sent to workers.",

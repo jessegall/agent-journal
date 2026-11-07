@@ -6,8 +6,8 @@ const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
 const MERGER = "journal.suites.coding.workers.merger-on";
 const MODES = [
-    {key: "builder", label: "Builder", tip: {title: "Builder", line: "Auto on: the agent writes code and assigns work to workers when useful."}},
-    {key: "orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "Auto off: the agent plans, hands the work to workers, then reviews and merges it; it writes no project file."}},
+    {key: "builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code itself and assigns work to workers when useful."}},
+    {key: "orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes no project file."}},
 ];
 const view = useWindow();
 const mode = ref("");
@@ -85,7 +85,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 <template>
     <WindowRoom>
         <span ref="root" class="agentset" data-work-mode>
-            <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="toggleAuto" />
+            <Switch :on="auto" word="Auto" title="Auto mode: the journal hands the agent its next task, and it keeps going while tasks are left" data-auto-toggle @change="toggleAuto" />
             <Segmented class="agentset-mode" :options="MODES" :value="mode" @pick="pickMode" />
             <template v-if="asking">
                 <div class="agentset-menu" role="dialog" aria-label="Switch the work mode" data-mode-ask>

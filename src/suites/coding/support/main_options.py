@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
-BUILDER = (True, True, False, True, True, False, True)
-ORCHESTRATOR = (False, True, True, True, True, False, True)
+BUILDER = (True, True, False, True, True, False, True, True)
+ORCHESTRATOR = (False, True, True, True, True, False, True, False)
 PRESETS = {"builder": BUILDER, "orchestrator": ORCHESTRATOR}
 
 
 @dataclass(frozen=True)
 class MainOptions:
-    """What the main agent may do in an environment: the seven workflow controls, where each was set, and what is
+    """What the main agent may do in an environment: the eight workflow controls, where each was set, and what is
     wrong with a stored value. A control that holds something other than on or off reads as off until repaired."""
 
     auto: bool
@@ -17,12 +17,13 @@ class MainOptions:
     helpers: bool
     designer: bool
     may_merge: bool
+    writes_code: bool
     sources: tuple[tuple[str, str], ...] = ()
     problems: tuple[str, ...] = ()
 
     @property
     def bundle(self) -> tuple[bool, ...]:
-        return (self.auto, self.sends_workers, self.keeps_going, self.merger, self.helpers, self.designer, self.may_merge)
+        return (self.auto, self.sends_workers, self.keeps_going, self.merger, self.helpers, self.designer, self.may_merge, self.writes_code)
 
     @property
     def workflow(self) -> str:

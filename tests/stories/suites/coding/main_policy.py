@@ -37,11 +37,14 @@ def test_s44_effective_workflow_is_derived_from_the_preset_owned_controls_only(n
     story.expect_success(f"setting set {AUTO} off --environment main", actor=story.user)
     expect_value(main_options(story).workflow, "custom")
     story.expect_success(f"setting set {KEEP_GOING} on --environment main", actor=story.user)
+    expect_value(main_options(story).workflow, "custom")
+    story.expect_success("setting set journal.suites.coding.main-writes-code off --environment main", actor=story.user)
     expect_value((main_options(story).bundle, main_options(story).workflow), (ORCHESTRATOR, "orchestrator"))
     story.expect_success(f"setting set {WORKER_LIMIT} 5 --environment main", actor=story.user)
     expect_value(main_options(story).workflow, "orchestrator")
     story.expect_success(f"setting set {AUTO} on --environment main", actor=story.user)
     story.expect_success(f"setting set {KEEP_GOING} off --environment main", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.main-writes-code on --environment main", actor=story.user)
     expect_value(main_options(story).workflow, "builder")
 
 

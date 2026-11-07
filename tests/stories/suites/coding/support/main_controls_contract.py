@@ -18,7 +18,7 @@ DEFAULT_COMMAND_TYPES = (CommandCategory.READ.value, CommandCategory.SEARCH.valu
 SETTING_LISTS = {"coding": coding.CODING_SETTINGS, "workers": workers.WORKER_SETTINGS, "helpers": helpers.HELPER_SETTINGS}
 MODULE_KEYS = {"coding": coding.MODULE_KEY, "workers": workers.MODULE_KEY, "helpers": helpers.MODULE_KEY}
 RULES = {**coding.CODING_SETTING_RULES, **workers.WORKER_SETTING_RULES, **helpers.HELPER_SETTING_RULES}
-MAIN_AUTO_DESCRIPTION = "The main agent may also write code itself"
+MAIN_AUTO_DESCRIPTION = "The journal hands the main agent its tasks, and it keeps going while tasks are left"
 
 
 @dataclass(frozen=True)
