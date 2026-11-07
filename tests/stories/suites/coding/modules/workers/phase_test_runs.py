@@ -11,7 +11,9 @@ RULE = "workers.phase-tests"
 
 @pytest.fixture
 def on_plan(new_story, monkeypatch):
-    return worker_on_plan(new_story, monkeypatch)
+    worker = worker_on_plan(new_story, monkeypatch)
+    worker.story.expect_success("setting set journal.suites.coding.workers.worker-phase-test-runs 0 --environment main", actor=worker.story.user)
+    return worker
 
 
 @pytest.fixture

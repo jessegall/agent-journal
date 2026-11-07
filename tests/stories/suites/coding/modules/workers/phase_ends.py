@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.task import Task
-from core.testing.expect_reply import expect_reply_refusal
+from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
@@ -121,8 +121,8 @@ def test_the_tasks_of_a_phase_close_and_the_next_phases_task_starts_once_its_tes
     phase_passed.story.expect_rows(phase_passed.current_task() == 4)
 
 
-def test_the_next_phase_starts_held_back_again(phase_passed):
-    expect_reply_refusal(phase_passed.run_test(), FLAG)
+def test_the_next_phase_has_its_own_test_allowance(phase_passed):
+    expect_reply_allowed(phase_passed.run_test())
 
 
 def test_the_phases_own_test_runs_at_its_end_as_a_proof_of_the_last_task(new_story, monkeypatch):

@@ -87,8 +87,12 @@ def test_the_flag_after_a_failure_is_refused_with_no_need_to_ask(two_failed):
     expect_reply_refusal(two_failed.run_test(asking_main(TEST_LINE, "the rounding")), "need not ask")
 
 
-def test_after_the_next_hand_in_a_plain_test_run_is_refused_again(first_failed):
+def test_after_the_next_hand_in_the_phase_allowance_applies_again(first_failed):
+    for _ in range(5):
+        expect_reply_allowed(first_failed.run_test())
     first_failed.story.expect_success("worker deliver --differences none", actor=first_failed.worker)
+    for _ in range(3):
+        expect_reply_allowed(first_failed.run_test())
     expect_reply_refusal(first_failed.run_test(), FLAG)
 
 

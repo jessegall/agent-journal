@@ -1,4 +1,10 @@
 from collections.abc import Sequence
+from dataclasses import replace
+
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from suites.coding.modules.workers.models.worker_phase_test_run import WorkerPhaseTestRun
+from suites.coding.modules.workers.commands.record_worker_phase_test_run.record_worker_phase_test_run import RecordWorkerPhaseTestRun
+from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
 from core.base.driver.nudge import Nudge
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
@@ -19,7 +25,7 @@ from suites.coding.modules.workers.commands.use_worker_test.use_worker_test impo
 from suites.coding.modules.workers.models.enums.worker_test_request_state import OPEN_REQUEST_STATES, WorkerTestRequestState
 from suites.coding.modules.workers.models.worker_test_request import WorkerTestRequest
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, TEST_REQUEST_UNNEEDED, TEST_REQUEST_ALLOWED, TEST_REQUEST_REASON_MISSING, TEST_REQUEST_FORWARDED, TEST_REQUEST_WAITING
+from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUSED, PHASE_TEST_RUN_ALLOWED, TEST_REQUEST_UNNEEDED, TEST_REQUEST_ALLOWED, TEST_REQUEST_REASON_MISSING, TEST_REQUEST_FORWARDED, TEST_REQUEST_WAITING
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.test_request_identity import TestRequestIdentity
 from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
@@ -27,9 +33,7 @@ from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 
 
 class PhaseTestRule(DriverRule):
-    """Answers a worker's test run by where it stands in a phase of a started plan: held back it is refused, the
-    flag sends a request, and an allowed command runs once. It runs before the rules about saved commands and
-    readers, so the worker hears this first."""
+    """Allows counted tests within a phase and handles requests after the allowance is spent."""
 
     name = "workers.phase-tests"
     priority = -2
@@ -37,8 +41,8 @@ class PhaseTestRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.WORKER]
 
-    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, queries: Queries, saved_commands: SavedCommandRule, identity: TestRequestIdentity) -> None:
-        self.phases, self.commands, self.worktrees, self.queries, self.saved_commands, self.identity = phases, commands, worktrees, queries, saved_commands, identity
+    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, queries: Queries, saved_commands: SavedCommandRule, identity: TestRequestIdentity, settings: SettingValues) -> None:
+        self.phases, self.commands, self.worktrees, self.queries, self.saved_commands, self.identity, self.settings = phases, commands, worktrees, queries, saved_commands, identity, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -56,19 +60,32 @@ class PhaseTestRule(DriverRule):
         saved_refusals = [self.saved_commands.part_refusal(part, tool.shell, hook.role) for part in test_parts]
         task_id = self.worktrees.worker_worktree(hook.agent_id).task_id
         open_requests = self.queries.query(WorkerTestRequest).filter(worker_id=hook.agent_id, task_id=task_id).matching(Among("state", OPEN_REQUEST_STATES)).oldest().all_rows()
-        return self.line_answer([self.part_answer(flag, saved_refusal, hook.agent_id, task_id, phase, open_requests) for flag, saved_refusal in zip(flags, saved_refusals, strict=True)])
+        used = self.queries.query(WorkerPhaseTestRun).filter(worker_id=hook.agent_id, phase_id=phase.id).count()
+        remaining = self.settings.number(WORKER_PHASE_TEST_RUNS) - used
+        answers = []
+        for flag, saved_refusal in zip(flags, saved_refusals, strict=True):
+            answer = self.part_answer(flag, saved_refusal, hook.agent_id, task_id, phase, open_requests, remaining)
+            answers.append(answer)
+            remaining -= sum(isinstance(command, RecordWorkerPhaseTestRun) for command in answer.commands_unrefused)
+        return self.line_answer(answers)
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
         return self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN and not ASKING_FLAGS.intersection(part.arguments)
 
-    def part_answer(self, flag: WorkerTestFlag, saved_refusal: Nudge | None, worker_id: int, task_id: int, phase: Phase, open_requests: Sequence[WorkerTestRequest]) -> RuleAnswer:
+    def part_answer(self, flag: WorkerTestFlag, saved_refusal: Nudge | None, worker_id: int, task_id: int, phase: Phase, open_requests: Sequence[WorkerTestRequest], remaining: int) -> RuleAnswer:
         wanted = self.identity.key(flag.command)
         request = next((row for row in open_requests if self.identity.key(row.command) == wanted), None)
         is_allowed = request is not None and request.state is WorkerTestRequestState.ALLOWED
         if saved_refusal is not None and (flag.is_flagged or is_allowed):
             return RuleAnswer.refused(saved_refusal)
         if not flag.is_flagged:
-            return RuleAnswer.allowed().running_unrefused(UseWorkerTest(request.id)) if is_allowed else RuleAnswer.refused(PHASE_TEST_REFUSED.nudge(phase=phase.id, plan=phase.plan_id))
+            if is_allowed:
+                return RuleAnswer.allowed().running_unrefused(UseWorkerTest(request.id))
+            if remaining <= 0:
+                return RuleAnswer.refused(PHASE_TEST_REFUSED.nudge())
+            return RuleAnswer.with_nudges(PHASE_TEST_RUN_ALLOWED.nudge(remaining=remaining - 1)).running_unrefused(RecordWorkerPhaseTestRun(worker_id, phase.id))
+        if request is None and remaining > 0:
+            return RuleAnswer.refused(TEST_REQUEST_UNNEEDED.nudge())
         if request is None:
             return RuleAnswer.refused(TEST_REQUEST_FORWARDED.nudge()).running(AskWorkerTest(worker_id, task_id, flag.command, flag.reason))
         return RuleAnswer.refused((TEST_REQUEST_ALLOWED if is_allowed else TEST_REQUEST_WAITING).nudge(request=request.id))
@@ -77,4 +94,5 @@ class PhaseTestRule(DriverRule):
     def line_answer(answers: list[RuleAnswer]) -> RuleAnswer:
         refusals = [answer for answer in answers if answer.refusal]
         first_answer, *remaining_answers = refusals or [RuleAnswer.allowed(), *answers]
-        return first_answer.running(*(command for answer in remaining_answers for command in answer.commands)).running_unrefused(*(command for answer in remaining_answers for command in answer.commands_unrefused))
+        combined = first_answer.running(*(command for answer in remaining_answers for command in answer.commands)).running_unrefused(*(command for answer in remaining_answers for command in answer.commands_unrefused))
+        return combined if refusals else replace(combined, nudges=tuple(nudge for answer in answers for nudge in answer.nudges))

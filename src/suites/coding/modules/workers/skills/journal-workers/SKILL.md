@@ -101,7 +101,9 @@ never starts is retired after the idle time.
   a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <n>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
-  test command in your worktree. A proof with no test waits for the main agent's check.
+  test command in your worktree. Before making a proof, read the test suite and decide which existing tests and test
+  files cover the code you changed. Include those and your new tests in the proof's `--test` command; it covers both.
+  A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
 - Before you hand in, run `journal sins --changes` over your own changes and fix each finding at its source. What it
   still finds after the merge comes back to you.
@@ -111,11 +113,13 @@ never starts is retired after the idle time.
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests in turn; those that fail come back to you to fix and deliver again.
-- On a task of a started plan you work through the phase with nothing run:
+- On a task of a started plan, leave tests to the phase hand-in unless you really need a run yourself:
   - Inside a phase `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
-  - A test run is refused, and your work is tested at the phase's end. Only if you cannot continue at all without this
-    run, run it again with `--ask-main "<why>"`: the run does not happen, the request goes on, and you go on working. When it is allowed you are told, and that exact command
-    runs once, without the flag.
+  - The journal runs your proofs' tests when you hand in and returns any failures. Run a test yourself only if you
+    really need it. Each worker has three test commands per phase by default, set by `worker-phase-test-runs`.
+    Each counted command says how many remain. A fourth is refused; only then ask with `--ask-main "<why>"`.
+    An allowed request runs once without the flag and does not use the phase allowance. The count starts anew
+    in the next phase. After failed phase tests come back, runs are free until the next hand-in.
   - At the end of the phase, `journal worker next` when your next task is in another phase, or `journal worker deliver`
     after your last, runs the tests of all your tasks of the phase and the phase's own test. Stop then.
   - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
