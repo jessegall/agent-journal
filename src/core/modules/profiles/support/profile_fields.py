@@ -11,6 +11,7 @@ class ProfileFields(TypedDict, total=False):
     agent_type: str
     access: Access
     program: str
+    program_if_possible: bool
     model: str
     codex_model: str
     independent: bool

@@ -3,8 +3,10 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from suites.coding.modules.workers.commands.merger.merger_commands import MergeNextWorker, PassWorkerToMain, ReadNextMerge, SendMergeFindings
+from suites.coding.modules.workers.commands.merger.merger_commands import TellMainAgent, MergeNextWorker, PassWorkerToMain, ReadNextMerge, SendMergeFindings
+from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
+from suites.coding.modules.workers.support.worker_settings import MERGER_COMMANDS
 
 
 class MergerNextSubcommand(Subcommand[ReadNextMerge, str]):
@@ -26,6 +28,9 @@ class MergerMergeSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
     cli_name = "merger"
     name = "merge"
 
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("worker_id", type=int)
 
@@ -34,7 +39,10 @@ class MergerMergeSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MergeOutcome):
-            output.line(f"merged from {value.worktree.commit_before_merge}: journal sins --branch={value.worktree.commit_before_merge}")
+            commit = value.worktree.commit_before_merge
+            for line in self.settings.texts(MERGER_COMMANDS):
+                output.line(f"run: {line.replace('{commit}', str(commit))}")
+            output.line(f"merged from {commit}")
 
 
 class MergerPassSubcommand(Subcommand[PassWorkerToMain, None]):
@@ -63,3 +71,16 @@ class MergerFindingsSubcommand(Subcommand[SendMergeFindings, None]):
 
     def command(self, arguments: Namespace, caller: Caller) -> SendMergeFindings:
         return SendMergeFindings(arguments.worker_id, arguments.findings)
+
+
+class MergerTellSubcommand(Subcommand[TellMainAgent, None]):
+    """`journal merger tell "<words>"`: hands on to the main agent what it must act on."""
+
+    cli_name = "merger"
+    name = "tell"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("text")
+
+    def command(self, arguments: Namespace, caller: Caller) -> TellMainAgent:
+        return TellMainAgent(arguments.text)

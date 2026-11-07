@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.drivers.support.main_agent_line import MainAgentLine
+from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.support.worker_nudges import WORKER_REFUSED, WORKER_REFUSAL_INTERVAL
@@ -12,7 +12,7 @@ REFUSAL_LIMIT_COUNT = 5
 class WorkerRefusals:
     """Counts consecutive refused worker steps and tells the main agent when they keep failing."""
 
-    def __init__(self, repository: Repository, main_agent_line: MainAgentLine, queries: Queries) -> None:
+    def __init__(self, repository: Repository, main_agent_line: MergerInbox, queries: Queries) -> None:
         self.repository, self.main_agent_line, self.queries = repository, main_agent_line, queries
 
     def record(self, worktree: Worktree, context: Context) -> None:

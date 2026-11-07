@@ -26,7 +26,7 @@ const jobRef = computed(() => {
     const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
     return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
 });
-const roleLabel = computed(() => props.row.role === "main" ? "" : `${props.row.role} ${props.row.id}`);
+const roleLabel = computed(() => props.facts?.job_enabled ? `${props.row.role} ${props.row.id}` : "");
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));

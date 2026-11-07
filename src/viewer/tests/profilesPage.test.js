@@ -104,7 +104,7 @@ test("Save waits until something changed, and an edit with a new model is saved 
     expect(panel().querySelector("[data-drop-head]").textContent.trim()).toBe("opus");
     save.click();
     await settle();
-    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
+    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
     expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
 });
 

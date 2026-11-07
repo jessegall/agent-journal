@@ -17,7 +17,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
-from core.modules.drivers.support.main_agent_line import MainAgentLine
+from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worker_test_failures import WorkerTestFailures
@@ -37,7 +37,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MainAgentLine, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues) -> None:
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues) -> None:
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
         self.rows, self.phases = rows, phases

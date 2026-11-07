@@ -6,9 +6,9 @@ from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 
 @dataclass(frozen=True)
 class WakeMerger(Command[None]):
-    """A worker's tests passed: the merger takes it, or the main agent when no merger can start."""
+    """Something waits for the merger: it is given the job, or the main agent hears when no merger can start."""
 
-    worker_id: int
+    fallback_line: str
 
 
 @dataclass(frozen=True)
@@ -44,3 +44,11 @@ class SendMergeFindings(Command[None]):
 
     worker_id: int
     findings: str
+
+
+@dataclass(frozen=True)
+class ReportToMerger(Command[None]):
+    """A worker's report goes to the merger."""
+
+    worker_id: int
+    text: str

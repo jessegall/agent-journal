@@ -9,6 +9,9 @@ from core.base.viewer.window_key_line import WindowKeyLine
 from core.modules.docking.models.dock_item import DockItem
 
 
+LIST_VERB = "list"
+
+
 class DockItemReadSubcommand(ReadSubcommand[WindowKeyLine]):
     """`journal dock-item read <item>`: the read that fills a docked card: the first read its type declares, of its
     target, with the rights of its type."""
@@ -26,7 +29,8 @@ class DockItemReadSubcommand(ReadSubcommand[WindowKeyLine]):
         item = self.queries.query(DockItem).find(arguments.item_id)
         dock = self.registry.dock(item.type)
         read_line = dock.reads[0].split() if dock is not None and dock.reads else []
-        return WindowKeyLine(item.type, [*read_line, str(item.target_id)] if read_line and item.target_id else read_line)
+        reads_one_row = bool(read_line) and item.target_id and read_line[-1] != LIST_VERB
+        return WindowKeyLine(item.type, [*read_line, str(item.target_id)] if reads_one_row else read_line)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, WindowKeyLine):
