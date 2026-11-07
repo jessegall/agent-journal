@@ -36,7 +36,7 @@ test("the allowance gauge names the window its percentage is of", () => {
 
 test("the information bar holds no window counts, and its scheduled jobs open with an icon and a count", () => {
     const opened = [];
-    const element = mounted(InformationBar, {agent: MAIN, jobs: 2, onOpen: (name) => opened.push(name)});
+    const element = mounted(InformationBar, {agent: MAIN, agentPrograms: [{name: "claude", title: "Claude"}], jobs: 2, onOpen: (name) => opened.push(name)});
     expect(element.textContent).toContain("Claude");
     expect(element.querySelector("[data-count]")).toBeNull();
     const jobs = element.querySelector('[data-fact="jobs"]');

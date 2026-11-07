@@ -26,3 +26,17 @@ def test_the_activity_of_workers_is_read_once_when_asked_again_in_one_request(ne
         for _ in range(3):
             activity.current()
         story.container.get(AgentActivity).current()
+
+
+def test_each_usage_line_builds_the_worker_activity_once(new_story, monkeypatch):
+    from core.modules.usage.conditions.agent_activity import AgentActivity
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    story.expect_success('worker dispatch --model sonnet 1', actor=story.agent)
+    builds = []
+    current = AgentActivity.current
+    monkeypatch.setattr(AgentActivity, "current", lambda activity: builds.append(activity) or current(activity))
+    for line in ("usage bars", "usage show", "usage agents"):
+        builds.clear()
+        story.expect_success(f"{line} --environment main", actor=story.user)
+        story.expect_rows(len(builds) == 1)
