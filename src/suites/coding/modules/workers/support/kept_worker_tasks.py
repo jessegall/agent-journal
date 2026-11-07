@@ -14,6 +14,7 @@ from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_waits import TaskWaits
+from core.modules.tasks.support.dependency_waits import DependencyWaits
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
@@ -33,11 +34,12 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies, waits: TaskWaits,
-                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.advance, self.sources, self.copies, self.waits, self.proof_queue = environments, advance, sources, copies, waits, proof_queue
         self.scopes = scopes
         self.kept = kept
+        self.dependency_waits = dependency_waits
 
     def read_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
@@ -75,6 +77,7 @@ class KeptWorkerTasks:
         for task in tasks:
             if task.delegated_to != worker.id:
                 self.repository.update(task, context, delegated_to=worker.id)
+        self.dependency_waits.update_tasks(task_ids, context)
         if worktree.state is WorktreeState.DELIVERED:
             reworked = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
             self.advance.start(reworked, tasks[0], context)

@@ -20,8 +20,10 @@ stays kept on the same agent number and session until retired.
 - `journal worker dispatch <task> [<task> ...] --tier general` starts a worker on the tasks; `--profile` is a checked worker profile, journal-worker by default, whose text the worker starts from. `--tier fast|general|strongest` chooses the model of the selected program; with no tier, the profile chooses it. `--model <model>` names one exact model (`--name` shows on its card). It takes the tasks one by one with no report in
   between; outside a plan the journal runs the tests of each before the next starts and tells you when the last passes. `--library-link <folder>` links a folder such as
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
-- `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the open tasks of an approved or
-  started plan, or of one phase of it, in the plan's order. The plan then shows as delegated, with each task's agent named.
+- `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
+  started plan, or of one phase of it, in the plan's order. Use `journal worker send <n> --plan <plan> [--phase <phase>]`
+  to give the same work to a kept worker. The plan shows as delegated, and phase tests run at each phase's end.
+  Completed, started, already assigned and tasks blocked on something other than a task are not handed over.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
   phase needs no check from you; you can still read it and send it back. When a worker asks to run one test, you get
   one line with the command and the reason: `journal worker allow-test <request>` lets it run that command once. To

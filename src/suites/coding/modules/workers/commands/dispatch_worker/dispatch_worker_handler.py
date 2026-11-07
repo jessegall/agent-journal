@@ -72,7 +72,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         program, model = choice.program, choice.model
         self.check_model(program, model)
         if not command.new_agent_reason.strip():
-            self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks)
+            self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
@@ -93,9 +93,12 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def queueable(self, task: Task, is_first: bool) -> bool:
         return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and self.waits.waits_target_tasks(task.id))
 
-    def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task]) -> None:
+    def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
         idle = self.available_workers.first(folder, request)
         if idle is not None:
+            if command.plan_id is not None:
+                phase = f" --phase {command.phase_id}" if command.phase_id is not None else ""
+                raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --plan {command.plan_id}{phase}", 'or --fresh "<why>"')
             task_ids = " ".join(str(task.id) for task in tasks)
             raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')
 

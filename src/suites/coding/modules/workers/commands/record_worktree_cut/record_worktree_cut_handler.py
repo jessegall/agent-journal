@@ -11,6 +11,7 @@ from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.support.dependency_waits import DependencyWaits
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
@@ -23,9 +24,10 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
 
     command = RecordWorktreeCut
 
-    def __init__(self, rows: EventRows, queries: Queries, repository: Repository, bus: Bus, sources: WorkSources, scopes: Scopes) -> None:
+    def __init__(self, rows: EventRows, queries: Queries, repository: Repository, bus: Bus, sources: WorkSources, scopes: Scopes, waits: DependencyWaits) -> None:
         self.rows, self.queries, self.repository, self.bus = rows, queries, repository, bus
         self.sources, self.scopes = sources, scopes
+        self.waits = waits
 
     def handle(self, command: RecordWorktreeCut, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
@@ -40,5 +42,6 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
                 self.sources.use_copy(assigned.source, replace(context, environment_id=worktree.environment_id))
         for task in self.queries.query(Task).find_many(command.task_ids):
             self.repository.update(task, context, delegated_to=worktree.session_agent_id)
+        self.waits.update_tasks(command.task_ids, context)
         self.bus.dispatch(StartTask(command.task_ids[0]), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
         return cut

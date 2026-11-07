@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
+from core.base.tasks.tasks_changed_together import TasksChangedTogether
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.task_source_copy import TaskSourceCopy
 
 
 @dataclass(frozen=True)
-class RecordWorktreeCut(Command[Worktree]):
+class RecordWorktreeCut(Command[Worktree], TasksChangedTogether):
     """Saves that git cut a worktree and it is prepared, delegates the dispatched tasks to its worker and starts
     the first."""
 

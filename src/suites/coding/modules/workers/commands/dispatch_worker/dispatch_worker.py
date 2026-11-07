@@ -24,3 +24,5 @@ class DispatchWorker(Command[WorkerLaunch]):
     given_name: str = ""
     new_agent_reason: str = ""
     tier: ModelTier | None = None
+    plan_id: int | None = None
+    phase_id: int | None = None

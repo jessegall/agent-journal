@@ -10,11 +10,13 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
+from core.base.refusal import Refusal
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_route_policy import WorkerRoutePolicy
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
+from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
 
 
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
@@ -27,28 +29,40 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     outward = True
 
     def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest,
-                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes) -> None:
+                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes, plan_tasks: PlanWorkerTasks) -> None:
         self.requests = requests
         self.home, self.agents = home, agents
         self.tasks, self.policy, self.flags, self.scopes = tasks, policy, flags, scopes
+        self.plan_tasks = plan_tasks
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
         parser.add_argument("worker_id", type=int)
         parser.add_argument("job", nargs="?", default="")
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
+        parser.add_argument("--plan", type=int, default=None, help="hand the worker a plan in phase order")
+        parser.add_argument("--phase", type=int, default=None, help="with --plan, only this phase")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
-        command = SendWorker(arguments.worker_id, arguments.job, tuple(arguments.task), tuple(arguments.library_link), tuple(arguments.library_copy))
-        if arguments.task:
-            with self.scopes.opened(caller.read_actor_id, caller.environment_id):
+        if arguments.phase is not None and arguments.plan is None:
+            raise Refusal("--phase needs --plan", "add --plan <plan>")
+        if arguments.plan is not None and arguments.task:
+            raise Refusal("a send takes tasks or a plan, not both", "drop the task numbers or drop --plan")
+        with self.scopes.opened(caller.read_actor_id, caller.environment_id):
+            task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
+            if task_ids:
                 worker = self.agents.find(arguments.worker_id)
-                self.policy.check_tasks(self.tasks.check_tasks(tuple(arguments.task)),
+                self.policy.check_tasks(self.tasks.check_tasks(task_ids),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
+        command = SendWorker(arguments.worker_id, arguments.job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy))
         argv = ["worker", "send", str(arguments.worker_id), arguments.job]
-        if arguments.task:
+        if arguments.plan is not None:
+            argv.extend(("--plan", str(arguments.plan)))
+            if arguments.phase is not None:
+                argv.extend(("--phase", str(arguments.phase)))
+        elif arguments.task:
             argv.extend(("--task", *(str(task) for task in arguments.task)))
         for link in arguments.library_link:
             argv.extend(("--library-link", link))
