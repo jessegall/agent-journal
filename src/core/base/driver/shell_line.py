@@ -126,7 +126,7 @@ class ShellLine:
 
     def journal_command_numbers(self, *commands: str) -> tuple[int, ...]:
         first_numbers = (next((word for word in part.arguments if word.isdigit()), "") for part in self.parts_running_journal_command(*commands))
-        return tuple(int(number) for number in first_numbers if number)
+        return tuple(dict.fromkeys(int(number) for number in first_numbers if number))
 
     def has_part_running(self, command: str) -> bool:
         return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)

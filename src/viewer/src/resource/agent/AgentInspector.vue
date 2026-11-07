@@ -42,7 +42,7 @@ async function load() {
     const id = String(props.id);
     const worker = shown.value.role === "worker";
     const [listed, inspected, tooled, children, loaded, pointed] = await Promise.all([
-        props.read(["usage", "agents", "--closed", "--environment", props.environment]),
+        props.read(["usage", "agents", "--closed", "--agent", id, "--environment", props.environment]),
         props.read(["usage", "agent", id]),
         shown.value.ended_at ? {ok: false} : props.read(["usage", "tool", "--agent", id]),
         props.read(["agent", "list", "--parent", id, "--limit", "1", "--columns", "id"]),

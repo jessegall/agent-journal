@@ -7,6 +7,9 @@ from core.base.database.request_watch import RequestWatch
 from core.base.request_queue import RequestQueue
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.kept_rows import KeptRows
+from core.base.query.queries import Queries
+from core.modules.actors.models.actor_record import ActorRecord
 from core.base.cli.console import USAGE_CODE, Console
 from core.base.cli.line_run import LineRun, ignore_completed
 from collections.abc import Callable
@@ -113,8 +116,12 @@ class LineRoute:
         finally:
             container.get(Database).close()
 
+    @staticmethod
+    def actor_type(container: Container, actor_id: int) -> ActorType:
+        return container.get(KeptRows).scoped_current(lambda: container.get(Queries).query(ActorRecord).find(actor_id).type, name=f"viewer.actor_type:{actor_id}")
+
     def run_line(self, container: Container, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None) -> LineAnswer:
-        person, stream = Actor(person_id, ActorType.USER), io.StringIO()
+        person, stream = Actor(person_id, self.actor_type(container, person_id)), io.StringIO()
         try:
             if shared is None:
                 container.get(WindowLines).check(window, argv, person, environment)
