@@ -13,3 +13,29 @@ function read() {
     const window = other();
     return window;
 }
+
+function assigned() {
+    let window;
+    // @sin WindowContextAssignedWindowDetector
+    window = useWindow();
+    return window;
+}
+
+function otherAssignment() {
+    let window;
+    // @righteous WindowContextAssignedWindowDetector
+    window = other();
+    return window;
+}
+
+function viewAssignment() {
+    let view;
+    // @righteous WindowContextAssignedWindowDetector
+    view = useWindow();
+    return view;
+}
+
+function propertyAssignment(holder) {
+    // @righteous WindowContextAssignedWindowDetector
+    holder.window = useWindow();
+}

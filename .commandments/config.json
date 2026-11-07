@@ -222,7 +222,8 @@
         "ViewerVersionTextDetector",
         "ViewerVersionAttributeDetector",
         "ViewerVersionScriptDetector",
-        "WindowContextNamedWindowDetector"
+        "WindowContextNamedWindowDetector",
+        "WindowContextAssignedWindowDetector"
     ],
     "parallel": 2,
     "configure": {
