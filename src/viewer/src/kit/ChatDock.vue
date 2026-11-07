@@ -74,7 +74,7 @@ defineExpose({card});
     align-items: center;
     gap: 8px;
     min-width: 0;
-    height: 28px;
+    min-height: 28px;
     margin-top: 5px;
     padding: 0 14px;
     white-space: nowrap;

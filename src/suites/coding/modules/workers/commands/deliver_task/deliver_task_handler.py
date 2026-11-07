@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -41,7 +42,9 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         following = self.next_task.following(actor.id)
         if following is not None:
             raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", "journal worker next")
-        self.task_commit.check_proofs(worktree, self.rows.required(Task, worktree.task_id))
+        current = self.rows.required(Task, worktree.task_id)
+        if current.state is TaskState.STARTED:
+            self.task_commit.check_proofs(worktree, current)
 
     def prepare(self, command: DeliverTask, actor: Actor) -> None:
         self.check_rows(command, actor)

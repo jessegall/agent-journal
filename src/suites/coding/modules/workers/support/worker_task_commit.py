@@ -1,3 +1,4 @@
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
@@ -33,7 +34,7 @@ class WorkerTaskCommit:
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
         if not self.git.changed_files(current):
             raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
-        if not self.git.has_task_commit(current, task.id):
+        if task.state is TaskState.STARTED and not self.git.has_task_commit(current, task.id):
             raise Refusal(f"task {task.id} changed no file, so it is not built",
                           f"block it on what it waits for with journal task block {task.id} --on task:<n>, or tell the main agent with journal worker report")
         if base_commit != worktree.base_commit:

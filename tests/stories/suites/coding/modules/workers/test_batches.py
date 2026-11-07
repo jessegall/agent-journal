@@ -180,3 +180,9 @@ def test_a_task_handed_in_without_a_change_of_its_own_is_refused(second):
 def test_a_worker_revises_the_proof_of_an_earlier_task_of_its_batch(second):
     second.story.expect_success(f'proof make 1 --task 1 "cart.py:1, revised" --test "{TEST_LINE}"', actor=second.worker)
     second.story.expect_text("proof list --task 1", "revised", actor=second.story.agent)
+
+
+def test_blocked_tasks_left_do_not_hold_the_delivery_of_the_handed_in_one(second):
+    for task in range(second.current_task(), 6):
+        second.story.expect_success(f'task block {task} --reason "the main agent runs it"', actor=second.story.agent)
+    second.story.expect_success("worker deliver --wait --differences none", actor=second.worker)

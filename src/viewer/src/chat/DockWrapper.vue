@@ -33,7 +33,7 @@ const view = useWindow();
 const cardKey = computed(() => `dock.${props.item.id}`);
 const card = computed(() => view.props[cardKey.value].data.value);
 const noun = computed(() => cliOf(props.item.target_model ?? ""));
-const rowWord = computed(() => (declaration.value?.word || noun.value.replaceAll("-", " ")).replace(/^./, (letter) => letter.toUpperCase()));
+const rowWord = computed(() => declaration.value?.word ?? "");
 const row = computed(() => ({...card.value, id: props.item.target_id, noun: noun.value}));
 const reloadCard = () => declaration.value?.reads?.length && view.reload(cardKey.value);
 provideDockCard(provide, {data: card, reload: reloadCard, readOutput: readOutputProp(view)});
@@ -89,13 +89,6 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
                 <Icon :name="look.icon" class="dock-icon" :size="14" />
                 <span class="dock-text">
                     <span class="dock-title" :title="look.title">{{ look.title }}</span>
-                    <span class="dock-facts" data-dock-facts>
-                        <template v-if="badge">
-                            <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
-                        </template>
-                        <span data-dock-row>{{ rowWord }} {{ item.target_id }}</span>
-                        <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
-                    </span>
                 </span>
             </template>
             <template v-if="controls.length">
@@ -132,14 +125,12 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
             </template>
         </template>
         <template #foot>
-            <span class="dock-facts">
-                <template v-if="ownsHead">
-                    <template v-if="badge">
-                        <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
-                    </template>
-                    <span data-dock-row>{{ rowWord }} {{ item.target_id }}</span>
-                    <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
+            <span class="dock-facts" data-dock-facts>
+                <template v-if="badge">
+                    <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
                 </template>
+                <template v-if="rowWord"><span data-dock-row>{{ rowWord }} {{ item.target_id }}</span></template>
+                <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
                 <span ref="foot" class="dock-module-facts" />
             </span>
             <template v-if="declaration?.folds">
@@ -205,12 +196,6 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
     flex: 1 1 auto;
     flex-direction: column;
     min-width: 0;
-}
-.dock-text .dock-facts {
-    min-height: 0;
-    padding-right: 0;
-    font-size: 11.5px;
-    line-height: 16px;
 }
 .dock-title {
     flex: 1 1 auto;
