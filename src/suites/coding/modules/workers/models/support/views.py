@@ -43,7 +43,8 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
            WHEN worktree.state = 'delivered' AND EXISTS (
                SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state = 'shown')
                THEN 'proof check'
-           WHEN worktree.state = 'delivered' THEN 'merge'
+           WHEN worktree.state = 'delivered' AND worktree.tests_passed_at IS NOT NULL THEN 'merge'
+           WHEN worktree.state = 'delivered' THEN ''
            WHEN worktree.state = 'cut' AND NOT EXISTS (
                SELECT 1 FROM tasks WHERE tasks.delegated_to = worktree.session_agent_id AND tasks.state IN ('open', 'started', 'testing', 'blocked'))
                THEN 'a job'

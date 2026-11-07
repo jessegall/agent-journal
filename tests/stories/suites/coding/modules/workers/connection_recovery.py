@@ -8,6 +8,8 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
+from core.base.database.statement import Statement
 from core.base.leftover_process import LeftoverProcess
 from core.base.query.queries import Queries
 from core.modules.agents.support.launcher_link import LauncherLink
@@ -21,6 +23,9 @@ from tests.stories.core.modules.processes.support.process_samples import start_p
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder
+from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
+from tests.stories.suites.coding.modules.workers.wait_reasons import expect_reason
 
 RECOVERY_SOURCE = "workers.silent-agent"
 FAILED_SOURCE = "workers.silent-agent-failed"
@@ -323,6 +328,20 @@ def test_a_paused_worker_is_not_reported_as_stopped(recovery):
     recovery.advance(20 * 60)
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+
+
+def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
+    story, worker = recovery.story, recovery.worker
+    GitRepository(repository_folder(story)).changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story.expect_success('proof make 1 --task 1 "cart.py:1, checked"', actor=worker)
+    story.expect_success("proof check 1", actor=story.agent)
+    story.expect_success("worker deliver --differences none", actor=worker)
+    story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL WHERE session_agent_id = ?", [worker.id]))
+    expect_reason(story, worker, "")
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    recovery.advance(20 * 60)
+    story.tick("s-1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped: journal worker status {worker.id}")
 
 
 def test_the_stopped_worker_warning_intervals_are_settings(recovery):

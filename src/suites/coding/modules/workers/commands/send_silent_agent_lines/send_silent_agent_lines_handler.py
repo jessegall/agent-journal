@@ -91,12 +91,15 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     def report_idle_workers(self, context: Context, agents: tuple[Agent, ...], activities: dict[int, AgentActivity], working: set[int],
                             worktrees: tuple[Worktree, ...], excluded: set[int]) -> None:
         workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT}
+        stalled = {row.session_agent_id for row in worktrees if row.state is WorktreeState.DELIVERED and row.tests_passed_at is None and row.left_to_main_at is None}
         waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
         notices = tuple(self.queries.query(AgentLine).filter(source=IDLE_WORKER.key).oldest().all_rows())
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
         repeat = self.settings.minutes(IDLE_WORKER_REPEAT_MINUTES).count
         for worker in agents:
-            if worker.ended_at is None or worker.paused_at is not None or worker.id not in workers or worker.id not in working or worker.id in excluded:
+            if worker.ended_at is None or worker.paused_at is not None or worker.id in excluded:
+                continue
+            if worker.id not in stalled and (worker.id not in workers or worker.id not in working):
                 continue
             if worker.id in waiting_jobs and not self.places.can_resume(worker):
                 continue
