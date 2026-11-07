@@ -69,7 +69,7 @@ class CodingModule(Module):
                                                 WindowKey("terminal-calls.*", "hook-call feed --session-agent-id {id}", arguments=["limit", "before-id", "after-id"], page_size=200)],
                                           tabs=[WindowTab("file-feed", "File feed", "file-edit list", component="/modules/journal.suites.coding/agent-file-edits.js"),
                                                 WindowTab("terminal", "Terminal", "hook-call feed", component="/modules/journal.suites.coding/terminal.js")]) for name in ("agents.agents", "agents.helpers")),
-                         WindowExtension("viewer.shell", reads=["git-overview current"]),
+                         WindowExtension("viewer.shell", reads=["git-overview current"], keys=[WindowKey("branch", "git-overview current", reload_seconds=30)]),
                          WindowExtension("plugins.plugins", links={"files": "coding.files"})]
     requires_core = ">=5,<6"
     settings = CODING_SETTINGS

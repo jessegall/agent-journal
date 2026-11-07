@@ -13,21 +13,12 @@ const cellsOf = (shape) => thumbnail(shape).map((cell) => ({box: cell.box, view:
 // person's own saved layouts, which keep any window; applying one arranges the live layout so panes holding the same
 // active window keep their options, and a person's layout is saved, updated, renamed, removed, shared as a
 // .layout.json file and imported through the person-preset commands
-export function useLayoutPresets({environment, page, shellLine, catalogue, store}) {
-    const suite = ref([]);
-    const person = ref([]);
+export function useLayoutPresets({page, shellLine, window, catalogue, store}) {
+    const suite = computed(() => (window.props["suite-presets"].data.value?.rows ?? []).map((preset) => ({...preset, shape: arrangedShape(preset.shape)})));
+    const person = computed(() => (window.props["person-presets"].data.value?.rows ?? []).map((row) => ({key: `person:${row.id}`, id: row.id, name: row.name, text: SAVED_TEXT, saved: true, shape: JSON.parse(row.shape)})));
     const notice = ref("");
 
-    async function load() {
-        const offered = await shellLine(["suite", "presets", environment, page]);
-        suite.value = offered.ok && offered.value?.rows ? offered.value.rows.map((preset) => ({...preset, shape: arrangedShape(preset.shape)})) : [];
-        await reload();
-    }
-
-    async function reload() {
-        const own = await shellLine(["person-preset", "list", "--page", page]);
-        person.value = own.ok && own.value?.rows ? own.value.rows.map((row) => ({key: `person:${row.id}`, id: row.id, name: row.name, text: SAVED_TEXT, saved: true, shape: JSON.parse(row.shape)})) : [];
-    }
+    const reload = () => window.reload("person-presets");
 
     const usable = (name) => {
         const entry = catalogue.window(name);
@@ -116,5 +107,5 @@ export function useLayoutPresets({environment, page, shellLine, catalogue, store
         URL.revokeObjectURL(link.href);
     }
 
-    return {presets, notice, load, apply, save, update, rename, remove, share, importLayout};
+    return {presets, notice, apply, save, update, rename, remove, share, importLayout};
 }
