@@ -11,6 +11,9 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.support.plugin_program import SETTINGS_FILE
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.base.actor_type import ActorType
+from core.base.query.queries import Queries
+from core.modules.approvals.models.approval_request import ApprovalRequest
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
@@ -319,5 +322,25 @@ def test_a_service_started_by_an_exec_script_lists_by_health_and_keeps_stderr(ne
         story.expect_text("plugin services", "served answers: stopped")
         services.follow(processes)
         story.expect_rows("plugin served service answers restarted after exit" in FileAccess.shared().read(story.home.system_log))
+    finally:
+        processes.close()
+
+
+def test_a_plugin_an_agent_installs_through_the_persons_approval_has_its_services_started_without_an_enable(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    folder = service_plugin_folder(story.home.folder.parent)
+    manifest_path = folder / "journal-plugin.json"
+    manifest = json.loads(FileAccess.shared().read(manifest_path))
+    manifest["installed"] = "touch run.sh; echo '{}'"
+    FileAccess.shared().write(manifest_path, json.dumps(manifest))
+    story.expect_refusal(f"plugin install {folder} --yes", "A person was asked in the dock", actor=story.agent)
+    with viewer_client(story) as viewer:
+        viewer.value("messages.chat", ["approval", "accept", str(story.container.get(Queries).query(ApprovalRequest).first().id)])
+    services, processes = story.container.get(PluginServices), ServiceProcesses()
+    try:
+        services.follow(processes)
+        story.expect_text("plugin services", "served answers: running")
+        story.expect_rows(list(processes.running) == [("served", "answers")])
     finally:
         processes.close()
