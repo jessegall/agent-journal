@@ -203,7 +203,7 @@ def test_worker_on_an_out_program_does_not_restart_until_the_outage_ends(failed_
     story.advance(timedelta(minutes=15, seconds=1))
     WorkerResumeRetry()(story.container)
     story.run_listeners()
-    story.expect_rows(len(launcher.requests) == 2, launcher.requests[-1]['agent_id'] == worker.id)
+    story.expect_rows(len(launcher.requests) == 2, launcher.requests[-1]['agent_id'] == worker.id, detail=str(launcher.requests))
 
 
 def test_every_program_out_refuses_a_dispatch(split_story, split_viewer):

@@ -104,7 +104,7 @@ def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_
     launcher = FakeLauncher(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))
     story.run_listeners()
     stop = {"agent_id": story.worker.id, "stop": True}
-    story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1)
+    story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1, detail=str(launcher.requests))
 
 
 def replaced_launcher(story, *answers: bytes) -> FakeLauncher:

@@ -72,7 +72,7 @@ class KeptWorkerTasks:
         tasks = AssignableTasks.open_first(self.read_tasks(task_ids))
         self.record_sources(worktree, tasks, replace(context, environment_id=worktree.environment_id))
         self.delegate(worker, tasks, context)
-        if not AssignableTasks.has_open(tasks):
+        if AssignableTasks.all_blocked(tasks):
             waiting = ", ".join(f"task:{task.id}" for task in tasks)
             return self.nudger.send_text(worker.id, job or f"{waiting} are yours once they open; go on with what you have", WAITING_TASKS_SOURCE, context)
         if worktree.state is WorktreeState.DELIVERED:
