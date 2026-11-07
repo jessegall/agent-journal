@@ -1,4 +1,6 @@
 import {expect, test} from "vitest";
+import {h, provide, ref} from "vue";
+import {provideDockCard} from "@journal/window-kit";
 import {context, drawn, mountedDock} from "./support/windowContext.js";
 import {dumpWindowContext} from "./support/dumpWindowContext.js";
 import Dumps from "../../core/modules/dumps/web/src/dumps.js";
@@ -26,8 +28,12 @@ test("an empty dumps list shows an empty state", async () => {
 });
 
 test("the dump dock adds its item count to the card's bottom line", async () => {
-    const window = context({"dump items 1": {ok: true, value: [{id: 2}, {id: 3}]}});
-    const element = await mountedDock(DumpDock, window, {target_id: 1});
+    const window = context({});
+    const card = {setup() {
+        provideDockCard(provide, {data: ref([{id: 2}, {id: 3}]), reload: async () => {}});
+        return () => h(DumpDock);
+    }};
+    const element = await mountedDock(card, window, {target_id: 1});
     expect(element.querySelector("footer").textContent).toBe("Items: 2");
-    expect(window.reads).toEqual(["dump items 1"]);
+    expect(window.reads).toEqual([]);
 });
