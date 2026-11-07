@@ -118,7 +118,7 @@ class ClaudeCodeProvider(Provider):
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
         model = [] if launch.names_flag("--model") else ["--model", launch.model]
         effort = [] if launch.names_flag("--effort") else ["--effort", SESSION_EFFORT]
-        arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self)]
+        arguments = [self.executable, *model, *effort, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:

@@ -4,7 +4,7 @@ from pathlib import Path
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.file_access import FileAccess
@@ -40,7 +40,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         if actor.type is ActorType.AGENT:
-            raise UserApproval(f"Upgrade the plugin {command.name}?", ("plugin", "upgrade", command.name, "--yes"))
+            raise UserApprovalRefusal(f"Upgrade the plugin {command.name}?", ("plugin", "upgrade", command.name, "--yes"))
         plugin = self.plugins.find_name(command.name)
         source = self.staging.fetched(plugin.source)
         manifest = PluginManifest.read(source)

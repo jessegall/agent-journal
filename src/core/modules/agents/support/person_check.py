@@ -1,7 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.context import Context
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.refusal import Refusal
 
 
@@ -17,5 +17,5 @@ class PersonCheck:
         if actor.type is ActorType.USER:
             return
         if actor.type is ActorType.AGENT:
-            raise UserApproval(reason, returns_output=returns_output)
+            raise UserApprovalRefusal(reason, returns_output=returns_output)
         raise Refusal(reason)

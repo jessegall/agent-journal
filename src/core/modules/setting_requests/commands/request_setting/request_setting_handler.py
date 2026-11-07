@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
 from core.base.command.request_user_approval import RequestUserApproval
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.setting_requests.commands.request_setting.request_setting import RequestSetting
 from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
@@ -40,4 +40,4 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
         if command.project:
             arguments = (*arguments, "--project")
         arguments = (*arguments, "--expected-revision", self.revision.current(entry.key))
-        return self.bus.dispatch(RequestUserApproval(UserApproval(f"Change {entry.title}?\n{details}"), arguments), context)
+        return self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}"), arguments), context)

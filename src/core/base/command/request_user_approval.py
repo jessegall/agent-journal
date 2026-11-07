@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 
 
 @dataclass(frozen=True)
 class RequestUserApproval(Command[object]):
-    approval: UserApproval
+    approval: UserApprovalRefusal
     arguments: tuple[str, ...]
     requester_id: int | None = None

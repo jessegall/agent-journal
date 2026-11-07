@@ -1,4 +1,4 @@
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
 from core.base.actor_type import ActorType
@@ -29,7 +29,7 @@ class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
 
     def read(self, arguments: Namespace, caller: Caller) -> MemoryPage:
         if caller.actor.type is ActorType.AGENT:
-            raise UserApproval("Show memories for all agents in the viewer?", returns_output=True)
+            raise UserApprovalRefusal("Show memories for all agents in the viewer?", returns_output=True)
         page = self.memories.read(arguments, caller)
         ids = {row.agent_id for row in page.rows if row.agent_id is not None}
         holders = self.queries.query(MemoryHolder).matching(Among("agent_id", tuple(sorted(ids)))).all_rows() if ids else ()

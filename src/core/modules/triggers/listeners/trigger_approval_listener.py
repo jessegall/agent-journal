@@ -9,7 +9,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.triggers.models.trigger import Trigger
 
@@ -35,7 +35,7 @@ class TriggerApprovalListener(CommitListener[Changed[Trigger] | RegistrySynced])
         if trigger.needs_enabling and trigger.ended_at is None:
             if environment_id is None:
                 environment_id = self.queries.query(Agent).find(trigger.creator_id).environment_id
-            approval = UserApproval(f"Enable the trigger {trigger.name or trigger.text}?\n{trigger.text}", arguments,
+            approval = UserApprovalRefusal(f"Enable the trigger {trigger.name or trigger.text}?\n{trigger.text}", arguments,
                                     ("trigger", "strike", str(trigger.id)), source_version=trigger.version)
             self.bus.run(RequestUserApproval(approval, arguments, trigger.creator_id), actor, cause_id=logged.id, environment_id=environment_id)
             return

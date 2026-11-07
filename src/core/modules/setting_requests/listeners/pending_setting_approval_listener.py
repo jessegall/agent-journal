@@ -7,7 +7,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION
@@ -31,6 +31,6 @@ class PendingSettingApprovalListener(CommitListener[RegistrySynced]):
             question = questions[request.question_id]
             arguments = ("question", "answer", str(question.id), "--answer", APPROVE_OPTION)
             refused = ("question", "answer", str(question.id), "--answer", REFUSE_OPTION)
-            approval = UserApproval(f"{question.text}\n{question.context}", arguments, refused, source_version=question.version)
+            approval = UserApprovalRefusal(f"{question.text}\n{question.context}", arguments, refused, source_version=question.version)
             self.bus.run(RequestUserApproval(approval, arguments, request.creator_id), self.actors.actor("journal.core.setting-requests"),
                          cause_id=logged.id, environment_id=request.environment_id)

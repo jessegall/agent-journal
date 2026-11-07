@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.guard.guard import Guard
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
@@ -95,6 +95,6 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         self.nudger.send(agent.parent_id, SKIPS_SPENT, SKIP_SOURCE, context, agent=agent_id, count=MOST_SKIP_COUNT)
 
     @staticmethod
-    def restoration_approval(agent_id: int) -> UserApproval:
-        return UserApproval(f"Agent {agent_id} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
+    def restoration_approval(agent_id: int) -> UserApprovalRefusal:
+        return UserApprovalRefusal(f"Agent {agent_id} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
                             ("refusal", "restore", str(agent_id)))

@@ -1,4 +1,4 @@
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.actor_type import ActorType
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
@@ -17,4 +17,4 @@ class LibraryAddressGuard(Guard[Changed[Setting]]):
     def check(self, event: Changed[Setting], context: Context) -> None:
         setting = event.row
         if setting.key == ADDRESS_SETTING and context.actor.type is not ActorType.USER:
-            raise UserApproval("Change the shared server address?")
+            raise UserApprovalRefusal("Change the shared server address?")

@@ -3,7 +3,7 @@ import shutil
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -39,7 +39,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
 
     def prepare(self, command: InstallPlugin, actor: Actor) -> None:
         if actor.type is ActorType.AGENT:
-            raise UserApproval(f"Install the plugin from {command.source}?", ("plugin", "install", command.source, "--yes"))
+            raise UserApprovalRefusal(f"Install the plugin from {command.source}?", ("plugin", "install", command.source, "--yes"))
         self.staging.fetched(command.source)
         manifest = self.uninstalled(command)
         if not command.confirmed:

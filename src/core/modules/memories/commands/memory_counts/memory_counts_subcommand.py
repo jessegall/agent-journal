@@ -1,4 +1,4 @@
-from core.base.user_approval import UserApproval
+from core.base.user_approval_refusal import UserApprovalRefusal
 from argparse import Namespace
 
 from core.base.actor_type import ActorType
@@ -24,6 +24,6 @@ class MemoryCountsSubcommand(ReadSubcommand[MemoryCounts]):
 
     def read(self, arguments: Namespace, caller: Caller) -> MemoryCounts:
         if caller.actor.type is ActorType.AGENT:
-            raise UserApproval("Show memory counts for all agents in the viewer?", returns_output=True)
+            raise UserApprovalRefusal("Show memory counts for all agents in the viewer?", returns_output=True)
         query = self.queries.query(Memory).filter(state=MemoryState.ACTIVE)
         return MemoryCounts(query.matching(IsNull("agent_id")).count(), query.matching(HasValue("agent_id")).count(), query.count())
