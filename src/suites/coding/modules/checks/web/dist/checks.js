@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-8e593e2ae07b")) { const style = document.createElement("style"); style.id = "window-styles-8e593e2ae07b"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-3125a647]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-3125a647]{flex:1}.check-command[data-v-3125a647]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-3125a647]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-3125a647]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-3125a647]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-3125a647]:hover{background:var(--hover)}.check-verdict[data-v-3125a647]{color:var(--accent-text)}.check-verdict.failing[data-v-3125a647]{color:var(--danger)}.check-note[data-v-3125a647]{margin:0;color:var(--text-3)}.cards[data-v-765eb018]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-765eb018]{display:flex;flex-direction:column;min-width:0;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-765eb018]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-765eb018]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-765eb018]{width:14px;height:14px}.card-title[data-v-765eb018]{font-weight:600}.card-run[data-v-765eb018]{align-self:flex-start}.card-detail[data-v-765eb018]{margin:0;overflow-wrap:anywhere;color:var(--text-2);font-size:12px;white-space:pre-wrap}.card-foot[data-v-765eb018]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-765eb018]{margin:0;color:var(--text-2)}.card-state[data-v-765eb018]{margin-left:auto;color:var(--text-3)}.card-state.passing[data-v-765eb018]{color:var(--accent-text)}.card-state.failing[data-v-765eb018]{color:var(--danger)}\n"; document.head.appendChild(style); }
-import { openBlock as t, createElementBlock as a, createElementVNode as u, normalizeStyle as P, normalizeClass as O, ref as b, computed as E, watch as W, onUnmounted as q, createBlock as _, unref as n, withCtx as R, createVNode as B, createTextVNode as N, toDisplayString as l, createCommentVNode as g, Fragment as x, renderList as T, withKeys as z, withModifiers as D } from "vue";
+if (!document.getElementById("window-styles-b83767521885")) { const style = document.createElement("style"); style.id = "window-styles-b83767521885"; style.textContent = ".check-bar[data-v-643882e1]{display:block;overflow:hidden;height:3px;border-radius:2px;background:var(--hover)}.check-bar-fill[data-v-643882e1]{display:block;height:100%;border-radius:2px;background:var(--accent);transition:width .5s ease}.check-bar-fill.sliding[data-v-643882e1]{width:30%;animation:check-bar-slide-643882e1 1.2s ease-in-out infinite alternate}@keyframes check-bar-slide-643882e1{0%{transform:translate(0)}to{transform:translate(233%)}}.check-tools[data-v-5b744c93]{display:flex;align-items:center;gap:8px;margin-bottom:10px}.check-space[data-v-5b744c93]{flex:1}.check-command[data-v-5b744c93]{display:block;margin-bottom:10px;overflow-wrap:anywhere;color:var(--text-2);font-size:12px}.check-output[data-v-5b744c93]{overflow:auto;max-height:50vh;margin:0;padding:10px 12px;border-radius:8px;background:var(--raised);font-size:12px;white-space:pre-wrap}.check-runs[data-v-5b744c93]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.check-run-row[data-v-5b744c93]{display:flex;width:100%;padding:6px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:13px;cursor:pointer}.check-run-row[data-v-5b744c93]:hover{background:var(--hover)}.check-verdict[data-v-5b744c93]{color:var(--accent-text)}.check-verdict.failing[data-v-5b744c93]{color:var(--danger)}.check-note[data-v-5b744c93]{margin:0;color:var(--text-3)}.cards[data-v-e53653a1]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-e53653a1]{display:flex;flex-direction:column;min-width:0;gap:8px;min-height:110px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-e53653a1]:hover{border-color:var(--border-strong, var(--border))}.card-head[data-v-e53653a1]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-e53653a1]{width:14px;height:14px}.card-title[data-v-e53653a1]{font-weight:600}.card-run[data-v-e53653a1]{align-self:flex-start}.card-detail[data-v-e53653a1]{margin:0;overflow-wrap:anywhere;color:var(--text-2);font-size:12px;white-space:pre-wrap}.card-foot[data-v-e53653a1]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-e53653a1]{margin:0;color:var(--text-2)}.card-state[data-v-e53653a1]{margin-left:auto;color:var(--text-3)}.card-state.passing[data-v-e53653a1]{color:var(--accent-text)}.card-state.failing[data-v-e53653a1]{color:var(--danger)}\n"; document.head.appendChild(style); }
+import { openBlock as t, createElementBlock as a, createElementVNode as u, normalizeStyle as P, normalizeClass as O, ref as w, computed as E, watch as W, onUnmounted as q, createBlock as _, unref as n, withCtx as R, createVNode as B, createTextVNode as N, toDisplayString as l, createCommentVNode as g, Fragment as x, renderList as T, withKeys as z, withModifiers as D } from "vue";
 import { useWindow as K, Dialog as F, Segmented as j, Btn as I, TimeAgo as A, useListTools as M, WindowRoom as U, ListTools as G, Skeleton as H, Icon as J } from "@journal/window-kit";
 const V = (s, y) => {
   const k = s.__vccOpts || s;
@@ -46,7 +46,7 @@ const V = (s, y) => {
     const k = [
       { key: "output", label: "Output" },
       { key: "runs", label: "Runs" }
-    ], m = s, f = y, C = K(), r = b("output"), $ = b(null), d = `runs.${m.row.id}`, { rows: p, failure: S } = C.props[d], w = E(() => {
+    ], m = s, f = y, C = K(), r = w("output"), $ = w(null), d = `runs.${m.row.id}`, { rows: p, failure: S } = C.props[d], b = E(() => {
       var h;
       return ((h = $.value) == null ? void 0 : h.output) ?? m.row.last_output;
     });
@@ -93,7 +93,7 @@ const V = (s, y) => {
         }, null, 8, ["percent"])) : g("", !0),
         n(S) ? (t(), a("p", ee, l(n(S)), 1)) : g("", !0),
         r.value === "output" ? (t(), a(x, { key: 2 }, [
-          w.value ? (t(), a("pre", te, l(w.value), 1)) : (t(), a("p", ne, "No output yet"))
+          b.value ? (t(), a("pre", te, l(b.value), 1)) : (t(), a("p", ne, "No output yet"))
         ], 64)) : (t(), a(x, { key: 3 }, [
           n(p).length ? (t(), a("ul", se, [
             (t(!0), a(x, null, T(n(p), (v) => (t(), a("li", {
@@ -119,7 +119,7 @@ const V = (s, y) => {
       _: 1
     }, 8, ["title"]));
   }
-}, oe = /* @__PURE__ */ V(le, [["__scopeId", "data-v-3125a647"]]), ue = { class: "cards" }, re = {
+}, oe = /* @__PURE__ */ V(le, [["__scopeId", "data-v-5b744c93"]]), ue = { class: "cards" }, re = {
   key: 1,
   class: "cards-note"
 }, de = {
@@ -132,13 +132,13 @@ const V = (s, y) => {
 }, ke = ["data-row", "onClick", "onKeydown"], pe = { class: "card-head" }, he = { class: "card-title" }, ve = { class: "card-detail" }, _e = { class: "card-foot" }, ye = {
   __name: "CheckCards",
   setup(s) {
-    const y = K(), { rows: k, failure: m, loaded: f } = y.props.checks, C = M(k, { title: (c) => c.title, isOpen: (c) => !c.stopped }), r = b(null), $ = E(() => k.value.find((c) => c.id === r.value) || null), d = b(/* @__PURE__ */ new Set()), p = b("");
+    const y = K(), { rows: k, failure: m, loaded: f } = y.props.checks, C = M(k, { title: (c) => c.title, isOpen: (c) => !c.stopped }), r = w(null), $ = E(() => k.value.find((c) => c.id === r.value) || null), d = w(/* @__PURE__ */ new Set()), p = w("");
     async function S(c) {
       p.value = "";
       const o = await y.run(["check", "start", String(c.id)]);
       o.ok || (p.value = o.error);
     }
-    async function w(c) {
+    async function b(c) {
       p.value = "", d.value = /* @__PURE__ */ new Set([...d.value, c.id]);
       const o = await y.run(["check", "run", String(c.id)]);
       d.value = new Set([...d.value].filter((e) => e !== c.id)), o.ok || (p.value = o.error);
@@ -196,7 +196,7 @@ const V = (s, y) => {
               class: "card-run",
               "data-check-card-run": "",
               disabled: d.value.has(e.id),
-              onClick: D((h) => w(e), ["stop"])
+              onClick: D((h) => b(e), ["stop"])
             }, {
               default: R(() => [
                 N(l(d.value.has(e.id) ? "Running" : "Run"), 1)
@@ -211,13 +211,13 @@ const V = (s, y) => {
           row: $.value,
           running: d.value.has($.value.id),
           onClose: o[0] || (o[0] = (e) => r.value = null),
-          onRun: w
+          onRun: b
         }, null, 8, ["row", "running"])) : g("", !0)
       ]),
       _: 1
     }));
   }
-}, Ce = /* @__PURE__ */ V(ye, [["__scopeId", "data-v-765eb018"]]);
+}, Ce = /* @__PURE__ */ V(ye, [["__scopeId", "data-v-e53653a1"]]);
 export {
   Ce as default
 };

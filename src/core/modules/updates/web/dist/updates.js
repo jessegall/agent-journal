@@ -1,12 +1,12 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-38a071a04e54")) { const style = document.createElement("style"); style.id = "window-styles-38a071a04e54"; style.textContent = ".releases[data-v-f8cd0642]{position:relative;min-height:100px}.failure[data-v-f8cd0642]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-f8cd0642]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-f8cd0642]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-f8cd0642]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-f8cd0642],.release[data-v-f8cd0642]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-f8cd0642],.title[data-v-f8cd0642]{flex:1}.heading[data-v-f8cd0642]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-f8cd0642]{color:var(--text-3);font-size:12px}button[data-v-f8cd0642]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { computed as _, ref as v, watch as I, openBlock as i, createBlock as R, unref as o, withCtx as f, createElementBlock as r, createCommentVNode as p, createElementVNode as l, createVNode as w, createTextVNode as N, toDisplayString as d, Fragment as P, renderList as V } from "vue";
+if (!document.getElementById("window-styles-ef7ef1d49d07")) { const style = document.createElement("style"); style.id = "window-styles-ef7ef1d49d07"; style.textContent = ".releases[data-v-b46da630]{position:relative;min-height:100px}.failure[data-v-b46da630]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-b46da630]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-b46da630]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-b46da630]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-b46da630],.release[data-v-b46da630]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-b46da630],.title[data-v-b46da630]{flex:1}.heading[data-v-b46da630]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-b46da630]{color:var(--text-3);font-size:12px}button[data-v-b46da630]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { computed as _, ref as v, watch as I, openBlock as i, createBlock as R, unref as o, withCtx as h, createElementBlock as r, createCommentVNode as p, createElementVNode as l, createVNode as w, createTextVNode as N, toDisplayString as u, Fragment as P, renderList as V } from "vue";
 import { useWindow as W, WindowRoom as E, Btn as D, RowList as $, TextDisplay as j } from "@journal/window-kit";
-const q = (h, a) => {
-  const u = h.__vccOpts || h;
+const q = (f, a) => {
+  const d = f.__vccOpts || f;
   for (const [c, n] of a)
-    u[c] = n;
-  return u;
+    d[c] = n;
+  return d;
 }, O = {
   key: 0,
   class: "cover",
@@ -26,8 +26,8 @@ const q = (h, a) => {
   "data-update-notes-failure": ""
 }, Y = { class: "release" }, Z = { class: "title" }, ee = { class: "detail" }, te = {
   __name: "UpdatesPanel",
-  setup(h) {
-    const a = W(), u = a.props.releases, { failure: c } = a.props.standing, n = _(() => c.value ? null : a.props.standing.data.value), g = v(!1), k = v(""), b = v(!1), L = _(() => {
+  setup(f) {
+    const a = W(), d = a.props.releases, { failure: c } = a.props.standing, n = _(() => c.value ? null : a.props.standing.data.value), g = v(!1), k = v(""), b = v(!1), L = _(() => {
       var e, s, t;
       return b.value && ((e = n.value) == null ? void 0 : e.is_current) && ((t = (s = n.value) == null ? void 0 : s.installation) == null ? void 0 : t.step) === "finished";
     }), y = v([]), m = v(1), S = _(() => {
@@ -51,7 +51,7 @@ const q = (h, a) => {
     }
     const F = () => globalThis.location.reload();
     return (e, s) => (i(), R(o(E), null, {
-      default: f(() => [
+      default: h(() => [
         g.value ? (i(), r("div", O, "Updating the journal. This takes a short while.")) : p("", !0),
         L.value ? (i(), r("div", z, [
           s[2] || (s[2] = l("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
@@ -61,15 +61,15 @@ const q = (h, a) => {
             "data-update-reload": "",
             onClick: F
           }, {
-            default: f(() => [...s[1] || (s[1] = [
+            default: h(() => [...s[1] || (s[1] = [
               N("Reload", -1)
             ])]),
             _: 1
           })
         ])) : p("", !0),
-        o(c) || k.value ? (i(), r("p", A, d(o(c) || k.value), 1)) : p("", !0),
+        o(c) || k.value ? (i(), r("p", A, u(o(c) || k.value), 1)) : p("", !0),
         l("div", G, [
-          l("span", H, d(T.value), 1),
+          l("span", H, u(T.value), 1),
           l("button", {
             type: "button",
             onClick: U
@@ -81,10 +81,10 @@ const q = (h, a) => {
             "data-update-install": "",
             onClick: C
           }, {
-            default: f(() => {
+            default: h(() => {
               var t;
               return [
-                N(d(((t = n.value.installation) == null ? void 0 : t.step) === "failed" ? "Retry update" : n.value.tag ? `Update to ${n.value.tag}` : "Update to the latest"), 1)
+                N(u(((t = n.value.installation) == null ? void 0 : t.step) === "failed" ? "Retry update" : n.value.tag ? `Update to ${n.value.tag}` : "Update to the latest"), 1)
               ];
             }),
             _: 1
@@ -98,34 +98,34 @@ const q = (h, a) => {
         s[3] || (s[3] = l("h3", { class: "heading" }, "Installed releases", -1)),
         l("div", J, [
           w(o($), {
-            rows: o(u).rows.value,
-            failure: o(u).failure.value,
-            loaded: o(u).loaded.value,
+            rows: o(d).rows.value,
+            failure: o(d).failure.value,
+            loaded: o(d).loaded.value,
             empty: "No installation history yet",
             hint: "Installed releases appear here with their installation dates."
           }, {
-            default: f(({ row: t }) => [
+            default: h(({ row: t }) => [
               l("div", {
                 class: "release",
                 "data-row": t.id
               }, [
-                l("span", M, d(t.tag || t.checksum.slice(0, 12)), 1),
-                l("span", Q, d(new Date(t.created_at).toLocaleString()), 1)
+                l("span", M, u(t.tag || t.checksum.slice(0, 12)), 1),
+                l("span", Q, u(new Date(t.created_at).toLocaleString()), 1)
               ], 8, K)
             ]),
             _: 1
           }, 8, ["rows", "failure", "loaded"])
         ]),
         s[4] || (s[4] = l("h3", { class: "heading" }, "What changed", -1)),
-        o(x) ? (i(), r("p", X, d(o(x)), 1)) : p("", !0),
+        o(x) ? (i(), r("p", X, u(o(x)), 1)) : p("", !0),
         (i(!0), r(P, null, V(y.value, (t) => (i(), r("article", {
           key: t.tag,
           class: "note",
           "data-update-note": ""
         }, [
           l("div", Y, [
-            l("span", Z, d(t.tag), 1),
-            l("span", ee, d(new Date(t.published_at).toLocaleDateString()), 1)
+            l("span", Z, u(t.tag), 1),
+            l("span", ee, u(new Date(t.published_at).toLocaleDateString()), 1)
           ]),
           w(o(j), {
             text: t.text
@@ -141,7 +141,7 @@ const q = (h, a) => {
       _: 1
     }));
   }
-}, le = /* @__PURE__ */ q(te, [["__scopeId", "data-v-f8cd0642"]]);
+}, le = /* @__PURE__ */ q(te, [["__scopeId", "data-v-b46da630"]]);
 export {
   le as default
 };

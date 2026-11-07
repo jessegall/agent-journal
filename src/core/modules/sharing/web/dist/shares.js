@@ -1,11 +1,11 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-307200573df8")) { const style = document.createElement("style"); style.id = "window-styles-307200573df8"; style.textContent = ".shares[data-v-8e1e11ad]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-8e1e11ad],.shares-waiting[data-v-8e1e11ad],.shares-opens[data-v-8e1e11ad],.shares-open[data-v-8e1e11ad]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-8e1e11ad],.shares-waiting[data-v-8e1e11ad],.shares-opens[data-v-8e1e11ad]{align-items:flex-start}.shares-target[data-v-8e1e11ad]{width:100%;min-width:0}.shares-option[data-v-8e1e11ad],.shares-row[data-v-8e1e11ad]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-8e1e11ad]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-8e1e11ad]{flex:1;min-width:0}.shares-link[data-v-8e1e11ad],.shares-comment[data-v-8e1e11ad]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-8e1e11ad],.shares-failure[data-v-8e1e11ad]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-783327b747fc")) { const style = document.createElement("style"); style.id = "window-styles-783327b747fc"; style.textContent = ".shares[data-v-64244b46]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-64244b46],.shares-waiting[data-v-64244b46],.shares-opens[data-v-64244b46],.shares-open[data-v-64244b46]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-64244b46],.shares-waiting[data-v-64244b46],.shares-opens[data-v-64244b46]{align-items:flex-start}.shares-target[data-v-64244b46]{width:100%;min-width:0}.shares-option[data-v-64244b46],.shares-row[data-v-64244b46]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-64244b46]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-64244b46]{flex:1;min-width:0}.shares-link[data-v-64244b46],.shares-comment[data-v-64244b46]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-64244b46],.shares-failure[data-v-64244b46]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { computed as M, ref as c, openBlock as t, createBlock as B, unref as l, withCtx as d, createElementVNode as n, withModifiers as z, withDirectives as O, vModelText as q, createVNode as u, createElementBlock as i, createCommentVNode as v, Fragment as _, renderList as E, toDisplayString as o, createTextVNode as h } from "vue";
 import { useWindow as G, useListTools as H, WindowRoom as J, Segmented as Q, Switch as X, Btn as f, ListTools as Z, RowList as ee } from "@journal/window-kit";
 const se = (x, N) => {
   const r = x.__vccOpts || x;
-  for (const [b, V] of N)
-    r[b] = V;
+  for (const [C, V] of N)
+    r[C] = V;
   return r;
 }, ae = { class: "shares" }, te = { class: "shares-option" }, ne = { class: "shares-option" }, le = {
   key: 0,
@@ -44,8 +44,8 @@ const se = (x, N) => {
       { key: "7d", label: "7 days" },
       { key: "30d", label: "30 days" },
       { key: "never", label: "Never" }
-    ], r = G(), { rows: b, failure: V, loaded: F } = r.props.shares, P = M(() => b.value.filter((a) => a.state === "waiting")), T = M(() => b.value.filter((a) => a.state === "active")), L = H(T, { title: (a) => `${a.row_model} ${a.row_id}` }), w = c(new URLSearchParams(globalThis.location.search).get("share") ?? ""), R = c("7d"), g = c(""), A = c(!1), S = c(null), k = c(null), y = c(""), m = c({}), $ = c(!1), D = (a) => a.expires_at ? `ends ${a.expires_at}` : "never ends";
-    async function C(a) {
+    ], r = G(), { rows: C, failure: V, loaded: F } = r.props.shares, P = M(() => C.value.filter((a) => a.state === "waiting")), T = M(() => C.value.filter((a) => a.state === "active")), L = H(T, { title: (a) => `${a.row_model} ${a.row_id}` }), w = c(new URLSearchParams(globalThis.location.search).get("share") ?? ""), R = c("7d"), g = c(""), A = c(!1), S = c(null), k = c(null), y = c(""), m = c({}), $ = c(!1), D = (a) => a.expires_at ? `ends ${a.expires_at}` : "never ends";
+    async function b(a) {
       const e = await r.run(a);
       return y.value = e.ok ? "" : e.error, e.ok && r.reload("shares"), e;
     }
@@ -59,15 +59,15 @@ const se = (x, N) => {
     }
     w.value && U();
     async function I() {
-      const a = await C(["share", "make", w.value.trim(), "--ends", R.value, ...g.value ? [`--password=${g.value}`] : [], ...A.value ? ["--comments"] : []]);
+      const a = await b(["share", "make", w.value.trim(), "--ends", R.value, ...g.value ? [`--password=${g.value}`] : [], ...A.value ? ["--comments"] : []]);
       a.ok && (k.value = await W(a), g.value = "", S.value = null);
     }
     async function K(a) {
-      const e = await C(["share", "accept", String(a.id)]);
+      const e = await b(["share", "accept", String(a.id)]);
       e.ok && (k.value = await W(e));
     }
     async function Y() {
-      for (const a of T.value) await C(["share", "revoke", String(a.id)]);
+      for (const a of T.value) await b(["share", "revoke", String(a.id)]);
       $.value = !1;
     }
     async function j(a) {
@@ -171,7 +171,7 @@ const se = (x, N) => {
               u(l(f), {
                 small: "",
                 "data-share-deny": "",
-                onClick: (p) => C(["share", "deny", String(s.id)])
+                onClick: (p) => b(["share", "deny", String(s.id)])
               }, {
                 default: d(() => [...e[12] || (e[12] = [
                   h("Deny", -1)
@@ -210,7 +210,7 @@ const se = (x, N) => {
                   u(l(f), {
                     small: "",
                     "data-share-stop": "",
-                    onClick: (p) => C(["share", "revoke", String(s.id)])
+                    onClick: (p) => b(["share", "revoke", String(s.id)])
                   }, {
                     default: d(() => [...e[15] || (e[15] = [
                       h("Stop sharing", -1)
@@ -272,7 +272,7 @@ const se = (x, N) => {
       _: 1
     }));
   }
-}, be = /* @__PURE__ */ se(ge, [["__scopeId", "data-v-8e1e11ad"]]);
+}, Ce = /* @__PURE__ */ se(ge, [["__scopeId", "data-v-64244b46"]]);
 export {
-  be as default
+  Ce as default
 };
