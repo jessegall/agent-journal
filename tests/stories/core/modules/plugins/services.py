@@ -45,10 +45,15 @@ def served_story(new_story):
     return story
 
 
+def expect_service_refusal(story, sample):
+    story.expect_hook_refusal("s-1", sample, "plugin:1 refused: journal agent-line list")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin served] the service says no", actor=story.agent)
+
+
 def test_a_service_that_answers_is_asked_in_place_of_the_program(new_story):
     story = served_story(new_story)
     try:
-        story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "[plugin served] the service says no")
+        expect_service_refusal(story, REMOVAL_SAMPLE)
     finally:
         story.processes.close()
 
@@ -57,7 +62,7 @@ def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_p
     story = served_story(new_story)
     try:
         starts = start_counter(monkeypatch, "run.sh")
-        story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
+        expect_service_refusal(story, four_parts(REMOVAL_PART))
         served_lines = (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()
         story.expect_rows(len(served_lines) == 4, starts == [])
     finally:
@@ -68,10 +73,10 @@ def test_a_line_of_four_parts_reads_the_agent_and_its_skills_as_a_line_of_one_pa
     story = served_story(new_story)
     try:
         call_counts = counted_calls(monkeypatch)
-        story.expect_hook_refusal("s-1", HookSamples.shell("rm -rf build", REMOVAL_PART), "[plugin served] the service says no")
+        expect_service_refusal(story, HookSamples.shell("rm -rf build", REMOVAL_PART))
         single_part_counts = dict(call_counts)
         call_counts.update(settings=0, agent=0, skills=0)
-        story.expect_hook_refusal("s-1", four_parts(REMOVAL_PART), "[plugin served] the service says no")
+        expect_service_refusal(story, four_parts(REMOVAL_PART))
         served_events = [json.loads(line) for line in (story.home.folder / "plugin-data" / "served" / "asked").read_text().splitlines()]
         story.expect_rows([line["data"]["position"] for line in served_events[-4:]] == [0, 1, 2, 3], single_part_counts["skills"] == 1, call_counts["agent"] == single_part_counts["agent"], call_counts["skills"] == 1, single_part_counts["settings"] + call_counts["settings"] <= 1)
     finally:

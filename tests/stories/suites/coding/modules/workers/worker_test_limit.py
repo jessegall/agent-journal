@@ -170,12 +170,13 @@ def test_a_worker_test_tool_with_no_reader_runs_once_so_a_reader_can_be_drawn_fr
     story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
 
 
-def test_a_listing_that_fails_says_why_in_the_line(limited_run):
+def test_a_listing_that_fails_shows_why_in_the_output_summary(limited_run):
     story, process = limited_run
     story.container.get(OutputFolder).write_count(process.id, "zsh: no such file: vitest\n", 1)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
-    story.expect_rows(len(lines) == 1, "no such file: vitest" in lines[0].text)
+    story.expect_rows(len(lines) == 1, f"journal output read {process.id} --summary" in lines[0].text)
+    story.expect_text(f"output read {process.id} --summary", "no such file: vitest", actor=reader_worker(story))
 
 
 def test_a_chain_lists_each_test_part_and_adds_the_counts(limited_run):

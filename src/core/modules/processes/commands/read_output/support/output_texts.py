@@ -66,7 +66,8 @@ class OutputTexts:
         size = f"{lines_kept} lines, {bytes_kept} bytes"
         lines_read = self.folder.reader_lines(process.id) if kept is not None else []
         digest = kept.reader_summary if kept is not None else ""
-        return [f"output {process.id} {outcome}: {size}", *lines_read, *self.digest_line(digest)]
+        count_error = self.folder.count_error(process.id) if process.state is ProcessState.STOPPED else []
+        return [f"output {process.id} {outcome}: {size}", *lines_read, *self.digest_line(digest), *count_error]
 
     @staticmethod
     def digest_line(digest: str) -> list[str]:
