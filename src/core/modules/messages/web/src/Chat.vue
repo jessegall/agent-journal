@@ -87,6 +87,8 @@ const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
 const chat = ref(null);
 const docksOpen = ref(true);
+// after half a quiet second of scrolling up, the insides of the docked cards fold and the Newest button shows; scrolling down to the foot undoes both
+const scrolledUp = ref(false);
 const short = ref(false);
 let lastTop = 0;
 let atFoot = true;
@@ -299,6 +301,7 @@ function send() {
     // a sent message takes the reader to the foot at once, also one who had scrolled up, so the rows watch below sets the scroll with no glide
     atFoot = true;
     awayFromFoot.value = false;
+    scrolledUp.value = false;
     arrived.value = 0;
     text.value = "";
     attached.value = [];
@@ -361,14 +364,19 @@ function followScroll() {
     const {scrollTop, scrollHeight, clientHeight} = scroller.value;
     atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS || (atFoot && scrollTop >= lastTop);
     awayFromFoot.value = !atFoot;
-    if (atFoot) arrived.value = 0;
+    if (atFoot) {
+        arrived.value = 0;
+        scrolledUp.value = false;
+    }
     const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
     lastTop = scrollTop;
     if (opening === null && !folding) return;
     clearTimeout(folding);
     folding = 0;
-    if (opening) docksOpen.value = true;
-    else folding = setTimeout(() => { docksOpen.value = false; folding = 0; }, FOLD_AFTER_MS);
+    if (opening) {
+        docksOpen.value = true;
+        scrolledUp.value = false;
+    } else folding = setTimeout(() => { docksOpen.value = false; scrolledUp.value = !atFoot; folding = 0; }, FOLD_AFTER_MS);
 }
 // the newest message and mark are at the foot: a chat that was at its foot stays there as rows land, one scrolled up is left where it is
 watch(() => messages.value[0]?.id, (newest, before) => {
@@ -407,6 +415,7 @@ async function refreshChat() {
     returning = true;
     atFoot = true;
     awayFromFoot.value = false;
+    scrolledUp.value = false;
     arrived.value = 0;
     try {
         await Promise.all([loadLatest(), latestMarks()]);
@@ -480,7 +489,7 @@ async function runCommand(pin) {
         </div>
         <div class="jump-holder">
             <Transition name="rise">
-                <button v-show="awayFromFoot" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Jump to latest'" @click="scrollToFoot">
+                <button v-show="awayFromFoot && scrolledUp" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Jump to latest'" @click="scrollToFoot">
                     <Icon name="down" />
                     {{ arrived ? `${arrived} new` : "Newest" }}
                 </button>
@@ -491,7 +500,7 @@ async function runCommand(pin) {
         </template>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <div data-figure-chat-foot class="chat-foot">
-            <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
+            <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :insides-folded="scrolledUp" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <template v-if="dumping">
             <DumpForm :run="view.run" @made="dumping = false" @close="dumping = false" />
