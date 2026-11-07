@@ -74,7 +74,7 @@ test("Cancel drops what was typed and Save applies all of it at once", async () 
     document.body.querySelector("[data-secret-helpers]").click();
     await settle();
     await save();
-    expect(ran).toEqual([["secret", "fill", "3", "key", "new-value"], ["secret", "allow", "3", "--helpers"], ["secret", "update", "3", "--title", "Shop token", "--brief", "For the shop"]]);
+    await vi.waitFor(() => expect(ran).toEqual([["secret", "fill", "3", "key", "new-value"], ["secret", "allow", "3", "--helpers"], ["secret", "update", "3", "--title", "Shop token", "--brief", "For the shop"]]));
 });
 
 test("a refused change keeps the dialog open and says why", async () => {
@@ -108,7 +108,7 @@ test("a custom secret adds and removes fields in its dialog, and another type do
     type(document.body.querySelector('[data-secret-value="region"]'), "eu");
     await settle();
     await save();
-    expect(ran).toEqual([["secret", "update", "4", "--add-field", "region"], ["secret", "update", "4", "--remove-field", "token"], ["secret", "fill", "4", "region", "eu"]]);
+    await vi.waitFor(() => expect(ran).toEqual([["secret", "update", "4", "--add-field", "region"], ["secret", "update", "4", "--remove-field", "token"], ["secret", "fill", "4", "region", "eu"]]));
 });
 
 test("a program is allowed by name, or from what the agent proposed", async () => {
