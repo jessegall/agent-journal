@@ -3,7 +3,6 @@ import {computed} from "vue";
 import {age, perHour, Btn, Icon, TimeAgo, peekRef, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentActions from "./AgentActions.vue";
-import AgentTaskCount from "./AgentTaskCount.vue";
 import InformationBar from "../../../../../viewer/src/shell/InformationBar.vue";
 
 const FALLBACK_TITLES = {helper: "Helper", reviewer: "Reviewer"};
@@ -22,10 +21,6 @@ const currentTask = computed(() => tasks.value.find((task) => task.id === props.
 const jobTask = computed(() => currentTask.value || tasks.value.find((task) => task.id === props.facts?.task_id) || queuedTasks.value[0] || tasks.value.at(-1));
 const blockedTasks = computed(() => currentTask.value ? tasks.value.filter((task) => task.state === "blocked") : []);
 const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? currentTask.value?.title || props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
-const jobRef = computed(() => {
-    const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
-    return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
-});
 const roleLabel = computed(() => props.facts?.job_enabled ? `${props.row.role} ${props.row.id}` : "");
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
 const context = useWindow();
@@ -36,8 +31,6 @@ const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.
 const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : pendingWork.value || props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
 const workStatus = computed(() => pendingWork.value ? `Status: ${pendingWork.value}` : props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
-const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
-const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
 const tasksPerHour = computed(() => {
     const rate = perHour(completedCount.value, props.progress?.started_at || props.row.created_at, props.progress ? props.progress.finished_at : props.row.ended_at, now.value);
     return props.row.role !== "main" && rate ? `${rate} per hour` : "";
@@ -78,17 +71,13 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
-        <template v-if="open && totalCount && !job"><span class="agent-line"><AgentTaskCount :count="taskCount" :rate="tasksPerHour" /></span></template>
-        <template v-if="job || (!open && workStatus) || pendingWork">
+        <template v-if="!open && (job || workStatus)">
             <span class="agent-line agent-work-start">
-                <span class="agent-job" data-agent-job :title="job"><span class="agent-job-title"><template v-if="open && jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template></span><template v-if="job && row.role !== 'helper' && jobTask?.plan_id"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${jobTask.plan_id}`" @click.stop="peekRef(`plans:${jobTask.plan_id}`)">plan {{ jobTask.plan_id }}</button></template></span>
-                <template v-if="workStatus && (!open || pendingWork)"><span class="agent-work-status" data-agent-work-status :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason && !pendingWork ? '' : null">{{ workStatus }}</span></template>
-                <template v-if="open && totalCount">
-                    <AgentTaskCount :count="taskCount" :rate="tasksPerHour" />
-                </template>
+                <span class="agent-job" data-agent-job :title="job"><span class="agent-job-title">{{ job }}</span><template v-if="job && row.role !== 'helper' && jobTask?.plan_id"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${jobTask.plan_id}`" @click.stop="peekRef(`plans:${jobTask.plan_id}`)">plan {{ jobTask.plan_id }}</button></template></span>
+                <template v-if="workStatus"><span class="agent-work-status" data-agent-work-status :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason && !pendingWork ? '' : null">{{ workStatus }}</span></template>
             </span>
         </template>
-        <template v-if="blockedTasks.length"><span class="agent-line agent-work-status" data-agent-blocked-tasks>Blocked: {{ blockedTasks.map((task) => `task ${task.id}`).join(", ") }}</span></template>
+        <template v-if="!open && blockedTasks.length"><span class="agent-line agent-work-status" data-agent-blocked-tasks>Blocked: {{ blockedTasks.map((task) => `task ${task.id}`).join(", ") }}</span></template>
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>
 </template>
@@ -240,7 +229,6 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card:hover .agent-chevron { color: var(--text-2); }
 .agent-line { padding-left: 16px; }
 .agent-plan { min-width: 0; overflow: hidden; padding: 0; border: 0; background: none; color: var(--text-3); font: inherit; font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
-.agent-job-link { padding: 0; border: 0; background: none; color: var(--accent-text); font: inherit; text-align: left; cursor: pointer; }
 .agent-back { display: grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-3); cursor: pointer; }
 .agent-back:hover { background: var(--hover); color: var(--text); }
 .agent-card.open { padding: 0; gap: 0; cursor: default; }
