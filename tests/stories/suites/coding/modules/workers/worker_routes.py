@@ -105,17 +105,22 @@ def test_batch_across_programs_is_refused_unrouted_goes_with_the_routed_task(spl
     story = split_story
     story.expect_success('worker-route make --program codex --tags batch --environment main', actor=story.agent)
     second = make_task(story, 'Routed batch task', '--tag batch --confirm')
-    expect_program(story, dispatch(story, f'1 {second}'), 'codex')
-    story.expect_text('worker status --json', 'Routed batch task')
+    worker = dispatch(story, f'1 {second}')
+    expect_program(story, worker, 'codex')
+    story.expect_text(f'worker status {worker.id} --json', 'Routed batch task')
 
 
-def test_batch_across_programs_is_refused_plan_names_phase(split_story):
+def test_batch_across_programs_is_refused_plan_names_phase(split_story, split_viewer):
     story = split_story
     plan = story.new_row_id('plan make "Two programs" --environment main', actor=story.agent)
-    first = story.new_row_id(f'phase make "Linux" --plan {plan}', actor=story.agent)
-    second = story.new_row_id(f'phase make "Windows" --plan {plan}', actor=story.agent)
-    make_task(story, 'Linux task', f'--phase {first} --tag linux --confirm')
-    make_task(story, 'Windows task', f'--phase {second} --tag windows --confirm')
+    linux_phase = story.new_row_id(f'phase make "Linux" --plan {plan}', actor=story.agent)
+    windows_phase = story.new_row_id(f'phase make "Windows" --plan {plan}', actor=story.agent)
+    make_task(story, 'Linux task', f'--phase {linux_phase} --tag linux --confirm')
+    make_task(story, 'Windows task', f'--phase {windows_phase} --tag windows --confirm')
+    make_task(story, 'Linux follow-up', f'--phase {linux_phase} --tag linux --confirm')
+    make_task(story, 'Windows follow-up', f'--phase {windows_phase} --tag windows --confirm')
+    story.expect_success(f'plan ready {plan}', actor=story.agent)
+    split_viewer.value('plans.plans', ['plan', 'approve', str(plan), '--environment', 'main'])
     story.expect_success('worker-route make --program codex --tags linux --environment main', actor=story.agent)
     story.expect_success('worker-route make --program claude --tags windows --environment main', actor=story.agent)
     story.expect_refusal(f'worker dispatch --plan {plan}', '--phase', actor=story.agent)

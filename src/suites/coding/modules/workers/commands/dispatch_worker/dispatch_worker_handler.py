@@ -1,4 +1,5 @@
 from uuid import uuid4
+from suites.coding.modules.workers.commands.report_worker_route_fallback.report_worker_route_fallback import ReportWorkerRouteFallback
 import json
 
 from core.base.command.bus import Bus
@@ -87,6 +88,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.git.remove(environment.folder, opened.worktree)
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
+        if choice.fallback is not None:
+            self.bus.run_with_context(ReportWorkerRouteFallback(opened.worker.id, tuple(listed.id for listed in tasks), choice.fallback), context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
     def queueable(self, task: Task, is_first: bool) -> bool:
@@ -108,4 +111,4 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def check_model(self, program: str, model: str) -> None:
         names = self.models.allowed(self.providers.provider(program))
         if model not in names:
-            raise Refusal(f"a worker is dispatched on a model {program} may run: {', '.join(names)}", "add --model <model>; journal worker models lists them")
+            raise Refusal(f"{model} cannot run on the chosen program {program}: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")

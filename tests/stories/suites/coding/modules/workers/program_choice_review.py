@@ -236,13 +236,19 @@ def test_score_refusal_only_for_routes_that_could_match_preview_reports(split_st
     story.expect_text('worker-worktree list', 'nothing found')
 
 
-@pytest.mark.parametrize('reverse', [False, True])
-def test_batch_combines_route_constraints(split_story, reverse):
+@pytest.fixture
+def batch_route_story(split_story):
     story = split_story
     story.expect_success('worker-route make --tags easy --tier fast --environment main', actor=story.agent)
     story.expect_success('worker-route make --tags server --program codex --tier strongest --environment main', actor=story.agent)
     story.expect_success('task tag 1 easy --confirm', actor=story.agent)
     task_id = make_task(story, 'Server', '--tag server --confirm')
+    return story, task_id
+
+
+@pytest.mark.parametrize('reverse', [False, True])
+def test_batch_combines_route_constraints(batch_route_story, reverse):
+    story, task_id = batch_route_story
     tasks = [1, task_id]
     if reverse:
         tasks.reverse()

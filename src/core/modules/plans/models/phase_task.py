@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from core.base.model.positioned import Positioned
 
 
 @dataclass(frozen=True, kw_only=True)
-class PhaseTask(Model):
+class PhaseTask(Positioned):
     """A task's place in a phase; a task has at most one."""
 
     model_name = "phase_task"

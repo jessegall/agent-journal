@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_routes import WorkerRoutes
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -40,15 +41,15 @@ class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
-        self.states, self.reports = states, reports
+        self.states, self.reports, self.routes = states, reports, routes
         self.shares, self.environments, self.scopes = shares, environments, scopes
 
     def program_state(self, worker: Agent) -> ProgramState:
         with self.scopes.row_scope(worker):
-            if self.shares.is_configured:
+            if self.shares.is_configured or self.routes.listed():
                 return self.states.state(worker.program, Path(self.environments.find(worker.environment_id).folder))
             return self.states.outage_state(worker.program)
 
