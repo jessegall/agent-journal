@@ -7,7 +7,9 @@
 # agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
 # synced from the core modules, by src/install/install_journal.py; a project that holds a version 4 journal is left as it
 # is and told to run journal upgrade (sh install.sh upgrade, with --dry-run to see the counts and --yes to go on without
-# asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing. An upgrade
+# asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing;
+# sh install.sh update puts this script's newer code into a project already on version 5, rebuilds its programs when
+# this is a checkout, and has its server take over the new code. An upgrade
 # goes on to place the programs and write the hooks as an install does. Nothing is started.
 #
 # The hook program built for this machine is downloaded from the release into .journal/bin/journal-hook, its
@@ -107,8 +109,29 @@ if [ ! -f "$SOURCE/core/journal.py" ]; then
   SOURCE="$archive/src"
 fi
 
+# a checkout of agent-journal has its tools beside this script and go on the PATH: it builds the programs itself unless
+# JOURNAL_RELEASE_URL names a release to download them from
+builds_programs() {
+  [ -z "${JOURNAL_RELEASE_URL:-}" ] && [ -f "$HERE/tools/go.work" ] && command -v go >/dev/null 2>&1
+}
+
+build_programs() {
+  mkdir -p "$BIN"
+  for program in journal journal-hook journal-run journal-shared; do
+    rm -f "$BIN/$program"
+    go -C "$HERE/tools/$program" build -o "$BIN/$program" . || fail "go could not build $program from $HERE/tools/$program"
+  done
+}
+
 python=$(find_python) || fail "journal needs Python 3.14 or newer, and none is on the PATH: get it from https://www.python.org/downloads/ (or brew install python@3.14, or your system's package for python 3.14)"
 upgraded=0
+if [ "${1:-}" = "update" ]; then
+  [ -f "$ROOT/.journal/version-5.db" ] || fail "no version 5 journal is installed in $ROOT to update: run sh install.sh"
+  if builds_programs; then
+    build_programs
+  fi
+  exec env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE"
+fi
 if [ "${1:-}" = "upgrade" ]; then
   shift
   env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" "$@" || exit $?
@@ -129,14 +152,9 @@ case "$status" in
 esac
 link_command
 
-# a checkout of agent-journal, with its tools beside this script and go on the PATH, builds the programs itself unless
-# JOURNAL_RELEASE_URL names a release to download them from; the journal command replaces version 4's script
-if [ -z "${JOURNAL_RELEASE_URL:-}" ] && [ -f "$HERE/tools/go.work" ] && command -v go >/dev/null 2>&1; then
-  mkdir -p "$BIN"
-  for program in journal journal-hook journal-run journal-shared; do
-    rm -f "$BIN/$program"
-    go -C "$HERE/tools/$program" build -o "$BIN/$program" . || fail "go could not build $program from $HERE/tools/$program"
-  done
+# the journal command replaces version 4's script
+if builds_programs; then
+  build_programs
   PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
   echo "built journal, journal-hook, journal-run and journal-shared from $HERE/tools into $BIN; the hooks call $BIN/journal-hook"
   exit 0
