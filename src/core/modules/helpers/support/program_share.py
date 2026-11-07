@@ -12,10 +12,10 @@ class ProgramShare:
 
     @classmethod
     def parsed(cls, line: str) -> "ProgramShare":
-        words = line.split()
-        if len(words) != 2 or not words[1].isdecimal():
+        parts = line.split()
+        if len(parts) != 2 or not parts[1].isdecimal():
             raise Refusal(f"invalid program share {line!r}", "use a program and a whole percentage, such as <program> 20")
-        percent = int(words[1])
+        percent = int(parts[1])
         if percent > 100:
             raise Refusal("a program share is between 0 and 100", "choose a whole percentage")
-        return cls(words[0], percent)
+        return cls(parts[0], percent)

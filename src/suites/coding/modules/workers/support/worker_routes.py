@@ -27,26 +27,26 @@ class WorkerRoutes:
     def task_matches(self, tasks: Sequence[Task]) -> RouteTasks:
         programs = {provider.name for provider in self.providers.all()}
         routes = tuple(route for route in self.listed() if not route.program or route.program in programs)
-        tags_by_task: dict[int, list[str]] = {task.id: [] for task in tasks}
+        task_tags: dict[int, list[str]] = {task.id: [] for task in tasks}
         if routes:
-            task_ids = tuple(tags_by_task)
+            task_ids = tuple(task_tags)
             tags = self.kept.read("task_tags",
                                  lambda: tuple(self.queries.query(TaskTag).matching(Among("task_id", task_ids)).all_rows()),
                                  f"task_id IN ({', '.join('?' for _ in task_ids)})", task_ids, name="workers.route_tags")
             for tag in tags:
-                tags_by_task[tag.task_id].append(tag.word)
-        return RouteTasks(routes, tags_by_task)
+                task_tags[tag.task_id].append(tag.word)
+        return RouteTasks(routes, task_tags)
 
     def first_match(self, task: Task) -> WorkerRoute | None:
         return self.task_matches([task]).first_match(task)
 
     def common_route(self, tasks: Sequence[Task]) -> WorkerRoute | None:
-        read = self.task_matches(tasks)
-        missing = [task for task in tasks if read.missing_score(task)]
+        route_tasks = self.task_matches(tasks)
+        missing = [task for task in tasks if route_tasks.missing_score(task)]
         if missing:
             lines = "; ".join(f"task {task.id} has no complexity: journal task edit {task.id} --complexity <1-5>" for task in missing)
             raise Refusal(lines, "score these tasks before dispatch")
-        matches = {task.id: route for task in tasks if (route := read.first_match(task)) is not None}
+        matches = {task.id: route for task in tasks if (route := route_tasks.first_match(task)) is not None}
         if not matches:
             return None
         programs = {route.program for route in matches.values() if route.program}

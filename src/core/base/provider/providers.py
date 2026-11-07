@@ -30,7 +30,7 @@ class Providers:
     def all(self) -> list[Provider]:
         return [self.provider(entry.name) for entry in self.registry.providers]
 
-    def program_for_model(self, model: str) -> str:
+    def model_program(self, model: str) -> str:
         programs = [provider.name for provider in self.all() if model in provider.model_names()]
         if not programs:
             raise Refusal(f"no program offers model {model}", "name --program explicitly, or use --tier to choose by capability")
