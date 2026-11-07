@@ -79,11 +79,6 @@ const workerMoves = (row) => (row?.role !== "worker" || row.ended_at ? [] : [
     {noun: "worker", word: "release", label: "Release", ask: "Why is it taken off its task?", positional: true},
 ]);
 
-// a memory that stands can be removed, with the reason, and one that was removed can be brought back
-const memoryMoves = (row) => (!row ? [] : row.state === "removed" ? [{word: "restore", label: "Restore", main: true}] : [{word: "remove", label: "Remove", flag: "--reason", ask: "Why is it removed?"}]);
-
-const checkMoves =(row) => (!row || row.removed_at ? [] : [row.stopped ? {word: "run", label: "Start again", main: true} : {word: "run", label: "Run now", main: true}, ...(row.stopped ? [] : [{word: "stop", label: "Stop"}])]);
-
 const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Needs no action", icon: "check", bordered: true, flag: "--why", ask: "Why does it need no action?"}]);
 
 // the moves of a plan or a task: an added state keeps those of the state it looks like that it may also take
@@ -94,4 +89,4 @@ function stateMoves(noun, row) {
     return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));
 }
 
-export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : noun === "check" ? checkMoves(row) : noun === "question" ? questionMoves(row) : noun === "memory" ? memoryMoves(row) : stateMoves(noun, row));
+export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : noun === "question" ? questionMoves(row) : stateMoves(noun, row));

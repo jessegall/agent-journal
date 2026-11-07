@@ -122,91 +122,6 @@ test("a task shows its log, and a move that needs words asks for them before it 
     expect(lines).toContainEqual(["task", "close", "7", "--outcome", "fixed"]);
 });
 
-test("any other row shows plain labels with no row numbers or text twice, and a refused read says why", async () => {
-    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: {id: 4, text: "Keep it", state: "active", weight: 9, creator_id: 78, environment_id: 5, created_at: "2026-11-06T10:30:28+00:00", updated_at: "2026-11-06T10:30:28+00:00"}}}));
-    const fields = shown().querySelector("[data-resource-fields]").textContent;
-    expect(fields).toContain("Weight");
-    expect(fields).toContain("Created");
-    expect(fields).not.toMatch(/creator|environment|Updated|Keep it|_at/);
-    expect(shown().querySelector(".resource-type").textContent).toBe("Memory 4 · Active");
-    expect(shown().querySelector("[data-resource-title]")).toBeNull();
-    app.unmount();
-    app = null;
-    await opened("#?open=secret:1", answering({"secret show 1": {ok: false, error: "viewer.shell does not declare secret show"}}));
-    expect(shown().querySelector("[data-resource-failure]").textContent).toContain("does not declare");
-});
-
-const MEMORY = {id: 4, text: "Keep it", state: "active", weight: 9, creator_id: 78, environment_id: 5, created_at: "2026-11-06T10:30:28+00:00", updated_at: "2026-11-06T10:30:28+00:00"};
-
-test("a row names its creator by the given name of an agent, read once for the row", async () => {
-    const lines = [];
-    await opened("#?open=memory:4", answering({
-        "memory show 4": {ok: true, value: MEMORY},
-        "actor show 78": {ok: true, value: {id: 78, type: "agent", name: "session-9"}},
-        "agent show 78": {ok: true, value: {id: 78, role: "worker", profile: "journal-worker", given_name: "Lady Lovelace"}},
-    }, lines));
-    const fields = shown().querySelector("[data-resource-fields]").textContent;
-    expect(fields).toContain("Created by");
-    expect(fields).toContain("Lady Lovelace");
-    expect(fields).not.toContain("78");
-    expect(lines.filter((line) => line[0] === "actor" || line[0] === "agent")).toEqual([["actor", "show", "78"], ["agent", "show", "78"]]);
-});
-
-test("a row names a creator who is a person by the person's name", async () => {
-    const lines = [];
-    await opened("#?open=memory:4", answering({
-        "memory show 4": {ok: true, value: MEMORY},
-        "actor show 78": {ok: true, value: {id: 78, type: "user", name: "Jesse"}},
-    }, lines));
-    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("Jesse");
-    expect(lines.some((line) => line[0] === "agent")).toBe(false);
-});
-
-test("a memory says who it belongs to by name, the main agent when no agent does, and links its task", async () => {
-    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: {...MEMORY, agent_id: null, task_id: 6700}}}));
-    const fields = shown().querySelector("[data-resource-fields]").textContent;
-    expect(fields).toContain("Belongs to");
-    expect(fields).toContain("Main agent");
-    expect(shown().querySelector("[data-resource-link]").textContent).toBe("Task 6700");
-    app.unmount();
-    app = null;
-    await opened("#?open=memory:4", answering({
-        "memory show 4": {ok: true, value: {...MEMORY, agent_id: 412}},
-        "agent show 412": {ok: true, value: {id: 412, role: "worker", given_name: ""}},
-    }));
-    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("Worker 412");
-    expect(shown().querySelector("[data-resource-link]")).toBeNull();
-});
-
-test("an old agent with no given name is named by its role and number", async () => {
-    await opened("#?open=memory:4", answering({
-        "memory show 4": {ok: true, value: MEMORY},
-        "actor show 78": {ok: true, value: {id: 78, type: "agent", name: "session-9"}},
-        "agent show 78": {ok: true, value: {id: 78, role: "worker", profile: "journal-worker", given_name: ""}},
-    }));
-    expect(shown().querySelector("[data-resource-fields]").textContent).toContain("Worker 78");
-});
-
-test("a memory can be removed with a reason and a removed one restored", async () => {
-    const lines = [];
-    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: MEMORY}}, lines));
-    shown().querySelector(`[data-move="remove"]`).click();
-    await later();
-    const ask = shown().querySelector("[data-resource-ask]");
-    ask.querySelector("input").value = "stale";
-    ask.querySelector("input").dispatchEvent(new Event("input"));
-    await later();
-    ask.dispatchEvent(new Event("submit", {cancelable: true}));
-    await later();
-    expect(lines).toContainEqual(["memory", "remove", "4", "--reason", "stale"]);
-    app.unmount();
-    app = null;
-    await opened("#?open=memory:4", answering({"memory show 4": {ok: true, value: {...MEMORY, state: "removed"}}}, lines));
-    shown().querySelector(`[data-move="restore"]`).click();
-    await later();
-    expect(lines).toContainEqual(["memory", "restore", "4"]);
-});
-
 test("the browser's back and forward walk the rows opened", async () => {
     await opened("#?open=plans:5", answering(PLAN));
     shown().querySelector("[data-resource-task]").click();
@@ -215,15 +130,6 @@ test("the browser's back and forward walk the rows opened", async () => {
     history.back();
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
-});
-
-test("a question opens with its text and a button for each option, and a pick answers it", async () => {
-    const lines = [];
-    await opened("#?open=questions:4", answering({"question show 4": {ok: true, value: {id: 4, title: "Which one?", text: "Which one should go first?", state: "open", options: ["Cart", "Totals"], recommended: "Cart"}}}, lines));
-    expect(shown().querySelector("[data-resource-text]").textContent).toContain("Which one should go first?");
-    shown().querySelector(`[data-move="answer"]`).click();
-    await later();
-    expect(lines).toContainEqual(["question", "answer", "4", "--answer", "Cart"]);
 });
 
 const leaving = () => new Promise((resolve) => setTimeout(resolve, 450));
@@ -241,19 +147,19 @@ test("focus moves into the panel when a row opens and back to what opened it whe
 });
 
 test("Escape closes an open action form first, then the top row, then the panel", async () => {
-    await opened("#?open=plans:5,memories:3", answering(PLAN));
+    await opened("#?open=plans:5,plans:6", answering({...PLAN, "plan inspect 6": {ok: true, value: {...PLAN["plan inspect 5"].value, id: 6}}}));
     const form = document.createElement("div");
     form.setAttribute("role", "dialog");
     form.setAttribute("aria-modal", "true");
     document.body.append(form);
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     await later();
-    expect(location.hash).toContain("memories:3");
+    expect(location.hash).toContain("plans:6");
     form.remove();
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     await later();
     expect(location.hash).toContain("plans:5");
-    expect(location.hash).not.toContain("memories:3");
+    expect(location.hash).not.toContain("plans:6");
     window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
     await later();
     await leaving();

@@ -2,7 +2,6 @@ import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {afterEach, expect, test} from "vitest";
 import {createApp, h} from "vue";
 import {settled} from "./settled.js";
-import MemoryFacts from "../src/resource/MemoryFacts.vue";
 import RowMoves from "../src/resource/RowMoves.vue";
 import {movesOf} from "../src/domain/resourceNouns.js";
 import {opening, route} from "../src/route.js";
@@ -18,32 +17,6 @@ function drawn(component, props) {
     createApp(() => h(component, props)).mount(element);
     return element;
 }
-
-test("a memory's panel lists its keywords, adds one and takes one off", async () => {
-    const lines = [];
-    const read = async (line) => (lines.push(line), {ok: true, value: {rows: [{id: 7, word: "cart"}]}});
-    const element = drawn(MemoryFacts, {id: 3, read});
-    await settled();
-    expect(lines[0]).toEqual(["memory-keyword", "list", "--memory", "3"]);
-    expect(element.querySelector("[data-memory-word]").textContent).toContain("cart");
-    const form = element.querySelector("[data-memory-word-form]");
-    const input = form.querySelector("input");
-    input.value = "total";
-    input.dispatchEvent(new Event("input"));
-    await settled();
-    form.dispatchEvent(new Event("submit", {cancelable: true}));
-    await settled();
-    expect(lines).toContainEqual(["memory-keyword", "make", "3", "total"]);
-    element.querySelector("[data-memory-word-off]").click();
-    await settled();
-    expect(lines).toContainEqual(["memory-keyword", "delete", "7"]);
-});
-
-test("a memory with no keywords says what that means", async () => {
-    const element = drawn(MemoryFacts, {id: 3, read: async () => ({ok: true, value: {rows: []}})});
-    await settled();
-    expect(element.textContent).toContain("No keywords");
-});
 
 test("a worker's moves go to the worker command, with its words after its number", async () => {
     const lines = [];
@@ -66,12 +39,6 @@ test("only a running worker has worker moves, and the main agent has none", () =
     expect(movesOf("agent", {role: "main"}).map((move) => move.word)).toEqual(["pause", "stop"]);
     expect(movesOf("agent", {role: "worker"}).map((move) => move.word)).toEqual(["send", "merge", "release", "pause", "stop"]);
     expect(movesOf("agent", {role: "worker", ended_at: "2026-11-01"})).toEqual([]);
-});
-
-test("a check can be run, and stopped unless it is", () => {
-    expect(movesOf("check", {stopped: false}).map((move) => move.word)).toEqual(["run", "stop"]);
-    expect(movesOf("check", {stopped: true}).map((move) => move.word)).toEqual(["run"]);
-    expect(movesOf("check", {removed_at: "2026-11-01"})).toEqual([]);
 });
 
 test("a question and a suggestion open in the panel", async () => {

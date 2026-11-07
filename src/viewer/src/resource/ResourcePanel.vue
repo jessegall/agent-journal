@@ -3,22 +3,15 @@ import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
 import {DECLARED_NOUNS} from "./declaredNouns.js";
 import InspectorPanel from "./InspectorPanel.vue";
-import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
-import ButtonSlot from "../kit/ButtonSlot.vue";
-import InspectorActions from "../kit/InspectorActions.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentInspector from "./agent/AgentInspector.vue";
-import MemoryFacts from "./MemoryFacts.vue";
-import ResourceFields from "./ResourceFields.vue";
 import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
-import RowMoves from "./RowMoves.vue";
 import ResourceHeading from "./ResourceHeading.vue";
-import {cliOf, fieldsOf, headingOf, ownerNameOf, titleOf} from "../domain/resourceNouns.js";
-import {creatorFor, ownerFor} from "./rowPeople.js";
+import {cliOf, titleOf} from "../domain/resourceNouns.js";
 import InspectorSections from "../windows/InspectorSections.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
 
@@ -27,50 +20,14 @@ const props = defineProps({read: {type: Function, required: true}, catalogue: {t
 
 const opened = computed(() => route.value.open);
 const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
-const row = ref(null);
-const creator = ref("");
-const owner = ref("");
-const failure = ref("");
 const fullyOpen = ref(false);
-let reading = 0;
 
-const declared = computed(() => DECLARED_NOUNS.has(noun.value));
-const LONG_NOUNS = new Set(["plan"]);
-const DOCUMENT_NOUNS = new Set(["doc", "report"]);
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", ...DOCUMENT_NOUNS]);
-const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
-const wide = computed(() => LONG_NOUNS.has(noun.value));
-const isDocument = computed(() => DOCUMENT_NOUNS.has(noun.value));
-const title = computed(() => titleOf(noun.value, row.value, opened.value?.id));
-const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(noun.value) ? row.value?.text : "") || "");
-const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
-const fields = computed(() => fieldsOf(row.value, text.value, creator.value, owner.value));
-
-async function load() {
-    const open = opened.value;
-    const turn = ++reading;
-    row.value = null;
-    creator.value = "";
-    owner.value = "";
-    failure.value = "";
-    if (!open || OWN_INSPECTORS.has(cliOf(open.table)) || DECLARED_NOUNS.has(cliOf(open.table))) return;
-    const name = cliOf(open.table);
-    const answer = await props.read([name, "show", String(open.id)]);
-    if (turn !== reading) return;
-    failure.value = answer.ok ? "" : answer.error;
-    row.value = answer.ok ? answer.value : null;
-    if (row.value?.creator_id) creator.value = await named(turn, creatorFor(props.read, row.value.creator_id));
-    if (row.value?.agent_id) owner.value = await named(turn, ownerFor(props.read, row.value));
-    else if (row.value) owner.value = ownerNameOf(row.value, null);
-}
-
-// a name read for the row, dropped when another row has opened since
-const named = async (turn, reading_) => {
-    const name = await reading_;
-    return turn === reading ? name : "";
-};
-
-watch(() => `${opened.value?.table}:${opened.value?.id}`, load, {immediate: true});
+// every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", "doc", "report"]);
+const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
+const wide = computed(() => noun.value === "plan");
+const isDocument = computed(() => noun.value === "doc" || noun.value === "report");
+const title = computed(() => titleOf(noun.value, null, opened.value?.id));
 
 const close = () => opening([]);
 // focus moves into the panel when it opens and back to what opened it when it closes; Escape closes an open action form first, then the top row
@@ -85,7 +42,7 @@ watch(() => Boolean(opened.value), async (now) => {
     }
     opener?.focus?.();
     opener = null;
-});
+}, {immediate: true});
 const closeOnEscape = (event) => event.key === "Escape" && opened.value && !document.querySelector('[role="dialog"][aria-modal="true"]') && unpeek();
 window.addEventListener("keydown", closeOnEscape);
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
@@ -97,6 +54,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             <div v-if="opened" :class="['veil', {fades: noun === 'test-queue'}]" @click.self="close">
                 <InspectorPanel
                     v-if="declared"
+                    ref="panel"
                     :noun="noun"
                     :id="opened.id"
                     :table="opened.table"
@@ -182,45 +140,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 @close="close"
                                 @back="unpeek"
                             />
-                        </template>
-                        <template #default>
-                            <header class="head">
-                                <template v-if="route.stack.length > 1">
-                                    <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">
-                                        ←
-                                    </button>
-                                </template>
-                                <ResourceHeading
-                                    :label="headingOf(noun, row, opened.id)"
-                                    :title="row?.title || row?.name"
-                                    :abstract="row?.abstract"
-                                />
-                                <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">
-                                    ×
-                                </button>
-                            </header>
-                            <InspectorActions>
-                                <RowMoves inline :noun="noun" :id="opened.id" :row="row" :read="read" @done="load" />
-                                <ButtonSlot :name="`row.${noun}`" :row="{...row, id: opened.id, noun}" :environment="environment" :read-only="readOnly" @done="load" />
-                            </InspectorActions>
-                            <div class="body">
-                                <template v-if="failure">
-                                    <p class="failure" role="alert" data-resource-failure>{{ failure }}</p>
-                                </template>
-                                <template v-else-if="!row">
-                                    <Skeleton />
-                                </template>
-                                <template v-else>
-                                    <template v-if="html">
-                                        <div class="md text" data-resource-text v-html="html" />
-                                    </template>
-                                    <template v-if="noun === 'memory'">
-                                        <MemoryFacts :id="opened.id" :read="read" />
-                                    </template>
-                                    <ResourceFields :fields="fields" @peek="peek($event.table, $event.id)" />
-                                    <InspectorSections :slot-name="`inspector.${noun}`" :row="{...row, id: opened.id}" />
-                                </template>
-                            </div>
                         </template>
                     </SwitchCase>
                 </aside>

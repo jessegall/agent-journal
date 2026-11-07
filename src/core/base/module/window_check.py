@@ -54,7 +54,15 @@ class WindowCheck:
             for window in map(extensions.extend, module.windows):
                 problems += window.problems(module.name, module.web_folder(), provided)
                 problems += inspector_slots.problems(module, window.name, window.slots)
+        problems += self.slotless_section_problems(modules)
         return (*problems, *self.suite_section_problems(modules), *self.button_problems(modules, shipped))
+
+    @staticmethod
+    def slotless_section_problems(modules: Sequence[type[Module]]) -> list[str]:
+        """A section with no slot is drawn only where an inspector names it as a component."""
+        named = {component.window for module in modules for inspector in module.inspectors for component in inspector.components}
+        return [f"{window.name} is a section and names no slot" for module in modules for window in module.windows
+                if window.place is WindowPlace.SECTION and not window.slots and window.name not in named]
 
     @staticmethod
     def suite_section_problems(modules: Sequence[type[Module]]) -> list[str]:

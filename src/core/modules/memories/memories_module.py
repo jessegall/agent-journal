@@ -68,6 +68,8 @@ from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
 from core.modules.memories.support.skeletons import MEMORIES_MEMORIES_SKELETON
+from core.modules.memories.support.memory_inspector import MEMORY_INSPECTOR
+from core.base.viewer.skeleton_part import SkeletonPart
 
 
 class MemoriesModule(Module):
@@ -103,5 +105,9 @@ class MemoriesModule(Module):
         WindowKey("working", "memory agents", arguments=["environment", "access", "name", "limit"], switches=["working"], events=["agent.*", "memory.*"], loading=KeyLoading.REQUESTED),
         WindowKey("ended", "memory agents", arguments=["environment", "access", "name", "limit"], switches=["ended"], events=["agent.*", "memory.*"], loading=KeyLoading.REQUESTED),
         WindowKey("selected", "agent show {id}", events=["agent.*"], loading=KeyLoading.REQUESTED),
-    ], runs=["memory make"], events=["memory.*", "agent.*"])]
+    ], runs=["memory make"], events=["memory.*", "agent.*"]),
+               WindowDeclaration("memories.memory-facts", "Keywords", "memory-facts.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.FILED, skeleton=[SkeletonPart.line()],
+                                 reads=["memory-keyword list"], runs=["memory-keyword make", "memory-keyword delete"], events=["memory_keyword.*"],
+                                 keys=[WindowKey("keywords.*", "memory-keyword list --memory {id}", events=["memory_keyword.*"], loading=KeyLoading.REQUESTED)])]
+    inspectors = [MEMORY_INSPECTOR]
     seeders = [MemoriesSeeder]

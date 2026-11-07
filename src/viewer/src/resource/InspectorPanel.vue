@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import Skeleton from "../kit/Skeleton.vue";
 import {inspectorWidth} from "../domain/inspectorWidths.js";
 import Inspector from "./Inspector.vue";
@@ -19,10 +19,14 @@ const props = defineProps({
 });
 const emit = defineEmits(["close", "back", "open"]);
 const listing = computed(() => props.catalogue.inspector(props.noun));
+const root = ref(null);
+defineExpose({focus: () => root.value?.focus()});
 </script>
 
 <template>
     <aside
+        ref="root"
+        tabindex="-1"
         :class="['panel', 'declared', {opening}]"
         :style="{'--inspector-width': inspectorWidth(listing?.width)}"
         role="dialog"

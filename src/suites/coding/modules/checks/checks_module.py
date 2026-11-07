@@ -54,6 +54,7 @@ from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
 from suites.coding.modules.checks.support.check_library_share import CheckLibraryShare
 from suites.coding.modules.checks.support.skeletons import CHECKS_CHECKS_SKELETON
+from suites.coding.modules.checks.support.check_inspector import CHECK_INSPECTOR
 
 BUILT = ["make", "edit", "show", "list", "delete"]
 
@@ -72,6 +73,7 @@ class ChecksModule(Module):
     skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
     library_shares = [CheckLibraryShare]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
+    inspectors = [CHECK_INSPECTOR]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [OpenCheckHiddenIndexMigration, CheckTaskWaitIndexMigration, OpenCheckResultIndexMigration, ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration, OpenTaskWaitIndexMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StartCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
