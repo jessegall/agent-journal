@@ -131,6 +131,9 @@ class ServerStory:
         answer = request_answer(self.socket_path, "POST", "/viewer/key", body)
         assert answer.status == status and text in answer.text, answer
 
+    def cookie_name(self, base: str) -> str:
+        return self.context.viewer.login.cookie_name(base)
+
     def viewer_port(self) -> int:
         answer = request_answer(self.socket_path, "GET", "/health").json()
         assert isinstance(answer, dict) and isinstance(answer["viewer_port"], int), answer

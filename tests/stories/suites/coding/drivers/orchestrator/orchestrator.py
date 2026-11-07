@@ -18,14 +18,16 @@ def test_a_main_agent_with_auto_off_that_stops_with_open_tasks_is_told_they_wait
     story.expect_success(lines.TASK_DETAILS, "state: open")
 
 
-def test_a_main_agent_with_auto_off_starts_no_task_of_its_own(new_story):
+def test_a_main_agent_that_writes_no_code_starts_no_task_of_its_own(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.expect_refusal(lines.TASK_START, "refused by coding.main-starts-no-task-without-auto: task 1 goes to a worker", actor=story.agent)
+    story.run("setting set journal.suites.coding.main-writes-code off --environment main")
+    story.expect_refusal(lines.TASK_START, "refused by coding.main-starts-no-task-without-code: task 1 goes to a worker", actor=story.agent)
 
 
-def test_the_agent_starts_its_task_again_once_auto_mode_is_on(new_story):
+def test_the_agent_starts_its_task_again_once_it_may_write_code(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.run("setting set journal.suites.coding.auto-mode on --environment main")
+    story.run("setting set journal.suites.coding.main-writes-code off --environment main")
+    story.run("setting set journal.suites.coding.main-writes-code on --environment main")
     story.expect_success(lines.TASK_START, "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
 
 

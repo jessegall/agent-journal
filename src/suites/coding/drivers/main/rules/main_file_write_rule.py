@@ -9,7 +9,7 @@ from core.base.listener.event_rows import EventRows
 from core.modules.environments.models.environment import Environment
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from suites.coding.support.coding_main_options import CodingMainOptions
-from suites.coding.support.coding_nudges import AUTO_OFF_FILE_WRITE
+from suites.coding.support.coding_nudges import MAIN_WRITES_NO_CODE
 
 JOURNAL_FOLDER = ".journal"
 ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.TEST_RUN, CommandCategory.CHECK,
@@ -17,10 +17,10 @@ ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, C
 
 
 class MainFileWriteRule(DriverRule):
-    """While auto mode is off, a main agent writes no file of the project checkout, by a file tool or a shell line; files
+    """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a shell line; files
     outside the checkout, in the .journal folder (agent memory and worker worktrees) and journal commands stay allowed."""
 
-    name = "coding.main-writes-no-file-without-auto"
+    name = "coding.main-writes-no-code"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
@@ -30,16 +30,16 @@ class MainFileWriteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or self.options.options().auto:
+        if tool is None or self.options.options().writes_code:
             return RuleAnswer.allowed()
         if tool.category.writes_files:
             folder = Path(self.rows.required(Environment, hook.environment_id).folder).resolve()
-            return RuleAnswer.refused(AUTO_OFF_FILE_WRITE.nudge()) if any(self.is_project_file(folder, file) for file in tool.files) else RuleAnswer.allowed()
+            return RuleAnswer.refused(MAIN_WRITES_NO_CODE.nudge()) if any(self.is_project_file(folder, file) for file in tool.files) else RuleAnswer.allowed()
         shell = tool.shell
         if shell is None:
             return RuleAnswer.allowed()
         writes = shell.parse_error or not shell.parts or shell.has_uncertain_part or shell.has_non_journal_file_writes
-        return RuleAnswer.refused(AUTO_OFF_FILE_WRITE.nudge()) if writes or shell.disallowed_part(ALLOWED_COMMANDS) is not None else RuleAnswer.allowed()
+        return RuleAnswer.refused(MAIN_WRITES_NO_CODE.nudge()) if writes or shell.disallowed_part(ALLOWED_COMMANDS) is not None else RuleAnswer.allowed()
 
     @staticmethod
     def is_project_file(folder: Path, file: str) -> bool:

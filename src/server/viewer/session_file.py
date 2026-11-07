@@ -1,4 +1,5 @@
 from core.base.type_guards import is_mapping
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -16,6 +17,10 @@ class SessionFile:
 
     def __init__(self, path: Path) -> None:
         self.path = path
+
+    @property
+    def cookie_suffix(self) -> str:
+        return hashlib.sha256(str(self.path.resolve()).encode()).hexdigest()[:12]
 
     def load(self) -> dict[str, ViewerSession]:
         if not self.path.is_file():

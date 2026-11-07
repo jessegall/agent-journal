@@ -12,11 +12,11 @@ MERGE_COMMANDS = "journal.suites.coding.workers.merge-commands"
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 
 
-def test_old_builder_auto_off_keeps_value_and_explains_refused_edits(new_story):
+def test_old_builder_auto_off_keeps_its_value_and_still_lets_the_main_agent_edit(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(f"setting set {AUTO} off --environment main", actor=story.user)
     story.expect_text(f"setting show {AUTO} --environment main", "value: False", actor=story.user)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.edit(PROJECT_FILE), "auto mode is off")
+    story.expect_hook_allowed(MAIN_SESSION, HookSamples.edit(PROJECT_FILE))
 
 
 def test_s50_a_fresh_environment_reads_auto_from_its_declared_default(new_story):

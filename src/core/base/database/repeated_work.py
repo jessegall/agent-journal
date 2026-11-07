@@ -72,7 +72,8 @@ ALLOWED_FILE_READS = {
 
 class RepeatedWork(PointTally):
     """Counts database work and rejects repeated reads and commands within each request: it raises at the first
-    repeat and again at the end of the request if anything was found."""
+    repeat and again at the end of the request if anything was found. A read is filed under the database's mark
+    taken before it runs, as EventRows takes its generation, so a commit landing during a read is never missed."""
 
     def __init__(self, database: Database | None = None, read_text_limit: int = READ_TEXT_LIMIT_REPEATS) -> None:
         super().__init__()
@@ -88,6 +89,7 @@ class RepeatedWork(PointTally):
         self.file_reads: Counter[str] = Counter()
         self.file_versions: dict[str, int] = {}
         self.read_mark: tuple[int, int, int] | None = None
+        self.started_mark: tuple[int, int, int] | None = None
 
     @contextmanager
     def request(self) -> Generator[None]:
@@ -128,8 +130,11 @@ class RepeatedWork(PointTally):
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(self.found("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
 
+    def before_read(self) -> None:
+        self.started_mark = self.database.content_mark() if self.database is not None else None
+
     def reset_stale_reads(self) -> None:
-        change_mark = self.database.content_mark() if self.database is not None else None
+        change_mark = self.started_mark
         if change_mark != self.read_mark:
             self.reads, self.read_mark = Counter(), change_mark
             self.read_origins.clear()

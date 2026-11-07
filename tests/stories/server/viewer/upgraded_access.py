@@ -25,5 +25,5 @@ def test_after_the_upgrade_a_version_4_share_link_opens_as_the_second_person_wit
     cookie = headers.get("Set-Cookie", "")
     expect_value(status, 200)
     expect_value_with(body, '<div id="app">')
-    expect_startswith_listed(cookie, "journal_share=")
+    expect_startswith_listed(cookie, story.cookie_name("journal_share") + "=")
     story.expect_viewer_status("/api/session", 200, cookie.split(";", 1)[0], text='"type": "share"')

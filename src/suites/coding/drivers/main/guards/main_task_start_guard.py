@@ -9,14 +9,14 @@ from suites.coding.support.main_caller import MainCaller
 
 
 class MainTaskStartGuard(Guard[Moved[Task]]):
-    """A main agent starts no task itself while auto mode is off; the task goes to a worker."""
+    """A main agent that writes no code starts no task itself; the task goes to a worker."""
 
-    name = "coding.main-starts-no-task-without-auto"
+    name = "coding.main-starts-no-task-without-code"
     moves = tuple([TaskLifecycle.start])
 
     def __init__(self, caller: MainCaller, options: CodingMainOptions) -> None:
         self.caller, self.options = caller, options
 
     def check(self, event: Moved[Task], context: Context) -> None:
-        if self.caller.is_main(context) and not self.options.options().auto:
-            raise Refusal(f"task {event.row.id} goes to a worker", "auto mode is off, so the main agent writes no code; leave it open for a worker")
+        if self.caller.is_main(context) and not self.options.options().writes_code:
+            raise Refusal(f"task {event.row.id} goes to a worker", "the main agent writes no code here; leave it open for a worker")

@@ -18,7 +18,7 @@ def test_s46_the_orchestrator_opening_forbids_code_and_keeps_going():
 
 
 def test_s46_a_custom_opening_follows_each_control_and_never_names_a_work_preference():
-    custom = MainOptions(auto=False, sends_workers=False, keeps_going=False, merger=True, helpers=False, designer=True, may_merge=False)
+    custom = MainOptions(auto=False, sends_workers=False, keeps_going=False, merger=True, helpers=False, designer=True, may_merge=False, writes_code=False)
     lines = MainOpening(custom).lines()
     expect_value((CODE_FORBIDDEN in lines, NO_WORKERS in lines, any("preference" in line for line in lines)), (True, True, False))
 

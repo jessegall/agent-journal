@@ -45,13 +45,13 @@ def test_a_locked_link_asks_for_its_password_and_a_guessed_cookie_opens_nothing(
     status, headers, _ = viewer_answer(story.viewer_port(), made["link"], "", "")
     expect_value(status, 401)
     expect_www_authenticate_headers_with(headers, "Basic")
-    expect_viewer_answer_3(story, "/api/session", f"journal_share={made['token']}", "", 401)
+    expect_viewer_answer_3(story, "/api/session", f"{story.cookie_name("journal_share")}={made['token']}", "", 401)
     expect_with_password(story, made, "wrong", 401)
     status, headers = with_password(story, made["link"], "open-sesame")
     expect_value(status, 200)
-    expect_startswith_cookie_headers(headers, "journal_share=")
+    expect_startswith_cookie_headers(headers, story.cookie_name("journal_share") + "=")
     expect_viewer_answer_4(story, "/api/session", headers, ";", "", 200)
-    expect_viewer_answer_3(story, "/api/session", f"journal_share={made['token']}", "", 401)
+    expect_viewer_answer_3(story, "/api/session", f"{story.cookie_name("journal_share")}={made['token']}", "", 401)
     expect_viewer_answer(story, made, "", "", 401)
 
 
@@ -74,7 +74,7 @@ def test_each_opening_counts_as_a_view(plan_server):
 def test_a_link_that_never_ends_opens_and_says_so(plan_server):
     story = plan_server
     made = made_link(story, "--ends never")
-    cookie = f"journal_share={made['token']}"
+    cookie = f"{story.cookie_name("journal_share")}={made['token']}"
     expect_viewer_answer(story, made, "", "", 200)
     session = json.loads(viewer_answer(story.viewer_port(), "/api/session", cookie, "")[2])
     expect_row(session["share"], ends_at=None)
@@ -84,7 +84,7 @@ def test_a_link_that_never_ends_opens_and_says_so(plan_server):
 def test_a_visitor_comments_through_a_link_that_takes_them(plan_server):
     story = plan_server
     made = made_link(story, "--comments")
-    cookie = f"journal_share={made['token']}"
+    cookie = f"{story.cookie_name("journal_share")}={made['token']}"
     status, _, body = viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "", {"name": "--Bo", "text": "--Nice"})
     expect_value(status, 200)
     expect_visitor(body, "--Bo")
@@ -97,7 +97,7 @@ def test_a_visitor_comments_through_a_link_that_takes_them(plan_server):
 def test_a_link_without_comments_gives_no_way_in(plan_server):
     story = plan_server
     made = made_link(story)
-    cookie = f"journal_share={made['token']}"
+    cookie = f"{story.cookie_name("journal_share")}={made['token']}"
     expect_viewer_answer_3(story, "/api/share/comments", cookie, "", 403)
     expect_viewer_answer_2(story, "/api/share/comments", cookie, "", "name", "text", "Bo", "x", 403)
 
@@ -111,7 +111,7 @@ def test_a_shared_document_reads_to_its_visitor_and_no_other_does(plan_server):
     story.story.expect_text('doc make "Secret plans" --abstract "Not for visitors" --body "Hidden" --environment main', "doc 2: Secret plans", actor=user)
     second = 2
     made = json.loads(story.story.run(f"share make docs:{shared} --json", actor=user, environment_id=1).output_text)
-    cookie = f"journal_share={made['token']}"
+    cookie = f"{story.cookie_name("journal_share")}={made['token']}"
     expect_viewer_answer(story, made, "", "", 200)
     session = json.loads(viewer_answer(story.viewer_port(), "/api/session", cookie, "")[2])
     window = session["share"]["window"]["name"]
