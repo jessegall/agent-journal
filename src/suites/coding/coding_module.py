@@ -1,4 +1,5 @@
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
+from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsMigration
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_extension import WindowExtension
@@ -91,7 +92,7 @@ class CodingModule(Module):
     drivers = [BuilderDriver, OrchestratorDriver, MainDriver, HelperDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-work-modes", "Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration]
+    migrations = [FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]
