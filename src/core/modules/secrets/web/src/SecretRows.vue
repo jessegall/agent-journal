@@ -1,13 +1,14 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Dialog, EmptyState, Icon, removed, useRows} from "@journal/window-kit";
+import {Btn, Dialog, EmptyState, Icon, removed, useWindow} from "@journal/window-kit";
 import SecretCard from "./SecretCard.vue";
 import SecretDialog from "./SecretDialog.vue";
 import SecretNewDialog from "./SecretNewDialog.vue";
 
 // the Secrets page holds no field: what waits on the person is one button each, a saved secret is one card each, and all change happens in a centred dialog
-const {rows, failure, loaded, act} = useRows("secret list", ["secret.*"]);
-const {rows: deleted, load: loadDeleted} = useRows("secret list --deleted", ["secret.*"]);
+const window = useWindow();
+const {rows, data, failure, loaded, act} = window.props.secrets;
+const deleted = computed(() => data.value?.deleted ?? []);
 const openId = ref(0);
 const isMaking = ref(false);
 const removing = ref(null);
@@ -20,12 +21,10 @@ async function remove() {
     const row = removing.value;
     removing.value = null;
     await act(["secret", "delete", String(row.id)], removed(row.id));
-    loadDeleted();
 }
 
 async function restore(row) {
     await act(["secret", "restore", String(row.id)]);
-    loadDeleted();
 }
 </script>
 

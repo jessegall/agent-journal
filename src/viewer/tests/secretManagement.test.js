@@ -1,5 +1,9 @@
 import {afterEach, expect, test, vi} from "vitest";
-import {context, mounted, page, settle, typeInto as type} from "./support/windowContext.js";
+import {context as baseContext, mounted, settle, typeInto as type} from "./support/windowContext.js";
+
+const KEYS = {secrets: {line: "secret board", events: ["secret.*"]}};
+const context = (answers) => baseContext({"secret board": {ok: true, value: {rows: answers["secret list"].value.rows, deleted: answers["secret list --deleted"].value.rows}}}, null, KEYS);
+const page = (rows) => ({ok: true, value: {rows}});
 import SecretRows from "../../core/modules/secrets/web/src/SecretRows.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
