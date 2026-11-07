@@ -365,7 +365,7 @@ func (menu *boot) conversation() (bool, error) {
 	}
 	if menu.request.Program == ClaudeProgram {
 		home, _ := os.UserHomeDir()
-		conversations = ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, conversations)
+		conversations = OpenFirst(ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, conversations), conversations)
 	} else {
 		conversations = limited(conversations)
 	}
@@ -439,3 +439,18 @@ func (request Request) ArgumentsBesideSession() []string {
 
 // ResumeFlag is the flag a person names a conversation with on the command line.
 const ResumeFlag = "--resume"
+
+// OpenFirst keeps the journal's first conversation, the one of the main agent still open, at the top after the
+// transcripts are sorted by their last write, so Continue never lands on an older agent that merely ran later.
+func OpenFirst(titled, listed []Conversation) []Conversation {
+	if len(listed) == 0 {
+		return titled
+	}
+	for index, conversation := range titled {
+		if conversation.Session != listed[0].Session {
+			continue
+		}
+		return append([]Conversation{conversation}, append(append([]Conversation{}, titled[:index]...), titled[index+1:]...)...)
+	}
+	return titled
+}

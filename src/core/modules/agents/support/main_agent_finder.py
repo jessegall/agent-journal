@@ -19,7 +19,8 @@ class MainAgentFinder:
 
     @staticmethod
     def sessions(queries: Queries, program: str) -> tuple[Agent, ...]:
-        return tuple(queries.query(Agent).filter(role=AgentRole.MAIN, program=program).newest().all_rows())
+        rows = queries.query(Agent).filter(role=AgentRole.MAIN, program=program).newest().all_rows()
+        return tuple(sorted(rows, key=lambda agent: agent.ended_at is not None))
 
     @staticmethod
     def newest(queries: Queries) -> Agent | None:

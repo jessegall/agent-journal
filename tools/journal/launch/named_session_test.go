@@ -25,3 +25,11 @@ func TestNoNamedSessionLetsTheMenuAsk(t *testing.T) {
 		t.Fatalf("named %q", got)
 	}
 }
+
+func TestTheOpenMainAgentsConversationComesFirst(t *testing.T) {
+	listed := []Conversation{{Session: "today"}, {Session: "october"}}
+	titled := []Conversation{{Session: "october"}, {Session: "today"}}
+	if got := OpenFirst(titled, listed); got[0].Session != "today" || got[1].Session != "october" {
+		t.Fatalf("order %v", got)
+	}
+}
