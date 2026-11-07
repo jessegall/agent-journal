@@ -41,6 +41,6 @@ class McpModule(Module):
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
     subcommands = [AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand]
     windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, skeleton=MCP_INTEGRATIONS_SKELETON, search=WindowSearch(ServerSearcher, "Search the servers"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN,
-                                 reads=["mcp list", "mcp suggested", "mcp check"], keys=[WindowKey("installed", "mcp list", events=["mcp_server.*"]),
+                                 reads=["mcp list", "mcp suggested", "mcp check"], events=["mcp_server.*"], keys=[WindowKey("installed", "mcp list", events=["mcp_server.*"]),
                                                                                          WindowKey("suggested", "mcp suggested"),
                                                                                          WindowKey("check", "mcp check")], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

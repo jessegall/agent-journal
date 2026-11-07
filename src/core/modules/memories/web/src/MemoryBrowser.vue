@@ -13,7 +13,7 @@ const context = useWindow();
 const who = ref(MAIN);
 const picking = ref(false);
 const agent = ref(null);
-const counts = useCounts(props.environment);
+const counts = useCounts();
 const CHOICE_NAMES = {[MAIN]: "Main agent", [OTHERS]: "Other agents", [EVERYONE]: "Every agent"};
 const chosenName = computed(() => (isAgent(who.value) ? agent.value?.name ?? "" : CHOICE_NAMES[who.value]));
 const chosenCount = computed(() => (isAgent(who.value) ? "" : counts[who.value]));
@@ -21,9 +21,12 @@ const chosenCount = computed(() => (isAgent(who.value) ? "" : counts[who.value])
 async function readAgent() {
     if (!isAgent(who.value)) return void (agent.value = null);
     const id = agentIdOf(who.value);
-    const answer = await context.read(`agent show ${id}`);
+    context.state["selected.id"] = String(id);
+    await context.reload("selected");
     if (agentIdOf(who.value) !== id) return;
-    agent.value = answer.ok ? {id, role: answer.value.role, ended_at: answer.value.ended_at, name: answer.value.given_name || `${wordLabel(answer.value.role)} ${id}`} : null;
+    const selected = context.props.selected;
+    const value = selected.data.value;
+    agent.value = selected.failure.value ? null : {id, role: value.role, ended_at: value.ended_at, name: value.given_name || `${wordLabel(value.role)} ${id}`};
 }
 
 const pick = (chosen) => {
@@ -32,6 +35,7 @@ const pick = (chosen) => {
 };
 watch(who, readAgent, {immediate: true});
 context.follow(["agent.*"], coalesced(() => readAgent(), READ_RATES.openPanel));
+
 </script>
 
 <template>

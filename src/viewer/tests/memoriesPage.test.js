@@ -1,7 +1,6 @@
 import {expect, test} from "vitest";
-import {context, mounted, page, pickButton, settle, typeInto} from "./support/windowContext.js";
+import {agentsLine, context, memoryLine, mounted, namesLine, page, pickButton, settle, typeInto} from "./support/memoriesContext.js";
 import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
-import {agentsLine, memoryLine, namesLine} from "../../core/modules/memories/web/src/memoryScope.js";
 
 const ENVIRONMENTS = page([{id: 1, name: "main"}, {id: 2, name: "docs"}]);
 const MAIN_MEMORY = {id: 1, text: "Totals are in cents", weight: 5, state: "active", agent_id: null, environment_id: 1, task_id: 6700, reason: ""};
@@ -119,7 +118,7 @@ test("choosing one agent reads its memories alone and its name and role head the
     const element = await mounted(MemoriesPage, window_);
     await settle();
     await clickByText(element, "[data-who]", "Worker 646");
-    expect(readsWith(window_, "memory list --agent 646 --environment main").length).toBeGreaterThan(0);
+    expect(readsWith(window_, "memory page --agent 646 --environment main").length).toBeGreaterThan(0);
     expect(rowTexts(element)).toEqual(["My worktree is clean"]);
     expect(element.querySelector("[data-pane-title]").textContent).toContain("Worker 646");
     expect(element.querySelector("[data-ended-note]")).toBeNull();
@@ -141,7 +140,7 @@ test("the workers and helpers are listed under the agent each memory belongs to,
     await settle();
     await clickByText(element, "[data-who]", "Other agents");
     expect(element.querySelector("[data-group-link]").textContent).toBe("Worker 646");
-    expect(readsWith(window_, "memory agents --agents")).toEqual(["memory agents --agents 646 --limit 1"]);
+    expect(readsWith(window_, "memory agents --agents")).toEqual([]);
     await clickByText(element, "[data-group-link]", "Worker 646");
     expect(element.querySelector("[data-pane-title]").textContent).toContain("Worker 646");
 });
@@ -161,15 +160,15 @@ test("a search, an order and the removed memories are asked of the server", asyn
     document.body.append(element);
     typeInto(element.querySelector("[data-memory-pane] [data-search-input]"), "cents");
     await settle();
-    expect(readsWith(window_, "memory list --main-agent --environment main --state active --search cents --order newest --limit 20")).toHaveLength(1);
+    expect(readsWith(window_, "memory page --main-agent --environment main --state active --search cents --order newest --limit 20")).toHaveLength(1);
     element.querySelector("[data-search-menu]").click();
     await settle();
     document.querySelector("[data-memory-order='weight']").click();
     await settle();
-    expect(readsWith(window_, "memory list --main-agent --environment main --state active --search cents --order weight").length).toBeGreaterThan(0);
+    expect(readsWith(window_, "memory page --main-agent --environment main --state active --search cents --order weight").length).toBeGreaterThan(0);
     document.querySelector("[data-memory-state='removed']").click();
     await settle();
-    expect(readsWith(window_, "memory list --main-agent --environment main --removed --state removed --search cents --order weight").length).toBeGreaterThan(0);
+    expect(readsWith(window_, "memory page --main-agent --environment main --removed --state removed --search cents --order weight").length).toBeGreaterThan(0);
 });
 
 test("a long list loads the next twenty behind the rows", async () => {
@@ -178,7 +177,7 @@ test("a long list loads the next twenty behind the rows", async () => {
     await settle();
     element.querySelector("[data-memories-more]").click();
     await settle();
-    expect(readsWith(window_, "memory list --main-agent --environment main --state active --order newest --limit 40")).toHaveLength(1);
+    expect(readsWith(window_, "memory page --main-agent --environment main --state active --order newest --limit 40")).toHaveLength(1);
 });
 
 test("a search that finds nothing offers to search every agent", async () => {
