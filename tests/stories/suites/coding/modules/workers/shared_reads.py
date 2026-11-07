@@ -62,6 +62,21 @@ def test_agent_cards_share_pending_work_through_the_viewer_route(pending_workers
                       len(reads) <= 1, not pending_viewer.server.context.reported_findings.keys)
 
 
+def test_agent_cards_read_pending_work_once_when_the_cache_changes(pending_workers, pending_viewer, monkeypatch):
+    story, workers = pending_workers
+    reads = []
+    original_read = WorkerAgentWork.read
+
+    def read_without_cache(work):
+        reads.append(work)
+        return original_read(work)
+
+    monkeypatch.setattr(WorkerAgentWork, "pending", read_without_cache)
+    cards = pending_viewer.value("agents.agents", ["agent", "cards", "--show", "running"])
+    story.expect_rows({row["id"] for row in cards["rows"]} == {worker.id for worker in workers},
+                      len(reads) == 1, not pending_viewer.server.context.reported_findings.keys)
+
+
 def test_an_approved_plan_stop_shares_several_pending_workers(pending_workers, pending_viewer):
     story, workers = pending_workers
     story.expect_success(f"setting set journal.suites.coding.workers.worker-kept-limit {len(workers)} --environment main")

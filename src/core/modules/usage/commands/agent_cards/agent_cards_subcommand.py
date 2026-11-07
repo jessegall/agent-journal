@@ -4,7 +4,6 @@ from argparse import ArgumentParser, Namespace
 import json
 
 from core.base.profile.agent_profile import AgentProfile
-from core.base.agent_work import AgentWork
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
@@ -38,8 +37,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry, work: AgentWork) -> None:
-        self.work = work
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry) -> None:
         self.queries, self.activity, self.profiles = queries, activity, profiles
         self.providers, self.folders = providers, folders
         self.usage = usage
@@ -72,6 +70,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
                 return AgentFilterOptions((), ())
             upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
             return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
+        activity = self.activity.current()
         rows = self.queries.query(AgentListing)
         if arguments.kept:
             rows = rows.matching(IsNull("retired_at"))
@@ -85,9 +84,9 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             rows = rows.matching(Among("program", arguments.program))
         match arguments.show:
             case AgentListState.RUNNING:
-                rows = rows.matching(self.activity)
+                rows = rows.matching(activity)
             case AgentListState.IDLE:
-                rows = rows.matching(AvailableAgents(self.activity))
+                rows = rows.matching(AvailableAgents(activity))
             case AgentListState.RETIRED:
                 rows = rows.matching(EndedAgents())
             case _:
@@ -96,13 +95,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             rows = rows.matching(ContainsEvery(("session", "program", "role", "program_model", "profile", "given_name", "job_profile", "job_description"), arguments.search.split()))
         page = rows.ordered("created_at", "id").page(arguments.page, arguments.limit)
         selected = self.queries.query(AgentListing).matching(Among("id", tuple(row.id for row in page.rows)))
-        running = {row.id for row in selected.matching(self.activity).all_rows()}
-        idle = {row.id for row in selected.matching(AvailableAgents(self.activity)).all_rows()}
+        running = {row.id for row in selected.matching(activity).all_rows()}
+        idle = {row.id for row in selected.matching(AvailableAgents(activity)).all_rows()}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))
         policy = self.usage.suites.agent_policy()
-        pending = self.work.pending()
+        pending = activity.pending
         job_commands = {entry.key: entry.job_command for entry in self.registry.agent_types}
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),

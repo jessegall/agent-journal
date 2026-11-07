@@ -1,5 +1,6 @@
 from core.base.database.statement import Statement
 from core.base.agent_work import AgentWork
+from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
 
 
 class AgentActivity:
@@ -9,12 +10,10 @@ class AgentActivity:
         self.work = work
 
     def statement(self) -> Statement:
-        pending = tuple(self.work.pending())
-        if not pending:
-            return Statement("ended_at IS NULL AND retired_at IS NULL")
-        placeholders = ", ".join("?" for _ in pending)
-        return Statement(f"(ended_at IS NULL OR id IN ({placeholders})) AND retired_at IS NULL", pending)
+        return self.current().statement()
 
     def idle(self) -> Statement:
-        active = self.statement()
-        return Statement(f"(NOT ({active.sql}) AND retired_at IS NULL)", active.parameters)
+        return self.current().idle()
+
+    def current(self) -> AgentActivityCondition:
+        return AgentActivityCondition(self.work.pending())
