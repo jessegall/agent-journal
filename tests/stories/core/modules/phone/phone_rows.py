@@ -13,7 +13,7 @@ def paired_story(new_story):
 
 def test_an_agent_cannot_unpair_a_persons_phone(new_story):
     story = paired_story(new_story)
-    story.expect_refusal("phone unpair 1", "only the phone's person unpairs it", actor=story.agent)
+    story.expect_refusal("phone unpair 1", "A person was asked in the dock", actor=story.agent)
 
 
 def test_the_person_unpairs_their_own_phone(new_story):
@@ -29,7 +29,7 @@ def test_no_one_edits_a_phone_or_a_code(new_story):
 
 def test_an_agent_cannot_make_a_phone_code(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal("phone pair", "only a person pairs a phone", actor=story.agent)
+    story.expect_refusal("phone pair", "A person was asked in the dock", actor=story.agent)
 
 
 def test_the_event_log_keeps_no_digest(new_story):

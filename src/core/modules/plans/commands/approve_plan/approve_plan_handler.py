@@ -4,6 +4,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.base.repository.repository import Repository
 from core.modules.documents.commands.comment_text.comment_text import CommentText
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
@@ -21,7 +22,7 @@ class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
 
     def handle(self, command: ApprovePlan, context: Context) -> Plan:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person approves a plan", "mark it ready and tell the user")
+            raise UserApproval(f"Approve plan {command.row_id}?")
         plan = self.queries.query(Plan).find(command.row_id)
         if plan.environment_id != context.environment_id:
             raise Refusal(f"plan {plan.id} belongs to another environment", "approve it there")

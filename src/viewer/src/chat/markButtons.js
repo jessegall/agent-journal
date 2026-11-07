@@ -1,6 +1,7 @@
 import {CHAT_WINDOW} from "../windows/chatOptions.js";
 import {lineResult, lineWords} from "../windows/windowContext.js";
 import {allowed} from "@journal/window-kit";
+import {showActionOutput} from "../kit/actionOutput.js";
 
 export {CHAT_WINDOW};
 
@@ -12,7 +13,11 @@ const buttonLine = (button, row, values = {}) => lineWords(button.runs).map((wor
 export async function pressButton(button, row, environment, values = {}) {
     try {
         if (!(await allowed(button.module, environment))) return {ok: false, error: ""};
-        return lineResult(CHAT_WINDOW, buttonLine(button, row, values), environment);
+        const answer = await lineResult(CHAT_WINDOW, buttonLine(button, row, values), environment);
+        if (answer.ok && typeof answer.value?.viewer_output === "string" && answer.value.viewer_output.trim()) {
+            showActionOutput(answer.value.viewer_output);
+        }
+        return answer;
     } catch (error) {
         return {ok: false, error: error.message};
     }

@@ -56,7 +56,7 @@ def test_an_update_changes_the_title_and_how_it_is_used(new_story):
 
 def test_only_the_user_fills_a_value_and_the_agent_is_told_how_to_ask(new_story):
     story = made_story(new_story)
-    story.expect_refusal(f"secret fill 1 key {VALUE}", "only the user fills a secret, on the Secrets window: journal secret request asks them", actor=story.agent)
+    story.expect_refusal(f"secret fill 1 key {VALUE}", "credential values are entered by a person in the Secrets window", actor=story.agent)
 
 
 def test_a_filled_value_lives_only_in_the_values_file_outside_the_project_readable_by_its_user_alone(new_story, private_folder):
@@ -104,7 +104,7 @@ def test_the_list_names_each_secret_what_it_waits_for_and_the_programs_it_goes_t
 
 def test_the_agent_proposes_a_program_and_the_user_allows_it(new_story):
     story = made_story(new_story)
-    story.expect_success("secret propose 1 curl", "curl proposed for secret 1: the user allows it on the Secrets window", actor=story.agent)
+    story.expect_success("secret propose 1 curl", "curl proposed for secret 1: a person was asked in the dock", actor=story.agent)
     story.expect_success("secret propose 1 curl", "curl is proposed for secret 1 already", actor=story.agent)
     story.expect_text("secret show 1", "given to: no program yet; proposed: curl", actor=story.agent)
     story.expect_success("secret allow 1 curl", "secret 1 may go to curl", actor=story.user)
@@ -121,7 +121,7 @@ def test_a_wrapper_or_a_program_named_by_its_path_is_never_proposed(new_story):
 
 def test_only_the_user_allows_a_program(new_story):
     story = made_story(new_story)
-    story.expect_refusal("secret allow 1 curl", "only the user allows a program for a secret: journal secret propose 1 curl asks them", actor=story.agent)
+    story.expect_refusal("secret allow 1 curl", "A person was asked in the dock", actor=story.agent)
 
 
 def test_a_deleted_secret_leaves_the_list_and_comes_back_with_its_value_on_a_restore(new_story, private_folder):

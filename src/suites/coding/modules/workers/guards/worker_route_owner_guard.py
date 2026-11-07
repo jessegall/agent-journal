@@ -1,10 +1,10 @@
+from core.base.user_approval import UserApproval
 from core.base.actor_type import ActorType
 from core.base.change.deleted import Deleted
 from core.base.change.updated import Updated
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
 from core.modules.actors.models.actor_record import ActorRecord
 from suites.coding.modules.workers.commands.delete_worker_route.delete_worker_route import DeleteWorkerRoute
 from suites.coding.modules.workers.models.worker_route import WorkerRoute
@@ -14,6 +14,7 @@ class WorkerRouteOwnerGuard(Guard[Updated[WorkerRoute] | Deleted[WorkerRoute]]):
     """A person owns the routes they made; deleting another route may close a gap."""
 
     name = "workers.route-owner"
+    is_safety = True
 
     def __init__(self, rows: EventRows) -> None:
         self.rows = rows
@@ -25,4 +26,4 @@ class WorkerRouteOwnerGuard(Guard[Updated[WorkerRoute] | Deleted[WorkerRoute]]):
             return
         owner = self.rows.required(ActorRecord, event.row.creator_id)
         if owner.type is ActorType.USER:
-            raise Refusal(f"route {event.row.id} was made by a person", "only a person changes or deletes it")
+            raise UserApproval(f"Change task route {event.row.id}?")

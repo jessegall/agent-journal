@@ -16,7 +16,7 @@ class LeaveLibraryCopyHandler(Handler[LeaveLibraryCopy, LibraryCopy]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: LeaveLibraryCopy, context: Context) -> LibraryCopy:
-        LibraryPerson.require(context, "an agent cannot stop following for the team", "ask the user to stop following")
+        LibraryPerson.require(context, "an agent cannot stop following for the team")
         copy = self.queries.query(LibraryCopy).find(command.copy_id)
         self.repository.delete(copy, context)
         return copy

@@ -1,4 +1,5 @@
 from core.base.actor import CORE_ACTOR_ID
+from collections.abc import Sequence
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.database.database import Database
@@ -28,8 +29,13 @@ class ActorTable:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
 
     def module_actor(self, module: str, timestamp: str) -> int:
-        self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
-        return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]
+        return self.module_actors(tuple([module]), timestamp)[module]
+
+    def module_actors(self, modules: Sequence[str], timestamp: str) -> dict[str, int]:
+        for module in modules:
+            self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
+        actors = self.kept.read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value], name="base.module_actors")
+        return {module: actors[module] for module in modules}
 
     def module_actor_id(self, module: str) -> int:
         return self.kept.read("actors", self.module_actor_ids, "type = ?", [ActorType.MODULE.value],

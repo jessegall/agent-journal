@@ -4,6 +4,7 @@ from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.base.repository.repository import Repository
 from core.modules.documents.commands.remove_link.remove_link import RemoveLink
 from core.modules.documents.models.enums.link_type import LinkType
@@ -55,4 +56,4 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
 
     def authorize(self, creator_id: int, context: Context) -> None:
         if context.actor.type is ActorType.AGENT and context.actor.id != creator_id:
-            raise Refusal("only the creating agent or a person can correct this attribution")
+            raise UserApproval("Correct another agent's request attribution?")

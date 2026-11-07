@@ -7,6 +7,7 @@ from core.modules.viewer.commands.support.window_allowances import WindowAllowan
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
 from core.modules.viewer.commands.trust_window.trust_window import TrustWindow
+from core.modules.agents.support.person_check import PersonCheck
 
 
 class TrustWindowHandler(Handler[TrustWindow, WindowPermission]):
@@ -25,6 +26,7 @@ class TrustWindowHandler(Handler[TrustWindow, WindowPermission]):
         fingerprint = self.registry.module_fingerprints.get(command.module)
         if fingerprint is None:
             raise Refusal(f"no installed module is named {command.module}", "journal module list shows them")
+        PersonCheck.require(context, f"Allow the page code from {command.module} to run?")
         trust = self.allowances.permission(context.actor.id, command.module, WindowPermissionType.COMPONENT)
         return self.repository.merge(trust, WindowPermission(person_id=context.actor.id, creator_id=context.actor.id,
                                                                  subject=command.module, type=WindowPermissionType.COMPONENT, fingerprint=fingerprint), context)

@@ -53,7 +53,7 @@ class WindowLines:
             raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a person gives rights and changes settings")
         parsed = self.parsed(window_name, argv)
         if person.type is ActorType.AGENT and not parsed.is_read:
-            raise WindowRefusal(f"the main agent's viewer session only reads: {parsed.line} is for a person to run")
+            raise WindowRefusal("the main agent's viewer session only reads")
         skips_guard = not parsed.is_read and bool(self.flags.skipped_guards(parsed.arguments))
         if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment):
             raise WindowRefusal(f"{window_name} may not skip a guard or name another environment")

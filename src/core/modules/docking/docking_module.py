@@ -20,6 +20,7 @@ from core.modules.docking.guards.dock_title_guard import DockTitleGuard
 from core.modules.docking.guards.dock_type_guard import DockTypeGuard
 from core.modules.docking.guards.one_item_per_row_guard import OneItemPerRowGuard
 from core.modules.docking.guards.type_capacity_guard import TypeCapacityGuard
+from core.modules.docking.guards.user_dock_guard import UserDockGuard
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.commands.schedule_dock_item_leave.schedule_dock_item_leave_handler import ScheduleDockItemLeaveHandler
 from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
@@ -53,6 +54,6 @@ class DockingModule(Module):
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, ReleaseDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [DockItemReadSubcommand, AddDockItemSubcommand, KeepDockItemSubcommand, ReleaseDockItemSubcommand, RemoveDockItemSubcommand, MainDockItemsSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener, PendingDockItemsListener]
-    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard]
+    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard, UserDockGuard]
     seeders = [DockingSeeder]
     tick_handlers = [TickHandler(TickInterval(seconds=2), DockItemLeaves(), "dock item leaves")]

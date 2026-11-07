@@ -1,11 +1,11 @@
-from dataclasses import replace
-
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.command.request_user_approval import RequestUserApproval
+from core.base.user_approval import UserApproval
 from core.base.guard.guard import Guard
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
@@ -20,7 +20,6 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.support.access_nudges import SKIPS_SPENT
 from core.modules.drivers.support.nudger import Nudger
-from core.modules.messages.commands.send_message.send_message import SendMessage
 
 MOST_SKIP_COUNT = 5
 SKIP_SOURCE = "drivers.refusal-skip"
@@ -49,7 +48,10 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             raise Refusal("say why this refusal does not apply", "--skip-reason '<why>'" if command.is_used else "--reason '<why>'")
         last = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id).newest().first()
         if last is not None and last.streak >= MOST_SKIP_COUNT and last.restored_at is None:
-            raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal; a skip comes back with journal refusal restore")
+            agent = self.queries.query(Agent).find(actor.id)
+            if agent.role == AgentRole.MAIN or agent.parent_id is None:
+                raise self.restoration_approval(actor.id)
+            raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
         skip = self.repository.save(RefusalSkip(session_agent_id=actor.id, creator_id=actor.id, name=command.name, reason=command.reason.strip(), streak=self.skip_count(actor, last, command.name, skipped_at),
@@ -86,6 +88,13 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     def raised(self, agent_id: int, context: Context) -> None:
         agent = self.queries.query(Agent).find(agent_id)
         if agent.role == AgentRole.MAIN or agent.parent_id is None:
-            self.bus.dispatch(SendMessage(SKIPS_SPENT.nudge(agent=agent_id, count=MOST_SKIP_COUNT).text), replace(context, actor=Actor.core()))
+            arguments = ("refusal", "restore", str(agent_id))
+            approval = self.restoration_approval(agent_id)
+            self.bus.dispatch(RequestUserApproval(approval, arguments, agent_id), context)
             return
         self.nudger.send(agent.parent_id, SKIPS_SPENT, SKIP_SOURCE, context, agent=agent_id, count=MOST_SKIP_COUNT)
+
+    @staticmethod
+    def restoration_approval(agent_id: int) -> UserApproval:
+        return UserApproval(f"Agent {agent_id} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
+                            ("refusal", "restore", str(agent_id)))

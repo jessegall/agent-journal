@@ -24,7 +24,7 @@ class AcceptShareLinkHandler(Handler[AcceptShareLink, ShareInvitation]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: AcceptShareLink, context: Context) -> ShareInvitation:
-        PersonCheck.require(context, "only a person accepts a link")
+        PersonCheck.require(context, "Accept this share request?", returns_output=True)
         token = secrets.token_urlsafe(TOKEN_BYTES)
         link = self.queries.query(ShareLink).find(command.link_id)
         accepted = self.repository.save(link.moved(ShareLinkLifecycle.accept, token_digest=TextDigest().hex_digest(token), creator_id=context.actor.id, expires_at=self.end_time(link, context)), context)

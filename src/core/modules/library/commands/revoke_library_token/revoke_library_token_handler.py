@@ -16,5 +16,5 @@ class RevokeLibraryTokenHandler(Handler[RevokeLibraryToken, LibraryToken]):
         self.people = people
 
     def handle(self, command: RevokeLibraryToken, context: Context) -> LibraryToken:
-        LibraryPerson.require(context, "an agent cannot revoke a token of the library", "ask the user to revoke it on the Teams page")
+        LibraryPerson.require(context, "an agent cannot revoke a token of the library")
         return self.people.revoke_token(command.token_id)

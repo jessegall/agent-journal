@@ -1,6 +1,7 @@
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.modules.triggers.models.trigger import Trigger
 from core.modules.triggers.support.trigger_approval import TriggerApproval
 from core.base.change.changed import Changed
@@ -15,6 +16,7 @@ class AgentTriggerGuard(Guard[Changed[Trigger]]):
     setting lets agents enable their own."""
 
     name = "triggers.agent-trigger"
+    is_safety = True
 
     def __init__(self, approval: TriggerApproval) -> None:
         self.approval = approval
@@ -26,6 +28,6 @@ class AgentTriggerGuard(Guard[Changed[Trigger]]):
         if not self.approval.needs_user(context.actor):
             return
         if not new.needs_enabling and (old is None or old is not None and old.needs_enabling):
-            raise Refusal("only the user enables a trigger an agent made", "the user enables it in the chat or on the Triggers page")
+            raise UserApproval(f"Enable trigger {new.id}?", ("trigger", "enable", str(new.id)))
         if old is not None and not old.needs_enabling and any(getattr(old, name) != getattr(new, name) for name in ACTING_FIELDS):
-            raise Refusal(f"only the user changes what enabled trigger {old.id} does", "make a new trigger, which waits for the user to enable it")
+            raise UserApproval(f"Change the enabled trigger {old.id}?")

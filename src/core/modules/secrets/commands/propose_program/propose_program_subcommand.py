@@ -8,7 +8,7 @@ from core.modules.secrets.commands.support.secret_program import SecretProgram
 
 
 class ProposeProgramSubcommand(Subcommand[ProposeProgram, SecretProgram]):
-    """`journal secret propose <n> <program>`: the user allows it on the Secrets window."""
+    """Proposes a program and asks a person in the approval dock."""
 
     cli_name = "secret"
     name = "propose"
@@ -25,6 +25,6 @@ class ProposeProgramSubcommand(Subcommand[ProposeProgram, SecretProgram]):
         if not isinstance(value, SecretProgram):
             return
         if value.is_new:
-            output.line(f"{value.program} proposed for secret {value.secret.id}: the user allows it on the Secrets window")
+            output.line(f"{value.program} proposed for secret {value.secret.id}: a person was asked in the dock")
         else:
             output.line(f"{value.program} is {'allowed' if value.program in value.secret.programs else 'proposed'} for secret {value.secret.id} already")

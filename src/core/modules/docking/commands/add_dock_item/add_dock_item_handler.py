@@ -34,12 +34,14 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         dock = dock or self.repository.save(Dock(creator_id=context.actor.id), context)
         self.docks.remember(dock)
         chat_items = self.items.docked(dock.id).same_chat(self.scopes.actor_id)
-        type_capacity = self.limits.type_capacity(command.type)
-        if type_capacity is not None:
-            self.free_place(chat_items.type_items(command.type), type_capacity, f"{command.type} allows at most {type_capacity} items", context)
-        dock_capacity = self.limits.dock_capacity(dock.id)
-        self.free_place(chat_items, dock_capacity, f"the dock allows at most {dock_capacity} items", context)
-        item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id, title=title, text=text)
+        needs_user = self.limits.requires_user(command.type)
+        if not needs_user:
+            type_capacity = self.limits.type_capacity(command.type)
+            if type_capacity is not None:
+                self.free_place(chat_items.type_items(command.type), type_capacity, f"{command.type} allows at most {type_capacity} items", context)
+            dock_capacity = self.limits.dock_capacity(dock.id)
+            self.free_place(chat_items, dock_capacity, f"the dock allows at most {dock_capacity} items", context)
+        item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id, title=title, text=text, kept=needs_user)
         return self.repository.save(item.changed(leaves_at=self.leave_time.departure(item, context.timestamp)), context)
 
     def free_place(self, docked_items: DockItemQuery, capacity: int, limit_text: str, context: Context) -> None:

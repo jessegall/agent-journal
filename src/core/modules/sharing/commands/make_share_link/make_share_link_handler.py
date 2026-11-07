@@ -4,7 +4,6 @@ from datetime import timedelta
 
 from core.base.actor_type import ActorType
 from core.base.clock import Clock
-from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -15,7 +14,6 @@ from core.base.timestamp import Timestamp
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan
-from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.sharing.commands.make_share_link.make_share_link import MakeShareLink
 from core.modules.sharing.commands.support.share_invitation import ShareInvitation
 from core.modules.sharing.commands.support.share_targets import ShareTargets
@@ -37,8 +35,8 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
 
     command = MakeShareLink
 
-    def __init__(self, repository: Repository, clock: Clock, targets: ShareTargets, bus: Bus, scopes: Scopes) -> None:
-        self.repository, self.clock, self.targets, self.bus, self.scopes = repository, clock, targets, bus, scopes
+    def __init__(self, repository: Repository, clock: Clock, targets: ShareTargets, scopes: Scopes) -> None:
+        self.repository, self.clock, self.targets, self.scopes = repository, clock, targets, scopes
 
     def handle(self, command: MakeShareLink, context: Context) -> ShareInvitation:
         shared = self.targets.row(command.target)
@@ -58,8 +56,6 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
                                               state=ShareLinkState.ACTIVE if is_person else ShareLinkState.WAITING), context)
         if is_person:
             return ShareInvitation(link.id, link.state.value, token, f"{LINK_PATH}{token}", link.expires_at)
-        asking = SendMessage(f"I ask to share {shared.model_name} {shared.id}, {shared.title}. Nothing opens until you accept it on the Shares window.\n\nshare {link.id}")
-        self.bus.dispatch(asking, context.nested(asking))
         return ShareInvitation(link.id, link.state.value, None, None, link.expires_at)
 
     def end_time(self, ends: str) -> Timestamp | None:
