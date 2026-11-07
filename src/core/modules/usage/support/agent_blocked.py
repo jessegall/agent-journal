@@ -14,6 +14,8 @@ class AgentBlocked:
         self.seconds = seconds
 
     def reason(self, card: AgentCard, current_time: Timestamp) -> str:
+        if card.role == "worker" and card.started_task_id:
+            return ""
         if card.task_blocked:
             return TASK_BLOCKED_REASON
         if card.block_started_at and Timestamp.parsed(card.block_started_at).elapsed_seconds(current_time) >= self.seconds:

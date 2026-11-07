@@ -1,12 +1,13 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
-import {READ_RATES, coalesced, Btn, WindowRoom, runChanged, useReadLine, useWindow} from "@journal/window-kit";
+import { computed, ref } from "vue";
+import {READ_RATES, coalesced, Btn, WindowRoom, runChanged, useWindow} from "@journal/window-kit";
 import HookDetails from "./HookDetails.vue";
 import HookGroup from "./HookGroup.vue";
 import ManagedHookRow from "./ManagedHookRow.vue";
 
 const context = useWindow();
-const { value, failure, load } = useReadLine(() => "managed-hook list");
+const { data: value, failure } = context.props.hooks;
+const load = () => context.reload("hooks");
 const busy = ref(false);
 const asking = ref(false);
 const restored = ref(false);
@@ -56,8 +57,7 @@ async function restore() {
   restored.value = reply.ok;
 }
 
-context.follow(["managed-hook.*", "hook_call.*"], coalesced(load, READ_RATES.projectHooks));
-onMounted(load);
+context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
 </script>
 
 <template>

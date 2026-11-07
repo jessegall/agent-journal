@@ -22,6 +22,7 @@ class TaskCard(EnvironmentScoped, ViewModel):
     state: TaskState
     priority: TaskPriority
     reason: str
+    automatic: bool
     closed_at: str | None
     delegated_to: int | None
     delegated_name: str | None

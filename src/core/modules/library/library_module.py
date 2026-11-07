@@ -2,6 +2,8 @@ from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_key import WindowKey
+from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.library.library_lookup import LibraryLookup
@@ -16,6 +18,8 @@ from core.modules.library.commands.pair_library.pair_library_subcommand import P
 from core.modules.library.commands.unpair_library.unpair_library_handler import UnpairLibraryHandler
 from core.modules.library.commands.unpair_library.unpair_library_subcommand import UnpairLibrarySubcommand
 from core.modules.library.commands.library_list.library_list_subcommand import LibraryListSubcommand
+from core.modules.library.commands.library_browse.library_browse_subcommand import LibraryBrowseSubcommand
+from core.modules.library.commands.library_inspect.library_inspect_subcommand import LibraryInspectSubcommand
 from core.modules.library.commands.library_show.library_show_subcommand import LibraryShowSubcommand
 from core.modules.library.commands.library_versions.library_versions_subcommand import LibraryVersionsSubcommand
 from core.modules.library.commands.library_status.library_status_subcommand import LibraryStatusSubcommand
@@ -83,12 +87,19 @@ class LibraryModule(Module):
     handlers = [PairLibraryHandler, SaveLibraryConnectionHandler, UnpairLibraryHandler, SaveLibraryCopyHandler, MakeLibraryCopyHandler, LeaveLibraryCopyHandler, AddLibraryUserHandler, SetLibraryRoleHandler, RemoveLibraryUserHandler, RevokeLibraryTokenHandler, SendLibraryItemHandler,
                 RunLibrarySyncHandler, ChooseLibraryVersionHandler, MergeLibraryItemHandler, UpdateLibraryCopyHandler, DeleteLibraryCopyHandler, UpdateLibraryConnectionHandler, RemoveLibraryItemHandler,
                 RestoreLibraryItemHandler]
-    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand, LibraryUserListSubcommand, LibraryUserTokensSubcommand, AddLibraryUserSubcommand, SetLibraryRoleSubcommand, RemoveLibraryUserSubcommand,
+    subcommands = [PairLibrarySubcommand, UnpairLibrarySubcommand, LibraryStatusSubcommand, LibraryListSubcommand, LibraryBrowseSubcommand, LibraryInspectSubcommand, LibraryShowSubcommand, LibraryVersionsSubcommand, LibraryUserListSubcommand, LibraryUserTokensSubcommand, AddLibraryUserSubcommand, SetLibraryRoleSubcommand, RemoveLibraryUserSubcommand,
                    RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
     skills = [SkillDeclaration("journal-library", "Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
                                keywords=("library", "team", "shared"), commands=["library"])]
     windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
-                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library show", "library versions", "library copies", "library-user list", "library-user tokens"],
+                                 place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library browse", "library inspect", "library show", "library copies", "library-user list", "library-user tokens"],
+                                 keys=[WindowKey("status", "library status", events=["library_connection.*"]),
+                                       WindowKey("copies", "library copies", events=["library_copy.*"], reload_seconds=30),
+                                       WindowKey("users", "library-user list", loading=KeyLoading.REQUESTED),
+                                       WindowKey("tokens", "library-user tokens {user}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("item", "library show {share} {id}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("inspection", "library inspect {share} {id}", loading=KeyLoading.REQUESTED),
+                                       WindowKey("listing", "library browse", arguments=["type", "search"], loading=KeyLoading.REQUESTED)],
                                  runs=["library connect", "library get", "library share", "library sync", "library resolve", "library leave", "library remove", "library restore", "library-user add", "library-user role", "library-user remove", "library-user revoke"], events=["library_connection.*", "library_copy.*"])]

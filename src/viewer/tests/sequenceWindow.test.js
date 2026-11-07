@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, page, settle, typeInto as typed} from "./support/windowContext.js";
+import {context, mounted, settle, typeInto as typed} from "./support/windowContext.js";
 import SequenceCards from "../../core/modules/sequences/web/src/SequenceCards.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -9,7 +9,7 @@ const RUN = {id: 9, sequence_id: 1, session_agent_id: 3, title: "Release", steps
 
 async function drawn(runs = []) {
     const ran = [];
-    const window = context({"sequence list": page([SEQUENCE]), "sequence-run list": page(runs)});
+    const window = context({"sequence board": {ok: true, value: {rows: [SEQUENCE], runs}}}, null, {board: {line: "sequence board", events: ["sequence.*", "sequence_run.*"]}});
     window.run = async (line) => (ran.push(line), {ok: true, value: {}});
     return {element: await mounted(SequenceCards, window), ran};
 }

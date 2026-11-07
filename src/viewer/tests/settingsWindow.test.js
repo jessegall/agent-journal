@@ -3,6 +3,7 @@ import {expect, test} from "vitest";
 import {settled} from "./settled.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
+import {context as settingsContext} from "./support/settingsContext.js";
 
 const row = (fields) => ({module: "good", parent: null, description: "", secret: false, scope: "both", choices: [], toggleable: false, value: null, shown: "not set", source: "default", ...fields});
 const TREE = [
@@ -17,7 +18,9 @@ const TREE = [
 
 function mounted({rows = TREE, runAnswer = {ok: true, value: null}, face = "person"} = {}) {
     const runs = [];
-    const context = {read: async () => ({ok: true, value: {rows}}), run: async (words) => (runs.push(words), runAnswer), follow: () => {}, face};
+    const context = settingsContext({"setting tree": {ok: true, value: {rows}}});
+    context.run = async (words) => (runs.push(words), runAnswer);
+    context.face = face;
     const element = document.createElement("div");
     createApp({setup: () => () => h(SettingsTree), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     return {element, runs};

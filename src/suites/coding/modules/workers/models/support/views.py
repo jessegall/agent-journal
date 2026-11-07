@@ -57,7 +57,7 @@ WHERE worktree.removed_at IS NULL
 """
 
 WORKER_PROGRESS_SELECT = """
-SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.branch,
+SELECT worktree.session_agent_id AS agent_id, worktree.environment_id, worktree.branch, worktree.task_id,
        coalesce(worktree.cut_at, worktree.created_at) AS started_at,
        worktree.removed_at AS finished_at,
        count(tasks.id) AS task_count,

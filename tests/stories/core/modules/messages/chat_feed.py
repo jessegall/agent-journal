@@ -1,6 +1,16 @@
-from core.base.database.database import Database
-from core.base.registry.registry import Registry
+from core.testing.story_fixture import StoryFixture
+from core.modules.messages.messages_module import MessagesModule
 from tests.stories.core.support.fixtures import UserJoined
+
+
+class TwoMessages(StoryFixture):
+    """Two messages for feed paging."""
+
+    parent = UserJoined
+
+    def steps(self, story):
+        story.run('message send "first" --environment main', actor=story.user)
+        story.run('message send "second" --environment main', actor=story.user)
 
 
 def test_the_feed_brings_a_message_with_only_the_fields_the_chat_draws(new_story):
@@ -16,9 +26,7 @@ def test_the_feed_brings_a_message_with_only_the_fields_the_chat_draws(new_story
 
 
 def test_the_feed_pages_by_id_newest_first(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('message send "first" --environment main', actor=story.user)
-    story.run('message send "second" --environment main', actor=story.user)
+    story = new_story(fixture=TwoMessages)
     newest = story.run("message feed --limit 1 --json", actor=story.user)
     newest.expect_text("second")
     newest.expect_no_text("first")
@@ -28,9 +36,8 @@ def test_the_feed_pages_by_id_newest_first(new_story):
 
 
 def test_the_feed_lists_only_the_rows_with_the_ids_asked_for(new_story):
-    story = new_story(fixture=UserJoined)
-    for text in ("first", "second", "third"):
-        story.run(f'message send "{text}" --environment main', actor=story.user)
+    story = new_story(fixture=TwoMessages)
+    story.run('message send "third" --environment main', actor=story.user)
     answer = story.run("message feed --ids 1,3 --json", actor=story.user)
     answer.expect_text("first")
     answer.expect_text("third")
@@ -40,6 +47,6 @@ def test_the_feed_lists_only_the_rows_with_the_ids_asked_for(new_story):
 
 def test_the_chat_window_reads_both_paged_keys_by_ids(new_story):
     story = new_story(fixture=UserJoined)
-    window = Registry.read(story.container.get(Database)).window("messages.chat")
+    window = next(window for window in MessagesModule.windows if window.name == "messages.chat")
     keys = {key.name: key for key in window.keys}
     story.expect_rows("ids" in keys["messages"].arguments, "ids" in keys["marks"].arguments, keys["messages"].listed()["reads_ids"], keys["marks"].listed()["reads_ids"])

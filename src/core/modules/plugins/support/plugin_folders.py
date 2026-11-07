@@ -23,5 +23,8 @@ class PluginFolders:
         mark = self.upgrade_mark(name)
         return mark.exists() and time.time() - mark.stat().st_mtime < UPGRADE_MARK_SECONDS
 
+    def service_log(self, name: str, service: str) -> Path:
+        return self.data(name) / f"service-{service}.log"
+
     def data(self, name: str) -> Path:
         return self.home.folder / "plugin-data" / name

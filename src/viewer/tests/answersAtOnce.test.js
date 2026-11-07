@@ -1,6 +1,6 @@
 import {afterEach, expect, test} from "vitest";
 import {added, patched, patchedWhere, removed} from "@journal/window-kit";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 
 afterEach(() => (document.body.innerHTML = ""));

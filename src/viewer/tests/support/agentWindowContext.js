@@ -9,6 +9,8 @@ export const AGENT_KEYS = {
     ...AGENT_TERMINAL_KEYS,
     reports: {line: "message agent-reports", tab: "reports", events: ["message.*"]},
     agents: {line: "agent cards", events: ["agent.*", "task.*", "hook_call.*"]},
+    "card.*": {line: "agent cards --show all --include-main --id {id}", events: ["agent.*", "task.*", "hook_call.*"]},
+    "count-agents": {line: "agent cards --show all --limit 10000", events: ["agent.*", "task.*", "hook_call.*"]},
     filters: {line: "agent cards --options", events: ["agent.*"]},
     programs: {line: "agent programs", events: []},
     limits: {line: "agent limits", events: ["agent.*", "setting.*"]},

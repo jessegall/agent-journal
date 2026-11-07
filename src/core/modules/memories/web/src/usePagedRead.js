@@ -1,25 +1,16 @@
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import {useWindow} from "@journal/window-kit";
 
-// rows read from one line a page at a time: `line(limit)` names the line for that many rows, a page is added behind the rows by reading
-// a longer first page, and the rows are read again whenever an event they follow arrives
-export function usePagedRead(line, patterns, size) {
-    const context = useWindow();
-    const rows = ref([]);
-    const total = ref(0);
-    const failure = ref("");
-    const loaded = ref(false);
+export function usePagedRead(name, flags, size, events) {
+    const window = useWindow();
+    const prop = window.props[name];
     let pages = 1;
-    let latest = 0;
 
     async function load() {
-        const turn = ++latest;
-        const result = await context.read(line(size * pages));
-        if (turn !== latest) return;
-        failure.value = result.ok ? "" : result.error;
-        rows.value = result.ok ? result.value.rows : [];
-        total.value = result.ok ? result.value.total : 0;
-        loaded.value = true;
+        const prefix = `${name}.`;
+        Object.keys(window.state).filter((key) => key.startsWith(prefix)).forEach((key) => delete window.state[key]);
+        Object.entries(flags(size * pages)).forEach(([key, value]) => (window.state[`${prefix}${key}`] = String(value)));
+        await window.reload(name);
     }
 
     const reset = () => {
@@ -30,8 +21,8 @@ export function usePagedRead(line, patterns, size) {
         pages += 1;
         return load();
     };
-
-    context.follow(patterns, () => load());
+    window.follow(events, load);
     load();
-    return {rows, total, failure, loaded, load, reset, more, hasMore: computed(() => rows.value.length < total.value)};
+    return {rows: prop.rows, total: computed(() => prop.data.value?.total ?? 0), failure: prop.failure, loaded: prop.loaded,
+        load, reset, more, hasMore: computed(() => prop.rows.value.length < (prop.data.value?.total ?? 0))};
 }

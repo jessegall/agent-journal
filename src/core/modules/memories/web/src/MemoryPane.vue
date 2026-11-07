@@ -4,7 +4,7 @@ import {Btn, MenuItem, MenuLabel, SearchBar, Skeleton, TextArea, TimeAgo, peekRe
 import MemoryEmpty from "./MemoryEmpty.vue";
 import MemoryGroup from "./MemoryGroup.vue";
 import MemoryRow from "./MemoryRow.vue";
-import {EVERYONE, MAIN, OTHERS, PAGE_ROWS, agentOf, agentIdOf, isAgent, isGroup, memoryLine, namesLine} from "./memoryScope.js";
+import {EVERYONE, MAIN, OTHERS, PAGE_ROWS, agentOf, agentIdOf, isAgent, isGroup} from "./memoryScope.js";
 import {usePagedRead} from "./usePagedRead.js";
 
 // the memories of whoever is chosen: searched and ordered by the server, active or removed, with a new one written for the main agent
@@ -29,19 +29,21 @@ const refusal = ref("");
 const notice = ref("");
 const names = ref({});
 
-const memories = usePagedRead((limit) => memoryLine({who: props.who, environment: props.environment, state: state.value, search: search.value, order: order.value, limit}), ["memory.*"], PAGE_ROWS);
+const memories = usePagedRead("memories", (limit) => ({
+    ...(props.who === MAIN ? {"main-agent": true} : {}), ...(props.who === OTHERS ? {"other-agents": true} : {}),
+    ...(isAgent(props.who) ? {agent: agentIdOf(props.who)} : {}), environment: props.environment,
+    ...(state.value !== "active" ? {removed: true} : {}), ...(state.value !== "all" ? {state: state.value} : {}),
+    ...(search.value.trim() ? {search: search.value.trim()} : {}), order: order.value, limit,
+}), PAGE_ROWS, ["memory.*"]);
 watch(() => [props.who, props.environment, state.value, search.value, order.value], () => memories.reset());
 watch(() => props.who, (who) => {
     if (who !== EVERYONE) search.value = "";
     notice.value = "";
 });
 
-// the agents behind the rows of a list of several, read together
-watch(memories.rows, async (rows) => {
-    const missing = rows.map((row) => row.agent_id).filter((id) => id !== null && !(id in names.value));
-    if (!isGroup(props.who) || !missing.length) return;
-    const answer = await context.read(namesLine(missing));
-    if (answer.ok) names.value = {...names.value, ...Object.fromEntries(answer.value.rows.map((agent) => [agent.agent_id, agent]))};
+watch(memories.rows, () => {
+    const agents = context.props.memories.data.value.agents;
+    names.value = Object.fromEntries(agents.map((agent) => [agent.agent_id, agent]));
 });
 
 const ownerOf = (row) => (row.agent_id === null ? MAIN : agentOf(row.agent_id));

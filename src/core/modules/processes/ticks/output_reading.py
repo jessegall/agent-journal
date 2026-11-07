@@ -1,12 +1,10 @@
 from core.base.actor import Actor
-from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.module.performance_tools import PerformanceTools
 from core.base.repository.stale_row_error import StaleRowError
 from core.base.scope.scopes import Scopes
-from core.base.timestamp import Timestamp
-from core.modules.developer.support.slow_tick_tool import SlowTickTool
+from core.modules.developer.support.slow_tick_tool import SlowTickTool, TICK_LIMIT_POINTS
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.output import Output
@@ -16,15 +14,16 @@ from core.modules.processes.support.grown_outputs import GrownOutputs
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
-WARNING_PERIOD_SECONDS = 60
+WARNING_REPEAT_TICKS = 5
 
 
 class OutputReading:
     """Every second each running output that grew goes through its reader, which writes its lines to their
-    file and what it found on the output row; costly reads are reported at most once a minute."""
+    file and what it found on the output row; repeated costly reads are reported every fifth tick."""
 
     def __init__(self) -> None:
-        self.warned_at: Timestamp | None = None
+        self.last_warned_points = 0
+        self.ticks_since_warning = 0
 
     def __call__(self, container: Container) -> bool:
         tools = container.get(PerformanceTools)
@@ -56,7 +55,13 @@ class OutputReading:
                 container.get(Bus).run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
 
     def warn_if_slow(self, container: Container, points: int) -> None:
-        clock_time = container.get(Clock).timestamp()
-        recently_warned = self.warned_at is not None and self.warned_at.elapsed_seconds(clock_time) < WARNING_PERIOD_SECONDS
-        if not recently_warned and container.get(PerformanceTools).run(SlowTickTool, points):
-            self.warned_at = clock_time
+        if points <= TICK_LIMIT_POINTS:
+            self.last_warned_points = 0
+            self.ticks_since_warning = 0
+            return
+        self.ticks_since_warning += 1
+        if points <= self.last_warned_points and self.ticks_since_warning < WARNING_REPEAT_TICKS:
+            return
+        if container.get(PerformanceTools).run(SlowTickTool, points):
+            self.last_warned_points = points
+            self.ticks_since_warning = 0

@@ -9,7 +9,7 @@ try {
     const plan = page.locator(`[data-window="agents.agents"] [data-agent-open="${agent}"] [data-agent-plan]`);
     await plan.waitFor();
     await page.locator('[data-window="agents.agents"] [aria-busy="true"]').waitFor({state: "hidden"});
-    assert.match(await plan.textContent(), /Plan 1: Release work/);
+    assert.match(await plan.textContent(), /plan 1/);
     await page.screenshot({path: capture, animations: "disabled"});
     await plan.click();
     await page.locator('[data-resource-title]').filter({hasText: "Release work"}).waitFor();

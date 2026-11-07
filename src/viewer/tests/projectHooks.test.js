@@ -1,5 +1,12 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {context, mounted, settle as tick} from "./support/windowContext.js";
+
+const KEYS = {hooks: {line: "managed-hook list", events: ["managed-hook.*"]}};
+async function settle() {
+    await tick();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    await tick();
+}
 import ProjectHooks from "../../core/modules/settings/web/src/ProjectHooks.vue";
 
 const hook = (id, fields = {}) => ({
@@ -46,7 +53,7 @@ afterEach(() => document.body.replaceChildren());
 
 async function drawn({data = DATA, answer = {ok: true, value: {}}, face = "person"} = {}) {
     const ran = [];
-    const window = context({"managed-hook list": {ok: true, value: structuredClone(data)}});
+    const window = context({"managed-hook list": {ok: true, value: structuredClone(data)}}, null, KEYS);
     window.face = face;
     window.run = async (words) => {
         ran.push(words);

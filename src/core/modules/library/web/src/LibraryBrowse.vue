@@ -8,7 +8,6 @@ const TYPES = [
     {key: "sequence", label: "Sequences"},
     {key: "check", label: "Checks"},
 ];
-const SHARES = ["doc", "sequence", "check"];
 const TYPE_WORDS = {doc: "Document", sequence: "Sequence", check: "Check"};
 const SEARCH_DELAY_MILLISECONDS = 300;
 
@@ -33,20 +32,26 @@ let delay = 0;
 const key = (row) => `${row.share}:${row.id}`;
 
 async function load() {
-    const words = search.value.trim();
-    const answers = await Promise.all((type.value ? [type.value] : SHARES).map((share) => context.read(`library list --type ${share}${words ? ` --search ${JSON.stringify(words)}` : ""}`)));
-    const failed = answers.find((answer) => !answer.ok);
-    failure.value = failed ? failed.error : "";
-    const listed = failed ? [] : answers.flatMap((answer) => answer.value.rows);
+    if (type.value) context.state["listing.type"] = type.value;
+    else delete context.state["listing.type"];
+    if (search.value.trim()) context.state["listing.search"] = search.value.trim();
+    else delete context.state["listing.search"];
+    await context.reload("listing");
+    const listing = context.props.listing;
+    failure.value = listing.failure.value;
+    const listed = failure.value ? [] : listing.data.value.rows;
     rows.value = [...new Map(listed.map((row) => [key(row), row])).values()].map((row) => ({...row, item_id: row.id, id: key(row)}));
     loaded.value = true;
 }
 
 async function open(row) {
-    const [item, changes] = await Promise.all([context.read(`library show ${row.share} ${row.item_id}`), context.read(`library versions ${row.share} ${row.item_id}`)]);
-    refusal.value = item.ok ? "" : item.error;
-    opened.value = item.ok ? {...item.value, title: row.title} : null;
-    versions.value = changes.ok ? changes.value.versions : [];
+    context.state["inspection.share"] = row.share;
+    context.state["inspection.id"] = String(row.item_id);
+    await context.reload("inspection");
+    const inspection = context.props.inspection;
+    refusal.value = inspection.failure.value;
+    opened.value = refusal.value ? null : {...inspection.data.value.item, title: row.title};
+    versions.value = refusal.value ? [] : inspection.data.value.versions;
 }
 
 async function reopen() {
@@ -66,9 +71,12 @@ async function restore(item, version = null) {
 
 // a check runs on this computer, so its command is read before it is got
 async function openCheck(row) {
-    const answer = await context.read(`library show check ${row.item_id}`);
-    refusal.value = answer.ok ? "" : answer.error;
-    checking.value = answer.ok ? {...row, command: answer.value.fields.command} : null;
+    context.state["item.share"] = "check";
+    context.state["item.id"] = String(row.item_id);
+    await context.reload("item");
+    const item = context.props.item;
+    refusal.value = item.failure.value;
+    checking.value = item.failure.value ? null : {...row, command: item.data.value.fields.command};
 }
 
 async function get(row) {

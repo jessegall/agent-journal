@@ -87,6 +87,8 @@ CARD_EVENTS = ["setting.*", "agent.*", "hook_call.*", "task.*", "process_part.*"
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("reports", "Reports", "message agent-reports", "reports"), WindowTab("transcript", "Transcript", "agent transcript")]
 CARD_KEYS = [WindowKey("reports", "message agent-reports", tab="reports", events=["message.*"], arguments=["agent"]),
              WindowKey("agents", "agent cards", events=["agent.*", "task.*", "hook_call.*"], arguments=["show", "search", "limit", "roles", "profiles", "programs"]),
+             WindowKey("card.*", "agent cards --show all --include-main --id {id}", events=["agent.*", "task.*", "hook_call.*"]),
+             WindowKey("count-agents", "agent cards --show all --limit 10000", events=["agent.*", "task.*", "hook_call.*"]),
              WindowKey("filters", "agent cards --options", events=["agent.*"]),
              WindowKey("programs", "agent programs"),
              WindowKey("limits", "agent limits", events=["agent.*", "setting.*"]),

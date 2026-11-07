@@ -17,9 +17,12 @@ const {refusal, run} = useRunLine(async () => emit("changed"));
 // the library's text is the one stored with the copy, so Compare works with no network; a copy that stored none reads the item live
 async function library(copy) {
     if (Object.keys(copy.server_fields).length) return copy.server_fields;
-    const answer = await context.read(`library show ${copy.share} ${copy.item_id}`);
-    refusal.value = answer.ok ? "" : answer.error;
-    return answer.ok ? answer.value.fields : null;
+    context.state["item.share"] = copy.share;
+    context.state["item.id"] = String(copy.item_id);
+    await context.reload("item");
+    const item = context.props.item;
+    refusal.value = item.failure.value;
+    return item.failure.value ? null : item.data.value.fields;
 }
 
 async function compare(copy, isTaking = false) {
