@@ -8,6 +8,7 @@ import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {context, mounted, page, settle} from "./support/codingWindowContext.js";
 
+vi.stubGlobal("matchMedia", () => ({matches: true}));
 vi.stubGlobal(
     "ResizeObserver",
     class {
