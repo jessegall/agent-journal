@@ -15,6 +15,7 @@ const props = defineProps({
     activeEnvironments: {type: Array, default: () => []},
     current: {type: String, default: ""},
     project: {type: String, default: "agent-journal"},
+    journalVersion: {type: String, default: ""},
     counts: {type: Object, default: () => ({})},
     open: {type: String, default: ""},
     run: {type: Function, default: null},
@@ -107,7 +108,7 @@ function fold(key) {
                 </template>
             </template>
         </div>
-        <p class="sidebar-foot">Agent journal</p>
+        <p class="sidebar-foot"><span>Agent journal</span><span>{{ journalVersion }}</span></p>
         <template v-if="drafting">
             <NewEnvironment :run="run" @close="drafting = false" @made="openEnvironment" />
         </template>
@@ -209,6 +210,8 @@ function fold(key) {
 }
 
 .sidebar-foot {
+    display: flex;
+    justify-content: space-between;
     margin: 0;
     padding: 10px 18px;
     border-top: 1px solid var(--border);

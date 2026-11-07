@@ -59,6 +59,7 @@ const props = defineProps({
     prompts: {type: Object, default: null},
     shellRead: {type: Function, default: null},
     face: {type: String, default: "person"},
+    journalVersion: {type: String, default: ""},
 });
 
 const context = props.shellRead ? windowContext({
@@ -301,7 +302,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :project="project" :windows="catalogue.pages.value" :environments="environments" :active-environments="activeEnvironments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" :navigate="goTo" />
+            <SidebarPages :project="project" :journal-version="journalVersion" :windows="catalogue.pages.value" :environments="environments" :active-environments="activeEnvironments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" :navigate="goTo" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <ButtonAllowance :prompts="prompts" />

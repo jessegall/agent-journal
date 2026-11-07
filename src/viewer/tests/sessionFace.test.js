@@ -43,3 +43,8 @@ test("a person on a narrow screen keeps the person face and gets the stacked pan
     expect(element.querySelector(".window-shell").dataset.face).toBe("person");
     expect(element.querySelector(".pane-grid.stacked")).not.toBeNull();
 });
+
+test("the sidebar footer shows the journal version from the session", async () => {
+    const element = await shell({type: "person", person_id: 1, journal_version: "5.7.3"}, DESKTOP_WIDTH);
+    expect(element.querySelector(".sidebar-foot").textContent).toBe("Agent journal5.7.3");
+});

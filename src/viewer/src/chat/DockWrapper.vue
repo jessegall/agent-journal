@@ -33,6 +33,7 @@ const view = useWindow();
 const cardKey = computed(() => `dock.${props.item.id}`);
 const card = computed(() => view.props[cardKey.value].data.value);
 const noun = computed(() => cliOf(props.item.target_model ?? ""));
+const rowWord = computed(() => (declaration.value?.word || noun.value.replaceAll("-", " ")).replace(/^./, (letter) => letter.toUpperCase()));
 const row = computed(() => ({...card.value, id: props.item.target_id, noun: noun.value}));
 const reloadCard = () => declaration.value?.reads?.length && view.reload(cardKey.value);
 provideDockCard(provide, {data: card, reload: reloadCard, readOutput: readOutputProp(view)});
@@ -123,9 +124,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 <template v-if="badge">
                     <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
                 </template>
-                <template v-if="declaration?.word">
-                    <span>{{ declaration.word }}</span>
-                </template>
+                <span data-dock-row>{{ rowWord }} {{ item.target_id }}</span>
                 <span ref="foot" class="dock-module-facts" />
                 <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
             </span>

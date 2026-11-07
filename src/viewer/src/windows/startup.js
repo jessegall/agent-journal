@@ -44,8 +44,10 @@ export function startWindows({environment, catalogue = null, events = followEven
         subscriptions.dispatch(event);
     }, patterns);
     const face = shallowRef(null);
+    const journalVersion = shallowRef("");
     const opened = session().then((answer) => {
         face.value = answer.type;
+        journalVersion.value = answer.journal_version;
         document.documentElement.classList.toggle("phone", answer.type === "phone");
         if (answer.type === "phone") navigator.serviceWorker?.register(PHONE_WORKER, {scope: "/"}).catch(() => {});
         return answer;
@@ -55,5 +57,5 @@ export function startWindows({environment, catalogue = null, events = followEven
         if (!answer.ok && answer.failure !== "refused") problem.value = answer.error;
     });
     offers.load();
-    return {catalogue: offers, subscriptions, shellLine, prompts, listeners, stop, face, opened, problem};
+    return {catalogue: offers, subscriptions, shellLine, prompts, listeners, stop, face, journalVersion, opened, problem};
 }
