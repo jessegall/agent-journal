@@ -35,7 +35,7 @@ class QueueWorkerOperationHandler(Handler[QueueWorkerOperation, WorkerOperation]
         source = self.sources.source_copy(replace(context, environment_id=worker.environment_id))
         folder = self.environments.find(worker.environment_id).folder
         line = f"journal worker-operation run {worker.id}"
-        process = self.bus.dispatch(StartProcess.single_part(worker.id, line, folder, CommandCategory.BUILD, 3600), replace(context, actor=Actor.core()))
+        process = self.bus.dispatch(StartProcess.single_part(worker.id, line, folder, CommandCategory.BACKGROUND_JOB, 3600), replace(context, actor=Actor.core()))
         return self.repository.save(WorkerOperation(worker_id=worker.id, creator_id=context.actor.id,
                                     actor_type=context.actor.type, process_id=process.id, line=command.line, name=command.name,
                                     source_message_id=source.message_id, source_version=source.version,

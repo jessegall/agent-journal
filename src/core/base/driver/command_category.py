@@ -10,6 +10,7 @@ class CommandCategory(StrEnum):
     VERSION_CONTROL = "version control"
     TEST_RUN = "test run"
     BUILD = "build"
+    BACKGROUND_JOB = "background job"
     CHECK = "check"
     PACKAGE = "package"
     NETWORK = "network"
@@ -39,7 +40,7 @@ class CommandCategory(StrEnum):
 
     @property
     def is_watched(self) -> bool:
-        return self.is_long_running or self is CommandCategory.CHECK
+        return self.is_long_running or self in (CommandCategory.CHECK, CommandCategory.BACKGROUND_JOB)
 
     @property
     def has_result_output(self) -> bool:

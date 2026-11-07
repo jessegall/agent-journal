@@ -1,6 +1,7 @@
 from dataclasses import replace
 
 from core.base.command.context import Context
+from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -32,13 +33,18 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, advance: WorkerTaskAdvance, sources: WorkSources, copies: WorkerTaskCopies, waits: TaskWaits,
-                 proof_queue: WorkerProofQueue, scopes: Scopes) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.advance, self.sources, self.copies, self.waits, self.proof_queue = environments, advance, sources, copies, waits, proof_queue
         self.scopes = scopes
+        self.kept = kept
 
-    def check_tasks(self, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
-        tasks = tuple(self.queries.query(Task).find_many(list(task_ids)))
+    def read_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
+        return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
+                                        name=f"workers.sent_tasks:{task_ids}")
+
+    def check_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
+        tasks = self.read_tasks(task_ids)
         if tasks[0].state is TaskState.BLOCKED and self.waits.waits_target_tasks(tasks[0].id):
             raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
         for task in tasks:
@@ -46,13 +52,13 @@ class KeptWorkerTasks:
                 raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
         return tasks
 
-    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
+    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> list[Task]:
         tasks = self.check_tasks(task_ids)
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):
                 raise Refusal(f"the tests of worker {worker.id} are running", "send the task when they have passed")
-            return ()
+            return []
         self.check_recut(worker)
         return tasks
 
@@ -64,7 +70,7 @@ class KeptWorkerTasks:
             raise Refusal(f"worker {worker.id} has unmerged work on {last.branch}", f"journal worker merge {worker.id}, or merge the branch by hand")
 
     def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> AgentLine:
-        tasks = self.queries.query(Task).find_many(list(task_ids))
+        tasks = self.read_tasks(task_ids)
         self.record_sources(worktree, tasks, replace(context, environment_id=worktree.environment_id))
         for task in tasks:
             if task.delegated_to != worker.id:

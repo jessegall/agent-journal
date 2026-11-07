@@ -3,6 +3,8 @@ from suites.coding.modules.workers.support.worker_command_request import WorkerC
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.cli.write_flags import WriteFlags
+from core.base.scope.scopes import Scopes
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -10,6 +12,9 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
+from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
+from suites.coding.modules.workers.support.worker_route_policy import WorkerRoutePolicy
+from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
 
 
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
@@ -21,9 +26,11 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     name = "send"
     outward = True
 
-    def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest) -> None:
+    def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest,
+                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes) -> None:
         self.requests = requests
         self.home, self.agents = home, agents
+        self.tasks, self.policy, self.flags, self.scopes = tasks, policy, flags, scopes
 
     def arguments(self, parser: ArgumentParser) -> None:
         WorkerCommandRequest.arguments(parser)
@@ -35,6 +42,11 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         command = SendWorker(arguments.worker_id, arguments.job, tuple(arguments.task), tuple(arguments.library_link), tuple(arguments.library_copy))
+        if arguments.task:
+            with self.scopes.opened(caller.read_actor_id, caller.environment_id):
+                worker = self.agents.find(arguments.worker_id)
+                self.policy.check_tasks(self.tasks.check_tasks(tuple(arguments.task)),
+                                        WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         argv = ["worker", "send", str(arguments.worker_id), arguments.job]
         if arguments.task:
             argv.extend(("--task", *(str(task) for task in arguments.task)))
