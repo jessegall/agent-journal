@@ -56,3 +56,33 @@ def test_s51_agent_details_are_paged(new_story):
                                      query="environment=main&count-agents.role=helper&count-agents.page=1")
         cards = answer["keys"]["count-agents"]
         expect_value((status, cards["code"], cards["value"]["total"] >= 3, len(cards["value"]["rows"]) <= 25), (200, 0, True, True))
+
+
+WINDOW = "coding.agent-settings"
+ORCHESTRATOR_LINE = ["work-settings", "preset", "orchestrator"]
+
+
+def work_reading(viewer) -> dict:
+    status, answer = window_data(viewer.server, viewer.cookie, keys="work", window=WINDOW)
+    assert (status, answer["keys"]["work"]["code"]) == (200, 0), answer["keys"]["work"]
+    return answer["keys"]["work"]["value"]
+
+
+def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back(new_story):
+    story = new_story(fixture=MainControlsActors)
+    with person_viewer(story) as viewer:
+        shown = work_reading(viewer)
+        expect_value((shown["workflow"], shown["controls"][AUTO_MODE]), ("builder", True))
+        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", shown["revision"]]})
+        applied = work_reading(viewer)
+        expect_value((applied["workflow"], applied["controls"][AUTO_MODE]), ("orchestrator", False))
+
+
+def test_s51_the_window_refuses_a_draft_made_from_an_older_reading_and_changes_nothing(new_story):
+    story = new_story(fixture=MainControlsActors)
+    with person_viewer(story) as viewer:
+        viewer.set_setting(AUTO_MODE, "true")
+        old = work_reading(viewer)["revision"]
+        viewer.set_setting("journal.suites.coding.continue-while-delegatable", "true")
+        viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", old]}, 200, "changed since")
+        expect_value(work_reading(viewer)["workflow"], "custom")

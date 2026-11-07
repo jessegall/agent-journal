@@ -57,7 +57,7 @@ from suites.coding.drivers.main.guards.main_task_start_guard import MainTaskStar
 from suites.coding.drivers.main.rules.main_file_write_rule import MainFileWriteRule
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.support.test_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
-from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
+from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
 
@@ -110,6 +110,10 @@ class CodingModule(Module):
                                        WindowKey("dispatches", "setting show journal.suites.coding.workers.builder-dispatches-workers", tab="settings", events=["setting.*"]),
                                        WindowKey("merger", "setting show journal.suites.coding.workers.merger-on", tab="settings", events=["setting.*"]),
                                        WindowKey("bars", "usage bars", loading=KeyLoading.REQUESTED)]),
+               WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.PAGE, group="project",
+                                 reads=["work-settings show", "agent limits", "setting show"], runs=["work-settings apply", "work-settings preset"], events=["setting.*", "agent.*"],
+                                 keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
+                                       WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"])]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],
                                  events=["file_edit.create"],
                                  keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["agent", "limit", "before-id", "after-id"], page_size=50),
