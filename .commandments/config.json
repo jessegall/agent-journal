@@ -186,6 +186,7 @@
         "architecture_viewer_request_through_the_browser_object",
         "architecture_viewer_shell_imports_window_code",
         "architecture_viewer_window_data_outside_context",
+        "architecture_viewer_window_reads_outside_its_api",
         "architecture_views_second_view_reader",
         "architecture_views_position_outside_positions",
         "architecture_views_view_model_without_select",

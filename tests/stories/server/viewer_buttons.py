@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 
 import pytest
 
@@ -16,6 +17,7 @@ LEGACY = "tests.stories.core.base.chat.support.legacy_buttons_module:LegacyButto
 @pytest.fixture
 def buttons_server(new_story):
     journal = new_story(BUTTONS, f"{SUITES}:SuiteModule", fixture=PlanAndPersonFixture)
+    journal.advance(datetime.now(timezone.utc) - journal.clock.timestamp().value)
     journal.expect_success("suite choose coding --environment main", actor=journal.user)
     journal.expect_success("environment make elsewhere /work/elsewhere")
     journal.expect_success("suite choose acme --environment elsewhere", actor=journal.user)

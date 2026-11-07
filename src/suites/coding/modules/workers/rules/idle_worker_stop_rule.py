@@ -1,3 +1,4 @@
+from core.base.duration_unit import DurationUnit
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -13,7 +14,6 @@ from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerW
 from suites.coding.modules.workers.support.worker_nudges import WORKER_IDLE_STOPPED
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
 
-HOUR_SECONDS = 3600
 
 
 class IdleWorkerStopRule(DriverRule):
@@ -37,4 +37,4 @@ class IdleWorkerStopRule(DriverRule):
         return RuleAnswer.with_nudges(*(WORKER_IDLE_STOPPED.nudge(worker=worktree.session_agent_id, task=worktree.task_id) for worktree in idle)).running(*commands)
 
     def is_idle(self, worker: AgentActivity, hook: AgentHook, hours: int) -> bool:
-        return worker.ended_at is None and worker.is_inactive(hook.timestamp, hours * HOUR_SECONDS)
+        return worker.ended_at is None and worker.is_inactive(hook.timestamp, hours * DurationUnit.HOUR.seconds)

@@ -173,6 +173,6 @@ def test_multiple_answer_notices_keep_selection_commands_valid(scenario):
     sources = [json.loads(scenario.command(f"question show {number} --json").output_text)["message_id"] for number in (1, 2)]
     lines = "\n".join(scenario.story.hook("s-1", HookSamples.prompt("go on")).lines)
     scenario.story.expect_rows(all(str(source) in lines for source in sources))
-    scenario.story.expect_rows(all(f"question:{number} message:{source}" in lines for number, source in enumerate(sources, 1)))
-    scenario.story.expect_rows("message work-from <message>" in lines, "question show <question>" in lines)
+    scenario.story.expect_rows(all(f"question:{number} answer source message:{source}" in lines and f"message work-from {source}" in lines for number, source in enumerate(sources, 1)))
+    scenario.story.expect_rows("question show <question>" in lines)
     scenario.story.expect_rows("message work-from 3, 4" not in lines, "question show 1, 2" not in lines)

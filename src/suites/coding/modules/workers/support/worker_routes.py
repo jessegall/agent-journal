@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from core.base.database.kept_rows import KeptRows
-from core.base.model_tier import ModelTier
+from core.base.provider.model_tier import ModelTier
 from core.base.provider.providers import Providers
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.minimum import Minimum

@@ -17,9 +17,9 @@ PROJECT = Path(__file__).resolve().parents[5]
     ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py", 12),
     ("pytest", ".venv/bin/python3 -m pytest -qq tests/stories/core/modules/processes/reader_draft.py", 12),
     ("pytest", ".venv/bin/python3 -m pytest -v tests/stories/core/modules/processes/reader_draft.py", 12),
-    ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py tests/stories/core/base/repeated_calls.py", 25),
-    ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --reporter=dot src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
-    ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --silent=true src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
+    ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py tests/stories/core/base/repeated_calls.py", 26),
+    ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --configLoader runner --reporter=dot src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
+    ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --configLoader runner --silent=true src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
 ])
 def test_stock_listing_counts_real_project_tests(new_story, name, command, count):
     story = new_story(fixture=BuilderStarted)

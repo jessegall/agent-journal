@@ -126,7 +126,8 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])))
-    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line, queue_run=False)})
+    expected = runner_line(story, 1, line, queue_run=False).replace(" JOURNAL_RUN_MOST_OUTPUT", " JOURNAL_RUN_FILE_COMMANDS=1 JOURNAL_RUN_MOST_OUTPUT")
+    expect_updated_input_reply(reply, {"command": expected})
     expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")
 

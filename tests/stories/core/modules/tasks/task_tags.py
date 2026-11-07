@@ -123,7 +123,7 @@ def test_read_only_planner_tags_and_scores(tag_story):
     arguments = ['task', 'make', 'Queue', '--complexity', '3', '--tag', 'networking', '--confirm', '--environment', 'main']
     story.expect_hook_allowed(session, HookSamples.shell('journal task make Queue --complexity 3 --tag networking --confirm --environment main', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='task')))
     task = story.new_row_id('task make Queue --complexity 3 --tag networking --confirm --environment main', actor=Actor(helper_id, ActorType.AGENT))
-    story.expect_hook_refusal(session, HookSamples.shell(f'journal task edit {task} --complexity 4', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'edit', str(task), '--complexity', '4'], subcommand='task')), OUTWARD_JOURNAL_LINE.nudge().text)
+    story.expect_hook_allowed(session, HookSamples.shell(f'journal task edit {task} --complexity 4', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'edit', str(task), '--complexity', '4'], subcommand='task')))
     story.expect_refusal(f'task edit {task} --complexity 4', 'read-only', actor=Actor(helper_id, ActorType.AGENT))
 
 
