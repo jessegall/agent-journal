@@ -76,7 +76,7 @@ class WorkerResume:
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or self.is_job_delivering(worker, worker.ended_at):
             return LaunchAnswer.SKIPPED
-        lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
+        lines = tuple(self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows())
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
                     if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
         job = job or self.lost_job(worker) or next((line for line in lines if line.source == UNFINISHED_TASKS_SOURCE), None)
