@@ -17,6 +17,7 @@ from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
+from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
@@ -71,7 +72,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
         self.admission.checked_new("worker", profile.name)
-        self.check_unstarted(command, context)
+        self.check_unstarted(command, context, environment)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
         self.check_model(program, model, profile.name)
@@ -100,8 +101,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
 
     @staticmethod
-    def check_unstarted(command: DispatchWorker, context: Context) -> None:
-        if not command.starts_program and context.actor.type is not ActorType.USER:
+    def check_unstarted(command: DispatchWorker, context: Context, environment: Environment) -> None:
+        granted = environment.test and environment.test_agent_id == context.actor.id
+        if not command.starts_program and context.actor.type is not ActorType.USER and not granted:
             raise Refusal("only a person dispatches a worker with no program", "an agent dispatches a worker without --no-program")
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
