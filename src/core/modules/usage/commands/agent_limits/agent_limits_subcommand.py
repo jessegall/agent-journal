@@ -31,7 +31,7 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[AgentLimitCounts, ...]:
         kept = tuple(self.queries.query(Agent).matching(IsNull("retired_at")).all_rows())
-        held = self.work.held()
+        pending = self.work.pending()
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         counts = []
         for entry in self.registry.agent_types:
@@ -43,8 +43,8 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
             for profile in sorted({agent.profile for agent in agents if agent.profile and entry.profile_limits_key}):
                 matching = tuple(agent for agent in agents if agent.profile == profile)
                 profile_limits = self.limits.read(entry, profile)
-                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.ended_at is None or agent.id in held for agent in matching), len(matching), profile_limits.run, profile_limits.kept))
-            counts.append(AgentLimitCounts(entry.key, entry.label, sum(agent.ended_at is None or agent.id in held for agent in agents), len(agents), limits.run, limits.kept,
+                profiles.append(AgentProfileLimitCounts(profile, titles.get(profile, profile), sum(agent.ended_at is None or agent.id in pending for agent in matching), len(matching), profile_limits.run, profile_limits.kept))
+            counts.append(AgentLimitCounts(entry.key, entry.label, sum(agent.ended_at is None or agent.id in pending for agent in agents), len(agents), limits.run, limits.kept,
                                           entry.run_limit_key, entry.kept_limit_key, bool(entry.profile_limits_key), tuple(profiles),
                                           self.settings.current(entry.run_limit_key).source, self.settings.current(entry.kept_limit_key).source))
         return tuple(counts)

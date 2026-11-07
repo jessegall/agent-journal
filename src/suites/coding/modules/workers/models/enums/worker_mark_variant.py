@@ -17,3 +17,5 @@ class WorkerMarkVariant(StrEnum):
     RELEASED = "released"
     ENDED_EARLY = "ended early"
     HELP_REQUEST = "help request"
+    TEST_REQUEST = "test request"
+    TEST_ALLOWED = "test allowed"

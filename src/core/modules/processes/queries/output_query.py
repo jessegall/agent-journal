@@ -23,6 +23,9 @@ class OutputQuery(Query[Output]):
         super().__init__(database, tables, Output)
         self.cached = cached
 
+    def process_outputs(self, process_ids: tuple[int, ...]) -> tuple[Output, ...]:
+        return tuple(self.matching(Among("process_id", process_ids)).all_rows())
+
     def process_output(self, process_id: int) -> Output | None:
         return self.cached.read(self.table.name, self.process(process_id).first, "process_id = ?", [process_id], name="processes.process_output")
 

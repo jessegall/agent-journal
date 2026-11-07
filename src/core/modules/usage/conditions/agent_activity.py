@@ -9,11 +9,11 @@ class AgentActivity:
         self.work = work
 
     def statement(self) -> Statement:
-        held = tuple(self.work.held())
-        if not held:
+        pending = tuple(self.work.pending())
+        if not pending:
             return Statement("ended_at IS NULL AND retired_at IS NULL")
-        placeholders = ", ".join("?" for _ in held)
-        return Statement(f"(ended_at IS NULL OR id IN ({placeholders})) AND retired_at IS NULL", held)
+        placeholders = ", ".join("?" for _ in pending)
+        return Statement(f"(ended_at IS NULL OR id IN ({placeholders})) AND retired_at IS NULL", pending)
 
     def idle(self) -> Statement:
         active = self.statement()

@@ -4,5 +4,5 @@ from collections.abc import Mapping
 class AgentWork:
     """Work that keeps an agent's place after its process ends, with the current status for its card."""
 
-    def held(self) -> Mapping[int, str]:
+    def pending(self) -> Mapping[int, str]:
         return {}

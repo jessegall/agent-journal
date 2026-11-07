@@ -2,6 +2,9 @@ from collections.abc import Sequence
 from argparse import Namespace
 
 from core.base.agent_role import AgentRole
+from core.base.agent_work import AgentWork
+from core.base.query.conditions.excluding import Excluding
+from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
@@ -27,28 +30,30 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles) -> None:
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, work: AgentWork) -> None:
+        self.activity, self.work = activity, work
         self.queries, self.agents, self.files = queries, agents, files
 
     def read(self, arguments: Namespace, caller: Caller) -> EnvironmentUsage:
-        opened = tuple(self.agents.running().oldest().all_rows())
+        opened = tuple(self.agents.matching(self.activity).oldest().all_rows())
         counted = (*opened, *self.ended_helpers(self.agents, opened))
         statuses = {agent.session: self.files.status(agent.session) for agent in counted}
         return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses))
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
-        helpers = agents.filter(role=AgentRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened)))
+        helpers = agents.filter(role=AgentRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
         return tuple(helpers.oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, EnvironmentUsage):
             return
         compactions = self.last_compactions([agent for agent, _ in value.agents])
+        pending = self.work.pending()
         lines = [self.agent_line(agent, status) for agent, status in value.agents]
         lines.append(f"plan: {'; '.join(window.line for window in value.windows)}" if value.windows else "plan: no limits reported yet")
         lines.append(f"cost of the open sessions: ${value.cost_dollars:.2f}")
-        output.write("\n".join(lines), {"agents": [{**output.values(agent), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent,
+        output.write("\n".join(lines), {"agents": [{**output.values(agent), "work_status": pending.get(agent.id), "last_compacted_at": compactions[agent.id].started_at if agent.id in compactions else None, "last_compaction": compactions[agent.id].json() if agent.id in compactions else None, "model": status.model, "effort": status.effort, "context_percent": status.context_percent,
                                                     "cost_dollars": status.cost_dollars} for agent, status in value.agents],
                                         "windows": [output.values(window) for window in value.windows], "cost_dollars": value.cost_dollars})
 

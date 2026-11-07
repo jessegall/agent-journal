@@ -35,8 +35,8 @@ class WorkerPlaces:
 
     def running(self) -> tuple[Agent, ...]:
         running = self.agents.running(CodingAgentRole.WORKER)
-        held = self.queries.query(Agent).find_many(tuple(self.work.held()))
-        return tuple({worker.id: worker for worker in (*running, *held)}.values())
+        pending = self.queries.query(Agent).find_many(tuple(self.work.pending()))
+        return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:
         return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingAgentRole.WORKER.value], name="workers.kept")
@@ -65,8 +65,8 @@ class WorkerPlaces:
         return self.limits.lookup(CodingAgentRole.WORKER).run
 
     def resuming_lines(self) -> tuple[AgentLine, ...]:
-        cutoff_time = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)
-        cutoff_at = Timestamp(cutoff_time.replace(second=0, microsecond=0)).text
+        cutoff_value_at = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)
+        cutoff_at = Timestamp(cutoff_value_at.replace(second=0, microsecond=0)).text
         with self.scopes.opened(self.scopes.actor_id, self.scopes.environment_id, [ActorScope]):
             return self.kept.read(AGENT_LINES_TABLE, lambda: self.entered_lines(cutoff_at), "state = ? AND updated_at > ?", [AgentLineState.ENTERED, cutoff_at], name=f"workers.resuming_lines.{self.scopes.environment_id}")
 
@@ -74,8 +74,8 @@ class WorkerPlaces:
         return tuple(self.queries.query(AgentLine).filter(state=AgentLineState.ENTERED).matching(Greater("updated_at", cutoff_at)).all_rows())
 
     def resuming_count(self) -> int:
-        held = self.work.held()
-        workers = {worker.id: worker for worker in self.kept_workers() if worker.ended_at is not None and worker.id not in held}
+        pending = self.work.pending()
+        workers = {worker.id: worker for worker in self.kept_workers() if worker.ended_at is not None and worker.id not in pending}
         return len({line.session_agent_id for line in self.resuming_lines() if line.source in RESUMING_SOURCES and line.session_agent_id in workers
                     and line.updated_at.text > workers[line.session_agent_id].ended_at.text})
 
@@ -83,6 +83,8 @@ class WorkerPlaces:
         if worker.ended_at is None:
             return True
         with self.scopes.row_scope(worker):
-            if worker.id in self.work.held():
+            if self.run_limit() == 0:
+                return False
+            if worker.id in self.work.pending():
                 return True
             return len(self.running()) + self.resuming_count() < self.run_limit()

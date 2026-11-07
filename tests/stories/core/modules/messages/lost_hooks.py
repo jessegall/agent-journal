@@ -262,3 +262,12 @@ def test_a_prompt_typed_in_the_terminal_shows_in_the_chat_as_the_users_message(b
     builder.expect_text("message show 1", "type: user", "text: please look at the cart", actor=builder.user)
 
 
+
+
+def test_a_lost_repeated_closing_line_stays_out_even_if_a_tool_follows(builder, tmp_path):
+    builder.run('message send "What happened?" --environment main', actor=builder.user)
+    builder.hook("s-1", HookSamples.prompt("go on"))
+    builder.run('message reply 1 "The worker has task 7246 and its tests passed."', actor=builder.agent)
+    text = "The worker has task 7246 and its tests passed."
+    run_hook(builder, transcript(tmp_path, agent_row(builder, text)), TOOL_FINISHED)
+    expect_chat_count(builder, text, 1)

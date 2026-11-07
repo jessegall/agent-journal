@@ -3,8 +3,9 @@ SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
        CASE
            WHEN worktree.state = 'cut' THEN 'changes requested'
            WHEN worktree.left_to_main_at IS NOT NULL THEN 'with the main agent'
-           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state = 'running') THEN 'tests running'
-           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state = 'queued') THEN 'tests queued'
+           WHEN EXISTS (SELECT 1 FROM proofs JOIN processes ON processes.id = proofs.process_id
+                        WHERE proofs.worktree_id = worktree.id AND proofs.state = 'running' AND processes.queued_at IS NULL) THEN 'tests running'
+           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running')) THEN 'tests queued'
            WHEN worktree.tests_passed_at IS NULL THEN 'judging'
            ELSE 'waiting for the merge'
        END AS status

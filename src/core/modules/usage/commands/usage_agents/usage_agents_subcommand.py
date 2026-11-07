@@ -51,10 +51,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cards = self.queries.query(AgentCard)
         running = tuple(cards.matching(self.activity).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(self.activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
-        held = self.work.held()
+        pending = self.work.pending()
         job_roles = self.suites.agent_policy().job_roles
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
-        return AgentFactsList(tuple(self.facts(card, job_roles, titles, held.get(card.id)) for card in (*running, *ended)))
+        return AgentFactsList(tuple(self.facts(card, job_roles, titles, pending.get(card.id)) for card in (*running, *ended)))
 
     def facts(self, card: AgentCard, job_roles: Collection[str], titles: dict[str, str], work_status: str | None = None) -> AgentFacts:
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp())

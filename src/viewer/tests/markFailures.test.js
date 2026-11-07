@@ -1,4 +1,4 @@
-import {createApp, h} from "vue";
+import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import MarkButtons from "../src/chat/MarkButtons.vue";
 import MarkHost from "../src/chat/MarkHost.vue";
@@ -6,6 +6,7 @@ import ModuleBody from "../src/windows/ModuleBody.vue";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {markLook} from "../src/domain/markLook.js";
+import {peekRef} from "../src/route.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 
@@ -52,4 +53,20 @@ test("a person who may not run a button's line sees the mark without that button
     expect(limited.querySelectorAll(".mark-button")).toHaveLength(1);
     expect(limited.querySelector(".mark-button").getAttribute("title")).toBe("Dock");
     expect(limited.textContent).toContain("ran tests");
+});
+
+
+test("a mark opens its reason and keeps the worker action", async () => {
+    loadMarkDeclarations([{type: "worker", family_icon: "person", group: "agent", click: "open row", buttons: []}]);
+    const mark = {id: 3, type: "worker", text: "The merger sent Worker 9 back", detail: "Fix the total", target_model: "agents", target_id: 9, state: "shown", created_at: 1};
+    const element = drawn(MarkHost, {mark});
+    expect(element.textContent).not.toContain("Fix the total");
+    element.querySelector(".fold").click();
+    await nextTick();
+    expect(element.textContent).toContain("Fix the total");
+    element.querySelector(".top").click();
+    expect(peekRef).toHaveBeenCalledWith("agents:9");
+    element.querySelector(".fold").click();
+    await nextTick();
+    expect(element.textContent).not.toContain("Fix the total");
 });
