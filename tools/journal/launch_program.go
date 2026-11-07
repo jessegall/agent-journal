@@ -176,3 +176,16 @@ func programExitReporter(journal launch.CommandJournal, inputs *launch.TerminalI
 		journal.TellProgramExit(agentID, exitCode, pid)
 	}
 }
+
+// ProgramNames are the programs a person starts with journal <program>, as version 4 did, beside journal launch <program>.
+var ProgramNames = []string{launch.ClaudeProgram, "codex"}
+
+// IsProgramName says whether the first word names a program to start.
+func IsProgramName(word string) bool {
+	for _, name := range ProgramNames {
+		if word == name {
+			return true
+		}
+	}
+	return false
+}
