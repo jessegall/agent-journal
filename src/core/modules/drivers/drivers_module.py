@@ -140,6 +140,7 @@ from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigra
 from core.modules.drivers.migrations.m028_read_indexes import ReadIndexesMigration
 from core.modules.drivers.commands.nudge_list.nudge_list_subcommand import NudgeListSubcommand
 from core.modules.drivers.rules.opening_lines_rule import OpeningLinesRule
+from core.modules.drivers.rules.continued_session_rule import ContinuedSessionRule
 from core.modules.drivers.rules.takeover_rule import TakeoverRule
 from core.modules.drivers.rules.block_stop_rule import BlockStopRule
 from core.modules.drivers.rules.repeated_stop_release_rule import RepeatedStopReleaseRule
@@ -184,7 +185,7 @@ class DriversModule(Module):
     tick_handlers = [TickHandler(TickInterval(seconds=60), AgentTicks(), "agent ticks", starts_immediately=True), TickHandler(TickInterval(seconds=60), EndSilentHelpersTick(), "silent helpers"), TickHandler(TickInterval(seconds=2), PanicWatch(), "panic watch"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), HookPruning(), "hook pruning", starts_immediately=True)]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed]
-    driver_rules = [PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
+    driver_rules = [PanicFileRule, BlockStopRule, LongOutputRule, ForeignHooksRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, ContinuedSessionRule, AgentBlockRule, TakeoverRule, AccessRule, NativeSubagentRule, PrivateCorpusRule]
     bindings = {RefusalSkips: TableRefusalSkips, ManagedHookHistoryReader: ManagedHookHistoryQuery, TranscriptAuthors: LineTranscriptAuthors, HookHistory: TableHookHistory,HookRoute: AgentHookRoute, ChangeFilter: DriverChangeFilter,
                 EssentialAllowances: SettingEssentialAllowances}
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, skeleton=DRIVERS_NUDGES_SKELETON, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"], keys=[WindowKey("nudges", "nudge list", events=["nudge_record.*"]) ]),

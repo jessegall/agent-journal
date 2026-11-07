@@ -1,10 +1,14 @@
+from core.base.driver.command_category import CommandCategory
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_output_2
 
 RESUME = HookSamples.session_start().with_raw({"source": "resume"})
 COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
 MEMORY = "1 memories to read"
+WORKING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 
 
 def kept_memory_story(new_story):
@@ -13,11 +17,25 @@ def kept_memory_story(new_story):
     return story
 
 
-def test_a_resumed_session_gets_no_start_lines(new_story):
+def test_a_resumed_session_gets_no_start_lines_but_the_one_saying_it_continues(new_story):
     story = kept_memory_story(new_story)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run("task start 1", actor=story.agent)
-    expect_lines_hook(story, "s-1", RESUME, [])
+    expect_lines_hook(story, "s-1", RESUME, [continued_line(story)])
+
+
+def continued_line(story) -> str:
+    return f"you continue a previous session, agent {story.agent.id}: read where things stand before you act"
+
+
+def test_a_main_agent_that_was_working_is_idle_when_started_again_and_told_once_that_it_continues(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_hook_allowed("s-1", WORKING)
+    hook_calls = story.container.get(HookCallQuery)
+    assert not hook_calls.is_idle(story.agent.id, story.clock.timestamp())
+    expect_lines_hook(story, "s-1", RESUME, [continued_line(story)])
+    assert hook_calls.is_idle(story.agent.id, story.clock.timestamp())
+    expect_lines_hook(story, "s-1", WORKING, [])
 
 
 def test_a_first_start_gets_the_memories(new_story):
