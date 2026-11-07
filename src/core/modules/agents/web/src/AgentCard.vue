@@ -26,7 +26,7 @@ const jobRef = computed(() => {
     const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
     return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
 });
-const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.row.role === "worker" ? `worker ${props.row.id}` : ""].filter(Boolean).join(" · "));
+const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, props.facts?.job_enabled ? `${props.row.role} ${props.row.id}` : ""].filter(Boolean).join(" · "));
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
@@ -64,7 +64,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             </span>
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity data-agent-motion>{{ open && row.role === 'worker' ? `worker ${row.id}` : open ? '' : identity }}</span>
+            <span class="agent-identity" data-agent-identity data-agent-motion>{{ open && facts?.job_enabled ? `${row.role} ${row.id}` : open ? '' : identity }}</span>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
         <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>

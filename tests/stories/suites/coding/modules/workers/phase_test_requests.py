@@ -203,9 +203,9 @@ def test_a_request_asked_through_the_saved_command_is_allowed_for_pytest_and_pyt
 
 
 def test_a_line_refused_by_another_rule_does_not_use_up_an_allowed_run(allowed):
-    hold = "read the task first"
-    allowed.story.container.get(Bus).run(BlockUntil(allowed.worker.id, Nudge("workers.hold", NudgeType.REFUSAL, hold), RanCommand("journal overview")), Actor.core())
-    expect_reply_refusal(allowed.run_test(), hold)
+    refusal_text = "read the task first"
+    allowed.story.container.get(Bus).run(BlockUntil(allowed.worker.id, Nudge("workers.refusal", NudgeType.REFUSAL, refusal_text), RanCommand("journal overview")), Actor.core())
+    expect_reply_refusal(allowed.run_test(), refusal_text)
     expect_requests(allowed, RunRequest(1, TEST_LINE, WHY, "allowed"))
     allowed.run_line("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview"))
     expect_reply_allowed(allowed.run_test())

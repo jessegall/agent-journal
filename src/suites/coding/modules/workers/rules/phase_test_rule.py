@@ -68,7 +68,7 @@ class PhaseTestRule(DriverRule):
         if saved_refusal is not None and (flag.is_flagged or is_allowed):
             return RuleAnswer.refused(saved_refusal)
         if not flag.is_flagged:
-            return RuleAnswer.allowed().running_if_allowed(UseWorkerTest(request.id)) if is_allowed else RuleAnswer.refused(PHASE_TEST_REFUSED.nudge(phase=phase.id, plan=phase.plan_id))
+            return RuleAnswer.allowed().running_unrefused(UseWorkerTest(request.id)) if is_allowed else RuleAnswer.refused(PHASE_TEST_REFUSED.nudge(phase=phase.id, plan=phase.plan_id))
         if request is None:
             return RuleAnswer.refused(TEST_REQUEST_FORWARDED.nudge()).running(AskWorkerTest(worker_id, task_id, flag.command, flag.reason))
         return RuleAnswer.refused((TEST_REQUEST_ALLOWED if is_allowed else TEST_REQUEST_WAITING).nudge(request=request.id))
@@ -77,4 +77,4 @@ class PhaseTestRule(DriverRule):
     def line_answer(answers: list[RuleAnswer]) -> RuleAnswer:
         refusals = [answer for answer in answers if answer.refusal]
         first_answer, *remaining_answers = refusals or [RuleAnswer.allowed(), *answers]
-        return first_answer.running(*(command for answer in remaining_answers for command in answer.commands)).running_if_allowed(*(command for answer in remaining_answers for command in answer.commands_if_allowed))
+        return first_answer.running(*(command for answer in remaining_answers for command in answer.commands)).running_unrefused(*(command for answer in remaining_answers for command in answer.commands_unrefused))
