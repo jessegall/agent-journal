@@ -86,3 +86,34 @@ def test_s51_the_window_refuses_a_draft_made_from_an_older_reading_and_changes_n
         viewer.set_setting("journal.suites.coding.continue-while-delegatable", "true")
         viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", old]}, 200, "changed since")
         expect_value(work_reading(viewer)["workflow"], "custom")
+
+
+TEST_BATCH = "journal.suites.coding.workers.test-batch-size"
+FAILURES = "journal.suites.coding.workers.own-test-failures-to-flag"
+RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
+
+
+def field_values(reading: dict, group: str) -> dict:
+    return {field["key"]: field["value"] for field in reading["fields"] if field["group"] == group}
+
+
+def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
+    story = new_story(fixture=MainControlsActors)
+    with person_viewer(story) as viewer:
+        viewer.set_setting("journal.suites.coding.continue-while-delegatable", "false")
+        shown = work_reading(viewer)
+        expect_value(len(field_values(shown, "tests")) > 0, True)
+        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
+        applied = field_values(work_reading(viewer), "tests")
+        expect_value((applied[TEST_BATCH], applied[FAILURES]), (4, 7))
+
+
+def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_nothing(new_story):
+    story = new_story(fixture=MainControlsActors)
+    with person_viewer(story) as viewer:
+        viewer.set_setting("journal.suites.coding.designer-enabled", "false")
+        shown = work_reading(viewer)
+        before = field_values(shown, "advanced")[RUN_LIMIT]
+        viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
+        after = work_reading(viewer)
+        expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (before, True))

@@ -8,9 +8,11 @@ from core.modules.settings.commands.set_setting.set_setting_handler import SetSe
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.checked_setting_value import CheckedSettingValue
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
 from suites.coding.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
 from suites.coding.support.main_options import PRESETS
-from suites.coding.support.work_settings import WorkSettings
+from suites.coding.support.work_catalogue import EDITABLE_KEYS, GROUPS
+from suites.coding.support.work_settings import WorkField, WorkSettings
 
 
 class WorkControls:
@@ -18,14 +20,19 @@ class WorkControls:
     and a change made from a reading that has since changed is refused, so a person never overwrites what they
     did not see."""
 
-    def __init__(self, options: CodingMainOptions, declared: SettingCatalogue, store: SettingStore) -> None:
-        self.options, self.declared, self.store = options, declared, store
+    def __init__(self, options: CodingMainOptions, declared: SettingCatalogue, store: SettingStore, reader: SettingReader) -> None:
+        self.options, self.declared, self.store, self.reader = options, declared, store, reader
 
     def shown(self) -> WorkSettings:
         current = self.options.options()
         controls = tuple(zip(CONTROL_KEYS.values(), current.bundle, strict=True))
-        revision = hashlib.sha256(repr((controls, current.sources, current.problems)).encode()).hexdigest()[:12]
-        return WorkSettings(current.workflow, revision, controls)
+        fields = tuple(self.field(group, key) for group, keys in GROUPS.items() for key in keys)
+        revision = hashlib.sha256(repr((controls, current.sources, current.problems, [(field.key, field.value, field.source) for field in fields])).encode()).hexdigest()[:12]
+        return WorkSettings(current.workflow, revision, controls, fields)
+
+    def field(self, group: str, key: str) -> WorkField:
+        current = self.reader.current(key)
+        return WorkField(key, group, current.entry.title, current.entry.description, current.entry.type, current.value, current.source)
 
     def preset(self, name: str, revision: str, context: Context) -> WorkSettings:
         if name not in PRESETS:
@@ -42,6 +49,6 @@ class WorkControls:
         return self.shown()
 
     def work_control(self, key: str) -> SettingEntry:
-        if key not in CONTROL_KEYS.values():
-            raise Refusal(f"{key} is not a work control", f"the work controls are {', '.join(CONTROL_KEYS.values())}")
+        if key not in (*CONTROL_KEYS.values(), *EDITABLE_KEYS):
+            raise Refusal(f"{key} is not a work control", f"the work controls are {', '.join((*CONTROL_KEYS.values(), *EDITABLE_KEYS))}")
         return self.declared.value(key)
