@@ -4,6 +4,7 @@ import {MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePo
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 import RequestDetails from "./RequestDetails.vue";
 import {toggleFeedPause} from "./toggleFeedPause.js";
+import {usePausedProp} from "./usePausedProp.js";
 
 const key = "journal.hook-requests.filters";
 const emptyFilters = () => ({kind: [], family: [], sender: []});
@@ -16,22 +17,12 @@ const paused = ref(false);
 const options = ref({family: ["process bookkeeping"], sender: []});
 const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
 const window = useWindow();
-const feed = window.props.requests;
-const requests = ref(null);
-const failure = ref("");
+const {data: requests, failure, loaded, reload: load} = usePausedProp(window, "requests", paused);
 const filterArguments = {kind: "kinds", family: "families", sender: "senders"};
 function setFilters(value) {
     for (const [name, values] of Object.entries(value)) window.state[`requests.${filterArguments[name]}`] = JSON.stringify(values);
 }
 setFilters(filters.value);
-async function load() {
-    await window.reload("requests");
-    if (paused.value) return;
-    failure.value = feed.failure.value;
-    if (feed.data.value) requests.value = feed.data.value;
-}
-watch(feed.data, (value) => { if (!paused.value) requests.value = value; });
-watch(feed.failure, (value) => { if (!paused.value) failure.value = value; });
 const rows = computed(() => requests.value?.rows ?? []);
 watch(requests, (value) => {
     options.value.family = [...new Set(["process bookkeeping", ...(value.families || []), ...filters.value.family])].sort();
@@ -54,7 +45,7 @@ const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
 function togglePause() {
     toggleFeedPause(paused, load);
 }
-usePoll(() => feed.loaded.value && load(), () => !paused.value && window.visible.value);
+usePoll(() => loaded.value && load(), () => !paused.value && window.visible.value);
 </script>
 
 <template>

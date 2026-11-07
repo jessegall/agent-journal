@@ -1,6 +1,7 @@
 import {expect, test, vi} from "vitest";
 import {READ_RATES} from "../src/composables/readRates.js";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {mounted, settle} from "./support/windowContext.js";
+import {systemLogsWindowContext as context} from "./support/systemLogsWindowContext.js";
 import SystemLogs from "../../core/modules/developer/web/src/SystemLogs.vue";
 
 const listing = (text = "server started") => ({ok: true, value: {rows: [{id: "server.log:1", recorded_at: "2026-11-06T12:00:00+00:00", source: "server", level: "info", text}], total: 75, size: 50}});
