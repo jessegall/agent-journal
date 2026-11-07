@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {Icon, PriorityIcon, SearchBar, Skeleton, TaskStatusIcon, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
+import MarkIcon from "../../../../../viewer/src/kit/MarkIcon.vue";
 import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
@@ -158,6 +159,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                     <template v-for="row in folded.has(group.state) ? [] : tasks" :key="row.id">
                         <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">
                             <TaskStatusIcon :status="row.state" />
+                            <template v-if="row.state === 'blocked' && !row.automatic"><MarkIcon name="warning" class="task-warning" data-task-warning title="Does not open by itself: needs a person" /></template>
                             <template v-if="display.number">
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
@@ -181,6 +183,8 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </template>
 
 <style scoped>
+.task-warning { color: var(--danger); flex: none; }
+
 .task-agent {
     flex: none;
     color: var(--text-3);

@@ -1,3 +1,6 @@
+USER_TASK_WAIT = "EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user')"
+AUTOMATIC_TASK_WAIT = "EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND (command != '' OR target != 'user'))"
+
 OPEN_DEPENDENCIES_SELECT = (
     "SELECT task_dependencies.id, task_dependencies.task_id, task_dependencies.dependency_id"
     " FROM task_dependencies"
@@ -9,6 +12,7 @@ OPEN_DEPENDENCIES_SELECT = (
 
 TASK_CARDS_SELECT = (
     "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.reason, tasks.closed_at, tasks.delegated_to,"
+    f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic, "
     " (SELECT coalesce(nullif(agents.given_name, ''), 'Agent ' || agents.id) FROM agents WHERE agents.id = tasks.delegated_to) AS delegated_name"
     " FROM tasks"
 )
@@ -39,9 +43,8 @@ TASK_BLOCK_REVIEWS_SELECT = (
     " max(coalesce((SELECT max(created_at) FROM task_block_renewals WHERE task_id = tasks.id), tasks.updated_at),"
     " coalesce((SELECT max(last_delivered_at) FROM nudge_records WHERE session_agent_id = agents.id"
     " AND key = 'tasks.block_review.' || tasks.id), '')) AS reviewed_at,"
-    " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user') AS user_wait,"
-    " EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL"
-    " AND (command != '' OR target != 'user')) AS automatic"
+    f" {USER_TASK_WAIT} AS user_wait,"
+    f" {AUTOMATIC_TASK_WAIT} AS automatic"
     " FROM tasks JOIN agents ON agents.environment_id = tasks.environment_id AND agents.role = 'main'"
 )
 
