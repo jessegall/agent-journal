@@ -1,5 +1,9 @@
 import {afterEach, expect, test} from "vitest";
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {arrivalQueue, FADE_MS, PUSH_MS} from "../src/chat/arrival.js";
+
+const chatSource = readFileSync(resolve(__dirname, "../../core/modules/messages/web/src/Chat.vue"), "utf8");
 
 const CLIENT_HEIGHT = 300;
 const FRAME_MS = 16;
@@ -10,7 +14,7 @@ afterEach(() => host?.remove());
 
 // A pane whose scrollable area is worked out the way a browser does: the layout's end plus the pane's bottom padding, or, past that, the foot of the
 // row sliding in below its place; the row's height grows with the time and its slide is the one the arrival sets on it. The pane's scrollTop stays inside the area.
-function modelled(padding) {
+function modelled(padding, clipped = false) {
     host = document.createElement("div");
     document.body.append(host);
     const pane = document.createElement("div");
@@ -23,7 +27,7 @@ function modelled(padding) {
     const grown = () => (el.style.height ? Math.min(state.height, state.height * Math.min(1, (state.now - (state.began ?? state.now)) / PUSH_MS)) : state.height);
     const layoutEnd = () => ROWS_END + grown();
     const transformed = () => layoutEnd() + slide();
-    const scrollHeight = () => Math.max(layoutEnd() + padding, transformed());
+    const scrollHeight = () => clipped ? layoutEnd() + padding : Math.max(layoutEnd() + padding, transformed());
     Object.defineProperty(pane, "scrollHeight", {get: scrollHeight});
     Object.defineProperty(pane, "clientHeight", {get: () => CLIENT_HEIGHT});
     Object.defineProperty(pane, "clientTop", {get: () => 0});
@@ -38,8 +42,9 @@ function modelled(padding) {
 }
 
 // the first turn of an arrival queue, stepped one frame at a time; the pane's scrollTop is read after each frame
-function sampled(padding, lasts) {
-    const {pane, el, state} = modelled(padding);
+function sampled(padding, lasts, resize = false) {
+    const clipped = resize && /\.history-content\s*\{[^}]*overflow:\s*clip\s*;/s.test(chatSource);
+    const {pane, el, state} = modelled(padding, clipped);
     state.top = scrollEnd(pane);
     let waiting = null;
     const samples = [];
@@ -52,6 +57,11 @@ function sampled(padding, lasts) {
         waiting = null;
         step?.();
         samples.push(state.top);
+        if (resize) {
+            pane.scrollTop = pane.scrollHeight;
+            samples.push(state.top);
+            expect(state.top).toBe(scrollEnd(pane));
+        }
     }
     el.style.height = "";
     el.style.transform = "";
@@ -68,5 +78,11 @@ test.each([0, 4, 8, 16])("a message that arrives glides the pane up and never le
 
 test("the pane ends at the real foot of the chat once the message has come in", () => {
     const {samples, finalFoot} = sampled(0, PUSH_MS + FADE_MS);
+    expect(samples.at(-1)).toBe(finalFoot);
+});
+
+test("each resize keeps the pane at the bottom without reversing the scroll", () => {
+    const {samples, finalFoot} = sampled(8, PUSH_MS + FADE_MS, true);
+    expect(largestDrop(samples)).toBe(0);
     expect(samples.at(-1)).toBe(finalFoot);
 });
