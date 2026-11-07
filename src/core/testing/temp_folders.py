@@ -17,7 +17,8 @@ PYTEST_PREFIX = "pytest-"
 
 class TempFolders:
     """The folder one test run keeps its temporary files in, inside the user's pytest folder. A passed run removes
-    its folder, a failed run keeps it under a failed name, and only the newest failed runs are kept."""
+    its folder, a failed run keeps it under a failed name, and only the newest failed runs are kept. A new run
+    removes the folders of runs whose process has ended."""
 
     def __init__(self, user_folder: Path | None = None) -> None:
         self.user_folder = user_folder or self.default_user_folder()
@@ -28,6 +29,8 @@ class TempFolders:
         return root / f"pytest-of-{getpass.getuser()}"
 
     def start(self) -> Path:
+        self.remove_dead_runs()
+        self.remove_old()
         run = self.user_folder / f"{RUNNING_PREFIX}{time.strftime('%Y%m%dT%H%M%S')}-{os.getpid()}"
         run.mkdir(parents=True, exist_ok=True)
         return run
@@ -38,6 +41,22 @@ class TempFolders:
         else:
             run.rename(run.with_name(FAILED_PREFIX + run.name.removeprefix(RUNNING_PREFIX)))
         self.remove_old()
+
+    def remove_dead_runs(self) -> None:
+        for folder in self.folders(RUNNING_PREFIX):
+            process = folder.name.rsplit("-", 1)[-1]
+            if process.isdigit() and not self.is_running(int(process)):
+                shutil.rmtree(folder, ignore_errors=True)
+
+    @staticmethod
+    def is_running(process: int) -> bool:
+        try:
+            os.kill(process, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        return True
 
     def remove_old(self) -> None:
         limit = time.time() - RUNNING_FOLDER_SECONDS

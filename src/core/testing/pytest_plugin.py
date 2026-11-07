@@ -1,3 +1,4 @@
+import shutil
 from collections.abc import Callable, Generator
 from pathlib import Path
 
@@ -16,6 +17,7 @@ from core.testing.template_databases import TemplateDatabases
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 RUN_FOLDER = pytest.StashKey[Path]()
+CALL_PASSED = pytest.StashKey[bool]()
 STORY_STEPS_KEY = "journal_story_steps"
 TESTS_PER_WORKER_OPTION = "tests_per_worker"
 MOST_WORKERS_OPTION = "most_workers"
@@ -66,6 +68,16 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         overlap.add(item.nodeid, steps.lines())
         steps.story.close()
     created.clear()
+    if item.stash.get(CALL_PASSED, False):
+        shutil.rmtree(tmp_path, ignore_errors=True)
+
+
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) -> Generator[None, pytest.TestReport, pytest.TestReport]:
+    report = yield
+    if report.when == "call":
+        item.stash[CALL_PASSED] = report.passed
+    return report
 
 
 @pytest.hookimpl(wrapper=True, tryfirst=True)

@@ -9,14 +9,17 @@ from core.base.module.source_hash import SourceHash
 from core.testing.folder_stat import FolderStat
 
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
-RUNNING_FOLDER_SECONDS = 3600
+UNUSED_FOLDER_SECONDS = 24 * 3600
+PRUNE_EVERY_SECONDS = 3600
+PRUNED_STAMP = ".pruned"
 CACHE_LIMIT_BYTES = 1024 ** 3
 HASH_CHARACTERS = 16
 
 
 class TemplateCache:
     """Shares complete story templates within a checkout, and when a new one is made removes
-    the ones unused for an hour and then the least recently used until the cache is under its size limit. The
+    the ones unused for a day and then the least recently used until the cache is under its size limit; a cache
+    already pruned within the hour is left alone. The
     templates are kept for the source code and the stories' support folders; a story file's own fixtures are in each
     template's key, so editing a story rebuilds only the templates of the fixtures it defines."""
 
@@ -29,24 +32,33 @@ class TemplateCache:
         source_hash = SourceHash.text((CORE_FOLDER.parent, *support_folders))
         checkout_hash = hashlib.sha256(str(checkout).encode()).hexdigest()[:HASH_CHARACTERS]
         current = self.root / f"{checkout_hash}-{source_hash[:HASH_CHARACTERS]}"
-        if not current.is_dir():
-            self.remove_old()
+        is_new = not current.is_dir()
         current.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().update_timestamp(current)
+        if is_new or self.is_prune_due():
+            self.remove_old(current)
         return current
 
-    def remove_old(self) -> None:
-        limit = time.time() - RUNNING_FOLDER_SECONDS
-        for folder in self.root.iterdir() if self.root.is_dir() else ():
-            if folder.is_dir() and FolderStat.modified_time(folder) < limit:
-                shutil.rmtree(folder, ignore_errors=True)
-        self.remove_oldest_templates()
+    def is_prune_due(self) -> bool:
+        stamp = self.root / PRUNED_STAMP
+        due = not stamp.exists() or FolderStat.modified_time(stamp) < time.time() - PRUNE_EVERY_SECONDS
+        if due:
+            stamp.touch()
+        return due
 
-    def remove_oldest_templates(self) -> None:
+    def remove_old(self, kept: Path | None = None) -> None:
+        limit = time.time() - UNUSED_FOLDER_SECONDS
+        for folder in self.root.iterdir() if self.root.is_dir() else ():
+            if folder.is_dir() and folder != kept and FolderStat.modified_time(folder) < limit:
+                shutil.rmtree(folder, ignore_errors=True)
+        self.remove_oldest_templates(kept)
+
+    def remove_oldest_templates(self, kept: Path | None = None) -> None:
         sizes = {folder: FolderStat.bytes(folder) for folder in self.root.iterdir() if folder.is_dir()} if self.root.is_dir() else {}
         total = sum(sizes.values())
         for folder in sorted(sizes, key=FolderStat.modified_time):
             if total <= self.limit_bytes:
                 break
-            shutil.rmtree(folder, ignore_errors=True)
-            total -= sizes[folder]
+            if folder != kept:
+                shutil.rmtree(folder, ignore_errors=True)
+                total -= sizes[folder]
