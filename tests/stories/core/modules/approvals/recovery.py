@@ -1,6 +1,7 @@
 import pytest
 
 from core.base.query.queries import Queries
+from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.docking.models.dock_item import DockItem
@@ -57,3 +58,20 @@ def test_a_failed_action_keeps_its_card_open_for_refusal(new_story):
         viewer.value("messages.chat", ["approval", "refuse", str(request.id)])
     saved = story.container.get(Queries).query(ApprovalRequest).find(request.id)
     story.expect_rows(saved.state is ApprovalState.REFUSED)
+
+
+def test_an_action_that_raises_can_be_accepted_again(phone_request, phone_viewer, monkeypatch):
+    story, request = phone_request
+    run_action = AnswerApprovalHandler.run_action
+
+    def fail(*args):
+        raise RuntimeError("action stopped")
+
+    monkeypatch.setattr(AnswerApprovalHandler, "run_action", fail)
+    with pytest.raises(AssertionError):
+        phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
+    story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
+    story.expect_refusal("phone pair", "A person was asked in the dock", actor=story.agent)
+    monkeypatch.setattr(AnswerApprovalHandler, "run_action", run_action)
+    phone_viewer.value("messages.chat", ["approval", "accept", str(request.id)])
+    story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.ACCEPTED)

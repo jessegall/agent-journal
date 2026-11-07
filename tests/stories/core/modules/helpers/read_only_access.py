@@ -33,7 +33,7 @@ class StartedCodexHelper(StoryFixture):
         launcher = FakeLauncher(story.home.socket("launcher"))
         story.run('helper start journal-researcher --program codex --model gpt-6-luna --brief "Read src/cart.py" --environment main', actor=story.agent)
         story.run_listeners()
-        launcher.thread.join(timeout=5)
+        launcher.wait_for_requests()
         launcher.server.close()
         story.home.socket("launcher").unlink()
 

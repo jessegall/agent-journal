@@ -3,12 +3,16 @@ from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.modules.approvals.commands.accept_approval.accept_approval_subcommand import AcceptApprovalSubcommand
 from core.modules.approvals.commands.close_user_approval.close_user_approval_handler import CloseUserApprovalHandler
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.commands.move_approval.move_approval_handler import MoveApprovalHandler
+from core.modules.approvals.commands.recover_approvals.recover_approvals_handler import RecoverApprovalsHandler
+from core.modules.approvals.ticks.recover_approvals_tick import RecoverApprovalsTick
 from core.modules.approvals.commands.pending_approvals.pending_approvals_subcommand import PendingApprovalsSubcommand
 from core.modules.approvals.commands.deny_approval.deny_approval_subcommand import DenyApprovalSubcommand
 from core.modules.approvals.commands.request_user_approval.request_user_approval_handler import RequestUserApprovalHandler
@@ -38,7 +42,8 @@ class ApprovalsModule(Module):
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer"]
     models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"])]
     migrations = [ApprovalRequestsMigration, ApprovalRecipientsMigration]
-    handlers = [RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler]
+    handlers = [RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
+    tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
     listeners = [ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard]

@@ -6,8 +6,8 @@ const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH
 try {
     const page = await browser.newPage({viewport: {width: 1100, height: 720}});
     await page.goto(address);
-    const approved = page.locator("[data-approval-question]").filter({hasText: "the end of the long rule"});
-    const denied = page.locator("[data-approval-question]").filter({hasText: "Skip the tests"});
+    const approved = page.locator("[data-approval-description]").filter({hasText: "the end of the long rule"});
+    const denied = page.locator("[data-approval-description]").filter({hasText: "Skip the tests"});
     await approved.waitFor();
     await denied.waitFor();
     const colour = await approved.evaluate((body) => getComputedStyle(body.closest(".chat-dock-card"), "::before").backgroundColor);

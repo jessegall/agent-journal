@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from core.base.registry.lazy_loading import LazyLoading
 from core.testing.run_size import RunSize
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -16,20 +17,26 @@ STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 RUN_FOLDER = pytest.StashKey[Path]()
 STORY_STEPS_KEY = "journal_story_steps"
-SHARD_LIMIT_OPTION = "shard_limit_tests"
+TESTS_PER_WORKER_OPTION = "tests_per_worker"
+MOST_WORKERS_OPTION = "most_workers"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini(SHARD_LIMIT_OPTION, "the number of tests from which a run with -n starts its shards", default="50")
+    parser.addini(TESTS_PER_WORKER_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
+    parser.addini(MOST_WORKERS_OPTION, "the most test runners a run with -n starts", default="4")
 
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_cmdline_main(config: pytest.Config) -> None:
-    if config.getoption("numprocesses", None) and RunSize(config.args, int(config.getini(SHARD_LIMIT_OPTION))).is_small():
-        config.option.numprocesses = 0
+    if not config.getoption("numprocesses", None):
+        return
+    per_worker, most = int(config.getini(TESTS_PER_WORKER_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
+    workers = RunSize(config.args, per_worker * most).workers(per_worker, most)
+    config.option.numprocesses = 0 if workers == 1 else workers
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    LazyLoading.always_prevented = True
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()

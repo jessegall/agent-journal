@@ -134,13 +134,13 @@ def test_changed_entries_with_the_same_fingerprint_are_read_after_sync(database)
     assert {listener.actor_id for listener in changed.listeners} == {77}
 
 
-def test_equal_versions_in_two_databases_keep_listener_actor_ids_separate(database, tmp_path):
+def test_two_databases_share_a_registry_while_their_rows_match_and_keep_listener_actor_ids_separate_after(database, tmp_path):
     first = Registry.read(database)
     second_database = Database.opened(JournalHome(tmp_path / "second"))
     try:
         database.connection.backup(second_database.connection)
         copied = Registry.read(second_database)
-        assert copied is not first
+        assert copied is first
         changed_entries = replace(first, listeners=tuple(replace(listener, actor_id=88) for listener in first.listeners))
         RegistryTable(second_database).write(first.fingerprint, changed_entries.entries_text(), "2026-11-05T13:00:00+00:00")
         first_entries = replace(first, listeners=tuple(replace(listener, actor_id=99) for listener in first.listeners))
@@ -151,13 +151,13 @@ def test_equal_versions_in_two_databases_keep_listener_actor_ids_separate(databa
         second_database.close()
 
 
-def test_an_in_memory_database_has_its_own_registry(database):
+def test_an_in_memory_copy_shares_the_registry_of_its_rows(database):
     first = Registry.read(database)
     memory = Database.configured(sqlite3.connect(":memory:", autocommit=True))
     try:
         database.connection.backup(memory.connection)
         copied = Registry.read(memory)
-        assert copied is not first
+        assert copied is first
         assert Registry.read(memory) is copied
     finally:
         memory.close()

@@ -24,7 +24,7 @@ class StartedHelper(StoryFixture):
         launcher = FakeLauncher(story.home.socket("launcher"))
         story.run(START, actor=story.agent)
         story.run_listeners()
-        launcher.thread.join(timeout=5)
+        launcher.wait_for_requests()
         launcher.server.close()
         story.home.socket("launcher").unlink()
 
@@ -72,7 +72,7 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, mon
     resumable_session(story, helper_agent(story), monkeypatch)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     story.expect_rows(len(jobs_of(story, helper)) == 2, helper.session in " ".join(launcher.requests[0]["command"]), JOB in " ".join(launcher.requests[0]["command"]))
 
 

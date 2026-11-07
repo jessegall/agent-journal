@@ -8,6 +8,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.scope.scopes import Scopes
 from core.base.listener.listener_class_error import ListenerClassError
+from collections.abc import Sequence
 
 
 class Listeners:
@@ -24,6 +25,17 @@ class Listeners:
                 raise ListenerClassError(f"{entry.path.text} is no deletion listener")
             if self.change_filter.applies(entry.name, change):
                 self.container.get(listener_class).handle(change.typed_event(listener_class), change.context)
+
+    def run_deletion_listeners_many(self, changes: Sequence[Change[Model]]) -> None:
+        if not changes:
+            return
+        for entry in self.registry.event_listeners(changes[0].event, ListenerTiming.DELETION):
+            listener_class = entry.path.loaded()
+            if not issubclass(listener_class, DeletionListener):
+                raise ListenerClassError(f"{entry.path.text} is no deletion listener")
+            events = [change.typed_event(listener_class) for change in changes if self.change_filter.applies(entry.name, change)]
+            if events:
+                self.container.get(listener_class).handle_many(events, changes[0].context)
 
     def run_save_listeners(self, change: Change[Model]) -> None:
         for entry in self.registry.event_listeners(change.event, ListenerTiming.SAVE):

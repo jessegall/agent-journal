@@ -206,7 +206,8 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def stack_calls() -> list[str]:
-        frames = [frame for frame in traceback.extract_stack(limit=CALLER_FRAMES) if not frame.filename.endswith(WATCH_FILES)]
+        stack = traceback.StackSummary.extract(traceback.walk_stack(sys._getframe(1)), limit=CALLER_FRAMES, lookup_lines=False)
+        frames = [frame for frame in reversed(stack) if not frame.filename.endswith(WATCH_FILES)]
         calls = [(os.path.relpath(frame.filename, SOURCE_ROOT), frame.lineno, frame.name) for frame in frames]
         return [f"{path}:{line} {name}" for path, line, name in calls if not path.startswith(ACCESS_LAYERS) and (not path.startswith("..") or path.startswith(TEST_FOLDER))]
 

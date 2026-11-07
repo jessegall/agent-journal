@@ -6,7 +6,6 @@ import struct
 import subprocess
 import termios
 import threading
-import time
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
@@ -19,7 +18,7 @@ READ_BYTES = 4096
 WINDOW_SIZE = struct.pack("HHHH", 40, 120, 0, 0)
 ENTER = b"\r"
 PROGRAM_LINE = "the stand-in program runs"
-STAND_IN_PROGRAM = f'#!/bin/sh\necho "{PROGRAM_LINE}"\nexec sleep 120\n'
+STAND_IN_PROGRAM = f'#!/bin/sh\necho "{PROGRAM_LINE}"\nexec python3 -c "import signal; signal.pause()"\n'
 OPENS_NOTHING = "#!/bin/sh\nexit 0\n"
 SUITE_QUESTION = "Which suite?"
 ENVIRONMENT_QUESTION = "Which environment?"
@@ -45,6 +44,7 @@ class LaunchTerminal:
 
     def __init__(self, home: JournalHome, binary: Path, programs: Path, folder: Path, suite_number: int) -> None:
         self.screen, self.read_up_to, self.suite_number = bytearray(), 0, suite_number
+        self.screen_changed = threading.Condition()
         self.controller, terminal = pty.openpty()
         fcntl.ioctl(terminal, termios.TIOCSWINSZ, WINDOW_SIZE)
         environment = GoBuild.environment(JOURNAL_HOME=str(home.folder), JOURNAL_SOURCE=str(ROOT / "src"))
@@ -65,19 +65,19 @@ class LaunchTerminal:
     def kept_screen(self) -> None:
         try:
             while text := os.read(self.controller, READ_BYTES):
-                self.screen += text
+                with self.screen_changed:
+                    self.screen += text
+                    self.screen_changed.notify_all()
         except OSError:
             return
 
     def wait_for(self, text: str) -> None:
-        wanted, deadline = text.encode(), time.monotonic() + SCREEN_WAIT_SECONDS
-        while time.monotonic() < deadline:
-            position = self.screen.find(wanted, self.read_up_to)
-            if position >= 0:
-                self.read_up_to = position + len(wanted)
-                return
-            time.sleep(0.02)
-        raise AssertionError(f"the launch never drew {text!r}, it drew: {bytes(self.screen[self.read_up_to:])!r}")
+        wanted = text.encode()
+        with self.screen_changed:
+            found = self.screen_changed.wait_for(lambda: self.screen.find(wanted, self.read_up_to) >= 0, SCREEN_WAIT_SECONDS)
+            if not found:
+                raise AssertionError(f"the launch never drew {text!r}, it drew: {bytes(self.screen[self.read_up_to:])!r}")
+            self.read_up_to = self.screen.find(wanted, self.read_up_to) + len(wanted)
 
     def press_enter_on(self, question: str) -> None:
         self.wait_for(question)

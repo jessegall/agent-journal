@@ -125,7 +125,7 @@ def test_helper_goes_by_the_split_named_out_program_is_started_with_warning(help
     launcher = FakeLauncher(story.home.socket('launcher'))
     answer = story.run(f'{START} --program codex', actor=story.agent)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     launcher.server.close()
     story.home.socket('launcher').unlink()
     story.expect_rows(answer.code == 0, 'is out until' in answer.output_text, ends_at in answer.output_text)

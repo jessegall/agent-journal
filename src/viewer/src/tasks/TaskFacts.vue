@@ -1,4 +1,5 @@
 <script setup>
+import InfoTip from "../kit/InfoTip.vue";
 import Segmented from "../kit/Segmented.vue";
 import {peekRef} from "../route.js";
 import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
@@ -6,6 +7,8 @@ import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
 // where a task sits: its plan and phase, the agent it is queued for or held by, and its priority
 const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
 const COMPLEXITIES = [1, 2, 3, 4, 5].map((score) => ({key: String(score), label: String(score)}));
+// what each score means, in the words the journal-tasks skill gives agents
+const SCORE_MEANINGS = ["a line or two, nothing to decide", "one file, the way is clear", "a few files in one module", "several modules, or a choice to make", "core paths, migrations, concurrency, or a design"];
 defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, refusal: {type: String, default: ""}});
 const emit = defineEmits(["priority", "complexity"]);
 const HELD_STATES = new Set(["started", "testing", "blocked"]);
@@ -47,9 +50,11 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
             </div>
         </template>
         <div class="fact wide">
-            <span class="fact-label">Complexity</span>
+            <span class="fact-label">
+                Complexity
+                <InfoTip :lines="SCORE_MEANINGS.map((meaning, index) => `${index + 1}: ${meaning}`)" label="What the scores mean" />
+            </span>
             <Segmented :options="COMPLEXITIES" :value="task.complexity ? String(task.complexity) : ''" data-task-complexity @pick="emit('complexity', $event)" />
-            <span class="fact-label">1: a few lines. 5: a design with risk.</span>
         </div>
         <div class="fact wide">
             <span class="fact-label">Priority</span>
