@@ -5,6 +5,8 @@ from dataclasses import dataclass
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
+from core.base.row_owner import RowOwner
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
@@ -56,3 +58,15 @@ class PersonViewer:
 def person_viewer(story: Story) -> Iterator[PersonViewer]:
     with server_story(story) as server:
         yield PersonViewer(server, server.expect_viewer_login(server.viewer_key("Ada")))
+
+
+@contextmanager
+def in_environment(story: Story, environment_id: int = 1) -> Iterator[None]:
+    """Reads the story's settings for an environment, as a request that names it would."""
+    database = story.container.get(Database)
+    previous = database.row_owner
+    database.row_owner = RowOwner(None, environment_id)
+    try:
+        yield
+    finally:
+        database.row_owner = previous
