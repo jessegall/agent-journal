@@ -14,7 +14,7 @@ import {ago} from "../format/time.js";
 import {dockBadgeOf, cliOf} from "../domain/resourceNouns.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {leaveSeconds} from "../domain/dockItems.js";
-import {dockLook} from "../domain/dockLook.js";
+import {dockLook, shownTitle as titleOf} from "../domain/dockLook.js";
 import {pressButton} from "./markButtons.js";
 import {peekRef} from "../route.js";
 
@@ -32,6 +32,8 @@ const look = computed(() => dockLook(props.item, declaration.value));
 const view = useWindow();
 const cardKey = computed(() => `dock.${props.item.id}`);
 const card = computed(() => view.props[cardKey.value].data.value);
+// a card that draws its own head names the item by what it holds, as its card says, and by the dock's generic title only until it has read
+const shownTitle = computed(() => titleOf(props.item, declaration.value, card.value));
 const noun = computed(() => cliOf(props.item.target_model ?? ""));
 const rowWord = computed(() => declaration.value?.word ?? "");
 const row = computed(() => ({...card.value, id: props.item.target_id, noun: noun.value}));
@@ -88,7 +90,7 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
             <template v-else>
                 <Icon :name="look.icon" class="dock-icon" :size="14" />
                 <span class="dock-text">
-                    <span class="dock-title" :title="look.title">{{ look.title }}</span>
+                    <span class="dock-title" :title="shownTitle">{{ shownTitle }}</span>
                 </span>
             </template>
             <span ref="time" class="dock-age" data-dock-age>
