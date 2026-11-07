@@ -138,6 +138,38 @@ def test_sixty_percent_overlap_is_held_and_less_reaches_chat(reply_ready):
     expect_chat(story, news)
 
 
+def test_a_closing_text_naming_only_rows_the_reply_named_stays_out_of_chat_in_other_words(reply_ready):
+    story = reply_ready
+    story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
+    text = "The reminder change is already filed as task 7413, with everything you described."
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_absent_chat(story, text)
+
+
+def test_a_closing_text_naming_a_new_task_in_other_words_reaches_chat(reply_ready):
+    story = reply_ready
+    story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
+    text = "The reminder change is already filed as task 7413, and the follow up is task 7414."
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_chat(story, text)
+
+
+def test_a_closing_text_with_a_question_in_other_words_reaches_chat(reply_ready):
+    story = reply_ready
+    story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
+    text = "The reminder change is already filed as task 7413, should it start now?"
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_chat(story, text)
+
+
+def test_a_closing_text_naming_a_new_file_in_other_words_reaches_chat(reply_ready):
+    story = reply_ready
+    story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
+    text = "Everything described there lives in src/reminder.py, per task 7413."
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_chat(story, text)
+
+
 @pytest.fixture
 def reaction_turn(new_story, monkeypatch):
     story = new_story(fixture=BuilderWithUser)
