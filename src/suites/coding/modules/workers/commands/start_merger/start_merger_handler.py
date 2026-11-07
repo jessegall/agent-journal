@@ -15,6 +15,7 @@ from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.minimum import Minimum
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PASSED, MERGER_PROFILE, MERGER_SOURCE, NO_WORKER_WAITING
@@ -41,12 +42,17 @@ class StartMergerHandler(Handler[StartMerger, None]):
         except Exception:
             text = command.fallback_line.text if isinstance(command.fallback_line, Nudge) else command.fallback_line
             existing = self.queries.query(AgentLine).filter(source=MERGER_SOURCE, state=AgentLineState.WAITING, text=text).first()
-            if existing is not None:
+            if existing is not None or self.is_told_since(command, text):
                 return
             if isinstance(command.fallback_line, Nudge):
                 self.main_line.send_nudge(command.fallback_line, MERGER_SOURCE, context)
             else:
                 self.main_line.send(command.fallback_line, MERGER_SOURCE, context)
+
+    def is_told_since(self, command: StartMerger, text: str) -> bool:
+        if command.since is None:
+            return False
+        return self.queries.query(AgentLine).filter(source=MERGER_SOURCE, text=text).matching(Minimum("created_at", command.since.text)).first() is not None
 
     def give_job(self, actor: Actor, context: Context) -> None:
         kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
