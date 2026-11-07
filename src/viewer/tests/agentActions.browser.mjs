@@ -34,8 +34,8 @@ try {
     await retiredCard.click();
     await retiredCard.locator('[data-agent-retirement-reason]').waitFor();
     await retiredCard.locator('[data-agent-tab-body="transcript"]').waitFor();
-    await retiredCard.locator('[aria-busy="true"]').waitFor({state: "hidden"});
-    assert.deepEqual(await retiredCard.locator('[data-tab]').evaluateAll((tabs) => tabs.map((tab) => tab.dataset.tab)), ["transcript"]);
+    await page.waitForFunction((id) => !document.querySelector(`[data-agent-open="${id}"] [aria-busy="true"]`), retiring);
+    assert.deepEqual(await retiredCard.locator('[data-tab]').evaluateAll((tabs) => tabs.map((tab) => tab.dataset.tab)), ["transcript", "reports"]);
     assert.equal(await retiredCard.locator('[data-agent-actions], textarea').count(), 0);
     for (const colorScheme of ["light", "dark"]) {
         await page.emulateMedia({colorScheme});
