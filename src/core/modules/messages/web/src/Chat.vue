@@ -442,7 +442,7 @@ async function runCommand(pin) {
             <PinsToggle :pin-rows="pins" />
         </div>
         <div ref="scroller" class="history" data-figure-scroll @scroll="followScroll">
-          <div ref="historyContent">
+          <div ref="historyContent" class="history-content">
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
@@ -551,6 +551,10 @@ async function runCommand(pin) {
     overflow-y: auto;
     /* bubbles scrolled under the foot fade out over its last stretch, as in version 4 */
     mask-image: linear-gradient(to bottom, #000 calc(100% - 8px), transparent);
+}
+
+.history-content {
+    overflow: clip;
 }
 
 /* version 4's spacing: 10 pixels between items, 18 above the first and 20 below the last, inside the scroll area */
