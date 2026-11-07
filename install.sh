@@ -17,6 +17,10 @@
 # the hooks call .journal/hooks/hook.sh instead, which hands the server the raw hook body, and the install says so.
 # A checksum that does not match stops the install: that file is not the release's.
 #
+# The install leaves .journal/journal, which runs .journal/bin/journal, and writes the journal command of the person's
+# machine to ~/.local/bin (JOURNAL_SHIM_FOLDER names another folder): it runs the command of the project in the folder
+# it is called from or above, version 5's or version 4's.
+#
 # JOURNAL_RELEASE_URL names another place to download from, a file:// folder among them; JOURNAL_PLATFORM names the
 # platform as os/arch instead of the one uname reports.
 #
@@ -69,6 +73,17 @@ fall_back() {
   exit 0
 }
 
+# the project's .journal/journal runs its .journal/bin/journal, and the journal command on the person's PATH
+# (JOURNAL_SHIM_FOLDER, else ~/.local/bin) finds the command of a version 5 project as well as a version 4 one
+link_command() {
+  printf '#!/bin/sh\nexec "$(dirname "$0")/bin/journal" "$@"\n' > "$ROOT/.journal/journal"
+  chmod +x "$ROOT/.journal/journal"
+  shim_folder="${JOURNAL_SHIM_FOLDER:-$HOME/.local/bin}"
+  mkdir -p "$shim_folder"
+  cp "$SOURCE/install/shim.sh" "$shim_folder/journal"
+  chmod +x "$shim_folder/journal"
+}
+
 find_python() {
   for candidate in python3.14 python3.15 python3 python; do
     if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' >/dev/null 2>&1; then
@@ -112,6 +127,7 @@ case "$status" in
   3) [ "$upgraded" = 1 ] || exit 0 ;;
   *) exit "$status" ;;
 esac
+link_command
 
 # a checkout of agent-journal, with its tools beside this script and go on the PATH, builds the programs itself unless
 # JOURNAL_RELEASE_URL names a release to download them from; the journal command replaces version 4's script
