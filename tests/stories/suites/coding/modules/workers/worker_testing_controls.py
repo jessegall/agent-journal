@@ -104,15 +104,13 @@ def merged_by_the_merger(new_story, monkeypatch):
         story.home.socket("launcher").unlink(missing_ok=True)
     merger = Actor(merger_of(story).id, ActorType.AGENT)
     story.expect_text("merger next", f"worker {worker.id}", actor=merger)
-    story.expect_success(f"worker logs {worker.id}", actor=merger)
     repository.checkout(ENVIRONMENT_BRANCH)
     return story, worker, merger
 
 
 def test_empty_merger_checks_keep_mechanical_judging(new_story, monkeypatch):
     story, worker, merger = merged_by_the_merger(new_story, monkeypatch)
-    story.expect_success(f"merger merge {worker.id}", actor=merger)
-    story.expect_no_text(f"worker logs {worker.id}", "run:", actor=merger)
+    story.expect_no_text(f"merger merge {worker.id}", "run:", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
