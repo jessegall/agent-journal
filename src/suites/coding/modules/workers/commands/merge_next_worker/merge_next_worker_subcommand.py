@@ -10,7 +10,8 @@ from suites.coding.modules.workers.commands.merge_next_worker.merge_next_worker 
 
 
 class MergeNextWorkerSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
-    """`journal merger merge <worker> [--read-important "<answer>"]`: takes the worker's work into the branch."""
+    """`journal merger merge <worker> [--read-important "<answer>"]`: takes the worker's work into the branch and
+    says so first, then prints the commands to run after it."""
 
     cli_name = "merger"
     name = "merge"
@@ -28,6 +29,7 @@ class MergeNextWorkerSubcommand(Subcommand[MergeNextWorker, MergeOutcome]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MergeOutcome):
             commit = value.worktree.commit_before_merge
+            output.line(f"worker {value.worktree.session_agent_id} merged into {value.worktree.base_branch}")
             for line in self.settings.texts(MERGER_COMMANDS):
                 output.line(f"run: {line.replace('{commit}', str(commit))}")
             output.line(f"merged from {commit}")

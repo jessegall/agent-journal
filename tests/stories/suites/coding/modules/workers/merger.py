@@ -28,6 +28,7 @@ from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
+from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
@@ -152,12 +153,14 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_text("merger next", f"worker {worker.id}", "brief:", "proof 1", actor=actor)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success('setting set journal.suites.coding.workers.merger-commands \'["journal sins --branch={commit}"]\' --project', actor=story.user)
-    story.expect_text(f"merger merge {worker.id}", "run: journal sins --branch=", actor=actor)
+    story.expect_text(f"merger merge {worker.id}", f"worker {worker.id} merged into", "run: journal sins --branch=", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
     expect_marks_text(story, f"Worker {worker.id} had")
     story.hook(merger.session, HookSamples.stop())
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    merged = next((row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text), None)
+    merged_rows = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text]
+    merged = next(iter(merged_rows), None)
+    story.expect_rows(len(merged_rows) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
     story.expect_rows(merged is not None and f"the merger merged worker:{worker.id}" in merged.text, f"agent:{merger.id} reports in message:{merged.id}" in lines, detail=lines)
     story.expect_success(f'merger findings {worker.id} "Fix the merged code"', actor=actor)
     story.run_listeners()
@@ -347,3 +350,9 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
     line = story.container.get(Queries).query(MergerLine).find(line.id)
     story.expect_rows(line.read_at is not None, line.read_output_id is None)
     story.agent = main
+
+
+def test_the_merger_is_told_to_read_a_merge_that_moved_to_the_background_before_calling_it_unconfirmed(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    profile = story.container.get(ProfileFiles).effective("journal-merger")
+    story.expect_rows("journal output read <n> --summary" in profile.body, "never tell the main agent a merge is unconfirmed while its output still runs" in profile.body)
