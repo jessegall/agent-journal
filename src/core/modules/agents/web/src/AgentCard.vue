@@ -216,7 +216,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 
 .agent-card.open { min-height: 0; }
 
-.agent-card { gap: 2px; padding: 9px 14px; }
+.agent-card { --agent-padding: 14px; gap: 2px; padding: 9px var(--agent-padding); }
 .agent-head { gap: 6px; }
 .agent-times { display: flex; flex-direction: column; align-items: flex-end; flex: none; margin-left: auto; }
 .agent-list-pace { color: var(--text-3); font-size: 12px; font-variant-numeric: tabular-nums; }
@@ -232,10 +232,10 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-back { display: grid; place-items: center; flex: none; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--text-3); cursor: pointer; }
 .agent-back:hover { background: var(--hover); color: var(--text); }
 .agent-card.open { padding: 0; gap: 0; cursor: default; }
-.agent-card.open .agent-head { gap: 9px; padding: 7px 14px 0 8px; background: var(--side); }
+.agent-card.open .agent-head { gap: 9px; padding: 7px var(--agent-padding) 0 8px; background: var(--side); }
 .agent-card.open .agent-title { font-weight: 600; }
 .agent-card.open .agent-dot { display: none; }
-.agent-card.open .agent-line { padding: 0 14px 7px 41px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
+.agent-card.open .agent-line { padding: 0 var(--agent-padding) 7px 41px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
 .agent-card.open .agent-job-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .agent-plan { flex: none; }
 
