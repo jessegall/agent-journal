@@ -85,6 +85,7 @@ from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_
 from suites.coding.modules.workers.commands.clear_worker_refusals.clear_worker_refusals_handler import ClearWorkerRefusalsHandler
 from suites.coding.modules.workers.listeners.main_agent_workers_listener import MainAgentWorkersListener
 from suites.coding.modules.workers.listeners.blocked_worker_task_listener import BlockedWorkerTaskListener
+from suites.coding.modules.workers.listeners.started_worker_task_listener import StartedWorkerTaskListener
 from suites.coding.modules.workers.listeners.opened_worker_task_listener import OpenedWorkerTaskListener
 from suites.coding.modules.workers.listeners.assigned_worker_task_listener import AssignedWorkerTaskListener
 from suites.coding.modules.workers.listeners.worker_help_request_listener import WorkerHelpRequestListener
