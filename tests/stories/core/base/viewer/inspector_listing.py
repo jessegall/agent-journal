@@ -40,3 +40,9 @@ def test_the_windows_list_is_unchanged(new_story):
     before = sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name)
     story.expect_sync_success(f"{PLAIN_PATH}:InspectorModule")
     assert sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name) == before
+
+
+def test_only_the_test_queue_inspector_lists_no_fields_of_its_row(new_story):
+    listed = inspectors_of(new_story(fixture=MainEnvironment))
+    assert listed["test-queue"].lists_fields is False
+    assert listed["task"].lists_fields is True

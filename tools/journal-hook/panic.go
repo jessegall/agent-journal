@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -12,13 +13,27 @@ import (
 // agent can repair the journal. Helpers and workers stay checked.
 const PanicFile = "panic"
 
-// Panicking says whether this hook belongs to the main agent while the panic file exists.
+// PanicReason is what the panic file says after "why:": the file names who wrote it and why, and one with no reason is
+// not honoured, so a hook is never let through for nothing.
+func PanicReason(root string) string {
+	text, err := os.ReadFile(filepath.Join(root, ".journal", PanicFile))
+	if err != nil {
+		return ""
+	}
+	for _, line := range strings.Split(string(text), "\n") {
+		if reason, found := strings.CutPrefix(strings.TrimSpace(line), "why:"); found {
+			return strings.TrimSpace(reason)
+		}
+	}
+	return ""
+}
+
+// Panicking says whether this hook belongs to the main agent while the panic file exists and gives a reason.
 func Panicking(root, role string) bool {
 	if role != "" && role != "main" {
 		return false
 	}
-	_, err := os.Stat(filepath.Join(root, ".journal", PanicFile))
-	return err == nil
+	return PanicReason(root) != ""
 }
 
 // NotePanicBypass records the hook that went around the journal in bypass.log, so the journal can say so once it is back.

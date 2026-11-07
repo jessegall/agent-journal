@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class InspectorListing:
     """A registered inspector as listed for the viewer: its noun, the module that supplies it and that module's
     fingerprint, the read that loads its row, its words, width and parts, the events that reload it, its links
-    section (none for a row without one) and whether its row can be shared."""
+    section (none for a row without one), whether its row can be shared and whether it lists the row's fields."""
 
     noun: str
     module: str
@@ -21,3 +21,4 @@ class InspectorListing:
     events: Sequence[str]
     links: Mapping[str, object] | None
     shareable: bool
+    lists_fields: bool = True
