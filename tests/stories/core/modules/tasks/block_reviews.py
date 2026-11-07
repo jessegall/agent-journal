@@ -157,14 +157,20 @@ class ManyUserWaits(StoryFixture):
             story.run(f'task block {task_id} --until-user --reason "Approve the release"', actor=story.agent)
 
 
-def test_all_due_user_waits_share_one_line_and_each_review_is_recorded(new_story):
+@pytest.fixture
+def reviewed_user_waits(new_story):
     story = new_story(fixture=ManyUserWaits)
     story.clock.advance(timedelta(hours=1))
-    answer = review(story)
+    return story, review(story)
+
+
+def test_all_due_user_waits_share_one_line_and_each_review_is_recorded(reviewed_user_waits):
+    story, answer = reviewed_user_waits
     ids = ", ".join(str(task_id) for task_id in range(1, 32))
     expect_matching_lines(answer, "wait on the user", [f"tasks {ids} wait on the user: tell the user what is still needed"])
     rows = list(story.container.get(Queries).query(TaskBlockReview).all_rows())
     expect_reviewed_rows(rows, story.clock.timestamp())
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     expect_absent_line(review(story), "wait on the user")
     story.clock.advance(timedelta(hours=1))
     expect_matching_lines(review(story), "wait on the user", [f"tasks {ids} wait on the user: tell the user what is still needed"])
