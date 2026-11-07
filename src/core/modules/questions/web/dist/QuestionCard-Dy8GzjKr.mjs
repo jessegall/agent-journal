@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { openBlock as t, createElementBlock as o, Fragment as u, createVNode as d, unref as c, withCtx as C, createTextVNode as w, toDisplayString as r, ref as h, normalizeClass as Q, createElementVNode as i, createCommentVNode as m, renderList as T, withModifiers as O, createBlock as R } from "vue";
 import { Btn as $, useWindow as I, TimeAgo as U, peekRef as j, TextInput as N } from "@journal/window-kit";
-import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const S = {
   __name: "QuestionActions",
   props: { elaborated: Boolean },
@@ -73,14 +73,14 @@ const S = {
   props: { row: { type: Object, required: !0 }, flush: Boolean },
   emits: ["changed"],
   setup(e, { emit: q }) {
-    const s = e, y = q, V = I(), f = h(""), x = h(null), k = h(""), v = h(!1);
+    const s = e, y = q, V = I(), f = h(""), x = h(null), b = h(""), v = h(!1);
     async function p(l, a) {
-      x.value = l, k.value = "";
+      x.value = l, b.value = "";
       const n = await V.run(a);
       if (n.ok) return void y("changed");
-      x.value = null, k.value = n.error;
+      x.value = null, b.value = n.error;
     }
-    const b = () => ({ ...s.row, ...x.value }), A = (l) => p({ state: "answered", answer: l }, ["question", "answer", String(s.row.id), "--answer", l]), B = () => p({ state: "closed" }, ["question", "close", String(s.row.id)]);
+    const k = () => ({ ...s.row, ...x.value }), A = (l) => p({ state: "answered", answer: l }, ["question", "answer", String(s.row.id), "--answer", l]), B = () => p({ state: "closed" }, ["question", "close", String(s.row.id)]);
     function g() {
       const l = f.value.trim();
       l && A(l);
@@ -88,11 +88,11 @@ const S = {
     async function E() {
       v.value = !0;
       const l = await V.run(["message", "send", `Elaborate on question ${s.row.id}: ask it again with more context on each option and which you would pick, and you choose.`]);
-      l.ok || (v.value = !1, k.value = l.error);
+      l.ok || (v.value = !1, b.value = l.error);
     }
     return (l, a) => (t(), o("section", {
       class: Q(["question", { flush: e.flush }]),
-      "data-state": b().state,
+      "data-state": k().state,
       "data-question-card": ""
     }, [
       i("header", F, [
@@ -111,14 +111,14 @@ const S = {
         onClick: a[0] || (a[0] = (n) => c(j)(`questions:${e.row.id}`))
       }, r(e.row.text), 9, W),
       e.row.context ? (t(), o("p", G, r(e.row.context), 1)) : m("", !0),
-      b().state !== "open" ? (t(), o("p", H, [
-        b().state === "answered" ? (t(), o(u, { key: 0 }, [
+      k().state !== "open" ? (t(), o("p", H, [
+        k().state === "answered" ? (t(), o(u, { key: 0 }, [
           e.flush ? (t(), o(u, { key: 0 }, [
             a[3] || (a[3] = i("b", { class: "question-answered" }, "Answered:", -1)),
             a[4] || (a[4] = w()),
-            i("span", J, r(b().answer), 1)
+            i("span", J, r(k().answer), 1)
           ], 64)) : (t(), o(u, { key: 1 }, [
-            w("Answered: " + r(b().answer), 1)
+            w("Answered: " + r(k().answer), 1)
           ], 64))
         ], 64)) : (t(), o(u, { key: 1 }, [
           w("Closed")
@@ -175,10 +175,10 @@ const S = {
           }, 8, ["modelValue"]))
         ], 32)
       ], 64)),
-      k.value ? (t(), o("p", te, r(k.value), 1)) : m("", !0)
+      b.value ? (t(), o("p", te, r(b.value), 1)) : m("", !0)
     ], 10, D));
   }
-}, ie = /* @__PURE__ */ z(oe, [["__scopeId", "data-v-87e71ace"]]);
+}, ie = /* @__PURE__ */ z(oe, [["__scopeId", "data-v-52bba98e"]]);
 export {
   ie as Q
 };

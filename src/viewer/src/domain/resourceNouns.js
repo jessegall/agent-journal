@@ -60,12 +60,6 @@ const TASK_MOVES = {
 };
 
 // what a person can do to a row in its state; a move with a flag asks for its words first
-const questionMoves = (row) => (row?.state !== "open" ? [] : [
-    ...(row.options ?? []).map((option) => ({word: "answer", label: option === row.recommended ? `${option} (recommended)` : option, flag: "--answer", said: option, main: option === row.recommended})),
-    {word: "answer", label: "Write an answer", flag: "--answer", ask: "Your answer"},
-    {word: "close", label: "Close"},
-]);
-
 // what a person can do to an agent: hold it or let it carry on, and stop its program after asking
 const agentMoves = (row) => (!row || row.ended_at ? [] : [
     row.paused_at ? {word: "resume", label: "Resume", main: true} : {word: "pause", label: "Pause"},
@@ -89,4 +83,4 @@ function stateMoves(noun, row) {
     return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));
 }
 
-export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : noun === "question" ? questionMoves(row) : stateMoves(noun, row));
+export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : noun === "agent" ? [...workerMoves(row), ...agentMoves(row)] : stateMoves(noun, row));

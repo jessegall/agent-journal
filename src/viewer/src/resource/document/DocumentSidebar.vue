@@ -1,12 +1,16 @@
 <script setup>
 import {stateLabel} from "../../domain/states.js";
-import RowMoves from "../RowMoves.vue";
+import {inject} from "vue";
+import ButtonSlot from "../../kit/ButtonSlot.vue";
+import InspectorSections from "../../windows/InspectorSections.vue";
+import {INSPECTOR_HOST} from "../../windows/windowContext.js";
 import CommentRail from "./CommentRail.vue";
 import MoreItems from "../../../kit/MoreItems.vue";
 
 defineProps({mode: {type: String, default: "comments"}, comments: {type: Array, required: true}, questions: {type: Array, required: true}, hot: {type: Number, default: 0}, lost: {type: Array, default: () => []}, failure: {type: String, default: ""}, read: {type: Function, required: true}, tab: Boolean,
     commentMore: Boolean, commentLoading: Boolean, commentFailure: {type: String, default: ""}, commentTotal: {type: Number, default: 0}});
 defineEmits(["update:mode", "show", "changed", "more"]);
+const host = inject(INSPECTOR_HOST, null);
 </script>
 
 <template>
@@ -42,7 +46,8 @@ defineEmits(["update:mode", "show", "changed", "more"]);
                         <template v-if="question.answer">
                             <p class="question-answer">Answered: {{ question.answer }}</p>
                         </template>
-                        <RowMoves noun="question" :id="question.id" :row="question" :read="read" @done="$emit('changed')" />
+                        <InspectorSections :names="['questions.question-options']" :row="question" />
+                        <ButtonSlot name="row.question" :row="{...question, noun: 'question'}" :environment="host?.environment ?? ''" @done="$emit('changed')" />
                     </section>
                 </template>
             </aside>
