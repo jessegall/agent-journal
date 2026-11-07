@@ -27,6 +27,7 @@ from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from core.modules.helpers.support.allowed_models import AllowedModels
+from core.modules.helpers.support.profile_models import ProfileModels
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
@@ -48,12 +49,12 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     transactional = False
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, programs: HelperPrograms, models: AllowedModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, waits: TaskWaits) -> None:
+                 providers: Providers, programs: HelperPrograms, models: AllowedModels, profile_models: ProfileModels, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, waits: TaskWaits) -> None:
         self.places, self.copies, self.available_workers, self.waits = places, copies, available_workers, waits
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.programs, self.models = git, worker_command, worktrees, providers, programs, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
-        self.sources = sources
+        self.sources, self.profile_models = sources, profile_models
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
@@ -72,7 +73,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
-        model = command.program_model or self.providers.provider(program).profile_model(profile)
+        model = command.program_model or self.profile_models.model(profile, self.providers.provider(program), command.tier)
         self.check_model(program, model)
         self.programs.installed(program)
         if not command.new_agent_reason.strip():

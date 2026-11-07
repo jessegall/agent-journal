@@ -6,10 +6,11 @@ const props = defineProps({profile: {type: Object, required: true}, used: {type:
 const emit = defineEmits(["close", "save", "reset"]);
 
 const WRITING = "writing";
+const TIERS = [{key: "", label: "Profile models"}, {key: "fast", label: "Fast"}, {key: "general", label: "General"}, {key: "strongest", label: "Strongest"}];
 const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
 const PROGRAMS = [{key: "", label: "The parent's program"}, {key: "claude", label: "Claude Code"}, {key: "codex", label: "Codex"}];
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "model", "codex_model", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "model", "codex_model", "tier", "body"];
 
 const draft = ref({});
 watch(
@@ -72,6 +73,9 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
                     <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.program_if_possible ? 'possible' : 'always'" @pick="draft.program_if_possible = $event === 'possible'" />
                 </FormField>
             </template>
+            <FormField label="Model tier" for="profile-tier" help="Chooses a model when this profile has no named model for the program.">
+                <Segmented data-profile-tier :options="TIERS" :value="draft.tier || ''" @pick="draft.tier = $event || null" />
+            </FormField>
             <FormField label="Model on Claude Code" for="profile-model" help="The least expensive model that reliably fits the work.">
                 <ModelPicker provider="claude" inherits :value="draft.model" data-profile-model="claude" @pick="draft.model = $event" />
             </FormField>

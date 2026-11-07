@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from collections.abc import Mapping
 from typing import Any
 from core.base.access import Access
+from core.base.model_tier import ModelTier
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class AgentProfile:
     program_if_possible: bool = False
     model: str = ""
     codex_model: str = ""
+    tier: ModelTier | None = None
     independent: bool = False
     mcp_tools: tuple[str, ...] = ()
     module: str = ""
@@ -43,4 +45,5 @@ class AgentProfile:
     @classmethod
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
-        return cls(**{**fields, "access": access, "mcp_tools": tuple(fields["mcp_tools"]), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})
+        tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
+        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})

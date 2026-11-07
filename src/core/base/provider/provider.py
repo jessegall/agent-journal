@@ -27,6 +27,7 @@ from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.provider.transcript_entry import TranscriptEntry
 from core.base.timestamp import Timestamp
+from core.base.refusal import Refusal
 
 
 class Provider(ABC):
@@ -74,9 +75,16 @@ class Provider(ABC):
         return next(model.name for model in self.models if model.tier is self.session_tier)
 
     def nearest_general_model(self, names: Sequence[str]) -> str:
-        all_names = self.model_names()
-        general = next(index for index, model in enumerate(self.models) if model.tier is ModelTier.GENERAL)
-        return min(names, key=lambda name: abs(all_names.index(name) - general))
+        return self.nearest_model(ModelTier.GENERAL, names)
+
+    def nearest_model(self, tier: ModelTier, names: Sequence[str]) -> str:
+        automatic = [model for model in self.models if model.tier is not ModelTier.RARE]
+        allowed = [model.name for model in automatic if model.name in names]
+        if not allowed:
+            raise Refusal(f"{self.name} has no allowed automatic model", "name an allowed model with --model, or allow a fast, general or strongest model")
+        positions = {model.name: index for index, model in enumerate(automatic)}
+        wanted = next((index for index, model in enumerate(automatic) if model.tier is tier), 0)
+        return min(allowed, key=lambda name: abs(positions[name] - wanted))
 
     @abstractmethod
     def session_command(self, launch: Launch) -> LaunchCommand: ...

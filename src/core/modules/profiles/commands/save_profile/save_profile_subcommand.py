@@ -2,6 +2,7 @@ from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 from dataclasses import replace
 
 from core.base.access import Access
+from core.base.provider.model_tier import ModelTier
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
 from core.base.refusal import Refusal
@@ -27,6 +28,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("profile_name")
         for name in ("title", "type", "model", "codex-model", "program", "mcp-tools"):
             parser.add_argument(f"--{name}")
+        parser.add_argument("--tier", help="fast, general or strongest; blank uses the profile models")
         parser.add_argument("--description", default="")
         parser.add_argument("--body", default="")
         parser.add_argument("--access", type=Access, choices=list(Access))
@@ -41,6 +43,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         else:
             profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
         fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "model", "codex_model", "body", "program", "program_if_possible", "access", "independent") and value is not None}
+        if arguments.tier is not None:
+            fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
         if arguments.type is not None:
             fields["agent_type"] = arguments.type
         if arguments.mcp_tools is not None:

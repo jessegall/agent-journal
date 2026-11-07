@@ -309,7 +309,7 @@ def test_profile_tier_alone_beats_default_models_bad_file_is_a_problem(split_sto
     story = split_story
     profile = story.home.project_folder / '.agents' / 'profiles' / 'bad-tier.md'
     profile.parent.mkdir(parents=True, exist_ok=True)
-    profile.write_text('---\nname: bad-tier\ndescription: Reads files\ntier: enormous\n---\nRead files.\n')
+    profile.write_text('---\nname: bad-tier\ntype: helper\ndescription: Reads files\ntier: enormous\n---\nRead files.\n')
     story.expect_text('profile list --json', 'bad-tier', 'problem', 'enormous')
 
 

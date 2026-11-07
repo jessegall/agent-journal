@@ -19,6 +19,9 @@ from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
+from core.modules.helpers.support.profile_models import ProfileModels
+from core.modules.helpers.support.helper_program import HelperProgram
+from core.base.provider.model_tier import ModelTier
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.base.provider.providers import Providers
 from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse
@@ -38,8 +41,8 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers) -> None:
-        self.kept = kept
+    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels) -> None:
+        self.kept, self.models = kept, models
         self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse
         self.programs, self.folders, self.providers = programs, folders, providers
@@ -61,36 +64,37 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
         if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
-        program, model, note = self.startable_program(command, profile, parent)
+        selection = self.startable_program(command, profile, parent)
         if reuses_helpers:
-            self.check_idle(profile, program, model)
-        start = StartAgent(str(uuid4()), program, agent_type.key, parent.id, program_model=model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
+            self.check_idle(profile, selection.program, selection.model)
+        start = StartAgent(str(uuid4()), selection.program, agent_type.key, parent.id, program_model=selection.model, profile=profile.name, given_name=command.given_name, access=profile.access or agent_type.access)
         source_context = replace(context, environment_id=parent.environment_id)
         source = self.sources.source_copy(source_context)
         helper = self.bus.dispatch(start, context)
-        self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=model,
+        self.repository.save(HelperJob(session_agent_id=parent.id, creator_id=context.actor.id, tool_key=helper.session, helper_id=helper.id, profile=profile.name, program_model=selection.model,
                                        description=command.given_name or profile.name, brief=command.brief, new_agent_reason=INDEPENDENT_REASON if profile.independent and not command.new_agent_reason.strip() else command.new_agent_reason.strip(), review_plan_id=command.review_plan_id, instruction=command.brief[:SHORT_BRIEF_CHARACTERS],
                                        source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
         self.sources.use_copy(source, source_context)
         self.bus.dispatch(CountProfileUse(profile.name), context)
-        return HelperStarted(helper, note)
+        return HelperStarted(helper, selection.note)
 
-    def startable_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> tuple[str, str, str]:
+    def startable_program(self, command: StartHelper, profile: AgentProfile, parent: Agent) -> HelperProgram:
         preferred = command.program or profile.program or parent.program
         try:
-            return preferred, self.checked_start(preferred, command.program_model, profile, parent), ""
+            return HelperProgram(preferred, self.checked_start(preferred, command.program_model, profile, parent, command.tier))
         except Refusal as refusal:
             if not (profile.program_if_possible and profile.program and not command.program):
                 raise
-            for other in (provider.name for provider in self.providers.all() if provider.name != preferred):
+            for fallback_program in (provider.name for provider in self.providers.all() if provider.name != preferred):
                 try:
-                    return other, self.checked_start(other, "", profile, parent), f"{profile.program} could not start ({refusal.text}), so it runs on {other}"
+                    return HelperProgram(fallback_program, self.checked_start(fallback_program, "", profile, parent, command.tier),
+                                         f"{profile.program} could not start ({refusal.text}), so it runs on {fallback_program}")
                 except Refusal:
                     continue
             raise refusal from None
 
-    def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent) -> str:
-        model = self.limits.checked_model(program, program_model or self.providers.provider(program).profile_model(profile))
+    def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
+        model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier))
         self.programs.checked(program, self.folders.folder(parent))
         return model
 
