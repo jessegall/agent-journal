@@ -1,5 +1,6 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
+import {presetProps} from "./support/shellWindowContext.js";
 import LayoutThumb from "../src/kit/LayoutThumb.vue";
 import {useLayoutPresets} from "../src/windows/layoutPresets.js";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
@@ -33,8 +34,7 @@ async function presets({person = [], catalogue: names = null} = {}) {
         entry: (name) => catalogue.window(name),
     });
     await store.load({environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"});
-    const list = useLayoutPresets({environment: "main", page: "home", shellLine, catalogue, store});
-    await list.load();
+    const list = useLayoutPresets({environment: "main", page: "home", shellLine, window: await presetProps(shellLine), catalogue, store});
     return {list, lines, store};
 }
 
@@ -143,7 +143,7 @@ test("a rename, remove, update or share of a layout that is gone is refused with
 test("a command the journal refuses shows its error as the notice", async () => {
     const {list} = await presets();
     const shellLine = vi.fn(async () => ({ok: false, error: "only a person keeps a layout"}));
-    const refusing = useLayoutPresets({environment: "main", page: "home", shellLine, catalogue: {window: () => null}, store: {layout: {value: null}}});
+    const refusing = useLayoutPresets({environment: "main", page: "home", shellLine, window: await presetProps(shellLine), catalogue: {window: () => null}, store: {layout: {value: null}}});
     await refusing.importLayout({name: "Fine", shape: {tabs: ["a.b"], active: "a.b"}});
     expect(refusing.notice.value).toBe("only a person keeps a layout");
     expect(list.notice.value).toBe("");

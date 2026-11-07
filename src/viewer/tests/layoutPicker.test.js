@@ -1,5 +1,7 @@
 import {createApp, h, nextTick, ref} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
+import {perLine} from "./support/windowContext.js";
+import {lineAnswer, presetProps} from "./support/shellWindowContext.js";
 import LayoutThumb from "../src/kit/LayoutThumb.vue";
 import PaneStage from "../src/windows/PaneStage.vue";
 import {paneLayout} from "../src/windows/paneLayout.js";
@@ -14,8 +16,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 async function savedPresets(shape) {
     const shellLine = async (line) => ({ok: true, value: {rows: line[0] === "person-preset" ? [{id: 1, name: "Mine", shape: JSON.stringify(shape)}] : []}});
-    const presets = useLayoutPresets({environment: "main", page: "home", shellLine, catalogue: {window: () => null}, store: {layout: ref(null)}});
-    await presets.load();
+    const presets = useLayoutPresets({environment: "main", page: "home", shellLine, window: await presetProps(shellLine), catalogue: {window: () => null}, store: {layout: ref(null)}});
     return presets.presets.value;
 }
 
@@ -40,6 +41,7 @@ for (const [page, width] of [["home", 1200], ["home", 400], ["agent", 1200], ["a
             unobserve() {}
         });
         const shellLine = async (line) => (line[0] === "usage" ? {ok: true, value: {agents: [], windows: []}} : line[0] === "suite" ? {ok: true, value: {rows: [{key: "default", name: "Default", text: "Chat and a board", shape: SHAPE}]}} : {ok: true, value: {rows: []}});
+        vi.stubGlobal("fetch", perLine(lineAnswer(shellLine)));
         const catalogue = new WindowCatalogue(async () => ({windows: []}));
         catalogue.windows.value = [entry("messages.chat"), entry("thirdparty.board")];
         const store = paneLayout({

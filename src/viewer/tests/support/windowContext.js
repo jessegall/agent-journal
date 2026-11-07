@@ -1,5 +1,6 @@
 import {createApp, h, nextTick, ref} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
+import {shellKeysAnswer} from "./shellWindowContext.js";
 import {WindowSubscriptions} from "../../src/windows/windowSubscriptions.js";
 
 export const page = (rows) => ({ok: true, value: {rows, page: 1, size: 50, total: rows.length}});
@@ -120,6 +121,7 @@ export function typeInto(input, text) {
 
 // a fetch stand-in that answers one line at a time, as the stubs of these tests were written, also for the lines the viewer sends together
 export const perLine = (answer) => async (url, init) => {
+    if (String(url).startsWith("/api/window?") && init.headers["x-journal-window"] === "viewer.shell") return shellKeysAnswer(answer, init, url);
     if (url === "/api/read-lines") return {ok: true, status: 200, json: async () => ({reads: ["task list", "suite current"]})};
     if (!String(url).endsWith("/api/lines")) return answer(url, init);
     const answers = [];

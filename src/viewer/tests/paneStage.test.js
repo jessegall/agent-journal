@@ -8,6 +8,7 @@ import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {leaves} from "../src/domain/panes.js";
 import {windowContext} from "../src/windows/windowContext.js";
+import {lineAnswer} from "./support/shellWindowContext.js";
 import {perLine} from "./support/windowContext.js";
 
 const TITLES = {"a.chat": "Chat", "a.tasks": "Tasks", "a.notes": "Notes", "a.spare": "Spare", "messages.chat": "Chat"};
@@ -44,6 +45,7 @@ function measured() {
 }
 
 async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "a.spare"], titles = null, extra = {}, subscriptions = new WindowSubscriptions(), stageProps = {}} = {}) {
+    if (stageProps.shellRead) vi.stubGlobal("fetch", vi.fn(perLine(lineAnswer(stageProps.shellRead))));
     const store = paneLayout({
         saved: async () => null,
         defaults: async () => shape,
@@ -521,4 +523,39 @@ test("a closed tab comes back through the plus of the pane it was closed in", as
     await settled();
     expect(holder(store, "a.notes")).toBe(own);
     expect(tabsIn(store, own)).toEqual(["a.tasks", "a.notes"]);
+});
+
+
+test("the shell reads its visible keys together and asks for fitness only after usage names its agent", async () => {
+    localStorage.clear();
+    const shellRead = async (line) => ({ok: true, value: line[0] === "usage" && line[1] === "show"
+        ? {agents: [{id: 7, role: "main"}], windows: []}
+        : line[0] === "agent" ? {environment_ids: [1]} : {rows: []}});
+    await stage(SHAPE, {stageProps: {shellRead}});
+    await settled();
+    const requests = fetch.mock.calls.filter(([url]) => String(url).startsWith("/api/window?"));
+    expect(requests).toHaveLength(2);
+    expect(requests[0][1].headers).toMatchObject({"x-journal-window": "viewer.shell"});
+    expect(requests[0][1].headers["x-journal-data-only"]).toBeUndefined();
+    expect(requests[1][1].headers["x-journal-data-only"]).toBe("fitness");
+    expect(new URL(requests[1][0], "http://localhost").searchParams.get("fitness.agent")).toBe("7");
+    expect(requests.some(([url]) => new URL(url, "http://localhost").searchParams.get("tab") === "activity")).toBe(false);
+});
+
+test("opening activity reads its key alone and a phone event reloads only phones", async () => {
+    localStorage.clear();
+    const subscriptions = new WindowSubscriptions();
+    const shellRead = async (line) => ({ok: true, value: line[0] === "usage" && line[1] === "show" ? {agents: [], windows: []} : {rows: []}});
+    const {element} = await stage(SHAPE, {subscriptions, stageProps: {shellRead}});
+    await settled();
+    fetch.mockClear();
+    element.querySelector("[data-activity-toggle]").click();
+    await settled();
+    const requested = () => fetch.mock.calls.filter(([url]) => String(url).startsWith("/api/window?")).map(([, init]) => init.headers["x-journal-data-only"]);
+    expect(requested()).toEqual(["activity"]);
+    fetch.mockClear();
+    subscriptions.dispatch({event: "phone.create"});
+    await new Promise((resolve) => setTimeout(resolve, 70));
+    await settled();
+    expect(requested()).toEqual(["phones"]);
 });

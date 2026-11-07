@@ -94,7 +94,7 @@ test("the bars follow events rather than read on a short clock", async () => {
     const {readFileSync} = await import("node:fs");
     const {resolve} = await import("node:path");
     const stage = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
-    expect(stage).toContain('follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars)');
+    expect(stage).toContain('follow(["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars)');
     expect(stage).not.toContain("setInterval(readFacts");
 });
 

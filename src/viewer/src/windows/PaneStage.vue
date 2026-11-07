@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
-import {INSPECTOR_HOST, OPEN_VIEW, PANE_PAGE} from "./windowContext.js";
+import {INSPECTOR_HOST, OPEN_VIEW, PANE_PAGE, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
 import {moveToPage} from "../shownPage.js";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
@@ -11,8 +11,8 @@ import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
 import {coalesced} from "../composables/coalesced.js";
 import {useSharedNow} from "../composables/now.js";
-import {usageRead} from "../../kit/useUsage.js";
-import {usePoll} from "../../kit/usePoll.js";
+import {useWindowData} from "../../kit/useWindowData.js";
+import {SHELL_WINDOW} from "./shellWindow.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
 import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
@@ -61,8 +61,31 @@ const props = defineProps({
     face: {type: String, default: "person"},
 });
 
+const context = props.shellRead ? windowContext({
+    window: SHELL_WINDOW,
+    environment: props.environment,
+    agent: props.agent,
+    page: props.page,
+    visible: () => true,
+    permissions: {reads: [], runs: [], missing: [], ask: async () => true},
+    events: ["agent.*", "phone.*", "task.*", "question.*", "scheduled_job.*", "process.*", "setting.*", "output.*"],
+    subscriptions: props.subscriptions,
+    open: (name) => goTo(name),
+}) : null;
+if (context) {
+    Object.assign(context, useWindowData(context));
+    context.state["suite-presets.environment"] = props.environment;
+    context.state["suite-presets.page"] = props.page;
+    context.state["person-presets.page"] = props.page;
+    provide(WINDOW_CONTEXT, context);
+    onUnmounted(() => {
+        context.cancel();
+        props.subscriptions.stopAll(SHELL_WINDOW);
+    });
+}
+const propData = (name, initial) => computed(() => context?.props[name].data.value ?? initial);
 provide(INSPECTOR_HOST, {catalogue: props.catalogue, subscriptions: props.subscriptions, environment: props.environment, prompts: props.prompts, shellRead: props.shellRead});
-const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
+const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, window: context, catalogue: props.catalogue, store: props.store}) : null;
 const isAgentWindow = (name) => props.catalogue.window(name)?.shows === "one-agent";
 // an agent window follows the page's main agent unless its pane was set to another
 function agentOf(name, pane = null) {
@@ -83,19 +106,19 @@ const measure = () => {
 const FILES_WINDOW = "coding.files";
 const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,.pane-tour";
 const adding = ref(null);
-const agentRow = ref(null);
-const agentKnown = ref(false);
-// the rows a list read gave, none when it failed or answered something else
-const rowsOf = (answer) => (answer?.ok && Array.isArray(answer.value?.rows) ? answer.value.rows : []);
-const environments = ref([]);
-const activeEnvironments = ref([]);
-const events = ref([]);
+const agentRow = computed(() => usage.value.agents.find((row) => row.role === "main") ?? null);
+const agentKnown = computed(() => context?.props.usage.loaded.value ?? false);
+const environmentData = propData("environments", {rows: []});
+const environments = computed(() => environmentData.value.rows);
+const activeData = propData("active-environments", {environment_ids: []});
+const activeEnvironments = computed(() => activeData.value.environment_ids);
+const activityData = propData("activity", {rows: []});
+const events = computed(() => activityData.value.rows);
 const activityOpen = rememberedRef("activity-open", false);
 const wideKept = rememberedRef("full-screen", false);
 shell.wide = wideKept.value;
 watch(() => shell.wide, (wide) => (wideKept.value = wide));
 const SIDEBAR_FROM_WIDTH = 1100;
-const ACTIVITY_SECONDS = 5;
 const sideHidden = rememberedRef("shell.side-hidden", false);
 const sideMini = rememberedRef("shell.side-mini", false);
 // the sidebar button goes from the whole sidebar to its icons, then to none, then back
@@ -110,27 +133,14 @@ const lastProject = rememberedRef("last-project", "agent-journal");
 const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || lastProject.value);
 watchEffect(() => (lastProject.value = project.value));
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
-// the bars follow events; what no event announces, the usage files of the agent programs and the checkout's branch, is read on a slow clock
 const EVENT_READ_GAP_MS = 5000;
-const USAGE_SECONDS = 10;
-const BRANCH_SECONDS = 30;
-async function readActivity() {
-    const answer = activityOpen.value && props.shellRead ? await props.shellRead(["event", "list", "--limit", "30"]) : null;
-    if (answer?.ok) events.value = rowsOf(answer);
-}
+watch(activityOpen, (open) => {
+    if (context) context.state.tab = open ? "activity" : "";
+}, {immediate: true});
 function toggleActivity() {
     activityOpen.value = !activityOpen.value;
-    readActivity();
 }
-async function readEnvironments() {
-    const answer = props.shellRead ? await props.shellRead(["environment", "list"]) : null;
-    environments.value = rowsOf(answer);
-}
-async function readActiveEnvironments() {
-    const answer = props.shellRead ? await props.shellRead(["agent", "environments"]) : null;
-    activeEnvironments.value = answer?.ok ? answer.value.environment_ids : [];
-}
-const facts = ref(NO_FACTS);
+const facts = propData("bars", NO_FACTS);
 const clock = useSharedNow();
 const now = computed(() => clock.value * 1000);
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title, planId: facts.value.task_plan_id} : null));
@@ -138,24 +148,16 @@ const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_
 const COUNT_WINDOWS = {skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each type is a group of its dropdown
 const HELPER_WINDOW = "agents.helpers";
-const usage = ref({agents: [], windows: []});
-const fitness = ref(null);
-const branch = ref("");
-async function readBranch() {
-    const answer = props.shellRead ? await props.shellRead(["git-overview", "current"]) : null;
-    branch.value = answer?.ok ? answer.value.branch : "";
-}
-async function readUsage() {
-    const answer = props.shellRead ? await usageRead(props.environment, () => props.shellRead(["usage", "show"])) : null;
-    if (!answer?.ok) return;
-    usage.value = answer.value;
-    agentRow.value = answer.value.agents.find((row) => row.role === "main") ?? null;
-    if (agentRow.value) {
-        const measured = await props.shellRead(["usage", "fitness", "--agent", String(agentRow.value.id)]);
-        fitness.value = measured?.ok ? measured.value : null;
-    }
-    agentKnown.value = true;
-}
+const usage = propData("usage", {agents: [], windows: []});
+const fitness = propData("fitness", null);
+const branchData = propData("branch", {branch: ""});
+const branch = computed(() => branchData.value.branch);
+watch(() => context?.props.usage.data.value, (measured) => {
+    if (!measured || !agentRow.value) return;
+    context.state["fitness.agent"] = String(agentRow.value.id);
+    context.reload("fitness");
+});
+const readUsage = () => context?.reload("usage");
 // a page opens at its own address and a window in a pane
 const pageAddress = (name) => `?environment=${encodeURIComponent(props.environment)}&page=${encodeURIComponent(name)}`;
 const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? moveToPage(pageAddress(name)) : openView(name));
@@ -173,31 +175,16 @@ const openCount = (key, anchor) => {
     if (groups.length) openDropdown.value = {key, groups, anchor};
     else if (props.catalogue.window(name)) goTo(name);
 };
-const pairedPhones = ref([]);
-async function readPhones() {
-    const answer = await props.shellRead(["phone", "list"]);
-    if (answer.ok) pairedPhones.value = answer.value.rows.filter((row) => row.state === "paired");
-}
-async function readBars() {
-    const answer = props.shellRead ? await props.shellRead(["usage", "bars"]) : null;
-    if (answer?.ok) facts.value = answer.value;
-}
-const askBars = coalesced(readBars, EVENT_READ_GAP_MS);
-function readEventFacts() {
-    if (!props.shellRead) return;
-    readPhones();
-    readBars();
+const phoneData = propData("phones", {rows: []});
+const pairedPhones = computed(() => phoneData.value.rows.filter((row) => row.state === "paired"));
+const askBars = coalesced(() => context.reload("bars"), EVENT_READ_GAP_MS, Date.now());
+if (context) {
+    context.follow(["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars);
 }
 function readFacts() {
-    if (!props.shellRead) return;
-    readUsage();
-    readBranch();
-    readEventFacts();
+    if (context) context.reload(["usage", "phones", ...(context.props.branch.loaded.value ? ["branch"] : [])]);
+    if (context) askBars();
 }
-// each poll reads once as it starts, so the first reading of these three is theirs
-usePoll(readUsage, () => true, USAGE_SECONDS * 1000);
-usePoll(readBranch, () => true, BRANCH_SECONDS * 1000);
-usePoll(readActivity, () => activityOpen.value, ACTIVITY_SECONDS * 1000);
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 const phone = computed(() => props.face === "phone");
 const phoneNames = computed(() => {
@@ -219,13 +206,6 @@ const heardWorker = (event) => event.data?.open && openRef(event.data.open);
 onMounted(() => {
     window.addEventListener("resize", measure);
     navigator.serviceWorker?.addEventListener("message", heardWorker);
-    presets?.load();
-    readEnvironments();
-    readActiveEnvironments();
-    props.subscriptions.follow("stage:environments", ["agent.*"], readActiveEnvironments);
-    readEventFacts();
-    props.subscriptions.follow("stage:bars", ["task.*", "agent.*", "question.*", "scheduled_job.*", "process.*"], askBars);
-    props.subscriptions.follow("stage:phones", ["phone.*"], readPhones);
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
