@@ -9,6 +9,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.journal_home import JournalHome
 from core.base.module.module import Module
+from core.base.provider.hook_trust import HookTrust
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.program_model import ProgramModel
@@ -18,6 +19,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.unit.core.base.samples.program_sample import SampleProgram
+from tests.stories.support.program_states import real_program_states
 
 SPLIT = 'journal.core.helpers.program-split'
 SAMPLE_MODULE = 'tests.stories.suites.coding.modules.workers.support.program_split:SplitProgramModule'
@@ -42,6 +44,9 @@ def split_story(new_story, monkeypatch):
     repository_environment(story)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     monkeypatch.setattr(shutil, 'which', lambda name: name)
+    for provider in story.container.get(Providers).all():
+        monkeypatch.setattr(provider, 'hook_trust', lambda folder: HookTrust.READY)
+    real_program_states(story)
     return story
 
 
@@ -77,6 +82,9 @@ def exit_program(story, worker, code=1, text='API Error: 429 rate limit reached'
 
 
 def real_program_checks(story):
+    for provider in story.container.get(Providers).all():
+        provider.__dict__.pop('hook_trust', None)
+    real_program_states(story)
     story.container.bind(HelperPrograms, HelperPrograms(story.container.get(JournalHome), story.container.get(Providers), story.container.get(ManagedHooks)))
 
 
