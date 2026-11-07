@@ -7,6 +7,7 @@ from core.modules.approvals.commands.accept_approval.accept_approval_subcommand 
 from core.modules.approvals.commands.close_user_approval.close_user_approval_handler import CloseUserApprovalHandler
 from core.modules.approvals.commands.answer_approval.answer_approval_handler import AnswerApprovalHandler
 from core.modules.approvals.commands.move_approval.move_approval_handler import MoveApprovalHandler
+from core.modules.approvals.commands.pending_approvals.pending_approvals_subcommand import PendingApprovalsSubcommand
 from core.modules.approvals.commands.deny_approval.deny_approval_subcommand import DenyApprovalSubcommand
 from core.modules.approvals.commands.request_user_approval.request_user_approval_handler import RequestUserApprovalHandler
 from core.modules.approvals.listeners.approval_dock_listener import ApprovalDockListener
@@ -33,11 +34,11 @@ class ApprovalsModule(Module):
     models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"])]
     migrations = [ApprovalRequestsMigration]
     handlers = [RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler]
-    subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand]
+    subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand]
     listeners = [ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard]
     nudges = [APPROVAL_PENDING, APPROVAL_DECIDED]
-    docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval show"], needs_user=True)]
+    docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False)]
     button_slots = list(APPROVAL_SLOT)
     buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", primary=True, condition=OPEN_REQUEST),
                ButtonDeclaration("approvals.refuse", APPROVAL_SLOT, "Refuse", "approval refuse {row_id}", condition=OPEN_REQUEST)]
