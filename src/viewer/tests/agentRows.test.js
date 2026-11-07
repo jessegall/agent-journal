@@ -142,7 +142,7 @@ test("worker identity stays the same when opened", async () => {
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
     expect(opened.querySelector("[data-agent-last-heard]").parentElement).toBe(opened.querySelector("[data-agent-identity]").parentElement);
     const dispatched = opened.querySelector("[data-agent-first-dispatched]");
-    expect(dispatched.textContent).toBe("First dispatched: 6m ago");
+    expect(dispatched.textContent).toBe("First started: 6m ago");
     expect(dispatched.querySelector("[data-icon]").dataset.icon).toBe("time");
     expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
     expect(dispatched.nextElementSibling).toBe(opened.querySelector("[data-agent-last-heard]"));
