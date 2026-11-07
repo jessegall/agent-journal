@@ -5,7 +5,7 @@ from tests.stories.server.support.server_client import server_story
 
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 KEPT_LIMIT = "journal.suites.coding.workers.worker-kept-limit"
-STALE = "changed since this change was asked for"
+STALE = "approval 1 is closed, so it cannot begin"
 
 
 def asked_by_agent(story, line: str) -> ApprovalRequest:
@@ -44,6 +44,8 @@ def test_s58_delayed_approval_preserves_newer_policy(new_story):
     story = new_story(fixture=BuilderWithUser)
     request = asked_by_agent(story, f"setting set {KEPT_LIMIT} 5 --environment main")
     story.expect_success(f"setting set {KEPT_LIMIT} 9 --environment main", actor=story.user)
+    story.run_listeners()
+    story.expect_text(f"approval show {request.id}", "state: closed", f"outdated: {KEPT_LIMIT} changed since this change was asked for", actor=story.user)
     person_accepts_refused(story, request, STALE)
     story.expect_text(f"setting show {KEPT_LIMIT} --environment main", "value: 9", actor=story.user)
 
@@ -53,5 +55,7 @@ def test_s58_project_default_change_invalidates_request(new_story):
     story.expect_success(f"setting set {RUN_LIMIT} 3 --project", actor=story.user)
     request = asked_by_agent(story, f"setting set {RUN_LIMIT} 5 --environment main")
     story.expect_success(f"setting set {RUN_LIMIT} 4 --project", actor=story.user)
+    story.run_listeners()
+    story.expect_text(f"approval show {request.id}", "state: closed", f"outdated: {RUN_LIMIT} changed since this change was asked for", actor=story.user)
     person_accepts_refused(story, request, STALE)
     story.expect_text(f"setting show {RUN_LIMIT} --environment main", "value: 4", "from: project", actor=story.user)
