@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-8c1537af464b")) { const style = document.createElement("style"); style.id = "window-styles-8c1537af464b"; style.textContent = ".attachments[data-v-1ccf0861]{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:8px 14px 8px 22px}.bar[data-v-1ccf0861]{flex-wrap:wrap;gap:10px;box-sizing:border-box;width:100%}.gallery[data-v-1ccf0861]{display:flex;flex-wrap:wrap;gap:8px}.tile[data-v-1ccf0861]{display:block;width:120px;height:90px;overflow:hidden;border:1px solid var(--border);border-radius:8px}.tile img[data-v-1ccf0861]{width:100%;height:100%;object-fit:cover}.row[data-v-1ccf0861]{display:flex;gap:10px;align-items:baseline;width:100%;font-size:13px}.name[data-v-1ccf0861]{flex:1;min-width:0;overflow-wrap:anywhere}.source[data-v-1ccf0861]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;font-size:12px;cursor:pointer}.when[data-v-1ccf0861]{color:var(--text-3);font-size:12px}.failure[data-v-1ccf0861]{margin:0;color:var(--danger);font-size:12.5px}.dump[data-v-330ada2b]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:12px}.dump-notes[data-v-330ada2b]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.dump-files[data-v-330ada2b],.dump-failure[data-v-330ada2b]{margin:0;color:var(--text-2);font-size:12px}.dump-row[data-v-330ada2b]{display:flex;gap:8px}.question-layer[data-v-bbce4175]{position:absolute;z-index:21;display:grid;top:0;right:0;bottom:0;left:0;padding:16px;place-items:center}.question-veil[data-v-bbce4175]{position:absolute;top:0;right:0;bottom:0;left:0;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(6px) saturate(.8);backdrop-filter:blur(6px) saturate(.8)}.question-sheet[data-v-bbce4175]{position:relative;overflow-y:auto;box-sizing:border-box;width:min(640px,100%);max-height:100%}.chat[data-v-0cab7b7b]{position:relative;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;height:100%;padding:0 12px 8px;min-height:0;container-type:size}.history[data-v-0cab7b7b]{flex:1;min-height:0;overflow-y:auto;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 8px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 8px),transparent)}.history-content[data-v-0cab7b7b]{overflow:clip}.history[data-v-0cab7b7b] .row-list{gap:10px;padding:18px 0 8px}.history[data-v-0cab7b7b] .row-list-row:hover{background:none}.history[data-v-0cab7b7b] .row-list-row{padding:0 8px}.history[data-v-0cab7b7b] .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:-5px}html.phone .history .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:2px}.history[data-v-0cab7b7b] .mark.w-event{color:var(--text-3)}.pins[data-v-0cab7b7b]{position:relative;z-index:2;display:flex;flex-direction:column;margin:0 -12px -8px}.pin[data-v-0cab7b7b]{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--accent) 10%,var(--bg));font-size:13px}.pin-dot[data-v-0cab7b7b]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.pin-text[data-v-0cab7b7b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pin-link[data-v-0cab7b7b]{flex:none;padding:2px 10px;border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-size:12px}.pin-close[data-v-0cab7b7b]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.running-strip[data-v-0cab7b7b]{display:flex;flex:none;gap:8px;align-items:center;margin:0;padding:4px 14px;color:var(--text-3);font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}.running-dot[data-v-0cab7b7b]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.running-dot.idle[data-v-0cab7b7b]{background:var(--text-4)}.chat-day[data-v-0cab7b7b]{margin:0;padding:4px 0;color:var(--text-4);font-size:10.5px;text-align:center}.chat-foot[data-v-0cab7b7b]{flex:0 1 auto;min-height:0;overflow-y:auto}.jump-holder[data-v-0cab7b7b]{position:relative;flex:none;height:0}.jump[data-v-0cab7b7b]{position:absolute;z-index:3;bottom:6px;left:50%;display:inline-flex;gap:5px;align-items:center;padding:4px 11px;border:1px solid var(--text);border-radius:99px;background:var(--text);color:var(--bg);font-size:11.5px;font-weight:500;cursor:pointer;box-shadow:0 6px 18px #00000073;transform:translate(-50%)}.jump[data-v-0cab7b7b]:hover{border-color:var(--text-2);background:var(--text-2);color:var(--bg)}.rise-enter-active[data-v-0cab7b7b]{transition:opacity .22s ease-out,transform .22s cubic-bezier(.2,.8,.2,1)}.rise-leave-active[data-v-0cab7b7b]{transition:opacity .16s ease-in,transform .16s ease-in}.rise-enter-from[data-v-0cab7b7b],.rise-leave-to[data-v-0cab7b7b]{opacity:0;transform:translate(-50%,8px)}.composer-quote[data-v-0cab7b7b]{display:flex;flex:none;gap:8px;align-items:center;margin:0 0 6px;padding:4px 10px;border-left:2px solid var(--accent);color:var(--text-3);font-size:12.5px}.composer-quote-text[data-v-0cab7b7b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.composer-quote-drop[data-v-0cab7b7b]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.composer[data-v-0cab7b7b]{position:relative;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border-2);border-radius:14px}.composer-input[data-v-0cab7b7b]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;line-height:1.45;resize:none;transition:height .16s var(--ease)}@media(prefers-reduced-motion:reduce){.composer-input[data-v-0cab7b7b]{transition:none}}.composer-row[data-v-0cab7b7b]{display:flex;gap:8px;align-items:center}.composer-attach[data-v-0cab7b7b]{border:0;background:none;color:var(--text-3);cursor:pointer}.composer.dragging[data-v-0cab7b7b]{border-color:var(--accent)}.attached[data-v-0cab7b7b]{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}.attached-file[data-v-0cab7b7b]{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border:1px solid var(--border-2);border-radius:999px;font-size:12px}.attached-file.failed[data-v-0cab7b7b]{border-color:var(--text-3);text-decoration:line-through}.attached-file button[data-v-0cab7b7b]{border:0;background:none;color:var(--text-3);cursor:pointer}.attached-wait[data-v-0cab7b7b]{color:var(--text-3)}.composer-send[data-v-0cab7b7b]{margin-left:auto}.composer-failure[data-v-0cab7b7b]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-259501dbfb42")) { const style = document.createElement("style"); style.id = "window-styles-259501dbfb42"; style.textContent = ".attachments[data-v-c6a2f00e]{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:8px 14px 8px 22px}.bar[data-v-c6a2f00e]{flex-wrap:wrap;gap:10px;box-sizing:border-box;width:100%}.gallery[data-v-c6a2f00e]{display:flex;flex-wrap:wrap;gap:8px}.tile[data-v-c6a2f00e]{display:block;width:120px;height:90px;overflow:hidden;border:1px solid var(--border);border-radius:8px}.tile img[data-v-c6a2f00e]{width:100%;height:100%;object-fit:cover}.row[data-v-c6a2f00e]{display:flex;gap:10px;align-items:baseline;width:100%;font-size:13px}.name[data-v-c6a2f00e]{flex:1;min-width:0;overflow-wrap:anywhere}.source[data-v-c6a2f00e]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;font-size:12px;cursor:pointer}.when[data-v-c6a2f00e]{color:var(--text-3);font-size:12px}.failure[data-v-c6a2f00e]{margin:0;color:var(--danger);font-size:12.5px}.dump[data-v-e73fd045]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:12px}.dump-notes[data-v-e73fd045]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.dump-files[data-v-e73fd045],.dump-failure[data-v-e73fd045]{margin:0;color:var(--text-2);font-size:12px}.dump-row[data-v-e73fd045]{display:flex;gap:8px}.question-layer[data-v-af9666c5]{position:absolute;z-index:21;display:grid;top:0;right:0;bottom:0;left:0;padding:16px;place-items:center}.question-veil[data-v-af9666c5]{position:absolute;top:0;right:0;bottom:0;left:0;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(6px) saturate(.8);backdrop-filter:blur(6px) saturate(.8)}.question-sheet[data-v-af9666c5]{position:relative;overflow-y:auto;box-sizing:border-box;width:min(640px,100%);max-height:100%}.chat[data-v-6aa04777]{position:relative;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;height:100%;padding:0 12px 8px;min-height:0;container-type:size}.history[data-v-6aa04777]{flex:1;min-height:0;overflow-y:auto;-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 8px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 8px),transparent)}.history-content[data-v-6aa04777]{overflow:clip}.history[data-v-6aa04777] .row-list{gap:10px;padding:18px 0 8px}.history[data-v-6aa04777] .row-list-row:hover{background:none}.history[data-v-6aa04777] .row-list-row{padding:0 8px}.history[data-v-6aa04777] .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:-5px}html.phone .history .row-list-row:has(.mark)+.row-list-row:has(.mark){margin-top:2px}.history[data-v-6aa04777] .mark.w-event{color:var(--text-3)}.pins[data-v-6aa04777]{position:relative;z-index:2;display:flex;flex-direction:column;margin:0 -12px -8px}.pin[data-v-6aa04777]{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--accent) 10%,var(--bg));font-size:13px}.pin-dot[data-v-6aa04777]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.pin-text[data-v-6aa04777]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pin-link[data-v-6aa04777]{flex:none;padding:2px 10px;border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-size:12px}.pin-close[data-v-6aa04777]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.running-strip[data-v-6aa04777]{display:flex;flex:none;gap:8px;align-items:center;margin:0;padding:4px 14px;color:var(--text-3);font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}.running-dot[data-v-6aa04777]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.running-dot.idle[data-v-6aa04777]{background:var(--text-4)}.chat-day[data-v-6aa04777]{margin:0;padding:4px 0;color:var(--text-4);font-size:10.5px;text-align:center}.chat-foot[data-v-6aa04777]{flex:0 1 auto;min-height:0;overflow-y:auto}.jump-holder[data-v-6aa04777]{position:relative;flex:none;height:0}.jump[data-v-6aa04777]{position:absolute;z-index:3;bottom:6px;left:50%;display:inline-flex;gap:5px;align-items:center;padding:4px 11px;border:1px solid var(--text);border-radius:99px;background:var(--text);color:var(--bg);font-size:11.5px;font-weight:500;cursor:pointer;box-shadow:0 6px 18px #00000073;transform:translate(-50%)}.jump[data-v-6aa04777]:hover{border-color:var(--text-2);background:var(--text-2);color:var(--bg)}.rise-enter-active[data-v-6aa04777]{transition:opacity .22s ease-out,transform .22s cubic-bezier(.2,.8,.2,1)}.rise-leave-active[data-v-6aa04777]{transition:opacity .16s ease-in,transform .16s ease-in}.rise-enter-from[data-v-6aa04777],.rise-leave-to[data-v-6aa04777]{opacity:0;transform:translate(-50%,8px)}.composer-quote[data-v-6aa04777]{display:flex;flex:none;gap:8px;align-items:center;margin:0 0 6px;padding:4px 10px;border-left:2px solid var(--accent);color:var(--text-3);font-size:12.5px}.composer-quote-text[data-v-6aa04777]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.composer-quote-drop[data-v-6aa04777]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.composer[data-v-6aa04777]{position:relative;display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border-2);border-radius:14px}.composer-input[data-v-6aa04777]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;line-height:1.45;resize:none;transition:height .16s var(--ease)}@media(prefers-reduced-motion:reduce){.composer-input[data-v-6aa04777]{transition:none}}.composer-row[data-v-6aa04777]{display:flex;gap:8px;align-items:center}.composer-attach[data-v-6aa04777]{border:0;background:none;color:var(--text-3);cursor:pointer}.composer.dragging[data-v-6aa04777]{border-color:var(--accent)}.attached[data-v-6aa04777]{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}.attached-file[data-v-6aa04777]{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border:1px solid var(--border-2);border-radius:999px;font-size:12px}.attached-file.failed[data-v-6aa04777]{border-color:var(--text-3);text-decoration:line-through}.attached-file button[data-v-6aa04777]{border:0;background:none;color:var(--text-3);cursor:pointer}.attached-wait[data-v-6aa04777]{color:var(--text-3)}.composer-send[data-v-6aa04777]{margin-left:auto}.composer-failure[data-v-6aa04777]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { watch as L, ref as l, openBlock as r, createElementBlock as f, withModifiers as Y, withDirectives as Fe, createElementVNode as i, vModelText as Bt, toDisplayString as x, createCommentVNode as C, createVNode as m, unref as n, withCtx as D, createTextVNode as X, onUnmounted as le, computed as F, onMounted as tt, nextTick as me, onBeforeUnmount as jt, Fragment as at, renderList as nt, createBlock as N, Transition as Kt, vShow as Ut, normalizeClass as Re, withKeys as fe } from "vue";
 import { Btn as oe, useWindow as ot, MarkBody as Vt, markDeclaration as Le, openInChat as zt, shownMarks as Qt, withDayLines as Wt, foldedMarks as Gt, interleaved as Jt, usePins as Xt, coalesced as Yt, READ_RATES as Zt, fetchMarkDeclarations as ea, fetchDockDeclarations as ta, SHORT_CHAT as aa, arrivalQueue as na, Icon as ge, PinsToggle as la, Skeleton as oa, RowList as sa, SwitchCase as ia, MessageCard as ra, MarkGroup as ua, MarkHost as ca, FigureFloors as da, RunningCommand as va, DockStack as pa, VoiceFigure as ma, dockOpening as fa, depart as ga, arriveAtOnce as ha, patched as ka, removed as ya } from "@journal/window-kit";
-import { _ as qe } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as qe } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const wa = 3, st = 16, _a = (u) => Math.min(Math.max(wa, u + 1), st);
 function Sa(u) {
   const o = u.style.height || `${u.offsetHeight}px`, v = parseFloat(getComputedStyle(u).lineHeight);
@@ -16,22 +16,22 @@ function Ca(u, o) {
 const Ta = {
   key: 0,
   class: "dump-files"
-}, ba = { class: "dump-row" }, $a = {
+}, $a = { class: "dump-row" }, Ea = {
   key: 1,
   class: "dump-failure"
-}, Ea = 60, xa = {
+}, ba = 60, xa = {
   __name: "DumpForm",
   props: { run: { type: Function, required: !0 } },
   emits: ["made", "close"],
   setup(u, { emit: o }) {
-    const v = o, O = u, w = l(""), T = l([]), q = l(""), b = () => [...w.value.split(/\n\s*\n/).map((k) => k.trim()).filter(Boolean), ...T.value.map((k) => `${k.name}: ${k.text.trim()}`)], B = () => (b()[0] ?? "").replace(/\s+/g, " ").slice(0, Ea);
+    const v = o, O = u, w = l(""), T = l([]), q = l(""), $ = () => [...w.value.split(/\n\s*\n/).map((k) => k.trim()).filter(Boolean), ...T.value.map((k) => `${k.name}: ${k.text.trim()}`)], B = () => ($()[0] ?? "").replace(/\s+/g, " ").slice(0, ba);
     async function j(k) {
       var M;
       const g = [...((M = k.dataTransfer) == null ? void 0 : M.files) ?? []];
       T.value = [...T.value, ...await Promise.all(g.map(async (ee) => ({ name: ee.name, text: await ee.text() })))];
     }
     async function Z() {
-      const k = await O.run(["dump", "make", B(), "--parts", b().join(" | ")]);
+      const k = await O.run(["dump", "make", B(), "--parts", $().join(" | ")]);
       q.value = k.ok ? "" : k.error, k.ok && (w.value = "", T.value = [], v("made"));
     }
     return (k, g) => (r(), f("form", {
@@ -51,11 +51,11 @@ const Ta = {
         [Bt, w.value]
       ]),
       T.value.length ? (r(), f("p", Ta, x(T.value.map((M) => M.name).join(", ")), 1)) : C("", !0),
-      i("div", ba, [
+      i("div", $a, [
         m(n(oe), {
           variant: "primary",
           small: "",
-          disabled: !b().length,
+          disabled: !$().length,
           "data-dump-make": "",
           onClick: Z
         }, {
@@ -74,10 +74,10 @@ const Ta = {
           _: 1
         })
       ]),
-      q.value ? (r(), f("p", $a, x(q.value), 1)) : C("", !0)
+      q.value ? (r(), f("p", Ea, x(q.value), 1)) : C("", !0)
     ], 32));
   }
-}, Da = /* @__PURE__ */ qe(xa, [["__scopeId", "data-v-330ada2b"]]), Oa = {
+}, Da = /* @__PURE__ */ qe(xa, [["__scopeId", "data-v-e73fd045"]]), Oa = {
   class: "question-layer",
   "data-question-overlay": ""
 }, Ma = { class: "question-sheet" }, lt = "questions.question", Ra = "open", Fa = 450, La = {
@@ -87,11 +87,11 @@ const Ta = {
   setup(u, { emit: o }) {
     const v = u, O = o, w = ot();
     async function T() {
-      const b = await w.readKey(`question.${v.id}`);
-      b.ok && b.value.state !== Ra && setTimeout(() => O("close"), Fa);
+      const $ = await w.readKey(`question.${v.id}`);
+      $.ok && $.value.state !== Ra && setTimeout(() => O("close"), Fa);
     }
-    const q = (b) => b.key === "Escape" && O("close");
-    return window.addEventListener("keydown", q), le(() => window.removeEventListener("keydown", q)), w.follow(["question.*"], T), (b, B) => (r(), f("div", Oa, [
+    const q = ($) => $.key === "Escape" && O("close");
+    return window.addEventListener("keydown", q), le(() => window.removeEventListener("keydown", q)), w.follow(["question.*"], T), ($, B) => (r(), f("div", Oa, [
       i("div", {
         class: "question-veil",
         "data-question-veil": "",
@@ -106,7 +106,7 @@ const Ta = {
       ])
     ]));
   }
-}, qa = /* @__PURE__ */ qe(La, [["__scopeId", "data-v-bbce4175"]]), Ha = {
+}, qa = /* @__PURE__ */ qe(La, [["__scopeId", "data-v-af9666c5"]]), Ha = {
   "data-pins": "",
   class: "pins"
 }, Ia = { class: "pin-text" }, Aa = ["title", "onClick"], Pa = ["href", "target"], Na = ["onClick"], Ba = {
@@ -132,19 +132,19 @@ const Ta = {
 }, Za = 500, en = 2e3, tn = 40, an = 1500, nn = {
   __name: "Chat",
   setup(u) {
-    const o = ot(), { rows: v, failure: O, loaded: w, load: T, loadLatest: q, older: b, act: B } = o.props.messages, j = (e) => {
+    const o = ot(), { rows: v, failure: O, loaded: w, load: T, loadLatest: q, older: $, act: B } = o.props.messages, j = (e) => {
       var t;
       return (t = o.props[e].data.value) == null ? void 0 : t.value;
     };
     o.markMotion = F(() => j("mark-motion") === !0);
     const { rows: Z, older: k, loadLatest: g } = o.props.marks, { rows: M } = o.props.docks, ee = F(() => new Set(M.value.filter((e) => e.state === "docked").map((e) => `${e.target_model}:${e.target_id}`))), { rows: He, act: Ie } = o.props.pins, te = l(0), it = zt("question", (e) => (te.value = e, !0));
     le(it);
-    const rt = F(() => Qt(Z.value, Le, (e) => o.option(e).value)), $ = l([]), Ae = (e) => v.value.some((t) => t.type === e.type && t.text === e.text && Date.parse(t.created_at) >= e.created_at - en);
+    const rt = F(() => Qt(Z.value, Le, (e) => o.option(e).value)), E = l([]), Ae = (e) => v.value.some((t) => t.type === e.type && t.text === e.text && Date.parse(t.created_at) >= e.created_at - en);
     L(v, () => {
-      const e = $.value.filter((t) => !Ae(t));
-      e.length !== $.value.length && ($.value = e);
+      const e = E.value.filter((t) => !Ae(t));
+      e.length !== E.value.length && (E.value = e);
     });
-    const he = F(() => Wt(Gt(Jt([...v.value, ...$.value.filter((e) => !Ae(e))], rt.value), Le))), { visible: ut } = Xt(() => He.value), ct = (e) => {
+    const he = F(() => Wt(Gt(Jt([...v.value, ...E.value.filter((e) => !Ae(e))], rt.value), Le))), { visible: ut } = Xt(() => He.value), ct = (e) => {
       var t;
       return ((t = v.value.find((a) => a.id === e.parent_id)) == null ? void 0 : t.text) ?? "";
     }, se = F(() => o.props["voice-profile"].loaded.value ? { profile: j("voice-profile"), avatar: j("voice-avatar"), avatar_shown: j("voice-avatar-shown") } : null), dt = () => {
@@ -175,9 +175,9 @@ const Ta = {
       ke.value = Date.now() / 1e3, o.reload("tool");
     }, Zt.runningTool));
     const Se = l(null), Ce = l(!0), Ue = l(!1);
-    let Te = 0, E = !0, U = 0, ne = null, V = null;
+    let Te = 0, b = !0, U = 0, ne = null, V = null;
     tt(() => {
-      K(), Promise.all([ea(), ta()]), Se.value && typeof ResizeObserver < "u" && (ne = new ResizeObserver(([e]) => Ue.value = e.contentRect.height < aa), ne.observe(Se.value), V = new ResizeObserver(() => E && c.value && (c.value.scrollTop = c.value.scrollHeight)), V.observe(c.value), V.observe(Ve.value));
+      K(), Promise.all([ea(), ta()]), Se.value && typeof ResizeObserver < "u" && (ne = new ResizeObserver(([e]) => Ue.value = e.contentRect.height < aa), ne.observe(Se.value), V = new ResizeObserver(() => b && c.value && (c.value.scrollTop = c.value.scrollHeight)), V.observe(c.value), V.observe(Ve.value));
     }), le(() => {
       ne == null || ne.disconnect(), V == null || V.disconnect(), clearTimeout(U);
     });
@@ -211,7 +211,7 @@ const Ta = {
       A(), h.value || Je(d.value), window.removeEventListener("focus", ce), document.removeEventListener("visibilitychange", ce);
     });
     const de = l(!1);
-    async function be(e) {
+    async function $e(e) {
       for (const t of e) {
         if (p.value.some((y) => y.name === t.name)) continue;
         const a = { name: t.name, pending: "", failure: "" };
@@ -222,15 +222,15 @@ const Ta = {
       K();
     }
     const gt = (e) => {
-      be([...e.target.files]), e.target.value = "";
+      $e([...e.target.files]), e.target.value = "";
     }, ht = (e) => {
       var a;
       const t = [...((a = e.clipboardData) == null ? void 0 : a.files) ?? []];
-      t.length && (e.preventDefault(), be(t));
+      t.length && (e.preventDefault(), $e(t));
     }, kt = (e) => {
       var t;
-      de.value = !1, be([...((t = e.dataTransfer) == null ? void 0 : t.files) ?? []]);
-    }, yt = (e) => p.value = p.value.filter((t) => t !== e), $e = F(() => (d.value.trim() || p.value.length) && p.value.every((e) => e.pending)), P = l(null), R = l(null), wt = F(() => {
+      de.value = !1, $e([...((t = e.dataTransfer) == null ? void 0 : t.files) ?? []]);
+    }, yt = (e) => p.value = p.value.filter((t) => t !== e), Ee = F(() => (d.value.trim() || p.value.length) && p.value.every((e) => e.pending)), P = l(null), R = l(null), wt = F(() => {
       var e;
       return h.value ? `Editing message ${h.value.id}` : R.value ? `Comment on: ${R.value.text}` : `Reply to: ${(e = P.value) == null ? void 0 : e.text}`;
     }), h = l(null);
@@ -248,41 +248,41 @@ const Ta = {
       const t = await B(["message", "delete", String(e.id)], ya(e.id));
       H.value = t.ok ? "" : t.error;
     }
-    const We = () => $.value.at(-1) ?? v.value.find((e) => ["user", "comment"].includes(e.type));
-    function bt(e) {
+    const We = () => E.value.at(-1) ?? v.value.find((e) => ["user", "comment"].includes(e.type));
+    function $t(e) {
       d.value || !We() || (e.preventDefault(), h.value = We(), P.value = null, R.value = null, d.value = h.value.text);
     }
     function ve() {
       h.value && (h.value = null, d.value = "");
     }
-    async function $t() {
+    async function Et() {
       const e = h.value, t = e.text, a = d.value;
       if (e.text = a, ve(), e.local) return;
       const s = await o.run(["message", "edit", String(e.id), "--text", a]);
       H.value = s.ok ? "" : s.error, s.ok || (e.text = t, h.value = e, d.value = a), T();
     }
-    function Et(e, t, a, s) {
+    function bt(e, t, a, s) {
       return t && !s.length ? ["message", "comment", String(t.id), a] : e && !s.length ? ["message", "reply", String(e.id), a] : ["message", "send", a, ...s];
     }
-    let Ee = Promise.resolve();
+    let be = Promise.resolve();
     async function xt(e, t, a, s, y) {
       let _ = e.text;
-      const S = await o.run(Et(t, a, _, s));
+      const S = await o.run(bt(t, a, _, s));
       for (S.ok || (H.value = S.error, d.value = e.text === y.line ? y.text : e.text, p.value = y.attached, R.value = a); S.ok && e.text !== _; ) {
         _ = e.text;
         const J = await o.run(["message", "edit", String(S.value.id), "--text", _]);
         H.value = J.ok ? "" : J.error;
       }
-      await T(), $.value = $.value.filter((J) => J.id !== e.id);
+      await T(), E.value = E.value.filter((J) => J.id !== e.id);
     }
     function xe() {
-      if (A(), h.value) return $t();
+      if (A(), h.value) return Et();
       const e = { text: d.value, attached: p.value, line: d.value || p.value.map((Me) => Me.name).join(", ") }, t = e.attached.flatMap((Me) => ["--file", Me.pending]), a = e.line, s = P.value, y = R.value, _ = y && !t.length, S = { id: `sending-${Date.now()}`, type: _ ? "comment" : "user", commented_row: _ ? `message:${y.id}` : "", text: a, created_at: Date.now(), files: [], local: !0 };
-      $.value = [...$.value, S];
-      const J = $.value.at(-1);
-      return E = !0, ue.value = !1, I.value = 0, d.value = "", p.value = [], H.value = "", K(), P.value = null, R.value = null, Ee = Ee.then(() => xt(J, s, y, t, e)), Ee;
+      E.value = [...E.value, S];
+      const J = E.value.at(-1);
+      return b = !0, ue.value = !1, I.value = 0, d.value = "", p.value = [], H.value = "", K(), P.value = null, R.value = null, be = be.then(() => xt(J, s, y, t, e)), be;
     }
-    const Dt = (e) => !e.shiftKey && !e.isComposing && (e.preventDefault(), A(), $e.value && xe()), Ot = /* @__PURE__ */ new Set(["INPUT", "TEXTAREA", "SELECT"]);
+    const Dt = (e) => !e.shiftKey && !e.isComposing && (e.preventDefault(), A(), Ee.value && xe()), Ot = /* @__PURE__ */ new Set(["INPUT", "TEXTAREA", "SELECT"]);
     function Ge(e) {
       var t, a;
       e.key !== "/" || e.metaKey || e.ctrlKey || Ot.has((t = e.target) == null ? void 0 : t.tagName) || (a = e.target) != null && a.isContentEditable || (e.preventDefault(), K());
@@ -308,13 +308,13 @@ const Ta = {
     async function Rt() {
       if (G || pe.value || !w.value) return;
       pe.value = !0;
-      const e = c.value.scrollHeight, [t, a] = await Promise.all([b(), k()]);
+      const e = c.value.scrollHeight, [t, a] = await Promise.all([$(), k()]);
       (t || a) && (await me(), c.value.scrollTop += c.value.scrollHeight - e), pe.value = !1;
     }
     function Ft() {
       if (ze.value = !c.value || c.value.scrollTop < 8, ze.value && c.value && Rt(), !c.value) return;
       const { scrollTop: e, scrollHeight: t, clientHeight: a } = c.value;
-      E = t - e - a < tn || E && e >= Te, ue.value = !E, E && (I.value = 0);
+      b = t - e - a < tn || b && e >= Te, ue.value = !b, b && (I.value = 0);
       const s = fa({ top: e, before: Te, height: t, shown: a });
       Te = e, !(s === null && !U) && (clearTimeout(U), U = 0, s ? Ce.value = !0 : U = setTimeout(() => {
         Ce.value = !1, U = 0;
@@ -324,15 +324,15 @@ const Ta = {
       var e;
       return (e = v.value[0]) == null ? void 0 : e.id;
     }, (e, t) => {
-      t && e > t && !E && (I.value += 1);
+      t && e > t && !b && (I.value += 1);
     }), L([he, w], async () => {
-      await me(), E && c.value && (c.value.scrollTop = c.value.scrollHeight);
+      await me(), b && c.value && (c.value.scrollTop = c.value.scrollHeight);
     });
     let Xe = !1, Ye = 0;
     L(w, () => Ye = setTimeout(() => Xe = !0, an));
     const Oe = na();
     let G = !1;
-    const Ze = () => ({ pane: c.value, follows: () => Xe && E && !document.hidden && !G }), Lt = (e) => {
+    const Ze = () => ({ pane: c.value, follows: () => Xe && b && !document.hidden && !G }), Lt = (e) => {
       var t;
       return (t = he.value.find((a) => a.id === e.dataset.row)) == null ? void 0 : t.row;
     }, qt = (e) => !!(e != null && e.local), Ht = {
@@ -340,11 +340,11 @@ const Ta = {
         const a = Lt(e);
         return qt(a) ? ha(e, Ze(), t) : ["user", "comment"].includes(a == null ? void 0 : a.type) ? t() : Oe(e, Ze(), t);
       },
-      leave: (e, t) => G || !E || !e.querySelector("[data-message]") || e.dataset.row.startsWith("message:sending-") ? t() : ga(e, t)
+      leave: (e, t) => G || !b || !e.querySelector("[data-message]") || e.dataset.row.startsWith("message:sending-") ? t() : ga(e, t)
     };
     async function et() {
       if (Oe.flush(), !(document.hidden || G)) {
-        G = !0, E = !0, ue.value = !1, I.value = 0;
+        G = !0, b = !0, ue.value = !1, I.value = 0;
         try {
           await Promise.all([q(), g()]), await me(), c.value && (c.value.scrollTop = c.value.scrollHeight);
         } finally {
@@ -423,7 +423,7 @@ const Ta = {
           })) : C("", !0),
           m(n(sa), {
             rows: he.value,
-            failure: $.value.length ? "" : n(O),
+            failure: E.value.length ? "" : n(O),
             loaded: n(w),
             arrival: Ht,
             shape: "messages",
@@ -571,7 +571,7 @@ const Ta = {
           onKeyup: A,
           onKeydown: [
             fe(Dt, ["enter"]),
-            fe(bt, ["up"]),
+            fe($t, ["up"]),
             fe(ve, ["down"]),
             fe(ve, ["esc"])
           ],
@@ -606,7 +606,7 @@ const Ta = {
               size: 16
             })
           ]),
-          $e.value ? (r(), N(n(oe), {
+          Ee.value ? (r(), N(n(oe), {
             key: 0,
             variant: "primary",
             small: "",
@@ -631,7 +631,7 @@ const Ta = {
             ])]),
             _: 1
           })),
-          $e.value && p.value.length > 1 && !d.value.trim() ? (r(), N(n(oe), {
+          Ee.value && p.value.length > 1 && !d.value.trim() ? (r(), N(n(oe), {
             key: 2,
             small: "",
             bordered: "",
@@ -654,7 +654,7 @@ const Ta = {
       }, null, 8, ["id"])) : C("", !0)
     ], 512));
   }
-}, rn = /* @__PURE__ */ qe(nn, [["__scopeId", "data-v-0cab7b7b"]]);
+}, rn = /* @__PURE__ */ qe(nn, [["__scopeId", "data-v-6aa04777"]]);
 export {
   rn as default
 };
