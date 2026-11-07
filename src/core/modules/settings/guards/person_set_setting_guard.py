@@ -4,6 +4,8 @@ from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
+from core.base.database.actor_table import ActorTable
+from core.base.refusal import Refusal
 from core.base.user_approval import UserApproval
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
@@ -18,12 +20,16 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
     name = "settings.person-set"
     is_safety = True
 
-    def __init__(self, declared: SettingCatalogue, revision: SettingRevision) -> None:
-        self.declared, self.revision = declared, revision
+    def __init__(self, declared: SettingCatalogue, revision: SettingRevision, actors: ActorTable) -> None:
+        self.declared, self.revision, self.actors = declared, revision, actors
 
     def check(self, event: Changed[Setting], context: Context) -> None:
         if context.actor.type is ActorType.AGENT and self.declared.is_person_set(event.row.key):
-            raise UserApproval(f"Change {self.declared.value(event.row.key).title}?", self.arguments(event.row))
+            entry = self.declared.value(event.row.key)
+            owner = self.actors.row_owner(context.actor.id) if entry.main_agent_only else None
+            if entry.main_agent_only and (owner is None or not owner.is_main):
+                raise Refusal("only the main agent can ask to change this setting")
+            raise UserApproval(f"Change {entry.title}?", self.arguments(event.row))
 
     def arguments(self, row: Setting) -> tuple[str, ...]:
         value = json.loads(row.value)

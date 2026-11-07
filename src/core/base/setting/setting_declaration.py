@@ -27,3 +27,4 @@ class SettingDeclaration:
     target: str = ""
     person_set: bool = False
     rule: str = ""
+    main_agent_only: bool = False
