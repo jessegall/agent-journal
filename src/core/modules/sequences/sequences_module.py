@@ -26,6 +26,7 @@ from core.modules.sequences.guards.standard_sequence_guard import StandardSequen
 from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
 from core.modules.sequences.listeners.sequence_end_listener import SequenceEndListener
 from core.modules.sequences.listeners.sequence_started_mark_listener import SequenceStartedMarkListener
+from core.modules.sequences.listeners.sequence_ended_mark_listener import SequenceEndedMarkListener
 from core.modules.sequences.listeners.standard_sequences_listener import StandardSequencesListener
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.migrations.m002_sequence_triggers import SequenceTriggersMigration
@@ -70,7 +71,7 @@ class SequencesModule(Module):
     subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceBoardSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
-    listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener]
+    listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener, SequenceEndedMarkListener]
     marks = SEQUENCE_MARKS
     driver_rules = [UnstartedStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
