@@ -27,8 +27,8 @@ def test_an_install_already_made_says_nothing_changed_and_update_brings_the_chec
     run(scratch, checkout)
     assert (scratch.journal / "version-5.db").is_file()
     (checkout / "src" / "core" / MARKER).write_text("newer")
-    again = run(scratch, checkout)
-    assert again.returncode == 0 and "already installed" in again.stdout and not (scratch.journal / "src" / "core" / MARKER).exists()
+    second_install = run(scratch, checkout)
+    assert second_install.returncode == 0 and "already installed" in second_install.stdout and not (scratch.journal / "src" / "core" / MARKER).exists()
     updated = run(scratch, checkout, "update")
     assert updated.returncode == 0, updated.stdout + updated.stderr
     assert (scratch.journal / "src" / "core" / MARKER).read_text() == "newer"

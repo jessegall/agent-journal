@@ -2,6 +2,7 @@ from uuid import uuid4
 from suites.coding.modules.workers.commands.report_worker_route_fallback.report_worker_route_fallback import ReportWorkerRouteFallback
 import json
 
+from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -69,15 +70,16 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         parent_id = caller.id if caller is not None else None
         profile = self.worker_profile(command.profile)
         self.admission.checked_new("worker", profile.name)
+        self.check_unstarted(command, context)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
         self.check_model(program, model, profile.name)
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
-        start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
+        start = StartAgent(command.session or str(uuid4()), program, AgentRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
-        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason), context)
+        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program), context)
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
@@ -93,6 +95,11 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if choice.fallback is not None:
             self.bus.run_with_context(ReportWorkerRouteFallback(opened.worker.id, tuple(listed.id for listed in tasks), choice.fallback), context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
+
+    @staticmethod
+    def check_unstarted(command: DispatchWorker, context: Context) -> None:
+        if not command.starts_program and context.actor.type is not ActorType.USER:
+            raise Refusal("only a person dispatches a worker with no program", "an agent dispatches a worker without --no-program")
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
         idle = self.available_workers.first(folder, request)

@@ -40,10 +40,14 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
         parser.add_argument("--fresh", default="", metavar="REASON", help="start a new worker though a stopped one could take the task, and why")
         parser.add_argument("--name", default="", help="the worker's name on its card")
+        parser.add_argument("--no-program", action="store_true", help="a person only: cut the worktree and start no program")
+        parser.add_argument("--session", default="", help="with --no-program, the session whose hooks are the worker's")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
+        if arguments.session and not arguments.no_program:
+            raise Refusal("--session names the session of a program that is not started", "add --no-program")
         task_ids = self.picked(arguments)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program)
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:
         if arguments.plan is None:
@@ -60,7 +64,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         if not isinstance(value, WorkerLaunch):
             return
         output.row(value.worker)
-        if not self.launcher_runs():
+        if value.worktree.starts_program and not self.launcher_runs():
             variables = " ".join(f"{name}={shlex.quote(text)}" for name, text in value.command.variables.items())
             output.line(f"start the worker with: cd {shlex.quote(str(value.command.folder))} && {variables} {shlex.join(value.command.arguments)}")
 

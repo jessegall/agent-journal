@@ -23,7 +23,7 @@ class WorkerProgramListener(CommitListener[Moved[Worktree]]):
 
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
-        if not self.worktrees.is_first_worktree(worktree):
+        if not worktree.starts_program or not self.worktrees.is_first_worktree(worktree):
             return
         worker = self.rows.required(Agent, worktree.session_agent_id)
         environment = self.environments.find(worktree.environment_id)
