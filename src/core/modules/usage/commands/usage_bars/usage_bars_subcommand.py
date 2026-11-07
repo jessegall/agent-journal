@@ -21,6 +21,7 @@ from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.usage.support.bar_facts import BarFacts
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.usage.conditions.agent_activity import AgentActivity
+from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
 from core.modules.usage.conditions.available_agents import AvailableAgents
 
 PAGE_ROWS = 1
@@ -40,8 +41,9 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         self.queries, self.agent_query, self.tasks, self.queue_runs = queries, agent_query, tasks, queue_runs
 
     def read(self, arguments: Namespace, caller: Caller) -> BarFacts:
-        agents = self.agent_query.matching(self.activity)
-        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_delegates()
+        activity = self.activity.current()
+        agents = self.agent_query.matching(activity)
+        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total + self.ended_delegates(activity)
         tasks =self.tasks.unclosed().page(1, PAGE_ROWS).total
         waiting = self.queries.query(Question).filter(state=QuestionState.OPEN).page(1, PAGE_ROWS).total
         main_agents = MainAgentFinder.rows(self.queries)
@@ -52,9 +54,9 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs, processes,
                         plans[0].plan_id if plans else None)
 
-    def ended_delegates(self) -> int:
+    def ended_delegates(self, activity: AgentActivityCondition) -> int:
         holders = {task.delegated_to for task in self.tasks.unclosed().all_rows() if task.state in UNFINISHED_WORK_STATES and task.delegated_to is not None}
-        return self.queries.query(Agent).matching(Among("id", sorted(holders))).matching(AvailableAgents(self.activity)).count()
+        return self.queries.query(Agent).matching(Among("id", sorted(holders))).matching(AvailableAgents(activity)).count()
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, BarFacts):

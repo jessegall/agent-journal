@@ -5,7 +5,6 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.clock import Clock
-from core.base.agent_work import AgentWork
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.journal_home import JournalHome
@@ -39,8 +38,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, work: AgentWork) -> None:
-        self.activity, self.work = activity, work
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity) -> None:
+        self.activity = activity
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
 
@@ -52,9 +51,10 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cards = self.queries.query(AgentCard)
         if arguments.agent_id is not None:
             cards = cards.filter(id=arguments.agent_id)
-        running = tuple(cards.matching(self.activity).oldest().all_rows())
-        ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(self.activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
-        pending = self.work.pending()
+        activity = self.activity.current()
+        running = tuple(cards.matching(activity).oldest().all_rows())
+        ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
+        pending = activity.pending
         policy = self.suites.agent_policy()
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id)) for card in (*running, *ended)))
