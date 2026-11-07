@@ -3,9 +3,13 @@ import json
 from core.base.driver.command_category import CommandCategory
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
+from core.base.query.queries import Queries
+from core.modules.processes.models.process import Process
+from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, worker_on_plan, worker_outside_plan
 from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
+from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended
 
 
 def test_s32_the_phase_setting_off_tests_each_plan_task_whatever_the_outside_batch_size(new_story, monkeypatch):
@@ -56,3 +60,21 @@ def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a
     worker = worker_on_plan(new_story, monkeypatch)
     configure(worker, COMMAND_TYPES, json.dumps(["read", "search", "edit", "test run", "build", "version control"]))
     expect_reply_refusal(worker.run_line("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"])), "a worker runs no git")
+
+
+def test_s37_the_picked_files_become_the_arguments_of_the_project_test_command(new_story, monkeypatch):
+    story, _, _, started = affected_test_story(new_story, monkeypatch)
+    story.container.get(OutputFolder).write_output(started[1], 1, "tests/cart.py\n")
+    ended(story, started[1], 0)
+    story.expect_rows(story.container.get(Queries).query(Process).find(started[2]).line == "python3 -m pytest -q tests/cart.py")
+    ended(story, started[2], 0)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+
+
+def test_s38_a_failed_selected_test_returns_the_work_and_no_full_suite_follows(new_story, monkeypatch):
+    story, _, _, started = affected_test_story(new_story, monkeypatch)
+    story.container.get(OutputFolder).write_output(started[1], 1, "tests/cart.py\n")
+    ended(story, started[1], 0)
+    ended(story, started[2], 1)
+    story.expect_rows(len(started) == 3)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
