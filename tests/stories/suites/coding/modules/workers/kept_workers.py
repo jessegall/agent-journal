@@ -18,7 +18,7 @@ from core.base.actor_type import ActorType
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree
 
@@ -255,3 +255,19 @@ def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_
     story.expect_success(f"plan approve {plan_id} --environment main", actor=person)
     story.expect_hook_allowed("s-1", HookSamples.sample("stop"))
 
+
+
+def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.library("node_modules", "index.js", "module.exports = 1\n")
+    worker = checked_worker(story, repository, "worker dispatch --model sonnet 1 --library-link node_modules")
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    session = worker_session(story, worker)
+    story.expect_success(f'worker send {worker.id} "Fix the findings"', actor=story.agent)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    story.expect_text(f"task show {worktree.task_id}", "Fix the findings", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", "Fix the findings", actor=story.agent)
+    story.expect_rows(worker_session(story, worker) == session)
+    repository.expect_link(worker.id, "node_modules")

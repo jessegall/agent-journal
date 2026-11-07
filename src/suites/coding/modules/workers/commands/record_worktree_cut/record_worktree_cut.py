@@ -14,3 +14,4 @@ class RecordWorktreeCut(Command[Worktree]):
     base_commit: str
     task_ids: tuple[int, ...]
     task_sources: tuple[TaskSourceCopy, ...] = ()
+    library_links: str = "[]"

@@ -60,6 +60,9 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.hook(merger.session, HookSamples.stop())
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
     story.expect_rows(f"worker:{worker.id}" not in lines, f"agent:{merger.id} reports" not in lines, detail=lines)
+    story.expect_success(f'merger findings {worker.id} "Fix the merged code"', actor=actor)
+    story.expect_text(f"agent-line list --agent {worker.id}", "Fix the merged code", actor=story.agent)
+    story.expect_text("task list", "Fix the merged code", actor=story.agent)
 
 
 def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
