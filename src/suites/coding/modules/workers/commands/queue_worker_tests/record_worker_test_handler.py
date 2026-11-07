@@ -71,12 +71,12 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if waiting:
             for task_id in sorted({row.task_id for row in waiting}):
                 proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-                self.main_agent_line.send(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=task_id, proofs=proof_ids).text, LINE_SOURCE, context)
+                self.main_agent_line.send_nudge(PROOF_CHECK.nudge(worker=worktree.session_agent_id, task=task_id, proofs=proof_ids), LINE_SOURCE, context)
             return
         if self.settings.flag(MERGER_ENABLED):
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp), context)
             return
-        self.main_agent_line.send(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id).text, LINE_SOURCE, context)
+        self.main_agent_line.send_nudge(WORKER_TESTS_PASSED.nudge(worker=worktree.session_agent_id), LINE_SOURCE, context)
 
     def complete_tested(self, proofs: tuple[Proof, ...], context: Context) -> None:
         for task_id in sorted({row.task_id for row in proofs}):

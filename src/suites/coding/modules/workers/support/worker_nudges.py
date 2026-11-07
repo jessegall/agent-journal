@@ -10,12 +10,15 @@ APPROVED_PLAN_WAIT = NudgeDeclaration("workers.approved_plan_wait", NudgeType.RE
 HELPER_INACTIVE = NudgeDeclaration("workers.helper_inactive", NudgeType.STEERING, '{name}:{agent} has used no tool for {minutes} minutes{queue}: {action}', turn_limited=False, wakes_agent=True)
 BUILDER_BUILDS = NudgeDeclaration("workers.builder_builds", NudgeType.REFUSAL, 'this builder builds its tasks itself: coding.builder-dispatches-workers is false')
 PROOF_CHECK = NudgeDeclaration("workers.check_the_proof", NudgeType.REFUSAL, 'worker:{worker} delivered task:{task}: journal proof check {proofs}, or journal proof short <proof> "<what is missing>"')
-WORKER_UNSTARTED = NudgeDeclaration("workers.unstarted", NudgeType.STEERING, 'worker:{worker} made no call in {seconds} seconds: journal agent terminal {worker}', interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True)
+WORKER_UNSTARTED = NudgeDeclaration("workers.unstarted", NudgeType.STEERING, 'worker:{worker} made no call in {seconds} seconds: journal agent terminal {worker}', interval=Interval(Seconds(600)), turn_limited=False, wakes_agent=True,
+                                   plural_text='workers {worker} made no call in {seconds} seconds: inspect each with journal agent terminal <id>', id_field="worker")
 PROOF_WAITS = NudgeDeclaration("workers.proof_waits", NudgeType.STEERING, 'worker:{worker} waits on your check: journal proof check {proofs}, or journal proof short <proof> "<why>"', turn_limited=False, wakes_agent=True)
-MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.STEERING, 'the merge of worker {worker} waits for the checkout of environment {environment} to return to {branch}', turn_limited=False)
+MERGE_WAITS = NudgeDeclaration("workers.merge_waits", NudgeType.STEERING, 'the merge of worker {worker} waits for the checkout of environment {environment} to return to {branch}', turn_limited=False,
+                              plural_text='the merges of workers {worker} wait for the checkout of environment {environment} to return to {branch}', id_field="worker")
 WORKER_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.STEERING, 'worker:{worker} holds task:{task}: its worktree is {state}')
 
-WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, 'worker:{worker} delivered {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False)
+WORKER_UNMERGED = NudgeDeclaration("workers.worker_unmerged", NudgeType.STEERING, 'worker:{worker} delivered {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False,
+                                  plural_text='workers {worker} delivered {tasks}, unmerged: {action}', id_field="worker")
 WORKER_UNMERGED_DUE = NudgeDeclaration("workers.worker_unmerged_due", NudgeType.STEERING, 'worker:{worker} delivered {tasks}, unmerged: {action}', interval=Interval(Seconds(300)), turn_limited=False, required_command="journal worker merge {worker}")
 
 WORKER_LIMIT_RAISED = NudgeDeclaration("workers.limit_raised", NudgeType.STEERING, 'worker limit is now {limit}: {workers} workers out, {count} open tasks not delegated; hand out more', turn_limited=False)
@@ -28,7 +31,8 @@ WORKER_JUDGE_SCOPE = NudgeDeclaration("workers.judge_scope", NudgeType.REFUSAL, 
 WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL, "that file is in worker {worker}'s worktree: journal worker send {worker} \"<job>\", or wait for its delivery", turn_limited=False)
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> --task <task> "<proof>"', interval=Interval(Seconds(1800)), turn_limited=False)
 
-WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False)
+WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False,
+                                     plural_text='the tests of workers {worker} all pass: merge each with journal worker merge <id>', id_field="worker")
 WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed: journal output read {outputs} --summary. Fix them, then journal worker next or deliver', turn_limited=False)
 WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'tests of phase {phase} failed: {failures}. Run tests freely now; fix them, then journal worker next or deliver', turn_limited=False, path_fields=["failures"])
 WORKER_TEST_REQUESTED = NudgeDeclaration("workers.test_requested", NudgeType.STEERING, 'worker:{worker} asks to run this once for task:{task}: {command}. Why: {reason}. journal worker allow-test {request}', turn_limited=False, wakes_agent=True, path_fields=["command", "reason"])
@@ -39,11 +43,13 @@ TEST_REQUEST_ALLOWED = NudgeDeclaration("workers.test_request_allowed", NudgeTyp
 TEST_REQUEST_REASON_MISSING = NudgeDeclaration("workers.test_request_no_reason", NudgeType.SAFETY_REFUSAL, 'the flag needs a reason: run it again with --ask-main "<why>"', turn_limited=False)
 TEST_REQUEST_UNNEEDED = NudgeDeclaration("workers.test_needs_no_request", NudgeType.SAFETY_REFUSAL, 'you need not ask: run the command without the flag', turn_limited=False)
 PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'phase {phase} of plan {plan} runs its tests at its end, so your work is tested then and you go on. Only if you cannot continue at all without this run, run it again with --ask-main "<why>"', turn_limited=False)
-WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: journal output read {output} --summary, then go on')
+WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: journal output read {output} --summary, then go on',
+                                   plural_text='your runs {output} ended: read each with journal output read <id> --summary, then go on', id_field="output")
 WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.STEERING, 'you ended with tasks left: go on with journal worker next, deliver after the last, and stop only then')
 READER_SAMPLE_READY = NudgeDeclaration("workers.reader_sample_ready", NudgeType.STEERING, "read the sample: journal output read {output} --reader {reader}", wakes_agent=True)
 WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.STEERING, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False, wakes_agent=True)
-WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.STEERING, 'the user commented on task:{task}: journal task comments {task}', turn_limited=False)
+WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.STEERING, 'the user commented on task:{task}: journal task comments {task}', turn_limited=False,
+                                      plural_text='the user commented on tasks {task}: read each with journal task comments <id>', id_field="task")
 WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.STEERING, 'your tests passed. Your next task is task:{task}: journal task show {task}', turn_limited=False)
 WORKER_TASK_REASSIGNED = NudgeDeclaration("workers.task_taken", NudgeType.STEERING, 'task:{task} was taken from you: leave it', turn_limited=False)
 WORKER_TASK_AFTER_REASSIGNED = NudgeDeclaration("workers.task_after_taken", NudgeType.STEERING, 'your next task is task:{task}: journal task show {task}', turn_limited=False)

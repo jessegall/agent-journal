@@ -3,6 +3,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.created import Created
 from core.base.change.moved import Moved
 from core.base.command.bus import Bus
+from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.listener.commit_listener import CommitListener
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -22,7 +23,8 @@ class MergerWakeListener(CommitListener[Moved[Worktree] | Created[MergerLine]]):
 
     def handle(self, event: Moved[Worktree] | Created[MergerLine], logged: LoggedEvent) -> None:
         if isinstance(event.row, MergerLine):
-            self.bus.run(StartMerger(event.row.text), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
+            line = event.row.text if event.row.nudge_json is None else NudgeDeclaration.restore(event.row.nudge_json)
+            self.bus.run(StartMerger(line), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)
         elif event.row.tests_passed_at is not None and event.row.left_to_main_at is None:
-            line = WORKER_TESTS_PASSED.nudge(worker=event.row.session_agent_id).text
+            line = WORKER_TESTS_PASSED.nudge(worker=event.row.session_agent_id)
             self.bus.run(StartMerger(line), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

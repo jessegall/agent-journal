@@ -11,8 +11,10 @@ class MergerLine(EnvironmentScoped, Model):
 
     model_name = "merger_line"
     cli_name = "merger-line"
+    hidden_fields = frozenset(["nudge_json"])
 
     environment_id: int = 0
     text: str
     fallback_source: str
     read_at: Timestamp | None = None
+    nudge_json: str | None = None

@@ -2,6 +2,9 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.driver.nudge import Nudge
+from core.base.driver.nudge_type import NudgeType
+from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
@@ -31,7 +34,8 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).oldest().all_rows())
         for line in lines:
             self.repository.save_change(line, replace(line, read_at=context.timestamp), context)
-        messages = "\n".join(f"line: {line.text}" for line in lines)
+        nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
+        messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))
         worktree = next((row for row in self.worktrees.open_worktrees() if self.waits(row)), None)
         if worktree is None:
             return messages or NO_WORKER_WAITING

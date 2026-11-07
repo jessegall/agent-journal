@@ -77,4 +77,4 @@ class WorkerProofQueue:
     def send_untested_line(self, worktree: Worktree, context: Context) -> None:
         proofs = [str(proof.id) for proof in self.proofs.untested_proofs(worktree.id).oldest().all_rows()]
         if proofs:
-            self.main_agent_line.send(PROOF_WAITS.nudge(worker=worktree.session_agent_id, proofs=" ".join(proofs)).text, PROOF_WAITS_SOURCE, context)
+            self.main_agent_line.send_nudge(PROOF_WAITS.nudge(worker=worktree.session_agent_id, proofs=" ".join(proofs)), PROOF_WAITS_SOURCE, context)

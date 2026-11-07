@@ -1,4 +1,5 @@
 from core.base.command.context import Context
+from core.base.driver.nudge import Nudge
 from core.base.repository.repository import Repository
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -18,3 +19,9 @@ class MergerInbox:
             self.repository.save(MergerLine(environment_id=context.environment_id, text=text, fallback_source=source), context)
             return
         self.main_line.send(text, source, context)
+
+    def send_nudge(self, nudge: Nudge, source: str, context: Context) -> None:
+        if self.settings.flag(MERGER_ENABLED):
+            self.repository.save(MergerLine(environment_id=context.environment_id, text=nudge.text, fallback_source=source, nudge_json=nudge.stored.json), context)
+            return
+        self.main_line.send_nudge(nudge, source, context)

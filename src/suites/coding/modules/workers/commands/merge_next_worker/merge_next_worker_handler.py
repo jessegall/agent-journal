@@ -23,5 +23,5 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
         require_merger(self.agents, context)
         outcome = self.bus.run(MergeWorker(command.worker_id), context.actor, environment_id=context.environment_id)
         if not outcome.conflicts:
-            self.bus.run(SendMergerReport(MERGER_MERGED.nudge(worker=command.worker_id).text), context.actor, environment_id=context.environment_id)
+            self.bus.run(SendMergerReport(MERGER_MERGED.nudge(worker=command.worker_id)), context.actor, environment_id=context.environment_id)
         return outcome

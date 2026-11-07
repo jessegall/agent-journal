@@ -68,6 +68,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
+        lines = handed_lines.with_answers(answers)
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
@@ -82,7 +83,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
-                                             lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
+                                             lines="\n".join(nudge.text for nudge in lines), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
         if answers.stop_checks:
             self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} agent {agent.id} {call.answer.value}: {json.dumps([asdict(check) for check in answers.stop_checks])}")
@@ -98,12 +99,18 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         if updated_input != answers.updated_input:
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
-            return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], {nudge.text for nudge in answers.delivered_nudges if nudge.wakes_agent}, call.id, context)
-        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal, labelled_lines=[*answers.labelled_lines, *(f"journal: {line}" for line in (*handed_lines.texts, *(line for _, line in refused)))])
+            return self.save_waiting_lines(agent.id, answers, refused, call.id, context)
+        return HookReply(answers.refusal, [*(nudge.text for nudge in lines), *(line for _, line in refused)], call.id, updated_input, terminal=answers.terminal,
+                         labelled_lines=[*(nudge.labelled for nudge in (*lines, *answers.refusal_nudges)), *(f"journal: {line}" for _, line in refused)])
 
-    def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], waking_texts: set[str], call_id: int, context: Context) -> HookReply:
-        for rule, text in rule_lines:
-            self.nudger.send_text(agent_id, text, rule, context, text in waking_texts)
+    def save_waiting_lines(self, agent_id: int, answers: RuleAnswers, refused: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
+        nudges = {nudge.text: nudge for nudge in answers.delivered_nudges}
+        for rule, text in [*answers.rule_lines, *refused]:
+            nudge = nudges.get(text)
+            if nudge is not None:
+                self.nudger.send_nudge(agent_id, nudge, rule, context)
+                continue
+            self.nudger.send_text(agent_id, text, rule, context)
         return HookReply("", [], call_id)
 
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:

@@ -47,7 +47,7 @@ class NudgeLog:
         return record if record is not None else NudgeRecord(session_agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        nudges = (*answers.delivered_nudges, *answers.refusal_nudges)
+        nudges = tuple(record for nudge in (*answers.delivered_nudges, *answers.refusal_nudges) for record in nudge.records)
         if not nudges:
             return
         records = self.records.nudge_rows(agent_id, nudges)

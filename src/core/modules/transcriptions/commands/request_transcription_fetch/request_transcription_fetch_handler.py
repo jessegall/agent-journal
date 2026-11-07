@@ -26,5 +26,5 @@ class RequestTranscriptionFetchHandler(Handler[RequestTranscriptionFetch, Task])
         brief = (f"Use the tools of the MCP server {server.name} to find transcripts not yet here: journal transcription list shows those that are. "
                  f'Add each with journal transcription make "<title>" --text "<the whole transcript>" --source {server.name}.')
         task = self.repository.save(Task(creator_id=context.actor.id, title=f"Fetch transcriptions from {server.title}", brief=brief), context)
-        self.line.send(TRANSCRIPTION_IMPORT_REQUEST.nudge(task=task.id).text, LINE_SOURCE, context)
+        self.line.send_nudge(TRANSCRIPTION_IMPORT_REQUEST.nudge(task=task.id), LINE_SOURCE, context)
         return task
