@@ -1,6 +1,6 @@
 from core.base.module.module import Module
 from core.base.skill.skill_declaration import SkillDeclaration
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, Choice, ChoiceField, TemplateField
+from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, Choice, ChoiceField, TemplateField, TextField
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
@@ -33,7 +33,9 @@ class PlanReviewsModule(Module):
                                          ChoiceField("size", "How thorough", tuple(Choice(size, size) for size in ("a quick look", "a normal read", "a thorough review")), "a normal read"),
                                          TemplateField("template", "Template", "plan", "critique", "General critique"))),
                ButtonDeclaration("plan_reviews.end-review", ("dock.plans.waiting", "row.plan"), "End the review of the plan", "plan reviewed {row_id}", icon="tick",
-                                 condition=ButtonCondition("state", tuple(["reviewing"])), tip="The plan is ready again")]
+                                 condition=ButtonCondition("state", tuple(["reviewing"])), tip="The plan is ready again"),
+               ButtonDeclaration("plan_reviews.cancel", ("row.plan",), "Cancel the plan", "plan cancel {row_id} --reason={reason}", icon="stop", danger=True,
+                                 condition=ButtonCondition("state", tuple(["reviewing"])), fields=(TextField("reason", "Why is it cancelled?"),))]
     windows = [WindowDeclaration("plan_reviews.rounds", "Review rounds", "rounds.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
                                  slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
                                  reads=["plan rounds"], keys=[WindowKey("rounds.*", "plan rounds {id}", loading=KeyLoading.REQUESTED)], events=["plan.*"],

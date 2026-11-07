@@ -40,16 +40,6 @@ export const dockBadgeOf = (declared, row) => declared || STATE_BADGES[row?.stat
 
 const CANCEL = {word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is it cancelled?"};
 
-const PLAN_MOVES = {
-    draft: [{word: "ready", label: "Mark ready"}, CANCEL],
-    ready: [CANCEL],
-    approved: [{word: "start", label: "Start", main: true}, CANCEL],
-    started: [{word: "block", label: "Pause", flag: "--reason", ask: "Why does it wait?"}, {word: "close", label: "Close"}, CANCEL],
-    blocked: [{word: "unblock", label: "Resume", main: true}, CANCEL],
-    completed: [],
-    cancelled: [],
-};
-
 const TASK_MOVES = {
     open: [{word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "Resume after: task:12, question:4 or plan:3 (optional)"}, CANCEL],
     started: [{word: "close", label: "Complete", flag: "--outcome", ask: "What was the outcome?", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "Resume after: task:12, question:4 or plan:3 (optional)"}, CANCEL],
@@ -64,7 +54,7 @@ const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", lab
 
 // the moves of a plan or a task: an added state keeps those of the state it looks like that it may also take
 function stateMoves(noun, row) {
-    const table = {plan: PLAN_MOVES, task: TASK_MOVES}[noun];
+    const table = {task: TASK_MOVES}[noun];
     const open = row?.state ? stateOpenMoves(noun, row.state) : null;
     if (!open) return table?.[row?.state] ?? [];
     return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));

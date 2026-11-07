@@ -20,12 +20,18 @@ function answering(rows, lines = []) {
     };
 }
 
+const CATALOGUE = {
+    inspector: (noun) => ({noun, module: "acme", fingerprint: "a", reads: `${noun} inspect {row_id}`, label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}),
+    window: () => null,
+    sectionsAt: () => [],
+};
+
 async function opened(hash, read) {
     location.hash = hash;
     await later();
     const element = document.createElement("div");
     document.body.append(element);
-    app = createApp({render: () => h(ResourcePanel, {read})});
+    app = createApp({render: () => h(ResourcePanel, {read, catalogue: CATALOGUE, environment: "main"})});
     app.mount(element);
     await later();
     await nextTick();
@@ -48,58 +54,17 @@ test("a reference names its type by table or by model", () => {
     expect(["plans", "plan", "tasks", "docs", "processes", "dock_items"].map(cliOf)).toEqual(["plan", "plan", "task", "doc", "process", "dock-item"]);
 });
 
-test("a plan opens with its document, its phases and its tasks, and a task opens over it with a way back", async () => {
-    await opened("#?open=plans:5", answering(PLAN));
-    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
-    expect(shown().querySelector("[data-resource-text]").innerHTML).toContain("<strong>cart</strong>");
-    expect(shown().querySelector("[data-resource-phase]").textContent).toContain("First phase");
-    shown().querySelector("[data-resource-task]").click();
-    await later();
-    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Fix the totals");
-    shown().querySelector("[data-resource-back]").click();
-    await later();
-    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
-});
-
 test("the inspector shows a skeleton while it opens and its content once it is fully open", async () => {
     location.hash = "#?open=plans:5";
     await later();
     const element = document.createElement("div");
     document.body.append(element);
-    app = createApp({render: () => h(ResourcePanel, {read: answering(PLAN)})});
+    app = createApp({render: () => h(ResourcePanel, {read: answering(PLAN), catalogue: CATALOGUE, environment: "main"})});
     app.mount(element);
     expect(shown().querySelector("[data-resource-opening]")).not.toBeNull();
     expect(shown().classList.contains("opening")).toBe(true);
     await vi.waitFor(() => expect(shown().querySelector("[data-resource-opening]")).toBeNull());
     expect(shown().classList.contains("opening")).toBe(false);
-});
-
-test("a plan shows how far it has come, the phase it is in and which phases are finished", async () => {
-    await opened("#?open=plans:6", answering({"plan inspect 6": {ok: true, value: {id: 6, title: "Move the cart", brief: "", state: "started", reason: "", total: 3, finished: 1, current_phase: 2, phases: [
-        {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 1, title: "One", state: "completed"}]},
-        {id: 2, title: "Second", goal: "They pass", checkpoint: true, tasks: [{id: 2, title: "Two", state: "started"}, {id: 3, title: "Three", state: "open"}]},
-    ]}}}));
-    expect(shown().querySelector("[data-plan-status]").textContent).toBe("Started");
-    expect(shown().querySelector(".phase-count").textContent).toBe("Phase 2 of 2");
-    expect(shown().querySelector("[data-plan-progress]").textContent).toContain("1 of 3 done");
-    const [first, second] = shown().querySelectorAll("[data-resource-phase]");
-    expect(first.classList.contains("done")).toBe(true);
-    expect(first.querySelector(".row").classList.contains("completed")).toBe(true);
-    expect(first.querySelector('svg[aria-label="Completed"]').classList.contains("done")).toBe(true);
-    expect(second.querySelector('svg[aria-label="Open"]').classList.contains("open")).toBe(true);
-    expect(second.classList.contains("current")).toBe(true);
-    expect(second.textContent).toContain("checkpoint");
-    expect(second.textContent).toContain("0/2");
-});
-
-test("a plan's moves follow its state and run its line, and the close button shuts the panel", async () => {
-    const lines = [];
-    expect(movesOf("plan", {state: "ready"}).map((move) => move.word)).toEqual(["cancel"]);
-    await opened("#?open=plans:5", answering(PLAN, lines));
-    expect(shown().querySelector("[data-move='approve']")).toBeNull();
-    shown().querySelector("[data-resource-close]").click();
-    await later();
-    expect(location.hash).not.toContain("open=");
 });
 
 test("a task shows its log, and a move that needs words asks for them before it runs", async () => {
@@ -120,16 +85,6 @@ test("a task shows its log, and a move that needs words asks for them before it 
     shown().querySelector("[data-resource-ask]").dispatchEvent(new Event("submit", {cancelable: true}));
     await later();
     expect(lines).toContainEqual(["task", "close", "7", "--outcome", "fixed"]);
-});
-
-test("the browser's back and forward walk the rows opened", async () => {
-    await opened("#?open=plans:5", answering(PLAN));
-    shown().querySelector("[data-resource-task]").click();
-    await later();
-    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Fix the totals");
-    history.back();
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
 });
 
 const leaving = () => new Promise((resolve) => setTimeout(resolve, 450));

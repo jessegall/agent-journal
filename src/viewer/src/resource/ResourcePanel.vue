@@ -6,7 +6,6 @@ import InspectorPanel from "./InspectorPanel.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
-import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import {cliOf, titleOf} from "../domain/resourceNouns.js";
 
@@ -18,9 +17,8 @@ const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 // every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue"]);
+const OWN_INSPECTORS = new Set(["task", "test-queue"]);
 const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
-const wide = computed(() => noun.value === "plan");
 const title = computed(() => titleOf(noun.value, null, opened.value?.id));
 
 const close = () => opening([]);
@@ -64,7 +62,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 />
                 <aside
                     v-else
-                    :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', queue: noun === 'test-queue'}]"
+                    :class="['panel', {opening: !fullyOpen, task: noun === 'task', queue: noun === 'test-queue'}]"
                     ref="panel"
                     tabindex="-1"
                     role="dialog"
@@ -84,19 +82,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 @close="close"
                                 @back="unpeek"
                                 @select="(id) => peek('tasks', id)"
-                            />
-                        </template>
-                        <template #plan>
-                            <PlanInspector
-                                :backed="route.stack.length > 1"
-                                :id="opened.id"
-                                :read="read"
-                                :environment="environment"
-                                :read-only="readOnly"
-                                @close="close"
-                                @back="unpeek"
-                                @select="(id) => peek('tasks', id)"
-                                @open="(row) => peek(row.table, row.id)"
                             />
                         </template>
                         <template #test-queue>
@@ -167,10 +152,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 .panel.task {
     width: min(640px, 100vw);
-}
-
-.panel.wide {
-    width: min(760px, 100vw);
 }
 
 .side-enter-active,

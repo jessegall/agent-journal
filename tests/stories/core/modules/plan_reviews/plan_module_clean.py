@@ -25,7 +25,7 @@ def test_no_skill_or_nudge_of_the_plans_module_names_a_review_or_a_critique(new_
 
 def test_the_plan_inspector_files_do_not_name_review_rows(new_story):
     story = new_story(fixture=MainEnvironment)
-    files = [CHECKOUT / "src/viewer/src/resource/PlanDetails.vue", CHECKOUT / "src/viewer/src/resource/PlanInspector.vue"]
+    files = [CHECKOUT / "src/viewer/src/resource/PlanDetails.vue", CHECKOUT / "src/core/modules/plans/support/plan_inspector.py"]
     story.expect_rows(all(word not in path.read_text().lower() for path in files for word in REVIEW_TERMS),
                       not (CHECKOUT / "src/viewer/src/resource/PlanReviews.vue").exists())
 

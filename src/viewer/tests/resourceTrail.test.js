@@ -1,6 +1,5 @@
 import {afterEach, expect, test} from "vitest";
 import MessageCard from "../kit/MessageCard.vue";
-import PlanLinks from "../src/resource/PlanLinks.vue";
 import DocumentBody from "../src/resource/document/DocumentBody.vue";
 import TranscriptionRows from "../../core/modules/transcriptions/web/src/TranscriptionRows.vue";
 import {context, mounted, page, settle} from "./support/windowContext.js";
@@ -76,40 +75,6 @@ function planRead(counterparts, requests) {
     };
 }
 
-test("task 6894: both directions keep all relation labels on one counterpart", async () => {
-    const rows = [linkedItem("task", 4, ["mentions", "comments_on"], "tasks:4")];
-    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, [])});
-    element.querySelector(".fold-head").click();
-    await settle();
-    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(1);
-    expect(element.textContent).toContain("mentions");
-    expect(element.textContent).toContain("comments on");
-    expect(element.textContent).not.toContain("comments_on");
-});
-
-test("task 6894: missing endpoints stay visible but cannot open", async () => {
-    const missing = {endpoint: {model: "task", id: 4, title: "Task 4 unavailable", exists: false, unavailable: true, open_ref: null}, relations: ["about"], link_ids: [1]};
-    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead([missing], [])});
-    element.querySelector(".fold-head").click();
-    await settle();
-    expect(element.textContent.toLowerCase()).toContain("unavailable");
-    expect(element.querySelector("[data-plan-link]")?.disabled).toBe(true);
-});
-
-test.each([
-    ["task_log", "tasks", 4],
-    ["phase", "plans", 1],
-])("task 6894: %s opens its parent", async (model, table, id) => {
-    const opened = [];
-    const rows = [linkedItem(model, 12, ["mentions"], `${table}:${id}`, "Audit totals")];
-    const element = await mounted(PlanLinks, context({}), {id: 1, read: planRead(rows, []), onOpen: (value) => opened.push(value)});
-    element.querySelector(".fold-head").click();
-    await settle();
-    element.querySelector("[data-plan-link]").click();
-    await settle();
-    expect(opened).toEqual([{table, id}]);
-});
-
 test("a migrated comment keeps a native button for its original target", async () => {
     const element = await mounted(MessageCard, receiptContext(), {message: {...REQUEST, type: "comment", commented_row: "task:4"}});
     const button = element.querySelector("[data-message-comment]");
@@ -136,59 +101,6 @@ async function documentRequests() {
 test("task 6894: document comments use their own bounded read", async () => {
     const {requests} = await documentRequests();
     expect(requests.some((line) => line[1] === "comments" && line.includes("--page") && line.includes("--page-size"))).toBe(true);
-});
-
-test("task 6894: counterpart pages append once and preserve every label", async () => {
-    const requests = [];
-    const read = async (line) => {
-        requests.push(line);
-        const second = line[line.indexOf("--page") + 1] === "2";
-        const counterparts = second ? [linkedItem("task", 15, ["about", "edited"], "tasks:15")] : Array.from({length: 10}, (_, at) => linkedItem("task", at + 5, ["about"], `tasks:${at + 5}`));
-        return {ok: true, value: {rows: [], counterparts, total: 11, page: second ? 2 : 1, page_size: 10, next_page: second ? null : 2}};
-    };
-    const element = await mounted(PlanLinks, context({}), {id: 1, read});
-    element.querySelector(".fold-head").click();
-    await settle();
-    expect(element.querySelector("[data-page-more]").textContent).toContain("Show 1 more");
-    element.querySelector("[data-page-more]").click();
-    await settle();
-    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(3);
-    element.querySelector("[data-link-show-more]").click();
-    await settle();
-    expect(element.querySelectorAll("[data-plan-link]")).toHaveLength(11);
-    expect(element.textContent).toContain("edited");
-    expect(requests.at(-1)).toContain("--group-counterparts");
-    expect(requests.at(-1)[requests.at(-1).indexOf("--page") + 1]).toBe("2");
-});
-
-test("link filters read the selected kind and show counts for all kinds", async () => {
-    const rows = [
-        ...Array.from({length: 8}, (_, at) => linkedItem("task", at + 1, ["about"], `tasks:${at + 1}`)),
-        ...Array.from({length: 2}, (_, at) => linkedItem("report", at + 1, ["about"], `reports:${at + 1}`)),
-    ];
-    const requests = [];
-    const read = async (line) => {
-        requests.push(line);
-        const filtered = line.includes("--kind") ? rows.filter((row) => row.endpoint.model === line[line.indexOf("--kind") + 1]) : rows;
-        return {ok: true, value: {counterparts: filtered, total: filtered.length, kinds: {task: 8, report: 2}, next_page: null}};
-    };
-    const element = await mounted(PlanLinks, context({}), {id: 1, read});
-    element.querySelector(".fold-head").click();
-    await settle();
-    expect([...element.querySelectorAll('[role="radio"]')].map((node) => node.textContent.trim())).toEqual(["All 10", "Tasks 8", "Reports 2"]);
-    [...element.querySelectorAll('[role="radio"]')].find((node) => node.textContent.includes("Tasks")).click();
-    await settle();
-    expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(3);
-    element.querySelector("[data-link-show-more]").click();
-    await settle();
-    expect(element.querySelectorAll('[data-plan-link][data-link-model="task"]')).toHaveLength(8);
-    expect(requests.at(-1)).toContain("--kind");
-    expect(requests.at(-1)).toContain("task");
-});
-
-test("task 6894: a relation failure remains visible", async () => {
-    const element = await mounted(PlanLinks, context({}), {id: 1, read: async () => ({ok: false, error: "Linked items could not be read"})});
-    expect(element.querySelector("[role=alert]")?.textContent).toContain("Linked items could not be read");
 });
 
 test("task 6894: transcription links request bounded counterpart pages", async () => {

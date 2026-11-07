@@ -16,6 +16,9 @@ export {loadStates, stateLabel, stateLook, stateOpenMoves} from "../src/domain/s
 export {wordLabel} from "../src/domain/labels.js";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as InspectorPart} from "./InspectorPart.vue";
+export {default as PlanDetails} from "../src/resource/PlanDetails.vue";
+export {default as PlanPhases} from "../src/resource/PlanPhases.vue";
+export {default as PlanTimeline} from "../src/resource/PlanTimeline.vue";
 export {default as AgentDetail} from "../src/resource/agent/AgentDetail.vue";
 export {default as DocumentBody} from "../src/resource/document/DocumentBody.vue";
 export {default as RowList} from "./RowList.vue";
