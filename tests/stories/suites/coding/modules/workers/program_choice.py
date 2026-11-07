@@ -6,6 +6,8 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.query.queries import Queries
+from core.modules.messages.models.message import Message
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -150,7 +152,8 @@ def test_exit_on_a_limit_opens_an_outage_for_a_helper(split_story):
     helper_id, _ = started(story, START)
     exit_program(story, Actor(helper_id, ActorType.AGENT))
     story.expect_text('provider-outage list', 'claude', 'rate limit')
-    story.expect_text(f'agent-line list --agent {story.agent.id}', 'rate limit')
+    report = story.container.get(Queries).query(Message).filter(session_agent_id=helper_id).first()
+    story.expect_text(f'message read {report.id}', 'rate limit')
 
 
 def test_exit_on_a_limit_opens_an_outage_only_for_a_failed_exit(split_story):

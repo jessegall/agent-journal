@@ -11,7 +11,6 @@ try {
     link.searchParams.set("page", "tasks.tasks");
     await page.goto(link.href);
     await page.evaluate(() => { location.hash = "#?open=plans:1"; });
-    await page.locator("[data-plan-links] > button").click();
     const section = page.locator("[data-plan-inspector] [data-resource-links]");
     try {
         await section.locator("[data-plan-link]").first().waitFor({timeout: 8000});
