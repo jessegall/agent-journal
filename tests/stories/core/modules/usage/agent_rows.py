@@ -99,7 +99,7 @@ class AgentsWithStates(StoryFixture):
 
     def steps(self, story):
         story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
-        story.expect_success("setting switch journal.suites.coding.workers.merger-on off --project", actor=story.user)
+        story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
         worker = story.new_row_id(f"agent start idle-worker codex worker --parent {story.agent.id} --environment main")
         story.expect_success('worker report "The worker found a repeated calculation."', actor=Actor(worker, ActorType.AGENT))
         story.expect_success(f"agent end {worker}", actor=story.user)
