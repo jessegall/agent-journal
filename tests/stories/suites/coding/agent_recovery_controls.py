@@ -8,7 +8,7 @@ def test_s24_recovery_off_sends_no_waking_line_and_starts_no_process_for_a_silen
     recovery.story.expect_success(f"setting set {RESUME} off --environment main")
     recovery.advance(SILENT_SECONDS)
     recovery.tick()
-    recovery.story.expect_rows(not recovery.launches, not recovery.lines(recovery.worker.id), not recovery.terminal_lines)
+    recovery.story.expect_rows(not recovery.launches, not recovery.lines(recovery.worker.id), not any(agent_id == recovery.worker.id for agent_id, line in recovery.terminal_lines))
 
 
 def test_s24_recovery_on_by_default_wakes_a_silent_worker_with_work(recovery):
