@@ -12,7 +12,7 @@ import core.testing.template_cache as template_cache
 def sample_cache(tmp_path, monkeypatch):
     source = tmp_path / "src" / "core"
     source.mkdir(parents=True)
-    sample = tmp_path / "tests" / "stories" / "sample.py"
+    sample = tmp_path / "tests" / "stories" / "support" / "sample.py"
     sample.parent.mkdir(parents=True)
     sample.write_text("class Sample: pass\n")
     monkeypatch.setattr(template_cache, "CORE_FOLDER", source)

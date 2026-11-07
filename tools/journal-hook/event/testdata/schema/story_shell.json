@@ -7,11 +7,11 @@
   "fired_at_ms": 1,
   "actor": "agent",
   "environment": "main",
-  "child_agent": "",
   "tool": {
     "name": "Bash",
     "category": "shell",
     "files": [],
+    "diff": null,
     "shell": {
       "line": "git status && journal task show 1",
       "parts": [
@@ -25,7 +25,8 @@
             "category": "version control",
             "effects": [
               "reads_files"
-            ],"uncertain": false
+            ],
+            "uncertain": false
           },
           "subcommand": "status",
           "joined_by": "&&"
@@ -42,19 +43,21 @@
             "category": "journal",
             "effects": [
               "reads_files"
-            ],"uncertain": false
+            ],
+            "uncertain": false
           }
         }
       ],
       "redirects": [],
       "is_journal_only": false,
-      "parse_error": ""
-    },
-    "diff": null
+      "parse_error": "",
+      "saved_commands_known": false
+    }
   },
   "prompt": null,
   "raw": {},
   "accepts_lines": true,
   "launch": "",
-  "foreign": []
+  "foreign": [],
+  "child_agent": ""
 }

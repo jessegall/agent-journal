@@ -7,11 +7,11 @@
   "fired_at_ms": 1,
   "actor": "agent",
   "environment": "main",
-  "child_agent": "",
   "tool": null,
   "prompt": null,
   "raw": {},
   "accepts_lines": true,
   "launch": "",
-  "foreign": []
+  "foreign": [],
+  "child_agent": ""
 }

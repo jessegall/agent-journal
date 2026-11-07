@@ -243,6 +243,234 @@
       "variables"
     ]
   },
+  "core.aliases.command_kind.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "words"
+    ]
+  },
+  "core.aliases.command_kind.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "words"
+    ]
+  },
+  "core.aliases.command_kind.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "category",
+      "creator_id",
+      "words"
+    ]
+  },
+  "core.approvals.approval.accept": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.begin": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.close": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.refuse": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.retry": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
+  "core.approvals.approval.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "answered_by_id",
+      "arguments",
+      "continued_arguments",
+      "creator_id",
+      "environment_id",
+      "recipient_agent_id",
+      "refused_arguments",
+      "relayed_by_id",
+      "requester_id",
+      "required_person_id",
+      "returns_output",
+      "review_answer",
+      "source_version",
+      "state",
+      "text"
+    ]
+  },
   "core.chat.chat_mark.created": {
     "forms": [
       "commit",
@@ -865,6 +1093,7 @@
       "creator_id",
       "grace_seconds",
       "grace_tool_uses",
+      "is_skippable",
       "nudge_key",
       "nudge_text",
       "session_agent_id",
@@ -888,6 +1117,7 @@
       "creator_id",
       "grace_seconds",
       "grace_tool_uses",
+      "is_skippable",
       "nudge_key",
       "nudge_text",
       "session_agent_id",
@@ -911,6 +1141,7 @@
       "creator_id",
       "grace_seconds",
       "grace_tool_uses",
+      "is_skippable",
       "nudge_key",
       "nudge_text",
       "session_agent_id",
@@ -990,6 +1221,24 @@
       "wakes_agent"
     ]
   },
+  "core.drivers.agent_line.drop": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "delivered_at",
+      "hook_call_id",
+      "repeats_without_hook",
+      "session_agent_id",
+      "source",
+      "state",
+      "text",
+      "wakes_agent"
+    ]
+  },
   "core.drivers.agent_line.enter": {
     "forms": [
       "commit",
@@ -1052,6 +1301,7 @@
     ],
     "fields": [
       "brief",
+      "cost_baseline",
       "creator_id",
       "description",
       "ended_at",
@@ -1081,6 +1331,7 @@
     ],
     "fields": [
       "brief",
+      "cost_baseline",
       "creator_id",
       "description",
       "ended_at",
@@ -1110,6 +1361,7 @@
     ],
     "fields": [
       "brief",
+      "cost_baseline",
       "creator_id",
       "description",
       "ended_at",
@@ -1408,6 +1660,45 @@
       "used_at"
     ]
   },
+  "core.drivers.reminder_pass.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "counts",
+      "creator_id",
+      "key",
+      "session_agent_id"
+    ]
+  },
+  "core.drivers.reminder_pass.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "counts",
+      "creator_id",
+      "key",
+      "session_agent_id"
+    ]
+  },
+  "core.drivers.reminder_pass.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "counts",
+      "creator_id",
+      "key",
+      "session_agent_id"
+    ]
+  },
   "core.drivers.rule_history.created": {
     "forms": [
       "commit",
@@ -1559,7 +1850,9 @@
       "branch",
       "creator_id",
       "folder",
-      "name"
+      "name",
+      "test",
+      "test_agent_id"
     ]
   },
   "core.environments.environment.deleted": {
@@ -1572,7 +1865,9 @@
       "branch",
       "creator_id",
       "folder",
-      "name"
+      "name",
+      "test",
+      "test_agent_id"
     ]
   },
   "core.environments.environment.updated": {
@@ -1585,7 +1880,9 @@
       "branch",
       "creator_id",
       "folder",
-      "name"
+      "name",
+      "test",
+      "test_agent_id"
     ]
   },
   "core.helpers.provider_outage.created": {
@@ -6049,6 +6346,120 @@
       "worktree_id"
     ]
   },
+  "suites.coding.workers.merge_followup.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commands",
+      "commit_after",
+      "commit_before",
+      "creator_id",
+      "environment_id",
+      "folder",
+      "results",
+      "revision",
+      "target_branch",
+      "worker_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.merge_followup.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commands",
+      "commit_after",
+      "commit_before",
+      "creator_id",
+      "environment_id",
+      "folder",
+      "results",
+      "revision",
+      "target_branch",
+      "worker_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.merge_followup.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "commands",
+      "commit_after",
+      "commit_before",
+      "creator_id",
+      "environment_id",
+      "folder",
+      "results",
+      "revision",
+      "target_branch",
+      "worker_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.merge_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "branch",
+      "branch_commit",
+      "creator_id",
+      "environment_id",
+      "folder",
+      "target_branch",
+      "target_commit",
+      "worker_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.merge_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "branch",
+      "branch_commit",
+      "creator_id",
+      "environment_id",
+      "folder",
+      "target_branch",
+      "target_commit",
+      "worker_id",
+      "worktree_id"
+    ]
+  },
+  "suites.coding.workers.merge_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "branch",
+      "branch_commit",
+      "creator_id",
+      "environment_id",
+      "folder",
+      "target_branch",
+      "target_commit",
+      "worker_id",
+      "worktree_id"
+    ]
+  },
   "suites.coding.workers.merger_line.created": {
     "forms": [
       "commit",
@@ -6275,6 +6686,45 @@
       "session_agent_id",
       "state",
       "text"
+    ]
+  },
+  "suites.coding.workers.worker_assignment.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "task_ids",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_assignment.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "task_ids",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_assignment.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "task_ids",
+      "worker_id"
     ]
   },
   "suites.coding.workers.worker_clocking_out": {
@@ -6698,6 +7148,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6732,6 +7183,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6766,6 +7218,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6800,6 +7253,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6834,6 +7288,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6868,6 +7323,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6902,6 +7358,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6936,6 +7393,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -6970,6 +7428,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -7004,6 +7463,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -7038,6 +7498,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -7072,6 +7533,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -7106,6 +7568,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
@@ -7140,6 +7603,7 @@
       "removed_at",
       "route_reason",
       "session_agent_id",
+      "starts_program",
       "state",
       "task_count",
       "task_id",
