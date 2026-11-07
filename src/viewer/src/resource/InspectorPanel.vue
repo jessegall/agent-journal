@@ -59,6 +59,34 @@ defineExpose({focus: () => root.value?.focus()});
 </template>
 
 <style scoped>
+.panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border);
+    background: var(--bg);
+    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.4);
+}
+
+.panel :deep(.panel-opening) {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    padding: 20px 24px;
+}
+
+.panel > :deep(:not(.panel-opening)) {
+    transition: opacity 0.18s ease;
+}
+
+.panel.opening > :deep(:not(.panel-opening)) {
+    opacity: 0;
+    transition: none;
+}
+
 .panel.declared {
     width: var(--inspector-width);
 }

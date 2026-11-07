@@ -212,22 +212,3 @@ test("the plan places are read through one window key", async () => {
     expect(await readPlanPlaces(window)).toEqual([{phaseId: 7, label: "Plan 3: Checkout › Payment", taskIds: [40]}]);
     expect(calls).toEqual(["places"]);
 });
-
-test("a block from the inspector can name what opens the task", async () => {
-    const lines = [];
-    const {default: RowMoves} = await import("../src/resource/RowMoves.vue");
-    const {createApp, h, nextTick} = await import("vue");
-    const element = document.createElement("div");
-    createApp({render: () => h(RowMoves, {noun: "task", id: 7, row: {state: "started"}, read: async (line) => (lines.push(line), {ok: true, value: {}})})}).mount(element);
-    element.querySelector('[data-move="block"]').click();
-    await nextTick();
-    const [reason, opener] = element.querySelectorAll("input");
-    reason.value = "needs the key";
-    reason.dispatchEvent(new Event("input"));
-    opener.value = "question:4";
-    opener.dispatchEvent(new Event("input"));
-    await nextTick();
-    element.querySelector("form").dispatchEvent(new Event("submit"));
-    await nextTick();
-    expect(lines).toEqual([["task", "block", "7", "--reason", "needs the key", "--on", "question:4"]]);
-});

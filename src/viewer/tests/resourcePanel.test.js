@@ -1,7 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import ResourcePanel from "../src/resource/ResourcePanel.vue";
-import {cliOf, movesOf} from "../src/domain/resourceNouns.js";
+import {cliOf} from "../src/domain/resourceNouns.js";
 import {pageOf} from "../src/sync/paging.js";
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 30));
@@ -67,26 +67,6 @@ test("the inspector shows a skeleton while it opens and its content once it is f
     expect(shown().classList.contains("opening")).toBe(false);
 });
 
-test("a task shows its log, and a move that needs words asks for them before it runs", async () => {
-    const lines = [];
-    await opened("#?open=tasks:7", answering({
-        "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "started", priority: "normal", brief: "The totals", waits: [], logs: [{id: 1, line: "rounding found"}]}},
-        [`task-log list --task 7 --limit ${pageOf("task_logs")} --page 1`]: {ok: true, value: {rows: [{id: 1, line: "rounding found", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}},
-    }, lines));
-    [...shown().querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
-    await later();
-    expect(shown().querySelector("[data-task-log]").textContent).toContain("rounding found");
-    expect(shown().querySelector("[data-move='close']").textContent).toContain("Complete");
-    shown().querySelector("[data-move='close']").click();
-    await later();
-    const input = shown().querySelector("[data-resource-ask] input");
-    input.value = "fixed";
-    input.dispatchEvent(new Event("input"));
-    shown().querySelector("[data-resource-ask]").dispatchEvent(new Event("submit", {cancelable: true}));
-    await later();
-    expect(lines).toContainEqual(["task", "close", "7", "--outcome", "fixed"]);
-});
-
 const leaving = () => new Promise((resolve) => setTimeout(resolve, 450));
 
 test("focus moves into the panel when a row opens and back to what opened it when it closes", async () => {
@@ -121,31 +101,25 @@ test("Escape closes an open action form first, then the top row, then the panel"
     expect(shown()).toBeNull();
 });
 
-test("a declared noun closes on Escape and on a click on the veil, and Back unpeeks", async () => {
-    const {DECLARED_NOUNS} = await import("../src/resource/declaredNouns.js");
-    DECLARED_NOUNS.add("plan");
-    try {
-        const catalogue = {inspector: () => ({noun: "plan", module: "journal.core.plans", fingerprint: "a", reads: "plan inspect {row_id}", label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}), window: () => null, sectionsAt: () => []};
-        location.hash = "#?open=memories:3,plans:5";
-        await later();
-        const element = document.createElement("div");
-        document.body.append(element);
-        app = createApp({render: () => h(ResourcePanel, {read: answering(PLAN), catalogue, environment: "main"})});
-        app.mount(element);
-        await later();
-        expect(shown().getAttribute("style")).toContain("min(640px, 100vw)");
-        shown().querySelector("[data-resource-back]").click();
-        await later();
-        expect(location.hash).not.toContain("plans:5");
-        window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
-        await leaving();
-        expect(shown()).toBeNull();
-        location.hash = "#?open=plans:5";
-        await later();
-        document.body.querySelector(".veil").click();
-        await leaving();
-        expect(shown()).toBeNull();
-    } finally {
-        DECLARED_NOUNS.delete("plan");
-    }
+test("an inspector closes on Escape and on a click on the veil, and Back unpeeks", async () => {
+    const catalogue = {inspector: () => ({noun: "plan", module: "journal.core.plans", fingerprint: "a", reads: "plan inspect {row_id}", label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}), window: () => null, sectionsAt: () => []};
+    location.hash = "#?open=memories:3,plans:5";
+    await later();
+    const element = document.createElement("div");
+    document.body.append(element);
+    app = createApp({render: () => h(ResourcePanel, {read: answering(PLAN), catalogue, environment: "main"})});
+    app.mount(element);
+    await later();
+    expect(shown().getAttribute("style")).toContain("min(640px, 100vw)");
+    shown().querySelector("[data-resource-back]").click();
+    await later();
+    expect(location.hash).not.toContain("plans:5");
+    window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+    await leaving();
+    expect(shown()).toBeNull();
+    location.hash = "#?open=plans:5";
+    await later();
+    document.body.querySelector(".veil").click();
+    await leaving();
+    expect(shown()).toBeNull();
 });

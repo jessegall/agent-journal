@@ -14,4 +14,3 @@ const addedState = (type, state) => added[type]?.[state];
 // the words and look of a row's state: an added state's own label and the state it looks like, else the state itself
 export const stateLabel = (type, state) => addedState(type, state)?.label ?? wordLabel(state);
 export const stateLook = (type, state) => addedState(type, state)?.looks_like ?? state;
-export const stateOpenMoves = (type, state) => addedState(type, state)?.open_moves ?? null;

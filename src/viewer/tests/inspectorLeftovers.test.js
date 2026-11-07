@@ -1,9 +1,5 @@
 import {questionsWindowContext} from "./support/questionsWindowContext.js";
 import {afterEach, expect, test} from "vitest";
-import {createApp, h} from "vue";
-import {settled} from "./settled.js";
-import RowMoves from "../src/resource/RowMoves.vue";
-import {movesOf} from "../src/domain/resourceNouns.js";
 import {opening, route} from "../src/route.js";
 import QuestionRows from "../../core/modules/questions/web/src/QuestionRows.vue";
 import SuggestionRows from "../../core/modules/suggestions/web/src/SuggestionRows.vue";
@@ -11,12 +7,6 @@ import {context, mounted, page, settle} from "./support/windowContext.js";
 import {suggestionWindowContext} from "./support/suggestionWindowContext.js";
 
 afterEach(() => opening([]));
-
-function drawn(component, props) {
-    const element = document.createElement("div");
-    createApp(() => h(component, props)).mount(element);
-    return element;
-}
 
 test("a question and a suggestion open in the panel", async () => {
     const question = await mounted(QuestionRows, questionsWindowContext({"question list": page([{id: 4, text: "Ship it?", state: "open", options: []}])}));

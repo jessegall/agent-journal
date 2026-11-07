@@ -12,7 +12,7 @@ export {default as Switch} from "./Switch.vue";
 export {openInChat, peekRef} from "../src/route.js";
 export {tableOfWord} from "../src/domain/tables.js";
 export {steppedItem} from "../src/domain/steppedItem.js";
-export {loadStates, stateLabel, stateLook, stateOpenMoves} from "../src/domain/states.js";
+export {loadStates, stateLabel, stateLook} from "../src/domain/states.js";
 export {wordLabel} from "../src/domain/labels.js";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as InspectorPart} from "./InspectorPart.vue";

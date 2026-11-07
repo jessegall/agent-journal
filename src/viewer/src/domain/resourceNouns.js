@@ -1,4 +1,3 @@
-import {stateLook, stateOpenMoves} from "@journal/window-kit";
 import {wordLabel} from "./labels.js";
 
 export {cliOf} from "./modelNames.js";
@@ -37,27 +36,3 @@ const STATE_BADGES = {reviewing: "Under review"};
 
 // the badge a docked row shows: the one its dock declares, or the one its state asks for
 export const dockBadgeOf = (declared, row) => declared || STATE_BADGES[row?.state] || "";
-
-const CANCEL = {word: "cancel", label: "Cancel", flag: "--reason", ask: "Why is it cancelled?"};
-
-const TASK_MOVES = {
-    open: [{word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "Resume after: task:12, question:4 or plan:3 (optional)"}, CANCEL],
-    started: [{word: "close", label: "Complete", flag: "--outcome", ask: "What was the outcome?", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "Resume after: task:12, question:4 or plan:3 (optional)"}, CANCEL],
-    testing: [{word: "close", label: "Complete", flag: "--outcome", ask: "What was the outcome?", main: true}, {word: "retest", label: "Back to work"}, CANCEL],
-    blocked: [{word: "unblock", label: "Unblock", main: true}, CANCEL],
-    completed: [{word: "reopen", label: "Reopen"}],
-    cancelled: [{word: "reopen", label: "Reopen"}],
-};
-
-// what a person can do to a row in its state; a move with a flag asks for its words first
-const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Needs no action", icon: "check", bordered: true, flag: "--why", ask: "Why does it need no action?"}]);
-
-// the moves of a plan or a task: an added state keeps those of the state it looks like that it may also take
-function stateMoves(noun, row) {
-    const table = {task: TASK_MOVES}[noun];
-    const open = row?.state ? stateOpenMoves(noun, row.state) : null;
-    if (!open) return table?.[row?.state] ?? [];
-    return (table?.[stateLook(noun, row.state)] ?? []).filter((move) => open.includes(move.word));
-}
-
-export const movesOf = (noun, row) => (noun === "doc" || noun === "report" ? textMoves(row).map(move => ({...move, word: noun === "doc" ? "settle" : move.word})) : stateMoves(noun, row));
