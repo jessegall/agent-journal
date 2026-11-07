@@ -14,6 +14,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.file_status import FileStatus
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
+from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
@@ -36,6 +37,9 @@ class WorktreeGit:
     stash stack, so a worktree finds its stash by its own message, and a lock holds the stack during a push or
     a drop."""
 
+    def __init__(self, runs: WorkerFolderRuns) -> None:
+        self.runs = runs
+
     def tip(self, folder: str, branch: str) -> str:
         revision = self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}")
         if revision.returncode != 0:
@@ -43,7 +47,19 @@ class WorktreeGit:
         return revision.stdout.strip()
 
     def cut(self, folder: str, worktree: Worktree) -> None:
-        self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
+        path = Path(worktree.folder)
+        if path.exists() or path.is_symlink():
+            self.runs.check_owner(worktree)
+            registered = any(Path(registered_folder).resolve() == path.resolve() for registered_folder, _ in self.folders(folder))
+            if registered or (path / ".git").is_dir():
+                raise Refusal(f"a git worktree still exists at {path}", "merge or release its worktree before reusing the folder")
+            self.runs.stop(worktree)
+            shutil.rmtree(path)
+        try:
+            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
+        except Exception:
+            self.remove(folder, worktree)
+            raise
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
         self.refuse_conflicts(worktree)
@@ -218,8 +234,15 @@ class WorktreeGit:
         return FileAccess.shared().read(path).removeprefix(GIT_FOLDER_PREFIX).strip()
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
+        self.runs.check_owner(worktree)
+        registered = [(path, branch) for path, branch in self.folders(folder) if Path(path).resolve() == Path(worktree.folder).resolve()]
+        if registered and registered[0][1] != worktree.branch:
+            raise Refusal(f"another git worktree owns {worktree.folder}", "keep its folder and remove the stale worker row")
+        self.runs.stop(worktree)
         if Path(worktree.folder).exists():
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
+        if Path(worktree.folder).exists():
+            shutil.rmtree(worktree.folder)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         if not self.is_merged(folder, worktree.base_branch, worktree.branch):
             return True
