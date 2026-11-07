@@ -4,10 +4,12 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 
 from core.base.query.queries import Queries
+from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.plan_steps import ready_plan
@@ -19,6 +21,11 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 def joined_person(story):
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+
+
+def assignment_marks(story):
+    story.run_listeners()
+    return tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).oldest().all_rows())
 
 
 @pytest.fixture
@@ -51,7 +58,11 @@ def test_idle_worker_refusal_keeps_the_plan_and_phase(idle_plan):
 
 def test_a_plan_sent_to_an_idle_worker_keeps_its_order_and_blocked_tasks(idle_plan):
     story, worker = idle_plan
+    before = len(assignment_marks(story))
     story.expect_success(f"worker send --wait {worker.id} --plan 1", actor=story.agent)
+    marks = assignment_marks(story)
+    story.expect_rows(len(marks) == before + 1, marks[-1].text == f"Worker {worker.id} was given 3 tasks",
+                      all(f"Task {number}: Task {number}" in marks[-1].detail for number in (2, 3, 4)), marks[-1].target_id == worker.id)
     tasks = story.container.get(Queries).query(Task).find_many([2, 3, 4])
     story.expect_rows(all(task.delegated_to == worker.id for task in tasks))
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
@@ -87,12 +98,15 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
     story, worker = idle_plan
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
     story.expect_success(f"worker send --wait {worker.id} --task 3", actor=story.agent)
+    before = len(assignment_marks(story))
     story.expect_rows(story.row(Task, 3).delegated_to == worker.id, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
     story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
     story.expect_rows(operation.worker_id == worker.id, operation.line == f"worker send {worker.id} --task 3 --wait", operation.creator_id == story.agent.id)
     outcome = run_operation(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    marks = assignment_marks(story)
+    story.expect_rows(len(marks) == before + 1, marks[-1].text == f"Worker {worker.id} was given task 3", "Task 3: Task 3" in marks[-1].detail)
     story.expect_text("task show 3", "state: started", f"holder_id: {worker.id}", actor=story.agent)
 
 
