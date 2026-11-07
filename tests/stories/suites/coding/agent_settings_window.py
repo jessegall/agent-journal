@@ -39,6 +39,7 @@ def limit_rows(viewer):
 
 def test_s49_counts_groups_and_retirement(new_story):
     story = new_story(fixture=MainControlsActors)
+    story.expect_success("agent limits --environment main", actor=story.agent)
     with person_viewer(story) as viewer:
         helper = next(row for row in limit_rows(viewer) if row["key"] == "helper")
         names = [row["profile"] for row in helper["profiles"]]
@@ -49,6 +50,7 @@ def test_s49_counts_groups_and_retirement(new_story):
 
 def test_s51_agent_details_are_paged(new_story):
     story = new_story(fixture=MainControlsActors)
+    story.expect_success("agent cards --show all --kept --environment main", actor=story.agent)
     with person_viewer(story) as viewer:
         status, answer = window_data(viewer.server, viewer.cookie, keys="count-agents", window="agents.agents",
                                      query="environment=main&count-agents.role=helper&count-agents.page=1")
