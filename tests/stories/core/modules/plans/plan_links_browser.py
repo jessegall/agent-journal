@@ -1,6 +1,6 @@
 from core.base.command.bus import Bus
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
-from core.modules.documents.support.row_ref import RowRef
+from core.modules.documents.references.row_ref import RowRef
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
