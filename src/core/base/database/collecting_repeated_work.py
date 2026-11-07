@@ -8,5 +8,5 @@ class CollectingRepeatedWork(RepeatedWork):
     def reject(self, finding: RepeatedFinding) -> None:
         self.findings.append(finding)
 
-    def conclude(self) -> None:
+    def finish(self) -> None:
         return

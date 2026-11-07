@@ -39,7 +39,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
         self.check_state(agent, command.reason)
         roster = self.roster(agent)
         if roster is not None:
-            roster.close_holdings(agent, context)
+            roster.release_pending_work(agent, context)
         return self.repository.save(agent.retired(context.timestamp, command.reason.strip(), context.actor.id), context)
 
     def check_actor(self, agent: Agent, actor: Actor) -> None:

@@ -38,7 +38,7 @@ class WorkerRoster(AgentRoster[Agent]):
         if self.worktrees.worker_worktree(agent.id) is not None:
             self.bus.run(ReleaseWorker(agent.id, "retired"), actor, environment_id=agent.environment_id)
 
-    def close_holdings(self, agent: Agent, context: Context) -> None:
+    def release_pending_work(self, agent: Agent, context: Context) -> None:
         self.bus.dispatch(ClearDelegatedTasks(agent.id), context)
         for line in tuple(self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).all_rows()):
             self.repository.update(line, context, state=AgentLineState.HIDDEN)

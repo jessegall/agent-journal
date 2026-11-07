@@ -102,9 +102,9 @@ class RepeatedWork(PointTally):
             yield
         finally:
             OPEN_REQUEST.reset(token)
-        self.conclude()
+        self.finish()
 
-    def conclude(self) -> None:
+    def finish(self) -> None:
         if self.findings:
             raise RepeatedCallsError("\n".join(finding.text for finding in self.findings))
 
