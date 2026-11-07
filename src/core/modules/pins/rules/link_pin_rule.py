@@ -27,4 +27,4 @@ class LinkPinRule(DriverRule):
             return RuleAnswer.allowed()
         part_nudges = [nudge for part_text in (tool.shell.part_texts if tool.shell is not None else ()) for nudge in self.check.nudges(part_text)]
         response = self.check.joined_text(hook.event.raw.get("tool_response"))
-        return RuleAnswer.with_nudges(*part_nudges, *self.check.nudges("", response)).running(*self.check.pull_request_pins(response))
+        return RuleAnswer.with_nudges(*part_nudges, *self.check.nudges("", response))

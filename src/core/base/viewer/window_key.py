@@ -4,9 +4,9 @@ from dataclasses import dataclass, replace
 
 from core.base.viewer.key_loading import KeyLoading
 
-ID_KEY_SUFFIX = ".*"
-ID_PLACE = "{id}"
-NAME_ID = re.compile(r"[\w@][\w./@-]*")
+ID_SUFFIX = ".*"
+ID_TOKEN = "{id}"
+NAME_PATTERN = re.compile(r"[\w@][\w./@-]*")
 
 
 @dataclass(frozen=True)
@@ -31,17 +31,17 @@ class WindowKey:
 
     @property
     def has_ids(self) -> bool:
-        return self.name.endswith(ID_KEY_SUFFIX)
+        return self.name.endswith(ID_SUFFIX)
 
     def with_id(self, name: str) -> "WindowKey | None":
         prefix = self.name.removesuffix("*")
         row_id = name.removeprefix(prefix)
         if not self.has_ids or row_id == name or not self.takes_id(row_id):
             return None
-        return replace(self, name=name, read=self.read.replace(ID_PLACE, row_id))
+        return replace(self, name=name, read=self.read.replace(ID_TOKEN, row_id))
 
     def takes_id(self, row_id: str) -> bool:
-        return row_id.isdigit() or (self.name_ids and NAME_ID.fullmatch(row_id) is not None)
+        return row_id.isdigit() or (self.name_ids and NAME_PATTERN.fullmatch(row_id) is not None)
 
     def loads_first(self, tab: str) -> bool:
         return not self.has_ids and self.loading == KeyLoading.FIRST and (self.tab is None or self.tab == tab)

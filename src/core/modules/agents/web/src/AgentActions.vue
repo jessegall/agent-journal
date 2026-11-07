@@ -105,7 +105,7 @@ async function retire() {
 </template>
 
 <style scoped>
-.agent-actions { display: flex; flex-direction: column; gap: 6px; margin: 5px 0 0 16px; font-size: 12px; }
+.agent-actions { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
 .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
 p { margin: 0; color: var(--text-2); }
 [role="alert"] { color: var(--danger); }

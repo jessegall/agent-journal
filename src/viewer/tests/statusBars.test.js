@@ -38,6 +38,13 @@ test("the information bar holds no window counts, and its scheduled jobs open wi
     expect(opened).toEqual(["jobs"]);
 });
 
+test("allowance and scheduled jobs use different icons", () => {
+    const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1}]};
+    const element = mounted(InformationBar, {agent: MAIN, jobs: 2, usage});
+    expect(element.querySelector('[data-fact="usage"] [data-icon]').dataset.icon).toBe("allowance");
+    expect(element.querySelector('[data-fact="jobs"] [data-icon]').dataset.icon).toBe("clock");
+});
+
 test("fitness and load come last in the bar, each an icon and a number with no word", () => {
     const element = mounted(InformationBar, {agent: MAIN, fitness: {is_measured: true, score: 90, workload: 0.5, workload_level: "ok"}});
     const facts = [...element.querySelectorAll("[data-fact]")].map((fact) => fact.dataset.fact);
