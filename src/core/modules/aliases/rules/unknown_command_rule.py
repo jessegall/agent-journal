@@ -22,5 +22,5 @@ class UnknownCommandRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None or shell.parse_error or hook.role not in self.suites.agent_policy().saved_command_roles:
             return RuleAnswer.allowed()
-        unknown = next((part for part in shell.parts if part.classification.category is CommandCategory.UNKNOWN), None)
+        unknown = next((part for part in shell.parts if part.program and part.classification.category is CommandCategory.UNKNOWN), None)
         return RuleAnswer.refused(COMMAND_KIND_UNKNOWN.nudge(program=unknown.program)) if unknown else RuleAnswer.allowed()
