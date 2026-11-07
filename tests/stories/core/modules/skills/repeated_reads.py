@@ -17,6 +17,7 @@ def test_one_request_asks_for_the_due_skills_of_an_agent_many_times_and_reads_th
 
 def test_repeated_skill_load_checks_share_the_agents_skill_row(new_story):
     story = environment(new_story)
+    start(story)
     story.expect_success(f"skill require {story.agent.id} journal-notes")
     rows = story.container.get(AgentSkillRows)
     with story.repeated_work.request():
