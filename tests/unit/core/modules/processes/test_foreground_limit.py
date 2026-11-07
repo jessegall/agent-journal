@@ -115,13 +115,16 @@ def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_backgro
     assert not decided.background
 
 
-def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(line(part("ls", CommandCategory.SEARCH)), 1).background
+def test_file_commands_stay_in_the_foreground_even_after_a_long_run():
+    decided = limit(over_limit=True).decide(line(part("grep", CommandCategory.SEARCH), part("cut", CommandCategory.READ), part("sed", CommandCategory.EDIT)), 1)
+    assert decided.file_commands
+    assert not decided.background
+    assert not limit().decide(line(part("grep", CommandCategory.SEARCH), part("pytest", CommandCategory.TEST_RUN)), 1).file_commands
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():
-    assert limit().decide(line(part("ls", CommandCategory.SEARCH)), 1).seconds == 15
-    assert limit(waiting=True).decide(line(part("ls", CommandCategory.SEARCH)), 1).seconds == 10
+    assert limit().decide(line(part("pytest", CommandCategory.TEST_RUN)), 1).seconds == 15
+    assert limit(waiting=True).decide(line(part("pytest", CommandCategory.TEST_RUN)), 1).seconds == 10
 
 
 def test_a_test_or_build_stores_more_output_than_any_other_line():
