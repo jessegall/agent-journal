@@ -10,7 +10,9 @@ const category = ref("all");
 const rows = ref([]);
 const counts = ref(null);
 const more = ref(false);
-const failure = ref("");
+const {data, failure} = context.props.attachments;
+context.state["attachments.category"] = "all";
+context.state["attachments.skip"] = "0";
 
 const categories = computed(() => [
     {key: "all", label: `All ${counts.value?.all ?? ""}`.trim()},
@@ -21,18 +23,18 @@ const images = computed(() => rows.value.filter((row) => row.is_image));
 const others = computed(() => rows.value.filter((row) => !row.is_image));
 const addressOf = (row) => `/api/files/message/${row.message_id}/${encodeURIComponent(row.name)}`;
 
-let reading = 0;
+watch(data, (answer) => {
+    rows.value = Number(context.state["attachments.skip"]) ? [...rows.value, ...answer.rows] : answer.rows;
+    counts.value = answer.counts;
+    more.value = !answer.is_last_page;
+});
 
 async function read(skip) {
-    const turn = ++reading;
-    const search = words.value.trim() ? ` --search ${JSON.stringify(words.value.trim())}` : "";
-    const answer = await context.read(`attachment list --category ${category.value} --skip ${skip}${search}`);
-    if (turn !== reading) return;
-    failure.value = answer.ok ? "" : answer.error;
-    if (!answer.ok) return;
-    rows.value = skip ? [...rows.value, ...answer.value.rows] : answer.value.rows;
-    counts.value = answer.value.counts;
-    more.value = !answer.value.is_last_page;
+    context.state["attachments.category"] = category.value;
+    context.state["attachments.skip"] = String(skip);
+    if (words.value.trim()) context.state["attachments.search"] = words.value.trim();
+    else delete context.state["attachments.search"];
+    await context.reload("attachments");
 }
 
 let waiting = 0;
@@ -41,7 +43,6 @@ watch([words, category], () => {
     waiting = setTimeout(() => read(0), words.value ? SEARCH_WAIT_MILLISECONDS : 0);
 });
 onUnmounted(() => clearTimeout(waiting));
-read(0);
 </script>
 
 <template>
