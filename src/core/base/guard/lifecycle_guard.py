@@ -12,6 +12,7 @@ from core.base.model.state_book import StateBook
 from core.base.model.table import indefinite_article
 from core.base.model.unknown_state_error import UnknownStateError
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 
 
 
@@ -39,7 +40,7 @@ class LifecycleGuard(Guard[Changed[Model]]):
             self.require(old_state in lifecycle.deletable, event.old_row, lifecycle, "so it cannot be deleted")
         elif event.move is not None:
             if context.actor.type is ActorType.AGENT and lifecycle.is_third_party_move(event.move.name):
-                raise Refusal(f"the move {event.move.name} comes from a module the journal does not ship, so a person takes it", "press its button in the viewer")
+                raise UserApproval(f"Allow {event.row.cli_name} {event.row.id} to {event.move.name} using an installed module?")
             repeat_allowed = lifecycle.has_move(event.move.name) and old_state in lifecycle.move(event.move.name).sources
             if old_state == event.move.target and old_state not in lifecycle.initial and not repeat_allowed:
                 raise CompletedCommandError(f"{event.old_row.cli_name} {event.old_row.id} is {old_state.value}, so it cannot {event.move.name}", lifecycle.suggestion(event.old_row.cli_name, event.old_row.id, old_state))

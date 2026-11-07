@@ -253,6 +253,9 @@ class PluginManifest:
     def allows_skip(self, key: str) -> bool:
         return all(listener.allows_skip for listener in self.listeners if listener.event == key)
 
+    def listen_window_ms(self, key: str) -> int | None:
+        return min((listener.window_ms for listener in self.listeners if listener.event == key and listener.window_ms is not None), default=None)
+
     def project_folders(self, project_root: Path, journal_folder: Path) -> tuple[Path, ...]:
         real_root, real_journal = project_root.resolve(), journal_folder.resolve()
         folders = ((real_root / entry).resolve() for entry in self.project_reads if not Path(entry).is_absolute())

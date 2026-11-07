@@ -33,7 +33,7 @@ def test_a_machine_not_logged_in_to_tunler_gets_no_address_and_the_way_to_log_in
     client = FakeTunlerClient(authenticated=False)
     story, tunler = tunnel(new_story, client)
     tunler.open(VIEWER_PORT)
-    story.expect_rows(client.started == [], tunler.state() is TunnelState.DISCONNECTED, tunler.reason() == "this machine is not logged in to tunler: run tunler login")
+    story.expect_rows(client.started == [], tunler.state() is TunnelState.DISCONNECTED, tunler.reason() == "this machine is not logged in to Tunler: sign in on the Tunler page")
 
 
 def test_a_tunler_that_stopped_shows_the_tunnel_disconnected(new_story):

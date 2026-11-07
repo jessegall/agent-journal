@@ -161,6 +161,8 @@ journal task make "Fix" --skip-guard plugins.event-guard:<plugin> --skip-reason 
 
 This passes one plugin, and the log names the skip. The bare name passes nothing. An entry with `"skip": false` cannot be passed this way. A person can always turn the plugin off.
 
+An entry may declare `"window_ms": <milliseconds>`, the longest its scripts may run. A script still running then is stopped and the change goes through as if the script had not answered: a guard that runs late refuses nothing. A chat mark says the change went through unjudged, and the system log keeps the same line. With no `window_ms` the journal waits for the script, however long it takes. A merge is guarded at `suites.coding.workers.merge_request.created`, whose row holds the target branch and its tip, the worker's branch and its tip, and the worker's folder; a refusal there stops the merge before git merges anything and goes to the worker whole.
+
 ## Trying a script
 
 `journal plugin try <name> <key> [--agent <n>]` runs the script of that key for real with the newest event of the key, or an empty row. It prints the line, the answer and any fault, and applies nothing. A read-only helper may not start it.

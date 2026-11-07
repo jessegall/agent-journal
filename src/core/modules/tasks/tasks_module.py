@@ -40,6 +40,7 @@ from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskS
 from core.modules.tasks.listeners.auto_next_task_listener import AutoNextTaskListener
 from core.modules.tasks.listeners.task_dependency_wait_listener import TaskDependencyWaitListener
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
+from core.modules.tasks.listeners.user_wait_approval_listener import UserWaitApprovalListener
 from core.modules.tasks.listeners.waiting_task_listener import WaitingTaskListener
 from core.modules.tasks.listeners.task_rows_listener import TaskRowsListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
@@ -141,7 +142,7 @@ class TasksModule(Module):
     moves = [TasksMove]
     guards = [TaskTagAccessGuard, TaskTagWordGuard, TaskEditAccessGuard, VisibleDependencyGuard, NoDependencyLoopGuard, DependenciesClosedGuard, UserWaitGuard]
     views = [TaskTagWord, OpenDependency, TaskCard, TaskEdge, EnvironmentCard, TaskInspectionRow, TaskBlockReview]
-    listeners = [TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
+    listeners = [TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener, UserWaitApprovalListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]

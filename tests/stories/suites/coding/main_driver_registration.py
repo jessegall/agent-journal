@@ -12,7 +12,7 @@ from suites.coding.modules.workers.rules.unmerged_worker_rule import UnmergedWor
 from suites.coding.modules.workers.rules.unstarted_worker_rule import UnstartedWorkerRule
 from suites.coding.modules.workers.rules.worker_file_rule import WorkerFileRule
 from suites.coding.modules.workers.rules.workers_out_rule import WorkersOutRule
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, BuilderWithUser
 from tests.stories.support.story_checks import expect_absent_value
 
 ELEVEN_RULES = [SmallBatchRule, UnstartedWorkerRule, StoppedWorkerRunRule, ApprovedPlanStopRule, DeliveredWorkStopRule, WorkerFileRule, MergeCheckoutRule,
@@ -28,4 +28,23 @@ def test_main_driver_keeps_all_eleven_rules():
 def test_s46_the_main_driver_is_registered_and_a_person_chooses_it(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success("driver choose coding.main --environment main", actor=story.user)
-    story.expect_text("suite current --environment main", "main: coding.main", actor=story.user)
+    story.expect_text("suite current main", "main: coding.main", actor=story.user)
+
+
+def test_auto_delivery_after_close_cancel_block_release_under_the_main_driver(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    story.expect_success("driver choose coding.main --environment main")
+    story.run('task make "Second" --environment main', actor=story.agent)
+    story.expect_success('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("task show 2", "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
+
+
+def test_auto_off_delivers_nothing_to_the_main_agent_under_the_main_driver(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    story.expect_success("driver choose coding.main --environment main")
+    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
+    story.run('task make "Second" --environment main', actor=story.agent)
+    story.expect_success('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("task show 2", "state: open", actor=story.agent)

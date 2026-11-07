@@ -3,6 +3,7 @@ from core.base.refusal import Refusal
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan
+from core.modules.sharing.models.share_link import ShareLink
 
 MODELS: dict[str, tuple[type[Doc] | type[Report] | type[Plan], str]] = {"docs": (Doc, "document"), "reports": (Report, "report"), "plans": (Plan, "plan")}
 
@@ -22,3 +23,10 @@ class ShareTargets:
         if match is None:
             raise Refusal(f"{target_type} {row} does not exist", f"list them with journal {model.cli_name} list")
         return match
+
+    def shared_row(self, link: ShareLink) -> Doc | Report | Plan:
+        for table, (model, _) in MODELS.items():
+            if model.model_name != link.row_model:
+                continue
+            return self.row(f"{table}:{link.row_id}")
+        raise Refusal(f"share {link.id} refers to an unknown kind of document")

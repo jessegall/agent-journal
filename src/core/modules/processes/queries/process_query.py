@@ -34,6 +34,9 @@ class ProcessQuery(Query[Process]):
     def agent(self, agent_id: int) -> Self:
         return self.filter(session_agent_id=agent_id)
 
+    def started_by(self, agent_id: int) -> Self:
+        return self.filter(session_agent_id=agent_id, creator_id=agent_id)
+
     def ended(self) -> Self:
         return self.matching(Among("state", [state for state in ProcessState if state not in OPEN]))
 

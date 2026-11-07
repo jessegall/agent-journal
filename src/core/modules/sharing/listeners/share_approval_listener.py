@@ -1,0 +1,45 @@
+from core.base.change.created import Created
+from core.base.change.moved import Moved
+from core.base.change.logged_event import LoggedEvent
+from core.base.change.registry_synced import RegistrySynced
+from core.base.command.bus import Bus
+from core.base.command.close_user_approval import CloseUserApproval
+from core.base.command.request_user_approval import RequestUserApproval
+from core.base.listener.commit_listener import CommitListener
+from core.base.module.module_actors import ModuleActors
+from core.base.query.queries import Queries
+from core.base.scope.actor_scope import ActorScope
+from core.base.scope.environment_scope import EnvironmentScope
+from core.base.user_approval import UserApproval
+from core.modules.sharing.commands.support.share_targets import ShareTargets
+from core.modules.sharing.models.enums.share_link_state import ShareLinkState
+from core.modules.sharing.models.share_link import ShareLink
+from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLinkLifecycle
+
+
+class ShareApprovalListener(CommitListener[Created[ShareLink] | Moved[ShareLink] | RegistrySynced]):
+    """Keeps waiting share links in the shared approval dock until a person decides them."""
+
+    name = "sharing.approval"
+    moves = (ShareLinkLifecycle.accept, ShareLinkLifecycle.deny, ShareLinkLifecycle.revoke)
+    disabled_scopes = [ActorScope, EnvironmentScope]
+
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, targets: ShareTargets) -> None:
+        self.bus, self.actors, self.queries, self.targets = bus, actors, queries, targets
+
+    def handle(self, event: Created[ShareLink] | Moved[ShareLink] | RegistrySynced, logged: LoggedEvent) -> None:
+        links = tuple(self.queries.query(ShareLink).filter(state=ShareLinkState.WAITING).all_rows()) if isinstance(event, RegistrySynced) else tuple([event.row])
+        for link in links:
+            self.update_request(link, logged.id)
+
+    def update_request(self, link: ShareLink, cause_id: int) -> None:
+        actor = self.actors.actor("journal.core.sharing")
+        arguments = ("share", "accept", str(link.id))
+        if link.state is ShareLinkState.WAITING:
+            shared = self.targets.shared_row(link)
+            approval = UserApproval(f"Share {shared.title} with a read-only link?", arguments,
+                                    ("share", "deny", str(link.id)), source_version=link.version, returns_output=True)
+            self.bus.run(RequestUserApproval(approval, arguments, link.creator_id), actor,
+                         cause_id=cause_id, environment_id=link.environment_id)
+            return
+        self.bus.run(CloseUserApproval(arguments), actor, cause_id=cause_id, environment_id=link.environment_id)

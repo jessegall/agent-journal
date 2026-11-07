@@ -4,7 +4,7 @@ from dataclasses import replace
 import html
 import json
 import re
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from core.base.driver.hook_event_name import HookEventName
@@ -169,7 +169,6 @@ class CodexProvider(Provider):
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)
-        self.trust_record().copied(root.resolve() / self.hook_file.path, folder.resolve() / self.hook_file.path)
 
     def hook_trust(self, project: Path) -> HookTrust:
         if not ProgramHooks.hooks(type(self), project).is_complete():
@@ -185,5 +184,17 @@ class CodexProvider(Provider):
 
     @classmethod
     def hooks_rewritten(cls, path: Path, original_hooks: object, updated_hooks: object) -> None:
+        cls.configured_trust().remapped(path.resolve(), original_hooks, updated_hooks)
+
+    @classmethod
+    def record_hook_write(cls, path: Path, hooks: Mapping[str, object]) -> None:
+        cls.configured_trust().record_generated(path.resolve(), hooks)
+
+    @classmethod
+    def hooks_copied(cls, source: Path, target: Path) -> None:
+        cls.configured_trust().copied(source.resolve(), target.resolve())
+
+    @staticmethod
+    def configured_trust() -> CodexTrust:
         config = ProgramFolders().folder(HOME_VARIABLE, ".codex") / "config.toml"
-        CodexTrust(config).remapped(path.resolve(), original_hooks, updated_hooks)
+        return CodexTrust(config)

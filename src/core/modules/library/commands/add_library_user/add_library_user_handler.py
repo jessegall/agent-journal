@@ -15,5 +15,5 @@ class AddLibraryUserHandler(Handler[AddLibraryUser, NewLibraryUser]):
         self.people = people
 
     def handle(self, command: AddLibraryUser, context: Context) -> NewLibraryUser:
-        LibraryPerson.require(context, "an agent cannot add a user to the library", "ask the user to add them on the Teams page")
+        LibraryPerson.require(context, "an agent cannot add a user to the library")
         return self.people.add_user(command.name, command.role)

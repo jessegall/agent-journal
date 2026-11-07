@@ -175,3 +175,8 @@ def test_a_task_handed_in_without_a_change_of_its_own_is_refused(second):
     task = second.current_task()
     second.story.expect_success(f'proof make 1 --task {task} "cart.py:1, nothing new"', actor=second.worker)
     second.story.expect_refusal("worker next --wait --differences none", f"task {task} changed no file, so it is not built", actor=second.worker)
+
+
+def test_a_worker_revises_the_proof_of_an_earlier_task_of_its_batch(second):
+    second.story.expect_success(f'proof make 1 --task 1 "cart.py:1, revised" --test "{TEST_LINE}"', actor=second.worker)
+    second.story.expect_text("proof list --task 1", "revised", actor=second.story.agent)

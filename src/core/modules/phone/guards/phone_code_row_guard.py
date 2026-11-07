@@ -19,4 +19,4 @@ class PhoneCodeRowGuard(Guard[Changed[PhoneCode]]):
             return
         if isinstance(event, Created) and actor.type is ActorType.USER and actor.id == event.row.person_id:
             return
-        raise Refusal("only a person makes their own phone code, and only the viewer redeems it", "ask for a code with journal phone pair")
+        raise Refusal("a phone code belongs to its person and can only be redeemed by the viewer")

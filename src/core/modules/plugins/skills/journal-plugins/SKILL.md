@@ -34,7 +34,8 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
   change; a journal command it runs itself commits at once and stays. Ids are a forecast. Only `commit` promises the change
   happened.
 - `commit` runs after the change is committed and cannot stop it.
-- A guard or listen script holds no lock, but the caller waits. The journal puts no limit on a script, and a hung one is
-  stopped by switching the plugin off. A guard on a hook moment keeps the journal's limit, and the plugin's card says so.
+- A guard or listen script holds no lock, but the caller waits. With no `window_ms` on its entry the journal puts no
+  limit on a script, and a hung one is stopped by switching the plugin off. With `"window_ms": <ms>` a script past it is
+  stopped: the change goes through unjudged, and a chat mark says so. A guard on a hook moment keeps the journal's limit.
 - `docs/writing-a-plugin.md` is the whole contract for a plugin's author, with a sample in `docs/samples/tidy-worktrees`.
 - `journal plugin settings <name>` lists its settings; `journal plugin dashboard <name>` reads its dashboard.

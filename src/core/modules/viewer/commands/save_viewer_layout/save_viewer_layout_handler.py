@@ -5,6 +5,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.commands.save_viewer_layout.save_viewer_layout import SaveViewerLayout
+from core.modules.agents.support.person_check import PersonCheck
 
 
 class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
@@ -20,9 +21,10 @@ class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
     def handle(self, command: SaveViewerLayout, context: Context) -> ViewerLayout:
         if context.environment_id is None:
             raise Refusal("a layout belongs to an environment", "name one with --environment")
+        PersonCheck.require(context, f"Save the layout for {command.page}?")
         saved = self.queries.query(ViewerLayout).filter(person_id=context.actor.id, suite=command.suite,
                                                        page=command.page, driver=command.driver).first()
-        if saved is not None and command.base_version is not None and saved.version != command.base_version:
+        if saved is not None and saved.has_changed_since(command.base_version):
             raise Refusal(f"the layout was saved again since version {command.base_version}; it is at version {saved.version}",
                           f"journal viewer-layout current --suite {command.suite} --page {command.page} reads it")
         layout = ViewerLayout(person_id=context.actor.id, creator_id=context.actor.id, suite=command.suite,

@@ -55,7 +55,16 @@ def test_a_request_naming_another_host_is_refused_even_with_the_cookie(person_se
 def test_a_worker_gets_no_viewer_key(person_server):
     story = person_server
     story.story.expect_success("agent start s-9 claude worker --environment main")
-    story.expect_viewer_key_refusal({"variables": {"JOURNAL_AGENT_SESSION": "s-9"}, "folder": "/"}, 403, "only a person or the main agent opens the viewer")
+    story.expect_viewer_key_refusal({"variables": {"JOURNAL_AGENT_SESSION": "s-9"}, "folder": "/"}, 403, "an agent cannot receive a person's viewer credentials")
+
+
+@pytest.mark.parametrize("decision", ["accept", "refuse"])
+def test_the_main_agents_viewer_session_cannot_decide_an_approval(person_server, decision):
+    story = person_server
+    story.story.expect_refusal("setting set journal.core.project-rules.agents-make-rules true --project",
+                               "A person was asked in the dock", actor=story.story.agent)
+    cookie = story.expect_viewer_login(main_agent_key(story))
+    story.expect_viewer_line(cookie, {"line": ["approval", decision, "1"], "environment": "main", "window": "messages.chat"}, 200, "only reads")
 
 
 def test_the_main_agent_opens_the_viewer_as_itself_and_reads_its_windows(person_server):
@@ -74,9 +83,7 @@ def test_the_main_agent_in_the_viewer_is_refused_what_only_a_person_may_do(perso
 
 
 def main_agent_key(story) -> str:
-    answer = request_answer(story.socket_path, "POST", "/viewer/key", {"variables": {"JOURNAL_AGENT_SESSION": "s-1"}, "folder": "/"}).json()
-    assert isinstance(answer, dict) and isinstance(answer.get("key"), str), answer
-    return answer["key"]
+    return story.login_key({"JOURNAL_AGENT_SESSION": "s-1"})
 
 
 def test_a_viewer_key_request_that_is_not_an_object_is_refused(person_server):

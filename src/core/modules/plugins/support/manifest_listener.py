@@ -19,6 +19,7 @@ class ManifestListener:
     is_wrong: bool = False
     external_scripts: tuple[str, ...] = ()
     allows_skip: bool = True
+    window_ms: int | None = None
 
     @classmethod
     def parsed(cls, entry: object, folder: Path) -> "ManifestListener":
@@ -26,7 +27,11 @@ class ManifestListener:
             return cls(str(entry), is_wrong=True)
         scripts = [str(entry.get(form.value, "")) for form in EventForm]
         guard, listen, commit = scripts
-        return cls(str(entry["event"]), guard, listen, commit, external_scripts=tuple(script for script in scripts if script and not script.startswith(SERVICE_PREFIX) and not cls.is_contained_path(script, folder)), allows_skip=entry.get("skip") is not False)
+        return cls(str(entry["event"]), guard, listen, commit, external_scripts=tuple(script for script in scripts if script and not script.startswith(SERVICE_PREFIX) and not cls.is_contained_path(script, folder)), allows_skip=entry.get("skip") is not False, window_ms=cls.declared_window(entry.get("window_ms")))
+
+    @staticmethod
+    def declared_window(value: object) -> int | None:
+        return value if isinstance(value, int) and not isinstance(value, bool) and value > 0 else None
 
     @staticmethod
     def is_contained_path(script: str, folder: Path) -> bool:

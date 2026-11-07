@@ -14,7 +14,7 @@ from core.modules.library.support.library_address import ADDRESS_SETTING, Librar
 from core.modules.library.support.library_certificate import LibraryCertificate
 from core.modules.library.support.library_client import PROTOCOL, TOKEN_VARIABLE, LibraryClient
 from core.modules.library.support.library_failure_error import LibraryFailureError
-from core.modules.library.support.library_person import LibraryPerson
+from core.base.actor_type import ActorType
 from core.modules.library.support.library_stopped_error import LibraryStoppedError
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.server_info import ServerInfo
@@ -32,7 +32,8 @@ class PairLibraryHandler(Handler[PairLibrary, LibraryConnection]):
         self.client, self.certificate, self.values, self.settings, self.bus = client, certificate, values, settings, bus
 
     def handle(self, command: PairLibrary, context: Context) -> LibraryConnection:
-        LibraryPerson.require(context, "only a person connects to the shared server or disconnects from it", "ask the user to do it on the Teams page")
+        if context.actor.type is not ActorType.USER:
+            raise Refusal("connection credentials are entered by a person in the Teams window")
         address_text = command.address or str(self.settings.project_value(ADDRESS_SETTING))
         address = LibraryAddress(address_text).base
         server, user = self.verified(address, command.token, self.opener(command.certificate))

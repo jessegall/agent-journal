@@ -1,0 +1,27 @@
+from dataclasses import dataclass
+
+from core.base.model.environment_scoped import EnvironmentScoped
+from core.base.model.model import Model
+from core.modules.approvals.models.enums.approval_state import ApprovalState
+from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
+
+
+@dataclass(frozen=True, kw_only=True)
+class ApprovalRequest(EnvironmentScoped, Model):
+    """An action waiting for a person's decision in an environment's dock."""
+
+    model_name = "approval"
+    cli_name = "approval"
+    lifecycle = ApprovalLifecycle
+
+    environment_id: int = 0
+    creator_id: int
+    requester_id: int
+    required_person_id: int | None = None
+    source_version: int | None = None
+    returns_output: bool = False
+    text: str
+    arguments: tuple[str, ...]
+    refused_arguments: tuple[str, ...] = ()
+    continued_arguments: tuple[str, ...] = ()
+    state: ApprovalState = ApprovalState.OPEN

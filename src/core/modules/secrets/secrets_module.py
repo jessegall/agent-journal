@@ -28,6 +28,7 @@ from core.modules.secrets.commands.secret_show.secret_show_subcommand import Sec
 from core.modules.secrets.commands.store_secret.store_secret_subcommand import StoreSecretSubcommand
 from core.modules.secrets.commands.edit_secret.edit_secret_subcommand import EditSecretSubcommand
 from core.modules.secrets.guards.secret_value_guard import SecretValueGuard
+from core.modules.secrets.listeners.secret_approval_listener import SecretApprovalListener
 from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.queries.secret_query import SecretQuery
@@ -55,6 +56,7 @@ class SecretsModule(Module):
     subcommands = [MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand, SecretBoardSubcommand,
                    SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand]
     guards = [SecretValueGuard]
+    listeners = [SecretApprovalListener]
     driver_rules = [SecretsFolderRule]
     windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, skeleton=SECRETS_SECRETS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,
                                  reads=["secret list", "secret show", "secret board"], keys=[WindowKey("secrets", "secret board", events=["secret.*"])], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete", "secret restore"], events=["secret.*"])]

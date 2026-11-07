@@ -9,6 +9,7 @@ from core.modules.viewer.commands.allow_window.allow_window import AllowWindow
 from core.modules.viewer.commands.support.window_allowances import WindowAllowances
 from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.models.enums.window_permission_type import WindowPermissionType
+from core.modules.agents.support.person_check import PersonCheck
 
 
 class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
@@ -25,6 +26,7 @@ class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
         if context.environment_id is None:
             raise Refusal("a window is allowed in an environment", "name one with --environment")
         declared = self.declared(command)
+        PersonCheck.require(context, f"Allow permissions for {command.window}?\nAccess: {command.type.value}")
         permission = self.allowances.permission(context.actor.id, command.window, command.type)
         allowed = self.allowances.allowed_lines(context.actor.id, command.window, command.type)
         return self.repository.merge(permission, WindowPermission(person_id=context.actor.id, creator_id=context.actor.id,

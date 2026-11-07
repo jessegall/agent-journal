@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.context import Context
+from core.base.user_approval import UserApproval
 from core.base.refusal import Refusal
 
 
@@ -8,10 +9,13 @@ class PersonCheck:
     """The check the commands of the agent bar share: a person gives them, never an agent."""
 
     @staticmethod
-    def require(context: Context, reason: str) -> None:
-        PersonCheck.require_actor(context.actor, reason)
+    def require(context: Context, reason: str, *, returns_output: bool = False) -> None:
+        PersonCheck.require_actor(context.actor, reason, returns_output=returns_output)
 
     @staticmethod
-    def require_actor(actor: Actor, reason: str) -> None:
-        if actor.type is not ActorType.USER:
-            raise Refusal(reason, "ask the user to do it from the viewer")
+    def require_actor(actor: Actor, reason: str, *, returns_output: bool = False) -> None:
+        if actor.type is ActorType.USER:
+            return
+        if actor.type is ActorType.AGENT:
+            raise UserApproval(reason, returns_output=returns_output)
+        raise Refusal(reason)

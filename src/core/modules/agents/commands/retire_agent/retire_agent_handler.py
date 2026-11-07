@@ -7,6 +7,7 @@ from core.base.command.handler import Handler
 from core.base.container import Container
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
@@ -47,7 +48,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
             return
         caller = self.queries.query(Agent).find(actor.id)
         if caller.id != agent.parent_id and (caller.role != AgentRole.MAIN or caller.environment_id != agent.environment_id):
-            raise Refusal(f"agent {agent.id} answers to agent:{agent.parent_id}", "only its parent, the main agent or a person retires it")
+            raise UserApproval(f"Retire agent {agent.id}, which belongs to agent {agent.parent_id}?")
 
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():
