@@ -21,7 +21,7 @@ CLAUDE_FOLDER, CODEX_FOLDER = ".claude/agents", ".codex/agents"
 CODEX_HOME = ".codex"
 PROFILE_FOLDER = ".agents/profiles"
 SHIPPED_PREFIX = "journal-"
-OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "program_if_possible", "model", "codex_model", "program_models", "mcp_tools", "independent")
+OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "program_if_possible", "model", "codex_model", "program_models", "tier", "mcp_tools", "independent")
 
 
 class ProfileFiles:
@@ -97,6 +97,8 @@ class ProfileFiles:
         return replace(profile, access=access)
 
     def defaults(self, profile: AgentProfile) -> AgentProfile:
+        if profile.tier is not None:
+            return profile
         for provider in self.providers.all():
             model = provider.profile_model(profile)
             if not model and provider.profile_model_setting:

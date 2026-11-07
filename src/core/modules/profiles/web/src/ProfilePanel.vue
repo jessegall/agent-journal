@@ -6,10 +6,11 @@ const props = defineProps({profile: {type: Object, required: true}, used: {type:
 const emit = defineEmits(["close", "save", "reset"]);
 
 const WRITING = "writing";
+const TIERS = [{key: "", label: "Profile models"}, {key: "fast", label: "Fast"}, {key: "general", label: "General"}, {key: "strongest", label: "Strongest"}];
 const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
 const programs = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "program_models", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "program_models", "tier", "body"];
 
 const draft = ref({});
 watch(
@@ -72,6 +73,9 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
                     <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.program_if_possible ? 'possible' : 'always'" @pick="draft.program_if_possible = $event === 'possible'" />
                 </FormField>
             </template>
+            <FormField label="Model tier" for="profile-tier" help="Chooses a model when this profile has no named model for the program.">
+                <Segmented data-profile-tier :options="TIERS" :value="draft.tier || ''" @pick="draft.tier = $event || null" />
+            </FormField>
             <template v-for="program in props.programs" :key="program.name">
                 <FormField :label="`Model on ${program.title}`" :for="`profile-model-${program.name}`" help="The least expensive model that reliably fits the work.">
                     <ModelPicker :title="program.title" :models="program.models" inherits :value="draft.program_models[program.name] || ''" :data-profile-model="program.name" @pick="draft.program_models[program.name] = $event" />

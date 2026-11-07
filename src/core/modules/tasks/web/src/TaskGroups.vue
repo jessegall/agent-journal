@@ -24,6 +24,8 @@ const failure = computed(() => pageFailure.value || view.props.board.failure.val
 const loaded = computed(() => view.shared ? view.props[`task.${view.shared.id}`].loaded.value : view.props.board.loaded.value);
 const extended = ref(new Set());
 const query = ref("");
+const tag = ref(view.state["board.tag"] || "");
+const tags = computed(() => view.props.tags.rows.value);
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
 const pageRows = view.option("rows");
 const pageLimit = computed(() => (Number(pageRows.value) > 0 ? String(Number(pageRows.value)) : undefined));
@@ -64,12 +66,15 @@ watch(() => view.props.board.data.value, readBoard, {immediate: true});
 // a group shown past its first page reads again as many rows as it shows, so a task that moved leaves it
 async function withHeldRows(group, held) {
     if (!extended.value.has(group.state) || !held?.rows.length) return group;
-    const answer = await view.readKey("group", {state: group.state, limit: String(held.rows.length)});
+    const flags = {state: group.state, limit: String(held.rows.length)};
+    if (tag.value) flags.tag = tag.value;
+    const answer = await view.readKey("group", flags);
     return answer.ok ? answer.value.groups[0] : group;
 }
 
 async function more(group) {
     const flags = {state: group.state};
+    if (tag.value) flags.tag = tag.value;
     if (pageLimit.value) flags.limit = pageLimit.value;
     if (group.rows.length) {
         flags["before-id"] = String(FINISHED.has(group.state) ? group.rows.at(-1).id : Math.min(...group.rows.map((row) => row.id)));
@@ -120,6 +125,12 @@ watch(pageRows, () => {
     else delete view.state["board.limit"];
     if (view.props.board.data.value) view.reload("board");
 }, {immediate: true});
+watch(tag, () => {
+    extended.value = new Set();
+    if (tag.value) view.state["board.tag"] = tag.value;
+    else delete view.state["board.tag"];
+    view.reload("board");
+});
 if (view.shared) {
     const name = `task.${view.shared.id}`;
     view.reload(name).then(() => {
@@ -128,7 +139,7 @@ if (view.shared) {
         if (row) board.value = [{state: row.state, total: 1, rows: [row]}];
     });
 }
-defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
+defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus()});
 </script>
 
 <template>
@@ -141,6 +152,10 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
         </template>
         <template v-else>
                 <SearchBar ref="search" v-model="query" class="tasks-tools">
+                    <select v-model="tag" aria-label="Filter by tag" data-task-tag-filter>
+                        <option value="">All tags</option>
+                        <option v-for="item in tags" :key="item.word" :value="item.word">{{ item.word }} ({{ item.count }})</option>
+                    </select>
                     <slot name="tools" />
                 </SearchBar>
             <template v-if="!groups.length">
@@ -164,6 +179,8 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
                             <span class="task-title">{{ row.title }}</span>
+                            <span v-for="word in row.tags" :key="word" class="task-tag" data-task-tag>{{ word }}</span>
+                            <span v-if="row.complexity" class="task-score" data-task-complexity>Complexity {{ row.complexity }}</span>
                             <template v-if="row.delegated_name">
                                 <span class="task-agent" :title="`Delegated to ${row.delegated_name}, in state ${row.state}`" data-task-agent>{{ row.delegated_name }}</span>
                             </template>
@@ -183,6 +200,18 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </template>
 
 <style scoped>
+.task-tag {
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: var(--hover);
+    color: var(--text-2);
+    font-size: 11px;
+}
+
+.task-score {
+    color: var(--text-3);
+    font-size: 12px;
+}
 .task-warning { color: var(--danger); flex: none; }
 
 .task-agent {

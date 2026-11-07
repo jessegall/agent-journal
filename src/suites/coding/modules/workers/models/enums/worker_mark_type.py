@@ -6,3 +6,5 @@ class WorkerMarkType(StrEnum):
 
     TESTS = "workers.tests"
     WORKER = "workers.worker"
+
+    SPLIT = "workers.split"

@@ -1,5 +1,6 @@
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
+from core.modules.processes.support.queued_process_start import QueuedProcessStart
 
 LIMIT_SECONDS = 0
 
@@ -12,4 +13,4 @@ class WorkerTestLaunch:
         self.launch = launch
 
     def start(self, process_id: int, line: str, folder: str, session: str) -> None:
-        self.launch.start(process_id, line, folder, session, ForegroundRun(LIMIT_SECONDS, True, queued=True))
+        self.launch.start(QueuedProcessStart(process_id, line, folder, session), ForegroundRun(LIMIT_SECONDS, True, queued=True))

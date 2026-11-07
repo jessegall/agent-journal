@@ -145,10 +145,11 @@ const clock = useSharedNow();
 const now = computed(() => clock.value * 1000);
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title, planId: facts.value.task_plan_id} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
+const COUNT_WINDOWS = {workers: "workers.workers", skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each type is a group of its dropdown
 const HELPER_WINDOW = "agents.helpers";
 const usage = propData("usage", {agents: [], windows: []});
+const workerCount = computed(() => usage.value.agents.filter((row) => row.role === "worker").length);
 const fitness = propData("fitness", null);
 const branchData = propData("branch", {branch: ""});
 const branch = computed(() => branchData.value.branch);
@@ -338,7 +339,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :processes="facts.processes" :run="shellRead" @open="openCount" @changed="readFacts">
+            <AgentBar :workers-shown="Boolean(catalogue.dropdown('workers.workers'))" :workers="workerCount" :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :processes="facts.processes" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>

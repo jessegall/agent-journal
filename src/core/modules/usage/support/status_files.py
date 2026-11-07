@@ -2,16 +2,19 @@ from core.base.file_access import FileAccess
 import json
 import shutil
 import time
+from collections.abc import Sequence
 from collections.abc import Mapping
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.timestamp import Timestamp
 from core.modules.usage.support.plan_window import PlanWindow
 from core.modules.usage.support.session_status import SessionStatus
 
 PLAN_FILE = "plan.json"
 ENDED_FOLDER = "ended"
 ENDED_KEPT_SECONDS = 30 * 24 * 3600
+READINESS_MAX_AGE_SECONDS = 24 * 3600
 
 
 class StatusFiles:
@@ -30,6 +33,13 @@ class StatusFiles:
     def status(self, session: str) -> SessionStatus:
         path = self.folder / f"{session}.json"
         return self.reported(path if path.is_file() else self.ended_folder / f"{session}.json")
+
+    def newest_status(self, sessions: Sequence[str], checked_at: Timestamp) -> SessionStatus:
+        files = [self.folder / f"{session}.json" for session in sessions]
+        newest = max((path for path in files if path.is_file()), key=lambda path: path.stat().st_mtime, default=None)
+        if newest is None or checked_at.value.timestamp() - newest.stat().st_mtime >= READINESS_MAX_AGE_SECONDS:
+            return SessionStatus()
+        return self.status(newest.stem)
 
     def plan_windows(self, statuses: Mapping[str, SessionStatus]) -> tuple[PlanWindow, ...]:
         files = sorted((path for path in self.folder.glob("*.json") if path != self.plan_file), key=lambda path: path.stat().st_mtime, reverse=True) if self.folder.is_dir() else []

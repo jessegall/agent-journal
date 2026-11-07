@@ -1,3 +1,6 @@
+from collections.abc import Iterator
+from contextlib import contextmanager
+from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.caller.caller import Caller
 from core.base.command.context import Context
@@ -25,6 +28,20 @@ class WorkSources:
         self.queries, self.messages, self.repository = queries, messages, repository
         self.kept = kept
         self.jobs, self.assignments, self.agents = jobs, assignments, agents
+        self.authorized_sources: dict[tuple[int, int | None], WorkSourceCopy] = {}
+
+    @contextmanager
+    def source_scope(self, source: WorkSourceCopy, actor: Actor) -> Iterator[None]:
+        key = (actor.id, source.environment_id)
+        previous = self.authorized_sources.get(key)
+        self.authorized_sources[key] = source
+        try:
+            yield
+        finally:
+            if previous is None:
+                del self.authorized_sources[key]
+            else:
+                self.authorized_sources[key] = previous
 
     def current(self, context: Context | Caller) -> MessageWorkSource | None:
         return self.kept.read("message_work_sources",
@@ -79,6 +96,9 @@ class WorkSources:
         self.repository.update(selected, context, used=True, provisional=False)
 
     def work_source(self, context: Context | Caller) -> WorkSourceCopy | None:
+        authorized = self.authorized_sources.get((context.actor.id, context.environment_id))
+        if authorized is not None:
+            return authorized
         if context.actor.type is not ActorType.AGENT or self.agents.find(context.actor.id).ended_at is not None:
             return None
         assigned = self.assignments.current(context)

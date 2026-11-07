@@ -10,6 +10,7 @@ from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.models.process import Process
+from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.commands.run_worker_operation.run_worker_operation import RunWorkerOperation
 
 
@@ -19,8 +20,8 @@ class RunWorkerOperationHandler(Handler[RunWorkerOperation, str]):
     command = RunWorkerOperation
     disabled_scopes = [ActorScope]
 
-    def __init__(self, console: Console, rows: EventRows) -> None:
-        self.console, self.rows = console, rows
+    def __init__(self, console: Console, rows: EventRows, sources: WorkSources) -> None:
+        self.console, self.rows, self.sources = console, rows, sources
 
     def handle(self, command: RunWorkerOperation, context: Context) -> str:
         operation = command.operation
@@ -28,7 +29,8 @@ class RunWorkerOperationHandler(Handler[RunWorkerOperation, str]):
         caller = Caller(Actor(operation.creator_id, operation.actor_type), process.environment_id,
                         operation.plugin_script, operation.process_id)
         stream = io.StringIO()
-        code = self.console.run(shlex.split(operation.line), caller, stream)
+        with self.sources.source_scope(operation.source_copy(process.environment_id), caller.actor):
+            code = self.console.run(shlex.split(operation.line), caller, stream)
         text = stream.getvalue().strip()
         if code:
             raise Refusal(text)

@@ -26,7 +26,6 @@ class WorkerTaskCommit:
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
     def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
-        self.check_proofs(worktree, task)
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:

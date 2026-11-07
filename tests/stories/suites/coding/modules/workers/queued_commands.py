@@ -1,16 +1,22 @@
+from core.base.cli.shell_handoff import RUNNER_VARIABLE
 from time import monotonic, sleep
 
 import pytest
 
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
+from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.processes.models.process import Process
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
+from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -28,8 +34,9 @@ def worker_command(new_story, monkeypatch):
 
 
 def run_operation(story, operation):
-    agent = story.row(Agent, operation.creator_id)
-    request = CallerRequest({SESSION_VARIABLE: agent.session, "JOURNAL_PROCESS": str(operation.process_id)},
+    process = story.row(Process, operation.process_id)
+    agent = story.row(Agent, process.session_agent_id)
+    request = CallerRequest({SESSION_VARIABLE: agent.session, "JOURNAL_PROCESS": str(operation.process_id), RUNNER_VARIABLE: str(operation.process_id)},
                             str(story.home.project_folder))
     return story.run_requested(f"worker-operation run {operation.worker_id}", request)
 
@@ -40,7 +47,7 @@ def end_operation(story, operation, exit_code=0):
 
 @pytest.mark.parametrize(("name", "method"), [("next", "rebased_commit"), ("deliver", "rebased_commit"),
                                                ("send", "sync"), ("merge", "merge")])
-def test_worker_commands_return_started_at_slow_git_and_notify_once(worker_command, monkeypatch, name, method):
+def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, monkeypatch, name, method):
     story, repository, worker, launches = worker_command
     if name == "next":
         task = story.new_row_id('task make "The next task" --brief "Add the receipt"', actor=story.agent)
@@ -75,7 +82,7 @@ def test_worker_commands_return_started_at_slow_git_and_notify_once(worker_comma
     print(f"{name}: accepted {accepted_seconds:.3f}s; synchronous work {finished_seconds:.3f}s")
     end_operation(story, operation)
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=actor.id).all_rows()
-    notifications = [line for line in lines if line.nudge.key == "workers.operation_ended"]
+    notifications = [line for line in lines if line.nudge.key.startswith("workers.operation_")]
     story.expect_rows(len(notifications) == 1, story.row(WorkerOperation, operation.id).ended_at is not None)
 
 
@@ -105,8 +112,72 @@ def test_a_failed_background_command_releases_the_worker_and_names_its_output(wo
     story.expect_rows(story.row(WorkerOperation, operation.id).ended_at is not None)
 
 
-def test_missing_proofs_are_refused_started_at_creating_a_background_process(worker_command):
+def test_missing_proofs_are_refused_before_creating_a_background_process(worker_command):
     story, _, worker, launches = worker_command
     story.expect_success('task edit 1 --brief "- Add the total\n- Round to cents"', actor=story.agent)
     story.expect_refusal('worker deliver --differences none', "point 2 has no proof", actor=worker)
     story.expect_rows(launches == [], story.container.get(Queries).query(WorkerOperation).count() == 0)
+
+
+def test_a_worker_can_stop_after_hand_in_and_resumes_when_the_command_ends(worker_command):
+    story, _, worker, _ = worker_command
+    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.expect_rows(story.row(Agent, worker.id).ended_at is not None)
+    outcome = run_operation(story, operation)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n", request_count=1)
+    try:
+        end_operation(story, operation)
+        story.run_listeners()
+        story.expect_rows(len(launcher.starts) == 1, story.row(Agent, worker.id).ended_at is None)
+    finally:
+        launcher.server.close()
+
+
+def test_an_accepted_command_cannot_execute_twice(worker_command):
+    story, _, worker, _ = worker_command
+    story.expect_text(f'worker send {worker.id} "The receipt"', "command accepted", actor=story.agent)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    story.expect_rows(run_operation(story, operation).code == 0)
+    second = run_operation(story, operation)
+    story.expect_rows(second.code == 1, "already started" in second.output_text)
+
+
+def test_a_launcher_failure_is_kept_in_the_output_and_releases_the_reservation(worker_command, monkeypatch):
+    story, _, worker, _ = worker_command
+
+    def cannot_start(*args, **kwargs):
+        raise OSError("runner was removed")
+
+    monkeypatch.setattr(QueuedProcessLaunch, "start", cannot_start)
+    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    story.expect_rows(operation.ended_at is not None)
+    story.expect_text(f"output read {operation.process_id} --tail 5", "runner was removed", actor=worker)
+
+
+@pytest.mark.parametrize("requester_ends", [False, True], ids=["requester-running", "requester-stopped"])
+def test_a_queued_send_keeps_the_request_selected_when_it_was_accepted(new_story, monkeypatch, requester_ends):
+    story = new_story(fixture=SelectedTrail)
+    scenario = Scenario(story)
+    story.expect_success("driver choose coding.orchestrator --environment main")
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    scenario.switch(1)
+    monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
+    story.expect_text(f'worker send {worker.id} "Use the original request"', "command accepted", actor=story.agent)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    scenario.switch(2)
+    if requester_ends:
+        story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
+    outcome = run_operation(story, operation)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    assigned = story.container.get(Queries).query(WorkerTaskSource).filter(worktree_id=1).newest().first()
+    story.expect_rows(assigned.source_message_id == 1)
+    scenario.expect_source(2)
+    if not requester_ends:
+        scenario.command('task make "Parent continues" --environment main')
+        scenario.expect_link("message:2", "task:2", "about")
+        scenario.expect_no_link("message:1", "task:2")

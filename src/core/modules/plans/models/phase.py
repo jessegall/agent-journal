@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from core.base.model.model import Model
+from core.base.model.positioned import Positioned
 
 
 @dataclass(frozen=True, kw_only=True)
-class Phase(Model):
+class Phase(Positioned):
     """One step of a plan, at its place in the plan's order, with what is true when it is done."""
 
     model_name = "phase"

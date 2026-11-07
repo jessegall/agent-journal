@@ -1,10 +1,3 @@
-from enum import StrEnum
+from core.base.model_tier import ModelTier
 
-
-class ModelTier(StrEnum):
-    """How capable a program's model is, so a driver asks for a tier rather than a model's name."""
-
-    FAST = "fast"
-    GENERAL = "general"
-    STRONGEST = "strongest"
-    RARE = "rare"
+__all__ = ["ModelTier"]

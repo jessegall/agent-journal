@@ -5,8 +5,9 @@ import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
 
 // where a task sits: its plan and phase, the agent it is queued for or held by, and its priority
 const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
+const COMPLEXITIES = [1, 2, 3, 4, 5].map((score) => ({key: String(score), label: String(score)}));
 defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, refusal: {type: String, default: ""}});
-const emit = defineEmits(["priority"]);
+const emit = defineEmits(["priority", "complexity"]);
 const HELD_STATES = new Set(["started", "testing", "blocked"]);
 </script>
 
@@ -45,6 +46,11 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
                 <span class="fact-value">Agent {{ task.holder_id }}</span>
             </div>
         </template>
+        <div class="fact wide">
+            <span class="fact-label">Complexity</span>
+            <Segmented :options="COMPLEXITIES" :value="task.complexity ? String(task.complexity) : ''" data-task-complexity @pick="emit('complexity', $event)" />
+            <span class="fact-label">1: a few lines. 5: a design with risk.</span>
+        </div>
         <div class="fact wide">
             <span class="fact-label">Priority</span>
             <Segmented :options="PRIORITIES" :value="String(namedPriority(task.priority))" data-task-priority @pick="emit('priority', $event)" />

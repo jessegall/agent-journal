@@ -26,4 +26,6 @@ class ClaimWorkerOperationHandler(Handler[ClaimWorkerOperation, WorkerOperation]
             raise Refusal("only the queued process runs this worker command")
         if operation.started_at is not None or operation.ended_at is not None or process.state not in RUNNING_STATES:
             raise Refusal(f"worker command in output {process.id} already started or ended")
+        if process.queued_at is not None:
+            raise Refusal(f"worker command in output {process.id} is waiting for its process queue slot")
         return self.repository.update(operation, context, started_at=context.timestamp)

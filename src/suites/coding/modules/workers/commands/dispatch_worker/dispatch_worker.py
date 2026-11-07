@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.base.provider.model_tier import ModelTier
+
 from core.base.command.command import Command
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
@@ -21,3 +23,4 @@ class DispatchWorker(Command[WorkerLaunch]):
     profile: str = ""
     given_name: str = ""
     new_agent_reason: str = ""
+    tier: ModelTier | None = None

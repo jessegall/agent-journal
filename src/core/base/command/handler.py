@@ -10,9 +10,7 @@ R = TypeVar("R", covariant=True)
 
 
 class Handler(Generic[C, R]):
-    """Carries out one type of command: reads what it needs through queries and saves through the repository;
-    work that must finish before the command's transaction opens belongs in prepare. A handler whose work
-    cannot be repeated or undone sets runs_once, so a rollback cannot run that work again."""
+    """Runs a command; check_rows refuses queued work, and prepare runs before its transaction."""
 
     command: ClassVar[type[Command[object]]]
     runs_once: ClassVar[bool] = False

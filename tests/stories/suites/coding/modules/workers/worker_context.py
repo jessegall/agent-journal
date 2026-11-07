@@ -6,6 +6,9 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
+from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
@@ -92,12 +95,14 @@ def test_worker_queued_tasks_use_their_own_sources(worker_scenario):
 def test_worker_followup_changes_source_only_after_delivery(assigned_worker):
     scenario, worker = assigned_worker.scenario, assigned_worker.worker
     scenario.switch(1)
-    scenario.command(f'worker send {worker.id} "Handle the original request next"')
+    scenario.command(f'worker send --wait {worker.id} "Handle the original request next"')
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.story.expect_success('task make "Work already running" --environment main', actor=worker)
     scenario.expect_link("message:2", "task:2", "about")
     reply = scenario.story.hook(worker_session(scenario.story, worker), HookSamples.tool_use("Read", ToolType.READ, [], None))
-    scenario.story.expect_rows(any("Handle the original request next" in line for line in reply.lines), detail=reply.lines)
+    job = scenario.story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, source=WORKER_JOB_SOURCE).newest().first()
+    scenario.story.expect_rows(any(f"agent-line:{job.id}" in line for line in reply.lines), detail=reply.lines)
+    scenario.story.expect_text(f"agent-line show {job.id}", "Handle the original request next", actor=worker)
     scenario.story.expect_success('task make "Work from delivered followup" --environment main', actor=worker)
     scenario.expect_link("message:1", "task:3", "about")
     scenario.expect_no_link("message:2", "task:3")
@@ -111,7 +116,7 @@ def test_resumed_worker_does_not_keep_the_old_job_source(assigned_worker):
     scenario.command(f"agent end {worker.id}")
     scenario.command("message clear-work-source")
     launcher = FakeLauncher(scenario.story.home.socket("launcher"))
-    scenario.command(f'worker send {worker.id} "A separate unsourced job"')
+    scenario.command(f'worker send --wait {worker.id} "A separate unsourced job"')
     scenario.story.run_listeners()
     launcher.expect_started(worker.id, worker_session(scenario.story, worker), scenario.repository.worktree_folder(worker.id))
     scenario.story.home.socket("launcher").unlink()
@@ -133,7 +138,7 @@ def test_deleted_worker_source_is_not_a_reused_message_number(worker_scenario):
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.story.expect_success('task make "Old unavailable assignment output" --environment main', actor=worker)
     scenario.expect_no_link(f'message:{replacement["id"]}', "task:2")
-    scenario.command(f'worker send {worker.id} "Now handle the replacement request"')
+    scenario.command(f'worker send --wait {worker.id} "Now handle the replacement request"')
     scenario.story.hook(worker_session(scenario.story, worker), HookSamples.tool_use("Read", ToolType.READ, [], None))
     scenario.story.expect_success('task make "New assignment output" --environment main', actor=worker)
     scenario.expect_link(f'message:{replacement["id"]}', "task:3", "about")
@@ -184,7 +189,7 @@ def test_resumed_launch_requires_current_overview(assigned_worker):
     scenario.story.expect_success(f"agent end {worker.id}", actor=scenario.story.agent)
     scenario.story.advance(timedelta(seconds=1))
     launcher = FakeLauncher(scenario.story.home.socket("launcher"))
-    scenario.command(f'worker send {worker.id} "Continue the cart assignment"')
+    scenario.command(f'worker send --wait {worker.id} "Continue the cart assignment"')
     scenario.story.run_listeners()
     launcher.expect_started(worker.id, worker_session(scenario.story, worker), scenario.repository.worktree_folder(worker.id))
     scenario.story.home.socket("launcher").unlink()
@@ -232,7 +237,7 @@ def test_rework_requires_current_overview_before_writes(assigned_worker):
     scenario.repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     scenario.story.expect_success('proof make 1 "cart.py:1, assignment completed" --task 1', actor=worker)
     scenario.story.expect_success("worker deliver --wait --differences none", actor=worker)
-    scenario.command(f'worker send {worker.id} "Recheck the cart assignment"')
+    scenario.command(f'worker send --wait {worker.id} "Recheck the cart assignment"')
     session = worker_session(scenario.story, worker)
     scenario.story.hook(session, HookSamples.tool_use("Read", ToolType.READ, [], None))
     scenario.story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), "journal task overview 1")

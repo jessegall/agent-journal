@@ -57,6 +57,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
             return
         task = self.queries.query(Task).find(worktree.task_id)
         if task.state is TaskState.STARTED and self.tasks.next_delegated(actor.id) is not None:
+            self.task_commit.check_proofs(worktree, task)
             self.task_commit.commit(worktree, task, actor)
 
     def handle(self, command: StartNextWorkerTask, context: Context) -> Task:

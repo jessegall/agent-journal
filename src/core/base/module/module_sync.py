@@ -144,7 +144,7 @@ class ModuleSync:
             subcommands={subcommand_line(subcommand): DottedPath.class_path(subcommand) for module in modules for subcommand in module.subcommands},
             outward_lines=tuple(sorted(subcommand_line(subcommand) for module in modules for subcommand in module.subcommands if subcommand.outward)),
             guards=(GuardEntry(LifecycleGuard.name, EventPattern(LifecycleGuard.event), DottedPath.class_path(LifecycleGuard), 0, LifecycleGuard.short_flag),
-                    *(GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, guard.short_flag)
+                    *(GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, guard.short_flag, guard.is_confirmation)
                       for position, guard in enumerate(guards, 1))),
             listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath.class_path(listener), position,
                                           actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),

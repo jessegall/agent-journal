@@ -2,25 +2,39 @@ from core.base.command.context import Context
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.plans.models.phase import Phase
-from core.modules.plans.models.phase_task import PhaseTask
+from typing import TypeVar
+from core.base.model.positioned import Positioned
+from core.base.refusal import Refusal
+
+P = TypeVar("P", bound=Positioned)
 
 POSITION = "position"
 
 
 class Positions:
-    """Keeps the places of a plan's phases and of a phase's tasks without gaps: a new one takes the place
-    after the last, and when one leaves, every later one moves up by one, nearest first, so no two ever
-    share a place."""
+    """Keeps a parent's numbered positions without gaps when rows are added, moved or deleted."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def next_position(self, model: type[Phase] | type[PhaseTask], parent_column: str, parent_id: int) -> int:
+    def next_position(self, model: type[Positioned], parent_column: str, parent_id: int) -> int:
         highest = self.queries.query(model).filter(**{parent_column: parent_id}).descending(POSITION).first()
         return highest.position + 1 if highest is not None else 1
 
-    def renumber(self, model: type[Phase] | type[PhaseTask], parent_column: str, parent_id: int, position: int, context: Context) -> None:
+    def renumber(self, model: type[Positioned], parent_column: str, parent_id: int, position: int, context: Context) -> None:
         later = self.queries.query(model).filter(**{parent_column: parent_id}).matching(Greater(POSITION, position)).ordered(POSITION)
         for row in tuple(later.all_rows()):
             self.repository.save(row.changed(position=row.position - 1), context)
+
+    def move(self, row: P, parent_column: str, parent_id: int, position: int, context: Context) -> P:
+        rows = tuple(self.queries.query(type(row)).filter(**{parent_column: parent_id}).ordered(POSITION).all_rows())
+        if not 1 <= position <= len(rows):
+            parent = parent_column.removesuffix("_id")
+            raise Refusal(f"{parent} {parent_id} has places 1 to {len(rows)}, not {position}")
+        old_position = row.position
+        moved = self.repository.update(row, context, position=len(rows) + 1)
+        step = 1 if position < old_position else -1
+        affected_rows = [sibling for sibling in rows if sibling.id != row.id and min(old_position, position) <= sibling.position <= max(old_position, position)]
+        for sibling in sorted(affected_rows, key=lambda sibling: sibling.position, reverse=step == 1):
+            self.repository.update(sibling, context, position=sibling.position + step)
+        return self.repository.update(moved, context, position=position)

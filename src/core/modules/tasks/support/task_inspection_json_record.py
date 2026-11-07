@@ -9,6 +9,8 @@ class TaskInspectionJsonRecord(TypedDict):
     brief: object
     state: object
     priority: object
+    complexity: object
+    tags: object
     reason: object
     outcome: object
     holder_id: object
