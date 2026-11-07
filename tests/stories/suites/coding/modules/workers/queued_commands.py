@@ -10,17 +10,21 @@ import pytest
 from core.base.caller.caller_request import CallerRequest, SESSION_VARIABLE
 from core.base.actor import Actor
 from core.base.command.bus import Bus
+from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.processes.support.queued_process_start import QueuedProcessStart
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -74,18 +78,35 @@ def run_operation_copy(story, operation):
         return run_operation(running_story, operation)
 
 
-@pytest.mark.parametrize(("name", "method"), [("next", "rebased_commit"), ("deliver", "rebased_commit"),
-                                               ("send", "sync"), ("merge", "merge")])
-def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, monkeypatch, name, method):
-    story, repository, worker, launches = worker_command
-    if name == "next":
+@pytest.fixture
+def worker_git_command(worker_command, name):
+    story, repository, worker, _ = worker_command
+    if name is WorkerOperationName.NEXT:
         task = story.new_row_id('task make "The next task" --brief "Add the receipt"', actor=story.agent)
         story.expect_success(f"worker send {worker.id} --wait --task {task}", actor=story.agent)
-    if name == "merge":
+    if name is WorkerOperationName.MERGE:
         story.expect_success(DELIVERY, actor=worker)
         story.expect_success("proof check 1", actor=story.agent)
         story.expect_success(f"worker logs {worker.id}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)
+    return worker_command
+
+
+@pytest.mark.parametrize(("name", "method"), [(WorkerOperationName.NEXT, "rebased_commit"), (WorkerOperationName.DELIVER, "rebased_commit"),
+                                               (WorkerOperationName.JOB, "sync"), (WorkerOperationName.MERGE, "merge")])
+@pytest.mark.parametrize("queue_full", [False, True])
+def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_command, monkeypatch, name, method, queue_full):
+    story, repository, worker, launches = worker_git_command
+    if queue_full:
+        story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main")
+        bus = story.container.get(Bus)
+        environment_id = story.row(Agent, worker.id).environment_id
+        running_test = bus.run(StartProcess.single_part(worker.id, "pytest held.py", str(repository.folder), CommandCategory.TEST_RUN, 60),
+                       Actor.core(), environment_id=environment_id)
+        waiting = bus.run(StartProcess.single_part(worker.id, "pytest waiting.py", str(repository.folder), CommandCategory.TEST_RUN, 60),
+                          Actor.core(), environment_id=environment_id)
+        story.expect_rows(story.row(Process, running_test.id).slot_assigned,
+                          story.row(Process, waiting.id).queued_at is not None)
     calls = []
     original = getattr(WorktreeGit, method)
     git_blocked, git_continue = Event(), Event()
@@ -108,15 +129,19 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_command, 
         return original_command_output(bus, value, command)
 
     monkeypatch.setattr(Bus, "result", checked_result)
-    line = f"worker {name} --differences none" if name in ("next", "deliver") else f'worker {name} {worker.id}'
-    if name == "send":
+    line = f"worker {name} --differences none" if name.is_handoff else f'worker {name} {worker.id}'
+    if name is WorkerOperationName.JOB:
         line += ' "Add the receipt"'
-    actor = worker if name in ("next", "deliver") else story.agent
+    actor = worker if name.is_handoff else story.agent
     started_at = monotonic()
     story.expect_text(line, "command accepted", actor=actor)
     accepted_seconds = monotonic() - started_at
     story.expect_rows(calls == [], len(launches) == 1)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    process = story.row(Process, operation.process_id)
+    part = story.container.get(Queries).query(ProcessPart).filter(process_id=process.id).first()
+    story.expect_rows(process.category is CommandCategory.BACKGROUND_JOB, not process.is_queue_run,
+                      not process.slot_assigned, process.queued_at is None, part.is_visible)
     started_at = monotonic()
     with ThreadPoolExecutor(max_workers=1) as executor:
         future = executor.submit(run_operation_copy, story, operation)

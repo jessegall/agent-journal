@@ -14,8 +14,8 @@ def test_each_group_of_categories_holds_the_categories_the_rules_used_to_list():
     assert members("is_readonly") == {C.READ, C.SEARCH, C.JOURNAL}
     assert members("is_short") == {C.READ, C.SEARCH, C.EDIT, C.JOURNAL}
     assert members("is_long_running") == {C.TEST_RUN, C.BUILD}
-    assert members("is_watched") == {C.TEST_RUN, C.BUILD, C.CHECK}
-    assert members("has_result_output") == {C.TEST_RUN, C.BUILD, C.CHECK, C.PACKAGE}
+    assert members("is_watched") == {C.TEST_RUN, C.BUILD, C.CHECK, C.BACKGROUND_JOB}
+    assert members("has_result_output") == {C.TEST_RUN, C.BUILD, C.CHECK, C.PACKAGE, C.BACKGROUND_JOB}
 
 
 def test_the_tool_types_that_read_and_write_files_are_named_by_the_enum():
