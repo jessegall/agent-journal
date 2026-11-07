@@ -288,13 +288,19 @@ def test_outage_only_from_a_provider_failure(split_story, text):
     story.expect_text('provider-outage list', 'nothing found')
 
 
-@pytest.mark.parametrize('program,model', [('claude', 'opus'), ('codex', 'gpt-6.1-sol')])
-def test_profile_tier_alone_beats_default_models(split_story, split_viewer, program, model):
+@pytest.fixture
+def tier_worker_story(split_story, split_viewer):
     story = split_story
     split_viewer.value('profiles.profiles', ['profile', 'save', 'tier-worker', '--type', 'worker', '--description', 'Implements a task', '--body', 'Do the task.', '--tier', 'strongest'])
     profiles = split_viewer.value('profiles.profiles', ['profile', 'list'])['rows']
     profile = next(row for row in profiles if row['name'] == 'tier-worker')
     story.expect_rows(profile['tier'] == 'strongest')
+    return story
+
+
+@pytest.mark.parametrize('program,model', [('claude', 'opus'), ('codex', 'gpt-6.1-sol')])
+def test_profile_tier_alone_beats_default_models(tier_worker_story, program, model):
+    story = tier_worker_story
     expect_program(story, dispatch(story, flags=f'--profile tier-worker --program {program}'), program, model)
 
 
