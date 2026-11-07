@@ -8,9 +8,13 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.refusal import Refusal
+from core.base.query.queries import Queries
+from core.modules.approvals.models.approval_request import ApprovalRequest
+from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_releases import PluginReleases
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 GUIDE = Path("src/core/modules/plugins/web/src/PluginGuide.vue")
 SKILL = Path("src/core/modules/plugins/skills/journal-plugins/SKILL.md")
@@ -188,7 +192,11 @@ def test_an_upgrade_preview_shows_the_diff_of_the_files_it_changes(new_story):
 def test_a_failed_setup_leaves_the_old_code(new_story):
     story = installed_plugin(new_story)
     (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "broken", "run": "false"}]}))
-    story.expect_refusal("plugin upgrade standup --yes", "broken", actor=story.agent)
+    story.expect_refusal("plugin upgrade standup --yes", "A person was asked", actor=story.agent)
+    request = story.container.get(Queries).query(ApprovalRequest).first()
+    with viewer_client(story) as viewer:
+        viewer.refusal("messages.chat", ["approval", "accept", str(request.id)], "broken")
+    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).find(request.id).state is ApprovalState.OPEN)
     story.expect_rows("1.2.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
     story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)
 

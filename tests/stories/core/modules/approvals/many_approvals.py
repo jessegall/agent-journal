@@ -10,7 +10,6 @@ from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 from tests.stories.core.modules.approvals.recovery import phone_request, phone_viewer
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, BuilderWithUser
-from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 

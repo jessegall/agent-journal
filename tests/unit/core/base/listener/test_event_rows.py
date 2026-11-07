@@ -56,3 +56,23 @@ def test_an_external_commit_refreshes_the_cached_row(entries, event_rows, tmp_pa
     finally:
         external.close()
     assert event_rows.required(LogEntry, 1).title == "External"
+
+
+def test_a_deleted_row_is_not_returned_from_the_cache(entries, event_rows):
+    row = event_rows.required(LogEntry, 1)
+    entries.database.update(Statement("DELETE FROM log_entries WHERE id = 1"))
+    event_rows.remove(row)
+    assert event_rows.find(LogEntry, 1) is None
+
+
+def test_an_external_unrelated_write_keeps_the_row_without_loading_it_twice(entries, event_rows, tmp_path):
+    assert event_rows.required(LogEntry, 1).title == "Book 1"
+    external = Database.opened(JournalHome(tmp_path))
+    try:
+        external.update(Statement("UPDATE log_entries SET version = version + 1 WHERE id = 7"))
+    finally:
+        external.close()
+    reads = []
+    entries.database.connection.set_trace_callback(reads.append)
+    assert event_rows.required(LogEntry, 1).title == "Book 1"
+    assert not any(sql.startswith("SELECT *") for sql in reads)
