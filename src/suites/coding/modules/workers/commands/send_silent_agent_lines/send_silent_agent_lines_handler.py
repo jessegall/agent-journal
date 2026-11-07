@@ -35,7 +35,7 @@ from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
-from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES
+from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.support.coding_agent_role import CodingAgentRole
 
@@ -75,7 +75,10 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         for line in self.queries.query(AgentLine).matching(Among("session_agent_id", agent_ids)).filter(source=SILENT_AGENT_SOURCE).oldest().all_rows():
             lines[line.session_agent_id].append(line)
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
+        resumes = self.settings.flag(RESUME_SILENT_AGENTS)
         for agent in agents:
+            if not resumes and agent.role != CodingAgentRole.MAIN:
+                continue
             has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and main_has_work)
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
