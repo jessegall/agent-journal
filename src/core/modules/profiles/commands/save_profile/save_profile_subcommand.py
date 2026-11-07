@@ -27,7 +27,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
-        for name in ("title", "type", "program", "mcp-tools"):
+        for name in ("title", "type", "program", "mcp-tools", "write-paths"):
             parser.add_argument(f"--{name}")
         for provider in self.providers.all():
             parser.add_argument(provider.model_option, dest=f"program_model_{provider.name}")
@@ -52,6 +52,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             fields["agent_type"] = arguments.type
         if arguments.mcp_tools is not None:
             fields["mcp_tools"] = ProfileFormat.tools(arguments.mcp_tools)
+        if arguments.write_paths is not None:
+            fields["write_paths"] = ProfileFormat.tools(arguments.write_paths)
         profile = replace(profile, **fields)
         for provider in self.providers.all():
             model = getattr(arguments, f"program_model_{provider.name}")
