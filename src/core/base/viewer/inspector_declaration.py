@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, fields, replace
 from typing import Any
 
 from core.base.dotted_path.dotted_path import DottedPath
@@ -27,6 +27,12 @@ class InspectorDeclaration:
     comments: bool = False
     events: Sequence[str] = ()
     links: InspectorLinks | None = InspectorLinks()
+
+    @classmethod
+    def default_for(cls, model: type[Model]) -> "InspectorDeclaration":
+        """The inspector of a model no module declares one for: its title is `{title}`, or `{name}` for a model with a name and no title."""
+        names = {field.name for field in fields(model)}
+        return cls(model, title="{name}" if "name" in names and "title" not in names else "{title}")
 
     @property
     def noun(self) -> str:

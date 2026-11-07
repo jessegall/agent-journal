@@ -157,11 +157,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path == WINDOWS_ROUTE:
             try:
-                windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
+                environment = parse_qs(route.query).get("environment", [""])[0]
+                windows = viewer.routes.windows_route.windows(environment)
+                inspectors = viewer.routes.windows_route.inspectors(environment)
             except UnknownEnvironmentError as error:
                 self.answer(404, {"error": str(error)})
                 return
-            self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
+            self.answer(200, {"windows": [asdict(window) for window in windows], "inspectors": [asdict(inspector) for inspector in inspectors], "person_id": viewer.login.person_id(token)})
             return
         if route.path == BUTTONS_ROUTE:
             try:

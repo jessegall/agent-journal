@@ -329,6 +329,10 @@ class Registry:
     def subject_button_lines(self, subject: str) -> tuple[str, ...]:
         return tuple(button.permission_line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
 
+    def sharing_windows(self, model: str) -> tuple[WindowEntry, ...]:
+        """The windows that list a read of the model as shareable, in registry order."""
+        return tuple(window for window in self.windows if any(entry.split(" ", 1)[0] == model for entry in window.shared_reads))
+
     def dock(self, type_name: str) -> DockEntry | None:
         return next((dock for dock in self.docks if dock.type == type_name), None)
 

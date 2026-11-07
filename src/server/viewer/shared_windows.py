@@ -10,4 +10,4 @@ class SharedWindows:
         self.registry = registry
 
     def window(self, model: str) -> WindowEntry:
-        return next(window for window in self.registry.windows if any(entry.split(" ", 1)[0] == model for entry in window.shared_reads))
+        return next(iter(self.registry.sharing_windows(model)))

@@ -1,0 +1,42 @@
+from server.viewer.windows_route import WindowsRoute
+from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.core.base.viewer.support.inspector_listing_modules import PATH
+from tests.stories.core.base.viewer.support.inspector_modules import PATH as PLAIN_PATH
+from tests.stories.core.support.fixtures import MainEnvironment
+
+
+def inspectors_of(story):
+    return {listing.noun: listing for listing in WindowsRoute(story.home).inspectors("main")}
+
+
+def test_a_model_without_a_declaration_is_listed_with_the_default_inspector(new_story):
+    task = inspectors_of(new_story(fixture=MainEnvironment))["task"]
+    assert (task.reads, task.label, task.title, task.description, task.width, task.components, task.comments, task.events) == ("task show {row_id}", "", "{title}", "", "small", [], False, [])
+    assert task.links == {"kinds": [], "open": False, "outside_plan": False, "page_size": 10}
+
+
+def test_a_declared_inspector_is_listed_with_its_width_and_components(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:DeclaringModule")
+    task = inspectors_of(story)["task"]
+    assert (task.module, task.label, task.description, task.width, task.comments) == ("declaring", "Task {id}", "{brief}", "large", True)
+    assert task.components == [{"window": "declaring.chain", "tab": "Chain"}]
+
+
+def test_a_row_with_a_shared_read_is_shareable(new_story):
+    listed = inspectors_of(new_story(fixture=MainEnvironment))
+    assert {noun: listed[noun].shareable for noun in ("plan", "doc", "task", "agent")} == {"plan": True, "doc": True, "task": False, "agent": False}
+
+
+def test_an_inactive_module_lists_no_inspector(new_story):
+    story = new_story(SAMPLES, fixture=MainEnvironment)
+    assert "file-edit" in inspectors_of(story)
+    story.run("suite choose samples --environment main")
+    assert "file-edit" not in inspectors_of(story)
+
+
+def test_the_windows_list_is_unchanged(new_story):
+    story = new_story(fixture=MainEnvironment)
+    before = WindowsRoute(story.home).windows("main")
+    story.expect_sync_success(f"{PLAIN_PATH}:InspectorModule")
+    assert WindowsRoute(story.home).windows("main") == before
