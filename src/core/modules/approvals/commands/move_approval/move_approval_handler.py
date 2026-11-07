@@ -18,6 +18,8 @@ class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
         if context.actor.type is not ActorType.USER:
             raise Refusal("an agent cannot decide an approval request")
         request = self.queries.query(ApprovalRequest).find(command.row_id)
+        if request.recipient_agent_id is not None:
+            raise Refusal(f"this approval is addressed to agent {request.recipient_agent_id}")
         if request.required_person_id is not None and request.required_person_id != context.actor.id:
             raise Refusal("this approval belongs to another person")
         return self.repository.save_change(request, request.moved(command.move), context)

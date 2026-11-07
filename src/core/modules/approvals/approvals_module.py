@@ -14,8 +14,11 @@ from core.modules.approvals.listeners.approval_dock_listener import ApprovalDock
 from core.modules.approvals.listeners.approval_notice_listener import ApprovalNoticeListener
 from core.modules.approvals.listeners.pending_approval_dock_listener import PendingApprovalDockListener
 from core.modules.approvals.guards.approval_decision_guard import ApprovalDecisionGuard
-from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED
+from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW
 from core.modules.approvals.migrations.m001_approval_requests import ApprovalRequestsMigration
+from core.modules.approvals.migrations.m002_approval_recipients import ApprovalRecipientsMigration
+from core.modules.approvals.commands.relay_approval.relay_approval_handler import RelayApprovalHandler
+from core.modules.approvals.commands.relay_approval.relay_approval_subcommand import RelayApprovalSubcommand
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_dock_type import ApprovalDockType
 
@@ -30,14 +33,14 @@ class ApprovalsModule(Module):
     requires_core = ">=5,<6"
     move_reason = "approval requests are new in version 5"
     seed_reason = "the demo has no pending approval requests"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer"]
+    dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer"]
     models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"])]
-    migrations = [ApprovalRequestsMigration]
-    handlers = [RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler]
-    subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand]
+    migrations = [ApprovalRequestsMigration, ApprovalRecipientsMigration]
+    handlers = [RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler]
+    subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand]
     listeners = [ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard]
-    nudges = [APPROVAL_PENDING, APPROVAL_DECIDED]
+    nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW]
     docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False)]
     button_slots = list(APPROVAL_SLOT)
     buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", primary=True, condition=OPEN_REQUEST),

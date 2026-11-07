@@ -10,7 +10,7 @@ from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
-from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED
+from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
 
 
@@ -26,12 +26,16 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
         created = isinstance(event, Created)
-        if not created and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED):
+        relayed = not created and event.old_row.recipient_agent_id is not None and request.recipient_agent_id is None
+        if not created and not relayed and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED):
             return
-        agent = self.queries.query(Agent).filter(id=request.requester_id).first()
+        recipient = request.recipient_agent_id if request.recipient_agent_id is not None else request.requester_id
+        agent = self.queries.query(Agent).filter(id=recipient).first()
         if agent is None:
             return
-        declaration = APPROVAL_PENDING if created else APPROVAL_DECIDED
-        notice = declaration.nudge(approval=request.id)
+        declaration = APPROVAL_PENDING if created or relayed else APPROVAL_DECIDED
+        if request.recipient_agent_id is not None:
+            declaration = APPROVAL_REVIEW
+        notice = declaration.nudge(approval=request.id, recipient=recipient) if declaration is APPROVAL_REVIEW else declaration.nudge(approval=request.id)
         self.bus.run(RecordAgentNudge(agent.id, notice, declaration.key), self.actors.actor("journal.core.approvals"),
                      cause_id=logged.id, environment_id=request.environment_id)

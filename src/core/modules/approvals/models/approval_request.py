@@ -18,6 +18,8 @@ class ApprovalRequest(EnvironmentScoped, Model):
     creator_id: int
     requester_id: int
     required_person_id: int | None = None
+    recipient_agent_id: int | None = None
+    relayed_by_id: int | None = None
     source_version: int | None = None
     returns_output: bool = False
     text: str

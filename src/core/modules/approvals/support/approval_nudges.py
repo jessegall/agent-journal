@@ -5,3 +5,6 @@ APPROVAL_PENDING = NudgeDeclaration("approvals.asked", NudgeType.NOTICE, "A pers
                                    plural_text="A person was asked for {count} approvals: journal approval list --state open",
                                    id_field="approval", turn_limited=False)
 APPROVAL_DECIDED = NudgeDeclaration("approvals.decided", NudgeType.NOTICE, "approval {approval} was decided: journal approval show {approval}", turn_limited=False, wakes_agent=True)
+APPROVAL_REVIEW = NudgeDeclaration("approvals.review", NudgeType.NOTICE, "approval {approval} needs your review: journal approval show {approval}",
+                                  plural_text="{count} approvals need your review: journal approval list --recipient-agent {recipient}",
+                                  id_field="approval", turn_limited=False)

@@ -1,7 +1,7 @@
 from core.base.actor_type import ActorType
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
-from core.base.user_approval import UserApproval
+from core.base.refusal import Refusal
 from core.modules.tasks.support.task_opener import USER_TARGET
 from core.modules.tasks.support.task_waits import TaskWaits
 from core.base.change.moved import Moved
@@ -23,4 +23,4 @@ class UserWaitGuard(Guard[Moved[Task]]):
         if context.actor.type is not ActorType.AGENT:
             return
         if any(wait.target == USER_TARGET for wait in self.waits.pending_task(event.row.id)):
-            raise UserApproval(f"Open task {event.row.id}, {event.row.title}, after completing the requested work?")
+            raise Refusal(f"task {event.row.id} waits on a person", "its wait reason records what is needed")

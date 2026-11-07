@@ -1,0 +1,58 @@
+import pytest
+
+from core.base.database.database import Database
+from core.base.database.statement import Statement
+from core.base.journal_home import JournalHome
+from core.base.listener.event_rows import EventRows
+from core.base.model.tables import Tables
+from core.base.query.queries import Queries
+from tests.unit.core.base.model.test_table import LogEntry
+from tests.unit.core.base.query.test_query import entries
+
+__all__ = ["entries"]
+
+
+@pytest.fixture
+def event_rows(entries):
+    tables = Tables()
+    return EventRows(Queries(entries.database, tables), tables)
+
+
+def test_prepared_rows_are_read_together_and_reused_after_other_writes(entries, event_rows):
+    reads = []
+    entries.database.connection.set_trace_callback(reads.append)
+    event_rows.prepare(LogEntry, [1, 2, 3])
+    for number in range(12):
+        entries.database.update(Statement("UPDATE log_entries SET version = version + 1 WHERE id = 7"))
+        assert event_rows.required(LogEntry, 1).title == "Book 1"
+    selects = [sql for sql in reads if sql.startswith("SELECT * FROM log_entries")]
+    assert len(selects) == 1
+
+
+def test_a_saved_row_replaces_the_cached_row_without_another_read(entries, event_rows):
+    row = event_rows.required(LogEntry, 1)
+    entries.database.update(Statement("UPDATE log_entries SET title = 'Saved', version = version + 1 WHERE id = 1"))
+    event_rows.remember(row.changed(title="Saved", version=row.version + 1))
+    reads = []
+    entries.database.connection.set_trace_callback(reads.append)
+    assert event_rows.required(LogEntry, 1).title == "Saved"
+    assert not any(sql.startswith("SELECT *") for sql in reads)
+
+
+def test_a_rollback_discards_a_saved_cached_row(entries, event_rows):
+    row = event_rows.required(LogEntry, 1)
+    with pytest.raises(RuntimeError), entries.database.transaction():
+        entries.database.update(Statement("UPDATE log_entries SET title = 'Temporary', version = version + 1 WHERE id = 1"))
+        event_rows.remember(row.changed(title="Temporary", version=row.version + 1))
+        raise RuntimeError()
+    assert event_rows.required(LogEntry, 1).title == "Book 1"
+
+
+def test_an_external_commit_refreshes_the_cached_row(entries, event_rows, tmp_path):
+    assert event_rows.required(LogEntry, 1).title == "Book 1"
+    external = Database.opened(JournalHome(tmp_path))
+    try:
+        external.update(Statement("UPDATE log_entries SET title = 'External', version = version + 1 WHERE id = 1"))
+    finally:
+        external.close()
+    assert event_rows.required(LogEntry, 1).title == "External"

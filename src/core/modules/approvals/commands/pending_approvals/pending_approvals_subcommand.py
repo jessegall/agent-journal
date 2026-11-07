@@ -17,5 +17,5 @@ class PendingApprovalsSubcommand(ReadSubcommand[Page[ApprovalRequest]]):
         self.queries = queries
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[ApprovalRequest]:
-        rows = tuple(self.queries.query(ApprovalRequest).matching(Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).newest().all_rows())
+        rows = tuple(self.queries.query(ApprovalRequest).filter(recipient_agent_id=None).matching(Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).newest().all_rows())
         return Page(rows, 1, len(rows), len(rows))
