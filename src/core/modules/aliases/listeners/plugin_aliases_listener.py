@@ -40,15 +40,16 @@ class PluginAliasesListener(SaveListener[Created[Plugin] | Updated[Plugin]]):
         for stored in stored_aliases.values():
             if stored.name not in manifest_aliases:
                 self.repository.delete(stored, context)
+        reader_ids = {reader_name: self.readers.existing_reader_id(reader_name) for reader_name in {alias.reader_name for alias in manifest_aliases.values()}}
         for name, manifest_alias in manifest_aliases.items():
-            alias = self.alias(manifest_alias, plugin, folder, context.actor.id)
+            alias = self.alias(manifest_alias, plugin, folder, context.actor.id, reader_ids[manifest_alias.reader_name])
             if name in stored_aliases:
                 stored = stored_aliases[name]
                 self.repository.save(replace(alias, id=stored.id, version=stored.version, creator_id=stored.creator_id, agent_access=stored.agent_access or alias.agent_access), context)
             elif self.names.is_free(name):
                 self.repository.save(alias, context)
 
-    def alias(self, manifest_alias: ManifestAlias, plugin: Plugin, folder: Path, creator_id: int) -> Alias:
+    def alias(self, manifest_alias: ManifestAlias, plugin: Plugin, folder: Path, creator_id: int, reader_id: int | None) -> Alias:
         return Alias(creator_id=creator_id, name=manifest_alias.name, line=f"{folder}/{manifest_alias.line}", description=manifest_alias.description,
-                     variables=manifest_alias.variables, reader_id=self.readers.existing_reader_id(manifest_alias.reader_name), background=manifest_alias.background,
+                     variables=manifest_alias.variables, reader_id=reader_id, background=manifest_alias.background,
                      agent_access=manifest_alias.has_agent_access(self.registry.alias_permission_names), plugin_id=plugin.id, category=manifest_alias.category)
