@@ -107,6 +107,7 @@ class StoryWorker:
 
     def prove(self, test_line: str = "", point: int = 1) -> LineOutcome:
         self.repository.changed(self.worker.id, "cart.py", CART_CHANGE)
+        self.repository.changed(self.worker.id, f"task_{self.current_task()}.txt", "done\n")
         test_flag = f' --test "{test_line}"' if test_line else ""
         return self.story.run(f'proof make {point} --task {self.current_task()} "cart.py:1, the cart total"{test_flag}', actor=self.worker)
 

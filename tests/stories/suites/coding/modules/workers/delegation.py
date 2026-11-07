@@ -3,16 +3,16 @@ import pytest
 
 from core.modules.plans.support.next_plan_tasks import NextPlanTasks
 from core.modules.tasks.queries.task_query import TaskQuery
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.messages.models.message import Message
-from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_absent_marks_text, expect_marks_text
+from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
@@ -115,7 +115,7 @@ def test_a_persons_comment_on_a_delegated_task_is_linked_to_the_worker_it_was_al
 
 def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
     story, _, worker = delegated_story(new_story)
-    story.expect_text(f"task assign 2 --to {story.agent.id}", f"task:2", actor=story.agent)
+    story.expect_text(f"task assign 2 --to {story.agent.id}", "task:2", actor=story.agent)
     story.expect_absent("task show 2", "delegated_to", actor=story.agent)
     story.expect_text(f"task assign 2 --to {worker.id}", "task:2", actor=story.agent)
     story.expect_text("task show 2", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
@@ -292,9 +292,9 @@ def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
 def test_a_chained_queue_goes_on_while_the_workers_earlier_task_is_in_testing(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_success("task depend 2 --on 1", actor=story.agent)
-    tasks = story.container.get(TaskQuery)
+    next_task = story.container.get(WorkerNextTask)
     story.expect_success("task test 1", actor=worker)
-    expect_id_next_delegated(tasks, worker, 2)
+    expect_id_next_delegated(next_task, worker, 2)
     story.expect_success("task start 2", actor=worker)
 
 
@@ -407,8 +407,8 @@ def expect_following_plans_2(plans, plan_id, expected) -> None:
     assert actual is expected, actual
 
 
-def expect_id_next_delegated(tasks, worker, expected) -> None:
-    actual = tasks.next_delegated(worker.id).id
+def expect_id_next_delegated(next_task, worker, expected) -> None:
+    actual = next_task.following(worker.id).id
     assert actual == expected, actual
 
 

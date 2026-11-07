@@ -1,10 +1,10 @@
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class WorkerUnfinishedTasks:
@@ -12,12 +12,13 @@ class WorkerUnfinishedTasks:
     when its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it
     moved on from inside a phase count too, since they wait for the end of that phase."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, phases: WorkerPhases) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, phases: WorkerPhases, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.tasks, self.worktrees, self.proofs, self.processes, self.phases = tasks, worktrees, proofs, processes, phases
 
     def rows(self, worker_id: int) -> tuple[Task, ...]:
         started = self.tasks.started_tasks(worker_id)
-        queued = self.tasks.next_delegated(worker_id)
+        queued = self.next_task.following(worker_id)
         worktree = self.worktrees.worker_worktree(worker_id)
         if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
             return ()

@@ -18,6 +18,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class DeliverTaskHandler(Handler[DeliverTask, Task]):
@@ -28,7 +29,8 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     command = DeliverTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
@@ -36,7 +38,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         worktree = self.worktrees.worker_worktree(actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
             raise Refusal("only a worker with a started task delivers", "journal worker-worktree list shows the worktrees")
-        following = self.tasks.next_delegated(actor.id)
+        following = self.next_task.following(actor.id)
         if following is not None:
             raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", "journal worker next")
         self.task_commit.check_proofs(worktree, self.rows.required(Task, worktree.task_id))

@@ -25,6 +25,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
@@ -36,7 +37,8 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
@@ -47,7 +49,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         task = self.rows.required(Task, worktree.task_id)
         if task.state is not TaskState.STARTED:
             return
-        if self.tasks.next_delegated(actor.id) is None:
+        if self.next_task.following(actor.id) is None:
             raise Refusal(f"task {task.id} is your last", "journal worker deliver hands in all your tasks")
         self.task_commit.check_proofs(worktree, task)
 
@@ -56,7 +58,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if worktree is None or worktree.state is not WorktreeState.CUT:
             return
         task = self.queries.query(Task).find(worktree.task_id)
-        if task.state is TaskState.STARTED and self.tasks.next_delegated(actor.id) is not None:
+        if task.state is TaskState.STARTED and self.next_task.following(actor.id) is not None:
             self.task_commit.check_proofs(worktree, task)
             self.task_commit.commit(worktree, task, actor)
 
@@ -78,7 +80,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if task.state is not TaskState.STARTED and started_task is not None:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
             return started_task
-        following = self.tasks.next_delegated(context.actor.id)
+        following = self.next_task.following(context.actor.id)
         if following is None:
             raise Refusal(f"task {task.id} is your last", "journal worker deliver hands in all your tasks")
         if task.state is not TaskState.STARTED:

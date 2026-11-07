@@ -26,6 +26,7 @@ from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WOR
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 LINE_SOURCE = "workers"
 
@@ -37,7 +38,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues) -> None:
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
         self.rows, self.phases = rows, phases
@@ -96,7 +98,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         if started_task is not None:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=started_task.id), context)
             return
-        following = self.tasks.next_delegated(worktree.session_agent_id)
+        following = self.next_task.following(worktree.session_agent_id)
         if following is None:
             return
         self.advance.next_task(worktree, following, context)

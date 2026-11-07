@@ -11,6 +11,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.kept_workers import stopped
@@ -126,3 +127,22 @@ def test_a_task_blocked_for_a_reason_goes_to_a_busy_worker_and_waits_for_its_tur
 def test_a_new_worker_is_not_started_on_blocked_tasks_alone(idle_plan):
     story, _worker = idle_plan
     story.expect_refusal("worker dispatch --fresh 'A second worker' --model sonnet 3", "every task here is blocked", actor=story.agent)
+
+
+def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    joined_person(story)
+    repository_environment(story)
+    story.expect_success('plan make "Two phases" --environment main', actor=story.user)
+    story.expect_success('phase make --plan 1 "First"', actor=story.user)
+    story.expect_success('phase make --plan 1 "Second"', actor=story.user)
+    second_phase_task = story.new_row_id('task make "Second phase work" --environment main', actor=story.agent)
+    first_phase_task = story.new_row_id('task make "First phase work" --environment main', actor=story.agent)
+    story.expect_success("phase place 1 --phase 1", actor=story.agent)
+    story.expect_success(f"phase place {first_phase_task} --phase 1", actor=story.agent)
+    story.expect_success(f"phase place {second_phase_task} --phase 2", actor=story.agent)
+    ready_plan(story, actor=story.user)
+    story.expect_success("plan approve 1 --environment main", actor=story.user)
+    worker = dispatched_worker(story, "worker dispatch --model sonnet --plan 1")
+    next_task = story.container.get(WorkerNextTask).following(worker.id)
+    story.expect_rows(next_task is not None and next_task.id == first_phase_task)
