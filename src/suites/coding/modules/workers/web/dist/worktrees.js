@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-03de2fe40d59")) { const style = document.createElement("style"); style.id = "window-styles-03de2fe40d59"; style.textContent = ".worker-models[data-v-8506c219]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-8506c219]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-8506c219]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-8506c219]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-8506c219]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-8506c219]{display:flex;gap:8px;align-items:center}.number[data-v-6eb6af04]{color:var(--text-3);font-size:12px}.main[data-v-6eb6af04]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-6eb6af04]{color:var(--text-3);font-size:12px}.main[data-v-a11fd403]{flex:1}.note[data-v-a11fd403]{color:var(--text-3);font-size:12px}.worker-moment[data-v-826dfb51]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-826dfb51]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-62d088fe]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-62d088fe]{display:flex;align-items:center;gap:8px}input[data-v-62d088fe]{min-width:0;flex:1}output[data-v-62d088fe]{min-width:36px;text-align:right}small[data-v-62d088fe]{color:var(--text-3)}p[data-v-62d088fe]{margin:0}.actions[data-v-62d088fe]{display:flex;gap:6px}.route[data-v-3d35bb1a]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-3d35bb1a]{margin:0}small[data-v-3d35bb1a]{color:var(--text-3)}.actions[data-v-3d35bb1a]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-1c28c310]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-1c28c310]{margin:0}label[data-v-1c28c310]{display:flex;align-items:center;gap:8px}select[data-v-1c28c310],input[type=number][data-v-1c28c310]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-079b94a1]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-079b94a1]{display:flex;gap:8px}input[data-v-079b94a1]{min-width:0;flex:1}.split[data-v-793964c0]{display:flex;flex-direction:column;gap:8px}p[data-v-793964c0],h3[data-v-793964c0]{margin:0}p[data-v-793964c0]{color:var(--text-3);font-size:12px}h3[data-v-793964c0]{margin-top:12px;font-size:13px}label[data-v-793964c0]{display:flex;align-items:center;gap:8px}input[data-v-793964c0]{width:54px}[role=alert][data-v-793964c0]{color:var(--danger)}.worker-tab-body[data-v-f8b83cb6]{padding:14px 16px}.worktree[data-v-158c53fa]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-158c53fa]{flex:1;min-width:0}.worktree-holder[data-v-158c53fa]{font-weight:500}.worktree-folder[data-v-158c53fa]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-158c53fa]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-540d4792d7b8")) { const style = document.createElement("style"); style.id = "window-styles-540d4792d7b8"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-3d819ba9]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-3d819ba9]{display:flex;align-items:center;gap:8px}input[data-v-3d819ba9]{min-width:0;flex:1}output[data-v-3d819ba9]{min-width:36px;text-align:right}small[data-v-3d819ba9]{color:var(--text-3)}p[data-v-3d819ba9]{margin:0}.actions[data-v-3d819ba9]{display:flex;gap:6px}.route[data-v-bf9fb256]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-bf9fb256]{margin:0}small[data-v-bf9fb256]{color:var(--text-3)}.actions[data-v-bf9fb256]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-0362f63d]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-0362f63d]{margin:0}label[data-v-0362f63d]{display:flex;align-items:center;gap:8px}select[data-v-0362f63d],input[type=number][data-v-0362f63d]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-7ea51616]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-7ea51616]{display:flex;gap:8px}input[data-v-7ea51616]{min-width:0;flex:1}.split[data-v-48203f6c]{display:flex;flex-direction:column;gap:8px}p[data-v-48203f6c],h3[data-v-48203f6c]{margin:0}p[data-v-48203f6c]{color:var(--text-3);font-size:12px}h3[data-v-48203f6c]{margin-top:12px;font-size:13px}label[data-v-48203f6c]{display:flex;align-items:center;gap:8px}input[data-v-48203f6c]{width:54px}[role=alert][data-v-48203f6c]{color:var(--danger)}.worker-tab-body[data-v-8fe373bc]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
 import { ref as v, openBlock as l, createBlock as _, unref as o, withCtx as a, createVNode as u, createElementVNode as s, toDisplayString as d, createElementBlock as p, createCommentVNode as g, Fragment as x, createTextVNode as c } from "vue";
 import { useWindow as B, WindowRoom as E, RowList as R, Btn as k, removed as V } from "@journal/window-kit";
-import { _ as b } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as b } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const j = ["data-worktree"], P = { class: "worktree-names" }, D = { class: "worktree-holder" }, F = { class: "worktree-folder" }, H = {
   key: 0,
   class: "worktree-refusal",
@@ -16,7 +16,7 @@ const j = ["data-worktree"], P = { class: "worktree-names" }, D = { class: "work
       return e.is_checkout ? "Main checkout" : e.worker_id !== null ? `Worker ${e.worker_id}` : e.agent_count ? `Environment ${e.environment}, agent running` : e.environment ? `Environment ${e.environment}` : "No environment";
     }
     const W = (e) => e.is_checkout || e.worker_id !== null || e.agent_count > 0;
-    async function m(e) {
+    async function f(e) {
       if (n.value !== e.id) return void (n.value = e.id);
       n.value = "";
       const t = await y(["project-worktree", "remove", e.folder], V(e.id));
@@ -45,7 +45,7 @@ const j = ["data-worktree"], P = { class: "worktree-names" }, D = { class: "work
                 u(o(k), {
                   small: "",
                   "data-worktree-keep": "",
-                  onClick: t[0] || (t[0] = (f) => n.value = "")
+                  onClick: t[0] || (t[0] = (m) => n.value = "")
                 }, {
                   default: a(() => [...t[1] || (t[1] = [
                     c("Keep it", -1)
@@ -56,7 +56,7 @@ const j = ["data-worktree"], P = { class: "worktree-names" }, D = { class: "work
                   small: "",
                   variant: "danger",
                   "data-worktree-confirm": "",
-                  onClick: (f) => m(r)
+                  onClick: (m) => f(r)
                 }, {
                   default: a(() => [...t[2] || (t[2] = [
                     c("Yes, remove the folder", -1)
@@ -69,7 +69,7 @@ const j = ["data-worktree"], P = { class: "worktree-names" }, D = { class: "work
                 variant: "danger",
                 title: "Remove this worktree folder, keeping its branch",
                 "data-worktree-remove": "",
-                onClick: (f) => m(r)
+                onClick: (m) => f(r)
               }, {
                 default: a(() => [...t[3] || (t[3] = [
                   c("Remove worktree", -1)
@@ -84,7 +84,7 @@ const j = ["data-worktree"], P = { class: "worktree-names" }, D = { class: "work
       _: 1
     }));
   }
-}, T = /* @__PURE__ */ b(I, [["__scopeId", "data-v-158c53fa"]]);
+}, T = /* @__PURE__ */ b(I, [["__scopeId", "data-v-a10f9f34"]]);
 export {
   T as default
 };
