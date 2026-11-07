@@ -33,15 +33,9 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended
     third = ended_task(story, "Third")
     oldest, newer = docked(story, first), docked(story, second)
     story.container.get(Bus).run(KeepDockItem(oldest.id), story.user)
-    added = docked(story, third)
-    expect_docked_state_3(story, oldest, newer, added, ("docked", "undocked", "docked"))
-
-
-def test_adding_an_item_at_the_types_limit_reads_the_docked_items_once(ended_pair):
-    story, first, second = ended_pair
-    third = ended_task(story, "Third")
     with story.repeated_work.request():
-        docked(story, third)
+        added = docked(story, third)
+    expect_docked_state_3(story, oldest, newer, added, ("docked", "undocked", "docked"))
 
 
 def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(kept_dock):
