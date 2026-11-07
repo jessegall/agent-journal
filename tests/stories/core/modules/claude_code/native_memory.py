@@ -5,7 +5,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 MEMORY_FILE = "/Users/ada/.claude/projects/-Users-ada-shop/memory/cart.md"
-BAN = "Claude's own memory files are not written here: keep it with journal memory make"
+BAN = "Claude's own memory files are not written here: keep it as a memory of the journal"
 
 
 def test_editing_a_native_memory_file_is_refused(new_story):

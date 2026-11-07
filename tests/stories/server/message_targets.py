@@ -162,4 +162,4 @@ def test_a_read_message_edit_wakes_the_same_worker(targeted_chat):
     story.advance(timedelta(seconds=31))
     server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "edit", "1", "--text", "Worker text after editing"]})
     story.run_listeners()
-    expect_row(typing, typed=[(story.worker.id, "[journal] message:1 updated; journal message show 1; select: journal message work-from 1")])
+    expect_row(typing, typed=[(story.worker.id, "[journal] message:1 updated")])

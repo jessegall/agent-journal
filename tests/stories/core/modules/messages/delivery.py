@@ -341,7 +341,7 @@ def test_a_message_of_the_agent_is_not_given_back_to_it(agent_message):
 
 def test_a_stop_is_refused_while_a_message_is_unread_and_goes_through_once_it_is_read(new_story):
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "message 1 is unread: journal message read 1")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "message 1 is unread")
     story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
@@ -374,7 +374,7 @@ def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story)
 
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
     story = new_story(SAMPLES, fixture=UnreadCartMessage)
-    story.expect_hook_refusal("s-1", MESSAGE_DISPLAY_HOOK, "message 1 is unread, so it cannot be shown: journal message read 1")
+    story.expect_hook_refusal("s-1", MESSAGE_DISPLAY_HOOK, "message 1 is unread, so it cannot be shown")
     story.expect_no_text("message show 1", "read_at: 2026", actor=story.user)
 
 
@@ -423,7 +423,7 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(image_message):
     story = image_message
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_MESSAGE_HOOK).lines
-    expect_lines_5('message:1 has an image: journal message tag 1 "shot.png" "<what it shows>"', lines)
+    expect_lines_5('message:1 has an image "shot.png": tag it with what it shows', lines)
     expect_absent_notes_lines("notes.txt", "attaches an image", lines)
 
 

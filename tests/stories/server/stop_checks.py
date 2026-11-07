@@ -55,7 +55,7 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, pla
         check = next(check for check in record["stop_checks"] if check["rule"] == "workers.approved-plan-at-stop")
         story.expect_rows(record["answer"] == answer, check["outcome"] == answer)
         if places:
-            story.expect_rows("plan:1 is approved" in record["refusal"], "journal plan start 1" in check["reason"])
+            story.expect_rows("plan:1 is approved" in record["refusal"], "start it, then assign its work" in check["reason"])
         else:
             story.expect_rows(check["reason"] == "no new worker can start")
 

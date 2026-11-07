@@ -7,7 +7,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 __all__ = ["private_folder"]
 
-FOLDER_REFUSAL = "the secrets folder is out of reach: give a secret to a program with journal secret run <n> -- <program>"
+FOLDER_REFUSAL = "the secrets folder is out of reach: run a program with a secret through the secret command"
 
 
 def read_sample(path: str):

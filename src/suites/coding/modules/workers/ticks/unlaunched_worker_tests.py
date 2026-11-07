@@ -15,19 +15,17 @@ LAUNCH_GRACE_SECONDS = 30
 
 class UnlaunchedWorkerTests:
     """Every 15 seconds, a worker test whose run is open but whose runner never started, as when a server update came
-    between the run and its launch, is launched again, before the run is ended as lost."""
+    between the run and its launch, is launched a second time, before the run is ended as lost."""
 
     def __call__(self, container: Container) -> None:
-        folder, now = container.get(OutputFolder), container.get(Clock).timestamp()
-        processes = container.get(ProcessQuery)
-        open_ids = {process.id for process in processes.running().all_rows()}
-        for proof in container.get(ProofQuery).test_rows():
-            if proof.state is ProofState.RUNNING and proof.process_id in open_ids:
-                self.launch_again(container, processes.find(proof.process_id), proof.test_command, folder, now)
+        folder, moment = container.get(OutputFolder), container.get(Clock).timestamp()
+        runs = {process.id: process for process in container.get(ProcessQuery).running().all_rows()}
+        stalled = [(runs[proof.process_id], proof.test_command) for proof in container.get(ProofQuery).test_rows()
+                   if proof.state is ProofState.RUNNING and proof.process_id in runs and self.is_unlaunched(runs[proof.process_id], folder, moment)]
+        agents = {agent.id: agent for agent in container.get(Queries).query(Agent).find_many([process.session_agent_id for process, _ in stalled])}
+        for process, line in stalled:
+            container.get(WorkerTestLaunch).start(process.id, line, process.folder, agents[process.session_agent_id].session)
 
     @staticmethod
-    def launch_again(container: Container, process: Process, line: str, folder: OutputFolder, now: Timestamp) -> None:
-        if folder.pid(process.id) is not None or process.created_at.elapsed_seconds(now) <= LAUNCH_GRACE_SECONDS:
-            return
-        session = container.get(Queries).query(Agent).find(process.session_agent_id).session
-        container.get(WorkerTestLaunch).start(process.id, line, process.folder, session)
+    def is_unlaunched(process: Process, folder: OutputFolder, moment: Timestamp) -> bool:
+        return folder.pid(process.id) is None and process.created_at.elapsed_seconds(moment) > LAUNCH_GRACE_SECONDS

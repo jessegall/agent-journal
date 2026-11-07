@@ -35,7 +35,7 @@ def monitor_on(command):
 def test_the_monitor_command_is_refused_as_a_plain_command(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     plain = HookSamples.shell("journal output monitor 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "monitor", "7"], subcommand="output"))
-    story.expect_hook_refusal("s-1", plain, "journal output monitor runs only in a Monitor")
+    story.expect_hook_refusal("s-1", plain, "the output wait runs only in a Monitor")
 
 
 def test_a_line_that_only_names_the_monitor_command_is_not_refused(new_story):
@@ -46,7 +46,7 @@ def test_a_line_that_only_names_the_monitor_command_is_not_refused(new_story):
 
 def test_a_hand_made_wait_on_an_output_is_refused_naming_the_command_and_that_command_goes_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.expect_hook_refusal("s-1", monitor_on("until journal output read 7 --summary | grep -q passed; do sleep 2; done"), "journal output monitor <n>")
+    story.expect_hook_refusal("s-1", monitor_on("until journal output read 7 --summary | grep -q passed; do sleep 2; done"), "give the Monitor the output wait")
     story.expect_hook_allowed("s-1", monitor_on("journal output monitor 7"))
     story.expect_hook_allowed("s-1", monitor_on("tail -f server.log"))
 

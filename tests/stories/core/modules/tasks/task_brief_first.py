@@ -25,7 +25,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWi
 EDIT = HookSamples.edit("src/cart.py")
 BRIEF_LINE = HookSamples.shell("journal task overview 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task"))
 COMPACTION = HookSamples.sample("compact")
-BRIEF_REFUSAL = "journal task overview 1"
+BRIEF_REFUSAL = "read task 1 first"
 
 
 def briefs_required(story) -> None:
@@ -93,7 +93,7 @@ def test_a_compaction_asks_only_for_the_last_started_task_and_the_earlier_one_wh
     story.expect_success("task start 2", actor=story.agent)
     story.expect_success("task overview 2", actor=story.agent)
     story.hook("s-1", COMPACTION)
-    story.expect_hook_refusal("s-1", EDIT, "journal task overview 2")
+    story.expect_hook_refusal("s-1", EDIT, "read task 2 first")
     story.run("task overview 2", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
     story.run('task close 2 --outcome "done"', actor=story.agent)

@@ -9,7 +9,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 
 class LeftoverRunRule(DriverRule):
     """Ends the runs the agent started in an old session unless the suite declares that its runs continue. A run the
-    journal started for the agent, as a worker's queued test, is not the agent's to end."""
+    journal started for the agent is not the agent's to end."""
 
     name = "processes.leftover-runs"
     hook = HookEventName.SESSION_START
@@ -21,5 +21,5 @@ class LeftoverRunRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.event.is_continuing or hook.role in self.suites.agent_policy().continuing_run_roles:
             return RuleAnswer.allowed()
-        leftover_runs = self.processes.started_by(hook.agent_id).running().oldest().all_rows()
+        leftover_runs = self.processes.agent_started(hook.agent_id).running().oldest().all_rows()
         return RuleAnswer.allowed().running(*(OrphanProcess(process.id) for process in leftover_runs))

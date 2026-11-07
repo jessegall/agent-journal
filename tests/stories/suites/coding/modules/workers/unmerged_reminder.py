@@ -79,7 +79,7 @@ def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
     worker = delivered_worker(story, repository)
     story.tick(MAIN_SESSION)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
-    lines.expect_text("journal proof check 1")
+    lines.expect_text("proofs 1")
     lines.expect_no_text(f"journal worker merge {worker.id}")
     story.expect_success("proof check 1", actor=story.agent)
     story.advance(REMINDER_INTERVAL)

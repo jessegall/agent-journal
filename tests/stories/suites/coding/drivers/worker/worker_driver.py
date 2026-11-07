@@ -48,7 +48,7 @@ def test_a_worker_runs_no_command_of_a_type_its_setting_leaves_out(new_story):
 
 def test_a_worker_that_stops_with_its_task_started_is_told_to_deliver_it(new_story):
     story = new_story(fixture=WorkingAgent)
-    story.expect_hook_refusal(WORKER_SESSION, HookSamples.stop(), "task:1 is not finished: go on, then journal worker next")
+    story.expect_hook_refusal(WORKER_SESSION, HookSamples.stop(), "task:1 is not finished: go on, then hand in")
 
 
 def test_a_worker_is_refused_a_whole_chain_with_a_full_test_run_and_may_run_named_tests(new_story):

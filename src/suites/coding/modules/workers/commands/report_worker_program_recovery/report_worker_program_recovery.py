@@ -5,8 +5,8 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.timestamp import Timestamp
 
-WORKER_PROGRAM_UNAVAILABLE = NudgeDeclaration("workers.program_out", NudgeType.STEERING, "worker:{worker} stopped: journal worker status {worker}", turn_limited=False, wakes_agent=True)
-WORKER_PROGRAM_RESUMED = NudgeDeclaration("workers.program_back", NudgeType.STEERING, "worker:{worker} resumed: journal worker status {worker}", turn_limited=False)
+WORKER_PROGRAM_UNAVAILABLE = NudgeDeclaration("workers.program_out", NudgeType.STEERING, "worker:{worker} stopped", turn_limited=False, wakes_agent=True)
+WORKER_PROGRAM_RESUMED = NudgeDeclaration("workers.program_back", NudgeType.STEERING, "worker:{worker} resumed", turn_limited=False)
 
 
 @dataclass(frozen=True)

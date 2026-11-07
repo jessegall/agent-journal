@@ -34,7 +34,7 @@ def expects_notice(story, text="review blocked task 1"):
 def expects_hold(story):
     answer = review(story)
     assert any("review blocked task 1" in line for line in answer.lines), answer
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "agent-block skip")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "skip block")
 
 
 def expect_review_absent(story):
@@ -89,7 +89,7 @@ class ReminderHeld(StoryFixture):
         expects_hold(story)
 
     def expect(self, story):
-        story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "agent-block skip")
+        story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "skip block")
 
 
 def test_the_reminder_passes_twice_and_holds_the_third_time(new_story):
@@ -191,7 +191,7 @@ def test_a_user_wait_is_reminded_twice_and_held_the_third_time_until_answered(ne
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
     story.clock.advance(timedelta(minutes=15))
     expect_line(review(story), "task 1 waits on the user")
-    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "agent-block skip")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "skip block")
     story.expect_success('agent-block skip 1 --reason "The user was told and has not answered"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
@@ -239,7 +239,7 @@ def test_manual_reviews_and_user_waits_each_get_their_own_plural_line(new_story)
     story = new_story(fixture=MixedBlockReviews)
     story.clock.advance(timedelta(minutes=15))
     answer = review(story)
-    expect_matching_lines(answer, "review blocked tasks", ['review blocked tasks 1, 2: renew each with journal task block <id> --reason "<why>", unblock it, or close it'])
+    expect_matching_lines(answer, "review blocked tasks", ['review blocked tasks 1, 2: renew each block with a reason, unblock it, or close it'])
     expect_matching_lines(answer, "wait on the user", ["tasks 3, 4 wait on the user: tell the user what is still needed"])
     story.run('task block 1 --reason "Still needs the list"', actor=story.agent)
     story.run("task unblock 2", actor=story.agent)

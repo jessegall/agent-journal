@@ -45,8 +45,8 @@ def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_sto
 
 def test_the_line_of_a_proof_with_no_test_names_the_check_and_wakes_the_main_agent():
     line = PROOF_WAITS.nudge(worker=7, proofs="3 4").text
-    expect_value_with(line, "journal proof check 3 4")
-    expect_value_with(line, "journal proof short")
+    expect_value_with(line, "proofs 3 4")
+    expect_value_with(line, "waits on your check")
     expect_wakes_agent_proof(PROOF_WAITS)
 
 

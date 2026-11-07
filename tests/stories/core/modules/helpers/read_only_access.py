@@ -246,7 +246,7 @@ def main_story(new_story):
 def test_a_programs_own_subagent_tool_is_refused_with_the_way_on(new_story, name, category):
     story = main_story(new_story)
     launcher = FakeLauncher(story.home.socket("launcher"))
-    story.expect_hook_refusal("s-1", tool(name, category), "journal helper start")
+    story.expect_hook_refusal("s-1", tool(name, category), "start a helper for this")
     launcher.server.close()
 
 

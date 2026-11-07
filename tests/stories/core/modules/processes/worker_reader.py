@@ -41,7 +41,7 @@ def test_a_worker_saves_a_reader_with_the_same_output_proof(worker_reader_sample
 
 def test_a_worker_gets_its_reader_request_before_the_main_agent(worker_reader_sample):
     story = worker_reader_sample
-    story.expect_hook_allowed("s-reader", HookSamples.prompt("continue"), "journal reader draft 1")
+    story.expect_hook_allowed("s-reader", HookSamples.prompt("continue"), "reader request 1: agent")
     story.expect_absent_hook_line("s-1", HookSamples.prompt("continue"), "reader request")
     story.tick("s-1")
     story.expect_rows(not story.container.get(Queries).query(AgentLine).filter(source="processes.reader-request.1").exists())
