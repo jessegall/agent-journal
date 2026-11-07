@@ -226,8 +226,8 @@ def test_a_terminal_agent_with_its_own_task_gets_a_typed_waking_line(recovery):
 
 
 def test_a_silent_main_agent_with_its_own_task_is_woken_with_auto_off_too(recovery):
-    recovery.story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=recovery.story.user)
     recovery.story.expect_success('task make "Main work" --brief "Finish the main task" --environment main')
+    recovery.story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=recovery.story.user)
     recovery.story.expect_success("task start 2", actor=recovery.story.agent)
     recovery.story.expect_success("setting set journal.suites.coding.auto-mode off --environment main", actor=recovery.story.user)
     recovery.advance(SILENT_SECONDS)
