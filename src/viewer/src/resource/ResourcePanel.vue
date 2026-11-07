@@ -5,7 +5,6 @@ import {DECLARED_NOUNS} from "./declaredNouns.js";
 import InspectorPanel from "./InspectorPanel.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import TaskInspector from "../tasks/TaskInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
 import {cliOf, titleOf} from "../domain/resourceNouns.js";
 
@@ -17,7 +16,7 @@ const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 // every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
-const OWN_INSPECTORS = new Set(["task", "test-queue"]);
+const OWN_INSPECTORS = new Set(["test-queue"]);
 const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
 const title = computed(() => titleOf(noun.value, null, opened.value?.id));
 
@@ -62,7 +61,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 />
                 <aside
                     v-else
-                    :class="['panel', {opening: !fullyOpen, task: noun === 'task', queue: noun === 'test-queue'}]"
+                    :class="['panel', {opening: !fullyOpen, queue: noun === 'test-queue'}]"
                     ref="panel"
                     tabindex="-1"
                     role="dialog"
@@ -73,17 +72,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <div class="panel-opening" data-resource-opening><Skeleton /></div>
                     </template>
                     <SwitchCase :value="noun">
-                        <template #task>
-                            <TaskInspector
-                                lone
-                                :backed="route.stack.length > 1"
-                                :id="opened.id"
-                                :read="read"
-                                @close="close"
-                                @back="unpeek"
-                                @select="(id) => peek('tasks', id)"
-                            />
-                        </template>
                         <template #test-queue>
                             <ProcessQueueInspector :backed="route.stack.length > 1" :read="read" @close="close" @back="unpeek" />
                         </template>
@@ -149,10 +137,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 .side-enter-active.fades .panel, .side-leave-active.fades .panel { transition: none; }
 .side-enter-from.fades .panel, .side-leave-to.fades .panel { transform: none; }
 @media (prefers-reduced-motion: reduce) { .side-enter-active.fades, .side-leave-active.fades { transition-duration: 100ms; } }
-
-.panel.task {
-    width: min(640px, 100vw);
-}
 
 .side-enter-active,
 .side-leave-active {
