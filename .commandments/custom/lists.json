@@ -1129,6 +1129,7 @@
     ],
     "command_verbs": [
         "Queue",
+        "Revise",
         "Approve",
         "Grant",
         "Halt",
