@@ -9,6 +9,7 @@ from core.modules.agents.support.report_nudges import REPORT_FIELD
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 
@@ -21,12 +22,13 @@ class WorkerReportRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.WORKER]
 
-    def __init__(self, agents: AgentRows, tasks: TaskQuery, settings: SettingValues) -> None:
+    def __init__(self, agents: AgentRows, tasks: TaskQuery, settings: SettingValues, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.agents, self.tasks, self.settings = agents, tasks, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         text = f"{hook.event.raw.get(REPORT_FIELD, '')}".strip()
         main_agent_id = self.agents.find(hook.agent_id).parent_id
-        if not text or main_agent_id is None or self.tasks.started_tasks(hook.agent_id) or self.tasks.next_delegated(hook.agent_id) is not None:
+        if not text or main_agent_id is None or self.tasks.started_tasks(hook.agent_id) or self.next_task.following(hook.agent_id) is not None:
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(RecordParentReport(hook.agent_id, main_agent_id, text, notify_parent=not self.settings.flag(MERGER_ENABLED)))

@@ -1,7 +1,6 @@
 from dataclasses import replace
 
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.task import Task
@@ -13,6 +12,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class ReassignedTaskListener(SaveListener[Moved[Task]]):
@@ -23,7 +23,8 @@ class ReassignedTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.release])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, advance: WorkerTaskAdvance, repository: Repository) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, advance: WorkerTaskAdvance, repository: Repository, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.tasks, self.worktrees, self.advance, self.repository = tasks, worktrees, advance, repository
 
     def handle(self, event: Moved[Task], context: Context) -> None:
@@ -38,7 +39,7 @@ class ReassignedTaskListener(SaveListener[Moved[Task]]):
         worktree = self.worktrees.worker_worktree(old.holder_id)
         if worktree is None or not worktree.has_cut_task(old.id):
             return
-        following = self.tasks.next_delegated(old.holder_id)
+        following = self.next_task.following(old.holder_id)
         if following is None:
             finished = self.tasks.holder(old.holder_id).filter(state=TaskState.TESTING).first()
             if finished is not None:

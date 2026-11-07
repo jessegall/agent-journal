@@ -163,3 +163,15 @@ def test_both_settings_appear_in_the_viewers_workers_section_and_are_person_set(
                                 len(settings[BATCH]["description"]) <= 120, len(settings[PHASE]["description"]) <= 120)
     for key, value in ((BATCH, "2"), (PHASE, "off")):
         batch.story.expect_refusal(f"setting set {key} {value} --environment main", "person", actor=batch.worker)
+
+
+@pytest.fixture
+def second(batch):
+    batch.prove_and_move_on(TEST_LINE)
+    return batch
+
+
+def test_a_task_handed_in_without_a_change_of_its_own_is_refused(second):
+    task = second.current_task()
+    second.story.expect_success(f'proof make 1 --task {task} "cart.py:1, nothing new"', actor=second.worker)
+    second.story.expect_refusal("worker next --wait --differences none", f"task {task} changed no file, so it is not built", actor=second.worker)

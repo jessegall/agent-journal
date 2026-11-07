@@ -67,11 +67,10 @@ class TaskQuery(Query[Task]):
     def no_open_dependency(self) -> Condition:
         return SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
 
-    def next_delegated(self, agent_id: int) -> Task | None:
-        delegated = self.kept.read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()),
-                                   f"delegated_to = ? AND state = ? AND {self.no_open_dependency().statement().sql}",
-                                   [agent_id, TaskState.OPEN], name="tasks.next_delegated")
-        return min(delegated, key=lambda task: (-task.priority, task.id), default=None)
+    def ready_delegated(self, agent_id: int) -> tuple[Task, ...]:
+        return self.kept.read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()),
+                              f"delegated_to = ? AND state = ? AND {self.no_open_dependency().statement().sql}",
+                              [agent_id, TaskState.OPEN], name="tasks.next_delegated")
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)

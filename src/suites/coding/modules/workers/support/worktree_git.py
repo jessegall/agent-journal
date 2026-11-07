@@ -293,6 +293,10 @@ class WorktreeGit:
         else:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
+    def has_task_commit(self, worktree: Worktree, task_id: int) -> bool:
+        subjects = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--format=%s", f"{worktree.base_commit}..HEAD").stdout.splitlines()
+        return any(subject.startswith(f"task {task_id}: ") for subject in subjects)
+
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
         return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
 
