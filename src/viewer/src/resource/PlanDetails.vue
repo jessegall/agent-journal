@@ -3,7 +3,8 @@ import Folded from "../kit/Folded.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
 import {delegationWord} from "../domain/plans.js";
-import {StateBadge, stateLook} from "@journal/window-kit";
+import StateBadge from "../../kit/StateBadge.vue";
+import {stateLook} from "../domain/states.js";
 
 defineProps({plan: {type: Object, required: true}, read: {type: Function, default: null}});
 </script>
