@@ -1,11 +1,18 @@
 import {expect, test} from "vitest";
 import SearchWindow from "../../core/modules/search/web/src/SearchWindow.vue";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {context, mounted, settle as tick} from "./support/windowContext.js";
+
+const KEYS = {results: {line: "search find {terms} --split-terms", loading: "requested"}};
+async function settle() {
+    await tick();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    await tick();
+}
 
 const HITS = {hits: [{cli_name: "task", id: 7, excerpt: "Round the cart total to cents"}, {cli_name: "doc", id: 2, excerpt: "How the cart counts money"}], total: 2};
 
 async function search(answer, words = "cart total") {
-    const window = context({"search find": {ok: true, value: answer}});
+    const window = context({"search find": {ok: true, value: answer}}, null, KEYS);
     const opened = [];
     window.open = (name) => opened.push(name);
     const element = await mounted(SearchWindow, window);
@@ -18,7 +25,7 @@ async function search(answer, words = "cart total") {
 
 test("typing terms shows the hits with their excerpt and the total", async () => {
     const {element, window} = await search(HITS);
-    expect(window.reads).toEqual([`search find "cart" "total"`]);
+    expect(window.reads).toEqual([`search find cart total --split-terms`]);
     expect([...element.querySelectorAll("[data-hit]")].map((hit) => [hit.querySelector(".search-hit-name").textContent, hit.querySelector(".search-hit-excerpt").textContent])).toEqual([
         ["task 7", "Round the cart total to cents"],
         ["doc 2", "How the cart counts money"],
@@ -36,7 +43,7 @@ test("a model chip narrows the search to that model, and none picked means all",
     const {element, window} = await search(HITS);
     element.querySelector(`[data-model="doc"]`).click();
     await settle();
-    expect(window.reads[1]).toBe(`search find "cart" "total" --model doc`);
+    expect(window.reads[1]).toBe(`search find cart total --split-terms --model doc`);
 });
 
 test("a search that holds nothing says so", async () => {
