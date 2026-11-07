@@ -23,7 +23,7 @@ OTHER_MAIN_RULES = [DispatchAllowanceRule, HelperAllowanceRule, MainFileWriteRul
 
 def test_main_driver_keeps_all_eleven_rules():
     expect_absent_value([rule.name for rule in [*ELEVEN_RULES, *OTHER_MAIN_RULES]
-                         if not {"coding.builder", "coding.orchestrator", "coding.main"} <= set(rule.drivers)])
+                         if list(rule.drivers) != ["coding.main"]])
 
 
 def test_s46_the_main_driver_is_registered_and_a_person_chooses_it(new_story):

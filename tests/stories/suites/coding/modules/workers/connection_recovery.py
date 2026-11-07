@@ -217,7 +217,7 @@ def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(rec
 
 
 def test_a_terminal_agent_with_its_own_task_gets_a_typed_waking_line(recovery):
-    recovery.story.expect_success("driver choose coding.builder --environment main", actor=recovery.story.user)
+    recovery.story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=recovery.story.user)
     recovery.story.expect_success('task make "Main work" --brief "Finish the main task" --environment main')
     recovery.story.expect_success("task start 2", actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)

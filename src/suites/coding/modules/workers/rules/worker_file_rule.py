@@ -14,7 +14,7 @@ class WorkerFileRule(DriverRule):
 
     name = "workers.worker-file"
     hook = HookEventName.PRE_TOOL_USE
-    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, worktrees: WorkerWorktrees) -> None:

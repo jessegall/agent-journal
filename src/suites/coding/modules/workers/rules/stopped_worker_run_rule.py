@@ -18,7 +18,7 @@ class StoppedWorkerRunRule(DriverRule):
 
     name = "workers.stopped-worker-run"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, queries: Queries, processes: ProcessQuery, unfinished: WorkerUnfinishedTasks) -> None:

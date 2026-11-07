@@ -13,7 +13,7 @@ def test_agent_card_links_its_current_plan(new_story, tmp_path):
     story.expect_success('task make "Check it" --brief "Check the release" --phase 1 --environment main')
     story.expect_success("plan ready 1", actor=story.agent)
     story.expect_success("plan approve 1 --environment main", actor=story.user)
-    story.expect_success("driver choose coding.orchestrator --environment main", actor=story.user)
+    story.expect_success("driver choose coding.main --environment main", actor=story.user)
     repository_environment(story)
     worker = story.new_row_id(f'worker dispatch --model sonnet --name "Lady Lovelace" {task}', actor=story.agent)
     with server_story(story, listener_thread_started=False) as server:

@@ -19,7 +19,7 @@ class UnstartedWorkerRule(DriverRule):
 
     name = "workers.unstarted-worker"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 

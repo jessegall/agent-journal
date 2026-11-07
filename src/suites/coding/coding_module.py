@@ -1,5 +1,6 @@
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
 from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsMigration
+from suites.coding.migrations.m005_main_driver import MainDriverMigration
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_extension import WindowExtension
@@ -22,7 +23,6 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_shows import WindowShows
-from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
@@ -34,8 +34,6 @@ from suites.coding.commands.record_file_changes.record_file_changes_subcommand i
 from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
-from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
-from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
 from suites.coding.commands.git_overview_branches.git_overview_branches_subcommand import GitOverviewBranchesSubcommand
 from suites.coding.commands.git_overview_commits.git_overview_commits_subcommand import GitOverviewCommitsSubcommand
@@ -87,12 +85,12 @@ class CodingModule(Module):
     settings = CODING_SETTINGS
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.viewer", "journal.core.plugins"]
-    guards = [OrchestratorStartGuard, MainTaskStartGuard]
+    guards = [MainTaskStartGuard]
     suites = [CodingSuite]
-    drivers = [BuilderDriver, OrchestratorDriver, MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-work-modes", "Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
+    drivers = [MainDriver, HelperDriver, WorkerDriver]
+    skills = [SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration]
+    migrations = [FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]

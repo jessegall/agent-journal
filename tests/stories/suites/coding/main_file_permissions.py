@@ -81,7 +81,7 @@ def test_s07_the_designer_is_off_by_default_and_only_a_person_changes_it(new_sto
     story = new_story(fixture=BuilderWithUser)
     with in_environment(story):
         expect_value(story.container.get(CodingMainOptions).options().designer, False)
-    story.expect_refusal(f"setting set {DESIGNER} on --environment main", "only a person changes", actor=story.agent)
+    story.expect_refusal(f"setting set {DESIGNER} on --environment main", "A person was asked", actor=story.agent)
     story.expect_success(f"setting set {DESIGNER} on --environment main", actor=story.user)
 
 

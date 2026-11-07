@@ -28,7 +28,7 @@ def test_two_people_keep_their_own_layout_of_the_same_page(new_story):
 def test_a_layout_is_kept_apart_per_driver(new_story):
     window = window_story(new_story)
     window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
-    window.story.expect_success(f"{SECOND_LAYOUT_SAVE} --driver coding.orchestrator", actor=window.story.user)
+    window.story.expect_success(f"{SECOND_LAYOUT_SAVE} --driver coding.main", actor=window.story.user)
     window.expect_row_count("viewer_layouts", 2)
 
 

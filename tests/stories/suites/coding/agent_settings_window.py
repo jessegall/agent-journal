@@ -15,7 +15,7 @@ def test_s49_fixture_person_changes_a_control_through_the_viewer_line_route_and_
 
 def test_s45_fixture_a_refused_agent_write_leaves_the_value_the_person_sees(new_story):
     story = new_story(fixture=MainControlsActors)
-    story.expect_refusal(f"setting set {AUTO_MODE} off --environment main", "only a person changes", actor=story.agent)
+    story.expect_refusal(f"setting set {AUTO_MODE} off --environment main", "A person was asked", actor=story.agent)
     with person_viewer(story) as viewer:
         status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
         expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, True))

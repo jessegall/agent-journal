@@ -17,7 +17,7 @@ class DeliveredWorkStopRule(DriverRule):
 
     name = "workers.delivered-work-at-stop"
     hook = HookEventName.STOP
-    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory, phases: WorkerPhases) -> None:

@@ -6,48 +6,48 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithOpenTask, CodingEnvironment
 
 
-def test_a_builder_that_stops_with_nothing_in_hand_is_started_on_the_open_task(new_story):
+def test_a_main_agent_with_auto_on_that_stops_with_nothing_in_hand_is_started_on_the_open_task(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
-    story.expect_success(lines.SECOND_HOOK_CALL, "hook: stop", "suite: coding", "driver: coding.builder", "answer: refused")
+    story.expect_success(lines.SECOND_HOOK_CALL, "hook: stop", "suite: coding", "driver: coding.main", "answer: refused")
 
 
-def test_a_builder_that_stops_with_auto_mode_off_is_not_given_the_open_task(new_story):
+def test_a_main_agent_with_auto_off_that_stops_is_not_given_the_open_task(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.run("setting make journal.suites.coding.auto-mode false")
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(lines.TASK_DETAILS, "state: open")
 
 
-def test_a_builder_with_nothing_open_stops(new_story):
+def test_a_main_agent_with_auto_on_with_nothing_open_stops(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_a_builder_is_told_it_is_the_builder_when_its_session_starts(new_story):
+def test_a_main_agent_with_auto_on_is_told_it_is_the_main_agent_when_its_session_starts(new_story):
     story = new_story(fixture=CodingEnvironment)
-    story.expect_hook_allowed("s-1", HookSamples.session_start(), "You are the builder")
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), "You are the main agent")
 
 
-def test_a_builder_given_a_task_is_told_its_brief(new_story):
+def test_a_main_agent_with_auto_on_given_a_task_is_told_its_brief(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('task make "Fix the tax" --brief "Round it at the end" --environment main')
     story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
 
 
-def test_a_builder_starting_is_told_what_waits_for_it(new_story):
+def test_a_main_agent_with_auto_on_starting_is_told_what_waits_for_it(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.run('task make "Fix the tax" --environment main')
     story.expect_hook_allowed("s-1", HookSamples.session_start(), "waiting for you: 1 open tasks")
 
 
-def test_a_builder_with_nothing_waiting_is_told_nothing_about_it(new_story):
+def test_a_main_agent_with_auto_on_with_nothing_waiting_is_told_nothing_about_it(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_absent_hook_line("s-1", HookSamples.session_start(), "waiting for you")
 
 
-def test_a_builder_the_journal_started_is_told_to_introduce_itself(new_story):
+def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itself(new_story):
     story = new_story(fixture=CodingEnvironment)
     launcher = FakeLauncher(story.home.socket("launcher"))
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -57,6 +57,6 @@ def test_a_builder_the_journal_started_is_told_to_introduce_itself(new_story):
     story.expect_hook_allowed(name, HookSamples.session_start().with_fields(launch=name), "introduce yourself in the chat")
 
 
-def test_a_builder_the_user_started_by_hand_is_not_told_to_introduce_itself(new_story):
+def test_a_main_agent_with_auto_on_the_user_started_by_hand_is_not_told_to_introduce_itself(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_absent_hook_line("s-1", HookSamples.session_start(), "introduce yourself")

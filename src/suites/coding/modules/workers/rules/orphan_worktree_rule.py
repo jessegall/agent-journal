@@ -11,7 +11,7 @@ class OrphanWorktreeRule(DriverRule):
 
     name = "workers.worktree-sweep"
     hook = HookEventName.TICK
-    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

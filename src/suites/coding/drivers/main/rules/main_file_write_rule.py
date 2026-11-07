@@ -22,7 +22,7 @@ class MainFileWriteRule(DriverRule):
 
     name = "coding.main-writes-no-file-without-auto"
     hook = HookEventName.PRE_TOOL_USE
-    drivers = ["coding.builder", "coding.orchestrator", "coding.main"]
+    drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
     def __init__(self, options: CodingMainOptions, rows: EventRows) -> None:

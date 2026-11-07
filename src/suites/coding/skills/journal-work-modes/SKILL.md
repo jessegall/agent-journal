@@ -1,45 +1,48 @@
 ---
 name: journal-work-modes
-description: Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up
+description: Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, helpers or the worker limit come up
 ---
 
 # Work modes
 
-The coding suite drives the main agent in one of two modes. Your first line of a session says which one you are in.
+The coding suite has one driver for the main agent, `coding.main`. What you may do comes from the work controls of your
+environment, not from a mode. Your first line of a session tells you to read them: `journal work-settings show`.
 
-## Builder
+## The work controls
 
-- You build each task yourself, one at a time, and may start helpers to read and search for you.
-- You may also send workers (`journal worker dispatch`) for a job better done beside you. Two settings can end that:
-  `coding.workers.builder-dispatches-workers` set to false refuses your dispatches, and
-  `coding.builder-starts-helpers` set to false refuses your helpers.
-- With auto mode on (`coding.auto-mode`, per environment), a stop with no task in hand starts the next open task as
-  yours and refuses the stop.
+- `coding.auto-mode` (per environment): whether you may write project files and start tasks yourself.
+- `coding.workers.builder-dispatches-workers`: whether you may send workers (`journal worker dispatch`). Set to false it
+  refuses your dispatches.
+- `coding.builder-starts-helpers`: whether you may start ordinary helpers. Set to false it refuses them.
+- `coding.continue-while-delegatable`: whether a stop is held while open tasks can still go to workers.
+- `coding.workers.merger-on`, `coding.designer-enabled` and `coding.workers.main-agent-may-merge` decide the merger, the
+  designer and whether you merge workers yourself.
 
-## Orchestrator
+## Presets
 
-- You plan, give every task to a worker and check what comes back. You start no task yourself: `journal task start` is
-  refused, and the task stays open for a worker.
-- A stop is refused while tasks of your environment are open, and names them. At the worker limit
-  (`coding.workers.worker-run-limit`, 2 by default) you can send no more, so you may stop until a worker ends.
-- Send related tasks to the worker that knows them: see journal-workers.
+- Builder: Auto on and Keep going off. You build tasks yourself, one at a time, and may also send workers.
+- Orchestrator: Auto off and Keep going on. You plan, give every task to a worker and check what comes back.
+- Any other mix of the controls is custom. A person applies a preset with `journal work-settings preset <name>`.
 
 ## Auto mode
 
 - `coding.auto-mode` ("The main agent may also write code itself") is one setting for each environment. It is the only
   switch for your own code writing.
-- With it on, you may write project files and start tasks yourself, or hand a task to a worker.
+- With it on, you may write project files and start tasks yourself, or hand a task to a worker. A stop with no task in
+  hand starts the next open task as yours and refuses the stop.
 - With it off, every edit of a project file is refused, whether by a file tool or a shell line, and `journal task start`
   is refused. Documents, plans and journal records stay allowed, and you may still send workers, start allowed helpers,
   report, test and release. Send the work to a worker instead.
+- With Keep going on, a stop is refused while tasks of your environment are open, and names them. At the worker limit
+  (`coding.workers.worker-run-limit`, 2 by default) you can send no more, so you may stop until a worker ends.
+- Send related tasks to the worker that knows them: see journal-workers.
 - It does not pause receiving tasks. Workers you already sent keep their work and may be resumed.
 
-## Changing mode
+## Changing the controls
 
-- `journal driver choose coding.builder` or `journal driver choose coding.orchestrator` changes the mode of an
-  environment for a person. The work-mode control in the top bar of the viewer does the same, and asks first while
-  the agent works on a task or has helpers out.
-- The mode, auto mode, the worker limit and the settings like them are the user's. An agent's write of one is refused.
-  A main agent asks with `journal setting request <key> <value> --reason "<why>"`: the user answers the question in
-  the chat, and an approval applies the change. Any other agent says what it needs in its report.
+- The controls, the worker limit and the settings like them are the user's. An agent's write of one is refused.
+  A main agent asks with `journal setting request <key> <value> --reason "<why>"`: the user answers in the dock, and an
+  approval applies the change if the setting has not changed since. Any other agent says what it needs in its report.
+- The work-mode control in the top bar of the viewer applies a preset, and asks first while the agent works on a task
+  or has helpers out.
 - Workers, helpers and reviewers have drivers of their own; this choice is the main agent's only.
