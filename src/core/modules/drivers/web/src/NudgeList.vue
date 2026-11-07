@@ -1,9 +1,10 @@
 <script setup>
-import {RowList, WindowRoom, useRows} from "@journal/window-kit";
+import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 import {nudgeTypeLabel} from "./labels.js";
 
 // every line the modules can say to an agent: its key, its type, its words and how often it was said
-const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
+const window = useWindow();
+const {rows, failure, loaded} = window.props.nudges;
 </script>
 
 <template>

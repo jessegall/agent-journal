@@ -6,6 +6,7 @@ from datetime import timedelta
 import pytest
 
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.leftover_process import LeftoverProcess
 from core.base.query.queries import Queries
 from core.modules.agents.support.launcher_link import LauncherLink
@@ -353,9 +354,11 @@ def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_fr
 
 def test_a_worker_stopped_by_a_person_is_not_restarted_for_its_old_job(recovery):
     story, worker = recovery.story, recovery.worker
-    story.expect_success(f"agent end {worker.id}", actor=story.user)
+    recovery.launches.clear()
+    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"agent end {worker.id}", actor=person)
     recovery.advance(20 * 60)
     WorkerResumeRetry()(story.container)
-    story.expect_rows(not recovery.launches)
+    story.expect_rows(not recovery.launches, detail=str(recovery.launches))
     story.tick("s-1")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")

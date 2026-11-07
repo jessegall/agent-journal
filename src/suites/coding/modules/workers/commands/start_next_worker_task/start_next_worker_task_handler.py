@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
-from core.modules.plans.models.phase import Phase
+from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -72,20 +72,20 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         if task.state is not TaskState.STARTED:
             return self.start_following(worktree, following, context)
         tested = self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
-        if self.phases.continues(tested, following):
-            return self.start_following(worktree, following, context)
-        phase = self.phases.phase(tested)
-        if phase is not None:
-            return self.submit_phase(worktree, tested, phase, context)
+        group = self.phases.group(worktree, tested)
+        if group is not None:
+            if self.phases.continues_group(group, following):
+                return self.start_following(worktree, following, context)
+            return self.submit_group(worktree, tested, group, context)
         if self.proof_queue.queue(worktree, context):
             return tested
         self.close_checked(tested, context)
         return self.start_following(worktree, following, context)
 
-    def submit_phase(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> Task:
+    def submit_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, context: Context) -> Task:
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
-        if self.proof_queue.queue_phase(worktree, task, phase, context):
+        if self.proof_queue.queue_group(worktree, task, group, context):
             return task
         self.results.finish(worktree, context)
         return self.rows.required(Task, self.rows.required(Worktree, worktree.id).task_id)

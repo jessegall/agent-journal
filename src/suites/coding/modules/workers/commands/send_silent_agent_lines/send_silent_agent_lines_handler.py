@@ -90,7 +90,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
 
     def report_idle_workers(self, context: Context, agents: tuple[Agent, ...], activities: dict[int, AgentActivity], working: set[int],
                             worktrees: tuple[Worktree, ...], excluded: set[int]) -> None:
-        workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT and row.left_to_main_at is None}
+        workers = {row.session_agent_id for row in worktrees if row.state is WorktreeState.CUT}
         waiting_jobs = {row.session_agent_id for row in self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("source", RESUMING_SOURCES)).all_rows()}
         notices = tuple(self.queries.query(AgentLine).filter(source=IDLE_WORKER.key).oldest().all_rows())
         grace = self.settings.minutes(IDLE_WORKER_MINUTES).count
