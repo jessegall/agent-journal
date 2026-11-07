@@ -40,7 +40,7 @@ const closed = () => {
                             <span class="slip-foot"><span>#{{ row.id }}<template v-if="row.needs_enabling"> · Waiting for you</template><template v-if="row.paused_at"> · Paused</template></span><Icon class="slip-go" name="arrow" :size="14" /></span>
                         </button>
                         <template v-if="row.needs_enabling">
-                            <Btn small bordered data-trigger-enable @click="act(`trigger enable ${row.id}`)">Enable the trigger</Btn>
+                            <Btn small bordered data-trigger-enable @click="act(`trigger enable ${row.id}`)">Enable</Btn>
                         </template>
                     </template>
                 </div>

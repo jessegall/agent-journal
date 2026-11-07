@@ -8,7 +8,6 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.messages.models.message import Message
 from core.modules.settings.models.setting import Setting
-from suites.coding.modules.checks.models.check import Check
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, WORKER_FACT
 from tests.stories.core.modules.templates.sending import CRITIQUE
 from tests.stories.core.modules.templates.support.sending_templates import SendingTemplates
@@ -89,11 +88,7 @@ def test_a_private_memory_view_is_returned_only_to_the_deciding_person(pending_m
     story.expect_rows(bool(answer["viewer_output"]), saved.state is ApprovalState.ACCEPTED, WORKER_FACT not in saved.text)
 
 
-def test_a_person_starts_and_runs_the_stopped_check_from_its_approval(new_story):
+def test_an_agent_running_a_stopped_check_is_refused_and_no_approval_is_asked(new_story):
     story = new_story(fixture=StoppedCheck)
-    story.expect_refusal("check run 1", "A person was asked in the dock", actor=story.agent)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
-    with viewer_client(story) as viewer:
-        answer = viewer.value("messages.chat", ["approval", "accept", str(request.id)])
-    check = story.container.get(Queries).query(Check).find(1)
-    story.expect_rows(not check.stopped, "passed" in answer["viewer_output"])
+    story.expect_refusal("check run 1", "check 1 is stopped", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).first() is None)

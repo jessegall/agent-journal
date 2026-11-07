@@ -45,5 +45,5 @@ class ApprovalsModule(Module):
     nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW]
     docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False)]
     button_slots = list(APPROVAL_SLOT)
-    buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept the request", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST),
-               ButtonDeclaration("approvals.refuse", APPROVAL_SLOT, "Refuse the request", "approval refuse {row_id}", icon="cross", condition=OPEN_REQUEST)]
+    buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST),
+               ButtonDeclaration("approvals.refuse", APPROVAL_SLOT, "Refuse", "approval refuse {row_id}", icon="cross", condition=OPEN_REQUEST)]
