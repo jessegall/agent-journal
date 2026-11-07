@@ -25,7 +25,7 @@ def test_a_person_sends_the_same_critique_request_as_the_button(new_story):
     story = new_story(fixture=SendingTemplates)
     story.expect_success(CRITIQUE, actor=story.user)
     message = story.container.get(Queries).query(Message).find(1)
-    expect_row(message, is_chat_visible=False, text="Please have 2 agents give plan 1 a normal read, following template 1 (Plan critique), "
+    expect_row(message, is_chat_visible=True, text="Please have 2 agents give plan 1 a normal read, following template 1 (Plan critique), "
                              "and compile what they find into a report linked to the plan.", creator_id=story.user.id)
     story.expect_text("plan comments 1", "Please have 2 agents give plan 1 a normal read", "Plan critique")
     story.expect_text("plan show 1", "state: reviewing")
@@ -142,14 +142,14 @@ def test_a_critique_request_starts_the_sequence_that_applies_the_reviews(new_sto
 
 
 
-def test_viewer_critique_is_a_plan_comment_and_reaches_the_agent(new_story):
+def test_viewer_critique_is_a_plan_comment_in_the_chat_and_reaches_the_agent(new_story):
     story = new_story(fixture=SendingTemplates)
     story.container.get(Bus).run(SaveStandardSequences(), Actor.core())
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["template", "send", "1", "--on=plan:1", "--set=agents=2 agents", "--set=size=a normal read"]})
         feed = server.viewer_line_value(cookie, {"window": "messages.chat", "environment": "main", "line": ["message", "feed"]})
-        story.expect_rows(not any("Plan critique" in row["text"] for row in feed["rows"]))
+        story.expect_rows([row["commented_row"] for row in feed["rows"] if "Plan critique" in row["text"]] == ["plan:1"])
         story.expect_text("plan comments 1", "Plan critique")
         story.expect_text("message unread", "Plan critique", actor=story.agent)
         story.run_listeners()
