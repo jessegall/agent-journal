@@ -335,6 +335,23 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_stor
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
 
 
+def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(new_story, monkeypatch):
+    from core.base.agent_policy import AgentPolicy
+    from core.modules.drivers.support.suite_choice import SuiteChoice
+    from core.testing.hook_samples import HookSamples
+    from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
+    story, _, worker, started = queued_story(new_story, monkeypatch)
+    monkeypatch.setattr(SuiteChoice, "agent_policy", lambda _choice: AgentPolicy())
+    session = worker_session(story, worker)
+    story.hook(session, HookSamples.session_start())
+    story.hook(session, HookSamples.tick())
+    story.run_listeners()
+    story.expect_text("process show " + str(started[0]), "state: running", actor=story.agent)
+    story.expect_text("proof show 1", "state: running", actor=story.agent)
+    ended(story, started[0], 0)
+    story.expect_text("proof show 1", "state: checked", actor=story.agent)
+
+
 def test_a_queued_proof_whose_runner_never_started_is_launched_again_and_counts(new_story, monkeypatch):
     from suites.coding.modules.workers.ticks.unlaunched_worker_tests import UnlaunchedWorkerTests
     story, _, _, started = queued_story(new_story, monkeypatch)

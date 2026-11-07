@@ -18,7 +18,7 @@ PID_MISSING_SECONDS = 10
 
 
 class OrphanProcessRule(DriverRule):
-    """On each tick, a run of the agent whose shell has given no sign of life for longer than the limit, or
+    """On each tick, a run the agent started whose shell has given no sign of life for longer than the limit, or
     whose runner pid is gone, is ended lost and the agent is told; a run whose folder holds an end the server
     never heard of is ended from the folder. The first tick after a long gap, a machine that slept, ends
     nothing lost, since no heartbeat could have been written either."""
@@ -33,7 +33,7 @@ class OrphanProcessRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
         restarted = self.folder.tick_interval_seconds(hook.agent_id, hook.timestamp) > TICK_INTERVAL_SECONDS
-        for process in tuple(self.processes.agent(hook.agent_id).running().oldest().all_rows()):
+        for process in tuple(self.processes.started_by(hook.agent_id).running().oldest().all_rows()):
             answer = self.checked(answer, hook, process, restarted)
         return answer
 
