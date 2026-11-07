@@ -20,10 +20,10 @@ class WriteFlags:
 
     def skipped_guards(self, arguments: Namespace) -> frozenset[str]:
         flag_guards: list[str] = list(arguments.skip_guard)
-        short_flag_guards = [guard.name for guard in self.registry.guards if guard.short_flag and not guard.confirmation_only and getattr(arguments, self.destination(guard.short_flag))]
+        short_flag_guards = [guard.name for guard in self.registry.guards if guard.short_flag and not guard.is_confirmation and getattr(arguments, self.destination(guard.short_flag))]
         return frozenset(flag_guards + short_flag_guards)
 
-    def take_short_flag(self, arguments: Namespace, short_flag: str) -> bool:
+    def consume_short_flag(self, arguments: Namespace, short_flag: str) -> bool:
         destination = self.destination(short_flag)
         confirmed = bool(getattr(arguments, destination))
         setattr(arguments, destination, False)

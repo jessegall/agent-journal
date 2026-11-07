@@ -23,4 +23,4 @@ class TagTaskSubcommand(Subcommand[TagTask, Task]):
         parser.add_argument("tags", nargs="+")
 
     def command(self, arguments: Namespace, caller: Caller) -> TagTask:
-        return TagTask(self.tasks.find(arguments.task_id), tuple(arguments.tags), self.flags.take_short_flag(arguments, "confirm"))
+        return TagTask(self.tasks.find(arguments.task_id), tuple(arguments.tags), self.flags.consume_short_flag(arguments, "confirm"))

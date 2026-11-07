@@ -14,7 +14,7 @@ class TaskTagWordGuard(Guard[Created[TaskTag]]):
 
     name = "tasks.known-tag-word"
     short_flag = "confirm"
-    confirmation_only = True
+    is_confirmation = True
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
