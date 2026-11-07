@@ -40,7 +40,7 @@ go_test_list {part}'''
 STOCK_READERS = (
     StockReader("pytest", "pytest*,*python -m pytest*,*python3 -m pytest*,*uv run pytest*", "Python tests",
                   r"^FAILED |^ERROR |^E +(assert\b|\w*(Error|Exception)\b)|^(=+ )?([0-9]+ (passed|failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$",
-                  "", r"^(=+ )?[0-9]+ passed", r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$", r"(?:[0-9]+ failed, )?[0-9]+ passed|[0-9]+ failed",
+                  "", r"^(=+ )?[0-9]+ passed", r"^(=+ )?([0-9]+ (failed|errors?|deselected)\b|no tests ran)|^ERROR: .{1,70}$", r"(?:[0-9]+ failed, )?[0-9]+ passed|[0-9]+ failed|[0-9]+ errors? in ",
                   count=r"^collected [0-9]+ items? / [0-9]+ deselected / ([0-9]+) selected|^([0-9]+)/[0-9]+ tests? collected|^collected ([0-9]+) items?|^([0-9]+) tests? collected|\[([0-9]+) items?\]|^.+\.py: (?P<sum>[0-9]+)$", count_command="{part} --collect-only -q", step=r"[.FEsxX]"),
     StockReader("vitest", "*vitest*,npm*run test*,npm test*", "Vitest tests", r"^\s*FAIL |^\s*(Assertion|Type|Reference)?Error\b|^\s*(Test Files|Tests)\s+[0-9]", "",
                   r"^\s*(Test Files|Tests)\s+[0-9]", r"^\s*FAIL |^\s*Tests\s+[0-9]+ failed", r"^\s*Tests\s+(?:([0-9]+ failed)\s*\|\s*)?([0-9]+ passed)",

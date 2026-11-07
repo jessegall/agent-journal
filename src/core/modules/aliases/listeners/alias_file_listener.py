@@ -14,22 +14,25 @@ from core.modules.aliases.support.alias_shell_aliases import AliasShellAliases
 from core.base.change.file_publishing import FilePublishing
 from core.base.change.touched import Touched
 from core.modules.aliases.models.alias import Alias
+from core.modules.aliases.models.command_kind import CommandKind
+from core.base.query.queries import Queries
 
 
-class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
+class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched[CommandKind]]):
     """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the journal
     anything, and judges an alias by the command under it, the names of the aliases saved as tests and builds, and
-    the category of each alias, which the hook gives a command it cannot classify itself.
+    the category of each alias, which the hook gives a command it cannot classify itself, and the kinds agents gave
+    such commands by their leading words.
     It runs ahead of slow listeners, since an agent runs a new alias right after adding it."""
 
     name = "aliases.alias-file"
     run_order = -1
 
-    def __init__(self, aliases: AliasQuery, home: JournalHome, names: AliasNames, shell_aliases: AliasShellAliases, kept: KeptRows) -> None:
-        self.aliases, self.home, self.names, self.shell_aliases = aliases, home, names, shell_aliases
+    def __init__(self, aliases: AliasQuery, home: JournalHome, names: AliasNames, shell_aliases: AliasShellAliases, kept: KeptRows, queries: Queries) -> None:
+        self.aliases, self.home, self.names, self.shell_aliases, self.queries = aliases, home, names, shell_aliases, queries
         self.kept = kept
 
-    def handle(self, event: FilePublishing | Touched[Alias], logged: LoggedEvent) -> None:
+    def handle(self, event: FilePublishing | Touched[Alias] | Touched[CommandKind], logged: LoggedEvent) -> None:
         commands = self.names.command_names()
         aliases = self.kept.read("aliases", lambda: tuple(self.aliases.all_rows()), name="aliases.file_rows")
         lines = {alias.name: self.line(alias) for alias in aliases if alias.name not in commands}
@@ -37,6 +40,8 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
         FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
         FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
         FileAccess.shared().write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
+        kinds = self.kept.read("command_kinds", lambda: tuple(self.queries.query(CommandKind).all_rows()), name="aliases.command_kinds")
+        FileAccess.shared().write(self.home.command_kind_file, json.dumps({kind.words: kind.category.value for kind in kinds}))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)

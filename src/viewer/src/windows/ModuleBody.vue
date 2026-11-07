@@ -15,6 +15,7 @@ const props = defineProps({
     actions: {type: Object, default: null},
     time: {type: Object, default: null},
     folded: Boolean,
+    collapsed: Boolean,
     environment: {type: String, default: ""},
 });
 const ANY_EVENT = "*.*";
@@ -50,7 +51,7 @@ const entry = computed(() => ({
             :subscriptions="subscriptions"
             :environment="env"
             :permissions="permissions"
-            :options="{row, head, foot, actions, time, folded}"
+            :options="{row, head, foot, actions, time, folded, collapsed}"
         />
     </template>
     <template v-else>
