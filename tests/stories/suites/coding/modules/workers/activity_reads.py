@@ -43,7 +43,7 @@ def four_workers(four_tasks):
     return story
 
 
-def test_a_tick_reads_one_activity_set_for_four_workers(four_workers):
+def test_a_tick_reads_its_family_and_environment_activity_once_each(four_workers):
     story = four_workers
     story.advance(timedelta(minutes=15))
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:

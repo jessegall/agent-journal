@@ -102,6 +102,20 @@ def offline_recovery(recovery):
 
 
 @pytest.fixture
+def running_command_recovery(recovery):
+    recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
+    recovery.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+    return recovery
+
+
+@pytest.fixture
+def reconnected_recovery(offline_recovery):
+    offline_recovery.online = True
+    offline_recovery.tick()
+    return offline_recovery
+
+
+@pytest.fixture
 def running_recovery(recovery):
     recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
     recovery.process_running = True
@@ -134,18 +148,15 @@ def nested_recovery(recovery):
     recovery.tick()
     return recovery
 
-def test_a_reconnection_resumes_a_silent_worker_once(offline_recovery):
-    recovery = offline_recovery
-    recovery.online = True
-    recovery.tick()
+def test_a_reconnection_resumes_a_silent_worker_once(reconnected_recovery):
+    recovery = reconnected_recovery
     recovery.tick()
     recovery.story.expect_rows(len(recovery.launches) == 1, len(recovery.lines(recovery.worker.id)) == 1)
     recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.terminal_lines))
 
 
-def test_a_running_or_queued_shell_command_prevents_recovery(recovery):
-    recovery.story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
-    recovery.story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+def test_a_running_or_queued_shell_command_prevents_recovery(running_command_recovery):
+    recovery = running_command_recovery
     recovery.story.agent = recovery.worker
     process = start_process(recovery.story, "sleep 30", category=CommandCategory.TEST_RUN)
     recovery.online = False
@@ -328,11 +339,10 @@ def test_the_stopped_worker_warning_intervals_are_settings(recovery):
     story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line) == 2)
 
 
-def test_a_stopped_worker_with_a_running_command_is_not_reported(recovery):
+def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command_recovery):
+    recovery = running_command_recovery
     story, worker = recovery.story, recovery.worker
     main = story.agent
-    story.expect_success("setting set journal.core.processes.readers-forced off --environment main")
-    story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     story.agent = worker
     start_process(story, "sleep 30", category=CommandCategory.TEST_RUN)
     story.agent = main

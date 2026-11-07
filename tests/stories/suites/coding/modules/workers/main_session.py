@@ -15,38 +15,42 @@ def delivered_story(new_story):
     return story, worker
 
 
-def replacement_main(story):
-    story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
-    return Actor(story.new_row_id("agent start s-new claude main --environment main"), ActorType.AGENT)
-
-
-def test_a_new_main_session_hears_a_workers_report(delivered_story):
+@pytest.fixture
+def replacement(delivered_story):
     story, worker = delivered_story
-    main = replacement_main(story)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
+    main = Actor(story.new_row_id("agent start s-new claude main --environment main"), ActorType.AGENT)
+    return story, worker, main
+
+
+@pytest.fixture
+def started_replacement(replacement):
+    story, _, _ = replacement
+    story.hook("s-new", HookSamples.session_start())
+    return replacement
+
+
+def test_a_new_main_session_hears_a_workers_report(replacement):
+    story, worker, main = replacement
     story.expect_hook_allowed(worker_session(story, worker), stop_with_text(REPORT))
     story.expect_text(f"agent-line list --agent {main.id}", f"agent:{worker.id} reports in message:1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "reports in message:1")
 
 
-def test_a_new_main_session_is_held_for_a_delivered_workers_proof(delivered_story):
-    story, worker = delivered_story
-    replacement_main(story)
-    story.hook("s-new", HookSamples.session_start())
+def test_a_new_main_session_is_held_for_a_delivered_workers_proof(started_replacement):
+    story, worker, _ = started_replacement
     notice = PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="1").text
     story.expect_hook_refusal("s-new", HookSamples.stop(), notice)
 
 
-def test_a_new_main_session_is_told_of_an_unmerged_worker(delivered_story):
-    story, worker = delivered_story
-    main = replacement_main(story)
-    story.hook("s-new", HookSamples.session_start())
+def test_a_new_main_session_is_told_of_an_unmerged_worker(started_replacement):
+    story, worker, main = started_replacement
     story.tick("s-new")
     story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} delivered task:1, unmerged")
 
 
-def test_a_new_main_session_hears_a_comment_sent_to_its_worker(delivered_story):
-    story, worker = delivered_story
-    main = replacement_main(story)
+def test_a_new_main_session_hears_a_comment_sent_to_its_worker(replacement):
+    story, worker, main = replacement
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} was also told message:1")
