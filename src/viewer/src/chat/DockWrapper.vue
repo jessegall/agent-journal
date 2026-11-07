@@ -53,6 +53,7 @@ watch(
 const pressed = ref(new Set());
 const failure = ref("");
 async function press(button) {
+    if (button.action === "undock") return emit("undock", button);
     if (button.action === "open") return peekRef(`${props.item.target_model}:${props.item.target_id}`);
     const isDeclared = button.action === "declared";
     if (isDeclared) pressed.value = new Set([...pressed.value, button.label]);
@@ -62,9 +63,11 @@ async function press(button) {
     pressed.value = new Set([...pressed.value].filter((label) => label !== button.label));
     failure.value = `Could not ${button.label.toLowerCase()}: ${answer.error}`;
 }
-const buttons = computed(() => look.value.actions.filter((button) => button.action !== "undock" && !pressed.value.has(button.label)));
+const buttons = computed(() => look.value.actions.filter((button) => !pressed.value.has(button.label)));
 const badge = computed(() => dockBadgeOf(declaration.value?.badge, row.value));
-const undock = computed(() => look.value.buttons.find((button) => button.action === "undock"));
+// a folded or collapsed card keeps its Open and X icons; the pin waits until the card is open
+const controls = computed(() => look.value.controls.filter((button) => !(props.collapsed && ["keep", "unkeep"].includes(button.action))));
+const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props.collapsed);
 </script>
 
 <template>
@@ -81,14 +84,23 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             <template v-if="leaving && !item.kept"><DockLeave :ends-at="leaveSeconds(item)" /></template>
         </template>
         <template #head>
-            <template v-if="declaration?.draws_head && !collapsed"><span ref="head" class="dock-head" data-dock-head /></template>
+            <template v-if="ownsHead"><span ref="head" class="dock-head" data-dock-head /></template>
             <template v-else>
                 <Icon :name="look.icon" class="dock-icon" :size="14" />
-                <span class="dock-title" :title="look.title">{{ look.title }}</span>
+                <span class="dock-text">
+                    <span class="dock-title" :title="look.title">{{ look.title }}</span>
+                    <span class="dock-facts" data-dock-facts>
+                        <template v-if="badge">
+                            <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
+                        </template>
+                        <span data-dock-row>{{ rowWord }} {{ item.target_id }}</span>
+                        <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
+                    </span>
+                </span>
             </template>
-            <template v-if="look.controls.length && !collapsed">
-                <span class="dock-controls">
-                    <template v-for="button in look.controls" :key="button.action + button.runs">
+            <template v-if="controls.length">
+                <span class="dock-controls" @click.stop>
+                    <template v-for="button in controls" :key="button.action + button.runs">
                         <template
                             v-if="
                                 !pressed.has(button.label) &&
@@ -121,12 +133,14 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         </template>
         <template #foot>
             <span class="dock-facts">
-                <template v-if="badge">
-                    <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
+                <template v-if="ownsHead">
+                    <template v-if="badge">
+                        <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
+                    </template>
+                    <span data-dock-row>{{ rowWord }} {{ item.target_id }}</span>
+                    <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
                 </template>
-                <span data-dock-row>{{ rowWord }} {{ item.target_id }}</span>
                 <span ref="foot" class="dock-module-facts" />
-                <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
             </span>
             <template v-if="declaration?.folds">
                 <Btn small class="dock-fold" data-dock-fold :aria-expanded="!folded" @click="emit('fold')">
@@ -157,7 +171,6 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                         {{ button.label }}
                     </Btn>
                 </template>
-                <Btn small bordered :title="undock.label" data-dock-action="undock" @click="emit('undock', undock)">Close</Btn>
             </span>
         </template>
         <template v-if="declaration?.body_url">
@@ -186,6 +199,18 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 .dock-icon {
     flex: none;
     color: var(--text-3);
+}
+.dock-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+.dock-text .dock-facts {
+    min-height: 0;
+    padding-right: 0;
+    font-size: 11.5px;
+    line-height: 16px;
 }
 .dock-title {
     flex: 1 1 auto;
