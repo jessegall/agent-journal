@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections.abc import Mapping
 
 from core.modules.agents.models.agent import Agent
 from core.modules.usage.support.plan_window import PlanWindow
@@ -11,6 +12,7 @@ class EnvironmentUsage:
 
     agents: tuple[tuple[Agent, SessionStatus], ...]
     windows: tuple[PlanWindow, ...]
+    pending_work: Mapping[int, str]
 
     @property
     def cost_dollars(self) -> float:
