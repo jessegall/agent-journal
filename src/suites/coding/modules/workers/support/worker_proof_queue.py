@@ -3,7 +3,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.modules.drivers.support.main_agent_line import MainAgentLine
+from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
@@ -27,7 +27,7 @@ class WorkerProofQueue:
     main agent of the proofs with no test, which wait for its check. At the end of a phase those proofs are
     checked instead, and the phase's own test is added as a proof."""
 
-    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MainAgentLine, settings: SettingValues, git: WorktreeGit, queries: Queries) -> None:
+    def __init__(self, proofs: ProofQuery, repository: Repository, main_agent_line: MergerInbox, settings: SettingValues, git: WorktreeGit, queries: Queries) -> None:
         self.proofs, self.repository, self.main_agent_line, self.queries = proofs, repository, main_agent_line, queries
         self.settings, self.git = settings, git
 

@@ -9,7 +9,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import ended, queued_story
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -51,6 +51,28 @@ def test_the_merger_reads_a_worker_merges_it_and_the_main_agent_hears_one_line(n
     actor = Actor(merger.id, ActorType.AGENT)
     story.expect_text("merger next", f"worker {worker.id}", "brief:", "proof 1", actor=actor)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_text(f"merger merge {worker.id}", "journal sins --branch=", actor=actor)
+    story.expect_success('setting set journal.suites.coding.workers.merger-commands \'["journal sins --branch={commit}"]\' --project', actor=story.user)
+    story.expect_text(f"merger merge {worker.id}", "run: journal sins --branch=", actor=actor)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"the merger merged worker:{worker.id}", actor=story.agent)
     story.expect_text("merger next", "no worker waits", actor=actor)
+
+
+def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        story.expect_success('worker report "Converted the window"', actor=worker)
+        story.run_listeners()
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    story.expect_rows("Converted the window" not in story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text)
+    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    story.expect_text("merger next", "reports: Converted the window", actor=merger)
+    story.expect_success('merger tell "Worker asks which reader to keep"', actor=merger)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "Worker asks which reader to keep", actor=story.agent)
