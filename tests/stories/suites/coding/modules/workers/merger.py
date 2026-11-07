@@ -6,6 +6,8 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.modules.drivers.support.helper_job_rows import HelperJobRows
+from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
@@ -95,3 +97,39 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
     story.hook(worker_session(story, worker), stop.with_raw({**stop.body["raw"], "last_assistant_message": "Handed in all assigned work."}))
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
     story.expect_rows("Handed in all assigned work" not in lines, f"agent:{worker.id} reports" not in lines, detail=lines)
+
+
+def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+        merger = merger_of(story)
+        actor = Actor(merger.id, ActorType.AGENT)
+        repository.checkout(ENVIRONMENT_BRANCH)
+        story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+        repository.uncommitted("cart.py", "TOTAL = 0\n# main change\n")
+        story.expect_refusal(f"merger merge {worker.id}", "uncommitted changes to cart.py", actor=actor)
+        story.expect_success('merger tell "The merge waits for cart.py to be committed"', actor=actor)
+        story.hook(merger.session, HookSamples.stop())
+        story.expect_success(f"agent exited {merger.id} 0")
+        story.run_listeners()
+        jobs = story.container.get(HelperJobRows)
+        before = len(jobs.helper_jobs(merger.id))
+        MergerRetry()(story.container)
+        MergerRetry()(story.container)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before)
+        lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
+        story.expect_rows(lines.count("The merge waits for cart.py to be committed") == 1)
+        repository.committed("cart.py", "TOTAL = 0\n# main change\n", "Commit main change")
+        MergerRetry()(story.container)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before + 1, detail=f"before={before}, jobs={jobs.helper_jobs(merger.id)}, agent={merger_of(story)}")
+        story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+        story.expect_success(f"merger merge {worker.id}", actor=actor)
+        story.expect_text("task show 1", "state: completed", actor=story.agent)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
