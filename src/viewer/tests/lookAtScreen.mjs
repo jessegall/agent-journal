@@ -9,7 +9,8 @@ try {
     const window = page.locator(`[data-window="${windowName}"]`);
     await window.waitFor({timeout: 20000});
     if (waitFor) await page.locator(waitFor).first().waitFor({timeout: 20000});
-    await page.waitForTimeout(1500);
+    await page.waitForFunction(() => !document.querySelector("[data-window-skeleton], [data-skeleton-line]"), null, {timeout: 20000});
+    await page.waitForTimeout(500);
     await page.screenshot({path: output, animations: "disabled"});
 } finally {
     await browser.close();
