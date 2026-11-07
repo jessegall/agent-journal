@@ -41,3 +41,12 @@ func TestTheRequestCarriesTheVariableThatSaysARunnerIsAround(t *testing.T) {
 		t.Fatalf("the runner variable is not in the request: %v", request.Variables)
 	}
 }
+
+func TestTheRequestCarriesTheCurrentProcessSeparatelyFromTheRunnerMarker(t *testing.T) {
+	variables := map[string]string{"JOURNAL_PROCESS": "12", "JOURNAL_RUNNER_PROCESS": "7"}
+	lookup := func(name string) (string, bool) { value, exists := variables[name]; return value, exists }
+	request := NewCliRequest([]string{"worker-operation", "run", "3"}, lookup, "/work")
+	if request.Variables["JOURNAL_PROCESS"] != "12" || request.Variables["JOURNAL_RUNNER_PROCESS"] != "7" {
+		t.Fatalf("the current process and runner marker were not preserved: %v", request.Variables)
+	}
+}
