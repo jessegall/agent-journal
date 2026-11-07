@@ -1,3 +1,5 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {createApp, h} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import Inspector from "../src/resource/Inspector.vue";
@@ -148,4 +150,28 @@ test("a reload on an event keeps the row, so a typed comment survives", async ()
     await settle();
     expect(lines.filter((line) => line.join(" ") === "task inspect 7")).toHaveLength(2);
     expect(element.querySelector(".comment-bar textarea").value).toBe("half a thought");
+});
+
+const QUEUE = {...TASK, noun: "test-queue", reads: "queue list", label: "Test queue", title: "Test queue", description: "", lists_fields: false, links: null, events: []};
+const QUEUE_ROW = {page: 1, parallel_limit: 2, recent_total: 4, size: 10, total: 9, used_slots: 1, waiting_count: 2};
+const source = (path) => readFileSync(resolve(import.meta.dirname, path), "utf8");
+
+test("an inspector whose label and title are the same words shows them once", async () => {
+    const {element} = await drawn(await catalogueOf([QUEUE]), {"queue list": {ok: true, value: QUEUE_ROW}}, {noun: "test-queue"});
+    expect(element.textContent.split("Test queue").length - 1).toBe(1);
+});
+
+test("an inspector that declares no field list draws none of the row's raw fields", async () => {
+    const {element} = await drawn(await catalogueOf([QUEUE]), {"queue list": {ok: true, value: QUEUE_ROW}}, {noun: "test-queue"});
+    expect(element.querySelector("[data-resource-fields]")).toBeNull();
+    expect(element.textContent).not.toContain("Parallel limit");
+});
+
+test("the inspector adds no padding around its sections, and each section declares its own", () => {
+    const inspector = source("../src/resource/Inspector.vue");
+    expect(inspector).not.toMatch(/inspector-section\)\s*\{[^}]*padding/);
+    expect(inspector).not.toMatch(/\.inspector-body\s*\{[^}]*padding/);
+    for (const path of ["../kit/InspectorPart.vue", "../src/resource/PlanTimeline.vue", "../src/tasks/TaskChain.vue", "../src/tasks/TaskDetails.vue", "../src/tasks/TaskLog.vue", "../src/resource/PlanDetails.vue", "../src/kit/InspectorLinks.vue"]) {
+        expect(source(path), path).toMatch(/padding:\s*[^;]*\d+px/);
+    }
 });

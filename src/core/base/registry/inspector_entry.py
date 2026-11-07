@@ -30,7 +30,7 @@ class InspectorEntry:
         return InspectorListing(declaration.noun, self.module, fingerprint, declaration.reads or f"{declaration.noun} show {{row_id}}",
                                 declaration.label, declaration.title, declaration.description, declaration.width.value,
                                 [{"window": component.window, "tab": component.tab} for component in declaration.components],
-                                declaration.comments, list(declaration.events), links, shareable)
+                                declaration.comments, list(declaration.events), links, shareable, declaration.lists_fields)
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "InspectorEntry":

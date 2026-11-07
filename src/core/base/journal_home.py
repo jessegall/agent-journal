@@ -25,6 +25,14 @@ class JournalHome:
         return self.folder / "version-5.db"
 
     @property
+    def panic_file(self) -> Path:
+        return self.folder / "panic"
+
+    @property
+    def panic_announced(self) -> Path:
+        return self.folder / "runtime" / "panic-announced"
+
+    @property
     def bypass_log(self) -> Path:
         return self.folder / "runtime" / "bypass.log"
 

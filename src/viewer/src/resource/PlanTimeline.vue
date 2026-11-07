@@ -82,6 +82,7 @@ watch(() => props.id, load, {immediate: true});
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding: 0 16px;
 }
 
 .empty {
