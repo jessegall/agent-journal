@@ -33,13 +33,13 @@ const STANDINGS = {
   stopped: "stopped",
   orphaned: "stopped",
 };
-const window = useWindow();
+const view = useWindow();
 const card = useDockCard();
-const item = window.option("row");
-const head = window.option("head");
-const foot = window.option("foot");
-const time = window.option("time");
-const folded = window.option("folded");
+const item = view.option("row");
+const head = view.option("head");
+const foot = view.option("foot");
+const time = view.option("time");
+const folded = view.option("folded");
 const run = card.data;
 const pages = useOutputPages(
   card.readOutput,
@@ -101,7 +101,7 @@ async function load() {
 
 watch(opened, (open) => open && load());
 
-window.follow(
+view.follow(
   ["process.*"],
   (event) => event.row_id === item.value?.target_id && load(),
 );

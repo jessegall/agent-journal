@@ -20,8 +20,8 @@ function slowFetch() {
 const drawn = ref("");
 const reading = defineComponent({
     setup() {
-        const window = useWindow();
-        window.read("task list").then((answer) => (drawn.value = answer.ok ? `rows ${answer.value}` : `failed ${answer.failure}`));
+        const view = useWindow();
+        view.read("task list").then((answer) => (drawn.value = answer.ok ? `rows ${answer.value}` : `failed ${answer.failure}`));
         return () => h("p", "reading");
     },
 });

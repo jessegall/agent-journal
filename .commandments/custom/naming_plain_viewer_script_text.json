@@ -23,6 +23,7 @@
             }
         ],
         "reject": [
+            {"fileMatches": "(^|/)src/viewer/tests/"},
             {
                 "textLike": "For example*"
             },

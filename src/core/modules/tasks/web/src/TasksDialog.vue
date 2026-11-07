@@ -9,7 +9,7 @@ import TasksMenus from "./TasksMenus.vue";
 // the place to manage tasks, as version 4's dialog: the groups of tasks on the left, the one selected in the inspector on the right, and keys for all of it
 const TYPING = "input,textarea,select,[contenteditable],.menu-panel";
 const emit = defineEmits(["close"]);
-const window = useWindow();
+const view = useWindow();
 const open = ref(true);
 const list = ref(null);
 const inspector = ref(null);
@@ -21,12 +21,12 @@ const VIEWS = [
     {key: "list", label: "List"},
     {key: "graph", label: "Graph"},
 ];
-window.state.tab = "list";
-const view = computed({get: () => window.state.tab, set: (value) => (window.state.tab = value)});
+view.state.tab = "list";
+const tab = computed({get: () => view.state.tab, set: (value) => (view.state.tab = value)});
 const states = ref([]);
 const display = ref({grouping: "state", number: true, reason: false, showDone: false});
 const searched = computed(() => list.value?.query ?? "");
-const filtered = computed(() => view.value === "list" && Boolean(states.value.length || searched.value));
+const filtered = computed(() => tab.value === "list" && Boolean(states.value.length || searched.value));
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 
 function clearFilter() {
@@ -38,7 +38,7 @@ function deleted() {
     inspecting.value = false;
     selected.value = 0;
 }
-const stopFollowing = window.follow(["task.*", "task_log.*"], () => (changes.value += 1));
+const stopFollowing = view.follow(["task.*", "task_log.*"], () => (changes.value += 1));
 onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));
@@ -71,8 +71,8 @@ const KEYS = {
     k: () => step(-1),
     Enter: () => selected.value && (inspecting.value = true),
     " ": () => selected.value && (inspecting.value = !inspecting.value),
-    c: () => ((view.value = "list"), (drafting.value = true)),
-    v: () => (view.value = view.value === "list" ? "graph" : "list"),
+    c: () => ((tab.value = "list"), (drafting.value = true)),
+    v: () => (tab.value = tab.value === "list" ? "graph" : "list"),
     s: () => inspecting.value && inspector.value?.openStatus(document.querySelector(".tasks-dialog [data-task-state]")),
     "/": () => list.value?.focusSearch(),
 };
@@ -91,13 +91,13 @@ function escaped(event) {
 }
 
 onMounted(() => {
-    globalThis.addEventListener("keydown", pressed, true);
-    globalThis.addEventListener("keydown", escaped);
+    window.addEventListener("keydown", pressed, true);
+    window.addEventListener("keydown", escaped);
 });
 onUnmounted(() => {
-    globalThis.removeEventListener("keydown", pressed, true);
-    globalThis.removeEventListener("keydown", escaped);
-    window.state.tab = "list";
+    window.removeEventListener("keydown", pressed, true);
+    window.removeEventListener("keydown", escaped);
+    view.state.tab = "list";
 });
 </script>
 
@@ -108,7 +108,7 @@ onUnmounted(() => {
                 <h2>Tasks</h2>
                 <span class="standing" data-tasks-standing>{{ standing }}</span>
                 <span class="grow" />
-                <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
+                <Segmented :options="VIEWS" :value="tab" @pick="tab = $event" />
                 <TasksMenus :states="states" :display="display" :selected="selected" @states="states = $event" @display="display = $event" @deleted="deleted" />
                 <Btn small title="New task (C)" data-new-task @click="drafting = true">
                     <Icon name="plus" :size="12" />
@@ -138,15 +138,15 @@ onUnmounted(() => {
                     <template v-if="drafting">
                         <NewTask @filed="filed" @cancel="drafting = false" />
                     </template>
-                    <template v-if="view === 'graph'">
+                    <template v-if="tab === 'graph'">
                         <TaskGraphView :selected="selected" @select="select" />
                     </template>
-                    <div v-show="view === 'list'">
+                    <div v-show="tab === 'list'">
                         <TaskGroups ref="list" selectable :selected="selected" :states="states" :display="display" @select="select" />
                     </div>
                 </div>
                 <template v-if="inspecting && selected">
-                    <TaskInspector ref="inspector" stepped :id="selected" :read="window.run" :changes="changes" @close="inspecting = false" @step="step" @select="select" />
+                    <TaskInspector ref="inspector" stepped :id="selected" :read="view.run" :changes="changes" @close="inspecting = false" @step="step" @select="select" />
                 </template>
             </div>
         </div>

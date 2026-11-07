@@ -4,8 +4,8 @@ import {Btn, EmptyState, Icon, Skeleton, useWindow} from "@journal/window-kit";
 import TriggerDialog from "./TriggerDialog.vue";
 
 // the triggers as slips on one ruled sheet: only a name, a short line and a number; a slip opens the one dialog that holds everything else
-const window = useWindow();
-const {rows, failure, loaded, act} = window.props.triggers;
+const view = useWindow();
+const {rows, failure, loaded, act} = view.props.triggers;
 const drafting = ref(false);
 const openedId = ref(null);
 const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);

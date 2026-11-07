@@ -9,8 +9,8 @@ const MODES = [
     {key: "coding.builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code and assigns work to workers when useful."}},
     {key: "coding.orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes code itself only where no worker can."}},
 ];
-const window = useWindow();
-window.state["mode.environment"] = window.environment;
+const view = useWindow();
+view.state["mode.environment"] = view.environment;
 const mode = ref(MODES[0].key);
 const auto = ref(true);
 const dispatches = ref(true);
@@ -20,18 +20,18 @@ const root = ref(null);
 useOutside(root, () => (open.value = false));
 const failure = ref("");
 
-watch(window.props.mode.data, (current) => {
+watch(view.props.mode.data, (current) => {
     if (!current) return;
     const driver = MODES.find((one) => current.drivers.includes(one.key));
     if (driver) mode.value = driver.key;
 }, {immediate: true});
 for (const [key, held] of [["auto", auto], ["dispatches", dispatches], ["merger", merger]]) {
-    watch(window.props[key].data, (answer) => { if (answer) held.value = answer.value; }, {immediate: true});
+    watch(view.props[key].data, (answer) => { if (answer) held.value = answer.value; }, {immediate: true});
 }
-watch(open, (value) => (window.state.tab = value ? "settings" : ""));
+watch(open, (value) => (view.state.tab = value ? "settings" : ""));
 
 async function run(words) {
-    const answer = await window.run(words);
+    const answer = await view.run(words);
     failure.value = answer.ok ? "" : answer.error;
     return answer.ok;
 }
@@ -40,14 +40,14 @@ const asking = ref(null);
 
 async function switchMode(key) {
     asking.value = null;
-    if (await run(`driver choose ${key} --environment ${window.environment}`)) mode.value = key;
+    if (await run(`driver choose ${key} --environment ${view.environment}`)) mode.value = key;
 }
 
 // a switch while the agent works asks first, so a stray click never changes it; none while it is idle
 async function pickMode(key) {
     if (key === mode.value) return;
-    const refreshed = await window.reload("bars");
-    const bars = window.props.bars;
+    const refreshed = await view.reload("bars");
+    const bars = view.props.bars;
     const label = MODES.find((one) => one.key === key).label;
     const busy = refreshed && !bars.failure.value ? bars.data.value : null;
     const question = !busy ? "" : busy.task_id ? `Switch to ${label}? The agent is working on task ${busy.task_id}.` : busy.helpers ? `Switch to ${label}? The agent has ${busy.helpers} helpers out.` : "";
@@ -55,14 +55,14 @@ async function pickMode(key) {
     else await switchMode(key);
 }
 
-const setSetting = (key, value) => run(`setting set ${key} ${value} --environment ${window.environment}`);
+const setSetting = (key, value) => run(`setting set ${key} ${value} --environment ${view.environment}`);
 
 async function toggleAuto() {
     if (await setSetting(AUTO_MODE, !auto.value)) auto.value = !auto.value;
 }
 
-globalThis.addEventListener("journal:toggle-auto", toggleAuto);
-onUnmounted(() => globalThis.removeEventListener("journal:toggle-auto", toggleAuto));
+window.addEventListener("journal:toggle-auto", toggleAuto);
+onUnmounted(() => window.removeEventListener("journal:toggle-auto", toggleAuto));
 
 async function toggleDispatches() {
     if (await setSetting(DISPATCHES, !dispatches.value)) dispatches.value = !dispatches.value;
@@ -78,8 +78,8 @@ function toggleMenu() {
 }
 
 const closeOnEscape = (event) => event.key === "Escape" && (open.value = false);
-globalThis.addEventListener("keydown", closeOnEscape);
-onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
+window.addEventListener("keydown", closeOnEscape);
+onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>

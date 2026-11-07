@@ -69,7 +69,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             </span>
         </span>
         <span class="agent-line">
-            <span class="agent-identity" data-agent-identity data-agent-motion>{{ open ? roleLabel : identity }}</span>
+            <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
             <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First dispatched: <TimeAgo :at="row.created_at" /></span></template>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>

@@ -2,9 +2,9 @@
 import {computed} from "vue";
 import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 
-const window = useWindow();
-window.state["points.agent"] = String(window.agent);
-const {data, failure, loaded} = window.props.points;
+const view = useWindow();
+view.state["points.agent"] = String(view.agent);
+const {data, failure, loaded} = view.props.points;
 const points = computed(() => data.value?.points ?? []);
 </script>
 

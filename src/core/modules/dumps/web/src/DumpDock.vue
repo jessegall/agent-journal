@@ -1,11 +1,11 @@
 <script setup>
 import { computed, unref } from "vue";
 import { useDockCard, useWindow } from "@journal/window-kit";
-const window = useWindow();
+const view = useWindow();
 const card = useDockCard();
-const foot = window.option("foot");
+const foot = view.option("foot");
 const count = computed(() => card.data.value?.length ?? 0);
-window.follow(["dump_item.*"], card.reload);
+view.follow(["dump_item.*"], card.reload);
 </script>
 <template>
   <template v-if="unref(foot)"

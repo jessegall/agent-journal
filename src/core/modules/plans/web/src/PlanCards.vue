@@ -4,12 +4,12 @@ import {Btn, Icon, InnerTabs, Skeleton, TabBody, WindowRoom, afterSkeletonMinimu
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
-const window = useWindow();
+const view = useWindow();
 const PAGE_ROWS = 25;
-window.state.tab = window.shared ? "shared" : window.tabs[0].key;
-const tab = computed(() => window.tabs.find((tab) => tab.key === window.state.tab) ?? window.tabs[0]);
-const key = computed(() => window.shared ? `plan.${window.shared.id}` : window.state.tab);
-const active = computed(() => window.props[key.value]);
+view.state.tab = view.shared ? "shared" : view.tabs[0].key;
+const tab = computed(() => view.tabs.find((tab) => tab.key === view.state.tab) ?? view.tabs[0]);
+const key = computed(() => view.shared ? `plan.${view.shared.id}` : view.state.tab);
+const active = computed(() => view.props[key.value]);
 const board = ref({open_total: 0, closed_total: 0, plans: []});
 const pageFailure = ref("");
 const failure = computed(() => pageFailure.value || active.value.failure.value);
@@ -21,35 +21,35 @@ watch(() => active.value.loaded.value, (ready) => {
 watch(() => active.value.data.value, (value) => {
     if (!value) return;
     pageFailure.value = "";
-    board.value = window.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...value}]} : value;
+    board.value = view.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, agents: [], ...value}]} : value;
 }, {immediate: true});
 
 async function more() {
     if (!board.value.plans.length) return;
     const asked = tab.value;
     const pageKey = `older-${asked.key}`;
-    window.state[`${pageKey}.before-id`] = Math.min(...board.value.plans.map((plan) => plan.id));
-    await window.reload(pageKey);
+    view.state[`${pageKey}.before-id`] = Math.min(...board.value.plans.map((plan) => plan.id));
+    await view.reload(pageKey);
     if (asked !== tab.value) return;
-    const page = window.props[pageKey];
+    const page = view.props[pageKey];
     if (page.failure.value) return void (pageFailure.value = page.failure.value);
     const shown = new Set(board.value.plans.map((plan) => plan.id));
     board.value = {...page.data.value, plans: [...board.value.plans, ...page.data.value.plans.filter((plan) => !shown.has(plan.id))]};
-    if (board.value.plans.length > PAGE_ROWS) window.state[`${asked.key}.limit`] = board.value.plans.length;
+    if (board.value.plans.length > PAGE_ROWS) view.state[`${asked.key}.limit`] = board.value.plans.length;
 }
 
 const choose = (chosen) => {
-    if (chosen.key === window.state.tab) return;
-    window.state.tab = chosen.key;
+    if (chosen.key === view.state.tab) return;
+    view.state.tab = chosen.key;
     board.value = {...board.value, plans: []};
     pageFailure.value = "";
 };
 const shown = computed(() => board.value.plans);
 const total = computed(() => board.value[tab.value?.count_field]);
 const share = (row, count) => (row.task_count ? Math.round((count / row.task_count) * 100) : 0);
-if (window.shared) {
-    window.reload(key.value);
-    window.follow(["plan.*", "phase.*", "task.*"], () => window.reload(key.value));
+if (view.shared) {
+    view.reload(key.value);
+    view.follow(["plan.*", "phase.*", "task.*"], () => view.reload(key.value));
 }
 </script>
 

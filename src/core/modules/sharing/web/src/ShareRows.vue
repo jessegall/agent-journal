@@ -9,8 +9,8 @@ const ENDS = [
     {key: "never", label: "Never"},
 ];
 
-const window = useWindow();
-const {rows, failure, loaded} = window.props.shares;
+const view = useWindow();
+const {rows, failure, loaded} = view.props.shares;
 const waiting = computed(() => rows.value.filter((row) => row.state === "waiting"));
 const active = computed(() => rows.value.filter((row) => row.state === "active"));
 const tools = useListTools(active, {title: (row) => `${row.row_model} ${row.row_id}`});
@@ -26,24 +26,24 @@ const stoppingAll = ref(false);
 const when = (row) => (row.expires_at ? `ends ${row.expires_at}` : "never ends");
 
 async function run(line) {
-    const answer = await window.run(line);
+    const answer = await view.run(line);
     refusal.value = answer.ok ? "" : answer.error;
-    if (answer.ok) window.reload("shares");
+    if (answer.ok) view.reload("shares");
     return answer;
 }
 
 async function address(answer) {
-    await window.reload("tunnel");
-    const tunnel = window.props.tunnel.failure.value ? null : window.props.tunnel.data.value;
+    await view.reload("tunnel");
+    const tunnel = view.props.tunnel.failure.value ? null : view.props.tunnel.data.value;
     const start = tunnel?.address || globalThis.location.origin;
     return {...answer.value, address: `${start}${answer.value.link}`, outside: Boolean(tunnel?.address)};
 }
 
 async function previewOpens() {
-    window.state["opens.target"] = target.value.trim();
-    await window.reload("opens");
-    refusal.value = window.props.opens.failure.value;
-    opens.value = refusal.value ? null : window.props.opens.rows.value;
+    view.state["opens.target"] = target.value.trim();
+    await view.reload("opens");
+    refusal.value = view.props.opens.failure.value;
+    opens.value = refusal.value ? null : view.props.opens.rows.value;
 }
 
 if (target.value) previewOpens();
@@ -72,9 +72,9 @@ async function toggleComments(row) {
         return void (commentRows.value = others);
     }
     const name = `comments.${row.id}`;
-    await window.reload(name);
-    refusal.value = window.props[name].failure.value;
-    if (!refusal.value) commentRows.value = {...commentRows.value, [row.id]: window.props[name].rows.value};
+    await view.reload(name);
+    refusal.value = view.props[name].failure.value;
+    if (!refusal.value) commentRows.value = {...commentRows.value, [row.id]: view.props[name].rows.value};
 }
 </script>
 

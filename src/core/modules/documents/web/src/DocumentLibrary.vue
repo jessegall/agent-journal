@@ -21,10 +21,10 @@ const state = ref("open");
 const order = ref("newest");
 const words = ref("");
 const chosen = ref(null);
-const window = useWindow();
-window.state["library.type"] = noun.value;
-window.state["library.state"] = state.value;
-const library = window.props.library;
+const view = useWindow();
+view.state["library.type"] = noun.value;
+view.state["library.state"] = state.value;
+const library = view.props.library;
 const rows = ref([]);
 const total = ref(0);
 const {failure, loaded} = library;
@@ -42,10 +42,10 @@ const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 async function load() {
     const type = noun.value;
     const shown = state.value;
-    window.state["library.type"] = type;
-    window.state["library.state"] = shown;
-    delete window.state["library.after"];
-    const refreshed = await window.reload("library");
+    view.state["library.type"] = type;
+    view.state["library.state"] = shown;
+    delete view.state["library.after"];
+    const refreshed = await view.reload("library");
     if (type !== noun.value || shown !== state.value) return;
     rows.value = refreshed && !failure.value ? library.data.value.rows : [];
     total.value = refreshed && !failure.value ? library.data.value.total : 0;
@@ -55,9 +55,9 @@ async function load() {
 async function more() {
     const type = noun.value;
     const shown = state.value;
-    window.state["library.after"] = String(Math.max(...rows.value.map((row) => row.id)));
-    const refreshed = await window.reload("library");
-    delete window.state["library.after"];
+    view.state["library.after"] = String(Math.max(...rows.value.map((row) => row.id)));
+    const refreshed = await view.reload("library");
+    delete view.state["library.after"];
     if (!refreshed || failure.value) return;
     if (type === noun.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
 }
@@ -71,7 +71,7 @@ function open(row) {
 async function create() {
     const {title, abstract, body} = draft.value;
     if (!title.trim() || !abstract.trim()) return;
-    const answer = await window.run([noun.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
+    const answer = await view.run([noun.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     drafting.value = false;
@@ -101,7 +101,7 @@ watch([noun, state], () => {
     loaded.value = false;
     load();
 });
-const stopFollowing = window.follow(["doc.*", "report.*"], load);
+const stopFollowing = view.follow(["doc.*", "report.*"], load);
 onUnmounted(() => stopFollowing?.());
 </script>
 

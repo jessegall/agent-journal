@@ -6,10 +6,10 @@ import AgentLimits from "./AgentLimits.vue";
 
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
-const window = useWindow();
-const {rows: waits} = window.props.waits;
-const {rows: progress} = window.props.progress;
-const {rows, failure, loaded, more} = window.props.agents;
+const view = useWindow();
+const {rows: waits} = view.props.waits;
+const {rows: progress} = view.props.progress;
+const {rows, failure, loaded, more} = view.props.agents;
 const progressOf = (row) => progress.value.find((progress) => progress.agent_id === row.id) ?? null;
 const waitReasonOf = (row) => waits.value.find((wait) => wait.agent_id === row.id)?.reason ?? "";
 const show = ref("running");
@@ -17,8 +17,8 @@ const words = ref("");
 const FILTER_KEY = "journal.agents.filters";
 const savedFilters = JSON.parse(localStorage.getItem(FILTER_KEY) || '{"roles":[],"profiles":[],"programs":[]}');
 const filters = ref(savedFilters);
-const filterOptions = computed(() => window.props.filters.data.value ?? {roles: [], profiles: [], states: [], upgrade_retired: 0});
-const {rows: programs} = window.props.programs;
+const filterOptions = computed(() => view.props.filters.data.value ?? {roles: [], profiles: [], states: [], upgrade_retired: 0});
+const {rows: programs} = view.props.programs;
 const filterCount = computed(() => filters.value.roles.length + filters.value.profiles.length + filters.value.programs.length);
 const updateFilter = (group, value) => { filters.value = toggleFilter(filters.value, group, value); };
 const clearFilters = () => { filters.value = {roles: [], profiles: [], programs: []}; };
@@ -27,19 +27,19 @@ watch(filters, (value) => localStorage.setItem(FILTER_KEY, JSON.stringify(value)
 
 const limit = ref(25);
 function setState() {
-    Object.assign(window.state, {"agents.show": show.value, "agents.search": words.value, "agents.limit": String(limit.value),
+    Object.assign(view.state, {"agents.show": show.value, "agents.search": words.value, "agents.limit": String(limit.value),
         "agents.roles": filters.value.roles.join(","), "agents.profiles": filters.value.profiles.join(","), "agents.programs": filters.value.programs.join(",")});
 }
 async function older() {
     limit.value += 25;
     setState();
-    await window.reload("agents");
+    await view.reload("agents");
     return true;
 }
 watch([show, words, filters], () => {
     limit.value = 25;
     setState();
-    window.reload("agents");
+    view.reload("agents");
 });
 setState();
 const factsOf = (row) => row.facts ?? null;
@@ -59,7 +59,7 @@ const openRow = computed(() => {
 });
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
-const reduced = () => globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let changing = false;
 let scrollTop = 0;
 async function open(row) {
@@ -116,8 +116,8 @@ const toggle = (row) => { if (openId.value === row.id) return close(); return op
 watch(words, (typed) => typed.trim() && (openId.value = null));
 watch(show, () => { openId.value = null; });
 const closeOnEscape = (event) => { if (event.key === "Escape") close(); };
-globalThis.addEventListener("keydown", closeOnEscape);
-onUnmounted(() => globalThis.removeEventListener("keydown", closeOnEscape));
+window.addEventListener("keydown", closeOnEscape);
+onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>

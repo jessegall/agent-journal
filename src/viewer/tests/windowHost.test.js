@@ -7,8 +7,8 @@ import {perLine, settle} from "./support/windowContext.js";
 
 const following = defineComponent({
     setup() {
-        const window = useWindow();
-        onMounted(() => window.follow(["task.*"], () => {}));
+        const view = useWindow();
+        onMounted(() => view.follow(["task.*"], () => {}));
         return () => h("p", "following tasks");
     },
 });
