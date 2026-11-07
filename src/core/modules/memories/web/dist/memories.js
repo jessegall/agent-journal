@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 if (!document.getElementById("window-styles-97a8ff3e9b66")) { const style = document.createElement("style"); style.id = "window-styles-97a8ff3e9b66"; style.textContent = ".who[data-v-35ee5762]{display:flex;gap:8px;align-items:center;width:100%;min-height:32px;padding:5px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-align:left;cursor:pointer}.who[data-v-35ee5762]:hover{background:var(--hover);color:var(--text)}.who.selected[data-v-35ee5762]{background:var(--sel);color:var(--text)}.who.main[data-v-35ee5762]{min-height:44px;color:var(--text)}.who.main .who-name[data-v-35ee5762]{font-weight:600}.who[data-v-35ee5762]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.who-mark[data-v-35ee5762]{flex:none;width:8px;height:8px;border-radius:50%}.who-mark.main[data-v-35ee5762]{background:var(--accent)}.who-mark.live[data-v-35ee5762]{width:6px;height:6px;background:var(--tone-good)}.who-text[data-v-35ee5762]{display:flex;flex:1;flex-direction:column;min-width:0}.who-name[data-v-35ee5762],.who-meta[data-v-35ee5762]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.who-meta[data-v-35ee5762]{color:var(--text-3);font-size:11.5px}.who-count[data-v-35ee5762]{flex:none;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}@media(max-width:720px){.who[data-v-35ee5762]{min-height:44px}}.head[data-v-f99a36be]{display:flex;gap:6px;align-items:center;width:100%;margin:0;padding:9px 8px 4px;border:0;background:none;color:var(--text-3);font:inherit;font-size:11.5px;font-weight:600;text-align:left}.fold[data-v-f99a36be]{cursor:pointer}.head em[data-v-f99a36be]{font-style:normal;font-weight:400}.caret[data-v-f99a36be]{width:10px}.more[data-v-f99a36be]{display:flex;justify-content:center;padding:8px 0 0}.more-button[data-v-f99a36be]{min-height:26px;padding:3px 10px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text);font:inherit;font-size:12.5px;cursor:pointer}.more-button[data-v-f99a36be]:hover{background:var(--hover)}.column[data-v-9d6fbd92]{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--border)}.pinned[data-v-9d6fbd92]{display:flex;flex:none;flex-direction:column;gap:2px;padding:8px;border-bottom:1px solid var(--border)}.tools[data-v-9d6fbd92]{display:flex;flex:none;flex-direction:column;gap:6px;padding:8px}.input[data-v-9d6fbd92]{width:100%;padding:6px 9px;border:1px solid var(--border-2);border-radius:7px;outline:0;background:var(--bg);color:var(--text);font:inherit;font-size:12.5px}.input[data-v-9d6fbd92]:focus{border-color:var(--accent)}.list[data-v-9d6fbd92]{flex:1;min-height:0;overflow:auto;padding:0 8px 12px}.note[data-v-9d6fbd92]{margin:8px;color:var(--text-3);font-size:11.5px}@media(max-width:720px){.column[data-v-9d6fbd92]{border-right:0}.input[data-v-9d6fbd92]{min-height:44px;font-size:16px}}.empty[data-v-ab0635c6]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:26px 0;color:var(--text-3)}.empty b[data-v-ab0635c6]{color:var(--text);font-size:13px;font-weight:600}.empty p[data-v-ab0635c6]{max-width:380px;margin:0}.group-head[data-v-23c62860]{position:sticky;z-index:1;top:0;display:flex;gap:8px;align-items:baseline;justify-content:space-between;padding:12px 0 5px;border-bottom:1px solid var(--border);background:var(--bg)}.group-link[data-v-23c62860]{min-width:0;padding:0;border:0;background:none;color:var(--text);font:inherit;font-weight:600;text-align:left;cursor:pointer}.group-link[data-v-23c62860]:hover{color:var(--accent-text)}small[data-v-23c62860]{flex:none;color:var(--text-3);font-size:11.5px}.memory[data-v-3ac52124]{display:flex;flex-direction:column;gap:3px;width:100%;padding:9px 0;border:0;border-bottom:1px solid var(--border-inner);background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.memory:hover .memory-text[data-v-3ac52124]{color:var(--accent-text)}.memory[data-v-3ac52124]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}.memory.removed .memory-text[data-v-3ac52124]{color:var(--text-3)}.memory-text[data-v-3ac52124]{max-width:74ch}.memory-meta[data-v-3ac52124]{display:flex;flex-wrap:wrap;gap:2px 12px;color:var(--text-3);font-size:12px}@media(max-width:720px){.memory[data-v-3ac52124]{min-height:44px}}.pane[data-v-686524d5]{display:flex;flex-direction:column;min-width:0;min-height:0}.head[data-v-686524d5]{display:flex;flex:none;flex-wrap:wrap;gap:6px 14px;align-items:center;justify-content:space-between;padding:12px 20px 10px}.title[data-v-686524d5]{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin:0;font-size:15px;font-weight:600}.pill[data-v-686524d5]{padding:1px 7px;border-radius:4px;background:var(--chip);color:var(--text-2);font-size:11.5px;font-weight:400}.line[data-v-686524d5]{margin:1px 0 0;color:var(--text-3);font-size:12.5px}.ended-note[data-v-686524d5]{margin:0 20px 10px;padding:7px 11px;border:1px solid var(--border-2);border-radius:7px;color:var(--text-2);font-size:12.5px}.make[data-v-686524d5]{display:flex;flex-direction:column;gap:8px;align-items:flex-start;padding:10px 20px;border-bottom:1px solid var(--border);background:var(--bg-2)}.make-text[data-v-686524d5]{min-height:0}.make-foot[data-v-686524d5]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;width:100%}.make-foot span[data-v-686524d5]{flex:1 1 180px;color:var(--text-3);font-size:12px}.refusal[data-v-686524d5]{margin:8px 20px 0;color:var(--danger);font-size:12.5px}.notice[data-v-686524d5]{margin:8px 20px 0;padding:7px 11px;border-radius:7px;background:var(--accent-dim);font-size:12.5px}.list[data-v-686524d5]{flex:1;min-height:0;overflow:auto;padding:0 20px 24px}.more[data-v-686524d5]{display:flex;justify-content:center;padding:14px 0 0}@media(max-width:720px){.head[data-v-686524d5],.list[data-v-686524d5]{padding-right:0;padding-left:0}.ended-note[data-v-686524d5],.refusal[data-v-686524d5],.notice[data-v-686524d5]{margin-right:0;margin-left:0}}.browser[data-v-c5c8a0f3]{display:grid;grid-template-columns:300px minmax(0,1fr);align-self:stretch;height:calc(100vh - 100px);min-height:420px;border:1px solid var(--border);border-radius:8px;overflow:hidden}.chooser[data-v-c5c8a0f3]{display:none}@media(max-width:720px){.browser[data-v-c5c8a0f3]{display:flex;flex-direction:column;height:auto;min-height:0;border:0;border-radius:0}.chooser[data-v-c5c8a0f3]{display:block;padding:8px 0}.chooser-label[data-v-c5c8a0f3]{display:block;margin-bottom:4px;color:var(--text-3);font-size:12px}.chooser-button[data-v-c5c8a0f3]{display:flex;gap:8px;align-items:center;width:100%;min-height:48px;padding:6px 12px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);color:var(--text);font:inherit;text-align:left}.chooser-name[data-v-c5c8a0f3]{flex:1;min-width:0;font-weight:600}.chooser-count[data-v-c5c8a0f3]{color:var(--text-3);font-size:12px}.browser:not(.picking) .who[data-v-c5c8a0f3],.browser.picking .memories[data-v-c5c8a0f3]{display:none}}.memory-round[data-v-4910a3d9]{margin:0 0 0 20px}.memory-round-rows[data-v-4910a3d9]{margin:0;padding:0;list-style:none}.memory-round-row[data-v-4910a3d9]{display:flex;flex-wrap:wrap;gap:2px 8px;padding:2px 0;color:var(--text-2);font-size:12px;line-height:1.45;overflow-wrap:anywhere}.memory-round-ref[data-v-4910a3d9]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.memory-round-weight[data-v-4910a3d9]{color:var(--text-4)}\n"; document.head.appendChild(style); }
-import { openBlock as r, createElementBlock as u, normalizeClass as D, createCommentVNode as O, createElementVNode as s, toDisplayString as f, renderSlot as ne, createTextVNode as h, computed as x, watch as V, unref as o, Fragment as A, renderList as I, createBlock as P, withCtx as p, createVNode as k, reactive as oe, ref as E, withModifiers as ke, watchEffect as ge } from "vue";
-import { useWindow as G, wordLabel as F, TimeAgo as ae, SearchBar as re, Segmented as we, SwitchCase as fe, Btn as T, peekRef as se, MenuLabel as X, MenuItem as Z, TextArea as pe, Skeleton as he, coalesced as $e, READ_RATES as be, WindowRoom as Se } from "@journal/window-kit";
+import { openBlock as r, createElementBlock as u, normalizeClass as D, createCommentVNode as O, createElementVNode as s, toDisplayString as w, renderSlot as ne, createTextVNode as h, computed as x, watch as V, unref as o, Fragment as A, renderList as I, createBlock as P, withCtx as p, createVNode as k, reactive as oe, ref as E, withModifiers as ke, watchEffect as ge } from "vue";
+import { useWindow as G, wordLabel as F, TimeAgo as ae, SearchBar as re, Segmented as fe, SwitchCase as we, Btn as T, peekRef as se, MenuLabel as X, MenuItem as Z, TextArea as pe, Skeleton as he, coalesced as $e, READ_RATES as be, WindowRoom as Se } from "@journal/window-kit";
 import { _ as W } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const Ce = ["aria-current"], Ee = { class: "who-text" }, Oe = {
   class: "who-name",
@@ -26,14 +26,14 @@ const Ce = ["aria-current"], Ee = { class: "who-text" }, Oe = {
         class: D(["who-mark", e.mark])
       }, null, 2)) : O("", !0),
       s("span", Ee, [
-        s("span", Oe, f(e.name), 1),
+        s("span", Oe, w(e.name), 1),
         e.meta || m.$slots.meta ? (r(), u("span", Ae, [
           ne(m.$slots, "meta", {}, () => [
-            h(f(e.meta), 1)
+            h(w(e.meta), 1)
           ], !0)
         ])) : O("", !0)
       ]),
-      s("span", Me, f(e.count), 1)
+      s("span", Me, w(e.count), 1)
     ], 10, Ce));
   }
 }, H = /* @__PURE__ */ W(Re, [["__scopeId", "data-v-35ee5762"]]), M = "main", q = "others", B = "everyone", xe = 20, _ = 30, Y = (e) => `agent:${e}`, j = (e) => e.startsWith("agent:"), Ne = (e) => e === q || e === B, U = (e) => Number(e.slice(6)), Te = [
@@ -46,7 +46,7 @@ function le(e, m, t, c) {
   let C = 1;
   async function y() {
     const b = `${e}.`;
-    Object.keys(n.state).filter((w) => w.startsWith(b)).forEach((w) => delete n.state[w]), Object.entries(m(t * C)).forEach(([w, d]) => n.state[`${b}${w}`] = String(d)), await n.reload(e);
+    Object.keys(n.state).filter((f) => f.startsWith(b)).forEach((f) => delete n.state[f]), Object.entries(m(t * C)).forEach(([f, d]) => n.state[`${b}${f}`] = String(d)), await n.reload(e);
   }
   const $ = () => (C = 1, y()), g = () => (C += 1, y());
   return n.follow(c, y), y(), {
@@ -90,12 +90,12 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
         "data-ended-fold": "",
         onClick: $[0] || ($[0] = (g) => c("fold"))
       }, [
-        s("span", We, f(e.open ? "▾" : "▸"), 1),
+        s("span", We, w(e.open ? "▾" : "▸"), 1),
         $[2] || ($[2] = h("Ended ", -1)),
-        s("em", null, f(o(l).total.value), 1)
+        s("em", null, w(o(l).total.value), 1)
       ], 8, Pe)) : (r(), u("p", Ie, [
         $[3] || ($[3] = h("Working now ", -1)),
-        s("em", null, f(o(l).total.value), 1)
+        s("em", null, w(o(l).total.value), 1)
       ])),
       n() ? (r(), u(A, { key: 2 }, [
         (r(!0), u(A, null, I(o(l).rows.value, (g) => (r(), P(H, {
@@ -107,7 +107,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
           onPick: (b) => c("pick", g)
         }, {
           meta: p(() => [
-            h(f(o(F)(g.role)) + ", ", 1),
+            h(w(o(F)(g.role)) + ", ", 1),
             e.ended ? (r(), u(A, { key: 0 }, [
               $[4] || ($[4] = h("ended ", -1)),
               k(o(ae), {
@@ -125,7 +125,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
             class: "more-button",
             "data-agents-more": "",
             onClick: $[1] || ($[1] = (g) => o(l).more())
-          }, "Show " + f(o(_)) + " more of " + f(o(l).total.value), 1)
+          }, "Show " + w(o(_)) + " more of " + w(o(l).total.value), 1)
         ])) : O("", !0)
       ], 64)) : O("", !0)
     ], 64)) : O("", !0);
@@ -146,8 +146,8 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
   props: { environment: { type: String, required: !0 }, who: { type: String, required: !0 }, counts: { type: Object, required: !0 } },
   emits: ["pick"],
   setup(e, { emit: m }) {
-    const t = e, c = m, n = oe({ working: 0, ended: 0 }), l = E("all"), C = E(""), y = E(!1), $ = x(() => !!C.value.trim()), g = x(() => t.counts.others), b = (w) => c("pick", Y(w.agent_id), w);
-    return (w, d) => (r(), u("div", Ve, [
+    const t = e, c = m, n = oe({ working: 0, ended: 0 }), l = E("all"), C = E(""), y = E(!1), $ = x(() => !!C.value.trim()), g = x(() => t.counts.others), b = (f) => c("pick", Y(f.agent_id), f);
+    return (f, d) => (r(), u("div", Ve, [
       s("div", je, [
         k(H, {
           name: "Main agent",
@@ -185,7 +185,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
             placeholder: "Find an agent",
             "data-agent-find": ""
           }, null, 8, ["modelValue"]),
-          k(o(we), {
+          k(o(fe), {
             fill: "",
             options: o(Te),
             value: l.value,
@@ -234,10 +234,10 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
       "data-memory-empty": "",
       "data-kind": e.kind
     }, [
-      k(o(fe), { value: e.kind }, {
+      k(o(we), { value: e.kind }, {
         failure: p(() => [
           n[5] || (n[5] = s("b", null, "The memories could not be read", -1)),
-          s("p", ze, f(e.reason || "The journal did not answer.") + " Nothing has been lost.", 1),
+          s("p", ze, w(e.reason || "The journal did not answer.") + " Nothing has been lost.", 1),
           k(o(T), {
             small: "",
             bordered: "",
@@ -271,7 +271,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
         ])]),
         "main-others": p(() => [
           n[11] || (n[11] = s("b", null, "The main agent has no memories yet", -1)),
-          s("p", null, "Your other agents have " + f(e.others) + " active " + f(e.others === 1 ? "memory" : "memories") + ".", 1),
+          s("p", null, "Your other agents have " + w(e.others) + " active " + w(e.others === 1 ? "memory" : "memories") + ".", 1),
           k(o(T), {
             small: "",
             bordered: "",
@@ -321,8 +321,8 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
           class: "group-link",
           "data-group-link": "",
           onClick: t[0] || (t[0] = (c) => m.$emit("pick"))
-        }, f(e.name), 1),
-        s("small", null, f(e.facts), 1)
+        }, w(e.name), 1),
+        s("small", null, w(e.facts), 1)
       ]),
       ne(m.$slots, "default", {}, void 0, !0)
     ]));
@@ -338,9 +338,9 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
       "data-memory": e.row.id,
       onClick: n[0] || (n[0] = (l) => o(se)(`memories:${e.row.id}`))
     }, [
-      s("span", tt, f(e.row.text), 1),
+      s("span", tt, w(e.row.text), 1),
       s("span", nt, [
-        (r(!0), u(A, null, I(t.value, (l) => (r(), u("span", { key: l }, f(l), 1))), 128))
+        (r(!0), u(A, null, I(t.value, (l) => (r(), u("span", { key: l }, w(l), 1))), 128))
       ])
     ], 10, et));
   }
@@ -384,7 +384,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
   },
   emits: ["pick"],
   setup(e, { emit: m }) {
-    const t = e, c = m, n = [{ key: "newest", label: "Newest" }, { key: "weight", label: "Highest weight" }], l = [{ key: "active", label: "Active" }, { key: "removed", label: "Removed" }, { key: "all", label: "All" }], C = G(), y = E(""), $ = E("newest"), g = E("active"), b = E(!1), w = E(""), d = E(""), S = E(""), z = E({}), R = le("memories", (v) => ({
+    const t = e, c = m, n = [{ key: "newest", label: "Newest" }, { key: "weight", label: "Highest weight" }], l = [{ key: "active", label: "Active" }, { key: "removed", label: "Removed" }, { key: "all", label: "All" }], C = G(), y = E(""), $ = E("newest"), g = E("active"), b = E(!1), f = E(""), d = E(""), S = E(""), z = E({}), R = le("memories", (v) => ({
       ...t.who === M ? { "main-agent": !0 } : {},
       ...t.who === q ? { "other-agents": !0 } : {},
       ...j(t.who) ? { agent: U(t.who) } : {},
@@ -418,8 +418,8 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
       return j(t.who) ? (v = t.agent) != null && v.ended_at ? "" : "Working now" : t.who === M ? `What this environment's main agent gets back at every start and when a keyword comes up. ${Q(J.value)}.` : `${Q(J.value)}, listed under the agent they belong to.`;
     }), ce = x(() => R.failure.value ? "failure" : y.value.trim() ? "search" : g.value === "removed" ? "removed" : t.who !== M ? "agent" : t.counts.others ? "main-others" : "main");
     async function ye() {
-      const v = await C.run(["memory", "make", w.value.trim(), "--environment", t.environment]);
-      d.value = v.ok ? "" : v.error, v.ok && (w.value = "", b.value = !1, S.value = "Saved for the main agent.", c("pick", M), R.reset());
+      const v = await C.run(["memory", "make", f.value.trim(), "--environment", t.environment]);
+      d.value = v.ok ? "" : v.error, v.ok && (f.value = "", b.value = !1, S.value = "Saved for the main agent.", c("pick", M), R.reset());
     }
     return (v, a) => {
       var N;
@@ -427,10 +427,10 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
         s("div", rt, [
           s("div", null, [
             s("h2", st, [
-              h(f(me.value) + " ", 1),
-              e.agent ? (r(), u("span", lt, f(o(F)(e.agent.role)), 1)) : O("", !0)
+              h(w(me.value) + " ", 1),
+              e.agent ? (r(), u("span", lt, w(o(F)(e.agent.role)), 1)) : O("", !0)
             ]),
-            s("p", it, f(ve.value), 1)
+            s("p", it, w(ve.value), 1)
           ]),
           e.agent ? (r(), P(o(T), {
             key: 0,
@@ -471,7 +471,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
               onClick: (L) => $.value = i.key
             }, {
               default: p(() => [
-                h(f(i.label), 1)
+                h(w(i.label), 1)
               ]),
               _: 2
             }, 1032, ["checked", "data-memory-order", "onClick"])), 64)),
@@ -488,7 +488,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
               onClick: (L) => g.value = i.key
             }, {
               default: p(() => [
-                h(f(i.label), 1)
+                h(w(i.label), 1)
               ]),
               _: 2
             }, 1032, ["checked", "data-memory-state", "onClick"])), 64))
@@ -517,10 +517,10 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
           k(o(pe), {
             class: "make-text",
             rows: "2",
-            value: w.value,
+            value: f.value,
             placeholder: "What should be remembered?",
             "aria-label": "What should be remembered?",
-            onInput: a[3] || (a[3] = (i) => w.value = i.target.value)
+            onInput: a[3] || (a[3] = (i) => f.value = i.target.value)
           }, null, 8, ["value"]),
           s("div", dt, [
             a[18] || (a[18] = s("span", null, "A new memory goes to the main agent.", -1)),
@@ -538,7 +538,7 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
               small: "",
               variant: "primary",
               type: "submit",
-              disabled: !w.value.trim()
+              disabled: !f.value.trim()
             }, {
               default: p(() => [...a[17] || (a[17] = [
                 h("Save memory", -1)
@@ -547,8 +547,8 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
             }, 8, ["disabled"])
           ])
         ], 32)) : O("", !0),
-        d.value ? (r(), u("p", mt, f(d.value), 1)) : O("", !0),
-        S.value ? (r(), u("p", vt, f(S.value), 1)) : O("", !0),
+        d.value ? (r(), u("p", mt, w(d.value), 1)) : O("", !0),
+        S.value ? (r(), u("p", vt, w(S.value), 1)) : O("", !0),
         s("div", ct, [
           o(R).loaded.value ? o(R).rows.value.length ? (r(), u(A, { key: 2 }, [
             o(Ne)(e.who) ? (r(!0), u(A, { key: 0 }, I(ie.value, (i) => (r(), P(_e, {
@@ -596,36 +596,36 @@ const Pe = ["aria-expanded"], We = { class: "caret" }, Ie = {
     };
   }
 }, gt = /* @__PURE__ */ W(kt, [["__scopeId", "data-v-686524d5"]]);
-function wt() {
+function ft() {
   const e = G(), m = oe({ main: 0, others: 0, everyone: 0 });
   return ge(() => {
     const t = e.props.counts.data.value;
     t && Object.assign(m, { main: t.main_count, others: t.agent_count, everyone: t.total });
   }), m;
 }
-const ft = { class: "chooser" }, pt = ["aria-expanded"], ht = { class: "chooser-name" }, $t = { class: "chooser-count" }, bt = { "aria-hidden": "true" }, St = {
+const wt = { class: "chooser" }, pt = ["aria-expanded"], ht = { class: "chooser-name" }, $t = { class: "chooser-count" }, bt = { "aria-hidden": "true" }, St = {
   __name: "MemoryBrowser",
   props: { environment: { type: String, required: !0 } },
   setup(e) {
-    const m = G(), t = E(M), c = E(!1), n = E(null), l = wt(), C = { [M]: "Main agent", [q]: "Other agents", [B]: "Every agent" }, y = x(() => {
-      var w;
-      return j(t.value) ? ((w = n.value) == null ? void 0 : w.name) ?? "" : C[t.value];
+    const m = G(), t = E(M), c = E(!1), n = E(null), l = ft(), C = { [M]: "Main agent", [q]: "Other agents", [B]: "Every agent" }, y = x(() => {
+      var f;
+      return j(t.value) ? ((f = n.value) == null ? void 0 : f.name) ?? "" : C[t.value];
     }), $ = x(() => j(t.value) ? "" : l[t.value]);
     async function g() {
       if (!j(t.value)) return void (n.value = null);
-      const w = U(t.value);
-      if (m.state["selected.id"] = String(w), await m.reload("selected"), U(t.value) !== w) return;
+      const f = U(t.value);
+      if (m.state["selected.id"] = String(f), await m.reload("selected"), U(t.value) !== f) return;
       const d = m.props.selected, S = d.data.value;
-      n.value = d.failure.value ? null : { id: w, role: S.role, ended_at: S.ended_at, name: S.given_name || `${F(S.role)} ${w}` };
+      n.value = d.failure.value ? null : { id: f, role: S.role, ended_at: S.ended_at, name: S.given_name || `${F(S.role)} ${f}` };
     }
-    const b = (w) => {
-      t.value = w, c.value = !1;
+    const b = (f) => {
+      t.value = f, c.value = !1;
     };
-    return V(t, g, { immediate: !0 }), m.follow(["agent.*"], $e(() => g(), be.openPanel)), (w, d) => (r(), u("div", {
+    return V(t, g, { immediate: !0 }), m.follow(["agent.*"], $e(() => g(), be.openPanel)), (f, d) => (r(), u("div", {
       class: D(["browser", { picking: c.value }]),
       "data-memory-browser": ""
     }, [
-      s("div", ft, [
+      s("div", wt, [
         d[1] || (d[1] = s("span", { class: "chooser-label" }, "Whose memories", -1)),
         s("button", {
           type: "button",
@@ -634,9 +634,9 @@ const ft = { class: "chooser" }, pt = ["aria-expanded"], ht = { class: "chooser-
           "data-whose": "",
           onClick: d[0] || (d[0] = (S) => c.value = !c.value)
         }, [
-          s("span", ht, f(y.value), 1),
-          s("span", $t, f($.value), 1),
-          s("span", bt, f(c.value ? "▴" : "▾"), 1)
+          s("span", ht, w(y.value), 1),
+          s("span", $t, w($.value), 1),
+          s("span", bt, w(c.value ? "▴" : "▾"), 1)
         ], 8, pt)
       ]),
       k(Ue, {
