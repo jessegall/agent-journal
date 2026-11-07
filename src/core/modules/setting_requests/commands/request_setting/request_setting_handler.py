@@ -26,7 +26,7 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
 
     def handle(self, command: RequestSetting, context: Context) -> ApprovalRequest:
         if context.actor.type is not ActorType.AGENT:
-            raise Refusal("only an agent asks for a setting", "a person sets it with journal setting set")
+            raise Refusal("only an agent asks for a setting", "change the setting on the Settings page")
         entry = self.declared.value(command.key)
         if not entry.person_set:
             raise Refusal(f"an agent may set {command.key} itself", "journal setting set")

@@ -2,6 +2,9 @@ import json
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.query.queries import Queries
+from core.modules.chat.models.chat_mark import ChatMark
+from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
@@ -63,7 +66,10 @@ def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(new_s
     recording_launch(monkeypatch)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
     story.run_listeners()
-    expect_marks_text(story, f"Worker {worker.id} was handed plan 1")
+    expect_marks_text(story, f"Worker {worker.id} was given 3 tasks")
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).all_rows())
+    story.expect_rows(len(marks) == 1, marks[0].target_id == worker.id,
+                      all(text in marks[0].detail for text in ("Task 1: Fix the cart", "Task 2: Tax", "Task 3: Totals")))
 
 
 def test_a_dispatch_for_one_task_shows_no_plan_handed_over(new_story, monkeypatch):

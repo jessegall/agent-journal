@@ -19,8 +19,6 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.support.task_waits import TaskWaits
 from suites.coding.modules.workers.support.available_workers import AvailableWorkers
 from suites.coding.modules.workers.support.worker_request import WorkerRequest
 from suites.coding.modules.workers.support.worker_settings import LIBRARY_LINKS
@@ -39,6 +37,7 @@ from dataclasses import replace
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker and its tasks, runs git without a write lock and removes an opening that fails."""
@@ -47,23 +46,23 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, waits: TaskWaits) -> None:
-        self.places, self.copies, self.available_workers, self.waits = places, copies, available_workers, waits
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers) -> None:
+        self.places, self.copies, self.available_workers = places, copies, available_workers
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
         self.environments, self.rows, self.types, self.profiles, self.scopes = environments, rows, types, profiles, scopes
         self.sources, self.routing = sources, routing
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
-        tasks = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
+        tasks = AssignableTasks.checked(self.queries.query(Task).find_many([command.task_id, *command.delegated_ids]))
+        if not AssignableTasks.has_open(tasks):
+            raise Refusal("every task here is blocked, and a new worker starts on an open one",
+                          "assign blocked tasks to a kept worker with journal worker send <n> --task, or dispatch once one opens")
         with self.scopes.row_scope(tasks[0]):
             return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
 
     def dispatched(self, command: DispatchWorker, tasks: list[Task], context: Context) -> WorkerLaunch:
         task = tasks[0]
-        for listed in tasks:
-            if not self.queueable(listed, listed is task, command.plan_id is not None):
-                raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.environments.find(task.environment_id)
         caller = self.rows.find(Agent, context.actor.id)
         parent_id = caller.id if caller is not None else None
@@ -80,18 +79,18 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         try:
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
-            self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
-            worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links))))), context)
+            try:
+                self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
+                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links))))), context)
+            except Exception:
+                self.git.remove(environment.folder, opened.worktree)
+                raise
         except Exception:
-            self.git.remove(environment.folder, opened.worktree)
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
         if choice.fallback is not None:
             self.bus.run_with_context(ReportWorkerRouteFallback(opened.worker.id, tuple(listed.id for listed in tasks), choice.fallback), context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))
-
-    def queueable(self, task: Task, is_first: bool, is_plan: bool) -> bool:
-        return task.state is TaskState.OPEN or (not is_first and task.state is TaskState.BLOCKED and (is_plan or self.waits.waits_target_tasks(task.id)))
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
         idle = self.available_workers.first(folder, request)

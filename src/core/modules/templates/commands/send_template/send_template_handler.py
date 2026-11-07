@@ -1,5 +1,4 @@
-from core.base.user_approval import UserApproval
-from core.base.actor_type import ActorType
+from core.modules.agents.support.person_check import PersonCheck
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -26,8 +25,7 @@ class SendTemplateHandler(Handler[SendTemplate, Message]):
         self.queries, self.active, self.targets, self.bus, self.book = queries, active, targets, bus, book
 
     def handle(self, command: SendTemplate, context: Context) -> Message:
-        if context.actor.type is not ActorType.USER:
-            raise UserApproval(f"Send template {command.template_id}?")
+        PersonCheck.require(context, f"Send template {command.template_id}?")
         template = self.queries.query(Template).find(command.template_id)
         if not self.active.is_active(template.module):
             raise Refusal(f"template {template.id} is not offered here", "journal template list shows those that are")

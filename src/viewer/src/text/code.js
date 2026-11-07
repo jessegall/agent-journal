@@ -131,4 +131,4 @@ function lift(text, isDocument) {
     return out.length > 1 || (out[0] && out[0].type === "html") ? out : null;
 }
 
-register((text, context) => lift(text, context.document));
+register((text, context) => lift(text, context.document), {first: true});

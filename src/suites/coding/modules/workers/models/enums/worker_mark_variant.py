@@ -11,6 +11,7 @@ class WorkerMarkVariant(StrEnum):
     STARTED = "started"
     NEXT_TASK = "next task"
     NEXT_JOB = "next job"
+    ASSIGNED = "assigned"
     HANDED_PLAN = "handed plan"
     DELIVERED = "delivered"
     MERGED = "merged"

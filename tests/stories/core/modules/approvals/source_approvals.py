@@ -11,6 +11,7 @@ from tests.stories.core.modules.plans.support.approval_fixtures import ReadyAppr
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.support.fixtures import PlanWithPhases
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 
 
 @pytest.fixture
@@ -33,6 +34,15 @@ def test_a_ready_plan_is_automatically_docked_for_the_persons_decision(ready_pla
     plan_viewer.value("messages.chat", ["approval", decision, str(request.id)])
     plan = story.container.get(Queries).query(Plan).find(1)
     story.expect_rows(plan.state is state)
+
+
+def test_a_refused_plan_is_not_asked_again_when_the_registry_changes(ready_plan, plan_viewer):
+    story, request = ready_plan
+    plan_viewer.value("messages.chat", ["approval", "refuse", str(request.id)])
+    story.expect_sync_success(UPGRADE)
+    story.run_listeners()
+    requests = tuple(story.container.get(Queries).query(ApprovalRequest).all_rows())
+    story.expect_rows(len(requests) == 1)
 
 
 @pytest.fixture

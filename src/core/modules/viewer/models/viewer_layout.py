@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.environment_scoped import EnvironmentScoped
 
@@ -20,3 +19,6 @@ class ViewerLayout(EnvironmentScoped, Model):
     page: str
     driver: str = ""
     layout: str
+
+    def has_changed_since(self, version: int | None) -> bool:
+        return version is not None and self.version != version

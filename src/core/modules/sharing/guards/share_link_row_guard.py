@@ -17,6 +17,7 @@ class ShareLinkRowGuard(Guard[Changed[ShareLink]]):
     what an agent asked."""
 
     name = "sharing.share-link-rows"
+    is_safety = True
 
     def check(self, event: Changed[ShareLink], context: Context) -> None:
         row, actor = event.row, context.actor
@@ -25,8 +26,11 @@ class ShareLinkRowGuard(Guard[Changed[ShareLink]]):
         is_new = isinstance(event, Created)
         if is_new and actor.type is ActorType.AGENT and row.state is ShareLinkState.WAITING:
             return
-        if event.move in (ShareLinkLifecycle.accept, ShareLinkLifecycle.deny) and actor.type is ActorType.USER:
-            return
+        if event.move in (ShareLinkLifecycle.accept, ShareLinkLifecycle.deny):
+            if actor.type is ActorType.USER:
+                return
+            if actor.type is ActorType.AGENT:
+                raise UserApproval(f"Decide this share request {row.id}?")
         is_owner_change = is_new or isinstance(event, Deleted) or event.move is ShareLinkLifecycle.revoke
         if is_owner_change and actor.type is ActorType.USER and actor.id == row.creator_id:
             return

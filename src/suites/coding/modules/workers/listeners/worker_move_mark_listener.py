@@ -7,7 +7,6 @@ from core.base.query.conditions.among import Among
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.chat.listeners.mark_listener import MarkListener
-from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -55,17 +54,6 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
         name = agent.given_name or f"Worker {agent.id}"
         choice_reason = f"; {worktree.route_reason}" if worktree.route_reason else ""
         self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{choice_reason}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
-        if event.move is WorktreeLifecycle.cut:
-            self.show_plan(logged, worktree, agent, name, (worktree.task_id, *(row.id for row in queued)))
-
-    def show_plan(self, logged: LoggedEvent, worktree: Worktree, agent: Agent, name: str, task_ids: tuple[int, ...]) -> None:
-        plan_tasks = tuple(self.queries.query(PlanTask).matching(Among("task_id", task_ids)).all_rows())
-        plan_ids = {row.plan_id for row in plan_tasks}
-        if len(task_ids) > 1 and len(plan_tasks) == len(task_ids) and len(plan_ids) == 1:
-            plan_id = plan_ids.pop()
-            self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.HANDED_PLAN, f"{name} was handed plan {plan_id}", None, AGENTS_TABLE, agent.id,
-                      detail=", ".join(f"task {task_id}" for task_id in task_ids))
-
     def queue_text(self, queued: tuple[Task, ...]) -> str:
         names = ", ".join(f"task {row.id}" for row in queued)
         return f"\n\nQueued: {names}" if names else ""

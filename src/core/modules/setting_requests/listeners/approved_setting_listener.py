@@ -28,7 +28,7 @@ class ApprovedSettingListener(CommitListener[Moved[Question]]):
         request = self.queries.query(SettingRequest).filter(question_id=event.row.id).first()
         if request is None:
             return
-        if event.move is QuestionLifecycle.answer and event.row.answer == APPROVE_OPTION:
+        if event.move.name == QuestionLifecycle.answer.name and event.row.answer == APPROVE_OPTION:
             self.bus.run(SetSetting(request.key, request.value, request.project), Actor(logged.actor_id, ActorType.USER), cause_id=logged.id, environment_id=request.environment_id)
         arguments = ("question", "answer", str(event.row.id), "--answer", APPROVE_OPTION)
         self.bus.run(CloseUserApproval(arguments), self.actors.actor("journal.core.setting-requests"),

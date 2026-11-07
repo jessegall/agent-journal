@@ -35,7 +35,8 @@ class TriggerApprovalListener(CommitListener[Changed[Trigger] | RegistrySynced])
         if trigger.needs_enabling and trigger.ended_at is None:
             if environment_id is None:
                 environment_id = self.queries.query(Agent).find(trigger.creator_id).environment_id
-            approval = UserApproval(f"Enable the trigger {trigger.name or trigger.text}?\n{trigger.text}", arguments, ("trigger", "strike", str(trigger.id)))
+            approval = UserApproval(f"Enable the trigger {trigger.name or trigger.text}?\n{trigger.text}", arguments,
+                                    ("trigger", "strike", str(trigger.id)), source_version=trigger.version)
             self.bus.run(RequestUserApproval(approval, arguments, trigger.creator_id), actor, cause_id=logged.id, environment_id=environment_id)
             return
         self.bus.run(CloseUserApproval(arguments), actor, cause_id=logged.id, environment_id=environment_id)

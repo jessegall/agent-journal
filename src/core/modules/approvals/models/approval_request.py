@@ -18,6 +18,8 @@ class ApprovalRequest(EnvironmentScoped, Model):
     creator_id: int
     requester_id: int
     required_person_id: int | None = None
+    source_version: int | None = None
+    returns_output: bool = False
     text: str
     arguments: tuple[str, ...]
     refused_arguments: tuple[str, ...] = ()

@@ -39,7 +39,7 @@ def encrypted_server(tmp_path_factory):
         yield server, server.new_user("Grace", "edit"), tls
 
 
-def connection_of(story: Story) -> LibraryConnection | None:
+def library_connection(story: Story) -> LibraryConnection | None:
     return story.container.get(LibraryConnectionQuery).current()
 
 
@@ -49,7 +49,7 @@ def test_a_person_connects_with_a_url_and_a_token_and_sees_the_server_and_their_
     story.expect_text(f"library connect {server.address} --token {token}", "Connected: ", ". Role: edit.", actor=story.user)
     story.expect_text("library status", f"address: {server.address}", "user_name: Grace", "role: edit", "is_connected: True", actor=story.user)
     story.expect_text(f"setting show {ADDRESS_SETTING}", server.address, actor=story.user)
-    story.expect_rows(connection_of(story).server_key == server.server_key(), connection_of(story).stopped == "", TOKEN_VARIABLE in story.container.get(SecretValues).values())
+    story.expect_rows(library_connection(story).server_key == server.server_key(), library_connection(story).stopped == "", TOKEN_VARIABLE in story.container.get(SecretValues).values())
 
 
 def test_a_bare_ip_means_https_so_a_server_without_a_certificate_cannot_be_reached(new_story, shared_server):
@@ -57,7 +57,7 @@ def test_a_bare_ip_means_https_so_a_server_without_a_certificate_cannot_be_reach
     bare = server.address.removeprefix("http://")
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal(f"library connect {bare} --token {token}", f"The server could not be reached at https://{bare}.", actor=story.user)
-    story.expect_rows(connection_of(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values())
+    story.expect_rows(library_connection(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values())
 
 
 def test_a_bare_ip_connects_over_https_with_the_certificate_of_the_server(new_story, encrypted_server):
@@ -66,7 +66,7 @@ def test_a_bare_ip_connects_over_https_with_the_certificate_of_the_server(new_st
     story = new_story(fixture=BuilderWithUser)
     story.expect_text(f"library connect {bare} --token {token} --certificate {tls.certificate}", "Role: edit.", actor=story.user)
     story.expect_text("library status", f"address: {server.address}", "is_encrypted: True", actor=story.user)
-    story.expect_rows(client_of(story).state().role.value == "edit")
+    story.expect_rows(library_client(story).state().role.value == "edit")
 
 
 def test_a_certificate_the_server_does_not_use_is_refused_and_a_file_that_is_no_certificate_too(new_story, encrypted_server, tmp_path):
@@ -77,14 +77,14 @@ def test_a_certificate_the_server_does_not_use_is_refused_and_a_file_that_is_no_
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal(f"library connect {server.address} --token {token} --certificate {second.certificate}", "The server could not be reached at", actor=story.user)
     story.expect_refusal(f"library connect {server.address} --token {token} --certificate {notes}", f"{notes} is no certificate file this journal can read", actor=story.user)
-    story.expect_rows(connection_of(story) is None)
+    story.expect_rows(library_connection(story) is None)
 
 
 def test_a_wrong_token_is_refused_and_nothing_is_kept(new_story, shared_server):
     server, _ = shared_server
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal(f"library connect {server.address} --token jsl_wrong", "The server did not accept this token.", actor=story.user)
-    story.expect_rows(connection_of(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values(), "jsl_wrong" not in every_stored_text(story))
+    story.expect_rows(library_connection(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values(), "jsl_wrong" not in every_stored_text(story))
 
 
 def test_an_address_nobody_answers_at_is_refused_and_named(new_story):
@@ -92,7 +92,7 @@ def test_an_address_nobody_answers_at_is_refused_and_named(new_story):
         address = closed.address
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal(f"library connect {address} --token jsl_token", f"The server could not be reached at {address}.", actor=story.user)
-    story.expect_rows(connection_of(story) is None)
+    story.expect_rows(library_connection(story) is None)
 
 
 def test_an_address_that_is_no_address_is_refused_before_anything_is_sent(new_story):
@@ -115,23 +115,19 @@ def test_a_connect_with_no_address_and_no_setting_is_refused(new_story):
 def test_an_agent_cannot_connect_and_nothing_is_sent(new_story):
     with StubServer(StubAnswer(200, b"{}")) as stub:
         story = new_story(fixture=BuilderWithUser)
-        story.expect_refusal(f"library connect {stub.address} --token jsl_token", "only a person connects to the shared server", actor=story.agent)
-        story.expect_rows(stub.requests == [], connection_of(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values())
+        story.expect_refusal(f"library connect {stub.address} --token jsl_token", "connection credentials are entered by a person", actor=story.agent)
+        story.expect_rows(stub.requests == [], library_connection(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values())
 
 
-def test_with_the_address_guard_skipped_an_agent_moves_the_setting_but_no_token_leaves(new_story, shared_server):
+def test_the_address_guard_cannot_be_skipped_and_no_token_leaves(new_story, shared_server):
     server, token = shared_server
     with StubServer(StubAnswer(200, b"{}")) as stub:
         story = new_story(fixture=BuilderWithUser)
         story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
         story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project", "library.address-by-person", actor=story.agent)
-        story.expect_success(f"setting set {ADDRESS_SETTING} {stub.address} --project {SKIP_ADDRESS_GUARD}", actor=story.agent)
-        stopped = None
-        try:
-            client_of(story).state()
-        except LibraryStoppedError as failure:
-            stopped = failure
-        story.expect_rows(stopped is not None, stub.requests == [])
+        story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project {SKIP_ADDRESS_GUARD}", "safety refusal", actor=story.agent)
+        library_client(story).state()
+        story.expect_rows(stub.requests == [])
 
 
 def test_the_token_is_in_no_row_no_output_and_no_process_line(new_story, shared_server):
@@ -162,7 +158,7 @@ def test_disconnect_with_forget_deletes_the_connection(new_story, shared_server)
     story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
     story.expect_success("library disconnect --forget", "Disconnected. 0 copies deleted.", actor=story.user)
     story.expect_text("library status", "is_connected: False", actor=story.user)
-    story.expect_rows(connection_of(story) is None)
+    story.expect_rows(library_connection(story) is None)
 
 
 def test_an_agent_cannot_disconnect(new_story, shared_server):
@@ -170,7 +166,7 @@ def test_an_agent_cannot_disconnect(new_story, shared_server):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
     story.expect_refusal("library disconnect --forget", "only a person connects to the shared server or disconnects from it", actor=story.agent)
-    story.expect_rows(connection_of(story) is not None, TOKEN_VARIABLE in story.container.get(SecretValues).values())
+    story.expect_rows(library_connection(story) is not None, TOKEN_VARIABLE in story.container.get(SecretValues).values())
 
 
 def test_disconnecting_with_no_connection_says_so(new_story):
@@ -183,5 +179,5 @@ def test_the_status_of_a_journal_with_no_connection_says_so(new_story):
     story.expect_text("library status", "is_connected: False", "stopped: This journal is not connected to a shared server.", actor=story.agent)
 
 
-def client_of(story: Story) -> LibraryClient:
+def library_client(story: Story) -> LibraryClient:
     return story.container.get(LibraryClient)

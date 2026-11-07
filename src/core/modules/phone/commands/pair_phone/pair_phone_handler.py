@@ -1,7 +1,6 @@
-from core.base.user_approval import UserApproval
 from datetime import timedelta
 
-from core.base.actor_type import ActorType
+from core.modules.agents.support.person_check import PersonCheck
 from core.base.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -25,8 +24,7 @@ class PairPhoneHandler(Handler[PairPhone, PhoneInvitation]):
         self.repository, self.clock, self.codes = repository, clock, codes
 
     def handle(self, command: PairPhone, context: Context) -> PhoneInvitation:
-        if context.actor.type is not ActorType.USER:
-            raise UserApproval("Create a phone pairing code?")
+        PersonCheck.require(context, "Create a phone pairing code?", returns_output=True)
         code = self.codes.code()
         expires_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=CODE_LIFETIME_MINUTES))
         self.repository.save(PhoneCode(creator_id=context.actor.id, person_id=context.actor.id, code_digest=self.codes.digest(code), expires_at=expires_at), context)

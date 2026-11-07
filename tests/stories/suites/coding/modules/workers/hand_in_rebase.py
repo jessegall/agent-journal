@@ -204,7 +204,7 @@ def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
     repository.changed(worker.id, "notes.py", "NOTE = 1\n")
     worktrees = [story.container.get(Queries).query(Worktree).filter(session_agent_id=agent.id).first() for agent in (worker, sibling)]
     with ThreadPoolExecutor(2) as pool:
-        list(pool.map(WorktreeGit().rebase, worktrees))
+        list(pool.map(story.container.get(WorktreeGit).rebase, worktrees))
 
     worker_folder, sibling_folder = repository.worktree_folder(worker.id), repository.worktree_folder(sibling.id)
     story.expect_rows((worker_folder / "notes.py").exists(), not (worker_folder / "sibling.py").exists())

@@ -32,7 +32,7 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
         check = self.checks.find(arguments.id)
         if check.stopped:
             raise UserApproval(f"Start and run the stopped check {check.id}?", ("check", "start", str(check.id)),
-                               continued_arguments=("check", "run", str(check.id)))
+                               continued_arguments=("check", "run", str(check.id)), returns_output=True)
         outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).read_line)
         return RecordCheckRun(check.id, outcome.passed, outcome.output)
 

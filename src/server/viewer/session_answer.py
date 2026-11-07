@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from core.base.journal_version import JOURNAL_VERSION
 from server.viewer.session_type import SessionType
 from server.viewer.share_answer import ShareAnswer
 
@@ -12,3 +13,4 @@ class SessionAnswer:
     person_id: int | None
     share: ShareAnswer | None = None
     tour_completed: bool = False
+    journal_version: str = JOURNAL_VERSION

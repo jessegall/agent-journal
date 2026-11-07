@@ -9,7 +9,9 @@ const request = useDockRow("approval");
   <details class="approval-details">
     <summary>Action details</summary>
     <pre>{{ request?.arguments?.join(" ") }}</pre>
-    <pre v-if="request?.continued_arguments?.length">{{ request.continued_arguments.join(" ") }}</pre>
+    <template v-if="request?.continued_arguments?.length">
+      <pre>{{ request.continued_arguments.join(" ") }}</pre>
+    </template>
   </details>
 </template>
 

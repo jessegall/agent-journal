@@ -6,15 +6,18 @@ from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.environments.models.environment import Environment
 from server.viewer.viewer_key import ViewerKey
+from server.viewer.session_type import SessionType
 from server.viewer.viewer_login import ViewerLogin
 
 
 class ViewerKeyRoute:
     """Answers POST /viewer/key on the journal's socket: a one-time login key for the person who asks,
-    found the way a command line's caller is found, with the environment of the folder they asked from;
-    an agent or a caller who is no person gets none."""
+    found the way a command line's caller is found, with the environment of the folder they asked from. A
+    running main agent gets a key for itself, so it can see the viewer; a helper, a worker or another caller
+    who is no person gets none."""
 
     def __init__(self, home: JournalHome, login: ViewerLogin) -> None:
         self.home, self.login = home, login
@@ -23,9 +26,13 @@ class ViewerKeyRoute:
         container = synced_container(self.home)
         try:
             caller = container.get(CallerResolver).caller(request)
-            environment = container.get(Queries).query(Environment).find(caller.environment_id).name if caller.environment_id is not None else ""
+            queries = container.get(Queries)
+            environment = queries.query(Environment).find(caller.environment_id).name if caller.environment_id is not None else ""
+            is_main_agent = caller.actor.type is ActorType.AGENT and bool(MainAgentFinder.main_ids(queries, tuple([caller.actor.id])))
         finally:
             container.get(Database).close()
+        if is_main_agent:
+            return ViewerKey(self.login.new_key(caller.actor.id, SessionType.AGENT), environment)
         if caller.actor.type is not ActorType.USER:
             raise Refusal("an agent cannot receive a person's viewer credentials")
         return ViewerKey(self.login.new_key(caller.actor.id), environment)

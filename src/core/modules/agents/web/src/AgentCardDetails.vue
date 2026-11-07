@@ -98,7 +98,7 @@ watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true
 .agent-summary { margin: 8px 14px; color: var(--text-2); font-size: 12px; white-space: pre-wrap; }
 .agent-report { padding: 8px 14px; border: 0; border-bottom: 1px solid var(--border-inner); background: transparent; color: var(--text); text-align: left; white-space: pre-wrap; cursor: pointer; }
 .agent-ended-reason { margin: 4px 0; color: var(--danger, var(--text)); }
-.agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px 40% 6px 0; border-bottom: 1px solid var(--border-inner); }
+.agent-command { width: 100%; max-width: 100%; overflow: hidden; padding: 6px var(--agent-padding); border-bottom: 1px solid var(--border-inner); }
 .agent-tab-body { position: relative; display: flex; flex: 1; flex-direction: column; min-width: 0; min-height: 0; overflow-x: hidden; overflow-y: auto; contain: inline-size; }
 .agent-tab-body:not([data-agent-tab-body="tasks"]) > :deep(*) { flex: 1; min-height: 0; }
 .agent-tab-body :deep(.row-list-row) { padding: 8px 14px; border-bottom: 1px solid var(--border-inner); }

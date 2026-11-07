@@ -3,6 +3,7 @@ from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_
 
 SILENT_AGENT_SOURCE = "workers.silent-agent"
 WORKER_JOB_SOURCE = "workers.worker-job"
+WAITING_TASKS_SOURCE = "workers.waiting-tasks"
 MERGE_CONFLICT_SOURCE = "workers.merge-clash"
 UNFINISHED_TASKS_SOURCE = "workers.unfinished-tasks"
 SHORT_PROOF_SOURCE = "workers.short-proof"

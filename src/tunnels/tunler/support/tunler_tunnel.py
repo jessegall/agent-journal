@@ -37,7 +37,7 @@ class TunlerTunnel(Tunnel):
         if not status.installed:
             return "tunler is not installed on this machine"
         if not status.authenticated:
-            return "this machine is not logged in to tunler: run tunler login"
+            return "this machine is not logged in to Tunler: sign in on the Tunler page"
         return ""
 
     def address(self) -> str | None:

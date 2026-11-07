@@ -30,9 +30,9 @@ def legacy_viewer(restored_question):
 def test_a_pending_old_setting_question_uses_the_shared_dock_after_upgrade(restored_question, legacy_viewer, decision, changed):
     story, request = restored_question
     legacy_viewer.value("messages.chat", ["approval", decision, str(request.id)])
-    story.run_listeners()
-    story.expect_rows(story.container.get(SettingValues).flag(SETTING) is changed)
+    legacy_viewer.server.expect_eventually(f"setting show {SETTING} --environment main", f"value: {changed}")
     question = story.container.get(Queries).query(Question).find(1)
+    story.expect_rows(story.container.get(SettingValues).flag(SETTING) is changed)
     story.expect_rows(question.state is QuestionState.ANSWERED)
 
 

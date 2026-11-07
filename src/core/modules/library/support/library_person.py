@@ -7,4 +7,4 @@ class LibraryPerson:
 
     @staticmethod
     def require(context: Context, reason: str) -> None:
-        PersonCheck.require(context, f"Allow this team action? {reason}")
+        PersonCheck.require(context, f"Allow this team action? {reason}", returns_output=True)

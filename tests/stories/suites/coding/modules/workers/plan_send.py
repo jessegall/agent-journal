@@ -1,25 +1,42 @@
 import pytest
 
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+
 from core.base.query.queries import Queries
+from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
+from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.models.worker_operation import WorkerOperation
+from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.kept_workers import stopped
+from tests.stories.suites.coding.modules.workers.queued_commands import run_operation
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+
+
+def joined_person(story):
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+
+
+def assignment_marks(story):
+    story.run_listeners()
+    return tuple(story.container.get(Queries).query(ChatMark).filter(variant=WorkerMarkVariant.ASSIGNED).oldest().all_rows())
 
 
 @pytest.fixture
 def idle_plan(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
+    joined_person(story)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
-    stopped(story, worker)
     story.expect_success('plan make "Next plan" --environment main', actor=story.user)
     story.expect_success('phase make --plan 1 "Build"', actor=story.user)
     story.expect_success('phase make --plan 1 "Ship"', actor=story.user)
@@ -29,6 +46,8 @@ def idle_plan(new_story, monkeypatch):
     story.expect_success("task block 3 --on task:2", actor=story.agent)
     ready_plan(story, actor=story.user)
     story.expect_success("plan approve 1 --environment main", actor=story.user)
+    monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
+    stopped(story, worker)
     return story, worker
 
 
@@ -39,11 +58,15 @@ def test_idle_worker_refusal_keeps_the_plan_and_phase(idle_plan):
 
 def test_a_plan_sent_to_an_idle_worker_keeps_its_order_and_blocked_tasks(idle_plan):
     story, worker = idle_plan
+    before = len(assignment_marks(story))
     story.expect_success(f"worker send --wait {worker.id} --plan 1", actor=story.agent)
+    marks = assignment_marks(story)
+    story.expect_rows(len(marks) == before + 1, marks[-1].text == f"Worker {worker.id} was given 3 tasks",
+                      all(f"Task {number}: Task {number}" in marks[-1].detail for number in (2, 3, 4)), marks[-1].target_id == worker.id)
     tasks = story.container.get(Queries).query(Task).find_many([2, 3, 4])
     story.expect_rows(all(task.delegated_to == worker.id for task in tasks))
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
-    story.expect_text("plan inspect 1", "delegated", actor=story.agent)
+    story.expect_text("plan inspect 1 --json", '"delegated": true', actor=story.agent)
 
 
 def test_sending_one_phase_leaves_the_other_phase_unassigned(idle_plan):
@@ -55,6 +78,7 @@ def test_sending_one_phase_leaves_the_other_phase_unassigned(idle_plan):
 
 def test_a_large_plan_dispatch_updates_dependencies_without_repeated_reads(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
+    joined_person(story)
     repository_environment(story)
     story.expect_success('plan make "Many tasks" --environment main', actor=story.user)
     story.expect_success('phase make --plan 1 "Build"', actor=story.user)
@@ -68,3 +92,37 @@ def test_a_large_plan_dispatch_updates_dependencies_without_repeated_reads(new_s
     worker = dispatched_worker(story, "worker dispatch --model sonnet --plan 1")
     tasks = story.container.get(Queries).query(Task).find_many(list(range(1, 15)))
     story.expect_rows(all(task.delegated_to == worker.id for task in tasks))
+
+
+def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_opens(idle_plan, monkeypatch):
+    story, worker = idle_plan
+    monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
+    story.expect_success(f"worker send --wait {worker.id} --task 3", actor=story.agent)
+    before = len(assignment_marks(story))
+    story.expect_rows(story.row(Task, 3).delegated_to == worker.id, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
+    story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    story.expect_rows(operation.worker_id == worker.id, operation.line == f"worker send {worker.id} --task 3 --wait", operation.creator_id == story.agent.id)
+    outcome = run_operation(story, operation)
+    story.expect_rows(outcome.code == 0, detail=outcome.output_text)
+    marks = assignment_marks(story)
+    story.expect_rows(len(marks) == before + 1, marks[-1].text == f"Worker {worker.id} was given task 3", "Task 3: Task 3" in marks[-1].detail)
+    story.expect_text("task show 3", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+
+
+def test_a_task_blocked_for_a_reason_goes_to_a_busy_worker_and_waits_for_its_turn(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
+    task = story.new_row_id('task make "Later work" --environment main', actor=story.agent)
+    story.expect_success(f'task block {task} --reason "Waits on the design"', actor=story.agent)
+    story.expect_success(f"worker send --wait {worker.id} --task {task}", actor=story.agent)
+    story.expect_success(f"task unblock {task}", actor=story.agent)
+    story.expect_rows(story.row(Task, task).delegated_to == worker.id, story.row(Task, task).holder_id is None,
+                      story.container.get(Queries).query(WorkerOperation).count() == 0)
+
+
+def test_a_new_worker_is_not_started_on_blocked_tasks_alone(idle_plan):
+    story, _worker = idle_plan
+    story.expect_refusal("worker dispatch --fresh 'A second worker' --model sonnet 3", "every task here is blocked", actor=story.agent)

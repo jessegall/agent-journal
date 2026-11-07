@@ -66,7 +66,7 @@ class ViewerModule(Module):
     windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, skeleton=VIEWER_SHELL_SKELETON, icon=WindowIcon.WINDOW, reads=SHELL_READS, runs=SHELL_RUNS, events=["process.*", "output.*", "setting.*", "agent.*", "phone.*", "task.*", "question.*", "scheduled_job.*"], keys=[
         WindowKey("environments", "environment list"),
         WindowKey("active-environments", "agent environments", events=["agent.*"]),
-        WindowKey("usage", "usage show", reload_seconds=10),
+        WindowKey("usage", "usage show --open", reload_seconds=10),
         WindowKey("fitness", "usage fitness", arguments=["agent"], loading=KeyLoading.REQUESTED),
         WindowKey("controls", "agent controls {agent}", loading=KeyLoading.REQUESTED),
         WindowKey("programs", "agent programs", loading=KeyLoading.REQUESTED),

@@ -1,3 +1,4 @@
+from core.modules.tasks.models.task import Task
 from core.testing.hook_samples import HookSamples
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from datetime import timedelta
@@ -205,13 +206,13 @@ def merged_kept_worker(story, repository):
     return worker
 
 
-def test_a_send_with_an_open_dependency_is_refused_and_the_worker_stays(new_story):
+def test_a_send_with_an_open_dependency_assigns_the_task_to_wait_and_cuts_no_worktree(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     worker = merged_kept_worker(story, repository_environment(story))
     first, second = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
     story.expect_success(f"task depend {second} --on {first}", actor=story.agent)
-    story.expect_refusal(f"worker send --wait {worker.id} --task {second}", f"task {second} waits on an open task", actor=story.agent)
-    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
+    story.expect_success(f"worker send --wait {worker.id} --task {second}", actor=story.agent)
+    story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, story.row(Task, second).delegated_to == worker.id)
 
 
 def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypatch):

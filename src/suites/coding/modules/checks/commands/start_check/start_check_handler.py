@@ -1,7 +1,6 @@
-from core.base.user_approval import UserApproval
 from dataclasses import replace
 
-from core.base.actor_type import ActorType
+from core.modules.agents.support.person_check import PersonCheck
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -20,8 +19,7 @@ class StartCheckHandler(Handler[StartCheck, Check]):
         self.checks, self.repository = checks, repository
 
     def handle(self, command: StartCheck, context: Context) -> Check:
-        if context.actor.type is not ActorType.USER:
-            raise UserApproval(f"Start the stopped check {command.check_id}?")
+        PersonCheck.require(context, f"Start the stopped check {command.check_id}?")
         check = self.checks.find(command.check_id)
         if not check.stopped:
             raise Refusal(f"check {check.id} is not stopped", "journal check list shows which checks are stopped")

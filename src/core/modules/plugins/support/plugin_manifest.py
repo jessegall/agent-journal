@@ -7,7 +7,9 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from functools import lru_cache
 
+from core.base.journal_version import JOURNAL_VERSION
 from core.base.refusal import Refusal
+from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_declared_event import PluginDeclaredEvent
@@ -22,7 +24,6 @@ from core.modules.plugins.support.setup_step import SetupStep
 from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.event_window import EventWindow
 
-MANIFEST_FILE = "journal-plugin.json"
 REQUIRED_FIELDS = ("name", "title", "version")
 
 
@@ -31,7 +32,7 @@ LINE_VERSION = 1
 
 @dataclass(frozen=True)
 class PluginManifest:
-    """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name,
+    """What a plugin folder says about itself in the manifest this journal version reads: its name,
     title and version, the program run for each event, the events it takes and the ones it answers
     inside a window, the settings its settings file lists, the tone of each type of card it shows, the
     folder of its skills, the services it keeps running, and what its install requires, sets up and
@@ -66,9 +67,8 @@ class PluginManifest:
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
-        path = folder / MANIFEST_FILE
-        if not path.is_file():
-            raise Refusal(f"{folder} contains no plugin: {MANIFEST_FILE} is missing", "name the folder of a plugin")
+        manifests = PluginManifestFiles.listed(folder)
+        path = manifests.chosen(JOURNAL_VERSION)
         fields = cls.loaded_fields(path, FileAccess.shared().version(path))
         program = str(fields["program"]) if "program" in fields else ""
         settings_file = str(fields["settings"]) if "settings" in fields else ""
@@ -79,7 +79,7 @@ class PluginManifest:
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (MANIFEST_FILE, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(listed, folder)) if file and not file.startswith(SERVICE_PREFIX))),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (*manifests.names, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(listed, folder)) if file and not file.startswith(SERVICE_PREFIX))),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",

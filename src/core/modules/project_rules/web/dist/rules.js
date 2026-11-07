@@ -1,75 +1,79 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-5aa5d5d6d2bc")) { const style = document.createElement("style"); style.id = "window-styles-5aa5d5d6d2bc"; style.textContent = ".rule-dock[data-v-5c184a03]{margin:3px 0 6px;border-block:1px solid var(--border-inner);padding:7px 14px 8px 36px;color:var(--text);font-size:13px;line-height:1.5}.rules-page[data-v-741afd9c]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-741afd9c]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-741afd9c]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-741afd9c]{flex:1 1 240px;min-width:0}.rule-state[data-v-741afd9c]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as w, ref as B, openBlock as l, createBlock as f, unref as o, withCtx as a, createElementVNode as s, createElementBlock as v, toDisplayString as _, createCommentVNode as D, createVNode as u, Fragment as P, createTextVNode as i } from "vue";
-import { useWindow as V, WindowRoom as O, RowList as T, Btn as p } from "@journal/window-kit";
-import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const b = { class: "rules-page" }, A = {
+if (!document.getElementById("window-styles-018f9f3e3ffe")) { const style = document.createElement("style"); style.id = "window-styles-018f9f3e3ffe"; style.textContent = ".rules-page[data-v-5af01d05]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-5af01d05]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-5af01d05]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-5af01d05]{flex:1 1 240px;min-width:0}.rule-state[data-v-5af01d05]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as B, ref as D, openBlock as s, createBlock as y, unref as o, withCtx as r, createElementVNode as n, createElementBlock as R, toDisplayString as g, createCommentVNode as O, createVNode as m, Fragment as P, createTextVNode as v } from "vue";
+import { useWindow as V, WindowRoom as T, RowList as $, Btn as _ } from "@journal/window-kit";
+const b = (d, u) => {
+  const a = d.__vccOpts || d;
+  for (const [i, c] of u)
+    a[i] = c;
+  return a;
+}, A = { class: "rules-page" }, W = {
   key: 0,
   class: "rules-refusal",
   role: "alert",
   "data-rule-refusal": ""
-}, W = ["data-rule", "data-rule-state"], h = { class: "rule-text" }, k = "proposed", F = {
+}, h = ["data-rule", "data-rule-state"], F = { class: "rule-text" }, x = "proposed", I = {
   __name: "RulesPage",
-  setup(I) {
-    const y = [k, "active"], c = V(), { rows: R, failure: x, loaded: C, more: g, load: E, older: N } = c.props.rules, S = w(() => y.flatMap((r) => R.value.filter((e) => e.state === r))), n = B("");
-    async function d(r, e) {
-      const t = await c.run(["rule", r, String(e.id)]);
-      n.value = t.ok ? "" : t.error, t.ok && E();
+  setup(d) {
+    const u = [x, "active"], a = V(), { rows: i, failure: c, loaded: C, more: E, load: N, older: S } = a.props.rules, w = B(() => u.flatMap((l) => i.value.filter((e) => e.state === l))), p = D("");
+    async function f(l, e) {
+      const t = await a.run(["rule", l, String(e.id)]);
+      p.value = t.ok ? "" : t.error, t.ok && N();
     }
-    return (r, e) => (l(), f(o(O), null, {
-      default: a(() => [
-        s("div", b, [
-          n.value ? (l(), v("p", A, _(n.value), 1)) : D("", !0),
-          u(o(T), {
-            rows: S.value,
-            failure: o(x),
+    return (l, e) => (s(), y(o(T), null, {
+      default: r(() => [
+        n("div", A, [
+          p.value ? (s(), R("p", W, g(p.value), 1)) : O("", !0),
+          m(o($), {
+            rows: w.value,
+            failure: o(c),
             loaded: o(C),
-            more: o(g),
-            older: o(N),
+            more: o(E),
+            older: o(S),
             empty: "No rules yet",
             hint: "Rules you add or approve hold for every agent."
           }, {
-            default: a(({ row: t }) => [
-              s("div", {
+            default: r(({ row: t }) => [
+              n("div", {
                 class: "rule",
                 "data-rule": t.id,
                 "data-rule-state": t.state
               }, [
-                s("span", h, _(t.text), 1),
-                t.state === k ? (l(), v(P, { key: 0 }, [
-                  e[2] || (e[2] = s("span", { class: "rule-state" }, "State: proposed", -1)),
-                  u(o(p), {
+                n("span", F, g(t.text), 1),
+                t.state === x ? (s(), R(P, { key: 0 }, [
+                  e[2] || (e[2] = n("span", { class: "rule-state" }, "State: proposed", -1)),
+                  m(o(_), {
                     small: "",
                     variant: "primary",
-                    onClick: (m) => d("approve", t)
+                    onClick: (k) => f("approve", t)
                   }, {
-                    default: a(() => [...e[0] || (e[0] = [
-                      i("Approve", -1)
+                    default: r(() => [...e[0] || (e[0] = [
+                      v("Approve", -1)
                     ])]),
                     _: 1
                   }, 8, ["onClick"]),
-                  u(o(p), {
+                  m(o(_), {
                     small: "",
                     bordered: "",
-                    onClick: (m) => d("deny", t)
+                    onClick: (k) => f("deny", t)
                   }, {
-                    default: a(() => [...e[1] || (e[1] = [
-                      i("Deny", -1)
+                    default: r(() => [...e[1] || (e[1] = [
+                      v("Deny", -1)
                     ])]),
                     _: 1
                   }, 8, ["onClick"])
-                ], 64)) : (l(), f(o(p), {
+                ], 64)) : (s(), y(o(_), {
                   key: 1,
                   small: "",
                   bordered: "",
-                  onClick: (m) => d("remove", t)
+                  onClick: (k) => f("remove", t)
                 }, {
-                  default: a(() => [...e[3] || (e[3] = [
-                    i("Remove", -1)
+                  default: r(() => [...e[3] || (e[3] = [
+                    v("Remove", -1)
                   ])]),
                   _: 1
                 }, 8, ["onClick"]))
-              ], 8, W)
+              ], 8, h)
             ]),
             _: 1
           }, 8, ["rows", "failure", "loaded", "more", "older"])
@@ -78,7 +82,7 @@ const b = { class: "rules-page" }, A = {
       _: 1
     }));
   }
-}, q = /* @__PURE__ */ $(F, [["__scopeId", "data-v-741afd9c"]]);
+}, j = /* @__PURE__ */ b(I, [["__scopeId", "data-v-5af01d05"]]);
 export {
-  q as default
+  j as default
 };

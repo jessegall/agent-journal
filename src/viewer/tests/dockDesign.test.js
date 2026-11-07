@@ -54,11 +54,22 @@ test.each(["Document", "Report", "Memory", "Dump", "Task", "Question"])(
         expect(host.querySelector(".dock-title").title).toBe("Example");
         expect(host.querySelector("[data-dock-age]").textContent).toBe("10m ago");
         const foot = host.querySelector(".chat-dock-foot");
-        expect(foot.textContent).toContain(word);
+        expect(foot.querySelector("[data-dock-row]").textContent).toBe(`${word} 3`);
         expect([...foot.querySelectorAll("button")].map((b) => b.textContent.trim())).toEqual(["Open", "Close"]);
         expect(host.querySelector("[data-dock-fold]")).toBeNull();
     }
 );
+test.each([["Document", "doc", 1223], ["Report", "report", 1255], ["Memory", "memory", 42]])(
+    "%s shows its target row number",
+    async (word, target_model, target_id) => {
+        const host = await draw({word}, {target_model, target_id});
+        expect(host.querySelector("[data-dock-row]").textContent).toBe(`${word} ${target_id}`);
+    }
+);
+test("a dock without a declared word names its row type and number", async () => {
+    const host = await draw({}, {target_model: "task", target_id: 17});
+    expect(host.querySelector("[data-dock-row]").textContent).toBe("Task 17");
+});
 test("each plan state has its pill and Phases before Open and Close", async () => {
     for (const badge of ["Planned", "Started", "Paused", "Done", "Cancelled"]) {
         const host = await draw({badge, folds: "Phases"});

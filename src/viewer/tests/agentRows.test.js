@@ -419,7 +419,10 @@ test("an opened worker card shows its command without a task pace bar", async ()
     await settle();
     expect(element.querySelector("[data-agent-pace]")).toBeNull();
     expect(element.querySelector("[data-agent-tasks]")).toBeNull();
-    expect(parseFloat(getComputedStyle(element.querySelector("[data-agent-command]")).paddingLeft)).toBe(0);
+    const card = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCard.vue"), "utf8");
+    const details = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCardDetails.vue"), "utf8");
+    expect(card).toMatch(/--agent-padding:\s*14px/);
+    expect(details).toMatch(/\.agent-command\s*\{[^}]*padding:\s*6px var\(--agent-padding\)/);
 });
 
 test("an opened worker card has no task count or pace bar", async () => {

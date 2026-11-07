@@ -22,4 +22,5 @@ class AnswerApprovalSubcommand(Subcommand[AnswerApproval, ApprovalResult]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ApprovalResult):
             output.write(value.output or f"approval {value.request.id}: {value.request.state.value}",
-                         {"request_id": value.request.id, "state": value.request.state.value, "output": value.output})
+                         {"request_id": value.request.id, "state": value.request.state.value,
+                          "viewer_output": value.output if value.request.returns_output else ""})

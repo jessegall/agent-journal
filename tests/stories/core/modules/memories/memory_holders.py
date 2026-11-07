@@ -184,6 +184,6 @@ def test_a_list_leaves_removed_memories_out_unless_it_asks_for_them(new_story):
 
 def test_an_agent_still_reads_only_its_own_memories(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_refusal("memory agents", "only a person", actor=story.agent)
+    story.expect_refusal("memory agents", "A person was asked in the dock", actor=story.agent)
     story.expect_text("memory list --order weight --search queue", MAIN_FACT, actor=story.agent)
     story.expect_no_text("memory list --order weight", WORKER_FACT, actor=story.agent)

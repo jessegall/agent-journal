@@ -36,6 +36,24 @@ The journal records each service’s standard output and standard error in its p
 
 A service may hold long-lived children. They end with its process group when it stops or crashes, and a child that calls setsid leaves the group and is not stopped.
 
+### A manifest per journal version
+
+A plugin may ship more than one manifest, one for each journal version it supports. The version is in the file name:
+`journal-plugin.5.json` is for journal 5.0, `journal-plugin.5.2.json` for 5.2. A journal reads the manifest for the
+highest version at or below its own, and `journal-plugin.json` when there is none, so the plain file is the floor and
+a plugin that ships only that file works as before.
+
+| Journal | Manifests in the folder | It reads |
+|---|---|---|
+| 5.3.3 | `journal-plugin.json`, `journal-plugin.5.json`, `journal-plugin.5.2.json` | `journal-plugin.5.2.json` |
+| 5.1 | the same three | `journal-plugin.5.json` |
+| 5.0 | `journal-plugin.json`, `journal-plugin.5.2.json` | `journal-plugin.json` |
+| 5.0 | only `journal-plugin.5.2.json` | none: the install is refused, saying every manifest is for a newer journal |
+
+A version 4 journal reads only `journal-plugin.json`, so a plugin that still supports version 4 keeps its version 4
+manifest in that file. When a later journal version needs a change, add a manifest for that version and leave the older
+ones as they are. Every manifest in the folder counts as a file the plugin runs.
+
 ## Finding a key
 
 `journal event keys` lists every event by its key, with the forms it offers and plain words for it. `--grep` narrows the list.

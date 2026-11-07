@@ -60,7 +60,7 @@ class SecretRun:
         if SecretPrograms.is_skipped(name):
             raise Refusal(f"a secret never goes to {name}", "name the program that uses it, such as curl or gh")
         if name not in secret.programs:
-            raise UserApproval(f"Allow {name} to use the secret {secret.title}?", ("secret", "allow", str(secret.id), name))
+            raise UserApproval(f"Allow {name} to use the secret {secret.title}?", ("secret", "allow", str(secret.id), name), returns_output=True)
         program_path = shutil.which(name, path=self.search_path())
         if program_path is None:
             raise Refusal(f"no program {name} on this machine")

@@ -24,7 +24,7 @@ class SaveViewerLayoutHandler(Handler[SaveViewerLayout, ViewerLayout]):
         PersonCheck.require(context, f"Save the layout for {command.page}?")
         saved = self.queries.query(ViewerLayout).filter(person_id=context.actor.id, suite=command.suite,
                                                        page=command.page, driver=command.driver).first()
-        if saved is not None and command.base_version is not None and saved.version != command.base_version:
+        if saved is not None and saved.has_changed_since(command.base_version):
             raise Refusal(f"the layout was saved again since version {command.base_version}; it is at version {saved.version}",
                           f"journal viewer-layout current --suite {command.suite} --page {command.page} reads it")
         layout = ViewerLayout(person_id=context.actor.id, creator_id=context.actor.id, suite=command.suite,

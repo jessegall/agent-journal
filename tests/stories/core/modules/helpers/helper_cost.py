@@ -36,6 +36,13 @@ def test_the_cost_window_keeps_a_helper_that_ended_while_its_parent_runs(new_sto
     story.expect_text("usage show --environment main", "cost of the open sessions: $1.50", actor=story.user)
 
 
+def test_the_open_sessions_alone_leave_out_an_ended_helper_for_the_shell(new_story):
+    story = new_story(fixture=EndedHelper)
+    save_helper_status(story, 1.5)
+    story.expect_no_text("usage show --open --environment main --json", f'"id": {helper_agent(story).id},', actor=story.user)
+    story.expect_text("usage show --open --environment main --json", f'"id": {story.agent.id},', actor=story.user)
+
+
 def test_the_cost_window_drops_an_ended_helper_once_its_parent_ended(new_story):
     story = new_story(fixture=EndedHelper)
     save_helper_status(story, 1.5)

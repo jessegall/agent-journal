@@ -86,6 +86,16 @@ def test_the_agents_window_reads_the_same_number_of_queries_for_one_agent_and_fo
     expect_visited_limit(first_run, READS_ALLOWED)
 
 
+def test_usage_show_reads_pending_worker_reviews_once_for_several_workers(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    for number in range(2, 6):
+        story.expect_success(f"agent start s-{number} claude worker --environment main", actor=story.agent)
+    reads = selects_of(story, "usage show --environment main --json")
+    story.expect_rows(sum("FROM worker_work_reviews" in statement for statement in reads) <= 1)
+    result = story.run("usage show --environment main --json", actor=story.agent)
+    story.expect_rows(result.code == 0, len(json.loads(result.output_text)["agents"]) == 5)
+
+
 def expect_rows_loaded(story, line: str, expected) -> None:
     actual = rows_loaded(story, line)
     assert actual == expected, actual

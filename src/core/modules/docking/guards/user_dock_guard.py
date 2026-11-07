@@ -1,7 +1,6 @@
 from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.change.created import Created
-from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.refusal import Refusal
@@ -21,6 +20,8 @@ class UserDockGuard(Guard[Changed[DockItem]]):
     def check(self, event: Changed[DockItem], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT or isinstance(event, Created):
             return
-        previous = event.row if isinstance(event, Deleted) else event.old_row
-        if self.limits.requires_user(previous.type):
+        protected = self.limits.requires_user(event.row.type)
+        if event.old_row is not None:
+            protected = protected or self.limits.requires_user(event.old_row.type)
+        if protected:
             raise Refusal("an agent cannot change a card waiting for a person")

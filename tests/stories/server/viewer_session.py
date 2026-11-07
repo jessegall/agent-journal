@@ -6,6 +6,7 @@ import os
 import time
 
 from core.base.server_restart_state import RESTART_LIMIT_SECONDS
+from core.base.journal_version import JOURNAL_VERSION
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from server.server_files import ServerFiles
 from tests.stories.core.support.fixtures import UserJoined
@@ -18,6 +19,7 @@ def test_the_session_route_answers_a_person_cookie_with_its_kind_and_person(pers
     story = person_server
     cookie = story.expect_viewer_login(story.viewer_key("Ada"))
     story.expect_viewer_status("/api/session", 200, cookie, text='"type": "person"')
+    story.expect_viewer_status("/api/session", 200, cookie, text=f'"journal_version": "{JOURNAL_VERSION}"')
 
 
 def test_the_session_route_answers_no_cookie_with_401(person_server):

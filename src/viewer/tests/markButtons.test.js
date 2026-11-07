@@ -1,7 +1,24 @@
 import {afterEach, expect, test, vi} from "vitest";
 import {pressButton} from "../src/chat/markButtons.js";
+import {showActionOutput} from "../src/kit/actionOutput.js";
+
+vi.mock("../src/kit/actionOutput.js", () => ({showActionOutput: vi.fn()}));
 
 afterEach(() => vi.unstubAllGlobals());
+
+test("a requested viewer result is shown after the action completes", async () => {
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {viewer_output: "Pairing code: 123456"}, error: ""})}));
+    const answer = await pressButton({runs: "approval accept {row_id}"}, {id: 1}, "main");
+    expect(answer.ok).toBe(true);
+    expect(showActionOutput).toHaveBeenCalledWith("Pairing code: 123456");
+});
+
+test("ordinary command output is not shown as a viewer result", async () => {
+    vi.mocked(showActionOutput).mockClear();
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {output: "updated: setting:1"}, error: ""})}));
+    await pressButton({runs: "setting set example true"}, null, "main");
+    expect(showActionOutput).not.toHaveBeenCalled();
+});
 
 async function pressed(button, mark, values = {}) {
     const asked = [];

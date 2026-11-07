@@ -1,5 +1,6 @@
 from core.base.exception_sink import ExceptionSink
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.cli.line_parser import LineParser
 from core.base.cli.parsed_line import ParsedLine
 from core.base.cli.usage_error import UsageError
@@ -18,11 +19,11 @@ WINDOW_SEARCH_LINE = "window search"
 
 
 class WindowLines:
-    """Whether a window may run a command line for a person: the line parses, it is a read subcommand the
-    window declares or a command it declares, or one of its own settings, it neither skips a guard nor names
-    another environment, and the person has allowed it unless the journal ships the window. A line only a
-    button allows answers to the module of that button, not the window. It checks the parsed line, never its
-    raw words."""
+    """Whether a window may run a command line for a person, or only a read for the main agent's own viewer
+    session: the line parses, it is a read subcommand the window declares or a command it declares, or one of
+    its own settings, it neither skips a guard nor names another environment, and the person has allowed it
+    unless the journal ships the window. A line only a button allows answers to the module of that button, not
+    the window. It checks the parsed line, never its raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
                  active: ActiveModules, scopes: Scopes, exceptions: ExceptionSink) -> None:
@@ -51,6 +52,8 @@ class WindowLines:
         if not window.shipped and subcommand_name in PERSON_LINES:
             raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a person gives rights and changes settings")
         parsed = self.parsed(window_name, argv)
+        if person.type is ActorType.AGENT and not parsed.is_read:
+            raise WindowRefusal("the main agent's viewer session only reads")
         skips_guard = not parsed.is_read and bool(self.flags.skipped_guards(parsed.arguments))
         if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment):
             raise WindowRefusal(f"{window_name} may not skip a guard or name another environment")
