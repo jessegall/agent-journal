@@ -1,3 +1,4 @@
+from core.modules.agents.commands.program_command.program_command_subcommand import FIRST_PROMPT
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
@@ -40,3 +41,18 @@ def test_a_program_no_module_provides_is_refused_naming_it(new_story):
     story = new_story(fixture=MainEnvironment)
     folder = project_folder(story)
     story.expect_refusal(f"program command gemini {folder} --launch launch-1", "gemini")
+
+
+def test_a_new_or_resumed_main_agent_starts_with_the_journals_first_prompt_last(new_story):
+    story = new_story(fixture=MainEnvironment)
+    folder = project_folder(story)
+    for line in (f"program command claude {folder} --launch launch-1", f"program command claude {folder} --launch launch-1 --resume s-1",
+                 f"program command codex {folder} --launch launch-1", f"program command codex {folder} --launch launch-1 --resume t-1"):
+        printed = story.run(line).output_text.splitlines()
+        assert printed[-1] == FIRST_PROMPT, printed
+
+
+def test_a_person_who_gave_arguments_gets_no_first_prompt(new_story):
+    story = new_story(fixture=MainEnvironment)
+    folder = project_folder(story)
+    story.expect_absent(f"program command claude {folder} --launch launch-1 --program-argument=--model --program-argument=haiku", FIRST_PROMPT)
