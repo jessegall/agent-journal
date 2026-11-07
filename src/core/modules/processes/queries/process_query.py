@@ -3,10 +3,12 @@ from typing import Self
 from datetime import timedelta
 
 from core.base.database.database import Database
+from core.base.database.foreign_references import ForeignReferences
 from core.base.model.tables import Tables
 from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.query import Query
 from core.base.query.select import Select
@@ -25,8 +27,9 @@ PROCESS_PARTS_TABLE = "process_parts"
 class ProcessQuery(Query[Process]):
     """Reads processes, with the filters the processes module and its rules use by name."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
+    def __init__(self, database: Database, tables: Tables, references: ForeignReferences) -> None:
         super().__init__(database, tables, Process)
+        self.references = references
 
     def running(self) -> Self:
         return self.matching(Among("state", OPEN))
@@ -36,6 +39,13 @@ class ProcessQuery(Query[Process]):
 
     def ended(self) -> Self:
         return self.matching(Among("state", [state for state in ProcessState if state not in OPEN]))
+
+    def prunable(self) -> Self:
+        query = self.ended()
+        for reference in self.references.restricting(self.table):
+            linked = Select(reference.table_name).matching(HasValue(reference.column_name)).column(reference.column_name)
+            query = query.matching(SubqueryMatch(reference.target_column, linked, negated=True))
+        return query
 
     def with_part(self, *conditions: Condition) -> Self:
         select = Select(PROCESS_PARTS_TABLE)
