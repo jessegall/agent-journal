@@ -8,7 +8,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.commands.send_merge_findings.send_merge_findings import SendMergeFindings
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
-from suites.coding.modules.workers.support.merger_nudges import SENT_BACK_BY_MERGER
+from suites.coding.modules.workers.support.merger_nudges import MERGER_FINDINGS_PREFIX
 
 
 class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
@@ -25,5 +25,5 @@ class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
         main_agent = self.agents.main_agent()
         if main_agent is None:
             raise Refusal("no main agent runs")
-        self.bus.run(SendWorker(command.worker_id, f"{SENT_BACK_BY_MERGER}{command.findings}"),
+        self.bus.run(SendWorker(command.worker_id, f"{MERGER_FINDINGS_PREFIX}{command.findings}"),
                      Actor(main_agent.id, ActorType.AGENT), environment_id=context.environment_id)
