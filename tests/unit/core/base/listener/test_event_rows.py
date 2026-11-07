@@ -76,3 +76,15 @@ def test_an_external_unrelated_write_keeps_the_row_without_loading_it_twice(entr
     entries.database.connection.set_trace_callback(reads.append)
     assert event_rows.required(LogEntry, 1).title == "Book 1"
     assert not any(sql.startswith("SELECT *") for sql in reads)
+
+
+def test_a_row_without_a_session_column_is_read_once_whoever_reads_it(entries, event_rows):
+    reads = []
+    entries.database.connection.set_trace_callback(reads.append)
+    event_rows.required(LogEntry, 1)
+    entries.database.read_actor_id = 694
+    try:
+        event_rows.required(LogEntry, 1)
+    finally:
+        entries.database.read_actor_id = None
+    assert len([sql for sql in reads if sql.startswith("SELECT * FROM log_entries")]) == 1
