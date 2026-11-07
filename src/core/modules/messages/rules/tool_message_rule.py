@@ -36,4 +36,4 @@ class ToolMessageRule(DriverRule):
             return False
         if not self.texts.is_reaction_turn(hook.agent_id, displayed_at) and self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
             return False
-        return not self.messages.has_text_after(hook.agent_id, text, displayed_at)
+        return not self.messages.has_text_after(hook.agent_id, text, displayed_at) and not self.texts.is_displayed_part(hook.agent_id, text, displayed_at)

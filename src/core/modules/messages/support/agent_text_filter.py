@@ -29,7 +29,7 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         if prompt is None:
             return False
-        reply = self.messages.latest_reply(agent_id, prompt.creation_timestamp(), created_at)
+        reply = self.messages.latest_turn_message(agent_id, prompt.creation_timestamp(), created_at)
         return reply is not None and not self.messages.has_person_message_past(reply.id)
 
     def is_duplicate_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
@@ -38,7 +38,7 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         if prompt is None:
             return False
-        replies = self.messages.turn_replies(agent_id, prompt.creation_timestamp(), created_at)
+        replies = self.messages.turn_messages(agent_id, prompt.creation_timestamp(), created_at)
         reply_text = " ".join(reply.text for reply in replies).lower()
         text = text.lower()
         tokens = [token for token in TOKENS.findall(text) if len(token) >= 3 or token.isdecimal()]
@@ -76,3 +76,6 @@ class AgentTextFilter:
 
     def is_displayed(self, agent_id: int, text: str, cutoff_at: Timestamp) -> bool:
         return self.hook_calls.has_call_after(agent_id, HookEventName.MESSAGE_DISPLAY, HookCall.summarize(text), cutoff_at) or self.messages.has_text_after(agent_id, text, cutoff_at)
+
+    def is_displayed_part(self, agent_id: int, text: str, cutoff_at: Timestamp) -> bool:
+        return any(message.text.endswith("\n" + text) for message in self.messages.recent_agent_messages(agent_id, cutoff_at))
