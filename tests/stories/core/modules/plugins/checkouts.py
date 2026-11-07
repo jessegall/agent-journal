@@ -40,7 +40,7 @@ def worker_helper(story) -> Agent:
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(HELPER_START, actor=story.worker)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
     return story.container.get(Queries).query(Agent).filter(parent_id=story.worker.id, role="helper").first()

@@ -9,7 +9,7 @@ def dispatched_brief(new_story, line):
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(line, actor=story.agent)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     return story, " ".join(launcher.requests[0]["command"])
 
 

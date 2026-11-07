@@ -16,14 +16,17 @@ HASH_CHARACTERS = 16
 
 class TemplateCache:
     """Shares complete story templates within a checkout, and when a new one is made removes
-    the ones unused for an hour and then the least recently used until the cache is under its size limit."""
+    the ones unused for an hour and then the least recently used until the cache is under its size limit. The
+    templates are kept for the source code and the stories' support folders; a story file's own fixtures are in each
+    template's key, so editing a story rebuilds only the templates of the fixtures it defines."""
 
     def __init__(self, root: Path = CACHE_FOLDER, limit_bytes: int = CACHE_LIMIT_BYTES) -> None:
         self.root, self.limit_bytes = root, limit_bytes
 
     def folder(self) -> Path:
         checkout = CORE_FOLDER.parent.parent.resolve()
-        source_hash = SourceHash.text((CORE_FOLDER.parent, checkout / "tests"))
+        support_folders = tuple(sorted(folder for folder in (checkout / "tests").rglob("support") if folder.is_dir()))
+        source_hash = SourceHash.text((CORE_FOLDER.parent, *support_folders))
         checkout_hash = hashlib.sha256(str(checkout).encode()).hexdigest()[:HASH_CHARACTERS]
         current = self.root / f"{checkout_hash}-{source_hash[:HASH_CHARACTERS]}"
         if not current.is_dir():

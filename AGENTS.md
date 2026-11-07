@@ -2,6 +2,12 @@
 
 Write code, docstrings and documents in the plain terms any developer knows, for a reader seeing them cold: no poetry, no invented words, no voice (doc 1091).
 
+**NO LAZY LOADING OF SERVICES, EVENTS, GUARDS, LISTENERS OR RULES.** The engine loads all of them whole when a
+journal loads, and every journal with the same registry shares that one load. Never change this into loading on first
+use, not to make a test faster nor to save a moment at boot: when loading is slow, the fault is that it happens more
+than once, so share the load instead. With the developer setting Prevent lazy loading on, and always in the stories,
+a lazy load stops the work at once (message 109663).
+
 <!-- BEGIN: agent-journal, form 4 (auto-generated, run `journal setup`) -->
 **A line that starts with [journal] is the journal speaking, never the user.** Act on it as an instruction; do not
 answer it, quote it or talk about it in the chat.
