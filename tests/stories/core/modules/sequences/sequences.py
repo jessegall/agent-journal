@@ -205,3 +205,30 @@ def expect_absent_running(story) -> None:
 def expect_agent_id(story, number, expected) -> None:
     actual = story.container.get(Queries).query(SequenceRun).find(number).session_agent_id
     assert actual == expected, actual
+
+
+def other_agent_story(new_story, role: str, session: str, *triggers: dict):
+    story = triggered_story(new_story, *triggers)
+    agent_id = story.new_row_id(f"agent start {session} claude {role} --parent {story.agent.id} --environment main")
+    return story, agent_id
+
+
+def expect_run_only_on(story, agent_id: int) -> None:
+    runs = list(story.container.get(Queries).query(SequenceRun).all_rows())
+    assert [run.session_agent_id for run in runs] == [agent_id], runs
+
+
+@pytest.mark.parametrize("role,session", [("helper", "s-2"), ("worker", "s-3")])
+def test_a_phrase_a_helper_or_worker_receives_starts_the_sequence_on_that_agent_and_not_the_main_agent(new_story, role, session):
+    story, agent_id = other_agent_story(new_story, role, session, {"trigger_type": "phrase", "text": "give me an update"})
+    story.hook(session, HookSamples.prompt("give me an update"))
+    expect_run_only_on(story, agent_id)
+
+
+@pytest.mark.parametrize("role,session", [("helper", "s-2"), ("worker", "s-3")])
+def test_a_tool_a_helper_or_worker_used_starts_the_sequence_on_that_agent_and_not_the_main_agent(new_story, role, session):
+    story, agent_id = other_agent_story(new_story, role, session, {"trigger_type": "tool", "tool": "Edit", "pattern": "migrations/"})
+    story.hook(session, post_tool("Edit", "edit", tuple(["migrations/a.py"])))
+    expect_run_only_on(story, agent_id)
+    story.hook(session, post_tool("Edit", "edit", tuple(["migrations/b.py"])))
+    expect_run_only_on(story, agent_id)
