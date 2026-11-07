@@ -2,7 +2,7 @@ from core.base.database.migration import Migration
 
 
 class MergerLinesMigration(Migration):
-    """Creates the lines about workers that wait for the merger, and marks a worker the merger left to the main agent."""
+    """Creates merger lines and marks workers returned to the main agent."""
 
     number = 30
     statements = (

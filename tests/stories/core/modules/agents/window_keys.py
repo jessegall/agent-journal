@@ -18,7 +18,7 @@ def test_agent_windows_read_their_visible_keys_together(agents_window, window):
     server, cookie = agents_window
     status, answer = window_data(server, cookie, window=window, query="environment=main&agents.show=idle")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"agents", "filters", "programs", "limits", "waits", "progress"})
-    server.story.expect_rows(all(result["code"] == 0 for result in answer["keys"].values()))
+    server.story.expect_rows(all(response["code"] == 0 for response in answer["keys"].values()))
     rows = answer["keys"]["agents"]["value"]["rows"]
     server.story.expect_rows(bool(rows), all(row["state"] == "idle" and "facts" in row for row in rows))
     limits = answer["keys"]["limits"]["value"]["rows"]
@@ -39,7 +39,7 @@ def test_a_card_requests_its_tool_and_transcript_without_the_list(agents_window)
     status, answer = window_data(server, cookie, keys=f"tool,transcript.{agent_id}", window="agents.agents",
                                  query=f"environment=main&tool.agent={agent_id}")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"tool", f"transcript.{agent_id}"},
-                             all(result["code"] == 0 for result in answer["keys"].values()))
+                             all(response["code"] == 0 for response in answer["keys"].values()))
 
 
 def test_the_standalone_transcript_reads_only_its_selected_agent_key(agents_window):

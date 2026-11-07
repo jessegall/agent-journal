@@ -70,7 +70,7 @@ class PluginScriptProcesses:
 
     def stop_reason(self, process: "subprocess.Popen[str]") -> ScriptStop:
         with self.lock:
-            return self.stop_reasons.get(process.pid, ScriptStop.RUNNING_ON)
+            return self.stop_reasons.get(process.pid, ScriptStop.NOT_STOPPED)
 
     def keep_line(self, plugin: str, line: str) -> None:
         with self.lock:

@@ -25,6 +25,9 @@ class SkillCatalogue:
     def skills(self) -> tuple[SkillEntry, ...]:
         return self.request_values.read("skills.catalogue", self.folder_versions, self.read_skills)
 
+    def contains(self, folder: str) -> bool:
+        return any(skill.folder == folder for skill in self.skills())
+
     def folder_versions(self) -> tuple[FileVersion | None, ...]:
         return tuple(self.folder_version(self.home.project_folder / program_folder) for program_folder in self.providers.skill_folders())
 

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.provider.model_tier import ModelTier
 
 from core.base.command.command import Command
-from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
+from core.modules.helpers.support.helper_started import HelperStarted
 
 
 @dataclass(frozen=True)

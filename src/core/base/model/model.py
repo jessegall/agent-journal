@@ -50,7 +50,7 @@ class Model:
     def search_text(self) -> str:
         return " ".join(str(getattr(self, name)) for name in self.search_fields)
 
-    def terms_held(self, terms: Sequence[str]) -> int:
+    def count_matching_terms(self, terms: Sequence[str]) -> int:
         text = self.search_text().lower()
         return sum(SearchTerm.stem(term) in text for term in terms)
 

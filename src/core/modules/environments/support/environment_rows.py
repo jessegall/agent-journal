@@ -18,3 +18,10 @@ class EnvironmentRows:
         if environment is None:
             raise MissingRowsError(Environment.cli_name, [environment_id])
         return environment
+
+    def find_many(self, environment_ids: list[int]) -> list[Environment]:
+        rows = {row.id: row for row in self.all()}
+        missing = [environment_id for environment_id in environment_ids if environment_id not in rows]
+        if missing:
+            raise MissingRowsError(Environment.cli_name, missing)
+        return [rows[environment_id] for environment_id in environment_ids]

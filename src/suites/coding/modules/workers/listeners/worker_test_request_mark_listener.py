@@ -16,7 +16,7 @@ class WorkerTestRequestMarkListener(MarkListener[Created[WorkerTestRequest] | Mo
     name = "workers.test-request-mark"
     disabled_scopes = [ActorScope]
     module_name = "journal.suites.coding.workers"
-    moves = (WorkerTestRequestLifecycle.allow,)
+    moves = tuple([WorkerTestRequestLifecycle.allow])
 
     def handle(self, event: Created[WorkerTestRequest] | Moved[WorkerTestRequest], logged: LoggedEvent) -> None:
         request = event.row

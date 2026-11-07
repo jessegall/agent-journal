@@ -54,7 +54,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
                 self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context)
                 state = self.resume.program_state(new)
                 if not state.is_ready:
-                    self.waits.notify_wait(new, state, context)
+                    self.waits.notify_wait(new, context)
                     return
                 self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.id, tasks=tasks)
                 return

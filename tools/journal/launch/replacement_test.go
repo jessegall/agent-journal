@@ -301,7 +301,7 @@ func TestReplacementRetriesAStartFailureWithoutClosingTheExistingListener(t *tes
 	if err != nil {
 		t.Fatal(err)
 	}
-	stop, done := make(chan struct{}), make(chan struct{})
+	stop, finished := make(chan struct{}), make(chan struct{})
 	defer close(stop)
 	attempts := 0
 	var replacement *Listener
@@ -315,7 +315,7 @@ func TestReplacementRetriesAStartFailureWithoutClosingTheExistingListener(t *tes
 			replacement, err = ListenVersioned(path, refusingStarter{}, NewTerminalInputs(), latest.Digest)
 			return err
 		}, func(err error) { failed <- err }, 10*time.Millisecond)
-		close(done)
+		close(finished)
 	}()
 	select {
 	case <-failed:
@@ -327,7 +327,7 @@ func TestReplacementRetriesAStartFailureWithoutClosingTheExistingListener(t *tes
 		t.Fatal("no failed attempt was reported")
 	}
 	select {
-	case <-done:
+	case <-finished:
 	case <-time.After(2 * time.Second):
 		t.Fatal("replacement was not retried")
 	}

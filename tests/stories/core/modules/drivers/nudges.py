@@ -21,7 +21,7 @@ from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_record import RuleRecord
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.modules.drivers.commands.support.nudge_log import NudgeLog
+from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.support.nudge_records import NudgeRecords

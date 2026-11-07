@@ -7,8 +7,8 @@ import SequenceSteps from "./SequenceSteps.vue";
 import SequenceTriggers from "./SequenceTriggers.vue";
 import {startWords} from "./sequenceTriggers.js";
 
-const window = useWindow();
-const {rows, data, failure, loaded, act} = window.props.board;
+const view = useWindow();
+const {rows, data, failure, loaded, act} = view.props.board;
 const runs = computed(() => data.value?.runs ?? []);
 const drafting = ref(false);
 const openedId = ref(null);

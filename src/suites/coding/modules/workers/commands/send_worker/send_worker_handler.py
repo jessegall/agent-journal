@@ -1,11 +1,10 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from dataclasses import dataclass, replace
+from dataclasses import replace
 import json
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.command.make_command import MakeCommand
 from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -26,6 +25,7 @@ from suites.coding.modules.workers.commands.open_kept_worktree.open_kept_worktre
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
+from suites.coding.modules.workers.commands.send_worker.make_worker_job import MakeWorkerJob
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -40,12 +40,6 @@ from suites.coding.modules.workers.support.worker_task_advance import WorkerTask
 from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
-
-
-@dataclass(frozen=True)
-class MakeWorkerJob(MakeCommand[Task]):
-    title: str
-    brief: str
 
 
 class SendWorkerHandler(Handler[SendWorker, AgentLine]):
@@ -75,7 +69,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             self.kept_tasks.check_recut(worker)
             title = command.job.strip().splitlines()[0][:TASK_TITLE_LIMIT_CHARACTERS]
             task = self.bus.run(MakeWorkerJob(title, command.job), actor, environment_id=worker.environment_id)
-            task_ids = (task.id,)
+            task_ids = tuple([task.id])
         self.task_ids = task_ids
         if task_ids:
             tasks = self.kept_tasks.checked_cut(worker, task_ids)
@@ -111,7 +105,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links))))), actor, environment_id=worker.environment_id)
         except Exception:
             self.git.remove(environment.folder, opened)
-            self.bus.run(CancelWorkerOpening(opened.id, keeps_agent=True), actor, environment_id=worker.environment_id)
+            self.bus.run(CancelWorkerOpening(opened.id, retain_agent=True), actor, environment_id=worker.environment_id)
             raise
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
@@ -136,9 +130,10 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         job = self.job_text(command, worktree)
         line = self.nudger.send_text(command.worker_id, job, WORKER_JOB_SOURCE, context)
         if resumed or source.changed(previous):
-            self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=worktree.task_id,
-                                                  environment_id=worktree.environment_id, source_message_id=source.message_id,
-                                                  source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id,
-                                                  started_at=context.timestamp if resumed else None), context)
+            with self.scopes.row_scope(worktree):
+                self.repository.save(WorkerTaskSource(creator_id=context.actor.id, worktree_id=worktree.id, task_id=worktree.task_id,
+                                                      source_message_id=source.message_id, source_version=source.version,
+                                                      source_unavailable=source.unavailable, source_line_id=line.id,
+                                                      started_at=context.timestamp if resumed else None), context)
             self.sources.use_copy(source, source_context)
         return line

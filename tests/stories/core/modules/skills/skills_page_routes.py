@@ -102,6 +102,8 @@ def test_a_skill_trigger_refuses_the_tool_then_allows_it_after_the_skill_is_read
     story.expect_hook_refusal("s-1", sample, "load this first with the Skill tool: journal")
     entry = next(skill for skill in story.container.get(SkillCatalogue).skills() if skill.folder == "journal")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal", entry.digest), story.agent)
+    story.run_listeners()
+    story.expect_text(f"agent-skill list --agent {story.agent.id}", "journal", "loaded")
     story.expect_hook_allowed("s-1", sample)
 
 

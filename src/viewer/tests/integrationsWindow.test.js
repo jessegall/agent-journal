@@ -1,12 +1,8 @@
+import {settle} from "./support/delayedWindowContext.js";
 import {expect, test} from "vitest";
-import {context, mounted, page, settle as tick} from "./support/windowContext.js";
+import {context, mounted, page} from "./support/windowContext.js";
 import ServerRows from "../../core/modules/mcp/web/src/ServerRows.vue";
 
-async function settle() {
-    await tick();
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    await tick();
-}
 
 const KEYS = {
     installed: {line: "mcp list", events: ["mcp_server.*"]},

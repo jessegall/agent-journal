@@ -40,7 +40,7 @@ class OneHelperAllowed(StoryFixture):
         story.run("setting set journal.core.helpers.helper-run-limit 1 --environment main", actor=story.user)
 
 
-def launcher_of(story, requests=1):
+def fake_launcher(story, requests=1):
     return FakeLauncher(story.home.socket("launcher"), request_count=requests)
 
 
@@ -49,7 +49,7 @@ def helpers(story):
 
 
 def started(story, line=START, actor=None):
-    launcher = launcher_of(story)
+    launcher = fake_launcher(story)
     helper_id = story.new_row_id(line, actor=actor or story.agent)
     story.run_listeners()
     launcher.thread.join(timeout=5)
@@ -128,7 +128,7 @@ def test_a_start_with_no_model_anywhere_is_refused_naming_the_flag(new_story):
 ], ids=["model", "profile", "worker profile", "long brief"])
 def test_a_refused_start_leaves_no_row(new_story, line, reason):
     story = new_story(fixture=LauncherRuns)
-    launcher_of(story)
+    fake_launcher(story)
     story.expect_refusal(line, reason, actor=story.agent)
     story.expect_rows(helpers(story) == [])
 
@@ -136,7 +136,7 @@ def test_a_refused_start_leaves_no_row(new_story, line, reason):
 def test_a_helper_starts_no_helper(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
-    launcher_of(story)
+    fake_launcher(story)
     story.expect_refusal(START, "say in your report what should be done next", actor=Actor(helper_id, ActorType.AGENT))
 
 
@@ -154,7 +154,7 @@ def test_no_launcher_is_refused_before_any_row(new_story):
 
 def test_at_the_limit_a_start_names_the_running_helpers_and_an_ended_one_gives_its_slot_back(new_story):
     story, helper_id, _ = started_from(new_story, OneHelperAllowed, f'{START} --name "Rosalind Franklin"')
-    launcher_of(story)
+    fake_launcher(story)
     story.expect_refusal(START, f"agent:{helper_id}", actor=story.agent)
     story.home.socket("launcher").unlink()
     story.expect_success(f"agent end {helper_id}", actor=story.user)
@@ -210,7 +210,7 @@ def test_a_helper_that_sent_a_hook_stays(new_story):
     story.expect_no_text(f"agent show {helper_id}", "ended_at: 20")
 
 
-def claude_not_installed(monkeypatch):
+def refuse_claude(monkeypatch):
     def refusing(programs, program, folder):
         if program == "claude":
             raise Refusal("claude is not installed here", "install claude or name another program")
@@ -224,8 +224,8 @@ def save_profile(story, flags):
 def test_a_profile_that_always_uses_its_program_is_refused_when_it_cannot_start(new_story, monkeypatch):
     story = new_story(fixture=LauncherRuns)
     save_profile(story, "--no-program-if-possible")
-    claude_not_installed(monkeypatch)
-    launcher_of(story)
+    refuse_claude(monkeypatch)
+    fake_launcher(story)
     story.expect_refusal(START, "claude is not installed", actor=story.agent)
     story.expect_rows(helpers(story) == [])
 
@@ -233,8 +233,8 @@ def test_a_profile_that_always_uses_its_program_is_refused_when_it_cannot_start(
 def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and_says_why(new_story, monkeypatch):
     story = new_story(fixture=LauncherRuns)
     save_profile(story, "--program-if-possible --codex-model gpt-6.1-sol")
-    claude_not_installed(monkeypatch)
-    launcher = launcher_of(story)
+    refuse_claude(monkeypatch)
+    launcher = fake_launcher(story)
     answer = json.loads(story.run(f"{PLAIN_START} --json", actor=story.agent).output_text.splitlines()[0])
     story.run_listeners()
     launcher.thread.join(timeout=5)

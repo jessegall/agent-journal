@@ -1,19 +1,10 @@
+import {mounted, settle} from "./support/delayedWindowContext.js";
 import {expect, test} from "vitest";
-import {context as baseContext, mounted as mount, settle as tick} from "./support/windowContext.js";
+import {context as baseContext} from "./support/windowContext.js";
 import Attachments from "../../core/modules/messages/web/src/Attachments.vue";
 
 const KEYS = {attachments: {line: "attachment list"}};
 const context = (answers) => baseContext(answers, null, KEYS);
-async function settle() {
-    await tick();
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    await tick();
-}
-async function mounted(component, window) {
-    const element = await mount(component, window);
-    await settle();
-    return element;
-}
 
 const IMAGE = {message_id: 2, name: "cart.png", message_text: "the cart", created_at: "2026-11-01T10:00:00Z", is_image: true};
 const FILE = {message_id: 1, name: "notes.txt", message_text: "notes", created_at: "2026-11-01T09:00:00Z", is_image: false};

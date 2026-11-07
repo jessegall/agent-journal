@@ -8,7 +8,7 @@ defineEmits(["move", "delete"]);
     <section class="route" :data-split-route="row.id">
         <strong>{{ row.position }}. {{ row.program || 'Any program' }} · {{ row.tier || 'Profile tier' }}</strong>
         <p>{{ row.tags.join(', ') || 'Any tags' }}<template v-if="row.complexity_from !== null || row.complexity_to !== null"> · Complexity {{ row.complexity_from ?? 1 }} to {{ row.complexity_to ?? 5 }}</template></p>
-        <template v-if="row.strict"><small>Waits for this program when it is out.</small></template>
+        <template v-if="row.strict"><small>Unavailable program: wait.</small></template>
         <template v-if="row.status === 'gone'"><small>This program was removed. This route matches nothing.</small></template>
         <div class="actions">
             <Btn small :disabled="disabled || row.position === 1" @click="$emit('move', row.position - 1)">Move up</Btn>

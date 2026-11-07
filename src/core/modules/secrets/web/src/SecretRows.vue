@@ -6,8 +6,8 @@ import SecretDialog from "./SecretDialog.vue";
 import SecretNewDialog from "./SecretNewDialog.vue";
 
 // the Secrets page holds no field: what waits on the person is one button each, a saved secret is one card each, and all change happens in a centred dialog
-const window = useWindow();
-const {rows, data, failure, loaded, act} = window.props.secrets;
+const view = useWindow();
+const {rows, data, failure, loaded, act} = view.props.secrets;
 const deleted = computed(() => data.value?.deleted ?? []);
 const openId = ref(0);
 const isMaking = ref(false);

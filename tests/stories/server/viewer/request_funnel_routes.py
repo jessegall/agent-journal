@@ -30,14 +30,14 @@ def expect_answered(status: int, body: str) -> None:
     assert status == 200, body
 
 
-def expect_only_reads_listed(reads: set[str]) -> None:
+def expect_read_lines(reads: set[str]) -> None:
     assert {"task list", "usage tool", "message feed", "agent main"} <= reads
     assert not {"message send", "message edit", "task close", "viewer-layout save"} & reads
 
 
-def expect_slow_line_logged_slow(duration_of: dict[str, float]) -> None:
-    assert duration_of[" ".join(SLOW_LINE)] >= SLOW_SECONDS * 1000, duration_of
-    assert duration_of[" ".join(QUICK_LINE)] < SLOW_SECONDS * 1000, duration_of
+def expect_slow_line_logged_slow(duration_by_line: dict[str, float]) -> None:
+    assert duration_by_line[" ".join(SLOW_LINE)] >= SLOW_SECONDS * 1000, duration_by_line
+    assert duration_by_line[" ".join(QUICK_LINE)] < SLOW_SECONDS * 1000, duration_by_line
 
 
 def expect_event_of_environment(response: http.client.HTTPResponse, environment: str) -> None:
@@ -50,17 +50,17 @@ def expect_event_of_environment(response: http.client.HTTPResponse, environment:
     assert json.loads(data)["environment"] == environment
 
 
-def expect_reported_times(server, times: int) -> None:
+def expect_report_count(server, count: int) -> None:
     log = server.story.home.system_log
     text = log.read_text() if log.exists() else ""
-    assert text.count("sent 12 lines of usage tool") == times, text
+    assert text.count("sent 12 lines of usage tool") == count, text
 
 
 def test_the_server_lists_the_lines_that_only_read(recording_server):
     server = recording_server
     status, _, body = viewer_answer(server.viewer_port(), "/api/read-lines", logged_in(server), "")
     expect_answered(status, body)
-    expect_only_reads_listed(set(json.loads(body)["reads"]))
+    expect_read_lines(set(json.loads(body)["reads"]))
 
 
 def test_each_line_of_a_batch_logs_its_own_time(recording_server):
@@ -106,7 +106,7 @@ def test_a_window_sending_many_lines_of_one_noun_and_verb_is_a_development_error
     for _ in range(2):
         status, _, body = viewer_answer(server.viewer_port(), "/api/repeated-lines", cookie, "", report)
         expect_answered(status, body)
-    expect_reported_times(server, 1 if reported else 0)
+    expect_report_count(server, 1 if reported else 0)
 
 
 def read_time(server, cookie: str, window: str) -> float:
@@ -115,9 +115,9 @@ def read_time(server, cookie: str, window: str) -> float:
     return perf_counter() - started_at
 
 
-def expect_chat_ahead_of_a_hook(chat_seconds: float, other_seconds: float, wait_limit_seconds: float) -> None:
+def expect_chat_ahead_of_a_hook(chat_seconds: float, agent_seconds: float, wait_limit_seconds: float) -> None:
     assert chat_seconds < wait_limit_seconds, chat_seconds
-    assert other_seconds >= wait_limit_seconds, other_seconds
+    assert agent_seconds >= wait_limit_seconds, agent_seconds
 
 
 def test_the_chat_goes_ahead_of_a_running_hook_and_another_window_waits_behind_it(recording_server):
@@ -125,5 +125,5 @@ def test_the_chat_goes_ahead_of_a_running_hook_and_another_window_waits_behind_i
     cookie = logged_in(server)
     with server.context.hook_database.used(QueuePriority.AGENT_HOOK, 1):
         chat_seconds = read_time(server, cookie, "messages.chat")
-        other_seconds = read_time(server, cookie, "agents.agents")
-    expect_chat_ahead_of_a_hook(chat_seconds, other_seconds, server.context.hook_database.queue.viewer_wait_limit_seconds)
+        agent_seconds = read_time(server, cookie, "agents.agents")
+    expect_chat_ahead_of_a_hook(chat_seconds, agent_seconds, server.context.hook_database.queue.viewer_wait_limit_seconds)

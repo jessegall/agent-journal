@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 class ProjectReads:
-    """The folders of the project a sandboxed worker's shell line may read; none until a module declares them."""
+    """The project folders a sandboxed shell line may read, as declared by modules."""
 
     def folders(self, project_root: Path) -> tuple[Path, ...]:
         return ()

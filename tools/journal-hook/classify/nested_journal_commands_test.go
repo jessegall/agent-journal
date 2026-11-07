@@ -16,9 +16,9 @@ func TestNestedJournalCommandsFollowShellSyntax(t *testing.T) {
 		{"{ journal task overview 1; } > /tmp/task", [][]string{{"task", "overview", "1"}}},
 		{"sh -c 'journal task overview 1'", [][]string{{"task", "overview", "1"}}},
 	} {
-		got := nestedJournalCommands(sample.line)
-		if !reflect.DeepEqual(got, sample.want) {
-			t.Errorf("%q: got %v, want %v", sample.line, got, sample.want)
+		actual := nestedJournalCommands(sample.line)
+		if !reflect.DeepEqual(actual, sample.want) {
+			t.Errorf("%q: got %v, want %v", sample.line, actual, sample.want)
 		}
 	}
 }

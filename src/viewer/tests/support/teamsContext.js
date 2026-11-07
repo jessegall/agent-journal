@@ -1,4 +1,5 @@
-import {context as windowContext, mounted as mount, settle as tick} from "./windowContext.js";
+import {mounted, settle} from "./delayedWindowContext.js";
+import {context as windowContext} from "./windowContext.js";
 
 const KEYS = {
     status: {line: "library status", events: ["library_connection.*"]},
@@ -11,13 +12,5 @@ const KEYS = {
 };
 
 export const context = (answers) => windowContext(answers, null, KEYS);
-export async function settle() {
-    await tick();
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    await tick();
-}
-export async function mounted(component, window) {
-    const element = await mount(component, window);
-    await settle();
-    return element;
-}
+
+export {mounted, settle};

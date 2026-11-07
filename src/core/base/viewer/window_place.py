@@ -10,5 +10,5 @@ class WindowPlace(StrEnum):
     DROPDOWN = "dropdown"
     HEADER = "bar"
     PAGE = "page"
-    EITHER = "pane_or_page"
+    PANE_OR_PAGE = "pane_or_page"
     SECTION = "section"

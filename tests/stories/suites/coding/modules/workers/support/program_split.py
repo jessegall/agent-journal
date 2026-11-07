@@ -95,15 +95,15 @@ class SplitViewer:
     def __init__(self, server, cookie):
         self.server, self.cookie = server, cookie
 
-    def value(self, window, line):
-        return self.server.viewer_line_value(self.cookie, {'window': window, 'environment': 'main', 'line': line})
+    def value(self, window_id, line):
+        return self.server.viewer_line_value(self.cookie, {'window': window_id, 'environment': 'main', 'line': line})
 
-    def refusal(self, window, line, reason):
-        body = {"window": window, "environment": "main", "line": line}
+    def refusal(self, window_id, line, reason):
+        body = {"window": window_id, "environment": "main", "line": line}
         self.server.story.steps.append(f"viewer line {json.dumps(body, sort_keys=True)}")
         status, _, answer = viewer_answer(self.server.viewer_port(), "/api/line", self.cookie, "", body)
-        result = json.loads(answer)
-        assert status == 200 and result["code"] == 1 and reason in result["error"], (status, result)
+        response = json.loads(answer)
+        assert status == 200 and response["code"] == 1 and reason in response["error"], (status, response)
 
 
 @contextmanager

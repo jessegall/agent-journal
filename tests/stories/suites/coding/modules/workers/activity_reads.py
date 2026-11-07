@@ -104,9 +104,8 @@ def test_reading_running_worker_output_stays_within_the_tick_limit(four_workers)
     start = tools.begin()
     OutputReading().read(story.container)
     cost = tools.cost(start)
-    assert cost is not None
-    assert cost.total < 50, (cost.line(), cost.statements)
-    assert cost.tables["outputs"] < 27, cost.line()
+    story.expect_rows(cost is not None)
+    story.expect_rows(cost.total < 50, cost.tables["outputs"] < 27, detail=f"{cost.line()}: {cost.statements}")
 
 
 def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_workers):
@@ -126,8 +125,8 @@ def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_work
     start = tools.begin()
     OutputReading().read(story.container)
     cost = tools.cost(start)
-    assert cost is not None
-    assert cost.total < 50, (cost.line(), cost.statements)
+    story.expect_rows(cost is not None)
+    story.expect_rows(cost.total < 50, detail=f"{cost.line()}: {cost.statements}")
 
 
 def test_a_tick_reads_again_if_the_output_changes_after_its_batch_read(four_workers):

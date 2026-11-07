@@ -101,13 +101,13 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))
-        job_roles = self.usage.suites.agent_policy().job_roles
+        policy = self.usage.suites.agent_policy()
         pending = self.work.pending()
         job_commands = {entry.key: entry.job_command for entry in self.registry.agent_types}
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
-                                           facts=self.usage.facts(row, job_roles, titles, pending.get(row.id)).json(),
+                                           facts=self.usage.facts(row, policy, titles, pending.get(row.id)).json(),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)

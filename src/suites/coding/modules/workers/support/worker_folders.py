@@ -17,7 +17,9 @@ class WorkerFolders(AgentFolders):
         self.worktrees = worktrees
 
     def resume_locations(self, agents: tuple[Agent, ...]) -> dict[int, tuple[bool, Path]]:
-        parents = {agent.parent_id: self.agents.find(agent.parent_id) for agent in agents if agent.parent_id is not None}
+        parent_ids = list({agent.parent_id for agent in agents if agent.parent_id is not None})
+        parents = {parent.id: parent for parent in self.agents.find_many(parent_ids)}
+        environments = {row.id: row for row in self.environments.find_many(list({agent.environment_id for agent in agents}))}
         ids = tuple({agent.id for agent in agents} | set(parents))
         worktrees = self.worktrees.with_removed().matching(Among("session_agent_id", ids)).oldest().all_rows()
         latest = {worktree.session_agent_id: worktree for worktree in worktrees}
@@ -32,7 +34,7 @@ class WorkerFolders(AgentFolders):
             elif parent is not None and parent.id in active:
                 folder = Path(active[parent.id].folder)
             else:
-                folder = Path(self.environments.find(agent.environment_id).folder)
+                folder = Path(environments[agent.environment_id].folder)
             locations[agent.id] = (available, folder)
         return locations
 

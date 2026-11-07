@@ -27,7 +27,7 @@ try {
     await page.locator('[data-feed-pause]').click();
     await page.locator("[data-request-queue-open]").click();
     await page.locator("[data-request-queue]").waitFor();
-    await page.getByText("Nothing is waiting.").waitFor();
+    await page.getByText("No waiting requests.").waitFor();
     await page.screenshot({path: "/tmp/journal-request-queue-647.png"});
     await page.getByRole("button", {name: "Close the request queue"}).click();
     assert.deepEqual(await page.locator("[data-hook-column]").allTextContents(), ["Event", "Tool", "Parts", "Time", "Sender", "Queued", "Duration"]);

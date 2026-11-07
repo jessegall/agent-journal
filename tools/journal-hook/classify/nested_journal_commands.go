@@ -24,18 +24,18 @@ func journalCommands(line string, includeOuter bool) [][]string {
 		if !ok || len(call.Args) == 0 {
 			return true
 		}
-		words, err := shell.Shlex(line[call.Pos().Offset():call.End().Offset()])
-		if err != nil || len(words) < 2 {
+		tokens, err := shell.Shlex(line[call.Pos().Offset():call.End().Offset()])
+		if err != nil || len(tokens) < 2 {
 			return true
 		}
-		if (includeOuter || call != outer) && words[0] == "journal" {
-			commands = append(commands, words[1:])
+		if (includeOuter || call != outer) && tokens[0] == "journal" {
+			commands = append(commands, tokens[1:])
 		}
-		if words[0] == "eval" {
-			commands = append(commands, journalCommands(words[1], true)...)
+		if tokens[0] == "eval" {
+			commands = append(commands, journalCommands(tokens[1], true)...)
 		}
-		if len(words) > 2 && (words[0] == "sh" || words[0] == "bash" || words[0] == "zsh") && words[1] == "-c" {
-			commands = append(commands, journalCommands(words[2], true)...)
+		if len(tokens) > 2 && (tokens[0] == "sh" || tokens[0] == "bash" || tokens[0] == "zsh") && tokens[1] == "-c" {
+			commands = append(commands, journalCommands(tokens[2], true)...)
 		}
 		return true
 	})

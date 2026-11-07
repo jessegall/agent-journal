@@ -1,5 +1,5 @@
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from collections.abc import Collection
+from core.base.agent_policy import AgentPolicy
 import json
 from argparse import ArgumentParser, Namespace
 
@@ -52,16 +52,16 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         running = tuple(cards.matching(self.activity).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(self.activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
         pending = self.work.pending()
-        job_roles = self.suites.agent_policy().job_roles
+        policy = self.suites.agent_policy()
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
-        return AgentFactsList(tuple(self.facts(card, job_roles, titles, pending.get(card.id)) for card in (*running, *ended)))
+        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id)) for card in (*running, *ended)))
 
-    def facts(self, card: AgentCard, job_roles: Collection[str], titles: dict[str, str], work_status: str | None = None) -> AgentFacts:
-        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp())
+    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None = None) -> AgentFacts:
+        blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status)
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status)
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:

@@ -154,7 +154,7 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                 <SearchBar ref="search" v-model="query" class="tasks-tools">
                     <select v-model="tag" aria-label="Filter by tag" data-task-tag-filter>
                         <option value="">All tags</option>
-                        <option v-for="item in tags" :key="item.word" :value="item.word">{{ item.word }} ({{ item.count }})</option>
+                        <template v-for="item in tags" :key="item.word"><option :value="item.word">{{ item.word }} ({{ item.count }})</option></template>
                     </select>
                     <slot name="tools" />
                 </SearchBar>
@@ -179,8 +179,8 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
                             <span class="task-title">{{ row.title }}</span>
-                            <span v-for="word in row.tags" :key="word" class="task-tag" data-task-tag>{{ word }}</span>
-                            <span v-if="row.complexity" class="task-score" data-task-complexity>Complexity {{ row.complexity }}</span>
+                            <template v-for="word in row.tags" :key="word"><span class="task-tag" data-task-tag>{{ word }}</span></template>
+                            <template v-if="row.complexity"><span class="task-score" data-task-complexity>Complexity {{ row.complexity }}</span></template>
                             <template v-if="row.delegated_name">
                                 <span class="task-agent" :title="`Delegated to ${row.delegated_name}, in state ${row.state}`" data-task-agent>{{ row.delegated_name }}</span>
                             </template>

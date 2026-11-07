@@ -6,6 +6,8 @@ from urllib.parse import parse_qs, unquote, urlsplit
 from core.base.clock import Clock
 from core.base.database.kept_rows import KeptRows
 from core.base.driver.nudge import Nudge
+from core.base.driver.tool import Tool
+from core.base.driver.tool_type import ToolType
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
@@ -17,6 +19,7 @@ from core.modules.pins.commands.make_pin.make_pin import MakePin
 from core.modules.pins.models.pin import Pin
 from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST, LINK_PIN_REQUEST, UNPINNED_CLAIM
 
+FILE_TOOLS = (ToolType.READ, ToolType.SEARCH, ToolType.EDIT, ToolType.NEW_FILE)
 LINK = re.compile(r"https?://[^\s<>()\[\]\"'`]+")
 LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
 PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
@@ -34,6 +37,10 @@ class LinkPinCheck:
 
     def __init__(self, queries: Queries, clock: Clock, kept: KeptRows) -> None:
         self.queries, self.clock, self.kept = queries, clock, kept
+
+    @staticmethod
+    def is_file_or_read(tool: Tool) -> bool:
+        return tool.category in FILE_TOOLS or (tool.shell is not None and tool.shell.is_readonly)
 
     def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
         if self.claims_missing_pin(agent_text):
