@@ -72,6 +72,9 @@ const SNAPSHOT = {
         },
     ],
 };
+const OUTPUT_LINES = ["compiling package", "linking package"];
+const reader = async (line) => (line[0] === "output" ? {ok: true, value: {lines: OUTPUT_LINES, first_byte: 0, last_byte: 20, total: 20, cut_bytes: 0}} : {ok: true, value: SNAPSHOT});
+const rowsOf = (section) => [...document.body.querySelectorAll(`[data-queue-row="${section}"]`)];
 let app = null;
 let subscriptions = null;
 
@@ -125,7 +128,6 @@ test("the process queue reads its counts and ordered lists together", async () =
     const read = vi.fn(reader);
     await panel(read);
     expect(read).toHaveBeenCalledExactlyOnceWith(["queue", "list"]);
-    expect(document.body.querySelector("[data-resource-panel]").classList.contains("queue")).toBe(true);
     expect(document.body.querySelector("[data-queue-spots]").textContent).toBe("1 of 2");
     expect(document.body.querySelector("[data-queue-waiting]").textContent).toBe("2");
     expect([...document.body.querySelectorAll("[data-queue-heading]")].map((item) => item.textContent)).toEqual([

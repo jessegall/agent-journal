@@ -91,9 +91,9 @@ test("the keys walk the list, open the inspector and step it", async () => {
     await press("j");
     expect(shown.querySelector(".task.selected").dataset.row).toBe("7");
     await press("Enter");
-    expect(shown.querySelector("[data-task-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
     await press("j");
-    expect(shown.querySelector("[data-task-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
     await press("Escape");
     expect(shown.querySelector("[data-task-inspector]")).toBeNull();
 });
@@ -125,7 +125,7 @@ test("a new task is filed with its brief, and opens in the inspector", async () 
     await settle();
     expect(ran).toContainEqual(["task", "make", "Fix the totals", "--brief", "They add up"]);
     expect(shown.querySelector("[data-task-draft]")).toBeNull();
-    expect(shown.querySelector("[data-task-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
 });
 
 test("a priority is changed from the inspector", async () => {
