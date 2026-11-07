@@ -457,27 +457,27 @@ function dc() {
   ze.starting || (ze.starting = !0, ze.offline = !navigator.onLine, hl(), dl = setTimeout(() => ze.late = !0, oc));
 }
 const fc = () => ze.starting ? new Promise((e) => fl.push(e)) : Promise.resolve();
-function ml(e, t) {
-  let n = 0, a = null, s = !1, o = !1;
-  const l = () => {
-    s = !1, n = Date.now(), o && (o = !1, i());
-  }, r = () => {
-    a = null;
-    const u = e();
-    n = Date.now(), u instanceof Promise && (s = !0, u.catch(() => {
-    }).finally(l));
+function ml(e, t, n = 0) {
+  let a = n, s = null, o = !1, l = !1;
+  const r = () => {
+    o = !1, a = Date.now(), l && (l = !1, u());
   }, i = () => {
-    if (s) {
-      o = !0;
+    s = null;
+    const d = e();
+    a = Date.now(), d instanceof Promise && (o = !0, d.catch(() => {
+    }).finally(r));
+  }, u = () => {
+    if (o) {
+      l = !0;
       return;
     }
-    if (a) return;
-    const u = t - (Date.now() - n);
-    u <= 0 ? r() : a = setTimeout(r, u);
+    if (s) return;
+    const d = t - (Date.now() - a);
+    d <= 0 ? i() : s = setTimeout(i, d);
   };
-  return i.cancel = () => {
-    clearTimeout(a), a = null, o = !1;
-  }, i;
+  return u.cancel = () => {
+    clearTimeout(s), s = null, l = !1;
+  }, u;
 }
 function hc(e) {
   const t = { id: crypto.randomUUID(), trailingOf: e, askers: 0, callers: 0, stop: new AbortController() };
@@ -11398,7 +11398,7 @@ function v8(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const y8 = ki(() => import("./VoiceFigure-BzeI7kTZ.js").then((e) => e.V)), b8 = "1.2.0", w8 = "3.5";
+const y8 = ki(() => import("./VoiceFigure-CGFhpXQP.js").then((e) => e.V)), b8 = "1.2.0", w8 = "3.5";
 export {
   Ld as $,
   _e as A,

@@ -32,14 +32,14 @@ async function drawn(agent, failure, gate) {
     const element = document.createElement("div");
     document.body.append(element);
     const run = async (line) => (ran.push(line.join(" ")), gate && line[1] !== "controls" && line[1] !== "programs" ? await gate : null, reply(line));
-    createApp({render: () => h(InformationBar, {agent: row, run, usage: USAGE})}).mount(element);
+    createApp({render: () => h(InformationBar, {agent: row, run, usage: USAGE, controlGroups: GROUPS, agentPrograms: [{name: "claude", title: "Claude Code"}]})}).mount(element);
     await settle();
     return {element, ran, row};
 }
 
 test("the model and the effort are the facts of the bar, and each is chosen from them", async () => {
     const {element, ran} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"});
-    expect(ran).toContain("agent controls 7");
+    expect(ran).toEqual([]);
     expect(element.querySelector('[data-fact="model"]').textContent).toContain("sonnet");
     element.querySelector('[data-fact="model"]').click();
     await settle();

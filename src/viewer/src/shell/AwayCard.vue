@@ -1,11 +1,12 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
+import {useWindow} from "@journal/window-kit";
 import Btn from "../kit/Btn.vue";
 import {peekRef} from "../route.js";
 
 // what came in while the page was out of sight for five minutes or more, as version 4's card told it: the pins since, each opening its row
 const AWAY_MILLISECONDS = 5 * 60 * 1000;
-const props = defineProps({run: {type: Function, required: true}});
+const window = useWindow();
 const pins = ref([]);
 let hiddenAt = 0;
 
@@ -16,8 +17,8 @@ async function heardVisibility() {
     }
     if (!hiddenAt || Date.now() - hiddenAt < AWAY_MILLISECONDS) return;
     const since = hiddenAt;
-    const answer = await props.run(["pin", "list"]);
-    pins.value = answer.ok ? answer.value.rows.filter((row) => new Date(row.created_at).getTime() >= since) : [];
+    await window.reload("pins");
+    pins.value = window.props.pins.failure.value ? [] : (window.props.pins.data.value?.rows ?? []).filter((row) => new Date(row.created_at).getTime() >= since);
 }
 
 function open(pin) {
