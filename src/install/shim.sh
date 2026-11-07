@@ -11,7 +11,7 @@ while :; do
     exec "$dir/.journal/journal" "$@"
   fi
   if [ -f "$dir/.journal/src/journal.sh" ]; then
-    exec sh "$dir/.journal/src/journal.sh" "$@"
+    JOURNAL_ROOT="$dir" exec sh "$dir/.journal/src/journal.sh" "$@"
   fi
   [ "$dir" = / ] && break
   dir=$(dirname "$dir")
