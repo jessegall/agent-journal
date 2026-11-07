@@ -8,14 +8,17 @@ TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
 
 class RunSize:
-    """Counts the tests a run names from its files, without importing them, and stops counting at the limit: a
-    small run needs no shards, since starting several test runners costs more time than it saves."""
+    """Counts the tests a run names from its files, without importing them, and stops counting at the limit, to
+    choose how many test runners it starts: one for every started block of tests, up to the most, since starting
+    a runner costs more time than it saves on a few tests."""
 
     def __init__(self, targets: Iterable[str], limit: int) -> None:
         self.targets, self.limit = tuple(targets), limit
 
-    def is_small(self) -> bool:
-        return bool(self.targets) and self.counted() < self.limit
+    def workers(self, tests_per_worker: int, most_workers: int) -> int:
+        if not self.targets:
+            return most_workers
+        return max(1, min(most_workers, -(-self.counted() // tests_per_worker)))
 
     def counted(self) -> int:
         count = 0
