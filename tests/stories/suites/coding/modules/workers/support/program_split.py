@@ -68,7 +68,7 @@ def make_task(story, title, flags=''):
 
 
 def outage(story, program='codex', minutes=15, reason='it hit a rate limit'):
-    ends_at = (story.clock.timestamp().value + timedelta(minutes=minutes)).isoformat()
+    ends_at = (story.clock.timestamp().value + timedelta(minutes=minutes)).isoformat(timespec="microseconds")
     row_id = story.new_row_id(f'provider-outage make {program} "{reason}" --ends-at {ends_at}', actor=story.agent)
     return row_id, ends_at
 

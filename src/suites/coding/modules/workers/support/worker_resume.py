@@ -29,6 +29,10 @@ from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_states import ProgramStates
+from core.modules.helpers.support.program_shares import ProgramShares
+from core.modules.environments.support.environment_rows import EnvironmentRows
+from core.base.scope.scopes import Scopes
+from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
 
 
@@ -36,13 +40,17 @@ class WorkerResume:
     """Resumes ended workers on waiting jobs and retries a job that did not start."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
         self.states = states
+        self.shares, self.environments, self.scopes = shares, environments, scopes
 
     def program_state(self, worker: Agent) -> ProgramState:
-        return self.states.outage_state(worker.program)
+        with self.scopes.row_scope(worker):
+            if self.shares.is_configured:
+                return self.states.state(worker.program, Path(self.environments.find(worker.environment_id).folder))
+            return self.states.outage_state(worker.program)
 
     def may_resume(self, worker: Agent) -> bool:
         return self.program_state(worker).is_ready

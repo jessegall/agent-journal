@@ -41,9 +41,11 @@ class Worktree(Removable, EnvironmentScoped, Model):
     merged_task_ids: str = ""
     new_agent_reason: str = ""
     library_links: str = "[]"
+    task_count: int = 1
+    route_reason: str = ""
 
-    def cut(self, timestamp: Timestamp, actor: Actor, base_commit: str) -> "Worktree":
-        return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp)
+    def cut(self, timestamp: Timestamp, actor: Actor, base_commit: str, task_count: int = 1) -> "Worktree":
+        return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp, task_count=task_count)
 
     def merge(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.merge, merged_at=timestamp)

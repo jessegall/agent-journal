@@ -22,7 +22,7 @@ def readiness():
     providers, programs, queries, settings, statuses, clock = (Mock() for _ in range(6))
     providers.provider.return_value = provider
     providers.all.return_value = [provider]
-    queries.query.return_value.filter.return_value.ordered.return_value.all_rows.return_value = []
+    queries.query.return_value.filter.return_value.descending.return_value.all_rows.return_value = []
     agents, scopes = Mock(), Mock()
     agents.running.return_value.filter.return_value.all_rows.return_value = [SimpleNamespace(session='open')]
     scopes.opened.return_value = nullcontext()
@@ -50,13 +50,13 @@ def test_untrusted_hooks_are_out(readiness):
 
 def test_current_outage_gives_reason_and_end(readiness):
     ends_at = Timestamp(readiness.now.value + timedelta(minutes=15))
-    readiness.queries.query.return_value.filter.return_value.ordered.return_value.all_rows.return_value = [SimpleNamespace(reason='rate limit', ends_at=ends_at)]
+    readiness.queries.query.return_value.filter.return_value.descending.return_value.all_rows.return_value = [SimpleNamespace(reason='rate limit', ends_at=ends_at)]
     state = readiness.states.state('sample', Path('/project'))
     assert not state.is_ready and state.line == 'rate limit' and state.ends_at == ends_at
 
 
 def test_expired_outage_is_ready_without_deleting_history(readiness):
-    query = readiness.queries.query.return_value.filter.return_value.ordered.return_value
+    query = readiness.queries.query.return_value.filter.return_value.descending.return_value
     query.all_rows.return_value = [SimpleNamespace(reason='rate limit', ends_at=readiness.now)]
     assert readiness.states.state('sample', Path('/project')).is_ready
     assert len(query.all_rows.return_value) == 1
@@ -104,7 +104,7 @@ def test_ready_programs_only_lists_ready_programs(readiness):
 
 def test_earliest_line_names_the_time(readiness):
     ends_at = Timestamp(readiness.now.value + timedelta(minutes=15))
-    readiness.queries.query.return_value.filter.return_value.ordered.return_value.all_rows.return_value = [SimpleNamespace(reason='rate limit', ends_at=ends_at)]
+    readiness.queries.query.return_value.filter.return_value.descending.return_value.all_rows.return_value = [SimpleNamespace(reason='rate limit', ends_at=ends_at)]
     assert ends_at.text in readiness.states.earliest_line(Path('/project'))
 
 

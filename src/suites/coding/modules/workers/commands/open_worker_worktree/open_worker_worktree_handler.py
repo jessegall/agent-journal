@@ -32,5 +32,5 @@ class OpenWorkerWorktreeHandler(Handler[OpenWorkerWorktree, OpenedWorker]):
         name = f"worker-{worker.id}"
         worktree = self.repository.save(Worktree(session_agent_id=worker.id, task_id=task.id, creator_id=context.actor.id,
                                                  folder=str(Path(environment.folder) / WORKTREES_FOLDER / environment.name / name),
-                                                 branch=f"journal/{environment.name}/{name}", base_branch=environment.branch, new_agent_reason=command.new_agent_reason), context)
+                                                 branch=f"journal/{environment.name}/{name}", base_branch=environment.branch, new_agent_reason=command.new_agent_reason, route_reason=command.route_reason), context)
         return OpenedWorker(worker, worktree)
