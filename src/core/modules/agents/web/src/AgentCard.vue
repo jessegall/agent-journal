@@ -22,7 +22,9 @@ const planTask = computed(() => {
     const current = tasks.value.find((task) => task.id === props.facts?.task_id);
     return current?.plan_id ? current : queuedTasks.value.find((task) => task.plan_id);
 });
-const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
+const currentTask = computed(() => tasks.value.find((task) => task.id === props.progress?.task_id && task.state === "started"));
+const blockedTasks = computed(() => currentTask.value ? tasks.value.filter((task) => task.state === "blocked") : []);
+const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? currentTask.value?.title || props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
 const jobRef = computed(() => {
     const match = job.value.match(/\b(plan|doc)(?::|\s+)(\d+)\b/i);
     return match ? `${match[1].toLowerCase() === "plan" ? "plans" : "docs"}:${match[2]}` : "";
@@ -88,6 +90,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
                 </template>
             </span>
         </template>
+        <template v-if="blockedTasks.length"><span class="agent-line agent-work-status" data-agent-blocked-tasks>Blocked: {{ blockedTasks.map((task) => `task ${task.id}`).join(", ") }}</span></template>
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>
 </template>

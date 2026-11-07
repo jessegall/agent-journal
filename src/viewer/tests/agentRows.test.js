@@ -599,3 +599,16 @@ test("a worker's list card shows its pace beneath the time only after a task is 
     expect(pace.previousElementSibling.classList.contains("agent-time")).toBe(true);
     expect(cardOf(element, 5).querySelector("[data-agent-list-pace]")).toBeNull();
 });
+
+test("a worker shows its worktree task and notes another blocked task", async () => {
+    const row = {id: 4, role: "worker", state: "running", ended_at: null};
+    const tasks = [{id: 1, title: "Current task", state: "started"}, {id: 2, title: "Blocked task", state: "blocked"}];
+    const facts = {job_enabled: true, task_id: 1, task_title: "Current task", tasks, state: ""};
+    const progress = {task_id: 1};
+    for (const open of [false, true]) {
+        const element = await mounted({render: () => h(AgentCard, {row, facts, progress, open})}, context({}));
+        expect(element.querySelector("[data-agent-job]").textContent).toBe("Current task");
+        expect(element.querySelector("[data-agent-blocked-tasks]").textContent).toBe("Blocked: task 2");
+        if (!open) expect(element.querySelector(".agent-dot").dataset.state).toBe("running");
+    }
+});
