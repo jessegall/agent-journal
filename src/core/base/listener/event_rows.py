@@ -72,4 +72,4 @@ class EventRows:
 
     def cache_name(self, model: type[Model]) -> str:
         query = self.queries.query(model)
-        return f"listeners.event_row:{self.queries.database.read_actor_id}:{query.scoped(query.select).conditions}"
+        return f"listeners.event_row:{query.scoped(query.select).conditions}"
