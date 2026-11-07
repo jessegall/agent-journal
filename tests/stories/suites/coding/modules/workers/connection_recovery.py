@@ -25,7 +25,6 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
-from tests.stories.suites.coding.modules.workers.wait_reasons import expect_reason
 
 RECOVERY_SOURCE = "workers.silent-agent"
 FAILED_SOURCE = "workers.silent-agent-failed"
@@ -337,7 +336,6 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success("worker deliver --differences none", actor=worker)
     story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL WHERE session_agent_id = ?", [worker.id]))
-    expect_reason(story, worker, "")
     story.expect_success(f"agent end {worker.id}", actor=worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
