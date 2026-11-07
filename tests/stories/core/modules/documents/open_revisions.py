@@ -91,21 +91,21 @@ def test_make_is_one_closed_revision(new_story):
 def test_a_stop_preserves_the_open_document(new_story):
     story = new_story(fixture=DocumentOpen)
     story.expect_hook_allowed('s-1', HookSamples.stop())
-    story.expect_hook_refusal('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])), 'journal doc close 1')
+    story.expect_hook_refusal('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])), 'doc:1 is open')
     story.expect_success('doc close 1', actor=story.agent)
 
 
 def test_a_new_session_hook_keeps_the_document_open(new_story):
     story = new_story(fixture=DocumentOpen)
     story.hook('s-1', HookSamples.sample('compact'))
-    story.expect_hook_refusal('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])), 'journal doc close 1')
+    story.expect_hook_refusal('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])), 'doc:1 is open')
     story.expect_success('doc close 1', actor=story.agent)
 
 
 def test_the_refusal_is_one_short_line_with_a_way_out(new_story):
     story = new_story(fixture=DocumentOpen)
     reply = story.hook('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))
-    story.expect_rows('journal doc close 1' in reply.refusal, len(reply.refusal) < 120)
+    story.expect_rows('doc:1 is open' in reply.refusal, len(reply.refusal) < 120)
 
 
 def test_reading_the_open_document_goes_through(new_story):
@@ -124,7 +124,7 @@ def test_loading_a_skill_and_reading_files_together_go_through(new_story):
 
 def test_an_incomplete_journal_command_is_refused_without_a_fault(new_story):
     story = new_story(fixture=DocumentOpen)
-    story.expect_hook_refusal('s-1', HookSamples.shell('journal', ShellPart('journal', CommandCategory.JOURNAL, [])), 'journal doc close 1')
+    story.expect_hook_refusal('s-1', HookSamples.shell('journal', ShellPart('journal', CommandCategory.JOURNAL, [])), 'doc:1 is open')
 
 
 def test_a_viewer_edit_and_close_preserve_the_agent_author(new_story):
@@ -169,7 +169,7 @@ def test_a_readonly_helper_can_make_open_edit_and_close_its_document(new_story):
 
 def test_a_block_allows_stop_and_closes_before_work_resumes(new_story):
     story = new_story(fixture=DocumentOpen)
-    story.expect_hook_refusal('s-1', HookSamples.edit('cart.py'), 'journal doc close 1')
+    story.expect_hook_refusal('s-1', HookSamples.edit('cart.py'), 'doc:1 is open')
     story.expect_hook_allowed('s-1', HookSamples.stop())
     story.expect_success('doc close 1', actor=story.agent)
     story.expect_hook_allowed('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))

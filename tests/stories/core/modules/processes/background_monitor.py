@@ -23,7 +23,7 @@ def test_a_moved_run_with_no_monitor_leaves_the_agent_working(running):
 
 def test_a_stop_with_a_run_going_and_no_monitor_is_refused(running):
     story, process = running
-    story.expect_hook_refusal("s-1", HookSamples.stop(), f"set a Monitor on journal output monitor {process.id} before you stop")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), f"output {process.id} still runs: set a Monitor on its wait before you stop")
 
 
 def test_a_monitor_on_the_run_lets_the_agent_stop(running):

@@ -46,7 +46,7 @@ def served_story(new_story):
 
 
 def expect_service_refusal(story, sample):
-    story.expect_hook_refusal("s-1", sample, "plugin:1 refused: journal agent-line list")
+    story.expect_hook_refusal("s-1", sample, "plugin:1 refused")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin served] the service says no", actor=story.agent)
 
 

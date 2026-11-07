@@ -196,7 +196,7 @@ def test_a_helper_with_no_hook_after_a_minute_ends_and_the_parent_is_told(new_st
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()
     story.expect_text(f"agent show {helper_id}", "ended_at: 20")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start: see journal agent terminal {helper_id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start")
 
 
 def test_a_helper_that_sent_a_hook_stays(new_story):

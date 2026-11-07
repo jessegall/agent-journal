@@ -187,7 +187,7 @@ def test_plan_start_pointer_is_read_before_work(new_story):
     scenario.person("viewer.shell", "plan", "start", "1")
     scenario.tick()
     notice = "\n".join(scenario.story.hook("s-1", HookSamples.tool_use("Read", ToolType.READ, [], None)).lines)
-    feature("plan context 1" in notice, notice)
+    feature("plan 1 started" in notice, notice)
     context = scenario.context("plan")
     feature("messages" in context, str(context))
 

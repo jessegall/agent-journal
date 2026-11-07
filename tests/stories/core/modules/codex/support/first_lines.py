@@ -22,7 +22,7 @@ def expect_memory_start(story) -> None:
     story.expect_success("skill write")
     answer = story.hook("s-1", HookSamples.session_start().with_fields(program="codex"))
     line = next(line for line in answer.lines if "memories to read" in line)
-    assert line.index("journal skill require") < line.index("journal memory list"), line
+    assert line.index("load the memory skill") < line.index("list them"), line
 
 
 def expect_read_request(story) -> None:

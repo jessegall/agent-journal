@@ -89,7 +89,7 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     story, repository, worker, started = queued_story(new_story, monkeypatch)
     ended(story, started[0], 1)
     story.expect_text("proof show 1", "state: short", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {started[0]} --summary")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[0]}")
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     repository.changed(worker.id, "cart.py", "TOTAL = 4\n")
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -106,7 +106,7 @@ def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed: journal output read {orphaned_process_id} --summary")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {orphaned_process_id}")
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.run_listeners()
     expect_answers(started, 2)
@@ -135,7 +135,7 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     ended(story, started[0], 0)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
     lines.expect_text(PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="2").text)
-    lines.expect_no_text(f"journal worker merge {worker.id}")
+    lines.expect_no_text(f"the tests of worker:{worker.id} all pass")
     expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -231,7 +231,7 @@ def test_a_failed_picker_returns_the_work_with_its_output(new_story, monkeypatch
     ended(story, started[1], 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"journal output read {started[1]} --summary")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[1]}")
 
 
 def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkeypatch):
@@ -241,7 +241,7 @@ def test_a_failed_picked_test_returns_the_work_with_its_output(new_story, monkey
     ended(story, started[2], 1)
     story.expect_text("worker-worktree show 1", "state: cut", actor=story.agent)
     story.expect_text("task show 1", "state: started", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", f"journal output read {started[2]} --summary")
+    story.expect_text(f"agent-line list --agent {worker.id}", f"your tests failed, output {started[2]}")
 
 
 def test_a_failed_picker_runs_again_at_the_next_hand_in(new_story, monkeypatch):

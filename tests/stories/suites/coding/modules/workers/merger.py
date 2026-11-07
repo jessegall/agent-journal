@@ -214,7 +214,7 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
 
 def test_merger_notices_combine_worker_numbers_without_reasons():
     notices = Nudge.collapsed([MERGER_PASSED.nudge(worker=6), MERGER_PASSED.nudge(worker=7), MERGER_PASSED.nudge(worker=8)])
-    expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you. Read journal worker logs <id> for each"])
+    expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you"])
 
 
 def expect_merger_lines(notices, expected):

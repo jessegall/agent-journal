@@ -40,7 +40,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --json", "A tick of the journal's clock cost 51 points", "tick costly")
     story.expect_no_text("message list --environment main", "over its limit")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "journal-exception:1: journal journal-exception show 1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "journal-exception:1 was recorded")
     story.expect_text("journal-exception show 1", "source: clock tick", "cost 51 points", actor=story.agent)
 
 

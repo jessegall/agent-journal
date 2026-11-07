@@ -3,7 +3,7 @@ from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE
 
 
 def test_a_line_someone_wrote_and_a_path_to_open_stay_whole():
-    expect_nudge_trigger(TRIGGER_LINE, 500, "trigger:500 fired: journal trigger show 500")
+    expect_nudge_trigger(TRIGGER_LINE, 500, "trigger:500 fired")
     path = ".agents/skills/commandments-rows-through-their-repository/SKILL.md"
     expect_nudge_skill_with(READ_SKILL_FIRST, path, path)
 

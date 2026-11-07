@@ -42,7 +42,7 @@ def test_a_stop_holds_a_codex_agent_until_it_runs_the_monitor_command_in_its_she
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     refusal = story.hook("s-1", STOP).refusal
-    expect_value_with(refusal, f"run journal output monitor {process.id}")
+    expect_value_with(refusal, "wait for it in a Monitor before you stop")
     expect_value_without(refusal, "Monitor")
 
 
@@ -57,7 +57,7 @@ def test_the_monitor_command_on_another_run_does_not_let_a_codex_agent_stop(new_
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     story.hook("s-1", shell_line(f"journal output monitor {process.id + 1}"))
-    story.expect_hook_refusal("s-1", STOP, f"run journal output monitor {process.id}")
+    story.expect_hook_refusal("s-1", STOP, "wait for it in a Monitor before you stop")
 
 
 def test_a_run_that_ended_no_longer_holds_a_codex_agents_stop(new_story):
@@ -77,7 +77,7 @@ def test_a_codex_agent_that_asks_for_a_runs_status_is_told_to_run_the_monitor_co
     story = codex_story(new_story)
     process = moved_run(story, "make test")
     lines = story.hook("s-1", shell_line(f"journal output status {process.id}")).lines
-    expect_lines_6(f"run journal output monitor {process.id}", "Monitor on", lines)
+    expect_lines_6("wait for it in a Monitor before you stop", "Monitor on", lines)
 
 
 def test_a_claude_agent_still_may_not_run_the_monitor_command_in_its_shell(new_story):

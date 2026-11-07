@@ -64,9 +64,9 @@ def test_after_a_session_start_nothing_passes_before_the_overview_but_reading_a_
     story = overview_story(new_story)
     story.hook("s-1", HookSamples.session_start())
     story.run_listeners()
-    story.expect_hook_refusal("s-1", EDIT, "run journal overview first")
-    story.expect_hook_refusal("s-1", LISTING, "run journal overview first")
-    story.expect_hook_refusal("s-1", JOURNAL_LINE, "run journal overview first")
+    story.expect_hook_refusal("s-1", EDIT, "read the overview first")
+    story.expect_hook_refusal("s-1", LISTING, "read the overview first")
+    story.expect_hook_refusal("s-1", JOURNAL_LINE, "read the overview first")
     story.expect_hook_allowed("s-1", SKILL_READ)
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT)
@@ -79,7 +79,7 @@ def test_a_compaction_blocks_again_and_a_resume_does_not(new_story):
     story.hook("s-1", RESUME)
     story.expect_hook_allowed("s-1", EDIT)
     story.hook("s-1", COMPACTION)
-    story.expect_hook_refusal("s-1", EDIT, "run journal overview first")
+    story.expect_hook_refusal("s-1", EDIT, "read the overview first")
 
 
 class CartWork(StoryFixture):
@@ -107,9 +107,9 @@ def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(new_story):
     start_lines = story.hook("s-1", COMPACTION).lines
     story.run_listeners()
     expect_value(list(compaction_lines), [])
-    expect_value(list(start_lines), ["run journal overview"])
+    expect_value(list(start_lines), ["read the overview"])
     story.expect_hook_silent("s-1", SKILL_READ)
-    story.expect_hook_refusal("s-1", EDIT, "run journal overview first")
+    story.expect_hook_refusal("s-1", EDIT, "read the overview first")
     story.expect_hook_allowed("s-1", OVERVIEW_HOOK)
     story.expect_hook_allowed("s-1", EDIT, "new message 1")
 
@@ -127,7 +127,7 @@ def test_nothing_is_typed_to_an_agent_that_starts_again_after_a_compaction(new_s
 
 def test_a_new_session_is_told_to_run_the_overview(new_story):
     story = overview_story(new_story)
-    story.expect_hook_allowed("s-1", HookSamples.session_start(), "run journal overview")
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), "read the overview")
 
 
 def test_the_overview_shows_the_memories(new_story):

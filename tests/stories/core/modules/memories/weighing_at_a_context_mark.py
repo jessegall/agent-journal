@@ -36,7 +36,7 @@ def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_le
             story.advance(SECOND)
             story.expect_hook_allowed("s-1", EDIT, *([f"weigh memories due: {remaining} tool uses"] if remaining < COUNTDOWN_USES else []))
         story.advance(SECOND)
-        story.expect_hook_refusal("s-1", EDIT, "journal memory weigh")
+        story.expect_hook_refusal("s-1", EDIT, "weigh your memories first")
         story.expect_hook_allowed("s-1", READ)
         story.expect_success('memory skip "nothing here changed"', actor=story.agent)
         story.expect_hook_allowed("s-1", READ)
@@ -44,7 +44,7 @@ def test_each_mark_gives_its_tool_uses_with_a_countdown_then_holds_writes_and_le
 
 def test_a_stop_waits_for_the_weighing_from_the_moment_a_mark_opens(open_context_mark):
     story = open_context_mark
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "journal memory weigh")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "weigh your memories first")
 
 
 def test_weighing_a_memory_closes_the_mark(context_memory):
