@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.testing.fake_launcher import FakeLauncher
@@ -100,6 +101,7 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
 
 
 def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkeypatch):
+    monkeypatch.setattr(ClaudeCodeProvider, "session_resumes_here", lambda _provider, _folder, _session: True)
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
@@ -111,7 +113,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         actor = Actor(merger.id, ActorType.AGENT)
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_text("merger next", f"worker {worker.id}", actor=actor)
-        repository.uncommitted("cart.py", "TOTAL = 0\n# main change\n")
+        (repository.folder / "cart.py").chmod(0o755)
         story.expect_refusal(f"merger merge {worker.id}", "uncommitted changes to cart.py", actor=actor)
         story.expect_success('merger tell "The merge waits for cart.py to be committed"', actor=actor)
         story.hook(merger.session, HookSamples.stop())
@@ -124,9 +126,16 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         story.expect_rows(len(jobs.helper_jobs(merger.id)) == before)
         lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
         story.expect_rows(lines.count("The merge waits for cart.py to be committed") == 1)
-        repository.committed("cart.py", "TOTAL = 0\n# main change\n", "Commit main change")
+        repository.git("add", "cart.py")
+        repository.git("commit", "-m", "Commit main change")
+        repository.checkout("main")
         MergerRetry()(story.container)
-        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before + 1, detail=f"before={before}, jobs={jobs.helper_jobs(merger.id)}, agent={merger_of(story)}")
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before)
+        repository.checkout(ENVIRONMENT_BRANCH)
+        MergerRetry()(story.container)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before + 1)
+        MergerRetry()(story.container)
+        story.expect_rows(len(jobs.helper_jobs(merger.id)) == before + 1)
         story.expect_text("merger next", f"worker {worker.id}", actor=actor)
         story.expect_success(f"merger merge {worker.id}", actor=actor)
         story.expect_text("task show 1", "state: completed", actor=story.agent)

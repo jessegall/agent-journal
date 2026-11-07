@@ -33,7 +33,7 @@ class MergerRetry:
         if not container.get(SettingValues).flag(MERGER_ENABLED):
             return
         merger = container.get(Queries).query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
-        if merger is not None and (merger.ended_at is None or container.get(HelperJobRows).open_job(merger.id) is not None):
+        if merger is None or merger.ended_at is None or container.get(HelperJobRows).open_job(merger.id) is not None:
             return
         environment = container.get(EnvironmentRows).find(worktree.environment_id)
         git = container.get(WorktreeGit)
