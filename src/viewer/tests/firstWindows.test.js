@@ -6,6 +6,7 @@ import {fileEditsWindowContext} from "./support/fileEditsWindowContext.js";
 import {fileFeedWindowContext} from "./support/fileFeedWindowContext.js";
 import {projectFilesWindowContext} from "./support/projectFilesWindowContext.js";
 import {terminalWindowContext} from "./support/terminalWindowContext.js";
+import {activityWindowContext} from "./support/activityWindowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
@@ -95,7 +96,7 @@ test("the helpers window lists every agent but the main one", async () => {
 });
 
 test("the hook calls window shows its agent's hook calls with their answers", async () => {
-    const windowContext = context({"hook-call feed": page([{id: 9, hook: "pre_tool_use", tool: "Edit", summary: "src/cart.py", answer: "refused", refusal: "start a task first"}])}, 2);
+    const windowContext = activityWindowContext({"hook-call feed": page([{id: 9, hook: "pre_tool_use", tool: "Edit", summary: "src/cart.py", answer: "refused", refusal: "start a task first"}])}, 2);
     const text = await drawn(HookCallList, windowContext);
     expect(text).toContain("start a task first");
     expect(windowContext.reads[0]).toContain("--session-agent-id 2");
@@ -160,7 +161,7 @@ test("the terminal window of an agent with no commands says so", async () => {
 
 test("the transcript window shows one agent's conversation, each turn under its author", async () => {
     const windowContext = context({"agent transcript 7": page([{id: 1, author: "user", row_type: "user", text: "Fix the cart total"},
-                                                              {id: 2, author: "assistant", row_type: "assistant", text: "The total is in cents now"}])}, 7);
+                                                              {id: 2, author: "assistant", row_type: "assistant", text: "The total is in cents now"}])}, 7, {"transcript.*": {line: "agent transcript {id}"}});
     const text = await drawn(Transcript, windowContext);
     expect(text).toContain("Fix the cart total");
     expect(text).toContain("The total is in cents now");

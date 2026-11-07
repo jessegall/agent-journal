@@ -1,9 +1,11 @@
 <script setup>
-import {RowList, WindowRoom, useRows, useWindow} from "@journal/window-kit";
+import {RowList, WindowRoom, useWindow} from "@journal/window-kit";
 import {hookEventLabel} from "./labels.js";
 import StopChecks from "./StopChecks.vue";
 
-const {rows, failure, loaded} = useRows(`hook-call feed --session-agent-id ${useWindow().agent}`, ["hook_call.*"], {incremental: true});
+const window = useWindow();
+window.state["calls.session-agent-id"] = String(window.agent);
+const {rows, failure, loaded} = window.props.calls;
 </script>
 
 <template>
