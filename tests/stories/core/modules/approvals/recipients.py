@@ -4,6 +4,8 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
+from core.modules.approvals.models.enums.approval_state import ApprovalState
+from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
@@ -42,3 +44,13 @@ def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
         viewer.value("messages.chat", ["approval", "refuse", str(approval.id)])
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).all_rows())
     story.expect_rows(not items)
+
+
+def test_main_answers_the_helper_without_a_person_or_a_protected_action(helper_request):
+    story, helper, approval = helper_request
+    line = f'approval answer {approval.id} --text "Use the existing paired phone"'
+    story.expect_refusal(line, "only the main agent", actor=helper)
+    story.expect_success(line, actor=story.agent)
+    saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
+    story.expect_rows(saved.state is ApprovalState.CLOSED, saved.review_answer == "Use the existing paired phone",
+                      saved.answered_by_id == story.agent.id, not tuple(story.container.get(Queries).query(PhoneCode).all_rows()))

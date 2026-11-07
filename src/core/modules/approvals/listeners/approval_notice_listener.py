@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.base.query.queries import Queries
+from core.base.listener.event_rows import EventRows
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
 from core.modules.agents.models.agent import Agent
@@ -20,21 +20,23 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
     name = "approvals.notices"
     disabled_scopes = [ActorScope, EnvironmentScope]
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
-        self.bus, self.actors, self.queries = bus, actors, queries
+    def __init__(self, bus: Bus, actors: ModuleActors, rows: EventRows) -> None:
+        self.bus, self.actors, self.rows = bus, actors, rows
 
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
         created = isinstance(event, Created)
-        relayed = not created and event.old_row.recipient_agent_id is not None and request.recipient_agent_id is None
-        if not created and not relayed and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED):
+        routed = not created and event.old_row.recipient_agent_id != request.recipient_agent_id
+        if not created and not routed and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED):
             return
-        recipient = request.recipient_agent_id if request.recipient_agent_id is not None else request.requester_id
-        agent = self.queries.query(Agent).filter(id=recipient).first()
+        pending = request.state in (ApprovalState.OPEN, ApprovalState.RUNNING)
+        review = pending and request.recipient_agent_id is not None
+        recipient = request.recipient_agent_id if review else request.requester_id
+        agent = self.rows.find(Agent, recipient)
         if agent is None:
             return
-        declaration = APPROVAL_PENDING if created or relayed else APPROVAL_DECIDED
-        if request.recipient_agent_id is not None:
+        declaration = APPROVAL_PENDING if pending else APPROVAL_DECIDED
+        if review:
             declaration = APPROVAL_REVIEW
         notice = declaration.nudge(approval=request.id, recipient=recipient) if declaration is APPROVAL_REVIEW else declaration.nudge(approval=request.id)
         self.bus.run(RecordAgentNudge(agent.id, notice, declaration.key), self.actors.actor("journal.core.approvals"),

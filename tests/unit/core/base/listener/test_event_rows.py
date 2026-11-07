@@ -15,7 +15,7 @@ __all__ = ["entries"]
 @pytest.fixture
 def event_rows(entries):
     tables = Tables()
-    return EventRows(Queries(entries.database, tables), tables)
+    return EventRows(Queries(entries.database, tables))
 
 
 def test_prepared_rows_are_read_together_and_reused_after_other_writes(entries, event_rows):

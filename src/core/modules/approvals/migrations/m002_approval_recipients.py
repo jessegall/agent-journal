@@ -6,6 +6,8 @@ class ApprovalRecipientsMigration(Migration):
     statements = [
         "ALTER TABLE approvals ADD COLUMN recipient_agent_id INTEGER REFERENCES actors(id) ON DELETE RESTRICT",
         "ALTER TABLE approvals ADD COLUMN relayed_by_id INTEGER REFERENCES actors(id) ON DELETE RESTRICT",
+        "ALTER TABLE approvals ADD COLUMN answered_by_id INTEGER REFERENCES actors(id) ON DELETE RESTRICT",
+        "ALTER TABLE approvals ADD COLUMN review_answer TEXT NOT NULL DEFAULT ''",
         "CREATE INDEX approval_requests_recipient ON approvals(recipient_agent_id, state)",
         "UPDATE approvals SET recipient_agent_id = (SELECT id FROM agents WHERE role = 'main'"
         " AND environment_id = approvals.environment_id ORDER BY id DESC LIMIT 1)"

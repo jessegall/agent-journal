@@ -12,5 +12,6 @@ def test_a_task_wait_keeps_its_reason_without_asking_the_person(new_story):
     saved = story.container.get(Queries).query(Task).find(task)
     story.expect_rows(saved.state is TaskState.BLOCKED, saved.reason == "Connect the shop account",
                       not tuple(story.container.get(Queries).query(ApprovalRequest).all_rows()))
-    story.expect_refusal(f"task unblock {task}", "waits on a person", actor=story.agent)
+    story.expect_success(f"task unblock {task}", actor=story.agent)
+    story.expect_rows(story.container.get(Queries).query(Task).find(task).state is TaskState.OPEN)
     story.expect_rows(not tuple(story.container.get(Queries).query(ApprovalRequest).all_rows()))

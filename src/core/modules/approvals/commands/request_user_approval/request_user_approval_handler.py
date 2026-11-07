@@ -3,6 +3,7 @@ from core.base.agent_role import AgentRole
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.database.actor_table import ActorTable
+from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -17,9 +18,9 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
 
     command = RequestUserApproval
 
-    def __init__(self, queries: Queries, repository: Repository, actors: ActorTable) -> None:
+    def __init__(self, queries: Queries, repository: Repository, actors: ActorTable, rows: EventRows) -> None:
         self.queries, self.repository = queries, repository
-        self.actors = actors
+        self.actors, self.rows = actors, rows
 
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
         requester_id = command.requester_id if command.requester_id is not None else context.actor.id
@@ -27,7 +28,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
             main = MainAgentFinder.newest(self.queries)
             if main is not None:
                 requester_id = main.id
-        requester = self.queries.query(Agent).filter(id=requester_id).first()
+        requester = self.rows.find(Agent, requester_id)
         recipient = None
         if requester is not None and requester.role != AgentRole.MAIN:
             main = MainAgentFinder.newest(self.queries)

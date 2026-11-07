@@ -1,32 +1,35 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-2effa0c7e648")) { const style = document.createElement("style"); style.id = "window-styles-2effa0c7e648"; style.textContent = ".approval-question[data-v-b72bd3c1]{margin:4px 14px 8px 36px;white-space:pre-wrap}.approval-details[data-v-b72bd3c1]{margin:4px 14px 8px 36px}.approval-details pre[data-v-b72bd3c1]{white-space:pre-wrap;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
-import { openBlock as i, createElementBlock as m, Fragment as d, createElementVNode as n, toDisplayString as c, unref as r, createCommentVNode as v } from "vue";
-import { useDockRow as f } from "@journal/window-kit";
-const g = (s, t) => {
+if (!document.getElementById("window-styles-a94119309606")) { const style = document.createElement("style"); style.id = "window-styles-a94119309606"; style.textContent = ".approval-question[data-v-25efc170]{margin:4px 14px 8px 36px;white-space:pre-wrap}.approval-details[data-v-25efc170]{margin:4px 14px 8px 36px}.approval-details pre[data-v-25efc170]{white-space:pre-wrap;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+import { computed as v, openBlock as _, createElementBlock as m, Fragment as f, createElementVNode as r, toDisplayString as l, createCommentVNode as g } from "vue";
+import { useDockCard as k, useWindow as x } from "@journal/window-kit";
+const y = (s, c) => {
   const a = s.__vccOpts || s;
-  for (const [e, o] of t)
-    a[e] = o;
+  for (const [t, e] of c)
+    a[t] = e;
   return a;
-}, k = {
+}, D = {
   class: "approval-question",
   "data-approval-question": ""
-}, x = { class: "approval-details" }, y = { key: 0 }, D = {
+}, h = { class: "approval-details" }, q = { key: 0 }, w = {
   __name: "ApprovalDock",
   setup(s) {
-    const t = f("approval");
-    return (a, e) => {
-      var o, p, l, u, _;
-      return i(), m(d, null, [
-        n("p", k, c((o = r(t)) == null ? void 0 : o.text), 1),
-        n("details", x, [
-          e[0] || (e[0] = n("summary", null, "Action details", -1)),
-          n("pre", null, c((l = (p = r(t)) == null ? void 0 : p.arguments) == null ? void 0 : l.join(" ")), 1),
-          (_ = (u = r(t)) == null ? void 0 : u.continued_arguments) != null && _.length ? (i(), m("pre", y, c(r(t).continued_arguments.join(" ")), 1)) : v("", !0)
+    const c = k(), a = x().option("row"), t = v(() => {
+      var e, o;
+      return (o = (e = c.data.value) == null ? void 0 : e.rows) == null ? void 0 : o.find((n) => n.id === a.value.target_id);
+    });
+    return (e, o) => {
+      var n, u, p, i, d;
+      return _(), m(f, null, [
+        r("p", D, l((n = t.value) == null ? void 0 : n.text), 1),
+        r("details", h, [
+          o[0] || (o[0] = r("summary", null, "Action details", -1)),
+          r("pre", null, l((p = (u = t.value) == null ? void 0 : u.arguments) == null ? void 0 : p.join(" ")), 1),
+          (d = (i = t.value) == null ? void 0 : i.continued_arguments) != null && d.length ? (_(), m("pre", q, l(t.value.continued_arguments.join(" ")), 1)) : g("", !0)
         ])
       ], 64);
     };
   }
-}, A = /* @__PURE__ */ g(D, [["__scopeId", "data-v-b72bd3c1"]]);
+}, B = /* @__PURE__ */ y(w, [["__scopeId", "data-v-25efc170"]]);
 export {
-  A as default
+  B as default
 };

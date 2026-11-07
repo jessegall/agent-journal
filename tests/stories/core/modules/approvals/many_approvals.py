@@ -3,18 +3,32 @@ import pytest
 from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
+from core.modules.docking.models.dock_item import DockItem
+from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from server.viewer.line_route import LineRoute
+from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
+from tests.stories.core.modules.approvals.recovery import phone_request, phone_viewer
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, BuilderWithUser
+from tests.stories.server.support.server_client import server_story
+from tests.stories.server.window_data_route import window_data
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
 @pytest.fixture
 def pending_requests(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=BuilderWithUser)
     for number in range(12):
         story.new_row_id(f'rule make "Check shop {number}"', actor=story.agent)
     requests = tuple(story.container.get(Queries).query(ApprovalRequest).oldest().all_rows())
     story.expect_rows(len(requests) == 12)
     return story
+
+
+@pytest.fixture
+def pending_viewer(pending_requests):
+    with viewer_client(pending_requests) as viewer:
+        yield viewer
 
 
 def test_several_approvals_reach_the_agent_as_one_counted_notice(pending_requests):
@@ -44,3 +58,30 @@ def test_a_task_wait_does_not_create_a_person_approval(new_story):
     task = story.new_row_id('task make "Check the shop" --environment main', actor=story.agent)
     story.expect_success(f'task block {task} --until-user --reason "Ask the main agent to review the shop"', actor=story.agent)
     story.expect_rows(not tuple(story.container.get(Queries).query(ApprovalRequest).all_rows()))
+
+
+def test_many_docked_approvals_use_one_read_through_the_viewer_route(pending_requests, pending_viewer, monkeypatch):
+    story = pending_requests
+    items = tuple(story.container.get(Queries).query(DockItem).filter(type="approvals.request", state=DockItemState.DOCKED).all_rows())
+    reads = []
+    original = LineRoute.run_line
+
+    def recorded(route, container, window, argv, person_id, environment, shared=None):
+        if argv[:1] == ["approval"]:
+            reads.append(argv)
+        return original(route, container, window, argv, person_id, environment, shared)
+
+    monkeypatch.setattr(LineRoute, "run_line", recorded)
+    status, answer = window_data(pending_viewer.server, pending_viewer.cookie, keys=",".join(f"dock.{item.id}" for item in items))
+    story.expect_rows(status == 200, len(answer["keys"]) == 12, reads == [["approval", "pending"]],
+                      all(len(result["value"]["rows"]) == 12 for result in answer["keys"].values()))
+
+
+def test_a_registry_refresh_removes_a_stale_closed_approval_card(phone_request, phone_viewer):
+    story, request = phone_request
+    phone_viewer.value("messages.chat", ["approval", "refuse", str(request.id)])
+    story.new_row_id(f"dock add approvals.request approval {request.id} --environment main", actor=story.user)
+    story.expect_sync_success(UPGRADE)
+    story.run_listeners()
+    items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=request.id, state=DockItemState.DOCKED).all_rows())
+    story.expect_rows(not items)

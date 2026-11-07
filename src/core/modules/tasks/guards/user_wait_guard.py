@@ -1,4 +1,6 @@
 from core.base.actor_type import ActorType
+from core.base.agent_role import AgentRole
+from core.base.query.queries import Queries
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
@@ -8,19 +10,22 @@ from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
+from core.modules.agents.models.agent import Agent
 
 
 class UserWaitGuard(Guard[Moved[Task]]):
-    """Only a person opens a task that waits on the user."""
+    """A person or the main agent reviews a task's wait before reopening it."""
 
     name = "tasks.user-wait"
     moves = tuple([TaskLifecycle.unblock])
 
-    def __init__(self, waits: TaskWaits) -> None:
-        self.waits = waits
+    def __init__(self, waits: TaskWaits, queries: Queries) -> None:
+        self.waits, self.queries = waits, queries
 
     def check(self, event: Moved[Task], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT:
             return
+        if self.queries.query(Agent).find(context.actor.id).role == AgentRole.MAIN:
+            return
         if any(wait.target == USER_TARGET for wait in self.waits.pending_task(event.row.id)):
-            raise Refusal(f"task {event.row.id} waits on a person", "its wait reason records what is needed")
+            raise Refusal(f"task {event.row.id} needs its main agent to review the wait", "its wait reason records what is needed")
