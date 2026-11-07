@@ -3,12 +3,12 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.agents.models.agent import Agent
+from core.modules.helpers.commands.start_helper.helper_started import HelperStarted
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 
 
-class StartHelperSubcommand(Subcommand[StartHelper, Agent]):
+class StartHelperSubcommand(Subcommand[StartHelper, HelperStarted]):
     """`journal helper start <profile> --brief "<job>"`, with a program, a model and a name if wanted."""
 
     cli_name = "helper"
@@ -31,6 +31,7 @@ class StartHelperSubcommand(Subcommand[StartHelper, Agent]):
         return StartHelper(arguments.profile, arguments.brief, arguments.program, arguments.model, arguments.name, arguments.fresh, arguments.plan)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, Agent):
+        if isinstance(value, HelperStarted):
             line = "its report wakes you, so you may stop" if self.launcher.is_running else "keep working and read journal overview: its report arrives at your next hook"
-            output.write(f"started agent:{value.id}: {line}", {"id": value.id})
+            note = f", on {value.agent.program}: {value.note}" if value.note else ""
+            output.write(f"started agent:{value.agent.id}{note}: {line}", {"id": value.agent.id, "program": value.agent.program, "note": value.note})
