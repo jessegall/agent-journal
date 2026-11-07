@@ -32,6 +32,6 @@ class ToolMessageRule(DriverRule):
 
     def should_send(self, hook: AgentHook, call: HookCall) -> bool:
         text, displayed_at = call.displayed_text, call.creation_timestamp()
-        if not text or not self.texts.has_recent_reply(hook.agent_id, displayed_at) or self.texts.is_held_after_reply(hook.agent_id, text, displayed_at) or self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
+        if not text or self.texts.is_duplicate_reply(hook.agent_id, text, displayed_at) or self.texts.is_acknowledgement(hook.agent_id, text, displayed_at):
             return False
         return not self.messages.has_text_after(hook.agent_id, text, displayed_at)

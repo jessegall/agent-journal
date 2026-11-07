@@ -1,3 +1,5 @@
+import pytest
+
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
@@ -70,10 +72,16 @@ def expect_chat(story, expected) -> None:
     assert expected in actual, actual
 
 
-def test_a_closing_text_repeating_the_reply_stays_out_of_chat(new_story):
+@pytest.fixture
+def reply_ready(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run('message send "What happened?" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
+    return story
+
+
+def test_a_closing_text_repeating_the_reply_stays_out_of_chat(reply_ready):
+    story = reply_ready
     story.run('message reply 1 "Yes, that is task 7246, with worker 672: those lines become one line with all the ids. It is not merged yet."', actor=story.agent)
     text = "I have confirmed that to you: task 7246 is with worker 672 and has not been merged yet."
     story.hook("s-1", HookSamples.message_display(text))
@@ -81,20 +89,16 @@ def test_a_closing_text_repeating_the_reply_stays_out_of_chat(new_story):
     expect_absent_chat(story, text)
 
 
-def test_new_worker_and_task_numbers_after_a_reply_reach_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('message send "What happened?" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.prompt("go on"))
+def test_new_worker_and_task_numbers_after_a_reply_reach_chat(reply_ready):
+    story = reply_ready
     story.run('message reply 1 "Yes. Looking at it."', actor=story.agent)
     text = "Delegated to Codex worker 672: tasks 6923 and 6931. I kept back task 7049."
     story.hook("s-1", HookSamples.message_display(text))
     expect_chat(story, text)
 
 
-def test_new_row_numbers_or_questions_after_a_reply_reach_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('message send "What happened?" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.prompt("go on"))
+def test_new_row_numbers_or_questions_after_a_reply_reach_chat(reply_ready):
+    story = reply_ready
     story.run('message reply 1 "The worker has task 7246 and its tests passed."', actor=story.agent)
     text = "The worker has task 7247 and its tests passed."
     question = "The worker has task 7246 and its tests passed?"
@@ -104,14 +108,12 @@ def test_new_row_numbers_or_questions_after_a_reply_reach_chat(new_story):
     expect_chat(story, question)
 
 
-def test_sixty_percent_overlap_is_held_and_less_reaches_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.run('message send "What happened?" --environment main', actor=story.user)
-    story.hook("s-1", HookSamples.prompt("go on"))
+def test_sixty_percent_overlap_is_held_and_less_reaches_chat(reply_ready):
+    story = reply_ready
     story.run('message reply 1 "apple berry cherry"', actor=story.agent)
-    held = "apple berry cherry melon grape"
-    news = "apple berry cherry melon grape lemon"
-    story.hook("s-1", HookSamples.message_display(held))
+    repeated = "apple berry cherry melon grape"
+    news = "melon grape lemon apple berry cherry"
+    story.hook("s-1", HookSamples.message_display(repeated))
     story.hook("s-1", HookSamples.message_display(news))
-    expect_absent_chat(story, held)
+    expect_absent_chat(story, repeated)
     expect_chat(story, news)
