@@ -5,7 +5,8 @@ from tests.stories.server.window_data_route import window_data
 
 def test_the_checks_window_reads_its_list_and_requests_history_separately(new_story):
     story = new_story(fixture=UserJoined)
-    check = story.new_row_id('check make "Cart totals" --command "true" --every 0', actor=story.user)
+    story.expect_success('check make "Cart totals" --command "true" --every 0', "check 1: Cart totals", actor=story.user)
+    check = 1
     story.expect_success(f"check stop {check}", actor=story.user)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
