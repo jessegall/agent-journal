@@ -14,3 +14,9 @@ type savedRun struct {
 	selection       string
 	timeoutDuration *string
 }
+
+// categorisedRun is an alias with a category that a line runs: the line it expands to and the alias's category.
+type categorisedRun struct {
+	line     string
+	category string
+}

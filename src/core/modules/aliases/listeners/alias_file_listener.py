@@ -18,8 +18,8 @@ from core.modules.aliases.models.alias import Alias
 
 class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
     """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the journal
-    anything, and judges an alias by the command under it, and the names of the aliases saved as tests and
-    builds.
+    anything, and judges an alias by the command under it, the names of the aliases saved as tests and builds, and
+    the category of each alias, which the hook gives a command it cannot classify itself.
     It runs ahead of slow listeners, since an agent runs a new alias right after adding it."""
 
     name = "aliases.alias-file"
@@ -36,6 +36,7 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias]]):
         self.home.alias_file.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.home.alias_file, json.dumps(lines))
         FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
+        FileAccess.shared().write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)

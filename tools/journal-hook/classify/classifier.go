@@ -44,6 +44,9 @@ type Classifier struct {
 	savedCommandsKnown bool
 	// savedRuns are the saved commands of the line being read.
 	savedRuns []savedRun
+	// aliasCategories are the category of each alias that has one, and categorisedRuns those the line being read runs.
+	aliasCategories map[string]string
+	categorisedRuns []categorisedRun
 }
 
 func NewClassifier(table *Table) *Classifier {
@@ -78,9 +81,20 @@ func (classifier *Classifier) aliasLine(text string) (string, bool) {
 
 func (classifier *Classifier) aliases() map[string]string {
 	if classifier.aliasLines == nil {
-		classifier.aliasLines = readAliasLines(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", aliasFileName))
+		classifier.aliasLines = readNamedTexts(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", aliasFileName))
 	}
 	return classifier.aliasLines
+}
+
+// aliasCategoryFileName is the file that names the category of each alias that has one.
+const aliasCategoryFileName = "alias-categories.json"
+
+// aliasCategory is the category an alias was saved with, read once per hook.
+func (classifier *Classifier) aliasCategory(name string) string {
+	if classifier.aliasCategories == nil {
+		classifier.aliasCategories = readNamedTexts(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", aliasCategoryFileName))
+	}
+	return classifier.aliasCategories[name]
 }
 
 // savedCommandFileName is the file that names the aliases registered as a project's tests and builds.
@@ -97,7 +111,7 @@ func (classifier *Classifier) isSaved(name string) bool {
 	return slices.Contains(classifier.savedCommands, name)
 }
 
-func readAliasLines(path string) map[string]string {
+func readNamedTexts(path string) map[string]string {
 	lines := map[string]string{}
 	if text, err := os.ReadFile(path); err == nil {
 		_ = json.Unmarshal(text, &lines)

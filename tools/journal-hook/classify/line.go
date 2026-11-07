@@ -15,7 +15,7 @@ const runnerProgram = "journal-run"
 func (classifier *Classifier) Line(line string) event.ShellLine {
 	line = lineOfRunner(line)
 	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}}
-	classifier.savedRuns = nil
+	classifier.savedRuns, classifier.categorisedRuns = nil, nil
 	classifier.isSaved("")
 	prepared.SavedCommandsKnown = classifier.savedCommandsKnown
 	expanded, aliases, expansionError := classifier.expandAliases(line)
@@ -65,6 +65,11 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 	if command.PipedInto >= 0 {
 		target := command.PipedInto
 		prepared.PipedInto = &target
+	}
+	for _, run := range classifier.categorisedRuns {
+		if run.line == strings.TrimSpace(command.Text) && prepared.Classification.Category == unknown {
+			prepared.Classification.Category = run.category
+		}
 	}
 	for _, run := range classifier.savedRuns {
 		if run.line != strings.TrimSpace(command.Text) {

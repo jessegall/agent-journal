@@ -106,6 +106,9 @@ func (classifier *Classifier) aliasReplacement(call *syntax.CallExpr, line strin
 	if isSaved {
 		classifier.savedRuns = append(classifier.savedRuns, savedRun{name, expanded, options.selection, options.timeoutDuration})
 	}
+	if category := classifier.aliasCategory(name); category != "" {
+		classifier.categorisedRuns = append(classifier.categorisedRuns, categorisedRun{expanded, category})
+	}
 	return aliasReplacement{[]string{name}, int(call.Args[first].Pos().Offset()), int(call.Args[len(call.Args)-1].End().Offset()), expanded}, true, err
 }
 

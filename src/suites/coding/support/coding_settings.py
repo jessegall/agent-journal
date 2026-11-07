@@ -25,7 +25,7 @@ CODING_SETTING_VALUES = [
     SettingValue("designer-enabled", "Use a designer", "Whether the main agent may start a designer, which writes a design document and changes no code.",
                  SettingType.FLAG, default=False, person_set=True),
     SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run.", SettingType.LIST,
-                 default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.TEST_RUN.value,
+                 default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
                           CommandCategory.BUILD.value), person_set=True),
 ]
 CODING_SETTING_RULES = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}

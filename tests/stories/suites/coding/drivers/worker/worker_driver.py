@@ -64,3 +64,11 @@ class WorkingAgent(StoryFixture):
 
     def steps(self, story):
         worker_with_started_task(story)
+
+
+def test_a_worker_runs_a_check_such_as_the_judge_by_default_but_no_unknown_command(new_story):
+    story = new_story(fixture=WorkingAgent)
+    judge = HookSamples.shell("journal sins --changes", ShellPart(".journal/plugins/judge/bin/judge", "check", ["--changes"]))
+    unknown = HookSamples.shell("scripts/dev serve", ShellPart("scripts/dev", "unknown", ["serve"]))
+    story.expect_hook_allowed(WORKER_SESSION, judge)
+    story.expect_hook_refusal(WORKER_SESSION, unknown, "a worker here runs no unknown command")

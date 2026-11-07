@@ -105,6 +105,14 @@ def test_saving_a_build_writes_its_name_for_the_hook(new_story):
     expect_saved_names(story, ["build-npm", "unit-tests"])
 
 
+def test_each_alias_with_a_category_writes_its_category_for_the_hook(new_story):
+    story = new_story(fixture=BuildSaved)
+    story.expect_success('alias add sins ".journal/plugins/judge/bin/judge --changes" --category check', actor=story.agent)
+    story.expect_success('alias add notes "cat notes.md"', actor=story.agent)
+    story.run_listeners()
+    assert json.loads(story.home.alias_category_file.read_text()) == {"build-npm": "build", "sins": "check"}
+
+
 def test_a_saved_build_refuses_a_pipe(saved_hook):
     saved_hook.expect_denied("journal build-npm --tail 5 | head -1", "journal build-npm takes no pipe")
 

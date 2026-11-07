@@ -43,3 +43,19 @@ func TestAliasExpansionKeepsCompoundCommandsAndReportsCycles(t *testing.T) {
 		t.Fatalf("cyclic shell alias %+v", scriptCycle)
 	}
 }
+
+func TestAnUnknownCommandFromAnAliasTakesTheAliasCategory(t *testing.T) {
+	for _, sample := range []struct{ line, category string }{
+		{"journal sins --changes", "check"},
+		{"journal listed src", "search"},
+		{".journal/plugins/judge/bin/judge --changes", "unknown"},
+	} {
+		classifier := NewClassifier(LoadTable(""))
+		classifier.aliasLines = map[string]string{"sins": ".journal/plugins/judge/bin/judge {args}", "listed": "ls {args}"}
+		classifier.aliasCategories = map[string]string{"sins": "check", "listed": "test run"}
+		prepared := classifier.Line(sample.line)
+		if len(prepared.Parts) != 1 || prepared.Parts[0].Classification.Category != sample.category {
+			t.Errorf("%q was classified %+v, want %q", sample.line, prepared.Parts, sample.category)
+		}
+	}
+}
