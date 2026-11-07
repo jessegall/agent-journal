@@ -22,4 +22,4 @@ def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(
     story.expect_rows(counts == [1, 1, 1, 1, 1, 2, 3, 3, 3, 3, 3, 4, 5, 5, 6])
     marks = story.run("chat-mark main --environment main --json", actor=story.user).output_text
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
-    story.expect_rows(marks.count("cost 51 points") == 4, lines.count("cost 51 points") == 4)
+    story.expect_rows(marks.count("cost 51 points") == 4, all(f"journal-exception:{warning.id}" in lines for warning in warnings))
