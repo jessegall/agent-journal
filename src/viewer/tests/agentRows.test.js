@@ -107,7 +107,7 @@ test("a closed card shows the profile, name and status without open-card details
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
-    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
+    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
     expect(card.querySelector("[data-agent-identity]").parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
@@ -115,19 +115,19 @@ test("a closed card shows the profile, name and status without open-card details
     expect(card.title).toBe("");
     card.click();
     await settle();
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("helper 3");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
     const held = window(FACTS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, held);
     expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toBe("claude · opus");
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
     expect(held.reads.filter((line) => line.startsWith("usage agents --closed"))).toHaveLength(0);
     expect(held.reads.filter((line) => line.startsWith("usage tool --agent"))).toHaveLength(0);
 });
 
-test("worker identity changes from list details to its number when opened", async () => {
+test("worker identity stays the same when opened", async () => {
     const row = {id: 4, session: "s-worker", program: "codex", role: "worker", ended_at: null, created_at: new Date(Date.now() - 6 * 60000).toISOString(), process_started_at: new Date(Date.now() - 60000).toISOString()};
     const facts = {model: "gpt-6.1-sol", effort: "high", given_name: "Mary Shelley", last_activity: "2026-11-01T10:00:00Z", job_enabled: true, task_title: "Window converter", tasks: []};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
@@ -138,7 +138,7 @@ test("worker identity changes from list details to its number when opened", asyn
     expect(identity.parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(identity.parentElement.nextElementSibling.querySelector("[data-agent-job]").textContent).toBe("Window converter");
     const opened = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({}));
-    expect(opened.querySelector("[data-agent-identity]").textContent).toBe("worker 4");
+    expect(opened.querySelector("[data-agent-identity]").textContent).toBe("codex · gpt-6.1-sol · high · worker 4");
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
     expect(opened.querySelector("[data-agent-last-heard]").parentElement).toBe(opened.querySelector("[data-agent-identity]").parentElement);
     const dispatched = opened.querySelector("[data-agent-first-dispatched]");

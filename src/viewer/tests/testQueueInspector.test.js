@@ -92,6 +92,7 @@ afterEach(async () => {
     expect(subscriptions?.count("resources") ?? 0).toBe(0);
     subscriptions = null;
     app = null;
+    document.body.innerHTML = "";
     location.hash = "";
     await later();
 });
@@ -101,10 +102,12 @@ test("the waiting status of an agent opens the test queue", async () => {
     const facts = [{id: 21, model: "sonnet", tasks: [{id: 11, title: "Fix", state: "testing"}], state: "", profile: "", given_name: ""}];
     const element = await mounted(
         {render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})},
-        context({"agent list": page([worker]), "agent running": page([worker]), "usage agents --closed": page(facts), "worker waits": page([{agent_id: 21, reason: "tests"}])})
+        context({"agent cards": page([{...worker, facts: facts[0]}]), "worker waits": page([{agent_id: 21, reason: "tests"}]), "agent limits": {ok: true, value: {}}})
     );
     document.body.append(element);
-    element.querySelector("[data-agent-waiting]").click();
+    element.querySelector("[data-agent-open]").click();
+    await settle();
+    element.querySelector("button[data-agent-waiting]").click();
     await settle();
     expect(location.hash).toContain("open=test_queue:0");
     expect(element.querySelector("[data-agent-more]")).toBeNull();
