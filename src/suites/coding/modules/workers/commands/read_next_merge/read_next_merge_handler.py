@@ -28,19 +28,19 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     def handle(self, command: ReadNextMerge, context: Context) -> str:
         require_merger(self.agents, context)
-        lines = tuple(self.queries.query(MergerLine).filter(environment_id=context.environment_id).matching(IsNull("read_at")).oldest().all_rows())
+        lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).oldest().all_rows())
         for line in lines:
             self.repository.save_change(line, replace(line, read_at=context.timestamp), context)
-        inbox = "\n".join(f"line: {line.text}" for line in lines)
+        messages = "\n".join(f"line: {line.text}" for line in lines)
         worktree = next((row for row in self.worktrees.open_worktrees() if self.waits(row)), None)
         if worktree is None:
-            return inbox or NO_WORKER_WAITING
+            return messages or NO_WORKER_WAITING
         worker_id = worktree.session_agent_id
         review = self.log_lines.review(worktree)
         sections = [self.task_section(task, review.summary(task), [proof for proof in review.proofs if proof.task_id == task.id]) for task in review.tasks]
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.review_logs, logs_read_at=context.timestamp), context)
         important = "important lines: pass this worker to the main agent\n" if review.has_important_lines() else ""
-        return f"{inbox}\nworker {worker_id}\n{important}\n" + "\n\n".join(sections)
+        return f"{messages}\nworker {worker_id}\n{important}\n" + "\n\n".join(sections)
 
     @staticmethod
     def waits(worktree: Worktree) -> bool:

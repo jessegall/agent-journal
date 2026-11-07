@@ -30,13 +30,13 @@ class AgentUse:
         job_counts = self.job_counts()
         agent_types = {agent.id: (agent.profile or agent.role, agent.program_model or "default") for agent in agents}
         jobs: dict[tuple[str, str], int] = defaultdict(int)
-        active_agents: dict[tuple[str, str], list[Agent]] = defaultdict(list)
+        retained_agents: dict[tuple[str, str], list[Agent]] = defaultdict(list)
         for agent in agents:
             jobs[agent_types[agent.id]] += job_counts[agent.id]
             if agent.retired_at is None:
-                active_agents[agent_types[agent.id]].append(agent)
-        model_keys = sorted(key for key in {*jobs, *active_agents} if jobs[key] or active_agents[key])
-        return tuple(ModelUse(agent_type, model, jobs[(agent_type, model)], tuple(active_agents[(agent_type, model)])) for agent_type, model in model_keys)
+                retained_agents[agent_types[agent.id]].append(agent)
+        model_keys = sorted(key for key in {*jobs, *retained_agents} if jobs[key] or retained_agents[key])
+        return tuple(ModelUse(agent_type, model, jobs[(agent_type, model)], tuple(retained_agents[(agent_type, model)])) for agent_type, model in model_keys)
 
     def job_counts(self) -> dict[int, int]:
         oldest_created_at = (self.clock.timestamp().value - timedelta(days=self.settings.number(AGENT_USE_DAYS))).isoformat()
