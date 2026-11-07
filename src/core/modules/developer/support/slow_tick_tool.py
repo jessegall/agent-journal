@@ -22,11 +22,12 @@ class SlowTickTool(PerformanceTool):
 
     def measure(self, *values: object) -> object:
         points = int(str(values[0]))
+        spent = str(values[1]) if len(values) > 1 else ""
         if points <= TICK_LIMIT_POINTS:
             return False
         environments = {agent.environment_id for agent in MainAgentFinder.all_running(self.queries) if self.reports_slow_ticks(agent)}
         for environment_id in environments:
-            self.sink.record(CLOCK_TICK_SOURCE, f"A tick of the journal's clock cost {points} points, over its limit of {TICK_LIMIT_POINTS} points.", environment_id)
+            self.sink.record(CLOCK_TICK_SOURCE, f"A tick of the journal's clock cost {points} points, over its limit of {TICK_LIMIT_POINTS} points: {spent}.", environment_id)
         return bool(environments)
 
     def reports_slow_ticks(self, agent: Agent) -> bool:

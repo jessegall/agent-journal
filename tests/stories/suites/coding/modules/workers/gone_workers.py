@@ -61,15 +61,6 @@ def running_worker(worker_story):
 
 @pytest.fixture
 def ended_worker(running_worker):
-    """The same worker after its program ended with no end hook and a tick noticed."""
-    running_worker.use_processes()
-    running_worker.tick(MAIN_SESSION)
-    running_worker.run_listeners()
-    return running_worker
-
-
-@pytest.fixture
-def ended_worker(running_worker):
     """The same worker after a tick noticed its program ended, with the listeners of that end still to run."""
     running_worker.use_processes()
     running_worker.tick(MAIN_SESSION)
@@ -104,7 +95,7 @@ def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_
     launcher = FakeLauncher(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))
     story.run_listeners()
     stop = {"agent_id": story.worker.id, "stop": True}
-    story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1)
+    story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1, detail=str(launcher.requests))
 
 
 def replaced_launcher(story, *answers: bytes) -> FakeLauncher:
@@ -210,7 +201,7 @@ def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_worker):
 
 def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_worker):
     worker = ended_worker.worker
-    stop_launcher = start_launcher(ended_worker, b"stopped\n")
+    stop_launcher = replaced_launcher(ended_worker, b"running\n", b"stopped\n")
     ended_worker.run_listeners()
     stop_launcher.thread.join(10)
     stop_launcher.server.close()
@@ -255,3 +246,4 @@ def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent show {helper}", "ended_at: 2026")
+

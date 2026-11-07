@@ -39,6 +39,10 @@ class CommandCategory(StrEnum):
         return self in (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 
     @property
+    def is_queued(self) -> bool:
+        return self.is_long_running or self is CommandCategory.CHECK
+
+    @property
     def is_watched(self) -> bool:
         return self.is_long_running or self in (CommandCategory.CHECK, CommandCategory.BACKGROUND_JOB)
 

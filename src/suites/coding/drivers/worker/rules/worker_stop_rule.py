@@ -13,6 +13,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
+from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class WorkerStopRule(DriverRule):
@@ -23,13 +24,14 @@ class WorkerStopRule(DriverRule):
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, next_task: WorkerNextTask) -> None:
+        self.next_task = next_task
         self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
         self.requests, self.clock, self.agents = requests, clock, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         started = self.tasks.holder(hook.agent_id).started().first()
-        task = started if started is not None else self.tasks.next_delegated(hook.agent_id)
+        task = started if started is not None else self.next_task.following(hook.agent_id)
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if self.requests.has_active_requests(hook.agent_id, self.clock.timestamp()):
             return RuleAnswer.allowed()

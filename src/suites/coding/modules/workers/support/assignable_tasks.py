@@ -26,3 +26,7 @@ class AssignableTasks:
     @staticmethod
     def has_open(tasks: list[Task]) -> bool:
         return any(task.state is TaskState.OPEN for task in tasks)
+
+    @staticmethod
+    def all_blocked(tasks: list[Task]) -> bool:
+        return all(task.state is TaskState.BLOCKED for task in tasks)
