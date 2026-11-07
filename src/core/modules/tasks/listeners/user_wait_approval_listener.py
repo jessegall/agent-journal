@@ -36,7 +36,7 @@ class UserWaitApprovalListener(CommitListener[Changed[TaskWait] | RegistrySynced
                 self.bus.run(CloseUserApproval(arguments), actor, cause_id=logged.id, environment_id=logged.environment_id)
                 continue
             task = tasks[wait.task_id]
-            approval = UserApproval(f"Have you completed the work requested for {task.title}?\n{task.reason}", arguments,
+            approval = UserApproval(task.reason, arguments,
                                     source_version=task.version)
             self.bus.run(RequestUserApproval(approval, arguments, wait.creator_id), actor,
                          cause_id=logged.id, environment_id=task.environment_id)

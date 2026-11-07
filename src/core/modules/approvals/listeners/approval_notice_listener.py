@@ -11,7 +11,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APPROVAL_DECIDED
-from core.modules.drivers.commands.record_agent_notice.record_agent_notice import RecordAgentNotice
+from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
 
 
 class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
@@ -33,5 +33,5 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
             return
         declaration = APPROVAL_PENDING if created else APPROVAL_DECIDED
         notice = declaration.nudge(approval=request.id)
-        self.bus.run(RecordAgentNotice(agent.id, notice.text, declaration.key), self.actors.actor("journal.core.approvals"),
+        self.bus.run(RecordAgentNudge(agent.id, notice, declaration.key), self.actors.actor("journal.core.approvals"),
                      cause_id=logged.id, environment_id=request.environment_id)
