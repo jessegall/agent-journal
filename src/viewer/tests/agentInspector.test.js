@@ -44,6 +44,8 @@ test("opening an inspector reads facts for that agent alone", async () => {
     const {lines} = opened(WORKER);
     await settle();
     expect(lines.filter((line) => line.startsWith("usage agents"))).toEqual(["usage agents --closed --agent 12 --environment main"]);
+    expect(lines.some((line) => line.startsWith("agent transcript") || line.startsWith("output ") || line.startsWith("task-log "))).toBe(false);
+    expect(lines.filter((line) => line.startsWith("agent list") || line.startsWith("agent-skill list")).every((line) => line.includes("--limit 1"))).toBe(true);
 });
 
 test("a running worker says its number once, then who it is, how it does, what it does now and what it was told", async () => {

@@ -46,9 +46,12 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--closed", action="store_true", help="also the agents that ended most recently")
+        parser.add_argument("--agent", type=int, dest="agent_id", help="show only this agent")
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFactsList:
         cards = self.queries.query(AgentCard)
+        if arguments.agent_id is not None:
+            cards = cards.filter(id=arguments.agent_id)
         running = tuple(cards.matching(self.activity).oldest().all_rows())
         ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(self.activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
         pending = self.work.pending()
