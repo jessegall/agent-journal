@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 from core.base.dotted_path.dotted_path import DottedPath
@@ -27,6 +27,22 @@ class InspectorDeclaration:
     comments: bool = False
     events: Sequence[str] = ()
     links: InspectorLinks | None = InspectorLinks()
+
+    @property
+    def noun(self) -> str:
+        return self.model.cli_name
+
+    def read_line(self) -> str:
+        """The read subcommand that loads the row: the first two words of `reads`, or `<noun> show` when it is empty."""
+        return " ".join(self.reads.split()[:2]) if self.reads else f"{self.noun} show"
+
+    def read_noun(self) -> str:
+        return self.read_line().split()[0]
+
+    def slotted_actions(self) -> tuple[ButtonDeclaration, ...]:
+        """The actions as ordinary buttons, each also on the row slot of this model."""
+        slot = f"row.{self.noun}"
+        return tuple(action if slot in action.slots else replace(action, slots=(*action.slots, slot)) for action in self.actions)
 
     def stored(self) -> dict[str, Any]:
         return {**asdict(self), "model": DottedPath.class_path(self.model).text}

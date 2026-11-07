@@ -13,9 +13,12 @@ from core.base.module.template_check import TemplateCheck
 from core.base.module.window_check import WindowCheck
 from core.base.registry.button_line import BLANK
 from core.base.viewer.button_field import ButtonField
+from core.base.viewer.panel_words import PanelWords
 from core.base.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"
+CARD_SLOT_PREFIX = "dock."
+MODEL_SLOT_PREFIXES = ("row.", CARD_SLOT_PREFIX)
 
 
 class ButtonCheck:
@@ -27,6 +30,7 @@ class ButtonCheck:
             fields = {field for _, field, _, _ in Formatter().parse(button.runs) if field is not None}
             line = " ".join(button.runs.replace(f"{{{ROW_PLACEHOLDER}}}", "").split()[:2])
             problems += DeclarationNames.icon_problems(f"{owner}'s button {button.label}", button.icon)
+            problems += self.label_problems(f"{owner}'s button", button.label)
             problems += [f"{owner} has the button {button.label} filling {{{field}}}, and only {{{ROW_PLACEHOLDER}}} is filled" for field in sorted(fields - {ROW_PLACEHOLDER})]
             if line not in runs:
                 problems.append(f"{owner} has the button {button.label} running {button.runs}, which names no command")
@@ -37,12 +41,16 @@ class ButtonCheck:
         slots = offered_slots.owners
         targets = TemplateCheck.known_targets(modules)
         runs = frozenset(WindowCheck.lines(modules)[1])
-        problems = [*offered_slots.problems(), *NameGroups.duplicates([("buttons", [button.name for module in modules for button in module.buttons])])]
-        for module, button in ((module, button) for module in modules for button in module.buttons):
+        problems = [*offered_slots.problems(), *NameGroups.duplicates([("buttons", [button.name for module in modules for button in module.declared_buttons()])])]
+        for module, button in ((module, button) for module in modules for button in module.declared_buttons()):
             owner = f"the button {button.name} of module {module.name}"
             problems += DeclarationNames.prefix_problems(owner, button.name, module.name)
             if button.icon:
                 problems += DeclarationNames.icon_problems(owner, button.icon)
+            elif any(slot.startswith(CARD_SLOT_PREFIX) for slot in button.slots):
+                problems.append(f"{owner} shows no icon, and a button on a card has one")
+            if any(slot.startswith(MODEL_SLOT_PREFIXES) for slot in button.slots):
+                problems += self.label_problems(owner, button.label)
             if button.primary and module.name not in shipped:
                 problems.append(f"{owner} is primary, which only a shipped module may declare")
             for slot in button.slots:
@@ -57,6 +65,10 @@ class ButtonCheck:
         peers = (*buttons, *WindowCheck.mark_dock_lines(modules, shipped))
         problems += ButtonCommandCheck().problems(buttons, peers, WindowCheck.allowed_button_lines(modules, shipped))
         return tuple(problems)
+
+    @staticmethod
+    def label_problems(owner: str, label: str) -> list[str]:
+        return [f"{owner} has the label {label}, which starts with a panel word, and the panel owns those words"] if PanelWords.begins(label) else []
 
     def action_problems(self, owner: str, text: str, fields: Sequence[ButtonField], runs: frozenset[str], targets: frozenset[str]) -> list[str]:
         try:

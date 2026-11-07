@@ -46,8 +46,8 @@ class ProjectRulesModule(Module):
     driver_rules = [StartRulesRule]
     docks = [DockDeclaration(RuleDockType.PROPOSED, "rules", "Proposed rule", "rule-dock.js", most=6, reads=["rule show"], needs_user=True)]
     button_slots = list(PROPOSED_SLOT)
-    buttons = [ButtonDeclaration("project-rules.approve", PROPOSED_SLOT, "Approve", "rule approve {row_id}", primary=True, condition=PROPOSED_CONDITION),
-               ButtonDeclaration("project-rules.deny", PROPOSED_SLOT, "Deny", "rule deny {row_id}", condition=PROPOSED_CONDITION)]
+    buttons = [ButtonDeclaration("project-rules.approve", PROPOSED_SLOT, "Approve", "rule approve {row_id}", icon="check", primary=True, condition=PROPOSED_CONDITION),
+               ButtonDeclaration("project-rules.deny", PROPOSED_SLOT, "Deny", "rule deny {row_id}", icon="cross", condition=PROPOSED_CONDITION)]
     windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"],
                                  keys=[WindowKey("rules", "rule list", events=["rule.*"], arguments=["limit", "before-id", "after-id"], page_size=50)],
                                  runs=["rule approve", "rule deny", "rule remove"], events=["rule.*"])]

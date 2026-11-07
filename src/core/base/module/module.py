@@ -106,6 +106,11 @@ class Module:
         return getattr(cls, "plugin_moments", cls.declared_plugin_events)
 
     @classmethod
+    def declared_buttons(cls) -> list[ButtonDeclaration]:
+        """The buttons of the module and the actions of its inspectors, which register as buttons on the row slot of their model."""
+        return [*cls.buttons, *(action for inspector in cls.inspectors for action in inspector.slotted_actions())]
+
+    @classmethod
     @cache
     def folder(cls) -> Path:
         return Path(inspect.getfile(cls)).resolve().parent

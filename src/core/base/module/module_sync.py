@@ -214,7 +214,7 @@ class ModuleSync:
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:
         shipped = set(self.finder.default_modules())
-        return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.buttons)
+        return tuple(ButtonEntry(module.name, button, module in shipped) for module in modules for button in module.declared_buttons())
 
     def inspectors(self, modules: tuple[type[Module], ...]) -> tuple[InspectorEntry, ...]:
         shipped = set(self.finder.default_modules())
