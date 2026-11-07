@@ -4,8 +4,6 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.providers import Providers
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
@@ -13,8 +11,12 @@ from tests.stories.suites.coding.modules.workers.support.program_split import SP
 
 
 @pytest.fixture
-def helper_split_story(new_story):
-    return new_story(fixture=BuilderWithUser)
+def helper_split_story(new_story, tmp_path):
+    story = new_story(fixture=BuilderWithUser)
+    folder = tmp_path / 'helper-project'
+    folder.mkdir()
+    story.expect_success(f'environment edit 1 --folder "{folder}"')
+    return story
 
 
 @pytest.fixture

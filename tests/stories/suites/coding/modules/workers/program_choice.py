@@ -73,7 +73,7 @@ def test_profile_tier_fits_any_program_added_provider(split_story):
 @pytest.mark.parametrize('program,model', [('claude', 'haiku'), ('codex', 'gpt-6.1-terra')])
 def test_profile_tier_fits_any_program_saved_model(split_story, split_viewer, program, model):
     story = split_story
-    split_viewer.value('profiles.profiles', ['profile', 'save', 'saved-worker', '--type', 'worker', '--description', 'Implements one task', '--body', 'Do the task.', '--model', 'haiku'])
+    split_viewer.value('profiles.profiles', ['profile', 'save', 'saved-worker', '--type', 'worker', '--description', 'Implements one task', '--body', 'Do the task.', '--model', 'haiku', '--codex-model', 'gpt-6.1-terra'])
     worker = dispatch(story, flags=f'--profile saved-worker --program {program}')
     expect_program(story, worker, program, model)
 
@@ -211,7 +211,9 @@ def test_split_counts_tasks_not_workers(split_story):
     dispatch(story, f'1 {second} {third}', '--program codex')
     set_split(story, 'claude 50,codex 50')
     story.expect_text('worker-worktree show 1', 'task_count: 3')
-    rows = json.loads(story.run('worker split --json').output_text)['rows']
+    answer = story.run('worker split --json')
+    story.expect_rows(answer.code == 0)
+    rows = json.loads(answer.output_text)['rows']
     story.expect_rows(next(row for row in rows if row['id'] == 'codex')['recent'] == 3)
     fourth = make_task(story, 'Fourth')
     expect_program(story, dispatch(story, str(fourth)), 'claude')
@@ -232,7 +234,9 @@ def test_out_program_share_goes_to_the_others(split_story):
 def test_provider_added_later_takes_a_share(split_story):
     story = split_story
     story.expect_sync_success(SAMPLE_MODULE)
-    rows = json.loads(story.run('worker split --json').output_text)['rows']
+    answer = story.run('worker split --json')
+    story.expect_rows(answer.code == 0)
+    rows = json.loads(answer.output_text)['rows']
     story.expect_rows(next(row for row in rows if row['id'] == 'sample')['share'] == 0)
     set_split(story, 'sample 100,claude 0,codex 0')
     expect_program(story, dispatch(story), 'sample', 'sample-general')

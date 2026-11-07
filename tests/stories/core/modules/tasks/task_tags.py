@@ -26,7 +26,7 @@ def tag_viewer(tag_story):
 def test_task_takes_many_tags(tag_story):
     story = tag_story
     task_id = story.new_row_id('task make "Network queue" --tag networking --tag linux --confirm --environment main', actor=story.agent)
-    story.expect_text(f'task show {task_id}', 'networking', 'linux')
+    story.expect_text('task board --environment main', 'networking', 'linux')
     rows = json.loads(story.run('task tags --json --environment main').output_text)['rows']
     story.expect_rows({row['word']: row['count'] for row in rows} == {'networking': 1, 'linux': 1})
 
@@ -36,8 +36,9 @@ def test_task_takes_many_tags_in_a_phase(tag_story):
     plan = story.new_row_id('plan make "Queue" --environment main', actor=story.agent)
     phase = story.new_row_id(f'phase make "Linux" --plan {plan}', actor=story.agent)
     task = story.new_row_id(f'task make "Queue" --phase {phase} --tag linux --confirm --environment main', actor=story.agent)
-    story.expect_text(f'task show {task}', 'linux', f'phase_id: {phase}')
-    story.expect_text(f'plan tasks {plan}', 'Queue')
+    story.expect_text('task tags --environment main', 'linux')
+    story.expect_text(f'plan place {task}', f'plan {plan}, phase 1 of 1')
+    story.expect_text(f'plan inspect {plan}', 'Queue')
 
 
 @pytest.mark.parametrize('word', ['Linux', 'network queue'])
@@ -72,20 +73,25 @@ def test_new_tag_word_needs_confirm_even_the_first_word(tag_story):
 
 def test_task_list_finds_by_tags(tag_story):
     story = tag_story
-    both = story.new_row_id('task make "Both" --tag networking --tag linux --confirm --environment main', actor=story.agent)
+    task_id = story.new_row_id('task make "Both" --tag networking --tag linux --confirm --environment main', actor=story.agent)
     story.expect_success('task make "One" --tag networking --environment main', actor=story.agent)
     story.expect_success('task make "Other" --tag linux --environment main', actor=story.agent)
     answer = story.run('task list --tag networking --tag linux --environment main --json', actor=story.agent)
     story.expect_rows(answer.code == 0)
-    story.expect_rows([row['id'] for row in json.loads(answer.output_text)['rows']] == [both])
+    story.expect_rows([row['id'] for row in json.loads(answer.output_text)['rows']] == [task_id])
 
 
 def test_tags_go_with_the_task(tag_story):
     story = tag_story
     task = story.new_row_id('task make "Remove me" --tag networking --tag linux --confirm --environment main', actor=story.agent)
     story.expect_success(f'task delete {task}', actor=story.agent)
+    story.run_listeners()
     story.expect_text('task tags --environment main', 'nothing found')
-    story.expect_text('event list --json --limit 100', 'task_tag', 'networking', 'linux', 'deleted')
+    events = story.run('event list --json --limit 100')
+    story.expect_rows(events.code == 0)
+    rows = json.loads(events.output_text)['rows']
+    deleted = [row for row in rows if row['event'] == 'task_tag.delete']
+    story.expect_rows(len(deleted) == 2, 'networking' in str(deleted), 'linux' in str(deleted))
 
 
 @pytest.mark.parametrize('score', [0, 6])
@@ -111,7 +117,7 @@ def test_read_only_planner_tags_and_scores(tag_story):
 def test_task_card_shows_tags_and_complexity(tag_story, tag_viewer):
     story = tag_story
     task = story.new_row_id('task make "Network queue" --tag networking --tag linux --complexity 3 --confirm --environment main', actor=story.agent)
-    card = tag_viewer.value('tasks.tasks', ['task', 'show', str(task)])
+    card = tag_viewer.value('tasks.tasks', ['task', 'board'])
     story.expect_rows('networking' in json.dumps(card), 'linux' in json.dumps(card), '3' in json.dumps(card))
     story.expect_success('task make "Other" --environment main', actor=story.agent)
     board = tag_viewer.value('tasks.tasks', ['task', 'board', '--tag', 'networking'])

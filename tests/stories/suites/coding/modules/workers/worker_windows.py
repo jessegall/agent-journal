@@ -1,3 +1,5 @@
+import json
+
 from tests.stories.suites.coding.modules.workers.support.program_split import SPLIT, outage, split_story, split_viewer
 
 from core.base.driver.tool_type import ToolType
@@ -40,6 +42,10 @@ def test_split_tab_saves_shares_that_add_to_100(split_story, split_viewer):
     rows = split_viewer.value('workers.workers', ['worker', 'split'])['rows']
     story.expect_rows({row['id'] for row in rows} >= {'claude', 'codex'})
     split_viewer.value('workers.workers', ['setting', 'set', SPLIT, 'claude 65,codex 35', '--project'])
+    events = story.run('event list --json --limit 100')
+    story.expect_rows(events.code == 0)
+    writes = [row for row in json.loads(events.output_text)['rows'] if row['event'] == 'setting.create' and SPLIT in str(row['data'])]
+    story.expect_rows(len(writes) == 1)
     saved = split_viewer.value('workers.workers', ['worker', 'split'])['rows']
     story.expect_rows(sum(row['share'] for row in saved) == 100)
     story.expect_rows({row['id']: row['share'] for row in saved} == {'claude': 65, 'codex': 35})
@@ -57,7 +63,7 @@ def test_split_tab_saves_shares_that_add_to_100_worker_limit_matches_settings(sp
 
 def test_person_adds_a_route_in_the_split_tab(split_story, split_viewer):
     story = split_story
-    story.expect_success('task edit 1 --tag networking --tag linux --confirm', actor=story.agent)
+    story.expect_success('task tag 1 networking linux --confirm', actor=story.agent)
     tags = split_viewer.value('workers.workers', ['task', 'tags'])['rows']
     story.expect_rows({row['word'] for row in tags} >= {'networking', 'linux'})
     split_viewer.value('workers.workers', ['worker-route', 'make', '--tags', 'networking,linux', '--program', 'codex', '--tier', 'strongest'])
