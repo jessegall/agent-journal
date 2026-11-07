@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from core.base.clock import Clock
+from core.base.database.kept_rows import KeptRows
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
 from core.base.provider.unknown_program_error import UnknownProgramError
@@ -25,10 +26,11 @@ class ProgramStates:
     """Reads program readiness; account windows apply across its open sessions in every environment."""
 
     def __init__(self, providers: Providers, programs: HelperPrograms, queries: Queries,
-                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes) -> None:
+                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes, kept_rows: KeptRows) -> None:
         self.providers, self.programs, self.queries = providers, programs, queries
         self.settings, self.statuses, self.clock = settings, statuses, clock
         self.agents, self.scopes = agents, scopes
+        self.kept_rows = kept_rows
 
     def state(self, program: str, folder: Path) -> ProgramState:
         try:
@@ -60,7 +62,8 @@ class ProgramStates:
 
     def windows(self, program: str) -> tuple[PlanWindow, ...]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):
-            agents = self.agents.running().filter(program=program).all_rows()
+            agents = self.kept_rows.scoped_read("agents", lambda: self.agents.running().filter(program=program).all_rows(),
+                                               "ended_at IS NULL AND program = ?", [program], name="helpers.program_sessions")
         return self.statuses.newest_status([agent.session for agent in agents], self.clock.timestamp()).windows
 
     def outage_state(self, program: str) -> ProgramState:

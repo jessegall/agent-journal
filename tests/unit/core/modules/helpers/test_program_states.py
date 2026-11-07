@@ -29,7 +29,9 @@ def readiness():
     settings.number.return_value = 95
     statuses.newest_status.return_value = SimpleNamespace(windows=())
     clock.timestamp.return_value = now
-    states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes)
+    kept_rows = Mock()
+    kept_rows.scoped_read.side_effect = lambda table, loader, *args, **kwargs: loader()
+    states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes, kept_rows)
     return SimpleNamespace(states=states, provider=provider, providers=providers, programs=programs,
                            queries=queries, settings=settings, statuses=statuses, clock=clock, now=now)
 
