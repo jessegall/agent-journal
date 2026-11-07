@@ -3,19 +3,23 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
+from core.base.driver.nudge import Nudge
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.refusal import Refusal
+from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.drivers.support.main_agent_line import MainAgentLine
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.base.query.conditions.is_null import IsNull
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PASSED, MERGER_PROFILE, MERGER_SOURCE, NO_WORKER_WAITING
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
-from suites.coding.modules.workers.commands.send_merger_report.send_merger_report import SendMergerReport
 
 
 class StartMergerHandler(Handler[StartMerger, None]):
@@ -23,9 +27,11 @@ class StartMergerHandler(Handler[StartMerger, None]):
     agent hears as it did before."""
 
     command = StartMerger
+    disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, profiles: ProfileFiles, providers: Providers) -> None:
+    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, profiles: ProfileFiles, providers: Providers, main_line: MainAgentLine) -> None:
         self.queries, self.bus, self.agents, self.profiles, self.providers = queries, bus, agents, profiles, providers
+        self.main_line = main_line
 
     def handle(self, command: StartMerger, context: Context) -> None:
         main_agent = self.agents.main_agent()
@@ -33,8 +39,15 @@ class StartMergerHandler(Handler[StartMerger, None]):
             if main_agent is None:
                 raise Refusal("no main agent runs")
             self.give_job(Actor(main_agent.id, ActorType.AGENT), context)
-        except Refusal:
-            self.bus.run(SendMergerReport(command.fallback_line), context.actor, environment_id=context.environment_id)
+        except Exception:
+            text = command.fallback_line.text if isinstance(command.fallback_line, Nudge) else command.fallback_line
+            existing = self.queries.query(AgentLine).filter(source=MERGER_SOURCE, state=AgentLineState.WAITING, text=text).first()
+            if existing is not None:
+                return
+            if isinstance(command.fallback_line, Nudge):
+                self.main_line.send_nudge(command.fallback_line, MERGER_SOURCE, context)
+            else:
+                self.main_line.send(command.fallback_line, MERGER_SOURCE, context)
 
     def give_job(self, actor: Actor, context: Context) -> None:
         kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()

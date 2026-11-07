@@ -12,11 +12,16 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.base.file_access import FileAccess
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.drivers.models.agent_line import AgentLine
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
+from core.modules.helpers.support.helper_limits import HelperLimits
+from core.modules.helpers.commands.start_helper.start_helper_handler import StartHelperHandler
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
@@ -24,6 +29,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch
@@ -35,6 +41,52 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 def merger_of(story):
     agents = story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows()
     return next(iter(agents), None)
+
+
+@pytest.mark.parametrize("failure", ["limit", "outage", "sandbox", "no main agent", "unexpected error"])
+def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story, monkeypatch, failure):
+    story, _, worker, started = queued_story(new_story, monkeypatch)
+    reached = []
+
+    def fail(*_args):
+        reached.append(failure)
+        if failure == "unexpected error":
+            raise RuntimeError("merger start failed")
+        raise Refusal(failure)
+
+    if failure == "sandbox":
+        monkeypatch.setattr(story.container.get(ShellSandbox), "check", fail)
+    monkeypatch.setattr(HelperLimits, "checked_launcher", lambda _limits: None)
+    if failure == "no main agent":
+        monkeypatch.setattr(AgentRows, "main_agent", lambda _rows: None)
+    elif failure == "limit":
+        monkeypatch.setattr(HelperLimits, "checked_new_place", fail)
+    elif failure == "outage":
+        monkeypatch.setattr(StartHelperHandler, "startable_program", fail)
+    elif failure == "unexpected error":
+        monkeypatch.setattr(StartHelperHandler, "prepare", fail)
+    ended(story, started[0], 0)
+    story.expect_rows(failure == "no main agent" or reached == [failure])
+    lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
+    notice = f"the tests of worker:{worker.id} all pass"
+    story.expect_rows(lines.count(notice) == 1, "agent:0" not in lines, detail=lines)
+    log = story.home.system_log
+    story.expect_rows(not log.exists() or "merger start failed" not in FileAccess.shared().read(log))
+
+
+def test_a_merge_waits_until_a_main_agent_returns(new_story, monkeypatch):
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
+    ended(story, started[0], 0)
+    main = hook_agent(story, story.hook("new-main", HookSamples.session_start()))
+    repository.checkout(ENVIRONMENT_BRANCH)
+    def fail_sandbox():
+        raise Refusal("sandbox unavailable")
+    monkeypatch.setattr(story.container.get(ShellSandbox), "check", fail_sandbox)
+    MergerRetry()(story.container)
+    MergerRetry()(story.container)
+    lines = story.run(f"agent-line list --agent {main.id}", actor=main).output_text
+    story.expect_rows(lines.count(f"the tests of worker:{worker.id} all pass") == 1, detail=lines)
 
 
 @pytest.mark.parametrize("merger_on", [True, False])
