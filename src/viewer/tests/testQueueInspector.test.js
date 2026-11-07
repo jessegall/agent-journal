@@ -111,7 +111,7 @@ test("the waiting status of an agent opens the test queue", async () => {
     element.querySelector("button[data-agent-waiting]").click();
     await settle();
     expect(location.hash).toContain("open=test_queue:0");
-    expect(element.querySelector("[data-agent-more]")).toBeNull();
+    expect(element.querySelector("[data-agent-open]").getAttribute("aria-expanded")).toBe("true");
 });
 
 const OUTPUT_LINES = ["building package", "package built"];
