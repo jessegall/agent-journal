@@ -1,12 +1,8 @@
+import {settle} from "./support/delayedWindowContext.js";
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, settle as tick} from "./support/windowContext.js";
+import {context, mounted} from "./support/windowContext.js";
 
 const KEYS = {hooks: {line: "managed-hook list", events: ["managed-hook.*"]}};
-async function settle() {
-    await tick();
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    await tick();
-}
 import ProjectHooks from "../../core/modules/settings/web/src/ProjectHooks.vue";
 
 const hook = (id, fields = {}) => ({

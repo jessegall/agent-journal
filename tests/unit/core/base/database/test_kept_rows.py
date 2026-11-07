@@ -158,15 +158,15 @@ def test_current_results_reuse_reads_and_refresh_after_a_write(database):
     kept = KeptRows(database)
     calls = []
 
-    def load():
+    def read_notes():
         calls.append(True)
         return texts(database)
 
-    assert kept.scoped_current(load, name="notes.current") == tuple(["Saved"])
-    assert kept.scoped_current(load, name="notes.current") == tuple(["Saved"])
+    assert kept.scoped_current(read_notes, name="notes.current") == tuple(["Saved"])
+    assert kept.scoped_current(read_notes, name="notes.current") == tuple(["Saved"])
     assert len(calls) == 1
     database.update(Statement("UPDATE notes SET text = 'Changed', version = version + 1"))
-    assert kept.scoped_current(load, name="notes.current") == tuple(["Changed"])
+    assert kept.scoped_current(read_notes, name="notes.current") == tuple(["Changed"])
     assert len(calls) == 2
 
 

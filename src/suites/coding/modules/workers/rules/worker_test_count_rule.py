@@ -4,7 +4,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from suites.coding.modules.workers.support.worker_test_listings import WorkerTestListings
+from suites.coding.modules.workers.bindings.worker_test_listings import WorkerTestListings
 from suites.coding.modules.workers.support.test_limit_nudges import TEST_LIMIT_REFUSAL
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT

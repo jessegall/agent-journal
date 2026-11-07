@@ -6,6 +6,7 @@ class AgentPolicy:
     """The roles a suite assigns to each type of core behavior."""
 
     job_roles: tuple[str, ...] = ()
+    active_task_unblocked_roles: tuple[str, ...] = ()
     task_roles: tuple[str, ...] = tuple(["main"])
     prompt_roles: tuple[str, ...] = tuple(["main"])
     plugin_roles: tuple[str, ...] = tuple(["main"])

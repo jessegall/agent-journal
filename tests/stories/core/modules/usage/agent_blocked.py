@@ -11,6 +11,9 @@ from core.modules.drivers.support.driver_settings import BLOCK_CARD_SECONDS
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 REFUSAL_TEXT = "read the task first"
 CARD = "usage agents --environment main --json"
@@ -51,3 +54,15 @@ def test_an_agent_whose_task_is_blocked_shows_blocked_at_once_and_not_after_it_e
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     closed_card = next(row for row in json.loads(story.run(f"{CARD.replace('--json', '--closed --json')}", actor=story.user).output_text)["rows"] if row["id"] == story.agent.id)
     story.expect_rows(closed_card["state"] == "", closed_card["blocked_reason"] == "")
+
+
+def test_a_worker_with_a_started_task_does_not_show_a_hook_hold_as_a_block(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    UserJoined().steps(story)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.container.get(Bus).run(BlockUntil(worker.id, Nudge("samples.wait", NudgeType.REFUSAL, REFUSAL_TEXT), RanCommand("journal overview")), Actor.core())
+    story.advance(timedelta(seconds=121))
+    rows = json.loads(story.run(CARD, actor=story.user).output_text)["rows"]
+    card = next(row for row in rows if row["id"] == worker.id)
+    story.expect_rows(card["state"] != "blocked", card["blocked_reason"] == "")

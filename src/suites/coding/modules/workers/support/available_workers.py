@@ -9,10 +9,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class AvailableWorkers:
-    """Reads the kept workers that can take a new task: process ended, on the profile, program and model asked
-    for, with no open worktree, no unmerged branch, and a session that resumes in the worker's folder and is not nearly
-    full. The
-    newest comes first. A worker with delivered work waits for its merge, so it is not offered."""
+    """Finds reusable workers with a resumable session and no unmerged work."""
 
     def __init__(self, places: WorkerPlaces, worktrees: WorktreeQuery, git: WorktreeGit, providers: Providers, home: JournalHome) -> None:
         self.places, self.worktrees, self.git, self.providers, self.home = places, worktrees, git, providers, home

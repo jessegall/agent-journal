@@ -1,4 +1,5 @@
-import {context as baseContext, mounted as mount, pickButton as pick, settle as tick} from "./windowContext.js";
+import {mounted as mountDelayed, settle as settleDelayed} from "./delayedWindowContext.js";
+import {context as baseContext, pickButton as pick} from "./windowContext.js";
 import {MAIN, OTHERS, EVERYONE, PAGE_ROWS, AGENT_ROWS, ROLES, isAgent, agentIdOf} from "../../../core/modules/memories/web/src/memoryScope.js";
 
 // a word in a command line, in quotes when it holds anything but letters, digits, dashes and dots
@@ -71,14 +72,10 @@ export function context(answers) {
 }
 
 export async function settle() {
-    await tick();
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await tick();
+    await settleDelayed(100);
 }
 export async function mounted(component, window) {
-    const element = await mount(component, window);
-    await settle();
-    return element;
+    return mountDelayed(component, window, 100);
 }
 export async function pickButton(...args) {
     await pick(...args);

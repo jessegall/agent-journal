@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.provider.transcript_tail import TAIL_BYTES
+from core.base.provider.transcript_tail import TAIL_BYTES, TranscriptTail
 
 
 class TranscriptGrowth:
@@ -19,9 +19,7 @@ class TranscriptGrowth:
             return []
         is_added = self.offset is not None and self.offset <= size and size - self.offset <= TAIL_BYTES
         start = self.offset if is_added and self.offset is not None else max(size - TAIL_BYTES, 0)
-        with self.path.open("rb") as transcript:
-            transcript.seek(start)
-            data = transcript.read()
+        data = TranscriptTail(self.path).read_from(start)
         length = data.rfind(b"\n") + 1
         text_bytes = data[:length]
         if start > 0 and not is_added:

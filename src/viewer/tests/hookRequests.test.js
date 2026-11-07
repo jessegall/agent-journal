@@ -58,7 +58,7 @@ test("the request queue is read only after its inspector opens", async () => {
     element.querySelector("[data-request-queue-open]").click();
     await settle();
     expect(requests.mock.calls.at(-1)[0].only).toEqual(["queue"]);
-    expect(element.querySelector("[data-request-queue-empty]").textContent).toBe("Nothing is running.");
+    expect(element.querySelector("[data-request-queue-empty]").textContent).toBe("No running requests.");
 });
 
 test("slow requests are amber and refused requests stay red even when slow", async () => {

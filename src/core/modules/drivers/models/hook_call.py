@@ -7,6 +7,7 @@ from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm
 from core.base.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
+from core.base.type_guards import is_list, is_mapping
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 
 
@@ -102,3 +103,24 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def is_session_start(self) -> bool:
         return self.hook == HookEventName.SESSION_START
+
+    @property
+    def is_resumed(self) -> bool:
+        return bool(self.metadata.module_part(DRIVERS_MODULE).get("resumed"))
+
+    @property
+    def layers(self) -> tuple[str, ...]:
+        return self.text_values("layers")
+
+    @property
+    def rule_outcomes(self) -> tuple[str, ...]:
+        values = self.metadata.module_part(DRIVERS_MODULE).get("rules", [])
+        return tuple(f"{row['rule']}: {row['outcome']}" for row in values if is_mapping(row)) if is_list(values) else ()
+
+    @property
+    def dropped_commands(self) -> tuple[str, ...]:
+        return self.text_values("dropped")
+
+    def text_values(self, key: str) -> tuple[str, ...]:
+        values = self.metadata.module_part(DRIVERS_MODULE).get(key, [])
+        return tuple(map(str, values)) if is_list(values) else ()

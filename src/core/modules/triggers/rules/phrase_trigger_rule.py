@@ -1,4 +1,4 @@
-from core.modules.skills.commands.require_skill.require_skill import RequireSkill
+from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_files import SkillFiles
@@ -47,7 +47,7 @@ class PhraseTriggerRule(DriverRule):
             return RuleAnswer.allowed()
         missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None
                    and not self.rows.is_loaded(hook.agent_id, trigger.skill, skills[trigger.skill].digest)]
-        commands = [RequireSkill(hook.agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None]
+        commands = [RequestSkill(hook.agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None]
         nudges = [TRIGGER_LINE.nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
         if missing:
             folder = missing[0].skill

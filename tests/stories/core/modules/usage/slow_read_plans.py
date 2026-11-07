@@ -32,4 +32,4 @@ def test_conversation_indexes(new_story):
     ]
     for sql, index in cases:
         plan = [row[3] for row in database.connection.execute("EXPLAIN QUERY PLAN " + sql)]
-        assert any(index in line for line in plan), (sql, plan)
+        story.expect_rows(any(index in line for line in plan), detail=f"{sql}: {plan}")

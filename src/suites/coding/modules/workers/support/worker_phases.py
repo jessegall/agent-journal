@@ -79,7 +79,7 @@ class WorkerPhases:
         return task.state is TaskState.STARTED and self.is_grouped(task)
 
     def advanced(self, worker_id: int) -> tuple[Task, ...]:
-        testing = self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()
+        testing = tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows())
         self.plans.prepare([task.id for task in testing])
         return tuple(task for task in testing if self.is_grouped(task))
 

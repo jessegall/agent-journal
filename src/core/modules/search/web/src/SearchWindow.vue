@@ -79,8 +79,8 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
                     </li>
                 </template>
             </ul>
-            <p v-if="answer.closest" class="search-note" data-closest>No result holds all these words: {{ terms.trim() }}, these hold most of them, the closest first</p>
-            <p v-else class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p>
+            <template v-if="answer.closest"><p class="search-note" data-closest>No result holds all these words: {{ terms.trim() }}, these hold most of them, the closest first</p></template>
+            <template v-else><p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p></template>
         </template>
     </div>
 </template>

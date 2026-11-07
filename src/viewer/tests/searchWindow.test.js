@@ -1,13 +1,9 @@
+import {settle} from "./support/delayedWindowContext.js";
 import {expect, test} from "vitest";
 import SearchWindow from "../../core/modules/search/web/src/SearchWindow.vue";
-import {context, mounted, settle as tick} from "./support/windowContext.js";
+import {context, mounted} from "./support/windowContext.js";
 
 const KEYS = {results: {line: "search find {terms} --split-terms", loading: "requested"}};
-async function settle() {
-    await tick();
-    await new Promise((resolve) => setTimeout(resolve, 80));
-    await tick();
-}
 
 const HITS = {hits: [{cli_name: "task", id: 7, excerpt: "Round the cart total to cents"}, {cli_name: "doc", id: 2, excerpt: "How the cart counts money"}], total: 2};
 

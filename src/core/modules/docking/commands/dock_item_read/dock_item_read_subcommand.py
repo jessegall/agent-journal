@@ -9,7 +9,7 @@ from core.base.viewer.window_key_line import WindowKeyLine
 from core.modules.docking.models.dock_item import DockItem
 
 
-LIST_VERB = "list"
+LIST_COMMAND = "list"
 
 
 class DockItemReadSubcommand(ReadSubcommand[WindowKeyLine]):
@@ -29,8 +29,8 @@ class DockItemReadSubcommand(ReadSubcommand[WindowKeyLine]):
         item = self.queries.query(DockItem).find(arguments.item_id)
         dock = self.registry.dock(item.type)
         read_line = dock.reads[0].split() if dock is not None and dock.reads else []
-        reads_one_row = bool(read_line) and item.target_id and read_line[-1] != LIST_VERB
-        return WindowKeyLine(item.type, [*read_line, str(item.target_id)] if reads_one_row else read_line)
+        is_item_read = bool(read_line) and item.target_id and read_line[-1] != LIST_COMMAND
+        return WindowKeyLine(item.type, [*read_line, str(item.target_id)] if is_item_read else read_line)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, WindowKeyLine):

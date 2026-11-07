@@ -18,7 +18,7 @@ from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -233,7 +233,8 @@ def test_mark_a_program_out_in_the_tab(split_story, split_viewer):
     ends_at = (story.clock.timestamp().value + timedelta(minutes=30)).isoformat(timespec='microseconds')
     split_viewer.value('workers.workers', ['provider-outage', 'make', 'codex', 'out of credit', '--ends-at', ends_at])
     rows = split_viewer.value('workers.workers', ['worker', 'split'])['rows']
-    story.expect_rows('out of credit' in str(rows), ends_at in str(rows))
+    codex = next(row for row in rows if row['id'] == 'codex')
+    story.expect_rows(codex['outage_reason'] == 'out of credit', datetime.fromisoformat(codex['outage_ends_at']) == datetime.fromisoformat(ends_at))
 
 
 @pytest.mark.parametrize('program,ends_at,reason', [('unknown', '2026-11-01T09:00:00+00:00', 'unknown'), ('codex', '2026-10-30T09:00:00+00:00', 'future')])
@@ -382,11 +383,11 @@ def provider_failure_story(split_story, request):
 def test_chat_says_once_when_a_program_goes_out(provider_failure_story):
     story = provider_failure_story
     story.run_listeners()
-    marks = story.run('chat-mark list --json').output_text
-    story.expect_rows('login' in marks, 'claude' in marks, 'journal program' in marks or '/login' in marks)
-    before = marks.count('login')
+    mark_text = story.run('chat-mark list --json').output_text
+    story.expect_rows('login' in mark_text, 'claude' in mark_text, 'journal program' in mark_text or '/login' in mark_text)
+    login_count = mark_text.count('login')
     story.run_listeners()
-    story.expect_rows(story.run('chat-mark list --json').output_text.count('login') == before)
+    story.expect_rows(story.run('chat-mark list --json').output_text.count('login') == login_count)
 
 
 @pytest.mark.parametrize('provider_failure_story', ['The fixture prints "API Error: 429 rate limit reached" as sample data.\nAssertionError: bad cart total',

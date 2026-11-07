@@ -13,14 +13,13 @@ LEAD_CHARACTERS = 40
 
 @dataclass(frozen=True)
 class SearchHit:
-    """One row that holds the terms, or some of them: its model's command name, its number, when it was made, how many terms it holds, its model's rank and a short
-    excerpt of its text from a little before the first term, its spaces folded and a cut end marked."""
+    """A search result with its matching term count, rank and text excerpt."""
 
     cli_name: str
     row_id: int
     created_at: Timestamp
     excerpt: str
-    held: int = 0
+    matched_terms: int = 0
     rank: int = 0
 
     @classmethod
@@ -30,7 +29,7 @@ class SearchHit:
         start = max(0, min(positions, default=0) - LEAD_CHARACTERS)
         end = start + EXCERPT_CHARACTERS
         excerpt = (CUT_MARK if start else "") + text[start:end] + (CUT_MARK if end < len(text) else "")
-        return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.terms_held(terms), row.search_rank)
+        return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.count_matching_terms(terms), row.search_rank)
 
     def line(self) -> str:
         return f"{self.cli_name} {self.row_id}: {self.excerpt}"

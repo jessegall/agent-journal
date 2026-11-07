@@ -16,10 +16,10 @@ const elapsed = (row) => `${Math.round(row.waited_ms)} ms`;
         <template v-else-if="queue">
             <div class="limits">Hooks at once: {{ queue.hook_limit }} · Main agent wait: {{ queue.main_hook_seconds }} s · Other agent wait: {{ queue.agent_hook_seconds }} s · Viewer wait: {{ queue.viewer_wait_seconds }} s</div>
             <ProcessQueueBand icon="start" :count="queue.running.length">Running</ProcessQueueBand>
-            <template v-if="!queue.running.length"><p class="empty" data-request-queue-empty>Nothing is running.</p></template>
+            <template v-if="!queue.running.length"><p class="empty" data-request-queue-empty>No running requests.</p></template>
             <template v-for="(row, index) in queue.running" :key="`running-${index}`"><div class="entry" data-request-queue-running><span>{{ row.sender }}<template v-if="row.priority"> · {{ row.priority }}</template></span><strong>{{ row.event }}</strong><span>{{ elapsed(row) }}</span></div></template>
             <ProcessQueueBand icon="clock" :count="queue.waiting.length">Waiting</ProcessQueueBand>
-            <template v-if="!queue.waiting.length"><p class="empty">Nothing is waiting.</p></template>
+            <template v-if="!queue.waiting.length"><p class="empty">No waiting requests.</p></template>
             <template v-for="(row, index) in queue.waiting" :key="`waiting-${index}`"><div class="entry" data-request-queue-waiting><span>{{ row.sender }}<template v-if="row.priority"> · {{ row.priority }}</template></span><strong>{{ row.event }}</strong><span>{{ elapsed(row) }}</span></div></template>
         </template>
     </aside>

@@ -1,6 +1,5 @@
 from core.base.agent_role import AgentRole
-from core.base.listener.event_rows import EventRows
-from core.modules.agents.models.agent import Agent
+from core.base.agent_role_reader import AgentRoleReader
 from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.command.context import Context
@@ -16,12 +15,12 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
     name = "settings.person-set"
     is_safety = True
 
-    def __init__(self, declared: SettingCatalogue, rows: EventRows) -> None:
-        self.declared, self.rows = declared, rows
+    def __init__(self, declared: SettingCatalogue, roles: AgentRoleReader) -> None:
+        self.declared, self.roles = declared, roles
 
     def check(self, event: Changed[Setting], context: Context) -> None:
         if context.actor.type is ActorType.AGENT and self.declared.is_person_set(event.row.key):
-            agent = self.rows.required(Agent, context.actor.id)
-            if agent.role != AgentRole.MAIN:
-                raise Refusal(f"a {agent.role} cannot change {event.row.key}", "ask the main agent")
+            role = self.roles.role(context.actor.id)
+            if role != AgentRole.MAIN:
+                raise Refusal(f"a {role} cannot change {event.row.key}", "ask the main agent")
             raise Refusal(f"only a person changes {event.row.key}", f"a main agent asks with journal setting request {event.row.key} <value> --reason '<why>'; any other agent writes what it needs in its report")

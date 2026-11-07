@@ -79,8 +79,8 @@ func excludedSymlinkTargets(worktree string) []string {
 	var targets []string
 	for _, line := range strings.Split(string(excludeData), "\n") {
 		path := filepath.Join(worktree, strings.TrimPrefix(strings.TrimSpace(line), "/"))
-		info, err := os.Lstat(path)
-		if err != nil || info.Mode()&os.ModeSymlink == 0 {
+		metadata, err := os.Lstat(path)
+		if err != nil || metadata.Mode()&os.ModeSymlink == 0 {
 			continue
 		}
 		if target, err := filepath.EvalSymlinks(path); err == nil {

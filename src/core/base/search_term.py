@@ -3,7 +3,7 @@ STEM_LENGTH_MINIMUM = 4
 
 
 class SearchTerm:
-    """A word a search looks for, lower case and cut to its stem, so hours finds two-hourly and reviews finds reviewer."""
+    """A lower-case search word cut to its stem, so hours finds two-hourly and reviews finds reviewer."""
 
     @staticmethod
     def stem(word: str) -> str:

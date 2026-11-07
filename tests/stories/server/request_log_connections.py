@@ -92,18 +92,18 @@ def test_a_locked_request_log_counts_dropped_rows_without_a_warning(logging_serv
     log = server.context.request_log
     with log.connected():
         pass
-    before = server.story.system_log_text()
+    previous_log = server.story.system_log_text()
     connection = sqlite3.connect(server.story.home.database, timeout=0, autocommit=True)
     try:
         connection.execute("BEGIN IMMEDIATE")
         log.record(["task", "list"], "cli", 1.0, 0.0, 0)
-        log.complete_reads(1, (ReadAttribution("client", "command"),))
+        log.complete_reads(1, tuple([ReadAttribution("client", "command")]))
     finally:
         connection.execute("ROLLBACK")
         connection.close()
     server.story.expect_rows(log.counts["attempted"] == 1, log.counts["dropped"] == 1,
                              log.counts["receipt_attempted"] == 1, log.counts["receipt_dropped"] == 1,
-                             server.story.system_log_text() == before)
+                             server.story.system_log_text() == previous_log)
 
 
 def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(logging_server, monkeypatch):
