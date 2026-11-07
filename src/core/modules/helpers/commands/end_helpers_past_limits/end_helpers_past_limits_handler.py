@@ -13,6 +13,7 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.helpers.commands.end_helpers_past_limits.end_helpers_past_limits import EndHelpersPastLimits
 from core.modules.helpers.commands.send_helper_limit_warning.send_helper_limit_warning import SendHelperLimitWarning
+from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST, HELPER_MAX_MINUTES
 from core.modules.helpers.support.helper_spend import HelperSpend
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -28,9 +29,9 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
 
     command = EndHelpersPastLimits
 
-    def __init__(self, queries: Queries, agents: AgentRows, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus) -> None:
+    def __init__(self, queries: Queries, agents: AgentRows, jobs: HelperJobRows, settings: SettingValues, files: StatusFiles, scopes: Scopes, bus: Bus, options: AgentOptions) -> None:
         self.queries, self.agents, self.jobs, self.settings, self.files, self.scopes = queries, agents, jobs, settings, files, scopes
-        self.bus = bus
+        self.bus, self.options = bus, options
 
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
         for helper in self.agents.running(AgentRole.HELPER):
@@ -40,8 +41,11 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
 
     def check(self, helper: Agent, job: HelperJob, context: Context) -> None:
         with self.scopes.opened(None, helper.environment_id):
+            chosen = self.options.reading(helper.role, helper.profile).options
+            max_minutes = chosen.max_minutes if chosen.max_minutes is not None else self.settings.number(HELPER_MAX_MINUTES)
+            max_cost = chosen.max_cost if chosen.max_cost is not None else self.settings.decimal(HELPER_MAX_COST)
             spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars, job.cost_baseline,
-                                self.settings.number(HELPER_MAX_MINUTES), self.settings.decimal(HELPER_MAX_COST))
+                                max_minutes, max_cost)
         if spend.share >= 1:
             self.stop(helper, job, spend)
         elif spend.share >= WARNING_SHARE and not self.was_warned(helper, job):

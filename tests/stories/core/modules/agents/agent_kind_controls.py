@@ -5,6 +5,9 @@ from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.helpers.helper_reports import enforced, helper_report
+from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.support.main_controls_fixture import in_environment
@@ -237,3 +240,26 @@ def test_s49_special_profiles_with_no_agents_add_nothing_to_the_helper_totals(ne
     rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
     helper = next(row for row in rows if row["key"] == "helper")
     expect_value((helper["running"], helper["kept"], sum(row["running"] + row["kept"] for row in helper["profiles"])), (0, 0, 0))
+
+
+def test_s22_a_helper_options_minutes_end_a_job_before_the_common_limit(new_story):
+    story = new_story(fixture=StartedHelper)
+    set_options(story, "helper max_minutes=10")
+    enforced(story, 11)
+    story.expect_text(f"message read {helper_report(story).id}", "stopped at its time limit")
+
+
+def test_s23_a_profile_line_sets_a_fractional_cost_cap_and_a_zero_cap_is_unlimited(new_story):
+    story = new_story(fixture=StartedHelper)
+    set_options(story, "helper max_cost=0", "helper:journal-researcher max_cost=0.5")
+    save_status_file(story, helper_agent(story).session, {"cost": {"total_cost_usd": 0.6}})
+    enforced(story, 1)
+    story.expect_text(f"message read {helper_report(story).id}", "stopped at its cost limit")
+
+
+def test_s23_a_type_line_of_zero_cost_leaves_the_helper_running(new_story):
+    story = new_story(fixture=StartedHelper)
+    set_options(story, "helper max_cost=0")
+    save_status_file(story, helper_agent(story).session, {"cost": {"total_cost_usd": 40}})
+    enforced(story, 1)
+    story.expect_rows(helper_agent(story).ended_at is None)
