@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from collections.abc import Mapping
 from typing import Any
 from core.base.access import Access
@@ -31,6 +31,7 @@ class AgentProfile:
     last_used: int = 0
     title: str = ""
     reports_to_parent: bool = True
+    program_models: Mapping[str, str] = field(default_factory=dict)
 
     @property
     def display_title(self) -> str:

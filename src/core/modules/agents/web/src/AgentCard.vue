@@ -31,9 +31,10 @@ const identity = computed(() => [props.row.program, props.facts?.model, props.fa
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
 const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
+const pendingWork = computed(() => props.facts?.work_status);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
-const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
-const workStatus = computed(() => props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
+const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : pendingWork.value || props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
+const workStatus = computed(() => pendingWork.value ? `Status: ${pendingWork.value}` : props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);
 const totalCount = computed(() => props.progress?.task_count ?? tasks.value.length);
 const taskCount = computed(() => `${completedCount.value} of ${totalCount.value} ${totalCount.value === 1 ? "task" : "tasks"}`);
@@ -56,6 +57,9 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
             <template v-if="retired">
                 <span class="agent-time" data-agent-motion>Retired, <TimeAgo :at="row.retired_at" /></span>
             </template>
+            <template v-else-if="row.ended_at && pendingWork">
+                <span class="agent-time" data-agent-motion>Process ended: <TimeAgo :at="row.ended_at" /></span>
+            </template>
             <template v-else-if="row.ended_at">
                 <span class="agent-time" data-agent-motion>Idle, <TimeAgo :at="row.ended_at" /></span>
             </template>
@@ -67,18 +71,18 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
-            <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First dispatched: <TimeAgo :at="row.created_at" /></span></template>
+            <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First started: <TimeAgo :at="row.created_at" /></span></template>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
-        <template v-if="open"><InformationBar :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
+        <template v-if="open"><InformationBar :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: []}" card>
             <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
         <template v-if="open && totalCount && !job"><span class="agent-line"><AgentTaskCount :count="taskCount" :rate="tasksPerHour" /></span></template>
-        <template v-if="job || (!open && workStatus)">
+        <template v-if="job || (!open && workStatus) || pendingWork">
             <span class="agent-line agent-work-start">
                 <span class="agent-job" data-agent-job :title="job"><template v-if="open && jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template><template v-if="job && row.role !== 'helper' && jobTask?.plan_id"> <button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${jobTask.plan_id}`" @click.stop="peekRef(`plans:${jobTask.plan_id}`)">plan {{ jobTask.plan_id }}</button></template></span>
-                <template v-if="!open && workStatus"><span class="agent-work-status" :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason ? '' : null">{{ workStatus }}</span></template>
+                <template v-if="workStatus && (!open || pendingWork)"><span class="agent-work-status" data-agent-work-status :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason && !pendingWork ? '' : null">{{ workStatus }}</span></template>
                 <template v-if="open && totalCount">
                     <AgentTaskCount :count="taskCount" :rate="tasksPerHour" />
                 </template>

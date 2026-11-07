@@ -2,6 +2,7 @@ from os.path import join, normpath
 from pathlib import Path
 
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.provider.providers import Providers
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -10,7 +11,6 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_READ_REFUSAL
 
 SHARED_FOLDERS = ("/tmp", "/private/tmp")
-PROGRAM_FOLDERS = (".claude", ".codex")
 
 
 class WorkerReadRule(DriverRule):
@@ -22,8 +22,8 @@ class WorkerReadRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.WORKER]
 
-    def __init__(self, worktrees: WorktreeQuery) -> None:
-        self.worktrees = worktrees
+    def __init__(self, worktrees: WorktreeQuery, providers: Providers) -> None:
+        self.worktrees, self.providers = worktrees, providers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -32,7 +32,7 @@ class WorkerReadRule(DriverRule):
         worktree = self.worktrees.worker_worktree(hook.agent_id)
         if worktree is None:
             return RuleAnswer.allowed()
-        readable = (worktree.folder, *SHARED_FOLDERS, *(str(Path.home() / home) for home in PROGRAM_FOLDERS))
+        readable = (worktree.folder, *SHARED_FOLDERS, *self.providers.provider(hook.event.program).readable_folders())
         paths = (Path(normpath(join(worktree.folder, path))) for path in tool.files)
         if all(any(path.is_relative_to(folder) for folder in readable) for path in paths):
             return RuleAnswer.allowed()

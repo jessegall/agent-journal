@@ -138,8 +138,9 @@ def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_
     replaced_launcher(story, *(b"running\n" for _ in range(6)))
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
-    notices = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    notices = story.run("merger-line list").output_text
     story.expect_rows(notices.count(f"agent:{story.worker.id} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "the launcher still holds its program")
 
 
 def test_a_resume_a_launch_in_hand_holds_stops_nothing(worker_with_waiting_job):

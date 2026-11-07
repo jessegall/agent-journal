@@ -39,7 +39,7 @@ class KeptHelpers:
         if helper.ended_at is None or helper.id in open_jobs or (program and helper.program != program) or (model and helper.program_model != model):
             return False
         provider = self.providers.provider(helper.program)
-        if not provider.session_resumes_here(self.folders.folder(helper), helper.session):
+        if not provider.session_matches_folder(self.folders.folder(helper), helper.session):
             return False
         return (provider.context_percent(self.home, helper.session) or 0) < FULL_SESSION_PERCENT
 

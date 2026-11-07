@@ -74,7 +74,7 @@ class WorkerTestListings(RunCounts):
         if not self.requires_count(process, agent) or (status is None and not self.has_listing(process, agent)):
             return
         lines = self.folder.count_text(process.id).strip().splitlines()
-        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id, listing=lines[-1] if lines else "no output")
+        self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id)
         self.bus.dispatch(RestoreWorkerTests(process.id), context)
         self.bus.dispatch(StopProcess(process.id), context)
 

@@ -8,9 +8,11 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.models.chat_mark import ChatMark
+from core.modules.drivers.models.agent_line import AgentLine
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
@@ -24,6 +26,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
 from tests.stories.suites.coding.modules.workers.test_queue import ended, queued_story
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 
 
 
@@ -97,6 +100,11 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     story.expect_text("merger next", "reports: Converted the window", actor=merger)
     story.expect_success('merger tell "Worker asks which reader to keep"', actor=merger)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "Worker asks which reader to keep", actor=story.agent)
+    saved = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id, text="Worker asks which reader to keep").first()
+    reply = story.hook("s-1", HookSamples.prompt("Continue"))
+    story.expect_rows("Worker asks which reader to keep" not in "\n".join(reply.lines), saved.nudge.text == f"agent-line:{saved.id}: journal agent-line show {saved.id}")
+    story.expect_text(f"agent-line show {saved.id}", "Worker asks which reader to keep", actor=story.agent)
+
     story.expect_success(f'merger findings {worker.id} "The tax is added twice"', actor=merger)
     expect_marks_text(story, f"The merger sent Worker {worker.id} back")
     mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
@@ -112,8 +120,17 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
     story.expect_rows("Handed in all assigned work" not in lines, f"agent:{worker.id} reports" not in lines, detail=lines)
 
 
+def test_merger_notices_combine_worker_numbers_without_reasons():
+    notices = Nudge.collapsed([MERGER_PASSED.nudge(worker=6), MERGER_PASSED.nudge(worker=7), MERGER_PASSED.nudge(worker=8)])
+    expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you. Read journal worker logs <id> for each"])
+
+
+def expect_merger_lines(notices, expected):
+    assert [notice.text for notice in notices] == expected
+
+
 def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkeypatch):
-    monkeypatch.setattr(ClaudeCodeProvider, "session_resumes_here", lambda _provider, _folder, _session: True)
+    monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda _provider, _folder, _session: True)
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)

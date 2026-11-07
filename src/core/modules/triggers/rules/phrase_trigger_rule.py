@@ -42,13 +42,13 @@ class PhraseTriggerRule(DriverRule):
         matching = [trigger for trigger in matching if trigger.action is not TriggerAction.SKILL or trigger.skill in skills]
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
-            return RuleAnswer.refused(TRIGGER_DENIES.nudge(text=deny.text)).running(FireTrigger(deny.id))
+            return RuleAnswer.refused(TRIGGER_DENIES.nudge(trigger=deny.id)).running(FireTrigger(deny.id))
         if not matching:
             return RuleAnswer.allowed()
         missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None
                    and not self.rows.is_loaded(hook.agent_id, trigger.skill, skills[trigger.skill].digest)]
         commands = [RequireSkill(hook.agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None]
-        nudges = [TRIGGER_LINE.nudge(text=trigger.agent_line) for trigger in matching if trigger.action is not TriggerAction.SKILL]
+        nudges = [TRIGGER_LINE.nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
         if missing:
             folder = missing[0].skill
             if folder is not None:

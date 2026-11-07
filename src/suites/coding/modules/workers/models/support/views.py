@@ -1,3 +1,21 @@
+WORKER_WORK_REVIEW_SELECT = """
+SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
+       CASE
+           WHEN worktree.state = 'cut' THEN 'changes requested'
+           WHEN worktree.left_to_main_at IS NOT NULL THEN 'with the main agent'
+           WHEN EXISTS (SELECT 1 FROM proofs JOIN processes ON processes.id = proofs.process_id
+                        WHERE proofs.worktree_id = worktree.id AND proofs.state = 'running' AND processes.queued_at IS NULL) THEN 'tests running'
+           WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running')) THEN 'tests queued'
+           WHEN worktree.tests_passed_at IS NULL THEN 'judging'
+           ELSE 'waiting for the merge'
+       END AS status
+FROM worker_worktrees AS worktree
+JOIN agents ON agents.id = worktree.session_agent_id
+WHERE worktree.delivered_at IS NOT NULL
+  AND worktree.state IN ('cut', 'delivered')
+  AND worktree.removed_at IS NULL AND agents.retired_at IS NULL
+"""
+
 WORKER_POINTS_SELECT = (
     "SELECT worker_worktrees.id AS worktree_id, worker_worktrees.session_agent_id, tasks.title AS task_title, tasks.brief AS task_brief,"
     " (SELECT json_group_array(json_object('point', proofs.point, 'state', proofs.state, 'text', proofs.text, 'shortfall', proofs.shortfall))"

@@ -44,7 +44,7 @@ class PluginAliasesListener(SaveListener[Created[Plugin] | Updated[Plugin]]):
             alias = self.alias(manifest_alias, plugin, folder, context.actor.id)
             if name in stored_aliases:
                 stored = stored_aliases[name]
-                self.repository.save(replace(alias, id=stored.id, version=stored.version, creator_id=stored.creator_id), context)
+                self.repository.save(replace(alias, id=stored.id, version=stored.version, creator_id=stored.creator_id, agent_access=stored.agent_access or alias.agent_access), context)
             elif self.names.is_free(name):
                 self.repository.save(alias, context)
 

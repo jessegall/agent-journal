@@ -59,3 +59,11 @@ Go keywords and built-in calls keep the language's spelling. Use `ctx`, `ok` and
 context, lookup-success and error roles. The shared resource service uses `Kind`, `Kinds` and `kind` for
 resource kinds. A SQL result may be named `result` when its type is `database/sql.Result` or its function
 uses its `LastInsertId` or `RowsAffected` methods. A string named `result` has no such exception.
+
+## Nudges name rows
+
+A nudge names a row, its number and the command that reads it. Keep stored text, reasons, commands,
+reports and titles in their rows. Counts, row types and paths are allowed; `path_fields` preserves a path,
+never a command or a reason. `stored-text-in-a-nudge` checks templates, including plural templates and
+aliased imports. Driver opening lines are static code instructions, and rule failures are code diagnostics;
+those two declarations are exempt because neither copies a stored resource's words.

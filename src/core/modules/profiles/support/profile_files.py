@@ -14,21 +14,22 @@ from core.base.text_digest import TextDigest
 from core.modules.profiles.support.profile_format import ProfileFormat
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_problem import ProfileProblem
-from core.modules.profiles.support.profile_settings import CLAUDE_MODEL_SETTING, CODEX_MODEL_SETTING
+from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 CLAUDE_FOLDER, CODEX_FOLDER = ".claude/agents", ".codex/agents"
 CODEX_HOME = ".codex"
 PROFILE_FOLDER = ".agents/profiles"
 SHIPPED_PREFIX = "journal-"
-OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "program_if_possible", "model", "codex_model", "mcp_tools", "independent")
+OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "program_if_possible", "model", "codex_model", "program_models", "mcp_tools", "independent")
 
 
 class ProfileFiles:
     """Reads module profiles and personal files, preserving personal changes across module upgrades."""
 
-    def __init__(self, home: JournalHome, settings: SettingValues, registry: Registry, digest: TextDigest) -> None:
+    def __init__(self, home: JournalHome, settings: SettingValues, registry: Registry, digest: TextDigest, providers: Providers) -> None:
         self.home, self.settings, self.registry, self.digest = home, settings, registry, digest
+        self.providers = providers
         self.kept = KeptFileText()
 
     @property
@@ -96,8 +97,12 @@ class ProfileFiles:
         return replace(profile, access=access)
 
     def defaults(self, profile: AgentProfile) -> AgentProfile:
-        return replace(profile, model=profile.model or self.settings.project.text(CLAUDE_MODEL_SETTING),
-                       codex_model=profile.codex_model or self.settings.project.text(CODEX_MODEL_SETTING))
+        for provider in self.providers.all():
+            model = provider.profile_model(profile)
+            if not model and provider.profile_model_setting:
+                model = self.settings.project.text(provider.profile_model_setting)
+            profile = provider.with_profile_model(profile, model)
+        return profile
 
     def fields(self, path: Path) -> ProfileFields:
         fields = ProfileFormat.fields(self.kept.read(path))

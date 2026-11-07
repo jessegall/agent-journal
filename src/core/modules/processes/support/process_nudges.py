@@ -14,15 +14,18 @@ READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "read
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader: journal reader-request waive {request} --reason "<why>"')
 
 READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}: journal reader draft {request} --save")
-OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: {result}')
+OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended: journal output read {output} --summary')
 OUTPUT_TIMEOUT = NudgeDeclaration("processes.output_timed_out", NudgeType.STEERING,
                                   'output {output} timed out after {seconds} seconds and was stopped', wakes_agent=True)
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet: journal reader add {name}', required_command="journal reader add {name}")
-MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}')
+MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on the command journal output monitor {output}',
+                               plural_text='do not ask again for outputs {output}: set a Monitor for each with journal output monitor <id>', id_field="output")
 REQUIRED_MONITOR = NudgeDeclaration("processes.monitor_required", NudgeType.REFUSAL, 'output {output} still runs: set a Monitor on journal output monitor {output} before you stop')
 REQUIRED_MONITOR_COMMAND = NudgeDeclaration("processes.monitor_command_required", NudgeType.REFUSAL, 'output {output} still runs: run journal output monitor {output} before you stop, so you wait for it')
-MONITOR_COMMAND_NOTE = NudgeDeclaration("processes.use_the_monitor_command", NudgeType.STEERING, 'do not ask again for output {output}: run journal output monitor {output}, which ends when the run does')
-AUTOMATIC_RUN_WATCHED = NudgeDeclaration("processes.automatic_run_watched", NudgeType.STEERING, 'output {output} is watched for you: go on working or stop; you are told when it ends, or started again if you stopped')
+MONITOR_COMMAND_NOTE = NudgeDeclaration("processes.use_the_monitor_command", NudgeType.STEERING, 'do not ask again for output {output}: run journal output monitor {output}, which ends when the run does',
+                                       plural_text='do not ask again for outputs {output}: run journal output monitor <id> for each, which ends when its run does', id_field="output")
+AUTOMATIC_RUN_WATCHED = NudgeDeclaration("processes.automatic_run_watched", NudgeType.STEERING, 'output {output} is watched for you: go on working or stop; you are told when it ends, or started again if you stopped',
+                                       plural_text='outputs {output} are watched for you: go on working or stop; you are told when they end, or started again if you stopped', id_field="output")
 MONITOR_TOOL_REQUIRED = NudgeDeclaration("processes.monitor_command_outside", NudgeType.REFUSAL, 'journal output monitor runs only in a Monitor: give it to the Monitor tool and keep working')
 HAND_MADE_MONITOR = NudgeDeclaration("processes.hand_made_monitor", NudgeType.REFUSAL, 'do not write your own wait on an output: give the Monitor the command journal output monitor <n>')
 PROCESS_MISSING = NudgeDeclaration("processes.process_lost", NudgeType.STEERING, 'process {process} was lost: its shell is gone')

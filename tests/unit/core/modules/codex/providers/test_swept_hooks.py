@@ -26,16 +26,17 @@ def test_a_sweep_preserves_the_journal_entries_existing_trust_at_their_new_posit
     ProgramHooks.store(hooks.path, settings)
     config = codex_home / "config.toml"
     names = [CAPITAL.sub("_", event).lower() for event in provider.hook_events]
+    hashes = CodexTrust.hashes(hooks.path)
     config.write_text("model = 'sample'\n" + "".join(
         CodexTrust.state_table(f"{hooks.path}:{name}:0:0", {"trusted_hash": "removed-project-hook"}) +
-        CodexTrust.state_table(f"{hooks.path}:{name}:1:0", {"trusted_hash": f"sha256:{name}"}) for name in names))
+        CodexTrust.state_table(f"{hooks.path}:{name}:1:0", {"trusted_hash": hashes[f"{hooks.path}:{name}:1:0"]}) for name in names))
     managed = HookManager(project, ManagedHooks(home)).import_hooks(CodexProvider, project)
     assert next(hook for hook in managed if hook.event == "PreToolUse").effects == tuple([HookEffect.ADDS_LINES])
     assert next(hook for hook in managed if hook.event == "Stop").effects == tuple([HookEffect.CAN_REFUSE])
     assert provider.hook_trust(project) is HookTrust.READY
     states = provider.trust_record().states()
     for name in names:
-        assert states[f"{hooks.path}:{name}:0:0"]["trusted_hash"] == f"sha256:{name}"
+        assert states[f"{hooks.path}:{name}:0:0"]["trusted_hash"] == hashes[f"{hooks.path}:{name}:1:0"]
     assert "model = 'sample'" in config.read_text()
 
 

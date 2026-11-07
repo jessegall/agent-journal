@@ -25,7 +25,8 @@ def ended(new_story, line: str, text: str, category: CommandCategory):
 
 def test_a_vitest_run_with_colour_codes_gives_its_counts_as_the_summary_with_no_escape(ended_vitest):
     story, lines = ended_vitest
-    expect_value_with(lines, "output 1 ended: 12 passed")
+    expect_value_with(lines, "output 1 ended: journal output read 1 --summary")
+    story.expect_text("output read 1 --summary", "12 passed", actor=story.agent)
     expect_value_without_line(lines, "\x1b")
 
 

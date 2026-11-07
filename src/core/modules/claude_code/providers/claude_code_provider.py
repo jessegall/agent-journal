@@ -1,3 +1,7 @@
+from core.base.provider.program_server_file import ProgramServerFile
+from core.modules.claude_code.providers.support.claude_server_file import ClaudeServerFile
+from dataclasses import replace
+from core.base.profile.agent_profile import AgentProfile
 from core.base.file_access import FileAccess
 import json
 import os
@@ -64,6 +68,7 @@ class ClaudeCodeProvider(Provider):
     plain_output_events = [HookEventName.SESSION_START, HookEventName.PROMPT]
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     skills_folder = ".claude/skills"
+    profile_model_setting = "journal.core.profiles.model-claude"
 
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
@@ -92,6 +97,22 @@ class ClaudeCodeProvider(Provider):
 
     def skill_instruction(self, skill: str, path: Path) -> str:
         return f"load this first with the Skill tool: {skill}"
+
+    def readable_folders(self) -> tuple[Path, ...]:
+        return tuple([self.folders.folder(CONFIG_VARIABLE, ".claude")])
+
+    def server_files(self, folder: Path) -> tuple[ProgramServerFile, ...]:
+        return tuple([ClaudeServerFile(folder)])
+
+    def profile_model(self, profile: AgentProfile) -> str:
+        return profile.program_models.get(self.name, profile.model)
+
+    @property
+    def model_option(self) -> str:
+        return "--model"
+
+    def with_profile_model(self, profile: AgentProfile, model: str) -> AgentProfile:
+        return replace(super().with_profile_model(profile, model), model=model)
 
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
@@ -130,7 +151,7 @@ class ClaudeCodeProvider(Provider):
             return path
         return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
 
-    def session_resumes_here(self, project: Path, session: str) -> bool:
+    def session_matches_folder(self, project: Path, session: str) -> bool:
         return (self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl").is_file()
 
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:

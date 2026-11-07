@@ -78,6 +78,27 @@ def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
     server.story.expect_rows(not server.story.container.get(HookRequestLog).read())
 
 
+def test_a_locked_hook_log_counts_the_dropped_row_without_a_warning(recording_server, monkeypatch):
+    server = recording_server
+    record_hook = HookRequestLog.record_hook
+
+    def record_while_locked(log, *args):
+        connection = sqlite3.connect(server.story.home.database, timeout=0, autocommit=True)
+        try:
+            connection.execute("BEGIN IMMEDIATE")
+            return record_hook(log, *args)
+        finally:
+            connection.execute("ROLLBACK")
+            connection.close()
+
+    monkeypatch.setattr(HookRequestLog, "record_hook", record_while_locked)
+    before = server.context.request_log.counts["dropped"]
+    sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="locked-log")
+    server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')
+    server.story.expect_rows(server.context.request_log.counts["dropped"] == before + 1,
+                             "request recording failed: database is locked" not in server.story.system_log_text())
+
+
 def test_a_hook_request_counts_the_parts_of_its_command_chain(recording_server):
     server = recording_server
     parts = [ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"]), ShellPart("ls", CommandCategory.READ, [])]

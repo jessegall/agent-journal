@@ -28,5 +28,5 @@ class ExceptionLineListener(CommitListener[Created[JournalException]]):
             return
         if event.row.source != CLOCK_TICK_SOURCE:
             self.told_messages.add(event.row.message)
-        command = SendExceptionLine(main_agent.id, event.row.source, event.row.message)
+        command = SendExceptionLine(main_agent.id, event.row.id)
         self.bus.run(command, Actor.core(), cause_id=logged.id, environment_id=main_agent.environment_id)

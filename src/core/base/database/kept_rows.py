@@ -12,7 +12,7 @@ KEPT_ROW_COUNT = 20000
 
 
 class KeptRows:
-    """Keeps each caller's table reads until the table changes or a transaction rolls back."""
+    """Caches scoped reads and refreshes them when their database data changes."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -50,6 +50,11 @@ class KeptRows:
 
     def scoped_read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
         return self.read(table, loader, *self.condition_with_scope(condition, parameters), name=name)
+
+    def scoped_current(self, loader: Callable[[], T], *, name: str) -> T:
+        signature = (*self.database.change_mark(), self.database.write_rollback_count)
+        return self.kept_value(f"current:{name}:{self.database.scope_environment_id}", loader,
+                               Statement("SELECT ?, ?, ?", signature))
 
     def scoped_update(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:
         self.update(table, updater, *self.condition_with_scope(condition, parameters), name=name)

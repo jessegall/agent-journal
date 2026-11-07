@@ -20,11 +20,12 @@ def test_an_error_in_the_chat_reaches_the_main_agent_once(new_story):
     story.advance(timedelta(minutes=5))
     failed_read(story, "TypeError: an unexpected argument")
     lines = story.run(LINES.format(agent=story.agent.id)).output_text
-    story.expect_rows(lines.count("the journal failed in line agent cards") == 1)
+    story.expect_rows(lines.count("journal-exception:1") == 1, "TypeError" not in lines)
+    story.expect_text("journal-exception show 1", "TypeError: an unexpected argument")
 
 
 def test_with_the_tools_off_no_line_is_sent(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting switch {TOOLS_SETTING} off --project", actor=story.user)
     failed_read(story, "TypeError: a second error")
-    story.expect_no_text(LINES.format(agent=story.agent.id), "the journal failed")
+    story.expect_no_text(LINES.format(agent=story.agent.id), "journal-exception:")

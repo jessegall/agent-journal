@@ -18,6 +18,14 @@ const mounted = (component, props) => {
 };
 const MAIN = {id: 1, role: "main", program: "claude", session: "s", process_started_at: null, ended_at: null};
 
+test.each(["tests running", "judging", "waiting for the merge", "with the main agent"])("the agent bar retains pending work: %s", (status) => {
+    const agent = {...MAIN, id: 8, role: "worker", ended_at: "2026-11-01T11:00:00Z", work_status: status};
+    const element = mounted(AgentBar, {agent});
+    expect(element.querySelector("[data-agent-word]").textContent).toBe(`Status: ${status}`);
+    expect(element.querySelector(".dot").classList.contains("paused")).toBe(true);
+    expect(element.querySelector("[data-agent-pause]")).toBeNull();
+});
+
 test("the allowance gauge names the window its percentage is of", () => {
     const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1}]};
     const fact = mounted(InformationBar, {agent: MAIN, usage}).querySelector('[data-fact="usage"]');

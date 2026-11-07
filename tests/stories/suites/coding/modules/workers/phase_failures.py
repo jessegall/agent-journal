@@ -64,7 +64,9 @@ def test_the_worker_gets_every_failure_in_one_line_once_all_tests_have_ended(han
     handed_in.end_test(handed_in.started[1], 1)
     failures = [line for line in handed_in.worker_lines() if "failed" in line]
     handed_in.story.expect_rows(len(failures) == 1)
-    handed_in.story.expect_rows(all(text in failures[0] for text in (TEST_LINE, SECOND_TEST_LINE, str(handed_in.started[0]), str(handed_in.started[1]))))
+    handed_in.story.expect_rows(all(str(output) in failures[0] for output in handed_in.started), TEST_LINE not in failures[0], SECOND_TEST_LINE not in failures[0])
+    handed_in.story.expect_text("proof show 1", TEST_LINE, actor=handed_in.worker)
+    handed_in.story.expect_text("proof show 3", SECOND_TEST_LINE, actor=handed_in.worker)
 
 
 def test_a_failure_on_an_earlier_task_puts_the_worktree_on_that_task(first_failed):

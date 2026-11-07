@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 import json
 
 from core.base.profile.agent_profile import AgentProfile
+from core.base.agent_work import AgentWork
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
@@ -35,7 +36,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry) -> None:
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry, work: AgentWork) -> None:
+        self.work = work
         self.queries, self.activity, self.profiles = queries, activity, profiles
         self.providers, self.folders = providers, folders
         self.usage = usage
@@ -94,11 +96,12 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
         agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         job_roles = self.usage.suites.agent_policy().job_roles
+        pending = self.work.pending()
         job_commands = {entry.key: entry.job_command for entry in self.registry.agent_types}
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
                                            resume_reason=self.resume_reason(agents[row.id]) if row.id in idle else None,
-                                           facts=self.usage.facts(row, job_roles, titles).json(),
+                                           facts=self.usage.facts(row, job_roles, titles, pending.get(row.id)).json(),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)
@@ -108,7 +111,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             return "This helper ran as a program subagent and cannot resume."
         if not self.folders.has_folder(agent):
             return "The folder this agent worked in is gone."
-        if not self.providers.provider(agent.program).session_resumes_here(self.folders.resume_folder(agent), agent.session):
+        if not self.providers.provider(agent.program).session_matches_folder(self.folders.resume_folder(agent), agent.session):
             return "The saved session is gone; this agent cannot resume."
         return None
 
