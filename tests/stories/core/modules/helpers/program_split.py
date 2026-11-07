@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta
 
 import pytest
 
@@ -8,6 +9,7 @@ from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.program_split import SPLIT, real_program_checks, set_split, viewer_client
+from tests.stories.support.program_states import real_program_states
 
 
 @pytest.fixture
@@ -102,3 +104,17 @@ def test_helper_goes_by_the_split_reuse_still_goes_first(helper_split_story):
     set_split(story, 'codex 100,claude 0')
     FakeLauncher(story.home.socket('launcher'))
     story.expect_refusal(START, f'journal helper send {helper_id}', actor=story.agent)
+
+
+def test_helper_goes_by_the_split_named_out_program_is_started_with_warning(helper_split_story):
+    story = helper_split_story
+    ends_at = (story.clock.timestamp().value + timedelta(minutes=15)).isoformat(timespec='microseconds')
+    story.expect_success(f'provider-outage make codex "rate limit" --ends-at {ends_at}', actor=story.agent)
+    real_program_states(story)
+    launcher = FakeLauncher(story.home.socket('launcher'))
+    answer = story.run(f'{START} --program codex', actor=story.agent)
+    story.run_listeners()
+    launcher.thread.join(timeout=5)
+    launcher.server.close()
+    story.home.socket('launcher').unlink()
+    story.expect_rows(answer.code == 0, 'is out until' in answer.output_text, ends_at in answer.output_text)
