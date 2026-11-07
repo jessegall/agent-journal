@@ -23,7 +23,9 @@ stays kept on the same agent number and session until retired.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --tier strongest` hands a worker the available tasks of an approved or
   started plan, or of one phase of it, in the plan's order. Use `journal worker send <n> --plan <plan> [--phase <phase>]`
   to give the same work to a kept worker. The plan shows as delegated, and phase tests run at each phase's end.
-  Blocked tasks stay assigned and are taken when they open; completed, started and already assigned tasks are left alone.
+  Completed, started and already assigned tasks are left alone.
+- Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
+  worker takes it when it opens, sent to it at once when the worker is idle. A new worker needs one open task to start on.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
   phase needs no check from you; you can still read it and send it back. When a worker asks to run one test, you get
   one line with the command and the reason: `journal worker allow-test <request>` lets it run that command once. To

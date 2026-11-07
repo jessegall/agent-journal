@@ -63,7 +63,7 @@ def test_a_dispatch_whose_worktree_command_fails_is_refused_with_its_output_and_
 def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     repository = repository_environment(story)
-    story.expect_refusal(DISPATCH, "task 1 is started: a worker is dispatched to an open task", actor=story.agent)
+    story.expect_refusal(DISPATCH, "task 1 is started: only an open or a blocked task can be assigned to a worker", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")
     story.expect_success("agent list --role worker", "nothing found")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
