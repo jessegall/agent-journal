@@ -164,3 +164,15 @@ def saved_text(value: SettingValue) -> str:
             return json.dumps(list(value.default))
         case _:
             return str(value.default)
+
+
+CONTROL_CASES = ("default", "changed")
+REGRESSION_STORIES = ("S04", "S08", "S15", "S19")
+REGRESSION_CASES = ("kept", "changed")
+TRANSITION_STORIES = [f"S{number}" for number in range(44, 62)]
+
+
+def matrix_cases() -> list[str]:
+    controls = [f"{control.number}-{case}" for control in CONTROLS for case in CONTROL_CASES]
+    regressions = [f"{story}-{case}" for story in REGRESSION_STORIES for case in REGRESSION_CASES]
+    return controls + regressions + TRANSITION_STORIES
