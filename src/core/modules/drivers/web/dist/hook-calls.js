@@ -1,18 +1,18 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-76994975f84f")) { const style = document.createElement("style"); style.id = "window-styles-76994975f84f"; style.textContent = "details[data-v-efdd3bca]{width:100%;font-size:12px}summary[data-v-efdd3bca]{cursor:pointer}.check[data-v-efdd3bca]{padding:8px 0;border-bottom:1px solid var(--border)}.check span[data-v-efdd3bca]{margin-left:8px}.note[data-v-efdd3bca]{color:var(--text-3)}p[data-v-efdd3bca]{margin:4px 0 0;white-space:pre-wrap}.activity[data-v-0df7ff1b]{width:100%}.summary[data-v-0df7ff1b]{display:flex;gap:10px}.main[data-v-0df7ff1b]{flex:1}.note[data-v-0df7ff1b]{color:var(--text-3);font-size:12px}.nudge[data-v-894b8f1e]{min-width:0;padding:6px 0}.nudge-head[data-v-894b8f1e]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-894b8f1e]{color:var(--text);font-weight:500}.nudge-type[data-v-894b8f1e],.nudge-count[data-v-894b8f1e]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-894b8f1e]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-894b8f1e]{color:var(--accent-text)}.nudge-text[data-v-894b8f1e]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
-import { openBlock as n, createElementBlock as c, createElementVNode as e, Fragment as f, renderList as k, toDisplayString as o, createCommentVNode as u, createBlock as p, unref as a, withCtx as _, createVNode as y } from "vue";
+if (!document.getElementById("window-styles-333edbc672fd")) { const style = document.createElement("style"); style.id = "window-styles-333edbc672fd"; style.textContent = "details[data-v-769933cd]{width:100%;font-size:12px}summary[data-v-769933cd]{cursor:pointer}.check[data-v-769933cd]{padding:8px 0;border-bottom:1px solid var(--border)}.check span[data-v-769933cd]{margin-left:8px}.note[data-v-769933cd]{color:var(--text-3)}p[data-v-769933cd]{margin:4px 0 0;white-space:pre-wrap}.activity[data-v-b8c8db23]{width:100%}.summary[data-v-b8c8db23]{display:flex;gap:10px}.main[data-v-b8c8db23]{flex:1}.note[data-v-b8c8db23]{color:var(--text-3);font-size:12px}.nudge[data-v-695c4b5c]{min-width:0;padding:6px 0}.nudge-head[data-v-695c4b5c]{display:flex;gap:10px;align-items:baseline;margin:0 0 2px;font-size:12px}.nudge-key[data-v-695c4b5c]{color:var(--text);font-weight:500}.nudge-type[data-v-695c4b5c],.nudge-count[data-v-695c4b5c]{color:var(--text-3)}.nudge-type[data-type=refusal][data-v-695c4b5c]{color:var(--tone-bad)}.nudge-type[data-type=steering][data-v-695c4b5c]{color:var(--accent-text)}.nudge-text[data-v-695c4b5c]{margin:0;color:var(--text-2);font-size:12.5px;overflow-wrap:anywhere}\n"; document.head.appendChild(style); }
+import { openBlock as n, createElementBlock as c, createElementVNode as e, Fragment as k, renderList as f, toDisplayString as o, createCommentVNode as u, createBlock as p, unref as a, withCtx as _, createVNode as y } from "vue";
 import { useWindow as g, WindowRoom as v, RowList as C } from "@journal/window-kit";
-import { _ as m, h as x } from "./_plugin-vue_export-helper-BEOZ8alP.mjs";
+import { _ as m, h as x } from "./_plugin-vue_export-helper-BEOZ8alP.js";
 const L = { "data-stop-checks": "" }, N = {
   key: 0,
   class: "note"
 }, S = {
   __name: "StopChecks",
   props: { checks: { type: Array, required: !0 } },
-  setup(d) {
+  setup(i) {
     return (l, r) => (n(), c("details", L, [
       r[0] || (r[0] = e("summary", null, "Stop checks", -1)),
-      (n(!0), c(f, null, k(d.checks, (t) => (n(), c("div", {
+      (n(!0), c(k, null, f(i.checks, (t) => (n(), c("div", {
         key: `${t.rule}:${t.layer || ""}`,
         class: "check",
         "data-stop-check": ""
@@ -24,9 +24,9 @@ const L = { "data-stop-checks": "" }, N = {
       ]))), 128))
     ]));
   }
-}, $ = /* @__PURE__ */ m(S, [["__scopeId", "data-v-efdd3bca"]]), w = { class: "activity" }, E = { class: "summary" }, b = { class: "note" }, B = { class: "main" }, V = { class: "note" }, H = {
+}, $ = /* @__PURE__ */ m(S, [["__scopeId", "data-v-769933cd"]]), w = { class: "activity" }, E = { class: "summary" }, b = { class: "note" }, B = { class: "main" }, V = { class: "note" }, H = {
   __name: "HookCallList",
-  setup(d) {
+  setup(i) {
     const l = g();
     l.state["calls.session-agent-id"] = String(l.agent);
     const { rows: r, failure: t, loaded: h } = l.props.calls;
@@ -40,7 +40,7 @@ const L = { "data-stop-checks": "" }, N = {
           hint: "Each call the agent program makes to the journal is listed here."
         }, {
           default: _(({ row: s }) => {
-            var i;
+            var d;
             return [
               e("div", w, [
                 e("div", E, [
@@ -48,7 +48,7 @@ const L = { "data-stop-checks": "" }, N = {
                   e("span", B, o(s.tool) + " " + o(s.summary), 1),
                   e("span", V, o(s.refusal || s.answer), 1)
                 ]),
-                (i = s.stop_checks) != null && i.length ? (n(), p($, {
+                (d = s.stop_checks) != null && d.length ? (n(), p($, {
                   key: 0,
                   checks: s.stop_checks
                 }, null, 8, ["checks"])) : u("", !0)
@@ -61,7 +61,7 @@ const L = { "data-stop-checks": "" }, N = {
       _: 1
     }));
   }
-}, A = /* @__PURE__ */ m(H, [["__scopeId", "data-v-0df7ff1b"]]);
+}, A = /* @__PURE__ */ m(H, [["__scopeId", "data-v-b8c8db23"]]);
 export {
   A as default
 };
