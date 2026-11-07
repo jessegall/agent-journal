@@ -225,3 +225,34 @@ test("a question opens with its text and a button for each option, and a pick an
     await later();
     expect(lines).toContainEqual(["question", "answer", "4", "--answer", "Cart"]);
 });
+
+test("focus moves into the panel when a row opens and back to what opened it when it closes", async () => {
+    const opener = document.createElement("button");
+    document.body.append(opener);
+    opener.focus();
+    await opened("#?open=plans:5", answering(PLAN));
+    expect(document.activeElement).toBe(shown());
+    location.hash = "#";
+    await later();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+});
+
+test("Escape closes an open action form first, then the top row, then the panel", async () => {
+    await opened("#?open=plans:5,tasks:7", answering(PLAN));
+    const form = document.createElement("div");
+    form.setAttribute("role", "dialog");
+    form.setAttribute("aria-modal", "true");
+    document.body.append(form);
+    window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+    await later();
+    expect(location.hash).toContain("tasks:7");
+    form.remove();
+    window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+    await later();
+    expect(location.hash).toContain("plans:5");
+    expect(location.hash).not.toContain("tasks:7");
+    window.dispatchEvent(new KeyboardEvent("keydown", {key: "Escape"}));
+    await later();
+    expect(shown()).toBeNull();
+});

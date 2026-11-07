@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
@@ -76,7 +76,20 @@ async function creatorOf(id, turn) {
 watch(() => `${opened.value?.table}:${opened.value?.id}`, load, {immediate: true});
 
 const close = () => opening([]);
-const closeOnEscape = (event) => event.key === "Escape" && opened.value && unpeek();
+// focus moves into the panel when it opens and back to what opened it when it closes; Escape closes an open action form first, then the top row
+const panel = ref(null);
+let opener = null;
+watch(() => Boolean(opened.value), async (now) => {
+    if (now) {
+        opener = document.activeElement;
+        await nextTick();
+        panel.value?.focus();
+        return;
+    }
+    opener?.focus?.();
+    opener = null;
+});
+const closeOnEscape = (event) => event.key === "Escape" && opened.value && !document.querySelector('[role="dialog"][aria-modal="true"]') && unpeek();
 window.addEventListener("keydown", closeOnEscape);
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
@@ -87,6 +100,8 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             <div v-if="opened" :class="['veil', {fades: noun === 'test-queue'}]" @click.self="close">
                 <aside
                     :class="['panel', {wide, opening: !fullyOpen, task: noun === 'task', document: isDocument, queue: noun === 'test-queue', agent: noun === 'agent'}]"
+                    ref="panel"
+                    tabindex="-1"
                     role="dialog"
                     :aria-label="title"
                     data-resource-panel
