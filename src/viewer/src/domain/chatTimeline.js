@@ -7,6 +7,19 @@ export function interleaved(messages, marks) {
     return items.sort((a, b) => moment(a.row.created_at) - moment(b.row.created_at) || (a.type === b.type ? a.row.id - b.row.id : a.type === "message" ? -1 : 1));
 }
 
+// marks come in far faster than messages, so the newest page of marks can reach back less far than the newest page of messages and leave
+// a mark that happened among those messages out; older pages of marks are read, one at a time, until the marks reach back as far as the messages do
+export const MARK_PAGES_AT_MOST = 20;
+export async function reachMessages(messages, marks, olderMarks) {
+    for (let page = 0; page < MARK_PAGES_AT_MOST; page++) {
+        const oldestMessage = messages().at(-1);
+        const oldestMark = marks().at(-1);
+        if (!oldestMessage || !oldestMark || moment(oldestMark.created_at) <= moment(oldestMessage.created_at)) return page;
+        if (!(await olderMarks())) return page;
+    }
+    return MARK_PAGES_AT_MOST;
+}
+
 // marks fold into one from three that stand together with nothing between them
 const GROUP_FROM = 3;
 const GROUP_KEYS = {

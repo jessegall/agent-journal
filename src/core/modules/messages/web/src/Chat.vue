@@ -3,13 +3,13 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
 
 const view = useWindow();
 const {rows: messages, failure, loaded, load, loadLatest, older, act} = view.props.messages;
 const settingOf = (key) => view.props[key].data.value?.value;
 view.markMotion = computed(() => settingOf("mark-motion") === true);
-const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = view.props.marks;
+const {rows: allMarks, loaded: marksLoaded, older: olderMarks, loadLatest: latestMarks} = view.props.marks;
 const {rows: docked} = view.props.docks;
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
 const {rows: pins, act: runOnPin} = view.props.pins;
@@ -390,6 +390,12 @@ const arrival = {
     },
     leave: (element, done) => (returning || !atFoot || !element.querySelector("[data-message]") || element.dataset.row.startsWith("message:sending-") ? done() : depart(element, done)),
 };
+const reachBack = () => reachMessages(() => messages.value, () => allMarks.value, olderMarks);
+const stopWaiting = watch([loaded, marksLoaded], ([messagesReady, marksReady]) => {
+    if (!messagesReady || !marksReady) return;
+    stopWaiting();
+    reachBack();
+});
 async function refreshChat() {
     comeIn.flush();
     if (document.hidden || returning) return;
@@ -399,6 +405,7 @@ async function refreshChat() {
     arrived.value = 0;
     try {
         await Promise.all([loadLatest(), latestMarks()]);
+        await reachBack();
         await nextTick();
         if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
     } finally {
