@@ -63,6 +63,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
         </span>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
+            <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
             <template v-if="!open && row.role === 'worker' && tasksPerHour"><span class="agent-list-pace" data-agent-list-pace>{{ tasksPerHour }}</span></template>
             <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched><Icon name="time" :size="12" />First started: <TimeAgo :at="row.created_at" /></span></template>
             <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard: <TimeAgo :at="facts.last_activity" /></span></template>
@@ -119,6 +120,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
     background: var(--text-3);
 }
 .agent-dot[data-state="retired"] { background: transparent; border: 1px solid var(--text-3); }
+.agent-sandbox-off { flex: none; color: var(--paused); font-size: 11.5px; }
 .agent-work-status { flex: 0 1 auto; overflow: hidden; color: var(--text-3); font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
 .agent-session { flex: none; color: var(--text-3); font-size: 11px; }
 

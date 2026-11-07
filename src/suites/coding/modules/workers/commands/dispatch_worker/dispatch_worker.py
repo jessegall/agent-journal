@@ -29,3 +29,4 @@ class DispatchWorker(Command[WorkerLaunch]):
     phase_id: int | None = None
     session: str = ""
     starts_program: bool = True
+    sandboxed: bool = True

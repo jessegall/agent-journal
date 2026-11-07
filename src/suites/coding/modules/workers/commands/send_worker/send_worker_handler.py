@@ -26,6 +26,7 @@ from suites.coding.modules.workers.commands.open_kept_worktree.open_kept_worktre
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
+from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox import SwitchWorkerSandbox
 from suites.coding.modules.workers.commands.send_worker.make_worker_job import MakeWorkerJob
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
@@ -138,6 +139,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has no worktree", "journal worker dispatch <task> starts a new one")
         worker = self.rows.required(Agent, command.worker_id)
+        if not command.sandboxed:
+            worker = self.bus.run_with_context(SwitchWorkerSandbox(worker.id, False), context)
         resumed = worker.ended_at is not None or self.is_gone or worktree.state is WorktreeState.DELIVERED
         source_context = replace(context, environment_id=worktree.environment_id)
         source = self.sources.source_copy(source_context)

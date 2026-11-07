@@ -657,3 +657,11 @@ test("an opened card has no task bar or blocked row above its commands and uses 
     expect(element.querySelector("[data-agent-blocked-tasks]")).toBeNull();
     expect(held.reads.slice(initialReads).filter((line) => line.startsWith("task ") || line.startsWith("worker progress"))).toEqual(["worker progress"]);
 });
+
+test("a worker card says sandbox off when its facts say its shell runs outside the sandbox", async () => {
+    const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null, state: "running"};
+    const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
+    const shown = async (facts) => mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, tasks: [], ...facts}})}, context(lines));
+    expect((await shown({sandbox_off: true})).querySelector("[data-agent-sandbox-off]").textContent).toBe("sandbox off");
+    expect((await shown({sandbox_off: false})).querySelector("[data-agent-sandbox-off]")).toBeNull();
+});

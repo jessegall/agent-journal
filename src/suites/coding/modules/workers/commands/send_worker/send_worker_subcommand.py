@@ -43,6 +43,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         parser.add_argument("--task", type=int, nargs="+", default=[], help="tasks the worker takes next")
         parser.add_argument("--plan", type=int, default=None, help="hand the worker a plan in phase order")
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only this phase")
+        parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")
 
@@ -58,7 +59,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                 self.policy.check_tasks(self.tasks.check_tasks(task_ids),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
-        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy))
+        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox)
         argv = ["worker", "send", str(arguments.worker_id), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))
@@ -66,6 +67,8 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
                 argv.extend(("--phase", str(arguments.phase)))
         elif arguments.task:
             argv.extend(("--task", *(str(task) for task in arguments.task)))
+        if arguments.no_sandbox:
+            argv.append("--no-sandbox")
         for link in arguments.library_link:
             argv.extend(("--library-link", link))
         for copy in arguments.library_copy:
