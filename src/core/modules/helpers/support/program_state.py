@@ -16,7 +16,7 @@ class ProgramState:
         return cls(True, "ready")
 
     @classmethod
-    def out(cls, line: str, ends_at: Timestamp | None = None) -> "ProgramState":
+    def unavailable(cls, line: str, ends_at: Timestamp | None = None) -> "ProgramState":
         return cls(False, line, ends_at)
 
     def listed(self) -> dict[str, object]:

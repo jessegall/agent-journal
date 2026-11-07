@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from contextlib import nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -22,11 +23,13 @@ def readiness():
     providers.provider.return_value = provider
     providers.all.return_value = [provider]
     queries.query.return_value.filter.return_value.ordered.return_value.all_rows.return_value = []
-    queries.query.return_value.filter.return_value.matching.return_value.all_rows.return_value = [SimpleNamespace(session='open')]
+    agents, scopes = Mock(), Mock()
+    agents.running.return_value.filter.return_value.all_rows.return_value = [SimpleNamespace(session='open')]
+    scopes.opened.return_value = nullcontext()
     settings.number.return_value = 95
     statuses.newest_status.return_value = SimpleNamespace(windows=())
     clock.timestamp.return_value = now
-    states = ProgramStates(providers, programs, queries, settings, statuses, clock)
+    states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes)
     return SimpleNamespace(states=states, provider=provider, providers=providers, programs=programs,
                            queries=queries, settings=settings, statuses=statuses, clock=clock, now=now)
 
@@ -94,7 +97,7 @@ def test_zero_threshold_disables_window_reading(readiness):
 
 
 def test_ready_programs_only_lists_ready_programs(readiness):
-    assert readiness.states.ready_programs(Path('/project')) == ('sample',)
+    assert readiness.states.ready_programs(Path('/project')) == tuple(['sample'])
     readiness.programs.installed.side_effect = Refusal('not installed')
     assert readiness.states.ready_programs(Path('/project')) == ()
 

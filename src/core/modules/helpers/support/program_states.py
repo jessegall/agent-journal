@@ -5,11 +5,12 @@ from core.base.clock import Clock
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
 from core.base.provider.unknown_program_error import UnknownProgramError
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
+from core.base.scope.environment_scope import EnvironmentScope
+from core.base.scope.scopes import Scopes
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
@@ -22,37 +23,39 @@ class ProgramStates:
     """Reads program readiness; account windows apply across its open sessions in every environment."""
 
     def __init__(self, providers: Providers, programs: HelperPrograms, queries: Queries,
-                 settings: SettingValues, statuses: StatusFiles, clock: Clock) -> None:
+                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes) -> None:
         self.providers, self.programs, self.queries = providers, programs, queries
         self.settings, self.statuses, self.clock = settings, statuses, clock
+        self.agents, self.scopes = agents, scopes
 
     def state(self, program: str, folder: Path) -> ProgramState:
         try:
             provider = self.providers.provider(program)
         except UnknownProgramError:
-            return ProgramState.out(f"{program} has no installed provider module")
+            return ProgramState.unavailable(f"{program} has no installed provider module")
         try:
             self.programs.installed(program)
         except Refusal as refusal:
-            return ProgramState.out(refusal.text)
+            return ProgramState.unavailable(refusal.text)
         if provider.hook_trust(folder) is not HookTrust.READY:
-            return ProgramState.out(f"{program} has not trusted the journal hooks in {folder}")
-        now = self.clock.timestamp()
+            return ProgramState.unavailable(f"{program} has not trusted the journal hooks in {folder}")
+        checked_at = self.clock.timestamp()
         outages = self.queries.query(ProviderOutage).filter(program=program).ordered("-ends_at").all_rows()
-        outage = next((row for row in outages if row.ends_at > now), None)
+        outage = next((row for row in outages if row.ends_at > checked_at), None)
         if outage is not None:
-            return ProgramState.out(outage.reason, outage.ends_at)
+            return ProgramState.unavailable(outage.reason, outage.ends_at)
         threshold = self.settings.number(PROGRAM_WINDOW_PERCENT)
         if threshold == 0:
             return ProgramState.ready()
-        agents = self.queries.query(Agent).filter(program=program).matching(IsNull("ended_at")).all_rows()
-        status = self.statuses.newest_status([agent.session for agent in agents], now)
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            agents = self.agents.running().filter(program=program).all_rows()
+        status = self.statuses.newest_status([agent.session for agent in agents], checked_at)
         blocked = [window for window in status.windows
-                   if window.used_percent >= threshold and window.reset_epoch_seconds > now.value.timestamp()]
+                   if window.used_percent >= threshold and window.reset_epoch_seconds > checked_at.value.timestamp()]
         if not blocked:
             return ProgramState.ready()
         window = max(blocked, key=lambda row: row.reset_epoch_seconds)
-        return ProgramState.out(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+        return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
 
     def ready_programs(self, folder: Path) -> tuple[str, ...]:
         return tuple(provider.name for provider in self.providers.all() if self.state(provider.name, folder).is_ready)
