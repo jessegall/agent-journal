@@ -64,20 +64,20 @@ type ShellLine struct {
 }
 
 type Part struct {
-	Text            string         `json:"text"`
-	Program         string         `json:"program"`
-	Subcommand      string         `json:"subcommand,omitempty"`
-	Arguments       []string       `json:"arguments"`
-	Classification  Classification `json:"classification"`
-	ReadPaths       []string       `json:"read_paths,omitempty"`
-	WritePaths      []string       `json:"write_paths,omitempty"`
-	JoinedBy        string         `json:"joined_by,omitempty"`
-	PipedInto       *int           `json:"piped_into,omitempty"`
-	IsFullTestRun   bool           `json:"is_full_test_run,omitempty"`
-	SavedCommand    string         `json:"saved_command,omitempty"`
-	ReadFlag        string         `json:"read_flag,omitempty"`
-	TimeoutDuration *string        `json:"timeout_duration,omitempty"`
-	NestedJournalCommands [][]string `json:"nested_journal_commands,omitempty"`
+	Text                  string         `json:"text"`
+	Program               string         `json:"program"`
+	Subcommand            string         `json:"subcommand,omitempty"`
+	Arguments             []string       `json:"arguments"`
+	Classification        Classification `json:"classification"`
+	ReadPaths             []string       `json:"read_paths,omitempty"`
+	WritePaths            []string       `json:"write_paths,omitempty"`
+	JoinedBy              string         `json:"joined_by,omitempty"`
+	PipedInto             *int           `json:"piped_into,omitempty"`
+	IsFullTestRun         bool           `json:"is_full_test_run,omitempty"`
+	SavedCommand          string         `json:"saved_command,omitempty"`
+	ReadFlag              string         `json:"read_flag,omitempty"`
+	TimeoutDuration       *string        `json:"timeout_duration,omitempty"`
+	NestedJournalCommands [][]string     `json:"nested_journal_commands,omitempty"`
 }
 
 type Classification struct {

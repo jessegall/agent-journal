@@ -51,15 +51,15 @@ func lineOfRunner(line string) string {
 func (classifier *Classifier) part(command shell.Command, classification Classification) event.Part {
 	program, subcommand, arguments := classifier.Program(command.Text)
 	prepared := event.Part{
-		Text:           command.Text,
-		Program:        program,
-		Subcommand:     subcommand,
-		Arguments:      arguments,
-		Classification: event.Classification{Category: classification.Category, Effects: classification.Effects, Uncertain: classification.Uncertain},
-		ReadPaths:      nonEmpty(classifier.ReadPaths(command.Text)),
-		WritePaths:     nonEmpty(classifier.WritePaths(command.Text)),
-		JoinedBy:       command.JoinedBy,
-		IsFullTestRun:  classifier.IsFullTestRun(command.Text, classification),
+		Text:                  command.Text,
+		Program:               program,
+		Subcommand:            subcommand,
+		Arguments:             arguments,
+		Classification:        event.Classification{Category: classification.Category, Effects: classification.Effects, Uncertain: classification.Uncertain},
+		ReadPaths:             nonEmpty(classifier.ReadPaths(command.Text)),
+		WritePaths:            nonEmpty(classifier.WritePaths(command.Text)),
+		JoinedBy:              command.JoinedBy,
+		IsFullTestRun:         classifier.IsFullTestRun(command.Text, classification),
 		NestedJournalCommands: nestedJournalCommands(command.Text),
 	}
 	if command.PipedInto >= 0 {
