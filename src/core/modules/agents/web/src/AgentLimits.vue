@@ -37,7 +37,8 @@ const overflow = (count, limit) => limit && count > limit ? `${(count - limit) /
 const title = computed(() => editing.value ? "Change the maximums" : chosen.value?.label || "Agent counts");
 async function readAgents(row, page = 1) {
     view.state["count-agents.role"] = row.type;
-    view.state["count-agents.profile"] = row.profile || "";
+    if (row.profile) view.state["count-agents.profile"] = row.profile;
+    else delete view.state["count-agents.profile"];
     view.state["count-agents.page"] = String(page);
     await view.reload("count-agents");
     const result = view.props["count-agents"];
