@@ -20,6 +20,8 @@ class AutomaticLinkPinRule(DriverRule):
         tool = hook.event.tool
         if tool is None:
             return RuleAnswer.allowed()
-        text = self.check.joined_text(hook.event.raw.get("tool_response"))
-        designs = [] if tool.category in FILE_TOOLS else self.check.design_pins(text)
+        if tool.category in FILE_TOOLS or (tool.shell is not None and tool.shell.is_readonly):
+            return RuleAnswer.allowed()
+        text = self.check.joined_text([hook.event.tool_input(), hook.event.raw.get("tool_response")])
+        designs = self.check.design_pins(text)
         return RuleAnswer.allowed().running(*designs, *self.check.pull_request_pins(text))

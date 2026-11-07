@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 from core.base.database.database import Database
@@ -11,7 +12,9 @@ from tests.stories.core.modules.helpers.helper_reports import reported
 
 
 def shell_call(line: str, output: str = ""):
-    sample = HookSamples.shell(line, ShellPart(line.split()[0], CommandCategory.READ, line.split()[1:])).with_fields(event="post_tool_use")
+    program = line.split()[0]
+    category = CommandCategory.READ if program == "cat" else CommandCategory.PROCESS
+    sample = HookSamples.shell(line, ShellPart(program, category, line.split()[1:])).with_fields(event="post_tool_use")
     return sample.with_raw({"tool_response": {"stdout": output}})
 
 
@@ -97,6 +100,47 @@ def test_a_link_in_a_file_the_agent_reads_is_not_offered(new_story):
     story = new_story(fixture=UserJoined)
     sample = HookSamples.tool_use("Read", ToolType.READ, ["a.md"], None).with_fields(event="post_tool_use").with_raw({"tool_response": {"content": "https://claude.ai/design/p/1"}})
     expect_absent_pin_lines(story.hook("s-1", sample))
+
+
+def test_shortened_links_are_neither_pinned_nor_suggested(new_story):
+    story = new_story(fixture=UserJoined)
+    text = "https://claude.ai/design/p/abc… https://github.com/shop/cart/pull/23... https://docs.example.com/a…b"
+    expect_absent_pin_lines(story.hook("s-1", shell_call("curl example", text)))
+    story.expect_absent("pin list --environment main", "claude.ai", actor=story.user)
+    story.expect_absent("pin list --environment main", "github.com", actor=story.user)
+
+
+def test_a_design_is_read_from_the_full_tool_input_and_named_for_its_file(new_story):
+    story = new_story(fixture=UserJoined)
+    address = "https://claude.ai/design/p/" + "a" * 220 + "?file=Agent%20limits"
+    sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_input": {"prompt": address}, "tool_response": {"content": "finished"}})
+    story.hook("s-1", sample)
+    story.expect_text("pin list --environment main", "Design: Agent limits", address, actor=story.user)
+
+
+def test_a_design_after_a_long_tool_output_is_pinned_in_full(new_story):
+    story = new_story(fixture=UserJoined)
+    address = "https://claude.ai/design/p/cart?file=Agent%20limits"
+    story.hook("s-1", shell_call("curl example", "output " * 100 + address))
+    story.expect_text("pin list --environment main", "Design: Agent limits", address, actor=story.user)
+
+
+def test_design_files_are_pinned_once_and_a_bare_project_does_not_duplicate_them(new_story):
+    story = new_story(fixture=UserJoined)
+    project = "https://claude.ai/design/p/cart"
+    story.hook("s-1", shell_call("curl example", f"{project}?file=Checkout&mode=edit"))
+    story.hook("s-1", shell_call("curl example", f"{project}?mode=preview&file=Checkout"))
+    story.hook("s-1", shell_call("curl example", project))
+    story.hook("s-1", shell_call("curl example", f"{project}?file=Payment"))
+    pins = json.loads(story.run("pin list --environment main --json", actor=story.user).output_text)["rows"]
+    story.expect_rows(len(pins) == 2, {pin["title"] for pin in pins} == {"Design: Checkout", "Design: Payment"})
+
+
+def test_file_output_and_backslash_links_are_not_offered(new_story):
+    story = new_story(fixture=UserJoined)
+    text = r"https://github\.com/shop/cart and https://fonts.googleapis.com/css?family=Inter&amp;display=swap"
+    story.expect_absent_hook_line("s-1", shell_call("cat design.html", text), "pin this link")
+    story.expect_absent_hook_line("s-1", shell_call("curl example", r"https://github\.com/shop/cart"), "pin this link")
 
 
 def test_a_link_in_the_agents_text_is_offered(new_story):
