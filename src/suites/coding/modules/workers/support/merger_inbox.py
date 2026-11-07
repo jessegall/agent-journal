@@ -4,6 +4,7 @@ from core.base.repository.repository import Repository
 from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -15,10 +16,9 @@ class MergerInbox:
         self.repository, self.main_line, self.settings = repository, main_line, settings
 
     def send(self, text: str, source: str, context: Context) -> None:
-        if self.settings.flag(MERGER_ENABLED):
-            self.repository.save(MergerLine(text=text, fallback_source=source), context)
-            return
-        self.main_line.send(text, source, context)
+        line = self.repository.save(MergerLine(text=text, fallback_source=source), context)
+        if not self.settings.flag(MERGER_ENABLED):
+            self.main_line.send_nudge(MERGER_LINE_AVAILABLE.nudge(line=line.id), source, context)
 
     def send_nudge(self, nudge: Nudge, source: str, context: Context) -> None:
         if self.settings.flag(MERGER_ENABLED):

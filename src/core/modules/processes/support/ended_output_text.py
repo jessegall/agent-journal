@@ -27,7 +27,7 @@ class EndedOutputText:
         self.outputs, self.readers, self.visibility, self.judge, self.writers, self.rows = outputs, readers, visibility, judge, writers, rows
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
-        ended = (OUTPUT_ENDED.nudge(output=process.id, result=self.result(process)), *self.silent_failure_nudges(process))
+        ended = (OUTPUT_ENDED.nudge(output=process.id), *self.silent_failure_nudges(process))
         if not self.writers.allows(Actor(process.session_agent_id, ActorType.AGENT)) or not self.visibility.is_visible(process):
             return ended
         program = self.read_program(process)

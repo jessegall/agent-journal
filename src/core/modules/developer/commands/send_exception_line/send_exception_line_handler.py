@@ -18,4 +18,4 @@ class SendExceptionLineHandler(Handler[SendExceptionLine, None]):
         self.nudger = nudger
 
     def handle(self, command: SendExceptionLine, context: Context) -> None:
-        self.nudger.send(command.agent_id, EXCEPTION_LINE, EXCEPTION_LINE_SOURCE, context, place=command.source, message=command.message)
+        self.nudger.send(command.agent_id, EXCEPTION_LINE, EXCEPTION_LINE_SOURCE, context, exception=command.exception_id)

@@ -4,6 +4,8 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.main_agent_line import MainAgentLine
+from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -26,4 +28,6 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has nothing delivered")
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, left_to_main_at=context.timestamp), context)
-        self.main_line.send_nudge(MERGER_PASSED.nudge(worker=command.worker_id, reason=command.reason), MERGER_SOURCE, context)
+        line = self.repository.save(MergerLine(text=f"worker:{command.worker_id}: {command.reason}", fallback_source=MERGER_SOURCE, read_at=context.timestamp), context)
+        self.main_line.send_nudge(MERGER_PASSED.nudge(worker=command.worker_id), MERGER_SOURCE, context)
+        self.main_line.send_nudge(MERGER_LINE_AVAILABLE.nudge(line=line.id), MERGER_SOURCE, context)

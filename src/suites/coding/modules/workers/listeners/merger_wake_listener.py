@@ -8,6 +8,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE
 
 
 class MergerWakeListener(CommitListener[Created[MergerLine]]):
@@ -21,5 +22,5 @@ class MergerWakeListener(CommitListener[Created[MergerLine]]):
     def handle(self, event: Created[MergerLine], logged: LoggedEvent) -> None:
         if not self.settings.flag(MERGER_ENABLED):
             return
-        line = event.row.text if event.row.nudge_json is None else NudgeDeclaration.restore(event.row.nudge_json)
+        line = MERGER_LINE_AVAILABLE.nudge(line=event.row.id) if event.row.nudge_json is None else NudgeDeclaration.restore(event.row.nudge_json)
         self.bus.run(StartMerger(line), Actor.core(), cause_id=logged.id, environment_id=event.row.environment_id)

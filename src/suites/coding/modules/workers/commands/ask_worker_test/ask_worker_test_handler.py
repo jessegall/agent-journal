@@ -32,6 +32,6 @@ class AskWorkerTestHandler(Handler[AskWorkerTest, WorkerTestRequest]):
             return open_request
         request = self.repository.save(WorkerTestRequest(worker_id=command.worker_id, task_id=command.task_id, command=command.test_command, reason=command.reason), context)
         self.bus.dispatch(MakeTaskLog(command.task_id, f"worker {command.worker_id} asked to run: {command.test_command}. Why: {command.reason}"), context)
-        line = WORKER_TEST_REQUESTED.nudge(worker=command.worker_id, task=command.task_id, command=command.test_command, reason=command.reason, request=request.id)
+        line = WORKER_TEST_REQUESTED.nudge(worker=command.worker_id, task=command.task_id, request=request.id)
         self.main_agent_line.send_nudge(line, REQUEST_LINE_SOURCE, context)
         return request

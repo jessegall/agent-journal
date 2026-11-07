@@ -6,7 +6,7 @@ from core.base.driver.nudge_type import NudgeType
 from core.base.timestamp import Timestamp
 
 SILENT_FAILURE_SOURCE = "workers.silent-agent-failed"
-SILENT_AGENT_FAILED = NudgeDeclaration("workers.silent_agent_failed", NudgeType.STEERING, "agent:{agent} could not resume: {reason}. Check its terminal.", turn_limited=False, wakes_agent=True)
+SILENT_AGENT_FAILED = NudgeDeclaration("workers.silent_agent_failed", NudgeType.STEERING, "agent:{agent} could not resume: journal agent terminal {agent}", turn_limited=False, wakes_agent=True)
 
 
 @dataclass(frozen=True)
