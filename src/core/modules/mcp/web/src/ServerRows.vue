@@ -1,9 +1,10 @@
 <script setup>
-import {computed, reactive, ref} from "vue";
-import {Btn, ListTools, RowList, WindowRoom, TimeAgo, added as addedRow, removed, useListTools, useRows} from "@journal/window-kit";
+import {computed, reactive, ref, watch} from "vue";
+import {Btn, ListTools, RowList, WindowRoom, TimeAgo, added as addedRow, removed, useListTools, useWindow} from "@journal/window-kit";
 
-const installed = useRows("mcp list", []);
-const suggested = useRows("mcp suggested", []);
+const window = useWindow();
+const installed = window.props.installed;
+const suggested = window.props.suggested;
 const tools = useListTools(installed.rows, {title: (row) => row.title});
 const typed = reactive({});
 
@@ -12,19 +13,17 @@ const offered = computed(() => suggested.rows.value.filter((row) => !installedNa
 const notice = ref("");
 const failure = computed(() => installed.actionFailure.value || suggested.actionFailure.value);
 const added = reactive({name: "", target: ""});
-const checkLines = ref([]);
+const checkLines = computed(() => window.props.check.data.value?.lines ?? []);
 const checkedAt = ref(null);
 
-async function check() {
-    const result = await installed.context.read("mcp check");
-    checkLines.value = result.ok ? result.value.lines : [];
-    checkedAt.value = result.ok ? new Date().toISOString() : null;
-}
+watch(window.props.check.data, (value) => {
+    if (value) checkedAt.value = new Date().toISOString();
+});
 
 const checkLine = (row) => checkLines.value.find((line) => line.startsWith(`${row.name}  `))?.slice(row.name.length + 2);
 
 async function refresh() {
-    await Promise.all([installed.load(), suggested.load(), check()]);
+    await window.reload(["installed", "suggested", "check"]);
 }
 
 async function add() {
@@ -32,7 +31,7 @@ async function add() {
     const result = await installed.act(["mcp", "add", added.name.trim(), added.target.trim()], addedRow(pending));
     if (!result.ok) return;
     Object.assign(added, {name: "", target: ""});
-    await check();
+    await window.reload("check");
 }
 
 async function signIn(row) {
@@ -40,11 +39,10 @@ async function signIn(row) {
     notice.value = result.ok ? `Asked the agent to sign in to ${row.title}; a browser window opens from its terminal.` : "";
 }
 
-check();
 
 async function install(row) {
     await suggested.act(["mcp", "install", row.name], removed(row.id));
-    await installed.load();
+    await window.reload("installed");
 }
 
 async function giveKey(row) {
