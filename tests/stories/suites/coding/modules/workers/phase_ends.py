@@ -81,8 +81,8 @@ def two_workers(new_story, monkeypatch):
 def test_queue_phase_checks_the_proofs_with_no_test_adds_the_phases_own_test_once_and_queues_the_rest(new_story, monkeypatch):
     worker = worker_on_plan(new_story, monkeypatch, build_test=PHASE_TEST)
     story = worker.story
-    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --project', actor=story.agent)
-    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --project', actor=story.agent)
+    story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --project')
+    story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --project')
     worker.prove_and_move_on(TEST_LINE)
     worker.change_and_prove()
     queue = story.container.get(WorkerProofQueue)
@@ -138,8 +138,8 @@ def test_the_phases_own_test_runs_at_its_end_as_a_proof_of_the_last_task(new_sto
 
 
 def test_the_selected_tests_run_at_the_end_of_a_phase_after_the_proofs(declared_tests):
-    declared_tests.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=declared_tests.story.agent)
-    declared_tests.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main', actor=declared_tests.story.agent)
+    declared_tests.story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
+    declared_tests.story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main')
     declared_tests.story.expect_text("worker next --wait --differences none", "queued", actor=declared_tests.worker)
     declared_tests.end_test(declared_tests.started[0])
     declared_tests.end_test(declared_tests.started[1])

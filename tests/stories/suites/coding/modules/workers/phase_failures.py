@@ -52,8 +52,8 @@ def plan_failed(new_story, monkeypatch):
 @pytest.fixture
 def selected_tests_handed_in(new_story, monkeypatch):
     worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
-    worker.story.run('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main', actor=worker.story.agent)
-    worker.story.run('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main', actor=worker.story.agent)
+    worker.story.run('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
+    worker.story.run('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main')
     return handed_in_with_tests(worker, "worker deliver --wait --differences none")
 
 
