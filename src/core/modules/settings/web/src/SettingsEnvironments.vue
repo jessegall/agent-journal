@@ -1,9 +1,10 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, RowList, removed, useRows} from "@journal/window-kit";
+import {Btn, RowList, removed, useWindow} from "@journal/window-kit";
 
 // the environments of this project, the one you are in first; removing one asks first, shows it gone at once, and says why when it is refused
-const {rows, failure, loaded, act, context} = useRows("environment cards", ["environment.*"]);
+const context = useWindow();
+const {rows, failure, loaded, act} = context.props.environments;
 const asking = ref(0);
 const refusal = ref({});
 const here = (row) => row.name === context.environment;

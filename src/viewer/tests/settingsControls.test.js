@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -131,4 +131,17 @@ test("picking a section in the nav shows that section alone", async () => {
 test("an environment says whether its agent runs and how many tasks are not done", async () => {
     const element = await environments([]);
     expect(element.querySelector("[data-environment-state]").textContent).toContain("Agent: running · 3 tasks not done");
+});
+
+test("the page reads each tab and the command section when opened", async () => {
+    const window = context({"setting tree": page(ROWS), "environment cards": page([]), "alias saved": page([{id: 1, name: "tests", line: "npm test", category: "test run"}])});
+    const element = await mounted(SettingsTree, window);
+    expect(window.reads).toEqual(["setting tree"]);
+    element.querySelector('[data-jump="commands"]').click();
+    await settle();
+    expect(window.reads).toContain("alias saved --limit 1000");
+    expect(element.querySelector('[data-saved-command="tests"]')).not.toBeNull();
+    [...element.querySelectorAll("[data-settings-tabs] button")].find((button) => button.textContent.includes("Environments")).click();
+    await settle();
+    expect(window.reads).toContain("environment cards");
 });
