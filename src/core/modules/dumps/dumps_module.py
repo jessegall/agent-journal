@@ -5,6 +5,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.dumps.support.dump_searcher import DumpSearcher
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
@@ -54,5 +55,6 @@ class DumpsModule(Module):
     listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMP_DOCKS
     windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, skeleton=DUMPS_DUMPS_SKELETON, search=WindowSearch(DumpSearcher, "Search the dumps"), place=WindowPlace.PANE, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
-                                 runs=["dump name"], events=["dump.*", "dump_item.*"])]
+                                 runs=["dump name"], events=["dump.*", "dump_item.*"],
+                                 keys=[WindowKey("dumps", "dump board", arguments=["before"], events=["dump.*", "dump_item.*"])])]
     seeders = [DumpsSeeder]
