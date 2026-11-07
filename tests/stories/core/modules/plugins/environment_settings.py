@@ -31,11 +31,11 @@ def test_each_environment_sends_its_own_setting_to_the_plugin(configured_plugin)
     sample = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
     story.expect_hook_allowed("s-1", sample)
     story.expect_success("agent start s-9 claude main --environment sandbox", actor=story.agent)
-    story.expect_hook_allowed("s-9", sample)
+    story.expect_hook_allowed("s-9", sample.with_fields(environment="sandbox"))
     inputs = [json.loads(line) for line in (story.home.folder / "plugin-data" / "sample" / "inputs").read_text().splitlines()]
     events = [line for line in inputs if line["event"] == "command_starting"]
     story.expect_rows(any(line["environment"] == "main" and line["settings"]["level"] == 2 for line in events),
-                      any(line["environment"] == "sandbox" and line["settings"]["level"] == 3 for line in events))
+                      any(line["environment"] == "sandbox" and line["settings"]["level"] == 3 for line in events), detail=repr(events))
 
 
 def test_the_granted_agent_can_configure_only_its_test_environment(configured_plugin):
