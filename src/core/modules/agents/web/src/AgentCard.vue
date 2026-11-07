@@ -81,7 +81,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
         <template v-if="open && totalCount && !job"><span class="agent-line"><AgentTaskCount :count="taskCount" :rate="tasksPerHour" /></span></template>
         <template v-if="job || (!open && workStatus) || pendingWork">
             <span class="agent-line agent-work-start">
-                <span class="agent-job" data-agent-job :title="job"><template v-if="open && jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template><template v-if="job && row.role !== 'helper' && jobTask?.plan_id"> <button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${jobTask.plan_id}`" @click.stop="peekRef(`plans:${jobTask.plan_id}`)">plan {{ jobTask.plan_id }}</button></template></span>
+                <span class="agent-job" data-agent-job :title="job"><span class="agent-job-title"><template v-if="open && jobRef"><button type="button" class="agent-job-link" :data-peek="jobRef" @click.stop="peekRef(jobRef)">{{ job }}</button></template><template v-else>{{ job }}</template></span><template v-if="job && row.role !== 'helper' && jobTask?.plan_id"><button type="button" class="agent-plan" data-agent-plan :data-peek="`plans:${jobTask.plan_id}`" @click.stop="peekRef(`plans:${jobTask.plan_id}`)">plan {{ jobTask.plan_id }}</button></template></span>
                 <template v-if="workStatus && (!open || pendingWork)"><span class="agent-work-status" data-agent-work-status :data-agent-waiting="waitReason ? '' : null" :data-agent-stopped="stoppedWithWork && !waitReason && !pendingWork ? '' : null">{{ workStatus }}</span></template>
                 <template v-if="open && totalCount">
                     <AgentTaskCount :count="taskCount" :rate="tasksPerHour" />
@@ -189,6 +189,8 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 }
 
 .agent-job {
+    display: flex;
+    gap: 6px;
     flex: 1;
     min-width: 0;
     overflow: hidden;
@@ -197,6 +199,9 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.agent-job-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent-plan { flex: none; }
 
 .agent-work-start {
     margin-top: 4px;
@@ -243,5 +248,8 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
 .agent-card.open .agent-title { font-weight: 600; }
 .agent-card.open .agent-dot { display: none; }
 .agent-card.open .agent-line { padding: 0 14px 7px 41px; border-bottom: 1px solid var(--border-inner); background: var(--side); }
-.agent-card.open .agent-work-start { margin-top: 0; padding: 7px 14px; background: none; }
+.agent-card.open .agent-job-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent-plan { flex: none; }
+
+.agent-work-start { margin-top: 0; padding: 7px 14px; background: none; }
 </style>
