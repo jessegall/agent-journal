@@ -1,4 +1,5 @@
 import json
+import sqlite3
 from contextlib import contextmanager
 from threading import Event
 
@@ -8,6 +9,7 @@ from core.base.database.database import Database
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
 from tests.stories.server.support.server_client import server_story, viewer_answer
+from server.viewer.read_attribution import ReadAttribution
 
 
 @pytest.fixture
@@ -83,6 +85,25 @@ def test_cli_requests_keep_the_same_logger_counts_and_epoch(logging_server, monk
     server.story.expect_rows(server.context.request_log is server.context.viewer.routes.request_log)
     server.story.expect_rows(log.epoch == epoch)
     server.story.expect_rows(log.counts["recorded"] == 2)
+
+
+def test_a_locked_request_log_counts_dropped_rows_without_a_warning(logging_server):
+    server = logging_server
+    log = server.context.request_log
+    with log.connected():
+        pass
+    before = server.story.system_log_text()
+    connection = sqlite3.connect(server.story.home.database, timeout=0, autocommit=True)
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        log.record(["task", "list"], "cli", 1.0, 0.0, 0)
+        log.complete_reads(1, (ReadAttribution("client", "command"),))
+    finally:
+        connection.execute("ROLLBACK")
+        connection.close()
+    server.story.expect_rows(log.counts["attempted"] == 1, log.counts["dropped"] == 1,
+                             log.counts["receipt_attempted"] == 1, log.counts["receipt_dropped"] == 1,
+                             server.story.system_log_text() == before)
 
 
 def test_a_viewer_setting_change_refreshes_recording_before_the_next_request(logging_server, monkeypatch):
