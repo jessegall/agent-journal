@@ -2,6 +2,8 @@ import pytest
 
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.modules.documents.support.trail_fixtures import viewer
+from core.modules.agents.support.terminal_typing import TerminalTyping
 
 
 def chat(story) -> str:
@@ -117,3 +119,54 @@ def test_sixty_percent_overlap_is_held_and_less_reaches_chat(reply_ready):
     story.hook("s-1", HookSamples.message_display(news))
     expect_absent_chat(story, repeated)
     expect_chat(story, news)
+
+
+@pytest.fixture
+def reaction_turn(new_story, monkeypatch):
+    story = new_story(fixture=BuilderWithUser)
+    typed = []
+    monkeypatch.setattr(TerminalTyping, "type_line", lambda _typing, agent_id, line: typed.append((agent_id, line)))
+    story.expect_success('message send "The cart is ready" --environment main', actor=story.agent)
+    story.hook("s-1", HookSamples.stop())
+    viewer(story, "messages.chat", ["message", "react", "1", "👍"])
+    story.expect_rows(len(typed) == 1, typed[0][0] == story.agent.id)
+    line = typed[0][1]
+    story.expect_rows("the user reacted to message:1" in line, "act if it asks" in line, "closing text is not in chat" in line, "journal message send" in line, "👍" not in line)
+    story.hook("s-1", HookSamples.prompt(line))
+    return story
+
+
+@pytest.mark.parametrize("text", ["Thanks!", "A question that ends this reaction turn?", "Long closing text. " * 30])
+def test_a_reaction_turns_closing_text_stays_out_of_chat(reaction_turn, text):
+    story = reaction_turn
+    story.hook("s-1", HookSamples.message_display(text))
+    story.hook("s-1", HookSamples.stop())
+    expect_absent_chat(story, text)
+
+
+def test_reaction_text_before_a_tool_reaches_chat_but_the_closing_text_does_not(reaction_turn):
+    story = reaction_turn
+    story.hook("s-1", HookSamples.message_display("I will inspect the cart."))
+    expect_absent_chat(story, "I will inspect the cart.")
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
+    expect_chat(story, "I will inspect the cart.")
+    story.hook("s-1", HookSamples.message_display("All finished."))
+    story.hook("s-1", HookSamples.stop())
+    expect_absent_chat(story, "All finished.")
+
+
+def test_a_message_sent_on_purpose_in_a_reaction_turn_reaches_chat(reaction_turn):
+    story = reaction_turn
+    story.expect_success('message send "I will start the cart work" --environment main', actor=story.agent)
+    story.hook("s-1", HookSamples.message_display("I have sent the message."))
+    story.hook("s-1", HookSamples.stop())
+    expect_chat(story, "I will start the cart work")
+    expect_absent_chat(story, "I have sent the message.")
+
+
+def test_an_older_reaction_line_also_keeps_the_closing_text_out(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.hook("s-1", HookSamples.prompt("[journal] the user put 👍 on message:1: act on it if it asks for something"))
+    story.hook("s-1", HookSamples.message_display("Should I continue?"))
+    story.hook("s-1", HookSamples.stop())
+    expect_absent_chat(story, "Should I continue?")

@@ -1,5 +1,11 @@
+import pytest
+from datetime import timedelta
+
 from core.testing.hook_samples import HookSamples
 from core.base.access import Access
+from core.base.caller.caller_request import CallerRequest
+from suites.coding.modules.workers.models.merger_line import MergerLine
+from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
@@ -148,3 +154,93 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
+
+
+def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    reason = "The main agent must decide which reader to keep"
+    story.expect_success(f'merger pass {worker.id} "{reason}"', actor=merger)
+    story.expect_success(f'merger pass {worker.id} "Another decision"', actor=merger)
+    story.run_listeners()
+    marks = tuple(story.container.get(Queries).query(ChatMark).filter(text=f"The merger left Worker {worker.id} to the main agent").oldest().all_rows())
+    story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
+
+
+@pytest.mark.parametrize("exit_line, fault", [("agent exited {agent} 0", False), ("agent end {agent}", False), ("agent exited {agent} 137", True)])
+def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_story, monkeypatch, exit_line, fault):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = merger_of(story)
+    story.expect_success(exit_line.format(agent=merger.id), actor=Actor(merger.id, ActorType.AGENT))
+    story.run_listeners()
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
+    lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
+    story.expect_rows((f"agent:{merger.id} program exited with code 137" in lines) == fault)
+    story.expect_rows(story.container.get(HelperJobRows).open_job(merger.id) is None)
+
+
+def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    story.expect_success(f'merger pass {worker.id} "A decision is needed"', actor=merger)
+    story.expect_success(f"agent end {worker.id}", actor=worker)
+    story.advance(timedelta(minutes=20))
+    story.tick("s-1")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+
+
+def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        story.expect_success(f'worker report "{"important line " * 40}"', actor=worker)
+        story.run_listeners()
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = merger_of(story)
+    main = story.agent
+    story.agent = Actor(merger.id, ActorType.AGENT)
+    process = start_process(story, "journal merger next && echo done")
+    request = CallerRequest({"JOURNAL_AGENT_SESSION": merger.session, "JOURNAL_PROCESS": str(process.id)}, str(repository.folder))
+    output = story.run_requested("merger next", request)
+    output.expect_code(0)
+    line = story.container.get(Queries).query(MergerLine).first()
+    story.expect_rows(line.read_at is None, line.read_output_id == process.id)
+    end_run(story, process, output.output_text)
+    story.expect_success(f"output read {process.id} --all", actor=story.agent)
+    line = story.container.get(Queries).query(MergerLine).find(line.id)
+    story.expect_rows(line.read_at is not None, line.read_output_id is None)
+    story.agent = main
