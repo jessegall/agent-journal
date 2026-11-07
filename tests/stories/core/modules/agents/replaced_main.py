@@ -29,8 +29,8 @@ def test_a_second_session_ends_the_old_row_in_its_hook_and_the_launcher_stops_th
 def test_a_second_session_stops_a_program_under_its_pid_only_afterwards(new_story, monkeypatch):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     stopped_pids: list[int] = []
-    monkeypatch.setattr(LeftoverProcess, "stop", lambda pid, program: stopped_pids.append(pid))
-    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: ""))
+    monkeypatch.setattr(LeftoverProcess, "stop", lambda pid, program: stopped_pids.append(pid) or True)
+    monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: "" if pid in stopped_pids or pid != 4242 else "claude"))
     story.run("agent start s-5 claude main --pid 4242 --environment main")
     story.hook("s-6", HookSamples.session_start())
     story.expect_rows(stopped_pids == [])
