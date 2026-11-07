@@ -16,5 +16,5 @@ class SetLibraryRoleHandler(Handler[SetLibraryRole, LibraryUser]):
         self.people = people
 
     def handle(self, command: SetLibraryRole, context: Context) -> LibraryUser:
-        LibraryPerson.require(context, "an agent cannot change a role in the library", "ask the user to change it on the Teams page")
+        LibraryPerson.require(context, "an agent cannot change a role in the library")
         return self.people.set_role(command.user_id, command.role)

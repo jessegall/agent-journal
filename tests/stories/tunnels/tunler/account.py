@@ -124,8 +124,9 @@ def test_installing_takes_the_server_address_without_its_scheme_or_path(new_stor
 
 def test_only_a_person_logs_in_or_changes_tunler(new_story):
     story, _ = account_story(new_story)
-    for line in (f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one", "tunler logout", "tunler update", f"tunler install {TUNLER_HOST}", f"tunler release {SPARE_DOMAIN}"):
-        story.expect_refusal(line, "only a person", actor=story.agent)
+    story.expect_refusal(f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one", "sign-in credentials are entered by a person", actor=story.agent)
+    for line in ("tunler logout", "tunler update", f"tunler install {TUNLER_HOST}", f"tunler release {SPARE_DOMAIN}"):
+        story.expect_refusal(line, "A person was asked in the dock", actor=story.agent)
 
 
 def test_the_tunler_window_declares_what_it_reads_and_runs(new_story):

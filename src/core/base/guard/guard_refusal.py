@@ -14,6 +14,10 @@ class GuardRefusal(Refusal):
         return self.refusal.is_completed
 
     @property
+    def original(self) -> Refusal:
+        return self.refusal.original
+
+    @property
     def text(self) -> str:
         skip = f" (to pass it: {self.skip_flag})" if self.skip_flag else ""
         return f"refused by {self.guard}: {super().text}{skip}"

@@ -1,5 +1,6 @@
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.support.output_mask import OutputMask
 from core.base.private.private_folder import PrivateFolder
@@ -59,7 +60,7 @@ class SecretRun:
         if SecretPrograms.is_skipped(name):
             raise Refusal(f"a secret never goes to {name}", "name the program that uses it, such as curl or gh")
         if name not in secret.programs:
-            raise Refusal(f"secret {secret.id} may not go to {name}", f"journal secret propose {secret.id} {name}")
+            raise UserApproval(f"Allow {name} to use the secret {secret.title}?", ("secret", "allow", str(secret.id), name))
         program_path = shutil.which(name, path=self.search_path())
         if program_path is None:
             raise Refusal(f"no program {name} on this machine")

@@ -6,6 +6,7 @@ from core.base.change.event_subscriber import E
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.refusal import Refusal
+from core.base.user_approval import UserApproval
 from core.modules.viewer.models.person_preset import PersonPreset
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.models.window_permission import WindowPermission
@@ -16,10 +17,14 @@ class PersonRowGuard(Guard[E]):
     anyone but the person it is for; each subclass names its model and its refusal."""
 
     refusal: ClassVar[Refusal]
+    question: ClassVar[str] = "Allow this change?"
+    is_safety = True
 
     def check(self, event: E, context: Context) -> None:
-        if isinstance(event, Deleted):
+        if isinstance(event, Deleted) and context.actor.type in (ActorType.CORE, ActorType.MODULE):
             return
         actor = context.actor
+        if actor.type is ActorType.AGENT:
+            raise UserApproval(self.question, required_person_id=event.row.person_id)
         if actor.type is not ActorType.USER or actor.id != event.row.person_id:
             raise self.refusal

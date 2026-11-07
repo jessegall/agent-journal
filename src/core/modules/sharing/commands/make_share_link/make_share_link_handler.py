@@ -15,7 +15,8 @@ from core.base.timestamp import Timestamp
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan
-from core.modules.messages.commands.send_message.send_message import SendMessage
+from core.base.command.request_user_approval import RequestUserApproval
+from core.base.user_approval import UserApproval
 from core.modules.sharing.commands.make_share_link.make_share_link import MakeShareLink
 from core.modules.sharing.commands.support.share_invitation import ShareInvitation
 from core.modules.sharing.commands.support.share_targets import ShareTargets
@@ -58,7 +59,9 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
                                               state=ShareLinkState.ACTIVE if is_person else ShareLinkState.WAITING), context)
         if is_person:
             return ShareInvitation(link.id, link.state.value, token, f"{LINK_PATH}{token}", link.expires_at)
-        asking = SendMessage(f"I ask to share {shared.model_name} {shared.id}, {shared.title}. Nothing opens until you accept it on the Shares window.\n\nshare {link.id}")
+        arguments = ("share", "accept", str(link.id))
+        approval = UserApproval(f"Share {shared.title} with a read-only link?", arguments, ("share", "deny", str(link.id)))
+        asking = RequestUserApproval(approval, arguments)
         self.bus.dispatch(asking, context.nested(asking))
         return ShareInvitation(link.id, link.state.value, None, None, link.expires_at)
 

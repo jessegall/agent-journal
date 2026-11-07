@@ -1,74 +1,83 @@
-from tests.stories.core.support.fixtures import AgentStarted
+import pytest
+import json
+
+from core.base.query.queries import Queries
+from core.modules.approvals.models.approval_request import ApprovalRequest
+from core.modules.settings.models.setting import Setting
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 SETTING = "journal.core.project-rules.agents-make-rules"
 AGENT_SETTING = "journal.core.settings.backup-minutes"
 REQUEST = f'setting request {SETTING} on --reason "Rules need no card" --environment main'
-QUESTION_WAITING = "question 1 waits for the user's answer"
 
 
-def test_the_main_agent_asks_a_person_to_change_a_setting_with_the_old_and_new_value_and_the_reason(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.expect_success(REQUEST, QUESTION_WAITING, actor=story.agent)
-    story.expect_text("question show 1", "Agents make rules without approval", "from False to True", "Reason: Rules need no card", "state: open", actor=story.user)
+@pytest.fixture
+def setting_story(new_story):
+    return new_story(fixture=UserJoined)
+
+
+@pytest.fixture(params=[False, True], ids=["environment", "project"])
+def pending_setting(setting_story, request):
+    story = setting_story
+    line = f'{REQUEST} --project' if request.param else REQUEST
+    request_id = story.new_row_id(line, actor=story.agent)
+    return story, request_id, request.param
+
+
+@pytest.fixture
+def setting_viewer(pending_setting):
+    with viewer_client(pending_setting[0]) as viewer:
+        yield viewer
+
+
+def test_the_request_shows_the_old_value_new_value_and_reason_in_the_dock(setting_story):
+    story = setting_story
+    story.expect_success(REQUEST, "A person was asked in the dock: approval 1", actor=story.agent)
+    story.expect_text("approval show 1", "Agents make rules without approval", "from False to True", "Reason: Rules need no card", "state: open")
     story.expect_text(f"setting show {SETTING} --environment main", "value: False", actor=story.user)
 
 
-def test_a_person_approving_the_question_sets_the_setting(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.run(REQUEST, actor=story.agent)
-    story.expect_success("question answer 1 --answer 'Yes, approve'", "state: answered", actor=story.user)
-    story.expect_text(f"setting show {SETTING} --environment main", "value: True", actor=story.user)
+@pytest.mark.parametrize("decision,value", [("accept", True), ("refuse", False)])
+def test_the_person_decides_the_setting_from_the_shared_dock(pending_setting, setting_viewer, decision, value):
+    story, request_id, project = pending_setting
+    setting_viewer.value("messages.chat", ["approval", decision, str(request_id)])
+    setting = story.container.get(Queries).query(Setting).filter(key=SETTING).first()
+    story.expect_rows((setting is not None and json.loads(setting.value)) is value)
+    if value:
+        story.expect_rows(setting.environment_id == (None if project else 1), setting.creator_id == story.user.id)
 
 
-def test_a_person_refusing_the_question_leaves_the_setting_as_it_was(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.run(REQUEST, actor=story.agent)
-    story.expect_success("question answer 1 --answer No", "state: answered", actor=story.user)
-    story.expect_text(f"setting show {SETTING} --environment main", "value: False", actor=story.user)
-
-
-def test_a_request_with_the_project_flag_sets_the_setting_for_the_project(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.run(f'setting request {SETTING} on --reason "Rules need no card" --project', actor=story.agent)
-    story.run("question answer 1 --answer 'Yes, approve'", actor=story.user)
-    story.expect_text(f"setting show {SETTING} --environment main", "value: True", "from: project", actor=story.user)
-
-
-def test_a_person_cannot_make_the_request(new_story):
-    story = new_story(fixture=AgentStarted)
+def test_a_person_cannot_make_the_request(setting_story):
+    story = setting_story
     story.expect_refusal(REQUEST, "only an agent asks for a setting", actor=story.user)
-    story.expect_absent("question list", "Agents make rules", actor=story.user)
+    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
 
 
-def test_a_setting_an_agent_may_set_itself_is_not_asked_for(new_story):
-    story = new_story(fixture=AgentStarted)
+def test_a_setting_an_agent_may_set_itself_is_not_asked_for(setting_story):
+    story = setting_story
     story.expect_refusal(f'setting request {AGENT_SETTING} 30 --reason "Copy more often" --environment main', f"an agent may set {AGENT_SETTING} itself", actor=story.agent)
-    story.expect_absent("question list", "backup", actor=story.user)
+    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
 
 
-def test_a_request_with_no_reason_is_refused(new_story):
-    story = new_story(fixture=AgentStarted)
+def test_a_request_with_no_reason_is_refused(setting_story):
+    story = setting_story
     story.expect_refusal(f'setting request {SETTING} on --reason " " --environment main', "say why the setting should change", actor=story.agent)
-    story.expect_absent("question list", "Agents make rules", actor=story.user)
+    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
 
 
-def test_a_value_of_the_wrong_type_is_refused_before_a_question_is_asked(new_story):
-    story = new_story(fixture=AgentStarted)
+def test_a_value_of_the_wrong_type_is_refused_before_requesting_approval(setting_story):
+    story = setting_story
     story.expect_refusal(f'setting request {SETTING} maybe --reason "Rules need no card" --environment main', f"{SETTING} is a", actor=story.agent)
-    story.expect_absent("question list", "Agents make rules", actor=story.user)
+    story.expect_rows(not story.container.get(Queries).query(ApprovalRequest).exists())
 
 
-def test_the_agent_cannot_answer_the_question_it_asked_but_may_close_it(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.run(REQUEST, actor=story.agent)
-    story.expect_refusal("question answer 1 --answer 'Yes, approve'", "only a person answers question 1", actor=story.agent)
-    story.expect_text(f"setting show {SETTING} --environment main", "value: False", actor=story.user)
-    story.expect_success("question close 1", "state: closed", actor=story.agent)
-    story.expect_text(f"setting show {SETTING} --environment main", "value: False", actor=story.user)
+@pytest.mark.parametrize("decision", ["accept", "refuse"])
+def test_the_requesting_agent_cannot_decide_or_close_it(pending_setting, decision):
+    story, request_id, _ = pending_setting
+    story.expect_refusal(f"approval {decision} {request_id}", "an agent cannot decide", actor=story.agent)
 
 
-def test_no_agent_can_skip_the_refusal_that_keeps_the_answer_with_a_person(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.run(REQUEST, actor=story.agent)
-    story.expect_refusal('refusal skip setting-requests.person-answers --reason "I need it" --environment main', "safety refusal", actor=story.agent)
-    story.expect_refusal("question answer 1 --answer 'Yes, approve'", "only a person answers question 1", actor=story.agent)
+def test_no_agent_can_skip_the_person_decision_guard(setting_story):
+    story = setting_story
+    story.expect_refusal('refusal skip approvals.person-decides --reason "I need it" --environment main', "safety refusal", actor=story.agent)

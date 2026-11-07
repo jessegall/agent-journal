@@ -1,3 +1,4 @@
+from core.base.user_approval import UserApproval
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
@@ -26,7 +27,7 @@ class SendTemplateHandler(Handler[SendTemplate, Message]):
 
     def handle(self, command: SendTemplate, context: Context) -> Message:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person sends a template", "journal template show <n> reads one")
+            raise UserApproval(f"Send template {command.template_id}?")
         template = self.queries.query(Template).find(command.template_id)
         if not self.active.is_active(template.module):
             raise Refusal(f"template {template.id} is not offered here", "journal template list shows those that are")

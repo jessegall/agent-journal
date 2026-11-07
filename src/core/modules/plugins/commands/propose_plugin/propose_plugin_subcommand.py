@@ -5,6 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.base.user_approval import UserApproval
 
 
 class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
@@ -19,7 +20,8 @@ class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
         parser.add_argument("--why", required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> PluginManifest:
-        return PluginManifest.read(Path(arguments.source))
+        manifest = PluginManifest.read(Path(arguments.source))
+        raise UserApproval(f"Install {manifest.title}?\n{arguments.why}", ("plugin", "install", arguments.source, "--yes"))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginManifest):

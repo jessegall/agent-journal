@@ -1,4 +1,5 @@
 import io
+from argparse import Namespace
 from dataclasses import replace
 from contextlib import redirect_stderr, redirect_stdout
 from typing import TextIO
@@ -18,6 +19,7 @@ from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.command.context import Context
+from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.command.handler import Handler
 from core.base.deadline_passed_error import DeadlinePassedError
@@ -33,6 +35,7 @@ from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.scope.scopes import Scopes
+from core.base.user_approval import UserApproval
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 HELP_FLAGS = ("--help", "-h")
@@ -83,6 +86,14 @@ class Console:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
 
+    def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller) -> None:
+        approval = refusal.original
+        if not isinstance(approval, UserApproval):
+            return
+        arguments = approval.arguments or tuple(argv)
+        self.bus.run(RequestUserApproval(approval, arguments), caller.actor, environment_id=caller.environment_id)
+        self.run_commit_listeners(argv)
+
     def subcommand_help(self, cli_name: str, stream: TextIO) -> int:
         names = self.line_parser.lookup.names(cli_name)
         if not names:
@@ -113,6 +124,15 @@ class Console:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         self.scopes.check_environment(caller.actor, environment_id)
         caller = replace(caller, environment_id=environment_id)
+        try:
+            return self.parsed_run(argv, subcommand, arguments, caller, output)
+        except Refusal as refusal:
+            self.request_approval(refusal, argv, caller)
+            raise
+
+    def parsed_run(self, argv: list[str], subcommand: Subcommand | ReadSubcommand, arguments: Namespace,
+                   caller: Caller, output: Output) -> int:
+        environment_id = caller.environment_id
         if not isinstance(subcommand, Subcommand):
             with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
                 value = subcommand.read(arguments, self.scoped_caller(subcommand, caller))

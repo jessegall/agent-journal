@@ -16,5 +16,5 @@ class RemoveLibraryUserHandler(Handler[RemoveLibraryUser, LibraryUser]):
         self.people = people
 
     def handle(self, command: RemoveLibraryUser, context: Context) -> LibraryUser:
-        LibraryPerson.require(context, "an agent cannot remove a user from the library", "ask the user to remove them on the Teams page")
+        LibraryPerson.require(context, "an agent cannot remove a user from the library")
         return self.people.remove_user(command.user_id)

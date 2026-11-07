@@ -23,3 +23,6 @@ class DockLimits:
     def type_capacity(self, type: str) -> int | None:
         declared = next((entry for entry in self.registry.docks if entry.type == type), None)
         return declared.most if declared is not None else None
+
+    def requires_user(self, type_name: str) -> bool:
+        return any(entry.type == type_name and entry.needs_user for entry in self.registry.docks)

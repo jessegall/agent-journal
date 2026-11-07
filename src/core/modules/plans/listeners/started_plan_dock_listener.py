@@ -18,7 +18,7 @@ from core.base.query.conditions.among import Among
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 
 ENDING_MOVES = ("close", "cancel")
-DOCKING_MOVES = {"create": PlanDockType.DRAFT, "ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
+DOCKING_MOVES = {"create": PlanDockType.DRAFT, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
 
 
 class StartedPlanDockListener(CommitListener[Created[Plan] | Moved[Plan]]):
@@ -36,7 +36,7 @@ class StartedPlanDockListener(CommitListener[Created[Plan] | Moved[Plan]]):
         move = event.move.name if event.move else "create"
         plan = event.row
         actor = self.actors.actor(PLANS_MODULE)
-        if move in ENDING_MOVES or move == "approve":
+        if move in ENDING_MOVES or move in ("approve", "ready"):
             self.undock(plan, actor, logged.id)
         if move in DOCKING_MOVES:
             self.undock(plan, actor, logged.id)

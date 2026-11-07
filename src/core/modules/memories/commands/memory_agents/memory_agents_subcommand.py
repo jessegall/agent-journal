@@ -1,3 +1,4 @@
+from core.base.user_approval import UserApproval
 from argparse import ArgumentParser, Namespace
 
 from core.base.access import Access
@@ -10,7 +11,6 @@ from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.page_arguments import page_arguments
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.models.memory_holder import MemoryHolder
@@ -39,7 +39,7 @@ class MemoryAgentsSubcommand(ReadSubcommand[Page[MemoryHolderRow]]):
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[MemoryHolderRow]:
         if caller.actor.type is ActorType.AGENT:
-            raise Refusal("only a person reads which agents hold memories", "an agent lists its own with journal memory list")
+            raise UserApproval("Show the people using the viewer which agents hold memories?")
         query = self.queries.query(MemoryHolder)
         if arguments.role:
             query = query.filter(role=arguments.role)

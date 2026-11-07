@@ -9,7 +9,7 @@ from core.base.model.state_book import StateBook
 from core.base.model.table import indefinite_article
 from core.base.model.tables import Tables
 
-RULE_TRIGGERS = Statement("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE '%\\_rule\\_%' ESCAPE '\\'")
+RULE_TRIGGERS = Statement("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE '%\\_rule\\_%' ESCAPE '\\'", scan_reason="Schema maintenance reads SQLite's trigger catalogue; SQLite does not allow indexing sqlite_master.")
 
 
 def listed(values: tuple[str, ...]) -> str:

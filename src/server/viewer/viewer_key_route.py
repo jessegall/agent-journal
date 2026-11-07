@@ -27,5 +27,5 @@ class ViewerKeyRoute:
         finally:
             container.get(Database).close()
         if caller.actor.type is not ActorType.USER:
-            raise Refusal("only a person opens the viewer", "run journal viewer yourself, in your own terminal")
+            raise Refusal("an agent cannot receive a person's viewer credentials")
         return ViewerKey(self.login.new_key(caller.actor.id), environment)

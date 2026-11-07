@@ -66,6 +66,7 @@ from core.modules.plans.commands.plan_comments.plan_comments_subcommand import P
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
+from core.modules.plans.listeners.plan_approval_listener import PlanApprovalListener
 from core.modules.plans.commands.plan_timeline.plan_timeline_subcommand import PlanTimelineSubcommand
 from core.modules.plans.rules.plan_order_rule import PlanOrderRule
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
@@ -98,12 +99,12 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard]
     listeners = [TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener]
+                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, PlanApprovalListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     docks = PLAN_DOCKS
-    buttons = [ButtonDeclaration("plans.approve", ("dock.plans.waiting", "row.plan"), "Approve", "plan approve {row_id}",
+    buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
                                  tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",
                                  menu=tuple([ButtonMenuItem("Approve with a message", "plan approve {row_id} --message={message}",

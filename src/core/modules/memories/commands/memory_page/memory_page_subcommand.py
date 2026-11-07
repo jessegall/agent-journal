@@ -1,3 +1,4 @@
+from core.base.user_approval import UserApproval
 from argparse import ArgumentParser, Namespace
 
 from core.base.actor_type import ActorType
@@ -5,7 +6,6 @@ from core.base.agent_type_book import AgentTypeBook
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
@@ -29,7 +29,7 @@ class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
 
     def read(self, arguments: Namespace, caller: Caller) -> MemoryPage:
         if caller.actor.type is ActorType.AGENT:
-            raise Refusal("only a person reads a page of every agent's memories", "an agent lists its own with journal memory list")
+            raise UserApproval("Show memories for all agents in the viewer?")
         page = self.memories.read(arguments, caller)
         ids = {row.agent_id for row in page.rows if row.agent_id is not None}
         holders = self.queries.query(MemoryHolder).matching(Among("agent_id", tuple(sorted(ids)))).all_rows() if ids else ()

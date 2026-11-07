@@ -1,10 +1,10 @@
+from core.base.user_approval import UserApproval
 from datetime import timedelta
 
 from core.base.actor_type import ActorType
 from core.base.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.timestamp import Timestamp
 from core.modules.phone.commands.pair_phone.pair_phone import PairPhone
@@ -26,7 +26,7 @@ class PairPhoneHandler(Handler[PairPhone, PhoneInvitation]):
 
     def handle(self, command: PairPhone, context: Context) -> PhoneInvitation:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person pairs a phone", "ask the user to pair it from the viewer")
+            raise UserApproval("Create a phone pairing code?")
         code = self.codes.code()
         expires_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=CODE_LIFETIME_MINUTES))
         self.repository.save(PhoneCode(creator_id=context.actor.id, person_id=context.actor.id, code_digest=self.codes.digest(code), expires_at=expires_at), context)

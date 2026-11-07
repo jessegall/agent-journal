@@ -16,5 +16,5 @@ class RemoveLibraryItemHandler(Handler[RemoveLibraryItem, LibraryItem]):
         self.writes = writes
 
     def handle(self, command: RemoveLibraryItem, context: Context) -> LibraryItem:
-        LibraryPerson.require(context, "an agent cannot remove an item from the library", "ask the user to remove it")
+        LibraryPerson.require(context, "an agent cannot remove an item from the library")
         return self.writes.remove(command.share, command.item_id)

@@ -27,7 +27,7 @@ class UnpairLibraryHandler(Handler[UnpairLibrary, LibraryDisconnection]):
         self.connections, self.queries, self.repository, self.values, self.certificate = connections, queries, repository, values, certificate
 
     def handle(self, command: UnpairLibrary, context: Context) -> LibraryDisconnection:
-        LibraryPerson.require(context, "only a person connects to the shared server or disconnects from it", "ask the user to do it on the Teams page")
+        LibraryPerson.require(context, "only a person connects to the shared server or disconnects from it")
         connection = self.connections.current()
         if connection is None:
             raise LibraryStoppedError.disconnected()

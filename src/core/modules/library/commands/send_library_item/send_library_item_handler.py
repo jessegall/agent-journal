@@ -20,7 +20,7 @@ class SendLibraryItemHandler(Handler[SendLibraryItem, SharedLibraryItem]):
         self.outgoing, self.writes, self.bus = outgoing, writes, bus
 
     def handle(self, command: SendLibraryItem, context: Context) -> SharedLibraryItem:
-        LibraryPerson.require(context, "an agent cannot share with the team", "ask the user to share it")
+        LibraryPerson.require(context, "an agent cannot share with the team")
         outgoing = self.outgoing.checked(command.share, command.row_id)
         item = self.writes.new_item(command.share, outgoing.fields)
         copy = self.bus.run(SaveLibraryCopy(command.share, item.item_id, item.version, KeptRow(command.row_id, outgoing.digest)), context.actor)

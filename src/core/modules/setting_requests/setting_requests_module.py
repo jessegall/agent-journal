@@ -4,12 +4,13 @@ from core.modules.setting_requests.commands.request_setting.request_setting_hand
 from core.modules.setting_requests.commands.request_setting.request_setting_subcommand import RequestSettingSubcommand
 from core.modules.setting_requests.guards.request_question_guard import RequestQuestionGuard
 from core.modules.setting_requests.listeners.approved_setting_listener import ApprovedSettingListener
+from core.modules.setting_requests.listeners.pending_setting_approval_listener import PendingSettingApprovalListener
 from core.modules.setting_requests.migrations.m001_setting_requests import SettingRequestsTableMigration
 from core.modules.setting_requests.models.setting_request import SettingRequest
 
 
 class SettingRequestsModule(Module):
-    """Lets a main agent ask a person to change a setting only a person may change, as a question in the chat."""
+    """Sends setting changes that require a person to the shared approval dock."""
 
     name = "journal.core.setting-requests"
     requires_core = ">=5,<6"
@@ -21,4 +22,4 @@ class SettingRequestsModule(Module):
     handlers = [RequestSettingHandler]
     subcommands = [RequestSettingSubcommand]
     guards = [RequestQuestionGuard]
-    listeners = [ApprovedSettingListener]
+    listeners = [ApprovedSettingListener, PendingSettingApprovalListener]

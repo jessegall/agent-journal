@@ -9,4 +9,5 @@ class PersonPresetOwnerGuard(PersonRowGuard[Changed[PersonPreset]]):
     """Refuses a preset of a person written by anyone but the person it is for."""
 
     name = "viewer.person-preset-owner"
-    refusal = Refusal("only a person keeps a layout", "the viewer saves a preset when the person saves one")
+    refusal = Refusal("this layout preset belongs to another person")
+    question = "Change this saved layout preset?"

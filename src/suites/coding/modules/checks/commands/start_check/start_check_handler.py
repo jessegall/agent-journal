@@ -1,3 +1,4 @@
+from core.base.user_approval import UserApproval
 from dataclasses import replace
 
 from core.base.actor_type import ActorType
@@ -20,7 +21,7 @@ class StartCheckHandler(Handler[StartCheck, Check]):
 
     def handle(self, command: StartCheck, context: Context) -> Check:
         if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person starts a stopped check", "ask the user to start it on the Checks window")
+            raise UserApproval(f"Start the stopped check {command.check_id}?")
         check = self.checks.find(command.check_id)
         if not check.stopped:
             raise Refusal(f"check {check.id} is not stopped", "journal check list shows which checks are stopped")
