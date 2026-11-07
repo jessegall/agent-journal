@@ -5,7 +5,6 @@ import {TaskDetails, peekRef, useWindow} from "@journal/window-kit";
 // the plan place, status, priority and complexity of a task; priority and complexity are edited through task edit
 const view = useWindow();
 const row = view.option("row");
-const {data: graph} = view.props.graph;
 const place = ref(null);
 const refusal = ref("");
 
@@ -26,7 +25,6 @@ watch(computed(() => row.value.id), loadPlace, {immediate: true});
     <TaskDetails
         :task="row"
         :place="place"
-        :graph="graph"
         :refusal="refusal"
         @priority="change('priority', $event)"
         @complexity="change('complexity', $event)"

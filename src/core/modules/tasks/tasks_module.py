@@ -158,7 +158,7 @@ class TasksModule(Module):
                     WindowKey("places", "plan places", loading=KeyLoading.REQUESTED),
                     WindowKey("task.*", "task show {id}", loading=KeyLoading.REQUESTED)]),
                WindowDeclaration("tasks.task-details", "Details", "task-details.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
-                                 reads=["plan place", "task graph"], runs=["task edit"], events=["task.*"], keys=[WindowKey("graph", "task graph", events=["task.*"])]),
+                                 reads=["plan place"], runs=["task edit"]),
                WindowDeclaration("tasks.task-chain", "What waits on what", "task-chain.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
                                  reads=["task graph"], events=["task.*"], keys=[WindowKey("graph", "task graph", events=["task.*"])]),
                WindowDeclaration("tasks.task-log", "Log", "task-log.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
