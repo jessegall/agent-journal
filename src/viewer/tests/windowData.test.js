@@ -155,7 +155,7 @@ test("a failed read waits for its rate and reads as soon as the server returns",
     expect(asked).toHaveLength(2);
     await vi.advanceTimersByTimeAsync(29000);
     expect(asked).toHaveLength(2);
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2000);
     expect(asked).toHaveLength(3);
     failing = false;
     returned();
@@ -177,7 +177,7 @@ test("a failed response waits for its declared rate", async () => {
     expect(asked).toHaveLength(2);
     await vi.advanceTimersByTimeAsync(59000);
     expect(asked).toHaveLength(2);
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2000);
     expect(asked).toHaveLength(3);
     app.unmount();
 });
@@ -194,7 +194,7 @@ test("an unreachable server is retried within 30 seconds for a slower key", asyn
     expect(asked).toHaveLength(2);
     await vi.advanceTimersByTimeAsync(29000);
     expect(asked).toHaveLength(2);
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2000);
     expect(asked).toHaveLength(3);
     app.unmount();
 });

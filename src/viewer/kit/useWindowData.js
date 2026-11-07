@@ -83,7 +83,7 @@ export function useWindowData(context) {
             if (server) server.then(() => {
                 if (disposed) return;
                 const retry = failed.filter((name) => readNumbers[name] === number);
-                if (retry.length || (!only.length && !failed.length)) read(retry);
+                if (retry.length || (!only.length && !failed.length && latestRead === number)) read(retry);
             });
             return false;
         }
