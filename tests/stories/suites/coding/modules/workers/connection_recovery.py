@@ -112,6 +112,7 @@ def running_command_recovery(recovery):
 def reconnected_recovery(offline_recovery):
     offline_recovery.online = True
     offline_recovery.tick()
+    offline_recovery.tick()
     return offline_recovery
 
 
@@ -150,7 +151,6 @@ def nested_recovery(recovery):
 
 def test_a_reconnection_resumes_a_silent_worker_once(reconnected_recovery):
     recovery = reconnected_recovery
-    recovery.tick()
     recovery.story.expect_rows(len(recovery.launches) == 1, len(recovery.lines(recovery.worker.id)) == 1)
     recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.terminal_lines))
 
