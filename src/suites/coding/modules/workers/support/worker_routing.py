@@ -40,7 +40,7 @@ class WorkerRouting:
             requested_program = profile.program or (caller.program if caller is not None else "")
         route = self.routes.common_route(tasks)
         if requested_program:
-            self.policy.check(tasks[0], route, WorkerRouteRequest.for_dispatch(requested_program, command, caller, context))
+            self.policy.check(tasks[0], route, WorkerRouteRequest.dispatch(requested_program, command, caller, context))
             self.programs.installed(requested_program)
             reason = "the profile's tools"
             if command.program:

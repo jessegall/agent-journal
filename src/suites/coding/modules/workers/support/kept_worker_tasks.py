@@ -39,11 +39,11 @@ class KeptWorkerTasks:
         self.scopes = scopes
         self.kept = kept
 
-    def read_tasks(self, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
-        return self.kept.scoped_current(lambda: tuple(self.queries.query(Task).find_many(task_ids)),
+    def read_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
+        return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
                                         name=f"workers.sent_tasks:{task_ids}")
 
-    def check_tasks(self, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
+    def check_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
         tasks = self.read_tasks(task_ids)
         if tasks[0].state is TaskState.BLOCKED and self.waits.waits_target_tasks(tasks[0].id):
             raise Refusal(f"task {tasks[0].id} waits on an open task", "send it when that one is done")
@@ -52,13 +52,13 @@ class KeptWorkerTasks:
                 raise Refusal(f"task {task.id} is {task.state.value}", "a worker takes an open task")
         return tasks
 
-    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> tuple[Task, ...]:
+    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> list[Task]:
         tasks = self.check_tasks(task_ids)
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):
                 raise Refusal(f"the tests of worker {worker.id} are running", "send the task when they have passed")
-            return ()
+            return []
         self.check_recut(worker)
         return tasks
 

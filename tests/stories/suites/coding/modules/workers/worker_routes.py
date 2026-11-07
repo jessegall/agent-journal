@@ -1,4 +1,5 @@
 import json
+from typing import NamedTuple
 from unittest.mock import patch
 from datetime import timedelta
 
@@ -6,12 +7,14 @@ import pytest
 
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.testing.story import Story
 from core.base.driver.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_folder
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository, ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.kept_workers import stopped
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -20,11 +23,17 @@ from tests.stories.suites.coding.modules.workers.support.program_split import (
 )
 
 
+class DeliveredWorkerStory(NamedTuple):
+    story: Story
+    repository: GitRepository
+    worker: Actor
+
+
 @pytest.fixture
 def delivered_worker_story(split_story):
     repository = GitRepository(repository_folder(split_story))
     worker = checked_worker(split_story, repository)
-    return split_story, repository, worker
+    return DeliveredWorkerStory(split_story, repository, worker)
 
 
 @pytest.fixture
@@ -46,11 +55,7 @@ def unmerged_worker_story(delivered_worker_story, monkeypatch):
 
 
 def test_named_model_of_another_program_is_refused(split_story):
-    story = split_story
-    story.expect_success('worker-route make --program codex --tags networking --environment main', actor=story.agent)
-    story.expect_success('task tag 1 networking --confirm', actor=story.agent)
-    story.expect_refusal('worker dispatch 1 --model sonnet', '--tier', actor=story.agent)
-    story.expect_text('worker-worktree list', 'nothing found')
+    expect_model_route_refusal(split_story, 'networking')
 
 
 def test_route_tasks_count_toward_the_split(split_story, split_viewer):
@@ -170,9 +175,7 @@ def test_complexity_route_needs_a_score(split_story):
 
 
 def test_complexity_route_needs_a_score_no_complexity_route_stops_nothing(split_story):
-    story = split_story
-    story.expect_success('worker-route make --tags absent --program codex --environment main', actor=story.agent)
-    expect_program(story, dispatch(story), 'claude')
+    expect_unmatched_route(split_story, '--tags absent')
 
 
 @pytest.mark.parametrize('flags,reason', [('--program codex', 'tags'), ('--tags linux', 'program'), ('--tags linux --tier fast --strict', 'program')])

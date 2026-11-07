@@ -16,7 +16,7 @@ class WorkerRouteRequest:
     model: str | None = None
 
     @classmethod
-    def for_dispatch(cls, program: str, command: WorkerProgramRequest, caller: Agent | None,
+    def dispatch(cls, program: str, command: WorkerProgramRequest, caller: Agent | None,
                      context: Context | None) -> "WorkerRouteRequest":
         actor_type = ActorType.USER if caller is None else ActorType.AGENT
         skipped_guards: frozenset[str] = frozenset()

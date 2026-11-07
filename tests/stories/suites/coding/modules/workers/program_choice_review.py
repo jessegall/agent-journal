@@ -40,6 +40,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import (
     real_program_checks, uninstall_sample_module, set_split, split_story, split_viewer,
 )
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
+from tests.stories.suites.coding.modules.workers.support.route_expectations import expect_model_route_refusal, expect_unmatched_route
 
 
 @pytest.mark.parametrize('agent_role', ['worker', 'helper'])
@@ -128,11 +129,7 @@ def test_named_model_fixes_the_program(split_story, program, model, shares, agen
 
 
 def test_named_model_fixes_the_program_route_still_holds(split_story):
-    story = split_story
-    story.expect_success('worker-route make --program codex --tags named --environment main', actor=story.agent)
-    story.expect_success('task tag 1 named --confirm', actor=story.agent)
-    story.expect_refusal('worker dispatch 1 --model sonnet', '--tier', actor=story.agent)
-    story.expect_text('worker-worktree list', 'nothing found')
+    expect_model_route_refusal(split_story, 'named')
 
 
 def test_split_counts_only_since_it_changed(split_story, split_viewer):
@@ -294,9 +291,7 @@ def test_read_only_helper_tags_only_when_making_a_task_changes_get_a_mark(routed
 
 
 def test_score_refusal_only_for_routes_that_could_match(split_story):
-    story = split_story
-    story.expect_success('worker-route make --program codex --tags scored --complexity-from 3 --environment main', actor=story.agent)
-    expect_program(story, dispatch(story), 'claude')
+    expect_unmatched_route(split_story, '--tags scored --complexity-from 3')
 
 
 def test_score_refusal_only_for_routes_that_could_match_names_all_tasks(split_story):
