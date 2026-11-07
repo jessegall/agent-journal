@@ -37,9 +37,9 @@ def test_a_plugin_guard_that_allows_lets_the_merge_through_with_both_ends_record
     story.expect_text("merge-request list --json", f'"target_commit": "{target_tip}"', f'"worker_id": {worker.id}', actor=story.user)
 
 
-def test_a_plugin_guard_past_its_window_lets_the_merge_through_marked_unjudged(new_story):
+def test_a_plugin_guard_past_its_window_lets_the_merge_through_with_the_fault_on_the_plugin(new_story):
     story, repository, worker = guarded_merge_story(new_story, "slow.sh", window_ms=300)
     target_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) != target_tip)
-    story.expect_text("chat-mark list", f"did not answer its guard of {MERGE_REQUEST_KEY} within 300 ms, so the change went through unjudged", actor=story.user)
+    story.expect_text("plugin list", "last fault", f"at {MERGE_REQUEST_KEY} (guard)", actor=story.user)

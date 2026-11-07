@@ -19,6 +19,6 @@ class RecordMergeRequestHandler(Handler[RecordMergeRequest, MergeRequest]):
 
     def handle(self, command: RecordMergeRequest, context: Context) -> MergeRequest:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        return self.repository.save(MergeRequest(environment_id=worktree.environment_id, worktree_id=worktree.id, worker_id=worktree.session_agent_id,
+        return self.repository.save(MergeRequest(worktree_id=worktree.id, worker_id=worktree.session_agent_id,
                                                  creator_id=context.actor.id, target_branch=worktree.base_branch, target_commit=command.target_commit,
                                                  branch=worktree.branch, branch_commit=command.branch_commit, folder=command.folder), context)
