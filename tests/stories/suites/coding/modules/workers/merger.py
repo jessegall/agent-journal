@@ -148,3 +148,23 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
+
+
+def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    reason = "The main agent must decide which reader to keep"
+    story.expect_success(f'merger pass {worker.id} "{reason}"', actor=merger)
+    story.expect_success(f'merger pass {worker.id} "Another decision"', actor=merger)
+    story.run_listeners()
+    marks = story.container.get(Queries).query(ChatMark).filter(text=f"The merger left Worker {worker.id} to the main agent").oldest().all_rows()
+    story.expect_rows(len(marks) == 2, marks[0].detail == reason, marks[1].detail == "Another decision", marks[0].target_id == worker.id)
