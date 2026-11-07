@@ -6,7 +6,9 @@ import AgentRetireForm from "./AgentRetireForm.vue";
 const emit = defineEmits(["open-agent"]);
 const view = useWindow();
 const {rows, failure: readFailure} = view.props.limits;
-const {rows: agents} = view.props["count-agents"];
+const agents = ref([]);
+const agentPage = ref(0);
+const moreAgents = ref(false);
 const now = useNow();
 const open = ref(false);
 const selected = ref(null);
@@ -33,6 +35,18 @@ const models = computed(() => {
 const width = (count, limit) => limit ? `${Math.min(count / Math.max(count, limit) * 100, 100)}%` : "0%";
 const overflow = (count, limit) => limit && count > limit ? `${(count - limit) / count * 100}%` : "0%";
 const title = computed(() => editing.value ? "Change the maximums" : chosen.value?.label || "Agent counts");
+async function readAgents(row, page = 1) {
+    view.state["count-agents.role"] = row.type;
+    if (row.profile) view.state["count-agents.profile"] = row.profile;
+    else delete view.state["count-agents.profile"];
+    view.state["count-agents.page"] = String(page);
+    await view.reload("count-agents");
+    const result = view.props["count-agents"];
+    agents.value = page === 1 ? [...result.rows.value] : [...agents.value, ...result.rows.value];
+    agentPage.value = page;
+    moreAgents.value = result.more.value;
+}
+function select(row) { selected.value = row.key; agents.value = []; readAgents(row); }
 function back() { editing.value = false; selected.value = null; retiring.value = null; failure.value = ""; }
 function close() { open.value = false; back(); }
 async function change(row, key, previous, value) {
@@ -51,7 +65,7 @@ async function retire(agent) {
     pending.value = true;
     const answer = await view.run(["agent", "retire", String(agent.id), "--reason", reason.value.trim()]);
     failure.value = answer.ok ? "" : "The agent could not be retired. Try again.";
-    if (answer.ok) { retiring.value = null; reason.value = ""; notice.value = "Agent retired permanently."; await Promise.all([view.reload("limits"), view.reload("count-agents")]); }
+    if (answer.ok) { retiring.value = null; reason.value = ""; notice.value = "Agent retired permanently."; await view.reload("limits"); await readAgents(chosen.value); }
     pending.value = false;
 }
 function openAgent(agent) { close(); emit("open-agent", agent); }
@@ -81,12 +95,13 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
                     <Btn small @click="openAgent(agent)">Open</Btn><Btn v-if="agent.state === 'idle' && !view.readOnly" small @click="retiring = agent.id; reason = ''">Retire</Btn>
                     <AgentRetireForm v-if="retiring === agent.id" v-model:reason="reason" :pending="pending" @submit="retire(agent)" @cancel="retiring = null" />
                 </div>
+                <Btn v-if="moreAgents" small @click="readAgents(chosen, agentPage + 1)">Show more</Btn>
             </template>
             <template v-else>
                 <p>Kept agents have not been retired, so they can take another job. Open a row to see them.</p>
                 <div class="columns"><span>Name</span><span>Running</span><span>Kept</span><span /></div>
                 <div v-if="helper" class="helper-head"><strong>Helpers</strong><span>{{ helper.running }} running, {{ helper.kept }} kept</span></div>
-                <button v-for="row in entries" :key="row.key" type="button" class="count-row" :data-agent-limit-type="row.type || row.key" :data-agent-limit-profile="row.profile" @click="selected = row.key">
+                <button v-for="row in entries" :key="row.key" type="button" class="count-row" :data-agent-limit-type="row.type || row.key" :data-agent-limit-profile="row.profile" @click="select(row)">
                     <strong>{{ row.label }}</strong><span v-for="cell in [{count: row.running, limit: row.run_limit, unlimited: false}, {count: row.kept, limit: row.kept_limit, unlimited: true}]" :key="cell.unlimited" :class="{full: full(cell.count, cell.limit)}"><span>{{ cell.count }}<template v-if="cell.limit || !cell.unlimited"> of {{ cell.limit }}</template></span><span v-if="cell.limit" class="bar"><span :style="{width: width(cell.count, cell.limit)}" /><i :style="{width: overflow(cell.count, cell.limit)}" /></span></span><Icon name="chevronRight" :size="12" />
                 </button>
             </template>

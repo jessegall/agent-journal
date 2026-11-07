@@ -1,3 +1,4 @@
+from core.modules.messages.migrations.m020_message_parent_environment import MessageParentEnvironmentMigration
 from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_key import WindowKey
 from core.modules.messages.migrations.m015_main_message_targets import MainMessageTargetsMigration
@@ -118,7 +119,7 @@ class MessagesModule(Module):
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration]
+    migrations = [MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration]
     guards = [OneReplyPerMessageGuard, QuestionMessageGuard]
     handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
