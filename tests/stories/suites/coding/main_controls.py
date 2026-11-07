@@ -10,6 +10,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors
 from tests.stories.suites.coding.support.main_controls_contract import (AGENT_TYPES, CONTROLS, DECLARED, MAIN_AUTO_DESCRIPTION, RULES, SETTING_PARTS,
                                                                          malformed_value_problems, matrix_cases, option_problems, owner_problems, saved_text)
+from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
 
 NEW_KEYS = ["continue-while-delegatable", "designer-enabled", "main-agent-may-merge", "resume-silent-agents", "workers-start-helpers", "agent-options"]
@@ -108,3 +109,11 @@ def test_s45_fixture_actors_are_distinct_agents_that_are_all_refused_a_person_on
     for actor in actors.values():
         story.expect_refusal("setting set journal.suites.coding.auto-mode off --environment main", "change", actor=actor)
     story.expect_success("setting show journal.suites.coding.auto-mode --environment main", "value: True", actor=story.user)
+
+
+def test_s48_defaults_a_running_worker_keeps_reporting_after_new_sessions_and_providers_are_switched_off(split_story, split_viewer):
+    worker = dispatch(split_story)
+    options = json.dumps(["worker allow_new=off", "worker allow_resume=off", "worker allowed_providers="])
+    split_viewer.value("settings.settings", ["setting", "set", AGENT_OPTIONS, options, "--environment", "main"])
+    split_story.expect_success("worker status", actor=worker)
+    split_story.expect_text("task show 1", "state: started", actor=worker)

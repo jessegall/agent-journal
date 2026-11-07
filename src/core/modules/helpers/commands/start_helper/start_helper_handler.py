@@ -65,6 +65,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         self.limits.checked_launcher()
         parent = self.limits.checked_parent(context)
         self.limits.checked_new_place(profile.name)
+        self.limits.checked_new_session(profile.name)
         reuses_helpers = not command.new_agent_reason.strip() and not profile.independent
         if reuses_helpers:
             self.check_reuse(parent, profile, command.brief)
@@ -126,7 +127,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         return f"{program} is out{availability}: {state.line}; started as requested"
 
     def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
-        model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier))
+        model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name)
         self.programs.checked(program, self.folders.folder(parent))
         return model
 

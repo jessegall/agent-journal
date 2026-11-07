@@ -78,6 +78,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
     def check_resume(self, helper: Agent) -> None:
         if not helper.profile:
             raise Refusal(f"helper {helper.id} ran as a program subagent and cannot be resumed", "start a new helper")
+        self.limits.checked_resume_session(helper)
         self.limits.checked_running(helper.profile)
         if not self.folders.has_folder(helper):
             raise Refusal(f"helper {helper.id} worked in a folder that is gone", 'start a new helper with --fresh "<why>"')

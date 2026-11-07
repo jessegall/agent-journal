@@ -7,6 +7,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
+from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
@@ -49,7 +50,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission) -> None:
+        self.admission = admission
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
         self.sources, self.task_sources, self.kept_tasks, self.environments = sources, task_sources, kept_tasks, environments
@@ -64,6 +66,11 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if not command.job.strip() and not command.task_ids:
             raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
 
+    def check_session(self, worker: Agent) -> None:
+        if worker.ended_at is not None:
+            self.admission.checked_resume("worker", worker.profile)
+            self.admission.checked_model("worker", worker.profile, worker.program, worker.program_model)
+
     def check_rows(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
@@ -75,6 +82,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     def prepare(self, command: SendWorker, actor: Actor) -> None:
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
+        self.check_session(worker)
         task_ids = command.task_ids
         if not task_ids and self.worktrees.worker_worktree(worker.id) is None:
             self.kept_tasks.check_recut(worker)

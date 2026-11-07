@@ -3,9 +3,11 @@ import shlex
 
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.agent_options import AgentOptions
+from core.testing.fake_launcher import FakeLauncher
+from tests.stories.core.modules.helpers.start_helper import START
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.support.main_controls_fixture import in_environment
-from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, expect_program, new_task, split_story, split_viewer
+from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, exit_program, expect_program, new_task, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
 
 OPTIONS = "journal.core.helpers.agent-options"
@@ -134,3 +136,44 @@ def test_s19_inheritance_a_strict_route_to_a_program_the_options_forbid_creates_
 def test_s52_inheritance_a_configured_model_list_naming_no_model_of_the_program_denies_instead_of_allowing_all(split_story, split_viewer):
     split_viewer.value("settings.settings", ["setting", "set", ALLOWED_MODELS, json.dumps(["codex gpt-6.1-sol"]), "--environment", "main"])
     expect_no_worker(split_story, "worker dispatch 1", "no allowed automatic model")
+
+
+def stopped_worker(story):
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=4)
+    worker = dispatch(story)
+    story.run_listeners()
+    exit_program(story, worker)
+    return worker, launcher
+
+
+def test_s11_lifecycle_new_workers_off_refuses_a_dispatch_and_starts_nothing(split_story, split_viewer):
+    viewer_options(split_viewer, "worker allow_new=off")
+    expect_no_worker(split_story, "worker dispatch 1", "new worker sessions are switched off")
+
+
+def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    set_options(story, "helper allow_new=off")
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=1)
+    story.expect_refusal(START, "new helper sessions are switched off", actor=story.agent)
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    story.expect_no_text("agent list", "role: helper", actor=story.user)
+
+
+def test_s12_lifecycle_resume_off_refuses_a_job_for_a_stopped_worker_and_leaves_it_stopped(split_story, split_viewer):
+    worker, launcher = stopped_worker(split_story)
+    viewer_options(split_viewer, "worker allow_resume=off")
+    split_story.expect_refusal(f'worker send {worker.id} "go on"', "may not resume", actor=split_story.agent)
+    split_story.expect_no_text(f"agent show {worker.id}", "ended_at: None", actor=split_story.user)
+
+
+def test_s13_lifecycle_an_empty_profile_list_refuses_a_dispatch_of_every_profile(split_story, split_viewer):
+    viewer_options(split_viewer, "worker allowed_profiles=")
+    expect_no_worker(split_story, "worker dispatch 1", "may not use the profile journal-worker")
+
+
+def test_s52_lifecycle_a_kept_worker_on_a_program_the_options_now_forbid_is_not_resumed(split_story, split_viewer):
+    worker, launcher = stopped_worker(split_story)
+    viewer_options(split_viewer, "worker allowed_providers=codex")
+    split_story.expect_refusal(f'worker send {worker.id} "go on"', "worker may not use claude", actor=split_story.agent)
