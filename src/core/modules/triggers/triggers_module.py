@@ -41,7 +41,7 @@ from core.modules.triggers.commands.deliver_trigger_output.deliver_trigger_outpu
 from core.modules.triggers.listeners.trigger_output_listener import TriggerOutputListener
 from core.modules.triggers.listeners.trigger_process_removal_listener import TriggerProcessRemovalListener
 
-BUILT = ["make", "show", "list", "delete"]
+BUILT = ["make", "list", "delete"]
 
 
 class TriggersModule(Module):

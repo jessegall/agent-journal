@@ -24,7 +24,9 @@ REQUESTED = RunRequest(1, TEST_LINE, WHY, "requested")
 
 @pytest.fixture
 def on_plan(new_story, monkeypatch):
-    return worker_on_plan(new_story, monkeypatch)
+    worker = worker_on_plan(new_story, monkeypatch)
+    worker.story.expect_success("setting set journal.suites.coding.workers.worker-phase-test-runs 0 --environment main", actor=worker.story.user)
+    return worker
 
 
 @pytest.fixture
@@ -54,6 +56,8 @@ def test_a_flagged_run_does_not_run_and_sends_one_request(on_plan):
     reply = on_plan.run_test(asking_main(TEST_LINE, WHY))
     expect_reply_refusal(reply, "main agent")
     expect_requests(on_plan, REQUESTED)
+    on_plan.story.expect_rows(all(TEST_LINE not in line and WHY not in line for line in on_plan.main_agent_lines()))
+    on_plan.story.expect_text("worker-test-request show 1", TEST_LINE, WHY, actor=on_plan.story.agent)
 
 
 @pytest.mark.parametrize("flagged", [f'{TEST_LINE} {FLAG} ""', f"{TEST_LINE} {FLAG}"])
@@ -103,7 +107,7 @@ def test_a_flagged_saved_test_alias_sends_one_request(alias_saved):
 
 def test_an_allowed_request_tells_the_worker_and_that_command_runs_once(requested):
     requested.story.expect_success(ALLOW, actor=requested.story.agent)
-    requested.story.expect_rows(any("request 1" in line and TEST_LINE in line for line in requested.worker_lines()))
+    requested.story.expect_rows(any("request 1" in line and "worker-test-request show 1" in line for line in requested.worker_lines()))
     expect_reply_allowed(requested.run_test())
     expect_requests(requested, RunRequest(1, TEST_LINE, WHY, "used"))
 

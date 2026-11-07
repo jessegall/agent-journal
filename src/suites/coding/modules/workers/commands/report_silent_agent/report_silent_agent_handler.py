@@ -4,9 +4,9 @@ from core.base.query.conditions.minimum import Minimum
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.agent_line import AgentLine
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
-from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent, SILENT_AGENT_FAILED, SILENT_FAILURE_SOURCE
+from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent, SILENT_FAILURE_SOURCE
 
 
 class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):
@@ -20,7 +20,7 @@ class ReportSilentAgentHandler(Handler[ReportSilentAgent, None]):
 
     def handle(self, command: ReportSilentAgent, context: Context) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        text = SILENT_AGENT_FAILED.nudge(agent=agent.id, reason=command.reason).text
-        notices = self.queries.query(AgentLine).filter(source=SILENT_FAILURE_SOURCE, text=text).matching(Minimum("created_at", command.inactive_at.text))
+        text = f"agent:{agent.id} could not resume: {command.reason}. Check its terminal."
+        notices = self.queries.query(MergerLine).filter(fallback_source=SILENT_FAILURE_SOURCE, text=text).matching(Minimum("created_at", command.inactive_at.text))
         if not notices.exists():
             self.main_agent_line.send(text, SILENT_FAILURE_SOURCE, context)

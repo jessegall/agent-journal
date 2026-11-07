@@ -6,8 +6,9 @@ from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.plans.models.phase import Phase
+from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.tasks.models.task import Task
-from core.testing.expect_reply import expect_reply_refusal
+from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
@@ -51,12 +52,16 @@ def undeclared_tests(new_story, monkeypatch):
 
 @pytest.fixture
 def single_phase_tests(new_story, monkeypatch):
-    return at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH), TEST_LINE, SECOND_TEST_LINE)
+    worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
+    worker.story.expect_success("setting set journal.suites.coding.workers.merger-on off --environment main", actor=worker.story.user)
+    return at_last_task_of_the_phase(worker, TEST_LINE, SECOND_TEST_LINE)
 
 
 @pytest.fixture
 def single_phase_untested(new_story, monkeypatch):
-    return at_last_task_of_the_phase(worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH))
+    worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
+    worker.story.expect_success("setting set journal.suites.coding.workers.merger-on off --environment main", actor=worker.story.user)
+    return at_last_task_of_the_phase(worker)
 
 
 @pytest.fixture
@@ -85,7 +90,7 @@ def test_queue_phase_checks_the_proofs_with_no_test_adds_the_phases_own_test_onc
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     for expected_count in (3, 1):
         with story.container.get(Database).transaction():
-            story.expect_rows(queue.queue_phase(worktree, story.row(Task, 2), story.row(Phase, 1), context) == expected_count)
+            story.expect_rows(queue.queue_group(worktree, story.row(Task, 2), WorkerTestGroup(story.row(Phase, 1), ()), context) == expected_count)
     story.expect_text("proof show 1", "state: queued", actor=story.agent)
     story.expect_text("proof show 2", "state: checked", actor=story.agent)
     story.expect_text("proof show 3", "point: 0", "state: queued", f"test_command: {PHASE_TEST}", "Build", actor=story.agent)
@@ -121,8 +126,8 @@ def test_the_tasks_of_a_phase_close_and_the_next_phases_task_starts_once_its_tes
     phase_passed.story.expect_rows(phase_passed.current_task() == 4)
 
 
-def test_the_next_phase_starts_held_back_again(phase_passed):
-    expect_reply_refusal(phase_passed.run_test(), FLAG)
+def test_the_next_phase_has_its_own_test_allowance(phase_passed):
+    expect_reply_allowed(phase_passed.run_test())
 
 
 def test_the_phases_own_test_runs_at_its_end_as_a_proof_of_the_last_task(new_story, monkeypatch):

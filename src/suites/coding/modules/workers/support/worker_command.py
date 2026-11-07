@@ -15,7 +15,7 @@ from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.refusal import Refusal
 
-WORK_STEPS = "Prove each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last."
+WORK_STEPS = "Read the test suite and choose which existing tests and test files cover your changes, along with your new tests, for each proof's --test command. Prove each point with journal proof make, then journal worker next while tasks are queued, and journal worker deliver after the last."
 
 
 class WorkerCommand:

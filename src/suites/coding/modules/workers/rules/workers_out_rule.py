@@ -22,5 +22,5 @@ class WorkersOutRule(DriverRule):
         self.worktrees = worktrees
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        nudges: list[Nudge] = [WORKER_TASK.nudge(worker=worktree.session_agent_id, task=worktree.task_id, state=worktree.state.value) for worktree in self.worktrees.open_worktrees()]
+        nudges: list[Nudge] = [WORKER_TASK.nudge(worker=worktree.session_agent_id, task=worktree.task_id) for worktree in self.worktrees.open_worktrees()]
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

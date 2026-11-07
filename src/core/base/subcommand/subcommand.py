@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
-from typing import Generic, TypeIs, TypeVar
+from typing import ClassVar, Generic, TypeIs, TypeVar
 from core.base.caller.caller import Caller
+from core.base.scope.scopes import WholeScopes
 from core.base.subcommand.output import Output
 from core.base.command.command import Command
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -14,6 +15,8 @@ class Subcommand(Generic[C, R]):
     how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
     run in the background at once when an agent types it. One that sets outward reaches past the journal, so
     a read-only agent may not run it."""
+
+    disabled_scopes: ClassVar[WholeScopes] = ()
 
     cli_name: str
     name: str

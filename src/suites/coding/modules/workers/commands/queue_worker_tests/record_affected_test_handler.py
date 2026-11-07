@@ -60,4 +60,4 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
         if phase is None:
             self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))
             return
-        self.results.send_phase_failures(worktree, phase, f"the selected tests: {first_answer.test_command}: journal output read {process_id} --summary", context)
+        self.results.send_phase_failures(worktree, phase, str(process_id), context)

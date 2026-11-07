@@ -1,6 +1,6 @@
 import sqlite3
 
-from suites.coding.modules.workers.migrations.m033_worktree_delivery import WorktreeDeliveryMigration
+from suites.coding.modules.workers.migrations.m035_worktree_delivery import WorktreeDeliveryMigration
 
 
 def test_existing_work_uses_delivery_events_and_an_unsubmitted_cut_keeps_no_place():

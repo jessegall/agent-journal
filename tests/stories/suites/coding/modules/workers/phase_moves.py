@@ -147,8 +147,8 @@ def test_the_task_after_a_running_test_follows_the_new_flow(previous_test_ended)
     previous_test_ended.story.expect_text("task show 2", "state: testing", actor=previous_test_ended.story.agent)
 
 
-def test_a_test_run_after_a_running_test_is_refused_with_a_line_that_says_what_to_do(previous_test_ended):
-    expect_reply_refusal(previous_test_ended.run_test(), FLAG)
+def test_a_test_run_after_a_running_test_uses_the_phase_allowance(previous_test_ended):
+    expect_reply_allowed(previous_test_ended.run_test())
 
 
 def test_on_a_blocked_plan_a_worker_runs_tests_as_today(advanced_with_test):
@@ -175,11 +175,11 @@ def test_a_task_outside_a_plan_and_then_a_task_of_a_plan_each_follow_their_own_f
     outside_task_first.story.expect_text("worker next --differences none", "queued", actor=outside_task_first.worker)
     outside_task_first.end_all_tests()
     outside_task_first.story.expect_rows(outside_task_first.current_task() == 1)
-    expect_reply_refusal(outside_task_first.run_test(), FLAG)
+    expect_reply_allowed(outside_task_first.run_test())
 
 
 def test_a_task_of_a_plan_and_then_a_task_outside_it_each_follow_their_own_flow(plan_task_first):
-    expect_reply_refusal(plan_task_first.run_test(), FLAG)
+    expect_reply_allowed(plan_task_first.run_test())
     plan_task_first.change_and_prove(TEST_LINE)
     plan_task_first.story.expect_text("worker next --differences none", "queued", actor=plan_task_first.worker)
     plan_task_first.end_all_tests()

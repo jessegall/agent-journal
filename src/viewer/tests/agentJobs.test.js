@@ -1,7 +1,11 @@
 import {expect, test} from "vitest";
 import AgentJobs from "../../core/modules/schedules/web/src/AgentJobs.vue";
 import {nextRun, scheduleWords} from "../../core/modules/schedules/web/src/cron.js";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context as windowContext, mounted, page, settle} from "./support/windowContext.js";
+
+const context = (answers, agent) => windowContext(answers, agent, {
+    jobs: {line: "scheduled-job running", events: ["scheduled_job.*"]},
+});
 
 const JOB = {id: 1, job_id: "1a2b3c4d", cron: "*/10 * * * *", prompt: "Check the build\nand say", is_recurring: true, stop_requested_at: null};
 

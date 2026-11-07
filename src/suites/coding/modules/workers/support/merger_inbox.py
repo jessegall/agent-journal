@@ -16,8 +16,9 @@ class MergerInbox:
         self.repository, self.main_line, self.settings = repository, main_line, settings
 
     def send(self, text: str, source: str, context: Context) -> None:
-        line = self.repository.save(MergerLine(text=text, fallback_source=source), context)
-        if not self.settings.flag(MERGER_ENABLED):
+        enabled = self.settings.flag(MERGER_ENABLED)
+        line = self.repository.save(MergerLine(text=text, fallback_source=source, read_at=None if enabled else context.timestamp), context)
+        if not enabled:
             self.main_line.send_nudge(MERGER_LINE_AVAILABLE.nudge(line=line.id), source, context)
 
     def send_nudge(self, nudge: Nudge, source: str, context: Context) -> None:

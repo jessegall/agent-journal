@@ -10,4 +10,4 @@ MERGER_MERGED = NudgeDeclaration("workers.merger_merged", NudgeType.STEERING, "t
 MERGER_PASSED = NudgeDeclaration("workers.merger_passed", NudgeType.STEERING, "the merger leaves worker:{worker} to you. Read journal worker logs {worker}",
                                  plural_text="the merger leaves workers {worker} to you. Read journal worker logs <id> for each", id_field="worker", wakes_agent=True)
 
-MERGER_LINE_AVAILABLE = NudgeDeclaration("workers.merger_line_available", NudgeType.STEERING, "merger-line:{line}: journal merger-line show {line}; journal merger next", turn_limited=False, wakes_agent=True)
+MERGER_LINE_AVAILABLE = NudgeDeclaration("workers.merger_line_available", NudgeType.STEERING, "merger-line:{line}: journal merger-line show {line}; journal merger next", turn_limited=False, wakes_agent=True, id_field="line", plural_text="merger-lines {line}: read each with journal merger-line show <id>; journal merger next")

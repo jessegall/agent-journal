@@ -41,12 +41,6 @@ class EndedOutputText:
         saved = next((part.saved_command for part in self.visibility.parts(process.id) if part.saved_command), "")
         return tuple([SILENT_SAVED_FAILURE.nudge(name=saved)]) if saved else ()
 
-    def result(self, process: Process) -> str:
-        if process.expired_at is not None:
-            return "timed out"
-        summary = self.summary(process)
-        return summary if summary else self.outcome(process)
-
     def read_program(self, process: Process) -> str | None:
         parts = self.visibility.parts(process.id)
         return next((part.program for part in parts if part.category.has_result_output), None)
@@ -79,12 +73,3 @@ class EndedOutputText:
         name = PurePath(first).name
         return not self.readers.with_name(name).exists()
 
-    def summary(self, process: Process) -> str:
-        output = self.outputs.process_output(process.id)
-        return output.reader_summary if output else ""
-
-    @staticmethod
-    def outcome(process: Process) -> str:
-        if process.state is ProcessState.FAILED:
-            return f"failed with exit code {process.exit_code}"
-        return process.state.value

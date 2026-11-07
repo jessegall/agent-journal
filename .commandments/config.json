@@ -221,7 +221,8 @@
         "naming_plain_viewer_state_text",
         "ViewerVersionTextDetector",
         "ViewerVersionAttributeDetector",
-        "ViewerVersionScriptDetector"
+        "ViewerVersionScriptDetector",
+        "architecture_nudges_stored_text"
     ],
     "parallel": 2,
     "configure": {

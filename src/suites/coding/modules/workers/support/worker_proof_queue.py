@@ -4,6 +4,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
+from suites.coding.modules.workers.support.worker_test_group import WorkerTestGroup
 from core.modules.plans.models.phase import Phase
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
@@ -57,13 +58,20 @@ class WorkerProofQueue:
         self.send_untested_line(worktree, context)
         return queued_count + self.queue_selected(worktree, context)
 
-    def queue_phase(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> int:
+    def queue_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, context: Context) -> int:
         for proof in tuple(self.proofs.untested_proofs(worktree.id).all_rows()):
             self.repository.save_change(proof, proof.moved(ProofLifecycle.check), context)
-        if phase.test_command and not self.proofs.worktree_proofs(worktree.id).filter(point=PHASE_TEST_POINT, task_id=task.id).exists():
-            self.repository.save(Proof(task_id=task.id, worktree_id=worktree.id, creator_id=worktree.session_agent_id, point=PHASE_TEST_POINT,
-                                       text=f"the test phase {phase.title} names", test_command=phase.test_command), context)
+        if group.phase is not None:
+            self.queue_phase_test(worktree, task, group.phase, context)
         return self.queue_proofs(worktree, context) + self.queue_selected(worktree, context)
+
+    def queue_phase_test(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> None:
+        if not phase.test_command:
+            return
+        if self.proofs.worktree_proofs(worktree.id).filter(point=PHASE_TEST_POINT, task_id=task.id).exists():
+            return
+        self.repository.save(Proof(task_id=task.id, worktree_id=worktree.id, creator_id=worktree.session_agent_id, point=PHASE_TEST_POINT,
+                                   text=f"the test phase {phase.title} names", test_command=phase.test_command), context)
 
     def queue_selected(self, worktree: Worktree, context: Context) -> int:
         picker = self.settings.text(AFFECTED_TESTS_COMMAND).strip()

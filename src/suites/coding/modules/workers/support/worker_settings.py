@@ -17,6 +17,9 @@ INACTIVE_HELPER_MINUTES = f"{MODULE_KEY}.quiet-helper-minutes"
 INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
 WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
+PHASE_TESTS_ENABLED = f"{MODULE_KEY}.test-at-phase-end"
+TEST_BATCH_SIZE = f"{MODULE_KEY}.test-batch-size"
+WORKER_PHASE_TEST_RUNS = f"{MODULE_KEY}.worker-phase-test-runs"
 WORKER_TEST_LIMIT = f"{MODULE_KEY}.worker-run-most-tests"
 MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
 MERGER_COMMANDS = f"{MODULE_KEY}.merger-commands"
@@ -25,6 +28,9 @@ WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
 AFFECTED_TESTS_COMMAND = f"{MODULE_KEY}.affected-tests-command"
 PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
 WORKER_SETTINGS = [
+    SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
+    SettingValue("worker-phase-test-runs", "Test commands per phase or batch", "Test commands a worker may run in each phase or batch before asking the main agent.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default=""),
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default=""),

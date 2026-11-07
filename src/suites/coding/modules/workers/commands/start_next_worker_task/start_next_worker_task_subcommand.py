@@ -37,6 +37,5 @@ class StartNextWorkerTaskSubcommand(Subcommand[StartNextWorkerTask, Task]):
         if isinstance(value, Task) and value.state is TaskState.STARTED:
             output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}")
         elif isinstance(value, Task):
-            phase = self.phases.phase(value)
-            queued = f"task {value.id}" if phase is None else f"phase {phase.id}"
+            queued = self.phases.test_label(value)
             output.line(f"the tests of {queued} are queued: stop now, your next task reaches you when they pass")

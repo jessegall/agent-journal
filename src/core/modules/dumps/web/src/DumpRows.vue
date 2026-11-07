@@ -1,17 +1,20 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {ListTools, Skeleton, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
 
-// dumps as version 4 drew them: the list of dumps with a phase pill each, the open one with its title (renamed while it is filing),
-// a bar of the files settled, what each file became and from which file; one read brings them all
 const STATES = {new: "New", noted: "Noted", filed: "Filed", failed: "Failed"};
 const TYPES = {docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report"};
 const SETTLED = ["noted", "filed", "failed"];
-const context = useWindow();
+const window = useWindow();
+const {data, failure: readFailure, loaded} = window.props.dumps;
 const cards = ref([]);
-const failure = ref("");
-const loaded = ref(false);
-const total = ref(0);
+const actionFailure = ref("");
+const failure = computed(() => actionFailure.value || readFailure.value);
+const total = computed(() => data.value ? data.value.total : 0);
+watch(data, (board) => {
+    cards.value = board ? board.dumps : [];
+    actionFailure.value = "";
+}, {immediate: true});
 const chosen = ref(null);
 const renaming = ref(null);
 const draft = ref("");
@@ -25,17 +28,9 @@ const settledOf = (card) => card.items.filter((item) => SETTLED.includes(item.st
 const madeOf = (card) => card.items.flatMap((item) => item.refs.map((ref) => ({ref, from: item.text})));
 const typeOf = (ref) => TYPES[ref.split(":")[0]] || ref.split(":")[0];
 
-async function load() {
-    const answer = await context.read("dump board");
-    failure.value = answer.ok ? "" : answer.error;
-    cards.value = answer.ok ? answer.value.dumps : [];
-    total.value = answer.ok ? answer.value.total : 0;
-    loaded.value = true;
-}
-
 async function more() {
-    const answer = await context.read(`dump board --before ${Math.min(...cards.value.map((card) => card.id))}`);
-    if (!answer.ok) return void (failure.value = answer.error);
+    const answer = await window.readKey("dumps", {before: Math.min(...cards.value.map((card) => card.id))});
+    if (!answer.ok) return void (actionFailure.value = answer.error);
     cards.value = [...cards.value, ...answer.value.dumps];
 }
 
@@ -48,12 +43,9 @@ async function rename(card) {
     const title = draft.value.trim();
     renaming.value = null;
     if (!title || title === card.title) return;
-    const answer = await context.run(["dump", "name", String(card.id), title]);
-    if (!answer.ok) failure.value = answer.error;
+    const answer = await window.run(["dump", "name", String(card.id), title]);
+    if (!answer.ok) actionFailure.value = answer.error;
 }
-
-context.follow(["dump.*", "dump_item.*"], load);
-load();
 </script>
 
 <template>

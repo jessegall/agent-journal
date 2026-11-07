@@ -64,7 +64,9 @@ def test_the_worker_gets_every_failure_in_one_line_once_all_tests_have_ended(han
     handed_in.end_test(handed_in.started[1], 1)
     failures = [line for line in handed_in.worker_lines() if "failed" in line]
     handed_in.story.expect_rows(len(failures) == 1)
-    handed_in.story.expect_rows(all(text in failures[0] for text in (TEST_LINE, SECOND_TEST_LINE, str(handed_in.started[0]), str(handed_in.started[1]))))
+    handed_in.story.expect_rows(all(str(output) in failures[0] for output in handed_in.started), TEST_LINE not in failures[0], SECOND_TEST_LINE not in failures[0])
+    handed_in.story.expect_text("proof show 1", TEST_LINE, actor=handed_in.worker)
+    handed_in.story.expect_text("proof show 3", SECOND_TEST_LINE, actor=handed_in.worker)
 
 
 def test_a_failure_on_an_earlier_task_puts_the_worktree_on_that_task(first_failed):
@@ -87,9 +89,11 @@ def test_the_flag_after_a_failure_is_refused_with_no_need_to_ask(two_failed):
     expect_reply_refusal(two_failed.run_test(asking_main(TEST_LINE, "the rounding")), "need not ask")
 
 
-def test_after_the_next_hand_in_a_plain_test_run_is_refused_again(first_failed):
+def test_free_runs_end_at_the_next_hand_in(first_failed):
+    for _ in range(5):
+        expect_reply_allowed(first_failed.run_test())
     first_failed.story.expect_success("worker deliver --differences none", actor=first_failed.worker)
-    expect_reply_refusal(first_failed.run_test(), FLAG)
+    expect_reply_refusal(first_failed.run_test(), "not started yet")
 
 
 def test_the_second_hand_in_runs_only_what_failed_and_what_passed_stays_checked(first_failed):

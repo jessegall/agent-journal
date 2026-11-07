@@ -20,13 +20,15 @@ def managed(sample, answer):
 def test_a_project_hook_refuses_a_tool_and_the_call_names_it(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(LISTING, {"refusal": "unsafe"}))
-    expect_refusal_reply(reply, "project-check: unsafe")
-    story.expect_text(f"hook-call show {reply.hook_call_id}", "refused", "project-check")
+    expect_reply_refusal(reply, "project hooks refused for agent:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unsafe", actor=story.agent)
+    story.expect_text(f"hook-call show {reply.hook_call_id}", "refused", "drivers.managed-hooks")
 
 
 def test_a_project_hook_refuses_a_stop(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), "project-check: unfinished")
+    story.expect_hook_refusal("s-1", managed(HookSamples.stop(), {"refusal": "unfinished"}), "project hooks refused for agent:")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "project-check: unfinished", actor=story.agent)
 
 
 def test_a_project_hook_allow_does_not_override_a_journal_refusal(new_story):
@@ -56,7 +58,9 @@ def test_a_journal_refusal_comes_before_a_project_refusal(new_story):
 def test_project_context_is_kept_on_a_line_event(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(LISTING, {"lines": ["project guidance"]}))
-    expect_reply_line(reply, "project guidance")
+    expect_reply_line(reply, "project hooks answered for agent:")
+    expect_absent_reply_line(reply, "project guidance")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "project guidance", actor=story.agent)
 
 
 def test_project_context_is_dropped_on_an_event_without_lines(new_story):

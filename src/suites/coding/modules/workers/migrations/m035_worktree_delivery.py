@@ -2,7 +2,7 @@ from core.base.database.migration import Migration
 
 
 class WorktreeDeliveryMigration(Migration):
-    number = 33
+    number = 35
     statements = [
         "ALTER TABLE worker_worktrees ADD COLUMN delivered_at TEXT",
         "UPDATE worker_worktrees SET delivered_at = coalesce("

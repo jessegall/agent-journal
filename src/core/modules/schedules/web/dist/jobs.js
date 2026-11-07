@@ -1,77 +1,79 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-d4acc353a864")) { const style = document.createElement("style"); style.id = "window-styles-d4acc353a864"; style.textContent = ".agent-jobs[data-v-ec69a5b6]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-ec69a5b6]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-ec69a5b6]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-ec69a5b6]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-ec69a5b6]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as y, openBlock as h, createBlock as j, unref as l, withCtx as b, createElementVNode as _, createElementBlock as S, toDisplayString as m, createCommentVNode as k, createVNode as $, createTextVNode as x } from "vue";
-import { useWindow as N, useRows as w, WindowRoom as D, RowList as A, Btn as B } from "@journal/window-kit";
-const E = [
+if (!document.getElementById("window-styles-cf6c6071d266")) { const style = document.createElement("style"); style.id = "window-styles-cf6c6071d266"; style.textContent = ".agent-jobs[data-v-61cd562a]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-61cd562a]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-61cd562a]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-61cd562a]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-61cd562a]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as j, openBlock as h, createBlock as v, unref as l, withCtx as b, createElementVNode as _, createElementBlock as y, toDisplayString as m, createCommentVNode as S, createVNode as $, createTextVNode as k } from "vue";
+import { useWindow as N, WindowRoom as w, RowList as x, Btn as D } from "@journal/window-kit";
+const A = [
   [0, 59],
   [0, 23],
   [1, 31],
   [1, 12],
   [0, 6]
-], M = 11520;
-function R(n, [s, e]) {
+], B = 11520;
+function E(s, [n, e]) {
   const t = /* @__PURE__ */ new Set();
-  for (const o of n.split(",")) {
-    const [r, i = "1"] = o.split("/"), [d, p] = r === "*" ? [s, e] : r.includes("-") ? r.split("-").map(Number) : [Number(r), i === "1" ? Number(r) : e];
-    for (let f = d; f <= p; f += Number(i)) t.add(f);
+  for (const r of s.split(",")) {
+    const [o, c = "1"] = r.split("/"), [i, p] = o === "*" ? [n, e] : o.includes("-") ? o.split("-").map(Number) : [Number(o), c === "1" ? Number(o) : e];
+    for (let f = i; f <= p; f += Number(c)) t.add(f);
   }
   return t;
 }
-function W(n) {
-  const s = String(n || "").trim().split(/\s+/);
-  return s.length === 5 ? s.map((e, t) => R(e, E[t])) : null;
+function M(s) {
+  const n = String(s || "").trim().split(/\s+/);
+  return n.length === 5 ? n.map((e, t) => E(e, A[t])) : null;
 }
-function C(n, s = /* @__PURE__ */ new Date()) {
-  const e = W(n);
+function W(s, n = /* @__PURE__ */ new Date()) {
+  const e = M(s);
   if (!e) return null;
-  const t = new Date(s);
+  const t = new Date(n);
   t.setSeconds(0, 0);
-  for (let o = 0; o < M; o++)
-    if (t.setMinutes(t.getMinutes() + 1), [t.getMinutes(), t.getHours(), t.getDate(), t.getMonth() + 1, t.getDay()].every((i, d) => e[d].has(i))) return new Date(t);
+  for (let r = 0; r < B; r++)
+    if (t.setMinutes(t.getMinutes() + 1), [t.getMinutes(), t.getHours(), t.getDate(), t.getMonth() + 1, t.getDay()].every((c, i) => e[i].has(c))) return new Date(t);
   return null;
 }
-const g = (n) => String(n).padStart(2, "0");
-function L(n) {
-  const s = String(n || "").trim().split(/\s+/);
-  if (s.length !== 5) return n || "";
-  const [e, t, o, r, i] = s, d = o === "*" && r === "*" && i === "*";
-  return d && t === "*" && e.startsWith("*/") ? `every ${e.slice(2)} minutes` : d && t === "*" && /^[\d,]+$/.test(e) ? `every hour at ${e.split(",").map((p) => `:${g(p)}`).join(", ")}` : d && /^\d+$/.test(t) && /^\d+$/.test(e) ? `every day at ${g(t)}:${g(e)}` : !d && /^\d+$/.test(o) && /^\d+$/.test(r) && /^\d+$/.test(t) && /^\d+$/.test(e) ? `once, on ${o}/${r} at ${g(t)}:${g(e)}` : n;
+const g = (s) => String(s).padStart(2, "0");
+function C(s) {
+  const n = String(s || "").trim().split(/\s+/);
+  if (n.length !== 5) return s || "";
+  const [e, t, r, o, c] = n, i = r === "*" && o === "*" && c === "*";
+  return i && t === "*" && e.startsWith("*/") ? `every ${e.slice(2)} minutes` : i && t === "*" && /^[\d,]+$/.test(e) ? `every hour at ${e.split(",").map((p) => `:${g(p)}`).join(", ")}` : i && /^\d+$/.test(t) && /^\d+$/.test(e) ? `every day at ${g(t)}:${g(e)}` : !i && /^\d+$/.test(r) && /^\d+$/.test(o) && /^\d+$/.test(t) && /^\d+$/.test(e) ? `once, on ${r}/${o} at ${g(t)}:${g(e)}` : s;
 }
-const V = (n, s) => {
-  const e = n.__vccOpts || n;
-  for (const [t, o] of s)
-    e[t] = o;
+const L = (s, n) => {
+  const e = s.__vccOpts || s;
+  for (const [t, r] of n)
+    e[t] = r;
   return e;
-}, O = { class: "agent-jobs" }, T = {
+}, R = { class: "agent-jobs" }, V = {
   key: 0,
   class: "agent-jobs-refusal",
   role: "alert",
   "data-job-refusal": ""
-}, q = ["data-job"], H = { class: "agent-job-text" }, I = {
+}, O = ["data-job"], T = { class: "agent-job-text" }, q = {
   __name: "AgentJobs",
-  setup(n) {
-    const s = N(), { rows: e, failure: t, loaded: o, load: r } = w(`scheduled-job running --agent ${s.agent}`, ["scheduled_job.*"]), i = y(""), d = (c) => c.split(`
+  setup(s) {
+    const n = N();
+    n.state["jobs.agent"] = String(n.agent);
+    const { rows: e, failure: t, loaded: r } = n.props.jobs, o = j(""), c = (d) => d.split(`
 `)[0];
-    function p(c) {
-      const a = C(c.cron);
+    function i(d) {
+      const a = W(d.cron);
       return a ? `next at ${a.toLocaleTimeString(void 0, { hour: "2-digit", minute: "2-digit" })}` : "not due in the next 8 days";
     }
-    function f(c) {
-      const a = L(c.cron);
-      return c.is_recurring || a.startsWith("once") ? a : `${a}, once`;
+    function p(d) {
+      const a = C(d.cron);
+      return d.is_recurring || a.startsWith("once") ? a : `${a}, once`;
     }
-    async function v(c) {
-      const a = await s.run(["scheduled-job", "stop", String(c.id)]);
-      i.value = a.ok ? "" : a.error, a.ok && r();
+    async function f(d) {
+      const a = await n.run(["scheduled-job", "stop", String(d.id)]);
+      o.value = a.ok ? "" : a.error, a.ok && n.reload("jobs");
     }
-    return (c, a) => (h(), j(l(D), { padding: "14px 16px" }, {
+    return (d, a) => (h(), v(l(w), { padding: "14px 16px" }, {
       default: b(() => [
-        _("div", O, [
-          i.value ? (h(), S("p", T, m(i.value), 1)) : k("", !0),
-          $(l(A), {
+        _("div", R, [
+          o.value ? (h(), y("p", V, m(o.value), 1)) : S("", !0),
+          $(l(x), {
             rows: l(e),
             failure: l(t),
-            loaded: l(o),
+            loaded: l(r),
             empty: "No scheduled jobs",
             hint: "Scheduled jobs appear here."
           }, {
@@ -80,22 +82,22 @@ const V = (n, s) => {
                 class: "agent-job",
                 "data-job": u.job_id
               }, [
-                _("div", H, [
-                  _("b", null, m(d(u.prompt)), 1),
-                  _("span", null, m(f(u)) + " · " + m(p(u)), 1)
+                _("div", T, [
+                  _("b", null, m(c(u.prompt)), 1),
+                  _("span", null, m(p(u)) + " · " + m(i(u)), 1)
                 ]),
-                $(l(B), {
+                $(l(D), {
                   small: "",
                   disabled: !!u.stop_requested_at,
                   "data-job-stop": "",
-                  onClick: (J) => v(u)
+                  onClick: (H) => f(u)
                 }, {
                   default: b(() => [
-                    x(m(u.stop_requested_at ? "Stopping" : "Stop"), 1)
+                    k(m(u.stop_requested_at ? "Stopping" : "Stop"), 1)
                   ]),
                   _: 2
                 }, 1032, ["disabled", "onClick"])
-              ], 8, q)
+              ], 8, O)
             ]),
             _: 1
           }, 8, ["rows", "failure", "loaded"])
@@ -104,7 +106,7 @@ const V = (n, s) => {
       _: 1
     }));
   }
-}, U = /* @__PURE__ */ V(I, [["__scopeId", "data-v-ec69a5b6"]]);
+}, G = /* @__PURE__ */ L(q, [["__scopeId", "data-v-61cd562a"]]);
 export {
-  U as default
+  G as default
 };

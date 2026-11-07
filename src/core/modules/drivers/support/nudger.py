@@ -7,8 +7,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 
 class Nudger:
     """Gives an agent a line outside a hook's own answer: the one place that writes the row its next hook
-    gives or the server types. A declared nudge is said by its declaration; only text that came from a person
-    or a plugin is said as plain text."""
+    gives or the server types. Declared nudges keep their templates; other text is read by its row number."""
 
     def __init__(self, repository: Repository) -> None:
         self.repository = repository
