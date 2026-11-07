@@ -50,9 +50,11 @@ def running_worker(worker_story):
     """A worker the launcher started and answered the pid of, whose program runs."""
     story = worker_story
     story.use_processes(RUNNING_PROGRAM)
-    start_launcher(story, f"started {WORKER_PID}\n".encode())
+    launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
     story.worker = dispatched_worker(story)
     story.run_listeners()
+    launcher.thread.join(10)
+    story.expect_rows(bool(launcher.requests), story.row(Agent, story.worker.id).pid == WORKER_PID)
     story.advance(timedelta(minutes=5))
     return story
 
