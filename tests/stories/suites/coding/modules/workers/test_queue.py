@@ -135,7 +135,7 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     ended(story, started[0], 0)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
     lines.expect_text(PROOF_CHECK.nudge(worker=worker.id, task=1, proofs="2").text)
-    lines.expect_no_text(f"the tests of worker:{worker.id} all pass")
+    lines.expect_no_text(f"journal worker merge {worker.id}")
     expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
