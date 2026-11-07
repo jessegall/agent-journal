@@ -146,3 +146,16 @@ def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(ne
     worker = dispatched_worker(story, "worker dispatch --model sonnet --plan 1")
     next_task = story.container.get(WorkerNextTask).following(worker.id)
     story.expect_rows(next_task is not None and next_task.id == first_phase_task)
+
+
+def test_an_open_task_given_to_an_ended_worker_with_a_blocked_task_is_sent_to_it(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
+    story.expect_success('task block 1 --reason "Waits on the design"', actor=worker)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    task = story.new_row_id('task make "Next work" --environment main', actor=story.agent)
+    story.expect_success(f"task edit {task} --delegated-to {worker.id}", actor=story.agent)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    story.expect_rows(operation is not None and operation.line == f"worker send {worker.id} --task {task} --wait")
