@@ -23,7 +23,7 @@ class LinkPinRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.category in FILE_TOOLS:
+        if tool is None or tool.category in FILE_TOOLS or (tool.shell is not None and tool.shell.is_readonly):
             return RuleAnswer.allowed()
         part_nudges = [nudge for part_text in (tool.shell.part_texts if tool.shell is not None else ()) for nudge in self.check.nudges(part_text)]
         response = self.check.joined_text(hook.event.raw.get("tool_response"))

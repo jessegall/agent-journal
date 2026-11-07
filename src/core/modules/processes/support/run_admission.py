@@ -8,16 +8,16 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.models.process import Process
-from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
+from core.modules.processes.support.run_visibility import RunVisibility
 
 
 class RunAdmission:
     """Decides which runs wait for capacity and readers, and which start immediately."""
 
-    def __init__(self, queries: Queries, listings: RunCounts, folder: OutputFolder, suites: SuiteChoice, settings: ProcessSettings) -> None:
+    def __init__(self, queries: Queries, listings: RunCounts, folder: OutputFolder, suites: SuiteChoice, settings: ProcessSettings, visibility: RunVisibility) -> None:
         self.queries, self.listings, self.folder = queries, listings, folder
-        self.suites, self.settings = suites, settings
+        self.suites, self.settings, self.visibility = suites, settings, visibility
 
     def needs_slot(self, process: Process, agent: Agent) -> bool:
         return process.is_queue_run and agent.role in self.suites.agent_policy().queued_run_roles
@@ -29,7 +29,7 @@ class RunAdmission:
                 and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN)
 
     def may_start(self, process: Process, agent: Agent, current_time: Timestamp) -> bool:
-        parts = tuple(self.queries.query(ProcessPart).filter(process_id=process.id).all_rows())
+        parts = self.visibility.parts(process.id)
         if not parts:
             return False
         if not self.needs_slot(process, agent):

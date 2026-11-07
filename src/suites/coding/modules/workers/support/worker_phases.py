@@ -27,10 +27,10 @@ class WorkerPhases:
     def phase(self, task: Task) -> Phase | None:
         if not self.settings.flag(PHASE_TESTS_ENABLED):
             return None
-        plan = self.plans.find(task.id)
-        if plan is None or plan.state is not PlanState.STARTED:
+        phase = self.plans.find_phase(task.id)
+        if phase is None or self.queries.query(Plan).find(phase.plan_id).state is not PlanState.STARTED:
             return None
-        return self.plans.find_phase(task.id)
+        return phase
 
     def continues(self, task: Task, following: Task | None) -> bool:
         phase = self.phase(task)
