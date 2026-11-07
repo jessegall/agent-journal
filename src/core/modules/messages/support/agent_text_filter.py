@@ -17,6 +17,7 @@ REPEATED_TOKEN_FRACTION = 0.6
 TOKENS = re.compile(r"[^\W_]+", re.UNICODE)
 REFERENCES = re.compile(r"\b([a-z][a-z0-9_-]*)\s*(?::\s*|\s+)(\d+)\b", re.IGNORECASE)
 NUMBERS = re.compile(r"\b\d+\b")
+FILES = re.compile(r"[\w./-]*\w\.[a-z]{1,5}\b|[\w.-]+/[\w./-]+", re.IGNORECASE)
 
 
 class AgentTextFilter:
@@ -49,7 +50,9 @@ class AgentTextFilter:
         if not refs.issubset(reply_refs):
             return False
         reply_tokens = set(TOKENS.findall(reply_text))
-        return sum(token in reply_tokens for token in tokens) / len(tokens) >= REPEATED_TOKEN_FRACTION
+        if sum(token in reply_tokens for token in tokens) / len(tokens) >= REPEATED_TOKEN_FRACTION:
+            return True
+        return bool(refs) and set(FILES.findall(text)).issubset(FILES.findall(reply_text))
 
     def is_reaction_turn(self, agent_id: int, created_at: Timestamp) -> bool:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
