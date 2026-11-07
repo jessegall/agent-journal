@@ -24,7 +24,6 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
-from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
 from suites.coding.modules.workers.models.proof import Proof
@@ -55,15 +54,13 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
         agents = tuple(self.queries.query(Agent).all_rows())
-        if all(agent.role == CodingAgentRole.MAIN for agent in agents) and not self.settings.flag(AUTO_MODE_SETTING):
-            return
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED]))
         held = tasks.matching(Among("holder_id", agent_ids)).all_rows()
         delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
         working = {agent_id for task in (*held, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
-        main_has_work = self.settings.flag(AUTO_MODE_SETTING) and tasks.exists()
+        main_has_work = tasks.exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.waiting(agent_ids, context)
