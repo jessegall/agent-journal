@@ -23,7 +23,8 @@ VERSION_FOUR_CHILD_ROLE = "subagent"
 
 
 class AgentsMove(VersionFourMove):
-    """Carries each version 4 agent with its session, program (version 4's provider), role and environment,
+    """Carries each version 4 agent with its session, program (version 4's provider), role and environment;
+    each environment's most recently active main agent stays open, so Continue resumes it, and older main agents end,
     as an agent whose number is its new actor's; a session that ended stays an ended agent so the rows
     it made keep their owner. An early session that has no role was a main session and moves as one. A
     session that made rows but has no agent row moves ended, as the helper version 4 sent it as with
@@ -38,7 +39,9 @@ class AgentsMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = list(context.role_names)
-        for row in source.rows(TABLE):
+        all_rows = list(source.rows(TABLE))
+        newest_mains = self.newest_main_ids(all_rows)
+        for row in all_rows:
             role = self.moved_role(row["role"] or AgentRole.MAIN.value)
             if not row["session"]:
                 report.drop("agents without a session", 1)
@@ -46,7 +49,7 @@ class AgentsMove(VersionFourMove):
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
             else:
                 created = row["created_at"] or context.timestamp
-                ended = (row["updated_at"] or created) if row["state"] == ENDED or role == AgentRole.HELPER else None
+                ended = self.ended_at(row, role, created, newest_mains)
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row["session"], row["environment_id"], row["provider"], role,
                                                                                          creators.actor_id(row["creator"]), created, row["updated_at"] or created, ended)))
         self.move_missing_sessions(source, rows, map, report, roles)
@@ -75,6 +78,25 @@ class AgentsMove(VersionFourMove):
             moved += 1
         if moved:
             report.note(f"{moved} sessions that made rows but had no version 4 agent row moved as ended agents")
+
+    @staticmethod
+    def ended_at(row: sqlite3.Row, role: str, created: str, newest_mains: set[int]) -> str | None:
+        if row["id"] in newest_mains:
+            return None
+        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == AgentRole.HELPER:
+            return row["updated_at"] or created
+        return None
+
+    @classmethod
+    def newest_main_ids(cls, rows: list[sqlite3.Row]) -> set[int]:
+        newest: dict[int, sqlite3.Row] = {}
+        for row in rows:
+            if not row["session"] or cls.moved_role(row["role"] or AgentRole.MAIN.value) != AgentRole.MAIN.value:
+                continue
+            current = newest.get(row["environment_id"])
+            if current is None or (row["updated_at"] or "") > (current["updated_at"] or ""):
+                newest[row["environment_id"]] = row
+        return {row["id"] for row in newest.values()}
 
     @staticmethod
     def moved_role(role: str) -> str:

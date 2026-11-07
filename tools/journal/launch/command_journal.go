@@ -165,7 +165,7 @@ func (journal CommandJournal) ProgramCommand(request Request, choice Choice, lau
 	if !choice.SkipPrompts {
 		argv = append(argv, "--ask-prompts")
 	}
-	for _, argument := range request.ProgramArguments {
+	for _, argument := range request.ArgumentsBesideSession() {
 		argv = append(argv, "--program-argument="+argument)
 	}
 	output, err := journal.Run(argv...)

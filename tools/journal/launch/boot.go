@@ -355,6 +355,10 @@ func (menu *boot) running() (bool, error) {
 }
 
 func (menu *boot) conversation() (bool, error) {
+	if named := menu.request.NamedSession(); named != "" {
+		menu.choice.Session = named
+		return true, nil
+	}
 	conversations, err := menu.journal.Conversations(menu.choice.Environment, menu.request.Program)
 	if err != nil {
 		return false, err
@@ -400,3 +404,38 @@ func indexOf(values []string, value string) int {
 	}
 	return -1
 }
+
+// NamedSession is the conversation the person named with --resume <session> (or --resume=<session>) after the
+// program's name; that one is resumed, and the menu does not ask which conversation to carry on.
+func (request Request) NamedSession() string {
+	for index, argument := range request.ProgramArguments {
+		if value, found := strings.CutPrefix(argument, ResumeFlag+"="); found {
+			return value
+		}
+		if argument == ResumeFlag && index+1 < len(request.ProgramArguments) {
+			return request.ProgramArguments[index+1]
+		}
+	}
+	return ""
+}
+
+// ArgumentsBesideSession are the program arguments without the --resume the menu's choice already carries, so the
+// program is never handed two sessions.
+func (request Request) ArgumentsBesideSession() []string {
+	kept := []string{}
+	for index := 0; index < len(request.ProgramArguments); index++ {
+		argument := request.ProgramArguments[index]
+		if strings.HasPrefix(argument, ResumeFlag+"=") {
+			continue
+		}
+		if argument == ResumeFlag {
+			index++
+			continue
+		}
+		kept = append(kept, argument)
+	}
+	return kept
+}
+
+// ResumeFlag is the flag a person names a conversation with on the command line.
+const ResumeFlag = "--resume"
