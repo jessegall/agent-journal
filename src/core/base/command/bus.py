@@ -79,7 +79,9 @@ class Bus:
             return self.run_with_context(command, context)
         handler = self.handler(command)
         if type(handler).prepare is not Handler.prepare and not handler.caller_prepares:
-            raise TransactionError(f"{command.label()} has a prepare step, which a dispatch skips: run it instead")
+            if self.database.has_transaction:
+                raise TransactionError(f"{command.label()} has a prepare step, which a dispatch skips: run it instead")
+            handler.prepare(command, context.actor)
         if handler.runs_once:
             context.outside_runs.close()
         with self.database.savepoint(command.label()), self.scopes.command_scope(handler.disabled_scopes, context.actor, context.environment_id):
