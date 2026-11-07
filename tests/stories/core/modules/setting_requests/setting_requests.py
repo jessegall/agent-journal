@@ -81,3 +81,14 @@ def test_the_requesting_agent_cannot_decide_or_close_it(pending_setting, decisio
 def test_no_agent_can_skip_the_person_decision_guard(setting_story):
     story = setting_story
     story.expect_refusal('refusal skip approvals.person-decides --reason "I need it" --environment main', "safety refusal", actor=story.agent)
+
+
+def test_a_setting_approval_closes_itself_when_its_own_setting_changes_before_it_is_decided(setting_story):
+    story = setting_story
+    story.expect_success(f'setting request {SETTING} on --reason "Stale soon" --environment main', actor=story.agent)
+    story.expect_success(f"setting set {AGENT_SETTING} 30 --project", actor=story.user)
+    story.run_listeners()
+    story.expect_text("approval show 1", "state: open")
+    story.expect_success(f"setting set {SETTING} true --environment main", actor=story.user)
+    story.run_listeners()
+    story.expect_text("approval show 1", "state: closed", f"outdated: {SETTING} changed since this change was asked for")
