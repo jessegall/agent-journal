@@ -28,7 +28,7 @@ def running_process(new_story):
 
 
 def move_after_answers(story, monkeypatch, expected_commands, move):
-    original_read = HookRuleAnswers.asked
+    original_read = HookRuleAnswers.evaluate
 
     def read_then_move(reader, event, agent):
         answers = original_read(reader, event, agent)
@@ -36,7 +36,7 @@ def move_after_answers(story, monkeypatch, expected_commands, move):
         move()
         return answers
 
-    monkeypatch.setattr(HookRuleAnswers, "asked", read_then_move)
+    monkeypatch.setattr(HookRuleAnswers, "evaluate", read_then_move)
 
 
 def expect_commands_answered(story, reply, *command_names):
