@@ -328,7 +328,9 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     arguments = ['worker', 'dispatch', str(task_id), '--model', 'sonnet']
     story.expect_hook_refusal('s-1', HookSamples.shell(f'journal worker dispatch {task_id} --model sonnet', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='worker')),
                               f'journal worker send {worker.id}')
-    story.expect_success(f'worker send {worker.id} --task {task_id}', actor=story.agent)
+    story.expect_refusal(f'worker send {worker.id} --wait --task {task_id}', 'route 1', actor=story.agent)
+    story.expect_success(f'worker send {worker.id} --wait --task {task_id} --skip-guard workers.route-holds '
+                         '--skip-reason "Keep the existing worker for this comparison"', actor=story.agent)
     expect_program(story, worker, 'claude')
     story.expect_text(f'task show {task_id}', f'holder_id: {worker.id}')
 
