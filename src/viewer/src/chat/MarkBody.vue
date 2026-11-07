@@ -18,6 +18,7 @@ const props = defineProps({
     actions: {type: Object, default: null},
     time: {type: Object, default: null},
     folded: Boolean,
+    collapsed: Boolean,
 });
 
 const view = useWindow();
@@ -65,6 +66,7 @@ watch(
                     :actions="actions"
                     :time="time"
                     :folded="folded"
+                    :collapsed="collapsed"
                 />
             </template>
             <template v-else>

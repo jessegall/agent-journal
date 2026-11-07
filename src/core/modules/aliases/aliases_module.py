@@ -15,6 +15,8 @@ from core.modules.aliases.listeners.plugin_aliases_listener import PluginAliases
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
 from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
 from core.modules.aliases.models.alias import Alias
+from core.modules.aliases.models.command_kind import CommandKind
+from core.modules.aliases.migrations.m004_command_kinds import CommandKindsMigration
 from core.modules.aliases.models.saved_command import SavedCommand
 from core.modules.aliases.commands.support.alias_saved_subcommand import AliasSavedSubcommand
 from core.modules.aliases.queries.alias_query import AliasQuery
@@ -24,7 +26,8 @@ from core.modules.aliases.upgrade.aliases_move import AliasesMove
 from core.modules.aliases.commands.skip_saved_command.skip_saved_command_subcommand import SkipSavedCommandSubcommand
 from core.modules.aliases.rules.alias_expansion_rule import AliasExpansionRule
 from core.modules.aliases.rules.saved_command_rule import SavedCommandRule
-from core.modules.aliases.support.alias_nudges import (ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_HELPER,
+from core.modules.aliases.rules.unknown_command_rule import UnknownCommandRule
+from core.modules.aliases.support.alias_nudges import (COMMAND_KIND_UNKNOWN, ALIAS_ACCESS_REFUSED, ALIAS_MISSING, ALIAS_UNEXPANDED, SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_HELPER,
                                                        SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT)
 
 
@@ -34,9 +37,9 @@ class AliasesModule(Module):
     name = "journal.core.aliases"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins"]
-    models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"])]
+    models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(CommandKind)]
     views = [SavedCommand]
-    migrations = [AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration]
+    migrations = [AliasesTableMigration, AliasCategoryMigration, AliasAgentAccessMigration, CommandKindsMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler]
     subcommands = [AliasSavedSubcommand, AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand, SkipSavedCommandSubcommand]
@@ -44,5 +47,5 @@ class AliasesModule(Module):
     seeders = [AliasesSeeder]
     listeners = [AliasFileListener, PluginAliasesListener]
     guards = [ReaderAliasGuard, SavedCommandGuard]
-    driver_rules = [AliasExpansionRule, SavedCommandRule]
-    nudges = [ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_MIXED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_HELPER, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT]
+    driver_rules = [AliasExpansionRule, UnknownCommandRule, SavedCommandRule]
+    nudges = [COMMAND_KIND_UNKNOWN, ALIAS_UNEXPANDED, ALIAS_MISSING, ALIAS_ACCESS_REFUSED, SAVED_COMMAND_MIXED, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_CHOICES, SAVED_COMMAND_HELPER, SAVED_COMMAND_DIRECT, SAVED_COMMAND_PIPED, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT]

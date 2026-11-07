@@ -40,6 +40,7 @@ const head = view.option("head");
 const foot = view.option("foot");
 const time = view.option("time");
 const folded = view.option("folded");
+const collapsed = view.option("collapsed");
 const run = card.data;
 const pages = useOutputPages(
   card.readOutput,
@@ -63,6 +64,11 @@ const width = computed(() =>
 const began = computed(() =>
   run.value?.created_at ? Date.parse(run.value.created_at) / 1000 : 0,
 );
+// a card folded to its title line shows only the percent of the run, left of its duration; none while the run has made no progress
+const percent = computed(() => {
+  const done = Math.round(Number(run.value?.progress ?? 0));
+  return unref(collapsed) && done > 0 ? `${done}%` : "";
+});
 const steps = computed(() => {
   if (!run.value?.steps_passed && !run.value?.steps_failed) return "";
   return run.value.steps_failed
@@ -159,6 +165,7 @@ usePoll(load, isRunning, () =>
     >
     <template v-if="unref(time)"
       ><Teleport :to="unref(time)"
+        ><span v-if="percent" class="output-dock-percent" data-output-percent>{{ percent }}</span
         ><span class="output-dock-figure">{{ ranFor }}</span></Teleport
       ></template
     >
@@ -258,6 +265,14 @@ usePoll(load, isRunning, () =>
 
 .output-dock-figure {
   flex: none;
+  color: var(--text-3);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.output-dock-percent {
+  flex: none;
+  margin-right: 6px;
   color: var(--text-3);
   font-size: 11.5px;
   font-variant-numeric: tabular-nums;

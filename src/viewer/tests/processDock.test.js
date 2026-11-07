@@ -4,10 +4,27 @@ import MarkButtons from "../src/chat/MarkButtons.vue";
 import OutputDock from "../../core/modules/processes/web/src/OutputDock.vue";
 import {nextTick, ref} from "vue";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
-import {context, mounted, settle} from "./support/windowContext.js";
+import {provideDockCard} from "../kit/windowContextKey.js";
+import {context, settle} from "./support/windowContext.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 afterEach(() => vi.unstubAllGlobals());
+
+// the process body is drawn inside a dock card, which gives it the card's data, its reload and the way to read its output
+async function mounted(component, window) {
+    const element = document.createElement("div");
+    const app = createApp({render: () => h(component)});
+    const data = ref(null);
+    app.provide(WINDOW_CONTEXT, window);
+    provideDockCard((key, value) => app.provide(key, value), {
+        data,
+        reload: async () => { data.value = (await window.read("process card 3")).value; },
+        readOutput: async (line) => window.read(line.join(" ")),
+    });
+    app.mount(element);
+    await settle();
+    return element;
+}
 
 const DOCK = {icon: "dock", label: "Dock", runs: "dock add processes.output process {row_id}"};
 const STOP_WATCHING = {icon: "close", label: "Stop watching", runs: "output unwatch {row_id}"};
@@ -186,4 +203,28 @@ test("a docked process's running time moves on with the clock, with no read", as
     } finally {
         vi.useRealTimers();
     }
+});
+
+async function foldedTime(run, collapsed) {
+    const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", created_at: "2026-11-02T10:00:00Z", ...run}}, "output peek 3": {ok: true, value: {lines: []}}});
+    const head = document.createElement("span");
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(head, foot, time);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(true), collapsed: ref(collapsed), row: ref({id: 7, target_id: 3})})[key];
+    await mounted(OutputDock, window);
+    return {time, head};
+}
+
+test("a card folded to its title line shows only the percent, left of the duration, with no steps or failures", async () => {
+    const {time, head} = await foldedTime({progress: 42, steps_passed: 12, steps_failed: 1}, true);
+    expect([...time.children].map((child) => child.className)).toEqual(["output-dock-percent", "output-dock-figure"]);
+    expect(time.querySelector("[data-output-percent]").textContent).toBe("42%");
+    expect(time.textContent).not.toMatch(/passed|failed|Steps/);
+    expect(head.textContent).not.toMatch(/passed|failed|Steps/);
+});
+
+test("a process with no progress shows no percent, and an unfolded card shows none either", async () => {
+    expect((await foldedTime({progress: 0}, true)).time.querySelector("[data-output-percent]")).toBeNull();
+    expect((await foldedTime({progress: 42}, false)).time.querySelector("[data-output-percent]")).toBeNull();
 });
