@@ -130,7 +130,7 @@ class ClaudeCodeProvider(Provider):
             return path
         return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
 
-    def session_resumes_here(self, project: Path, session: str) -> bool:
+    def session_matches_folder(self, project: Path, session: str) -> bool:
         return (self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl").is_file()
 
     def transcript_row(self, line: str, position: int) -> TranscriptRow | None:

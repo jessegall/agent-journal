@@ -131,12 +131,11 @@ class CodexProvider(Provider):
             return ""
         return CodexSessionEffort(path, "model").read()
 
-    def session_resumes_here(self, project: Path, session: str) -> bool:
+    def session_matches_folder(self, project: Path, session: str) -> bool:
         rollout = self.transcript(project, session)
         if rollout is None:
             return False
-        with rollout.open(encoding="utf-8") as lines:
-            header: object = json.loads(next(lines, "{}") or "{}")
+        header: object = json.loads(TranscriptTail(rollout).first_line() or "{}")
         payload = header.get("payload") if is_mapping(header) else None
         return is_mapping(payload) and payload.get("cwd") == str(project)
 

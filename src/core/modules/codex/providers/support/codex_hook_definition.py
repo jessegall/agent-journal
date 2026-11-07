@@ -5,6 +5,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
+from core.modules.codex.providers.support.codex_command_identity import CodexCommandIdentity
+from core.modules.codex.providers.support.codex_hook_identity import CodexHookIdentity
 
 
 @dataclass(frozen=True)
@@ -16,7 +18,8 @@ class CodexHookDefinition:
     entry: Mapping[str, object]
 
     def current_hash(self) -> str | None:
-        command = self.entry.get("commandWindows", self.entry.get("command_windows", self.entry.get("command"))) if os.name == "nt" else self.entry.get("command")
+        windows = self.entry.get("commandWindows", self.entry.get("command_windows"))
+        command = windows if os.name == "nt" and windows is not None else self.entry.get("command")
         timeout = self.entry.get("timeout", self.event.default_timeout)
         asynchronous = self.entry.get("async", False)
         status = self.entry.get("statusMessage")
@@ -31,12 +34,12 @@ class CodexHookDefinition:
             return None
         if self.matcher is not None and not isinstance(self.matcher, str):
             return None
-        handler: dict[str, object] = {"type": "command", "command": command, "timeout": self.event.timeout(timeout), "async": asynchronous}
+        handler: CodexCommandIdentity = {"type": "command", "command": command, "timeout": self.event.timeout(timeout), "async": asynchronous}
         if status is not None:
             handler["statusMessage"] = status
         if self.event.has_context and limit is not None and limit != 2500:
             handler["additionalContextLimit"] = limit
-        identity: dict[str, object] = {"event_name": self.event.key, "hooks": [handler]}
+        identity: CodexHookIdentity = {"event_name": self.event.key, "hooks": [handler]}
         if self.event.has_matcher and self.matcher is not None:
             identity["matcher"] = self.matcher
         body = json.dumps(identity, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()

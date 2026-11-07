@@ -99,5 +99,5 @@ def test_a_session_found_under_another_project_does_not_resume_here(provider, tm
     transcript.parent.mkdir(parents=True)
     transcript.write_text("{}\n")
     assert provider.transcript(project, "thread") == transcript
-    assert not provider.session_resumes_here(project, "thread")
-    assert provider.session_resumes_here(other, "thread")
+    assert not provider.session_matches_folder(project, "thread")
+    assert provider.session_matches_folder(other, "thread")

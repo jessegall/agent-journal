@@ -164,7 +164,7 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
-    monkeypatch.setattr(ClaudeCodeProvider, "session_resumes_here", lambda provider, folder, session: True)
+    monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
     stopped(story, worker)
     second, third = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
     story.expect_refusal(f"worker dispatch --model sonnet {second} {third}", f"journal worker send {worker.id} --task {second} {third}", actor=story.agent)
@@ -234,7 +234,7 @@ def test_a_send_while_tests_run_is_refused_and_nothing_moves(new_story, monkeypa
 def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     worker = merged_kept_worker(story, repository_environment(story))
-    monkeypatch.setattr(ClaudeCodeProvider, "session_resumes_here", lambda provider, folder, session: True)
+    monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
     monkeypatch.setattr(ClaudeCodeProvider, "context_percent", lambda provider, home, session: 80)
     stopped(story, worker)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)

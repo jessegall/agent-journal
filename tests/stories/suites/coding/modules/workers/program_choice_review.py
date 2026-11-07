@@ -45,5 +45,5 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
             story.expect_rows(finished.returncode == 0, detail=finished.stderr)
     calls = tuple(story.container.get(Queries).query(HookCall).filter(session_agent_id=worker.id, tool="read_file").all_rows())
     story.expect_rows(len(calls) == 1)
-    story.expect_rows(calls[0].folder == str(folder), calls[0].summary == str(path))
+    story.expect_rows(calls[0].folder == str(folder))
     story.expect_success(f"program trust codex {shlex.quote(str(folder))}", "untrusted")

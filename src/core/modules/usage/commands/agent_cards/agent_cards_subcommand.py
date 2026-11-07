@@ -99,7 +99,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             return "This helper ran as a program subagent and cannot resume."
         if not self.folders.has_folder(agent):
             return "The folder this agent worked in is gone."
-        if not self.providers.provider(agent.program).session_resumes_here(self.folders.resume_folder(agent), agent.session):
+        if not self.providers.provider(agent.program).session_matches_folder(self.folders.resume_folder(agent), agent.session):
             return "The saved session is gone; this agent cannot resume."
         return None
 
