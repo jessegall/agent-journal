@@ -1,0 +1,10 @@
+model = "sample"
+
+[hooks.state."/work/app/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:2a01b1f23943ddbcdfd4679541a6e90337fe0384a78dfd3892999c05d9b240fd"
+
+[hooks.state."/work/app/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:83134e577454ef18a25a039e02d79cf2487707d3606bdf04eb332f739fc0c1b0"
+
+[hooks.state."/work/app/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:ee53c6acb6ddc2f39f7eaf62302e4c829089dfb178a3f17d9b85a96169251215"
