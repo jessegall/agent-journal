@@ -54,9 +54,11 @@ const rows = computed(() => docked.value.filter((item) => !runs.value.includes(i
 const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
 const sizeChoice = rememberedRef(`dock-size:${store.identity?.root || location.host}`, null);
 const waitsOnPerson = (item) => Boolean(dockDeclaration(item.type)?.needs_user);
-// a card that waits on the person docks open, whatever the chat's scroll or the others' size choice says, until the person folds it
+// a card that waits on the person, or the only card in the dock, docks open whatever the chat's scroll or the others' size choice says, until the person folds it
 const handFolded = ref(new Set());
-const collapsedFor = (item) => waitsOnPerson(item) ? handFolded.value.has(item.id) : sizeChoice.value ? sizeChoice.value.collapsed && !sizeChoice.value.opened.includes(item.id) : props.collapsed;
+const alone = computed(() => docked.value.length === 1);
+const opensUnfolded = (item) => waitsOnPerson(item) || alone.value;
+const collapsedFor = (item) => opensUnfolded(item) ? handFolded.value.has(item.id) : sizeChoice.value ? sizeChoice.value.collapsed && !sizeChoice.value.opened.includes(item.id) : props.collapsed;
 const anyCollapsed = computed(() => docked.value.some(collapsedFor));
 const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value && !docked.value.some(collapsedFor));
 
@@ -68,7 +70,7 @@ function changeAll() {
 
 function openCard(item) {
     if (!collapsedFor(item)) return;
-    if (waitsOnPerson(item)) return void (handFolded.value = new Set([...handFolded.value].filter((id) => id !== item.id)));
+    if (opensUnfolded(item)) return void (handFolded.value = new Set([...handFolded.value].filter((id) => id !== item.id)));
     const opened = sizeChoice.value?.collapsed ? sizeChoice.value.opened : [];
     sizeChoice.value = {collapsed: true, opened: [...opened, item.id]};
 }

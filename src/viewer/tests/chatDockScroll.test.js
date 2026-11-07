@@ -154,3 +154,19 @@ test("a card that waits on the person docks open among folded cards, can be fold
     stack.app.unmount();
     localStorage.clear();
 });
+
+test("a lone card docks unfolded, the last card left unfolds, and two or more cards keep their folded state", async () => {
+    localStorage.clear();
+    const items = ref([item(1)]);
+    const stack = await mixedStack(items, ref(true));
+    const folded = () => [...stack.host.querySelectorAll(".chat-dock")].map((card) => card.classList.contains("collapsed"));
+    expect(folded()).toEqual([false]);
+    items.value = [item(1), item(2)];
+    await nextTick();
+    expect(folded()).toEqual([true, true]);
+    items.value = [item(2)];
+    await nextTick();
+    expect(folded().at(-1)).toBe(false);
+    stack.app.unmount();
+    localStorage.clear();
+});
