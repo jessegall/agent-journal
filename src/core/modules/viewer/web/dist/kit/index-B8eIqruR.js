@@ -8323,7 +8323,7 @@ function bw(e, t, n = pw) {
   const s = new Set(e.filter((o) => o.leaves_at && !o.kept && !(ma(o) > t)).slice(0, a).map((o) => o.id));
   return e.filter((o) => !s.has(o.id));
 }
-const kw = (e, t, n = e) => n < 2 ? !1 : e >= gw ? !0 : t, ww = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), vs = (e, t, n, a) => ({ action: e, icon: t, label: n, runs: a }), $w = (e, t) => !!(e.leaves_at || e.kept || (t == null ? void 0 : t.leaves_after_seconds) > 0), xw = (e) => ({ ...e.kept ? vs("unkeep", "pins", "Let this card close", `dock unkeep ${e.id}`) : vs("keep", "pins", "Keep this card", `dock keep ${e.id}`), pressed: !!e.kept }), Sw = ["keep", "unkeep", "open", "undock"], _w = (e) => ({ ...e, iconOnly: Sw.includes(e.action) });
+const kw = (e, t, n = e) => n < 2 ? !1 : e >= gw ? !0 : t, ww = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), vs = (e, t, n, a) => ({ action: e, icon: t, label: n, runs: a }), $w = (e, t) => !(t != null && t.needs_user) && !!(e.leaves_at || e.kept || (t == null ? void 0 : t.leaves_after_seconds) > 0), xw = (e) => ({ ...e.kept ? vs("unkeep", "pins", "Let this card close", `dock unkeep ${e.id}`) : vs("keep", "pins", "Keep this card", `dock keep ${e.id}`), pressed: !!e.kept }), Sw = ["keep", "unkeep", "open", "undock"], _w = (e) => ({ ...e, iconOnly: Sw.includes(e.action) });
 function Mw(e, t) {
   var n;
   return [
@@ -13568,7 +13568,7 @@ function TM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const IM = Zr(() => import("./VoiceFigure-DtXmdaOc.js").then((e) => e.V)), RM = "1.2.0", BM = "3.5";
+const IM = Zr(() => import("./VoiceFigure-B6iERUuD.js").then((e) => e.V)), RM = "1.2.0", BM = "3.5";
 export {
   Sf as $,
   Ae as A,

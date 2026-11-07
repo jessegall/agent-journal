@@ -63,3 +63,12 @@ test("pressing the stop icon runs the stop line", async () => {
     await settled();
     expect(lines).toEqual([["output", "stop", "3"]]);
 });
+
+test("a card that waits for a person is kept for good and shows no pin", () => {
+    const item = {id: 4, type: "approvals.request", target_model: "approval", target_id: 16, kept: true};
+    const actions = dockButtons(item, {type: "approvals.request", needs_user: true, buttons: [], reads: ["approval pending"]}).map((button) => button.action);
+    expect(actions).not.toContain("keep");
+    expect(actions).not.toContain("unkeep");
+    const leaving = dockButtons({...item, kept: false, leaves_at: "2026-11-07T20:00:00Z"}, {type: "documents.doc", buttons: [], reads: []}).map((button) => button.action);
+    expect(leaving).toContain("keep");
+});
