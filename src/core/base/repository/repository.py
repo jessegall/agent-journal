@@ -12,6 +12,7 @@ from core.base.database.table_statements import TableStatements
 from core.base.guard.guards import Guards
 from core.base.listener.listeners import Listeners
 from core.base.listener.event_rows import EventRows
+from core.base.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.model.tables import Tables
@@ -27,7 +28,7 @@ IDENTITY_FIELDS = (*BOOKKEEPING_FIELDS, "creator_id")
 class Repository:
     """Saves and deletes rows of any model: works out the change, asks the guards, writes it, logs it and runs
     the listeners, all inside the command's transaction; update saves new values on a row just read, without
-    reading it a second time."""
+    reading it a second time; a change of only the metadata is saved by save_metadata alone."""
 
     def __init__(self, database: Database, tables: Tables, queries: Queries, guards: Guards, listeners: Listeners, log: EventLog,
                  constraint_refusals: ConstraintRefusals, scopes: Scopes, event_rows: EventRows) -> None:
@@ -41,10 +42,13 @@ class Repository:
     def update(self, stored: M, context: Context, **values: object) -> M:
         return self.save_change(stored, stored.changed(**values), context)
 
-    def save_change(self, stored: M | None, model: M, context: Context) -> M:
+    def save_metadata(self, stored: M, metadata: Metadata, context: Context) -> M:
+        return self.save_change(stored, replace(stored, metadata=metadata), context, stores_metadata=True)
+
+    def save_change(self, stored: M | None, model: M, context: Context, stores_metadata: bool = False) -> M:
         model = self.scopes.applied(model)
         change = Change(stored, model, context)
-        if change.is_empty and change.old_row is not None:
+        if change.is_empty and not (stores_metadata and change.has_metadata_change) and change.old_row is not None:
             return change.old_row
         skipped = self.guards.ask(change)
         saved = self.persist(model, change)

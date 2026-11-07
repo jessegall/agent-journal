@@ -18,7 +18,7 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
     """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>])
     [--model <model> | --tier <tier>]
-    [--profile <profile>] [--name <name>] [--library-link <folder>] [--library-copy <folder>]`: a worker for
+    [--profile <profile>] [--name <name>] [--no-sandbox] [--library-link <folder>] [--library-copy <folder>]`: a worker for
     the tasks, or for the open tasks of a plan or of one of its phases, which it takes one by one."""
 
     cli_name = "worker"
@@ -42,12 +42,13 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--name", default="", help="the worker's name on its card")
         parser.add_argument("--no-program", action="store_true", help="a person only: cut the worktree and start no program")
         parser.add_argument("--session", default="", help="with --no-program, the session whose hooks are the worker's")
+        parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
         if arguments.session and not arguments.no_program:
             raise Refusal("--session names the session of a program that is not started", "add --no-program")
         task_ids = self.picked(arguments)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox)
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:
         if arguments.plan is None:

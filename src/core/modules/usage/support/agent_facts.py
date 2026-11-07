@@ -28,7 +28,8 @@ class AgentFacts:
     profile_title: str = ""
     blocked_reason: str = ""
     work_status: str | None = None
+    is_sandbox_off: bool = False
 
     def json(self) -> Mapping[str, object]:
         return {"id": self.agent_id, "model": self.model, "effort": self.effort, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title,
-                "job_enabled": self.job_enabled, "tasks": self.tasks, "state": self.state, "profile": self.profile, "profile_title": self.profile_title, "given_name": self.given_name, "instruction": self.instruction, "job_returned": self.job_returned, "last_activity": self.last_activity, "helper_job": self.helper_job, "blocked_reason": self.blocked_reason, "work_status": self.work_status}
+                "job_enabled": self.job_enabled, "tasks": self.tasks, "state": self.state, "profile": self.profile, "profile_title": self.profile_title, "given_name": self.given_name, "instruction": self.instruction, "job_returned": self.job_returned, "last_activity": self.last_activity, "helper_job": self.helper_job, "blocked_reason": self.blocked_reason, "work_status": self.work_status, "sandbox_off": self.is_sandbox_off}

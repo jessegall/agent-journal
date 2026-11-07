@@ -3,6 +3,7 @@ from core.base.agent_policy import AgentPolicy
 import json
 from argparse import ArgumentParser, Namespace
 
+from core.base.agent_sandbox_choice import AgentSandboxChoice
 from core.base.caller.caller import Caller
 from core.base.clock import Clock
 from core.base.query.conditions.excluding import Excluding
@@ -38,8 +39,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity) -> None:
-        self.activity = activity
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice) -> None:
+        self.activity, self.sandbox = activity, sandbox
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
 
@@ -64,7 +65,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status)
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not self.sandbox.sandboxed(card.id))
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:

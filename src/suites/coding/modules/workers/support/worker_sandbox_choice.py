@@ -1,0 +1,21 @@
+from core.base.agent_sandbox_choice import AgentSandboxChoice
+from core.base.agent_type_book import AgentTypeBook
+from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from suites.coding.modules.workers.support.worker_settings import MODULE_KEY, WORKER_SANDBOX
+
+SANDBOX_KEY = "sandbox"
+
+
+class WorkerSandboxChoice(AgentSandboxChoice):
+    """A worker's choice on its agent row decides whether it is sandboxed, else the project setting."""
+
+    def __init__(self, agents: AgentRows, types: AgentTypeBook, settings: SettingValues) -> None:
+        self.agents, self.types, self.settings = agents, types, settings
+
+    def sandboxed(self, agent_id: int) -> bool:
+        agent = self.agents.find(agent_id)
+        if not self.types.find(agent.role).separate_folder:
+            return True
+        choice = agent.metadata.module_part(MODULE_KEY)
+        return bool(choice[SANDBOX_KEY]) if SANDBOX_KEY in choice else self.settings.flag(WORKER_SANDBOX)

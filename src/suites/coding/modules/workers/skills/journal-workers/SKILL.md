@@ -60,6 +60,9 @@ stays kept on the same agent number and session until retired.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
 - `journal worker release <worker> "<why>"` puts its task back to open.
+- `journal worker sandbox <worker> on|off` sets whether that worker runs its shell lines in the sandbox, over the project setting
+  `worker-sandbox`; `journal worker dispatch` and `send` take `--no-sandbox` to start it with the sandbox off. A person or the
+  main agent switches it; a worker or helper cannot.
 
 ## Keeping the right mix
 

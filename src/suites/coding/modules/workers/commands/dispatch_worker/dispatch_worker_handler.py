@@ -34,6 +34,7 @@ from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
+from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_sandbox import SwitchWorkerSandbox
 from core.modules.messages.support.work_sources import WorkSources
 from dataclasses import replace
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
@@ -92,6 +93,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         except Exception:
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
+        if not command.sandboxed:
+            self.bus.run_with_context(SwitchWorkerSandbox(opened.worker.id, False), context)
         if choice.fallback is not None:
             self.bus.run_with_context(ReportWorkerRouteFallback(opened.worker.id, tuple(listed.id for listed in tasks), choice.fallback), context)
         return WorkerLaunch(opened.worker, worktree, self.worker_command.command(opened.worker, worktree, environment, task))

@@ -108,6 +108,16 @@ def test_a_metadata_only_change_stays_ignored_without_an_event(container: Contai
     assert container.get(EventLog).newest_id() == 1
 
 
+def test_save_metadata_keeps_a_metadata_only_change_with_an_update_event(tmp_path):
+    container = sample_container(tmp_path, empty_registry())
+    saved = save(container, Item(title="Dune"))
+    metadata = Metadata({"items": {"review": 7}})
+    updated = container.get(Repository).save_metadata(saved, metadata, context(MakeItem(title="Dune")))
+    stored = container.get(Queries).query(Item).find(updated.id)
+    assert (stored.version, stored.metadata) == (2, metadata)
+    assert container.get(EventLog).event(2).event == "item.update"
+
+
 def test_guards_are_asked_before_anything_is_written(container: Container):
     saved = save(container, Item(title="Dune"))
     with pytest.raises(GuardRefusal, match="out of print"):
