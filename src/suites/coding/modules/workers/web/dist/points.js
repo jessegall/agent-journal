@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-bbfc27ef32ba")) { const style = document.createElement("style"); style.id = "window-styles-bbfc27ef32ba"; style.textContent = ".worker-models[data-v-703d4f39]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-703d4f39]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-703d4f39]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-703d4f39]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-703d4f39]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-703d4f39]{display:flex;gap:8px;align-items:center}.number[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-470549ee]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-470549ee]{color:var(--text-3);font-size:12px}.main[data-v-7b462dac]{flex:1}.note[data-v-7b462dac]{color:var(--text-3);font-size:12px}.worker-moment[data-v-b883c89e]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-b883c89e]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-2e45450f]{padding:14px 16px}.worktree[data-v-e50e6690]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-e50e6690]{flex:1;min-width:0}.worktree-holder[data-v-e50e6690]{font-weight:500}.worktree-folder[data-v-e50e6690]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-e50e6690]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-43f28005cf6c")) { const style = document.createElement("style"); style.id = "window-styles-43f28005cf6c"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.worker-tab-body[data-v-ac3caed9]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
 import { computed as f, openBlock as r, createBlock as _, unref as t, withCtx as i, createVNode as m, createElementVNode as o, toDisplayString as s, createElementBlock as u, createCommentVNode as h } from "vue";
-import { useWindow as g, WindowRoom as k, RowList as x } from "@journal/window-kit";
-import { _ as v } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { useWindow as g, WindowRoom as k, RowList as v } from "@journal/window-kit";
+import { _ as x } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const y = { class: "number" }, B = { class: "main" }, N = { class: "note" }, V = {
   key: 0,
   class: "note"
@@ -17,7 +17,7 @@ const y = { class: "number" }, B = { class: "main" }, N = { class: "note" }, V =
     });
     return (n, E) => (r(), _(t(k), null, {
       default: i(() => [
-        m(t(x), {
+        m(t(v), {
           rows: d.value,
           failure: t(c),
           loaded: t(l),
@@ -38,7 +38,7 @@ const y = { class: "number" }, B = { class: "main" }, N = { class: "note" }, V =
       _: 1
     }));
   }
-}, T = /* @__PURE__ */ v(b, [["__scopeId", "data-v-470549ee"]]);
+}, T = /* @__PURE__ */ x(b, [["__scopeId", "data-v-d52c1a26"]]);
 export {
   T as default
 };
