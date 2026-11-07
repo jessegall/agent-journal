@@ -42,6 +42,11 @@ from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand imp
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
 from suites.coding.commands.file_edit_file.file_edit_file_subcommand import FileEditFileSubcommand
+from suites.coding.commands.show_work_settings.show_work_settings_subcommand import ShowWorkSettingsSubcommand
+from suites.coding.commands.apply_work_settings.apply_work_settings_handler import ApplyWorkSettingsHandler
+from suites.coding.commands.apply_work_settings.apply_work_settings_subcommand import ApplyWorkSettingsSubcommand
+from suites.coding.commands.apply_work_preset.apply_work_preset_handler import ApplyWorkPresetHandler
+from suites.coding.commands.apply_work_preset.apply_work_preset_subcommand import ApplyWorkPresetSubcommand
 from suites.coding.rules.introduction_rule import IntroductionRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
@@ -84,10 +89,10 @@ class CodingModule(Module):
     skills = [SkillDeclaration("journal-work-modes", "Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration]
-    handlers = [RecordFileEditHandler, RecordFileChangesHandler]
+    handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand, ShowWorkSettingsSubcommand, ApplyWorkSettingsSubcommand, ApplyWorkPresetSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
                                        WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),

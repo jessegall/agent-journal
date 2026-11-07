@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 BUILDER = (True, True, False, True, True, False, True)
 ORCHESTRATOR = (False, True, True, True, True, False, True)
+PRESETS = {"builder": BUILDER, "orchestrator": ORCHESTRATOR}
 
 
 @dataclass(frozen=True)
