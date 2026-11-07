@@ -54,7 +54,7 @@ class InspectorCheck:
         for pattern in declaration.events:
             if not provided.matches(pattern):
                 problems.append(f"{name} follows {pattern}, which no model's events match")
-            elif not WindowDeclaration.reads_model(pattern.split(".", 1)[0], {read_model}):
+            elif not WindowDeclaration.reads_model(pattern.split(".", 1)[0], {read_model.replace("-", "_")}):
                 problems.append(f"{name} follows {pattern} but reads no {pattern.split('.', 1)[0]}")
         return problems
 

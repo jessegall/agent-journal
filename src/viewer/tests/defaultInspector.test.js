@@ -69,3 +69,13 @@ test("a row whose noun has no inspector shows the failure line, never a blank pa
     expect(panel.querySelector("[data-resource-failure]").textContent).toBe("This row has no inspector.");
     expect(panel.querySelector("[data-resource-close]")).not.toBeNull();
 });
+
+test("a skill opens in the shared layout with the shared head", async () => {
+    const listing = LISTING("agent-skill", {label: "Skill", title: "{skill}", width: "medium", links: null, components: [{window: "skills.skill-body", tab: ""}]});
+    const panel = await opened("#?open=agent-skill:3", {"agent-skill": listing}, {"agent-skill show 3": {ok: true, value: {id: 3, skill: "journal-tasks"}}});
+    expect(panel.querySelector("[data-resource-title]").textContent).toBe("journal-tasks");
+    expect(panel.textContent).toContain("Skill");
+    expect(panel.querySelector("[data-resource-close]")).not.toBeNull();
+    expect(panel.getAttribute("style")).toContain("min(640px, 100vw)");
+    expect(panel.querySelector("[data-inspector-links]")).toBeNull();
+});

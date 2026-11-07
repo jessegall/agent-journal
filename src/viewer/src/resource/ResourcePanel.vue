@@ -10,10 +10,7 @@ import AgentInspector from "./agent/AgentInspector.vue";
 import DocumentInspector from "./document/DocumentInspector.vue";
 import PlanInspector from "./PlanInspector.vue";
 import ProcessQueueInspector from "./ProcessQueueInspector.vue";
-import ResourceHeading from "./ResourceHeading.vue";
 import {cliOf, titleOf} from "../domain/resourceNouns.js";
-import InspectorSections from "../windows/InspectorSections.vue";
-import ModuleBody from "../windows/ModuleBody.vue";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
 const props = defineProps({read: {type: Function, required: true}, catalogue: {type: Object, required: true}, environment: {type: String, required: true}, readOnly: Boolean});
@@ -23,7 +20,7 @@ const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 // every noun whose old branch is gone is drawn by the shared layout, and so is each noun a later task adds to the set
-const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "agent-skill", "doc", "report"]);
+const OWN_INSPECTORS = new Set(["task", "plan", "test-queue", "agent", "doc", "report"]);
 const declared = computed(() => DECLARED_NOUNS.has(noun.value) || !OWN_INSPECTORS.has(noun.value));
 const wide = computed(() => noun.value === "plan");
 const isDocument = computed(() => noun.value === "doc" || noun.value === "report");
@@ -81,16 +78,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <div class="panel-opening" data-resource-opening><Skeleton /></div>
                     </template>
                     <SwitchCase :value="noun">
-                        <template #agent-skill>
-                            <header class="head">
-                                <ResourceHeading label="Skill" title="Skill" />
-                                <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
-                            </header>
-                            <div class="body">
-                                <ModuleBody :declaration="{type: 'skills.skills', body_url: catalogue.window('skills.skills').entry_url, shipped: true}" :row="{skillId: opened.id}" :environment="environment" />
-                                <InspectorSections slot-name="inspector.agent-skill" :row="{id: opened.id}" />
-                            </div>
-                        </template>
                         <template #agent>
                             <AgentInspector :id="opened.id" :backed="route.stack.length > 1" :read="read" :environment="environment" @close="close" @back="unpeek" />
                         </template>
