@@ -1,4 +1,7 @@
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from collections.abc import Sequence
+from core.base.database.kept_rows import KeptRows
+from core.base.query.conditions.among import Among
 from core.base.change.moved import Moved
 from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
@@ -21,9 +24,18 @@ class TaskMemoryRemoverListener(CommitListener[Moved[Task]]):
     disabled_scopes = [ActorScope]
     moves = (TaskLifecycle.close, TaskLifecycle.cancel)
 
-    def __init__(self, bus: Bus, queries: Queries) -> None:
-        self.bus, self.queries = bus, queries
+    def __init__(self, bus: Bus, queries: Queries, kept: KeptRows) -> None:
+        self.bus, self.queries, self.kept = bus, queries, kept
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        task_ids = list(dict.fromkeys(event.row_id for event in events))
+        memories = self.queries.query(Memory).filter(state=MemoryState.ACTIVE).matching(Among("task_id", task_ids)).all_rows()
+        for task_id in task_ids:
+            self.kept.scoped_read("memories", lambda task_id=task_id: tuple(memory for memory in memories if memory.task_id == task_id),
+                                  "task_id = ? AND state = ? AND removed_at IS NULL", [task_id, MemoryState.ACTIVE.value], name="memories.task_active")
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        for memory in self.queries.query(Memory).filter(task_id=logged.row_id, state=MemoryState.ACTIVE).all_rows():
+        memories = self.kept.scoped_read("memories", lambda: self.queries.query(Memory).filter(task_id=logged.row_id, state=MemoryState.ACTIVE).all_rows(),
+                                         "task_id = ? AND state = ? AND removed_at IS NULL", [logged.row_id, MemoryState.ACTIVE.value], name="memories.task_active")
+        for memory in memories:
             self.bus.run(RemoveMemory(memory.id, f"task {logged.row_id} ended"), Actor.core(), cause_id=logged.id)
