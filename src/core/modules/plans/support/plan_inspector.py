@@ -7,6 +7,7 @@ from core.base.viewer.inspector_width import InspectorWidth
 from core.base.viewer.text_field import TextField
 from core.modules.plans.models.plan import Plan
 
+ASSIGNABLE = ("draft", "ready", "approved", "started", "blocked")
 CANCELLABLE = ("draft", "ready", "approved", "started", "blocked")
 
 PLAN_INSPECTOR = InspectorDeclaration(
@@ -19,6 +20,9 @@ PLAN_INSPECTOR = InspectorDeclaration(
     events=("plan.*",),
     actions=(
         ButtonDeclaration("plans.mark-ready", (), "Mark the plan ready", "plan ready {row_id}", icon="plan", condition=ButtonCondition("state", ("draft",))),
+        ButtonDeclaration("plans.assign-worker", (), "Assign to worker", "plan assign {row_id} --worker={worker}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE),
+                          fields=(TextField("worker", "Worker number"),)),
+        ButtonDeclaration("plans.assign-main", (), "Let the agent pick", "plan assign {row_id}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE)),
         ButtonDeclaration("plans.start", (), "Start the plan", "plan start {row_id}", icon="start", primary=True, condition=ButtonCondition("state", ("approved",))),
         ButtonDeclaration("plans.pause", (), "Pause the plan", "plan block {row_id} --reason={reason}", icon="pause", condition=ButtonCondition("state", ("started",)),
                           fields=(TextField("reason", "Why does it wait?"),)),

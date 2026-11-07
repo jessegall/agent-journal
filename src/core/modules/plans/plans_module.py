@@ -83,6 +83,8 @@ from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
 PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReworkPlan, StartPlan)
 
 from core.modules.plans.support.plan_inspector import PLAN_INSPECTOR
+from core.modules.plans.commands.assign_plan.assign_plan_handler import AssignPlanHandler
+from core.modules.plans.commands.assign_plan.assign_plan_subcommand import AssignPlanSubcommand
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_place import WindowPlace
 
@@ -99,9 +101,9 @@ class PlansModule(Module):
               SkillDeclaration("journal-planning", "How thorough a plan is: real steps in each phase, one task per step, and a brief an agent can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration]
-    handlers = [MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]
+    handlers = [AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]
     moves = [PlansMove]
-    subcommands = [CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = [AssignPlanSubcommand, CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard]
