@@ -3,14 +3,20 @@ import shutil
 
 import pytest
 
+from core.base.actor import Actor
+from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from suites.coding.modules.checks.models.check import Check
+from core.modules.library.commands.merge_library_item.merge_library_item import MergeLibraryItem
+from core.modules.library.commands.save_library_copy.save_library_copy import SaveLibraryCopy
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.models.library_copy import LibraryCopy
+from core.modules.library.support.copy_source import CopySource
+from core.modules.library.support.kept_row import KeptRow
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, connection_with, copy_line, copy_of_item, copy_with, made_copy, new_item,
@@ -268,3 +274,54 @@ def test_an_address_that_answers_as_another_server_stops_sync_with_its_reason(ne
     story.expect_text("library sync", "Did not reach the library. This address now answers as another server.", actor=story.agent)
     story.expect_text("library status", "This address now answers as another server.", actor=story.agent)
     story.expect_success("library sync", "This address now answers as another server.", actor=story.agent)
+
+
+class FailingCopyWrite(Exception):
+    pass
+
+
+def fail_the_copy_write(monkeypatch) -> None:
+    save, update = Repository.save, Repository.update
+
+    def failing_save(repository, row, context):
+        if isinstance(row, LibraryCopy):
+            raise FailingCopyWrite()
+        return save(repository, row, context)
+
+    def failing_update(repository, row, context, **changes):
+        if isinstance(row, LibraryCopy):
+            raise FailingCopyWrite()
+        return update(repository, row, context, **changes)
+
+    monkeypatch.setattr(Repository, "save", failing_save)
+    monkeypatch.setattr(Repository, "update", failing_update)
+
+
+def test_a_copy_that_cannot_be_written_leaves_no_row_the_save_made(new_story, shared_server, monkeypatch):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    item = story.container.get(LibraryClient).item("doc", new_item(server, tokens.admin, "Saved then failed", "Body."))
+
+    class ArrivingDoc(CopySource):
+        def kept(self, share, context):
+            return KeptRow(share.arrive(item.fields, context).id, "digest")
+
+    fail_the_copy_write(monkeypatch)
+    with pytest.raises(FailingCopyWrite):
+        story.container.get(Bus).run(SaveLibraryCopy("doc", item.item_id, item.version, ArrivingDoc()), story.user)
+    monkeypatch.undo()
+    story.expect_rows(len(list(story.container.get(Queries).query(Doc).all_rows())) == 0, len(list(story.container.get(Queries).query(LibraryCopy).all_rows())) == 0)
+
+
+def test_a_merge_whose_new_base_cannot_be_written_leaves_the_row_unchanged(new_story, shared_server, monkeypatch):
+    server, tokens = shared_server
+    story = connected(new_story, server, tokens.editor)
+    copy = made_copy(story, server, tokens.admin, "Merged then failed")
+    change_on_server(server, tokens.admin, copy.item_id, "Merged then failed", "Server text.", 1)
+    item = story.container.get(LibraryClient).item("doc", copy.item_id)
+    body = story.row(Doc, copy.row_id).body
+    fail_the_copy_write(monkeypatch)
+    with pytest.raises(FailingCopyWrite):
+        story.container.get(Bus).run(MergeLibraryItem(copy.id, item, story.row(Doc, copy.row_id).version), story.user)
+    monkeypatch.undo()
+    story.expect_rows(story.row(Doc, copy.row_id).body == body, copy_of_item(story, copy.item_id).base_version == 1)
