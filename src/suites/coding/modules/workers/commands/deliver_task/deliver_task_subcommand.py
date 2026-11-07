@@ -36,8 +36,7 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, Task):
             return
-        phase = self.phases.phase(value)
-        if phase is not None and value.state is TaskState.TESTING:
-            output.line(f"the tests of phase {phase.id} are queued: stop now, you hear when they end")
+        if value.state is TaskState.TESTING and self.phases.is_grouped(value):
+            output.line(f"the tests of {self.phases.test_label(value)} are queued: stop now, you hear when they end")
             return
         output.row(value)

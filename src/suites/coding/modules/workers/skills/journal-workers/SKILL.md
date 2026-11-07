@@ -22,7 +22,7 @@ stays kept on the same agent number and session until retired.
   `.venv` into its worktree and `--library-copy <folder>` copies it. `--program <program>` names the agent program.
 - `journal worker dispatch --plan <plan> [--phase <phase>] --model <model>` hands a worker the open tasks of an approved or
   started plan, or of one phase of it, in the plan's order. The plan then shows as delegated, with each task's agent named.
-- On a started plan the tests of a phase run at its end, and you hear nothing until then. A proof with no test on a
+- By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
   phase needs no check from you; you can still read it and send it back. When a worker asks to run one test, you get
   one line with the command and the reason: `journal worker allow-test <request>` lets it run that command once. To
   decline, do nothing: the worker goes on and the request stays on the task's log.
@@ -101,7 +101,9 @@ never starts is retired after the idle time.
   a worker with `journal worker status <n>`. Use `--page` and `--limit` for longer lists, or `--json` for structured output.
 - `journal proof points --agent <n>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> --task <task> "<file:line, and the test>" --test "<command>"`: the journal runs that
-  test command in your worktree. A proof with no test waits for the main agent's check.
+  test command in your worktree. Before making a proof, read the test suite and decide which existing tests and test
+  files cover the code you changed. Include those and your new tests in the proof's `--test` command; it covers both.
+  A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
 - Before you hand in, run `journal sins --changes` over your own changes and fix each finding at its source. What it
   still finds after the merge comes back to you.
@@ -111,13 +113,19 @@ never starts is retired after the idle time.
   right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests in turn; those that fail come back to you to fix and deliver again.
-- On a task of a started plan you work through the phase with nothing run:
-  - Inside a phase `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
-  - A test run is refused, and your work is tested at the phase's end. Only if you cannot continue at all without this
-    run, run it again with `--ask-main "<why>"`: the run does not happen, the request goes on, and you go on working. When it is allowed you are told, and that exact command
-    runs once, without the flag.
-  - At the end of the phase, `journal worker next` when your next task is in another phase, or `journal worker deliver`
-    after your last, runs the tests of all your tasks of the phase and the phase's own test. Stop then.
+- `test-at-phase-end` (on by default) tests a started plan's tasks together at the end of each phase. Off tests
+  each task at its own hand-in. Outside a plan, `test-batch-size` sets how many tasks to finish before testing;
+  its default is 1. A larger batch ends at that count or the worker's last task.
+- Inside a phase or batch, leave tests to the hand-in unless you really need a run yourself:
+  - Inside a phase or batch `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
+  - The journal runs your proofs' tests when you hand in and returns any failures. Run a test yourself only if you
+    really need it. Each worker has three test commands per phase or batch by default, set by `worker-phase-test-runs`.
+    Each counted command says how many remain. A fourth is refused; only then ask with `--ask-main "<why>"`.
+    An allowed request runs once without the flag and does not use the phase allowance. The count starts anew
+    in the next phase or batch. After failed tests come back, runs are free until the next hand-in.
+  - At a phase or batch end, `journal worker next` or `journal worker deliver` after your last runs the tests
+    of all tasks waiting for that hand-in, plus a phase's own test when set. Stop then. All failures come back
+    together, and only failed tests run at the next hand-in.
   - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
     flag until you hand in again, which runs only what failed.
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your

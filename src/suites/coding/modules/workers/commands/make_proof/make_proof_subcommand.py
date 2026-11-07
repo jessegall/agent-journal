@@ -17,7 +17,7 @@ class MakeProofSubcommand(Subcommand[MakeProof, Proof]):
         parser.add_argument("point", type=int)
         parser.add_argument("text", help="the file and line, and the test that shows it")
         parser.add_argument("--task", type=int, required=True, help="the task this proof is for")
-        parser.add_argument("--test", default="", help="the test command the journal runs in your worktree to check this point")
+        parser.add_argument("--test", default="", help="read the test suite and choose new and existing tests of changed files; the journal runs this command in your worktree")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeProof:
         return MakeProof(arguments.point, arguments.text, arguments.task, arguments.test)

@@ -29,7 +29,7 @@ class RestoreWorkerTestsHandler(Handler[RestoreWorkerTests, tuple[WorkerTestRequ
 
     def handle(self, command: RestoreWorkerTests, context: Context) -> tuple[WorkerTestRequest, ...]:
         process = self.queries.query(Process).find(command.process_id)
-        if process.queued_at is None or self.phases.waiting_phase(process.session_agent_id) is None:
+        if process.queued_at is None or self.phases.waiting_group(process.session_agent_id) is None:
             return ()
         task_id = self.worktrees.worker_worktree(process.session_agent_id).task_id
         parts = self.queries.query(ProcessPart).filter(process_id=process.id, category=CommandCategory.TEST_RUN).all_rows()
