@@ -9,6 +9,9 @@ from core.base.provider.program_hooks import ProgramHooks
 from core.base.query.queries import Queries
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.helpers.support.helper_resume import HelperResume
+from core.modules.agents.models.agent import Agent
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
@@ -150,6 +153,23 @@ def test_helper_send_on_an_out_program_says_until_when_reuse_names_it(split_stor
     FakeLauncher(story.home.socket('launcher'))
     story.expect_refusal(START, ends_at, actor=story.agent)
     story.expect_rows(f'journal helper send {helper_id}' in story.results[-1].output_text)
+
+
+def test_helper_send_on_an_out_program_says_until_when_resume_keeps_its_job(split_story):
+    story = split_story
+    helper_id, _ = started(story)
+    story.expect_success(f'helper send {helper_id} "Read the next file" --steer', actor=story.agent)
+    outage(story, 'claude')
+    launcher = FakeLauncher(story.home.socket('launcher'))
+    story.expect_success(f'agent end {helper_id}', actor=story.user)
+    story.run_listeners()
+    helper = story.container.get(Queries).query(Agent).find(helper_id)
+    job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper_id).newest().first()
+    story.expect_rows(helper.ended_at is not None, job.ended_at is None, len(launcher.requests) == 0)
+    story.advance(timedelta(minutes=16))
+    story.container.get(HelperResume).resume(helper, job.brief)
+    story.run_listeners()
+    story.expect_rows(len(launcher.requests) == 1)
 
 
 def test_back_now_ends_all_outages_of_a_program(split_story, split_viewer):

@@ -132,4 +132,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
     def check_reuse(self, parent: Agent, profile: AgentProfile, brief: str) -> None:
         job = self.reuse.known_job(parent.id, profile.name, brief)
         if job is not None:
+            helper = next((helper for helper in self.kept.kept(profile.name) if helper.id == job.helper_id), None)
+            if helper is not None:
+                self.kept.check_program(helper)
             raise Refusal(f"agent:{job.helper_id} knows these files", f"journal helper send {job.helper_id} \"<job>\", or start a new one with --fresh")

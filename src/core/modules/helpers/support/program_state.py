@@ -22,3 +22,7 @@ class ProgramState:
     def listed(self) -> dict[str, object]:
         return {"is_ready": self.is_ready, "line": self.line,
                 "ends_at": self.ends_at.text if self.ends_at is not None else None}
+
+    @property
+    def wait_line(self) -> str:
+        return f"{self.line}, until {self.ends_at.text}" if self.ends_at is not None else self.line

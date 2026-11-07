@@ -8,6 +8,8 @@ from core.base.refusal import Refusal
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.helpers.support.program_states import ProgramStates
+from core.modules.helpers.support.program_state import ProgramState
 
 FULL_SESSION_PERCENT = 80
 
@@ -17,8 +19,9 @@ class KeptHelpers:
     the program and model asked for, with a session that resumes in its folder and is not nearly full. The
     newest comes first."""
 
-    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, home: JournalHome) -> None:
+    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, home: JournalHome, states: ProgramStates) -> None:
         self.queries, self.providers, self.folders, self.kept_rows, self.home = queries, providers, folders, kept_rows, home
+        self.states = states
 
     def with_open_jobs(self, profile: str) -> set[int | None]:
         return self.kept_rows.scoped_read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows()},
@@ -45,4 +48,14 @@ class KeptHelpers:
 
     def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
         additional_helpers = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""
-        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{additional_helpers}', 'or --fresh "<why>"')
+        state = self.program_state(helpers[0])
+        waiting = f"; {state.wait_line}" if not state.is_ready else ""
+        return Refusal(f'helper {helpers[0].id} is idle: journal helper send {helpers[0].id} "<job>"{additional_helpers}{waiting}', 'or --fresh "<why>"')
+
+    def program_state(self, helper: Agent) -> ProgramState:
+        return self.states.outage_state(helper.program)
+
+    def check_program(self, helper: Agent) -> None:
+        state = self.program_state(helper)
+        if not state.is_ready:
+            raise Refusal(f"helper {helper.id} waits on {helper.program}: {state.wait_line}", f"journal helper send {helper.id} after it is back")
