@@ -329,3 +329,19 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     story.expect_success(f'worker send {worker.id} --task {task_id}', actor=story.agent)
     expect_program(story, worker, 'claude')
     story.expect_text(f'task show {task_id}', f'holder_id: {worker.id}')
+
+
+def test_skills_name_tiers_tags_and_routes(split_story):
+    story = split_story
+    story.expect_success('skill write')
+    texts = {
+        'journal-workers': ('--tier general', 'journal worker split --task', '--skip-guard workers.route-holds', 'log', 'first matching route'),
+        'journal-helpers': ('--tier general', "profile's program", "parent's program", 'separately from workers'),
+        'journal-tasks': ('journal task tags', '--tag networking', '--complexity 3', '| 5 | Core paths, migrations, concurrency, or a design |'),
+        'journal-plans': ('scores and tags each task as it writes it', '--complexity <1-5>', '--tag <word>'),
+    }
+    for name, fragments in texts.items():
+        story.expect_text(f'skill show {name}', *fragments)
+        for folder in ('.agents/skills', '.claude/skills'):
+            published = (story.home.project_folder / folder / name / 'SKILL.md').read_text()
+            story.expect_rows(all(fragment in published for fragment in fragments))

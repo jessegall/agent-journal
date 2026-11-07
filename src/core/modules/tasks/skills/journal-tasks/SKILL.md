@@ -11,6 +11,24 @@ A task is one unit of work: open, started, then completed or cancelled. Declare 
   normal. Do not start what you file: leave it open, and the suite of the environment hands it out, if it has a way to.
 - Add `--phase <phase>` to `journal task make` to put the new task at the end of that phase in the same command.
   A missing phase or an ended plan refuses the command and leaves no new task.
+- Add repeated tags and a score while making a task: `journal task make "Fix the socket" --tag networking --tag linux --complexity 3`.
+  Tags are lowercase words with no spaces. Read `journal task tags` before inventing a word; it lists words in use
+  and their task counts. An agent confirms a new word with `--confirm`, including the journal's first tag.
+  `journal task list --tag networking --tag linux` finds tasks with both tags. `journal task tag <n> networking linux`
+  adds tags to an existing task, and `journal task edit <n> --complexity 3` changes its score.
+
+| Score | Means |
+|---:|---|
+| 1 | A line or two, nothing to decide |
+| 2 | One file, the way is clear |
+| 3 | A few files in one module |
+| 4 | Several modules, or a choice to make |
+| 5 | Core paths, migrations, concurrency, or a design |
+
+Whoever writes the task gives its complexity, from 1 to 5. A planner scores and tags each task as it writes it.
+A read-only planner may set `--complexity` and `--tag` on `task make`, but may not edit a task afterward.
+An empty score means nobody scored it; only a route that needs a score stops dispatch until it is set.
+
 - `journal task start <n>` takes a task in hand; `journal task list` shows the tasks here, `--state open` narrows it.
 - `journal task overview <n>` prints a task's title, brief, recent comments and logs with counts, and a bounded
   conversation with its original request, plan comments and report/design references. A task handed to you blocks your writes until you
