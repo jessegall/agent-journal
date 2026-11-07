@@ -12,7 +12,7 @@ class ReviewWithDock(StoryFixture):
         story.run_listeners()
 
     def expect(self, story) -> None:
-        story.expect_text("dock-item list --state docked", "plans.waiting")
+        story.expect_no_text("dock-item list --state docked", "plans.waiting", "approvals.request")
 
 
 def test_cancelling_a_plan_under_review_removes_its_dock_and_shows_its_mark(new_story):

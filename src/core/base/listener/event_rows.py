@@ -50,7 +50,7 @@ class EventRows:
         stale = [row_id for row_id in dict.fromkeys(row_ids)
                  if name in self.known.get((model, row_id), {}) and self.known[(model, row_id)][name].generation != generation]
         if stale:
-            query = self.queries.query(model).matching(Among("id", stale))
+            query = self.queries.query(model).with_removed().matching(Among("id", stale))
             select = query.scoped(query.select).column("id, version")
             versions = {row[0]: row[1] for row in self.queries.database.rows(select.statement())}
             for row_id in stale:
@@ -60,7 +60,7 @@ class EventRows:
         missing = [row_id for row_id in dict.fromkeys(row_ids) if name not in self.known.get((model, row_id), {})]
         if not missing:
             return
-        rows = {row.id: row for row in self.queries.query(model).matching(Among("id", missing)).all_rows()}
+        rows = {row.id: row for row in self.queries.query(model).with_removed().matching(Among("id", missing)).all_rows()}
         for row_id in missing:
             self.known.setdefault((model, row_id), {})[name] = CachedEventRow(rows.get(row_id), generation)
 
