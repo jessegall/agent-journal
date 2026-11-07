@@ -394,6 +394,48 @@
                     50
                 ]
             }
+        ],
+        "architecture_testing_clock_loop_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_git_init_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_interpreter_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_sleep_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_source_parsed_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "architecture_testing_type_check_in_a_test": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
         ]
     }
 }

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from core.base.registry.lazy_loading import LazyLoading
 from core.testing.run_size import RunSize
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -30,6 +31,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    LazyLoading.always_prevented = True
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()

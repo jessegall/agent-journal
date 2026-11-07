@@ -22,7 +22,7 @@ def test_a_second_session_ends_the_old_row_in_its_hook_and_the_launcher_stops_th
     story.expect_text(f"agent show {old.id}", "ended_at: 20")
     story.expect_rows(launcher.requests == [])
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     story.expect_rows(launcher.requests == [{"agent_id": old.id, "stop": True}])
 
 
@@ -62,7 +62,7 @@ def test_two_launches_at_once_end_with_one_main_and_the_first_is_stopped(new_sto
     story.expect_text(f"agent show {first_id}", "ended_at: 20")
     story.expect_absent(f"agent show {second_id}", "ended_at: 20")
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     story.expect_rows(launcher.requests == [{"agent_id": first_id, "stop": True}])
 
 

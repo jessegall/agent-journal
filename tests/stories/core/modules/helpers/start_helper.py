@@ -52,7 +52,7 @@ def started(story, line=START, actor=None):
     launcher = fake_launcher(story)
     helper_id = story.new_row_id(line, actor=actor or story.agent)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
     return helper_id, launcher
@@ -184,7 +184,7 @@ def test_a_failed_launch_ends_the_helper_and_tells_the_parent(new_story):
     launcher = FakeLauncher(story.home.socket("launcher"), answer=b"failed\n")
     helper_id = story.new_row_id(f"{START} --model opus", actor=story.agent)
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     story.expect_text(f"agent show {helper_id}", "ended_at: 20")
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{helper_id} could not start")
 
@@ -237,7 +237,7 @@ def test_a_profile_that_uses_its_program_if_possible_starts_on_the_other_one_and
     launcher = fake_launcher(story)
     answer = json.loads(story.run(f"{PLAIN_START} --json", actor=story.agent).output_text.splitlines()[0])
     story.run_listeners()
-    launcher.thread.join(timeout=5)
+    launcher.wait_for_requests()
     launcher.server.close()
     story.expect_rows(answer["program"] == "codex", answer["note"] == "claude could not start (claude is not installed here: install claude or name another program), so it runs on codex")
     story.expect_success(f"agent show {answer['id']}", "program: codex", "program_model: gpt-6.1-sol")
