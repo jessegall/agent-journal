@@ -51,5 +51,6 @@ def test_a_model_offered_twice_needs_an_explicit_program(providers, monkeypatch)
     other = copy(provider)
     other.name = "other"
     monkeypatch.setattr(providers, "all", lambda: [provider, other])
-    with pytest.raises(Refusal, match="name --program explicitly"):
+    with pytest.raises(Refusal, match="model shared is offered by sample, other") as caught:
         providers.program_for_model("shared")
+    assert caught.value.suggestion == "name --program explicitly"

@@ -33,7 +33,7 @@ from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.suites.coding.modules.workers.program_choice import failed_worker_story
-from tests.stories.suites.coding.modules.workers.worker_routes import merged_worker_story
+from tests.stories.suites.coding.modules.workers.worker_routes import delivered_worker_story, merged_worker_story
 from tests.stories.suites.coding.modules.workers.support.program_split import (
     SAMPLE_MODULE, SPLIT, dispatch, exit_program, expect_program, new_task, outage,
     real_program_checks, uninstall_sample_module, set_split, split_story, split_viewer,

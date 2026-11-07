@@ -111,4 +111,4 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     def check_model(self, program: str, model: str) -> None:
         names = self.models.allowed(self.providers.provider(program))
         if model not in names:
-            raise Refusal(f"{model} cannot run on the chosen program {program}: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")
+            raise Refusal(f"{model} cannot run on {program}; choose a model {program} may run: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")

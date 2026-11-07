@@ -9,6 +9,7 @@ from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.migrations.m004_provider_outages import ProviderOutagesMigration
+from core.modules.helpers.migrations.m005_helper_job_counts_index import HelperJobCountsIndexMigration
 from core.modules.helpers.guards.provider_outage_program_guard import ProviderOutageProgramGuard
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage_subcommand import MakeProviderOutageSubcommand
 from core.modules.helpers.commands.end_provider_outages.end_provider_outages_handler import EndProviderOutagesHandler
@@ -54,7 +55,7 @@ class HelpersModule(Module):
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration]
+    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration]
     models = [ModelDeclaration(ProviderOutage)]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat"]
     marks = PROGRAM_MARKS
