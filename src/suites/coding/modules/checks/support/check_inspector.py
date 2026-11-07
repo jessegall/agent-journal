@@ -14,4 +14,5 @@ CHECK_INSPECTOR = InspectorDeclaration(
         ButtonDeclaration("checks.start", (), "Start the check again", "check start {row_id}", icon="resume", primary=True, condition=ButtonCondition("state", ("stopped",))),
         ButtonDeclaration("checks.stop", (), "Stop the check", "check stop {row_id}", icon="stop", condition=ButtonCondition("state", ("running",))),
     ),
+    lists_fields=True,
 )

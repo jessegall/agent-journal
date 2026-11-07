@@ -21,4 +21,4 @@ class InspectorListing:
     events: Sequence[str]
     links: Mapping[str, object] | None
     shareable: bool
-    lists_fields: bool = True
+    lists_fields: bool = False

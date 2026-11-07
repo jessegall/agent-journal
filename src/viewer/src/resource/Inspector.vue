@@ -145,7 +145,7 @@ onUnmounted(() => watcher?.disconnect());
                                     <template v-if="html">
                                         <div class="md text" data-resource-text v-html="html" />
                                     </template>
-                                    <template v-if="listing.lists_fields !== false">
+                                    <template v-if="listing.lists_fields">
                                         <ResourceFields :fields="fields" @peek="emit('open', $event)" />
                                     </template>
                                 </div>

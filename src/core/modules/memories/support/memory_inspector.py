@@ -20,4 +20,5 @@ MEMORY_INSPECTOR = InspectorDeclaration(
                           condition=ButtonCondition("state", (MemoryState.REMOVED.value,))),
     ),
     components=(InspectorComponent("memories.memory-facts"),),
+    lists_fields=True,
 )
