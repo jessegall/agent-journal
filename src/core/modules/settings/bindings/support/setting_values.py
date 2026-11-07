@@ -55,6 +55,12 @@ class SettingValues:
     def number(self, key: str) -> int:
         return self.typed(key, int, "a whole number")
 
+    def decimal(self, key: str) -> float:
+        value = self.value(key)
+        if isinstance(value, bool) or not isinstance(value, int | float):
+            raise SettingTypeError(f"{key} holds {value!r}, not a number")
+        return float(value)
+
     def minutes(self, key: str) -> Seconds:
         return Seconds.minutes(self.number(key))
 

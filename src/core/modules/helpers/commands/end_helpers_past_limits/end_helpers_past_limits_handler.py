@@ -40,8 +40,8 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
 
     def check(self, helper: Agent, job: HelperJob, context: Context) -> None:
         with self.scopes.opened(None, helper.environment_id):
-            spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars,
-                                self.settings.number(HELPER_MAX_MINUTES), self.settings.number(HELPER_MAX_COST))
+            spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars, job.cost_baseline,
+                                self.settings.number(HELPER_MAX_MINUTES), self.settings.decimal(HELPER_MAX_COST))
         if spend.share >= 1:
             self.stop(helper, job, spend)
         elif spend.share >= WARNING_SHARE and not self.was_warned(helper, job):

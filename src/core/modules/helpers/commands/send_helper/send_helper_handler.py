@@ -19,6 +19,7 @@ from core.modules.messages.support.work_sources import WorkSources
 from core.base.scope.scopes import Scopes
 from core.base.scope.actor_scope import ActorScope
 from core.modules.helpers.support.kept_helpers import KeptHelpers
+from core.modules.usage.support.status_files import StatusFiles
 
 SHORT_JOB_CHARACTERS = 200
 
@@ -28,12 +29,12 @@ class SendHelperHandler(Handler[SendHelper, int]):
 
     command = SendHelper
 
-    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers) -> None:
+    def __init__(self, reach: HelperReach, limits: HelperLimits, jobs: HelperJobRows, nudger: Nudger, repository: Repository, folders: AgentFolders, sources: WorkSources, scopes: Scopes, providers: Providers, kept: KeptHelpers, files: StatusFiles) -> None:
         self.reach, self.limits, self.jobs, self.nudger, self.repository, self.folders = reach, limits, jobs, nudger, repository, folders
         self.sources = sources
         self.scopes = scopes
         self.providers = providers
-        self.kept = kept
+        self.kept, self.files = kept, files
 
     def handle(self, command: SendHelper, context: Context) -> int:
         helper = self.reach.checked_helper(command.helper_id, context.actor)
@@ -58,7 +59,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if parent_id != helper.parent_id:
             self.repository.save(helper.changed(parent_id=parent_id), context)
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
-        self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp), context)
+        self.repository.save(next_job.changed(session_agent_id=parent_id, review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, started_at=context.timestamp, cost_baseline=self.files.status(helper.session).cost_dollars), context)
         self.sources.use_copy(source, source_context)
         return helper.id
 
@@ -71,7 +72,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
             self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}"), context)
             return helper.id
         next_job = last_job.next_job(helper.session, command.job, command.job[:SHORT_JOB_CHARACTERS], context.actor.id)
-        self.repository.save(next_job.changed(review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id), context)
+        self.repository.save(next_job.changed(review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id, cost_baseline=self.files.status(helper.session).cost_dollars), context)
         self.sources.use_copy(source, source_context)
         return helper.id
 
