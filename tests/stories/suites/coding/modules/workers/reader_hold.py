@@ -86,7 +86,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
         story.container.get(OutputFolder).write_output(process.id, 1, "compile\n" * 10)
         bus.run(EndProcessPart(process.id, 1, 0), worker, environment_id=1)
         ended = bus.run(EndProcess(process.id, 0, 5000, 10), worker, environment_id=1)
-        nudges = story.container.get(EndedOutputText).nudges(ended)
+        nudges = story.container.get(EndedOutputText).nudges((ended,))
         story.expect_rows(len(nudges) == 1, nudges[0] == OUTPUT_ENDED.nudge(output=ended.id, result="finished"))
     story.hook("s-8", HookSamples.stop())
     blocks = story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).all_rows()
