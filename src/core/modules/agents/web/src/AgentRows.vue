@@ -50,9 +50,13 @@ const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty,
 
 // one card is open at a time and takes the whole window until it closes or a search starts
 const openId = ref(null);
+const openedRow = ref(null);
 const agents = ref(null);
 const list = ref(null);
-const openRow = computed(() => shown.value.find((row) => row.id === openId.value) ?? null);
+const openRow = computed(() => {
+    if (openId.value === null) return null;
+    return window.props[`card.${openId.value}`].rows.value.find((row) => row.id === openId.value) ?? openedRow.value;
+});
 const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 const reduced = () => globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -70,7 +74,9 @@ async function open(row) {
     const bands = [...card.querySelectorAll(".agent-head, .agent-line")];
     const elements = [...bands, ...card.querySelectorAll("[data-agent-motion]")];
     const before = elements.map((element) => element.getBoundingClientRect());
+    openedRow.value = row;
     openId.value = row.id;
+    window.reload(`card.${row.id}`);
     await nextTick();
     if (!reduced()) {
         const after = elements.map((element) => element.getBoundingClientRect());

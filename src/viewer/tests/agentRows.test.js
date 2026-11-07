@@ -555,3 +555,28 @@ test("a card says Blocked with its reason when the facts name one, and nothing w
     expect(held.querySelector(".agent-dot").dataset.state).toBe("running");
     expect(held.querySelector(".agent-work-status")).toBeNull();
 });
+
+test("an open agent keeps its updated card after it leaves the list", async () => {
+    const held = window();
+    const read = held.read;
+    let running = true;
+    held.read = async (line) => {
+        if (line.startsWith("agent cards --show all --include-main --id 3")) {
+            return page([{...AGENTS[1], ended_at: running ? null : "2026-11-07T10:00:00Z", facts: {...FACTS[1], instruction: running ? "Working" : "Finished reading"}}]);
+        }
+        if (line.startsWith("agent cards --show running")) return page(running ? AGENTS.slice(0, 2) : [AGENTS[0]]);
+        return read(line);
+    };
+    const element = await mounted(AgentRows, held, {empty: "No agents yet"});
+    cardOf(element, 3).click();
+    await settle();
+    running = false;
+    await held.reload(["agents", "card.3"]);
+    await settle();
+    expect(cardOf(element, 3).getAttribute("aria-expanded")).toBe("true");
+    expect(cardOf(element, 3).textContent).toContain("Finished reading");
+    cardOf(element, 3).querySelector("[aria-label='Back to the list']").click();
+    await settle();
+    expect(cardOf(element, 3)).toBeNull();
+    expect(cardOf(element, 2)).not.toBeNull();
+});
