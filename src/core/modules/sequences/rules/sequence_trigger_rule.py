@@ -1,4 +1,3 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
@@ -15,13 +14,13 @@ EMPTY_TRIGGERS = "[]"
 
 
 class SequenceTriggerRule(DriverRule):
-    """A prompt or a finished tool call that matches a sequence's trigger starts that sequence for the main
-    agent on top of any run it has, unless that sequence already runs."""
+    """A prompt or a finished tool call that matches a sequence's trigger starts that sequence for the agent whose
+    hook it is, whether main agent, helper or worker, on top of any run it has, unless that sequence already runs
+    for that agent."""
 
     name = "sequences.triggers"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
 
     def __init__(self, queries: Queries, runs: SequenceRunQuery) -> None:
         self.queries, self.runs = queries, runs
