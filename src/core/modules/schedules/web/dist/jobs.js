@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-cf6c6071d266")) { const style = document.createElement("style"); style.id = "window-styles-cf6c6071d266"; style.textContent = ".agent-jobs[data-v-61cd562a]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-61cd562a]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-61cd562a]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-61cd562a]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-61cd562a]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as j, openBlock as h, createBlock as v, unref as l, withCtx as b, createElementVNode as _, createElementBlock as y, toDisplayString as m, createCommentVNode as S, createVNode as $, createTextVNode as k } from "vue";
-import { useWindow as N, WindowRoom as w, RowList as x, Btn as D } from "@journal/window-kit";
+if (!document.getElementById("window-styles-d94e8c4c52fb")) { const style = document.createElement("style"); style.id = "window-styles-d94e8c4c52fb"; style.textContent = ".agent-jobs[data-v-c96dcf7f]{display:flex;flex-direction:column;gap:6px}.agent-jobs-refusal[data-v-c96dcf7f]{margin:0;color:var(--danger);font-size:12.5px}.agent-job[data-v-c96dcf7f]{display:flex;flex:1;gap:10px;align-items:center;min-width:0;padding:6px 0}.agent-job-text[data-v-c96dcf7f]{display:flex;flex:1;flex-direction:column;gap:2px;min-width:0}.agent-job-text span[data-v-c96dcf7f]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as v, openBlock as h, createBlock as j, unref as l, withCtx as b, createElementVNode as _, createElementBlock as y, toDisplayString as m, createCommentVNode as S, createVNode as $, createTextVNode as k } from "vue";
+import { useWindow as N, WindowRoom as x, RowList as w, Btn as D } from "@journal/window-kit";
 const A = [
   [0, 59],
   [0, 23],
@@ -52,7 +52,7 @@ const L = (s, n) => {
   setup(s) {
     const n = N();
     n.state["jobs.agent"] = String(n.agent);
-    const { rows: e, failure: t, loaded: r } = n.props.jobs, o = j(""), c = (d) => d.split(`
+    const { rows: e, failure: t, loaded: r } = n.props.jobs, o = v(""), c = (d) => d.split(`
 `)[0];
     function i(d) {
       const a = W(d.cron);
@@ -66,11 +66,11 @@ const L = (s, n) => {
       const a = await n.run(["scheduled-job", "stop", String(d.id)]);
       o.value = a.ok ? "" : a.error, a.ok && n.reload("jobs");
     }
-    return (d, a) => (h(), v(l(w), { padding: "14px 16px" }, {
+    return (d, a) => (h(), j(l(x), { padding: "14px 16px" }, {
       default: b(() => [
         _("div", R, [
           o.value ? (h(), y("p", V, m(o.value), 1)) : S("", !0),
-          $(l(x), {
+          $(l(w), {
             rows: l(e),
             failure: l(t),
             loaded: l(r),
@@ -106,7 +106,7 @@ const L = (s, n) => {
       _: 1
     }));
   }
-}, G = /* @__PURE__ */ L(q, [["__scopeId", "data-v-61cd562a"]]);
+}, G = /* @__PURE__ */ L(q, [["__scopeId", "data-v-c96dcf7f"]]);
 export {
   G as default
 };
