@@ -56,7 +56,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
             if task_ids:
                 worker = self.agents.find(arguments.worker_id)
-                self.policy.check_tasks(self.tasks.check_tasks(task_ids),
+                self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
         command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox)

@@ -42,6 +42,7 @@ from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
+from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker and its tasks, runs git without a write lock and removes an opening that fails."""
@@ -50,7 +51,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission) -> None:
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease) -> None:
+        self.release = release
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
@@ -58,7 +60,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.sources, self.routing = sources, routing
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
-        tasks = AssignableTasks.checked(self.queries.query(Task).find_many([command.task_id, *command.delegated_ids]))
+        read = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
+        tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
         if not AssignableTasks.has_open(tasks):
             raise Refusal("every task here is blocked, and a new worker starts on an open one",
                           "assign blocked tasks to a kept worker with journal worker send <n> --task, or dispatch once one opens")

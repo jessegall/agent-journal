@@ -40,6 +40,7 @@ from suites.coding.modules.workers.support.worker_recipient import WorkerRecipie
 from suites.coding.modules.workers.support.retired_worker_refusal import RetiredWorkerRefusal
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
@@ -53,8 +54,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders) -> None:
-        self.admission, self.libraries = admission, libraries
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders, release: StartedTaskRelease) -> None:
+        self.admission, self.libraries, self.release = admission, libraries, release
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
         self.sources, self.task_sources, self.kept_tasks, self.environments = sources, task_sources, kept_tasks, environments
@@ -79,7 +80,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         self.check_job(command, worker)
         self.check_session(worker)
         if command.task_ids:
-            self.kept_tasks.check_tasks(command.task_ids)
+            self.kept_tasks.check_tasks(command.task_ids, actor.id)
         if self.worktrees.newest_worktree(worker.id) is None:
             raise Refusal(f"worker {worker.id} has no worktree", "journal worker dispatch <task> starts a new one")
 
@@ -95,7 +96,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             task_ids = tuple([task.id])
         self.task_ids = task_ids
         if task_ids:
-            tasks = self.kept_tasks.checked_cut(worker, task_ids)
+            read = self.release.released(self.kept_tasks.read_tasks(task_ids), actor, worker.environment_id)
+            tasks = self.kept_tasks.checked_cut(worker, task_ids, read)
             if tasks:
                 self.cut(worker, tasks, command, actor)
         self.is_gone = worker.ended_at is None and bool(self.missing_agents.find([worker]))
