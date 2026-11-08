@@ -7,7 +7,7 @@ from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import import RemoveInstructionImport
-from core.modules.agents.commands.remove_instruction_import.instruction_import_question import InstructionImportQuestion
+from core.modules.agents.commands.remove_instruction_import.support.instruction_import_question import InstructionImportQuestion
 
 COMMAND_NAME_PARTS = ("instruction-import", "remove")
 

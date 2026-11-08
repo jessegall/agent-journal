@@ -12,6 +12,7 @@ from core.testing.heavy_run_gate import HeavyRunGate
 from core.testing.run_cpu import RunCpu
 from core.testing.run_size import RunSize
 from core.testing.full_run_record import FullRunRecord
+from core.testing.full_run_records import FullRunRecords
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
@@ -174,7 +175,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
-        record.write()
+        FullRunRecords.add(record)
     lines = overlap.report_lines()
     if not lines:
         return

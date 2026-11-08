@@ -1,11 +1,12 @@
 from core.testing.run_size import RunSize
-from core.testing.full_run_record import FullRunRecord, FullRunRecords
+from core.testing.full_run_record import FullRunRecord
+from core.testing.full_run_records import FullRunRecords
 
 
 def test_each_full_run_adds_a_line_with_its_size_and_time(tmp_path):
     file = tmp_path / "runs.jsonl"
-    FullRunRecord(4000, 2, 120.0).write(file)
-    FullRunRecord(4010, 0, 118.0).write(file)
+    FullRunRecords.add(FullRunRecord(4000, 2, 120.0), file)
+    FullRunRecords.add(FullRunRecord(4010, 0, 118.0), file)
     records = FullRunRecords.read(file).records
     assert [(record.tests, record.failed, record.seconds) for record in records] == [(4000, 2, 120.0), (4010, 0, 118.0)]
 
@@ -28,7 +29,7 @@ def test_only_a_run_of_the_whole_suite_counts_as_full():
 
 def test_a_full_run_record_keeps_wall_and_cpu_seconds(tmp_path):
     file = tmp_path / "runs.jsonl"
-    FullRunRecord(4000, 0, 120.0, 310.5).write(file)
+    FullRunRecords.add(FullRunRecord(4000, 0, 120.0, 310.5), file)
     record = FullRunRecords.read(file).records[0]
     assert (record.seconds, record.cpu_seconds) == (120.0, 310.5)
     assert "120.0 wall seconds, 310.5 cpu seconds" in record.summary_line()
