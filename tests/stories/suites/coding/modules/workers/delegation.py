@@ -87,7 +87,7 @@ def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_s
     story.expect_text("chat-mark list --json", "sonnet", "Queued: task 2", actor=story.agent)
 
 
-def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_agent(new_story):
+def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_agent_and_is_linked_to_the_worker(new_story):
     story, _, worker = delegated_story(new_story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
@@ -95,6 +95,8 @@ def test_a_persons_comment_on_a_delegated_task_reaches_the_worker_and_the_main_a
     story.expect_text("task comments 1", "use the new cart", actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} was also told message:")
     story.expect_text("message unread --environment main", "use the new cart", actor=story.agent)
+    message_id = last_message_id(story)
+    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
 
 
 def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(new_story):
@@ -103,14 +105,6 @@ def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(n
     story.expect_success('message send "Fix the cart first" --environment main', actor=user)
     story.expect_absent("message unread --environment main", "Fix the cart first", actor=worker)
     story.expect_text("message unread --environment main", "Fix the cart first", actor=story.agent)
-
-
-def test_a_persons_comment_on_a_delegated_task_is_linked_to_the_worker_it_was_also_sent_to(new_story):
-    story, _, worker = delegated_story(new_story)
-    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
-    message_id = last_message_id(story)
-    story.expect_text(f"link list --source message:{message_id}", f"message:{message_id}  sent_to  agent:{worker.id}")
 
 
 def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
