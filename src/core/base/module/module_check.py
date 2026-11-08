@@ -11,7 +11,7 @@ from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.module_states import modules_book
 from core.base.module.state_check import StateCheck
-from core.base.module.agent_type_check import AgentTypeCheck
+from core.base.module.helper_type_check import HelperTypeCheck
 from core.base.module.profile_check import ProfileCheck
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
@@ -44,12 +44,12 @@ class ModuleCheck:
 
     def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck, marks: MarkCheck,
                  docks: DockCheck, settings: SettingCheck, skills: SkillCheck, moves: MoveCheck, templates: TemplateCheck,
-                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, agent_types: AgentTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck) -> None:
+                 buttons: ButtonCheck, finder: ModuleFinder, states: StateCheck, helper_types: HelperTypeCheck, profiles: ProfileCheck, inspectors: InspectorCheck) -> None:
         self.tables, self.suites, self.windows, self.providers, self.marks, self.docks = tables, suites, windows, providers, marks, docks
         self.settings, self.skills, self.moves = settings, skills, moves
         self.templates = templates
         self.states = states
-        self.agent_types = agent_types
+        self.helper_types = helper_types
         self.profiles = profiles
         self.buttons, self.finder = buttons, finder
         self.inspectors = inspectors
@@ -81,7 +81,7 @@ class ModuleCheck:
                     + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
                     + self.skills.problems(modules, self.known_events(modules)) + self.moves.problems(modules) + self.templates.problems(modules) + self.states.problems(modules)
                     + self.buttons.declared_problems(modules, frozenset(module.name for module in self.finder.default_modules()))
-                    + self.agent_types.problems(modules, rules) + self.profiles.problems(modules))
+                    + self.helper_types.problems(modules, rules) + self.profiles.problems(modules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 

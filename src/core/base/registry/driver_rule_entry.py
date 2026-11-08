@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+from core.base.agent_role import AgentRole
 from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_patterns import DriverPatterns
 from core.base.role_group import RoleGroup
@@ -38,7 +39,11 @@ class DriverRuleEntry:
     def covers_driver(self, driver: str, role: str) -> bool:
         if not self.drivers:
             return self.owner == driver
-        return DriverPatterns(self.drivers).covers(driver) and (not self.roles or role in self.roles)
+        return DriverPatterns(self.drivers).covers(driver) and (not self.roles or role in self.roles or self.covers_helper(role))
+
+    def covers_helper(self, role: str) -> bool:
+        """A rule that names the helper role holds for every kind of helper, workers too."""
+        return AgentRole.HELPER in self.roles and role != AgentRole.MAIN
 
     def is_driver_standing_rule(self, driver: str) -> bool:
         return (self.essential and not self.exempt) or (self.exempt and self.owner == driver)

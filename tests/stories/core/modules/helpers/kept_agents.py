@@ -84,7 +84,7 @@ def test_helper_form_offers_send_and_records_the_reason_for_another_helper(helpe
 def test_helper_form_offers_send_at_the_kept_limit_and_preserves_the_command_refusal(helper_form_server):
     server, helper = helper_form_server
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.helpers.helper-profile-limits", '["journal-researcher:4:1"]', "--project"]})
+    server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", "journal.core.helpers.read-only-helper-profile-limits", '["journal-researcher:4:1"]', "--project"]})
     availability = profile_line(server, cookie, ["helper", "availability", "--profile", "journal-researcher"])
     server.story.expect_rows([row["id"] for row in availability["idle_helpers"]] == [helper.id])
     server.story.expect_rows(not availability["can_start_fresh"])
@@ -182,14 +182,14 @@ def test_a_person_sets_the_limits_of_a_profile_and_a_number_in_a_profile_file_is
     story = new_story(fixture=StartedHelper)
     limits = story.container.get(AgentTypeLimits)
     story.expect_rows(limits.lookup("helper", "journal-researcher") == TypeLimits(4, 8), limits.lookup("main") is None)
-    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:2"]\' --project', actor=story.user)
+    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:2"]\' --project', actor=story.user)
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-researcher") == TypeLimits(1, 2))
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-planner") == TypeLimits(4, 8))
 
 
 def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile_starts(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
+    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
     expect_start_refused(story, "1 of journal-researcher run")
     story.expect_rows(story.container.get(AgentTypeLimits).lookup("helper", "journal-debugger") == TypeLimits(4, 8))
 
@@ -197,7 +197,7 @@ def test_at_the_run_limit_a_start_of_that_profile_is_refused_and_another_profile
 def test_at_the_kept_maximum_a_new_start_is_refused_with_a_retire_line(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
+    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
     expect_start_refused(story, f"journal agent retire {helper.id}")
 
 
@@ -205,7 +205,7 @@ def test_launches_in_flight_count(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
-    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
+    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:1:8"]\' --project', actor=story.user)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
     story.expect_refusal("helper start journal-researcher --fresh 'A second reader' --brief 'Read src/other.py' --environment main", "1 of journal-researcher run", actor=story.agent)
@@ -307,7 +307,7 @@ def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
 
 def test_refusals_fit_and_a_kept_limit_with_all_running_says_wait(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success('setting set journal.core.helpers.helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
+    story.expect_success('setting set journal.core.helpers.read-only-helper-profile-limits \'["journal-researcher:4:1"]\' --project', actor=story.user)
     launcher = FakeLauncher(story.home.socket("launcher"))
     outcome = story.run("helper start journal-researcher --brief 'Read src/other.py' --environment main", actor=story.agent)
     launcher.server.close()

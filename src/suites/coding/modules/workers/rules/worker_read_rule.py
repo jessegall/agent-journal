@@ -1,7 +1,7 @@
 from os.path import join, normpath
 from pathlib import Path
 
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.provider.providers import Providers
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -20,7 +20,7 @@ class WorkerReadRule(DriverRule):
     name = "workers.worker-read"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [AgentRole.WORKER]
+    roles = [CodingHelperKind.WORKER]
 
     def __init__(self, worktrees: WorktreeQuery, providers: Providers) -> None:
         self.worktrees, self.providers = worktrees, providers

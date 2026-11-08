@@ -5,6 +5,7 @@ from core.base.actor import CORE_ACTOR_ID
 from core.base.actor_type import ActorType
 from core.base.access import Access
 from core.base.agent_role import AgentRole
+from core.base.helper_kind import HelperKind
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from core.base.upgrade.creator_resolver import AGENT, CreatorResolver
@@ -83,7 +84,7 @@ class AgentsMove(VersionFourMove):
     def ended_at(row: sqlite3.Row, role: str, created_at: str, newest_mains: set[int]) -> str | None:
         if row["id"] in newest_mains:
             return None
-        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == AgentRole.HELPER:
+        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == HelperKind.READ_ONLY:
             return row["updated_at"] or created_at
         return None
 
@@ -100,7 +101,7 @@ class AgentsMove(VersionFourMove):
 
     @staticmethod
     def moved_role(role: str) -> str:
-        return AgentRole.HELPER.value if role == VERSION_FOUR_CHILD_ROLE else role
+        return HelperKind.READ_ONLY.value if role == VERSION_FOUR_CHILD_ROLE else role
 
     @staticmethod
     def is_subagent_session(session: str) -> bool:
@@ -113,4 +114,4 @@ class AgentsMove(VersionFourMove):
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
         return rows.insert(TABLE, {"id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
-                                   "role": role, "access": Access.READ.value if role == AgentRole.HELPER else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated})
+                                   "role": role, "access": Access.READ.value if role == HelperKind.READ_ONLY else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated})

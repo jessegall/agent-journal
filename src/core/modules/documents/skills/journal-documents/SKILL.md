@@ -10,7 +10,7 @@ their own numbers, so write the type with the number: doc 12, report 3.
 
 - `journal doc make "<title>" --abstract "<one line>" --body "<text>"` writes one; `--file <path>` takes the text from a
   file. `journal report make` takes the same.
-- A helper files its own documents and reports with these commands, even though it writes no files: they show in the
+- A read-only helper files its own documents and reports with these commands, even though it writes no files: they show in the
   viewer and dock in the chat. Name the number in your report rather than handing the text back.
 - A long text goes through standard input, so no word in it reads as a command, and a read-only agent files it this way:
   `journal report make "<title>" --body - <<'EOF'`, the text, then a line `EOF`. Keep the quotes around `'EOF'`.

@@ -1,4 +1,4 @@
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 from suites.coding.support.coding_nudges import MAIN_HELPER_BAN
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.auto_advice import AutoAdvice
@@ -13,7 +13,7 @@ HELPER_START_ARGUMENTS = ("helper", "start")
 
 
 class HelperAllowanceRule(DriverRule):
-    """The main agent starts no ordinary helpers while the setting main-starts-helpers is off."""
+    """The main agent starts no read-only helpers while the setting main-starts-read-only-helpers is off."""
 
     name = "workers.helper-allowed"
     hook = HookEventName.PRE_TOOL_USE

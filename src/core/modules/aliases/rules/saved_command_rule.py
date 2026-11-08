@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.base.helper_kind import HelperKind
 from core.base.duration import Duration
 from core.base.duration_error import DurationError
 from core.base.driver.agent_hook import AgentHook
@@ -71,7 +71,7 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
         if saved:
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
-        if role == AgentRole.HELPER:
+        if role == HelperKind.READ_ONLY:
             return SAVED_COMMAND_HELPER.nudge(category=category.value)
         return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 

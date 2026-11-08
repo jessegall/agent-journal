@@ -1,7 +1,11 @@
 from core.base.access import Access
 from core.base.agent_policy import AgentPolicy
+from core.base.agent_role import AgentRole
 from core.base.agent_roster import AgentRoster
-from core.base.agent_type import AgentType
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.rule_answer import RuleAnswer
+from core.base.role_group import RoleGroup
+from core.base.helper_type import HelperType
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -18,20 +22,20 @@ class Clerk(Module):
     name = "sample.clerk"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
-    agent_types = [AgentType("clerk", "Clerk", extends="helper", roster=ClerkRoster)]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", roster=ClerkRoster)]
 
 
 class Duplicate(Clerk):
     name = "sample.duplicate"
-    agent_types = [AgentType("main", "Duplicate main")]
+    helper_types = [HelperType("main", "Duplicate main")]
 
 
 class InvalidKey(Clerk):
-    agent_types = [AgentType("Clerk_1", "Clerk")]
+    helper_types = [HelperType("Clerk_1", "Clerk")]
 
 
 class MissingLabel(Clerk):
-    agent_types = [AgentType("clerk", " ")]
+    helper_types = [HelperType("clerk", " ")]
 
 
 class MissingDependency(Clerk):
@@ -39,24 +43,24 @@ class MissingDependency(Clerk):
 
 
 class InvalidRoster(Clerk):
-    agent_types = [AgentType("clerk", "Clerk", roster=str)]
+    helper_types = [HelperType("clerk", "Clerk", roster=str)]
 
 
 class UnknownBase(Clerk):
-    agent_types = [AgentType("clerk", "Clerk", extends="missing-base")]
+    helper_types = [HelperType("clerk", "Clerk", extends="missing-base")]
 
 
 class Loop(Clerk):
-    agent_types = [AgentType("clerk", "Clerk", extends="assistant"), AgentType("assistant", "Assistant", extends="clerk")]
+    helper_types = [HelperType("clerk", "Clerk", extends="assistant"), HelperType("assistant", "Assistant", extends="clerk")]
 
 
 class WritingHelper(Clerk):
-    agent_types = [AgentType("clerk", "Clerk", extends="helper", access=Access.WRITING)]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", access=Access.WRITING)]
 
 
 class WritingDescendant(Clerk):
-    agent_types = [AgentType("clerk", "Clerk", extends="helper"),
-                   AgentType("assistant", "Assistant", extends="clerk", access=Access.WRITING)]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper"),
+                   HelperType("assistant", "Assistant", extends="clerk", access=Access.WRITING)]
 
 
 class SampleSuite(Suite):
@@ -99,3 +103,40 @@ class UnknownRule(DriverRule):
 
 class RuleRole(Clerk):
     driver_rules = [UnknownRule]
+
+
+class EveryHelperRule(DriverRule):
+    name = "sample.every-helper"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["*"]
+    roles = [AgentRole.HELPER]
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        return RuleAnswer(refusal="sample rule holds for every helper")
+
+
+class EveryHelperRules(Clerk):
+    driver_rules = [EveryHelperRule]
+
+
+class ReadOnlyHelperRule(DriverRule):
+    name = "sample.read-only-helper"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["*"]
+    role_group = RoleGroup.READ_ONLY_HELPERS
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        return RuleAnswer(refusal="sample rule holds for read-only helpers")
+
+
+class ReadOnlyHelperRules(Clerk):
+    driver_rules = [ReadOnlyHelperRule]
+
+
+class SuiteWithHelperType(Suite):
+    name = "sample-helpers"
+    helper_types = [HelperType("suite-clerk", "Suite clerk")]
+
+
+class SuiteRegistersHelperType(Clerk):
+    suites = [SuiteWithHelperType]

@@ -13,7 +13,7 @@ from core.modules.drivers.support.nudger import Nudger
 
 
 class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
-    """Answers a helper's or worker's confirmed skip that waits for approval: an approved one passes the refusal once,
+    """Answers a helper's confirmed skip that waits for approval: an approved one passes the refusal once,
     a declined one leaves the refusal in force, and the agent that made it is told. Only its parent or a person answers."""
 
     command = JudgeRefusalSkip

@@ -11,7 +11,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.single_main_agent import SingleMainAgent
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.access import Access
 from core.base.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
@@ -23,7 +23,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     command = StartAgent
     caller_prepares = True
 
-    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: AgentTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent) -> None:
+    def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent) -> None:
         self.agents, self.repository, self.chain = agents, repository, chain
         self.types = types
         self.sandbox = sandbox

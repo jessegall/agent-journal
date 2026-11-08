@@ -22,13 +22,13 @@ WORKER_RULES = ("You write: change what the job needs and nothing beyond it. Fin
                   "write a second way. Write the test that proves your change and name it in a proof. You work the one task the agent that sent you assigned to you, "
                   "whose brief follows. Prove each point of the brief with journal proof make <point> --task <task> \"<file:line, and the test that shows it>\". The journal commits your "
                   "work; go on to a queued task with journal worker next and hand all in with journal worker deliver. Your report goes to the agent that sent you, never to the user.")
-KEPT_AGENT_RULES = ("Give new work to a kept helper or worker that can take it, even when the subject changes; prefer the one that knows the work. "
+KEPT_AGENT_RULES = ("Give new work to a kept helper that can take it, even when the subject changes; prefer the one that knows the work. "
                     "A stopped process is idle until the agent is retired. Use journal worker send <n> --task <task> for new assigned tasks, "
                     "or journal helper send <n> \"<job>\" for a helper's next job. journal helper send <n> --steer \"<text>\" only adds to a busy helper's current job. "
                     "A separate session when a compatible idle agent is available needs --fresh \"<why>\"; an independent review may start another helper. "
                     "A reviewer cannot review the same plan again. journal agent retire <n> --reason \"<why>\" permanently retires a stopped agent; it cannot resume or receive work. "
                     "Running limits count simultaneous processes; kept limits include running and idle agents until retirement. Running 0 allows none to start; kept 0 means no limit. "
-                    "Helper limits apply per profile. Only a person changes limits; environment values override project values, and limits in profile files have no effect. ")
+                    "Read-only helper limits apply per profile. Only a person changes limits; environment values override project values, and limits in profile files have no effect. ")
 
 HELPER_PROFILES = [
     AgentProfile("journal-researcher", "Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. It reads, and files its findings as a document or report.",

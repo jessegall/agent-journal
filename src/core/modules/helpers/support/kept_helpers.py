@@ -1,5 +1,5 @@
 from core.modules.settings.support.context_share import ContextShare
-from core.base.agent_role import AgentRole
+from core.base.helper_kind import HelperKind
 from core.base.database.kept_rows import KeptRows
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
@@ -28,10 +28,10 @@ class KeptHelpers:
                                    "profile = ? AND ended_at IS NULL", [profile], name="helpers.with_open_jobs")
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
-        return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.query_kept(profile), "role = ? AND profile = ? AND retired_at IS NULL", [AgentRole.HELPER, profile], name="helpers.kept")
+        return self.kept_rows.scoped_read(AGENTS_TABLE, lambda: self.query_kept(profile), "role = ? AND profile = ? AND retired_at IS NULL", [HelperKind.READ_ONLY, profile], name="helpers.kept")
 
     def query_kept(self, profile: str) -> tuple[Agent, ...]:
-        return tuple(self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
+        return tuple(self.queries.query(Agent).filter(role=HelperKind.READ_ONLY, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
 
     def idle(self, profile: str, program: str, model: str) -> tuple[Agent, ...]:
         kept = self.kept(profile)

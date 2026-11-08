@@ -1,6 +1,6 @@
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
 from core.base.command.bus import Bus
@@ -40,7 +40,7 @@ class WorkerTestListings(RunCounts):
             return ()
         if self.settings.number(WORKER_TEST_LIMIT) <= 0:
             return ()
-        if agent.role != AgentRole.WORKER:
+        if agent.role != CodingHelperKind.WORKER:
             return ()
         readers = self.readers.all()
         output = self.outputs.process_output(process.id)
@@ -64,7 +64,7 @@ class WorkerTestListings(RunCounts):
         return sum(counts) if counts and all(count > 0 for count in counts) else 0
 
     def requires_count(self, process: Process, agent: Agent) -> bool:
-        return (process.is_queue_run and process.creator_id == process.session_agent_id and agent.role == AgentRole.WORKER
+        return (process.is_queue_run and process.creator_id == process.session_agent_id and agent.role == CodingHelperKind.WORKER
                 and self.settings.number(WORKER_TEST_LIMIT) > 0
                 and any(part.category is CommandCategory.TEST_RUN for part in self.visibility.parts(process.id)))
 

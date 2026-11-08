@@ -1,4 +1,5 @@
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
+from core.base.agent_role import AgentRole
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.support.task_assignees import TaskAssignees
@@ -19,7 +20,7 @@ class WorkerTaskAssignees(TaskAssignees):
         self.worktrees, self.tasks = worktrees, tasks
 
     def check(self, agent: Agent) -> None:
-        worktree = self.worktrees.worker_worktree(agent.id) if agent.role == AgentRole.WORKER else None
+        worktree = self.worktrees.worker_worktree(agent.id) if agent.role == CodingHelperKind.WORKER else None
         if agent.role != AgentRole.MAIN and (worktree is None or worktree.state is not WorktreeState.CUT):
             raise Refusal(f"agent {agent.id} is a {agent.role} and takes no task", "only the main agent and a worker with a cut worktree take a task")
 

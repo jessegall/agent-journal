@@ -1,7 +1,7 @@
 from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.drivers.main.rules.main_stop_rule import MainStopRule
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 
 
 class MainDriver(Driver):

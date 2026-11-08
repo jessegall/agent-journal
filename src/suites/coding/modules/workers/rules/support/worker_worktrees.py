@@ -1,7 +1,7 @@
 from core.base.query.queries import Queries
 from core.base.database.kept_rows import KeptRows
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -16,8 +16,8 @@ class WorkerWorktrees:
         self.kept = kept
 
     def main_worktrees(self) -> list[Worktree]:
-        workers = self.kept.scoped_read("agents", lambda: tuple(self.queries.query(Agent).filter(role=AgentRole.WORKER).all_rows()),
-                                        "role = ?", [AgentRole.WORKER], name="workers.main_workers")
+        workers = self.kept.scoped_read("agents", lambda: tuple(self.queries.query(Agent).filter(role=CodingHelperKind.WORKER).all_rows()),
+                                        "role = ?", [CodingHelperKind.WORKER], name="workers.main_workers")
         if not workers:
             return []
         worker_ids = {worker.id for worker in workers}

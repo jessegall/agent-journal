@@ -5,7 +5,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class GoneWorkerRecovery:
@@ -13,7 +13,7 @@ class GoneWorkerRecovery:
     worker that has a job or started work, instead of waiting for the next agent tick and the retry after it."""
 
     def __call__(self, container: Container) -> None:
-        workers = [agent for agent in container.get(AgentRows).running() if agent.role == AgentRole.WORKER]
+        workers = [agent for agent in container.get(AgentRows).running() if agent.role == CodingHelperKind.WORKER]
         for gone in container.get(GoneAgents).find(workers):
             container.get(Bus).run(EndGoneWorker(gone.id), Actor.core(), environment_id=gone.environment_id)
         WorkerResumeRetry()(container)

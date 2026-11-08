@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
 from dataclasses import replace
 
-from core.base.agent_role import AgentRole
+from core.base.helper_kind import HelperKind
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.caller.caller import Caller
@@ -53,7 +53,7 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
-        helpers = agents.filter(role=AgentRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
+        helpers = agents.filter(role=HelperKind.READ_ONLY).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
         return tuple(helpers.oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:

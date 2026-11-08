@@ -1,4 +1,4 @@
-from core.base.module.agent_type_check import AGENTS_MODULE
+from core.base.module.helper_type_check import AGENTS_MODULE
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent

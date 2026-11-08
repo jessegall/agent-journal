@@ -6,9 +6,9 @@ from core.base.refusal import Refusal
 from core.base.agent_policy import AgentPolicy
 from core.base.role_group import RoleGroup
 from core.base.agent_group_book import AgentGroupBook
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.registry.agent_group_entry import AgentGroupEntry
-from core.base.registry.agent_type_entry import AgentTypeEntry
+from core.base.registry.helper_type_entry import HelperTypeEntry
 from dataclasses import asdict, dataclass, field, replace
 from functools import cached_property, lru_cache
 from core.base.registry.parsed_registries import ParsedRegistries
@@ -88,7 +88,7 @@ class Registry:
     inspectors: tuple[InspectorEntry, ...] = ()
     inspector_slots: tuple[str, ...] = ()
     state_additions: tuple[StateAdditionEntry, ...] = ()
-    agent_types: tuple[AgentTypeEntry, ...] = ()
+    helper_types: tuple[HelperTypeEntry, ...] = ()
     agent_groups: tuple[AgentGroupEntry, ...] = ()
     profiles: tuple[ProfileEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
@@ -170,7 +170,7 @@ class Registry:
             buttons=tuple(ButtonEntry.restored(button) for button in entries.get("buttons", [])),
             inspectors=tuple(InspectorEntry.restored(inspector) for inspector in entries.get("inspectors", [])),
             state_additions=tuple(StateAdditionEntry.restored(addition) for addition in entries.get("state_additions", [])),
-            agent_types=tuple(AgentTypeEntry.restored(entry) for entry in entries.get("agent_types", [])),
+            helper_types=tuple(HelperTypeEntry.restored(entry) for entry in entries.get("helper_types", [])),
             agent_groups=tuple(AgentGroupEntry.restored(entry) for entry in entries.get("agent_groups", [])),
             profiles=tuple(ProfileEntry.restored(entry) for entry in entries.get("profiles", [])),
             button_slots=tuple(entries.get("button_slots", [])),
@@ -228,7 +228,7 @@ class Registry:
             "buttons": [asdict(button) for button in self.buttons],
             "inspectors": [inspector.stored() for inspector in self.inspectors],
             "state_additions": [asdict(addition) for addition in self.state_additions],
-            "agent_types": [asdict(entry) for entry in self.agent_types],
+            "helper_types": [asdict(entry) for entry in self.helper_types],
             "agent_groups": [asdict(entry) for entry in self.agent_groups],
             "profiles": [asdict(entry) for entry in self.profiles],
             "button_slots": list(self.button_slots),
@@ -259,8 +259,9 @@ class Registry:
     def driver_rules(self, driver: str, role: str, hook_name: str, suite_name: str) -> list[DriverRuleEntry]:
         suite = self.suite(suite_name)
         policy = suite.agent_policy if suite is not None else AgentPolicy()
+        helper_types = self.helper_type_book()
         return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.exempt
-                and rule.covers_driver(driver, role) and rule.role_group.has_role(role, policy)]
+                and rule.covers_driver(driver, role) and rule.role_group.has_role(role, policy, helper_types)]
 
     def hook_rules(self, hook_name: str) -> list[DriverRuleEntry]:
         return sorted((rule for rule in self.rules if rule.covers_hook(hook_name)), key=lambda rule: rule.position)
@@ -278,8 +279,8 @@ class Registry:
     def agent_group_book(self) -> AgentGroupBook:
         return AgentGroupBook(self.agent_groups)
 
-    def agent_type_book(self) -> AgentTypeBook:
-        return AgentTypeBook(self.agent_types)
+    def helper_type_book(self) -> HelperTypeBook:
+        return HelperTypeBook(self.helper_types)
 
     def profile(self, name: str) -> ProfileEntry:
         for entry in self.profiles:
@@ -327,7 +328,7 @@ class Registry:
 
     @property
     def role_names(self) -> tuple[str, ...]:
-        return tuple(entry.key for entry in self.agent_types)
+        return tuple(self.helper_type_book().entries)
 
     @property
     def alias_permission_names(self) -> tuple[str, ...]:

@@ -5,11 +5,12 @@ description: Start a helper for a bounded read, send it more, stop it, and read 
 
 # Helpers
 
-A helper is an agent program of its own that works for you on one bounded job and reports back. A read-only helper
-reads; work that writes goes to a worker or stays with you.
+A helper is any agent outside the main agents: it works for you on one bounded job and reports back. This skill is about
+the read-only helpers, started with `journal helper start`; a worker is a helper that writes, started with `journal worker
+dispatch`, and work that writes goes to one or stays with you.
 
 - Choose the profile from what the job is: `journal-researcher` for research and checks, `journal-code-reviewer` for a review,
-  `journal-debugger` to trace a fault, `journal-planner` for a design. A job that writes is not a helper's.
+  `journal-debugger` to trace a fault, `journal-planner` for a design. A job that writes goes to a worker.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept helper only when it is on that model,
   and never because a stronger one happens to be there. When no kept helper on that model is idle and no place is free,
   retire a finished helper and start one on the simpler model.
@@ -24,7 +25,7 @@ reads; work that writes goes to a worker or stays with you.
   the chosen program. Tiers are `fast`, `general` and `strongest`; a rare model must be named with `--model`.
   The program order is a named `--program`, the profile's program, the split, then the parent's program. A profile
   with a program stays there. With no split or program choice, the helper runs on its parent's program.
-  Helpers count their tasks separately from workers. An out program passes its share to ready programs.
+  Read-only helpers count their tasks separately from workers. An out program passes its share to ready programs.
 - `journal helper send <n> "<job>"` gives a kept helper its next job. It resumes the same session after its process
   stopped. `--plan <n>` names the plan a review is for; a reviewer cannot review the same plan again.
 - `journal helper send <n> --steer "<text>"` adds to a busy helper's current job. Without `--steer`, a new job for a
@@ -54,7 +55,7 @@ for no free place names a suggestion. The journal never retires an agent itself.
 ## Running and kept limits
 
 `journal agent limits --environment <name>` shows both numbers in force. Running limits count simultaneous processes;
-kept limits count running and idle helpers until they are retired. Helpers have limits per profile, with optional
+kept limits count running and idle read-only helpers until they are retired. Read-only helpers have limits per profile, with optional
 overrides for one profile. A running limit of 0 allows none to start; a kept limit of 0 means no limit. Lowering a kept
 limit never deletes a helper. Retire an unused helper explicitly to free a kept place.
 

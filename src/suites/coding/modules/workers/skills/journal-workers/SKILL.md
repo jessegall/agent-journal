@@ -5,7 +5,7 @@ description: Send a worker to write a bounded job, check its proofs and merge it
 
 # Workers
 
-A helper only reads. A worker writes in a worktree on its assigned tasks, each with its own brief. A stopped worker
+A worker is a helper that writes: it works in a worktree on its assigned tasks, each with its own brief. A stopped worker
 stays kept on the same agent number and session until retired.
 
 ## As the one who sends
@@ -49,7 +49,7 @@ stays kept on the same agent number and session until retired.
   uses `--skip-guard workers.route-holds --skip-reason "<why>"`. The skip and its reason stay in the log and a chat mark.
   A person can choose any program. An agent cannot change a route a person made.
 - Only a person changes the split and its plan-window threshold. Ask with `journal setting request` when it needs
-  changing. A worker or helper changes neither routes nor program outages, and a worker dispatches no workers.
+  changing. A helper changes neither routes nor program outages, and a worker dispatches no workers.
 - `journal worker send <n> "<job>"` adds instructions to a kept worker's existing work. Use `--task` for new assigned
   tasks. A dispatch is refused when a compatible idle worker can take those tasks. Use `--fresh "<why>"` on dispatch
   only when a separate session is needed; its reason stays with the new worktree.
@@ -72,7 +72,7 @@ stays kept on the same agent number and session until retired.
 - `journal worker release <worker> "<why>"` puts its task back to open.
 - `journal worker sandbox <worker> on|off` sets whether that worker runs its shell lines in the sandbox, over the project setting
   `worker-sandbox`; `journal worker dispatch` and `send` take `--no-sandbox` to start it with the sandbox off. A person or the
-  main agent switches it; a worker or helper cannot.
+  main agent switches it; a helper cannot.
 
 ## Keeping the right mix
 
@@ -89,8 +89,8 @@ allows none to start; kept 0 means no limit. Lowering a kept limit never removes
 explicitly to free a kept place.
 
 Only a person changes the limits, through the agents window or settings. Environment values override project values;
-numbers written in a profile file have no effect. Helpers have their own limits per profile. To add instructions to
-a busy helper's current job, use `journal helper send <n> --steer "<text>"`; give separate work to an idle helper.
+numbers written in a profile file have no effect. Read-only helpers have their own limits per profile. To add instructions to
+a busy read-only helper's current job, use `journal helper send <n> --steer "<text>"`; give separate work to an idle one.
 
 ## Process rules
 

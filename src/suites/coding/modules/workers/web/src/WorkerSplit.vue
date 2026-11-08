@@ -46,7 +46,7 @@ function markOut(reason, endsAt) { return run(["provider-outage", "make", outPro
     <section class="split" data-worker-split>
         <template v-if="error"><p role="alert">{{ error }}</p></template>
         <template v-if="worker"><label>Workers running at once <input type="number" min="0" :value="worker.run_limit" aria-label="Workers running at once" :disabled="disabled" @change="setLimit($event.target.value)" /></label></template>
-        <p>Shares apply to new tasks. Helpers and workers are counted separately. A program that is out passes its share to the others.</p>
+        <p>Shares apply to new tasks. Read-only helpers and workers are counted separately. A program that is out passes its share to the others.</p>
         <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No agent programs" hint="Installed program modules appear here.">
             <template #default="{row}"><WorkerSplitProgram :row="row" :share="shareOf(row)" :disabled="disabled" @share="setShare(row, $event)" @save="save" @back="run(['provider-outage', 'end', row.id])" @out="outProgram = row.id" /></template>
         </RowList>

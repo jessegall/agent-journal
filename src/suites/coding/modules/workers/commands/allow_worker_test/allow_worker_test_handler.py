@@ -8,7 +8,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.commands.allow_worker_test.allow_worker_test import AllowWorkerTest

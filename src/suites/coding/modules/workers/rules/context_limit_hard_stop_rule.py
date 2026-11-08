@@ -7,7 +7,8 @@ from core.base.driver.seconds import Seconds
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_HARD_STOP
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
+from core.base.agent_role import AgentRole
 from suites.coding.support.context_over_limit import ContextOverLimit
 
 RETRY_SECONDS = Seconds(600)
@@ -21,7 +22,7 @@ class ContextLimitHardStopRule(DriverRule):
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingAgentRole.MAIN, CodingAgentRole.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
     disabled_scopes = [ActorScope]
 
     def __init__(self, history: HookHistory, over_limit: ContextOverLimit) -> None:

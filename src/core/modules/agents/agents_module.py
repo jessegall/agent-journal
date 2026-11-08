@@ -70,7 +70,7 @@ from core.modules.agents.support.launch_nudges import LAUNCH_FAILURE_NUDGES
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure_handler import RecordAgentLaunchFailureHandler
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
 from core.base.access import Access
-from core.base.agent_type import AgentType
+from core.base.helper_type import HelperType
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
 from core.modules.agents.support.agent_searcher import AgentSearcher
@@ -116,7 +116,7 @@ class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
     name = "journal.core.agents"
-    agent_types = [AgentType("main", "Main agent", access=Access.WRITING), AgentType("helper", "Helper", run_limit_key="journal.core.helpers.helper-run-limit", kept_limit_key="journal.core.helpers.helper-kept-limit", profile_limits_key="journal.core.helpers.helper-profile-limits", job_command=("helper", "send")), AgentType("reviewer", "Reviewer")]
+    helper_types = [HelperType("helper", "Read-only helper", run_limit_key="journal.core.helpers.read-only-helper-run-limit", kept_limit_key="journal.core.helpers.read-only-helper-kept-limit", profile_limits_key="journal.core.helpers.read-only-helper-profile-limits", job_command=("helper", "send")), HelperType("reviewer", "Reviewer")]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]

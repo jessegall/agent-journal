@@ -61,5 +61,5 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
             raise Refusal(f"agent {agent.id} is still running", f"journal agent stop {agent.id}, then retire it")
 
     def roster(self, agent: Agent) -> AgentRoster[Agent] | None:
-        entry = next((entry for entry in self.registry.agent_types if entry.key == agent.role), None)
+        entry = next((entry for entry in self.registry.helper_types if entry.key == agent.role), None)
         return self.container.get(entry.roster.loaded()) if entry is not None and entry.roster is not None else None

@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.clock import Clock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
@@ -49,4 +49,4 @@ class WorkerStopRule(DriverRule):
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))
 
     def has_running_helper(self, agent_id: int) -> bool:
-        return bool(self.agents.running(AgentRole.HELPER, agent_id))
+        return bool(self.agents.running(CodingHelperKind.READ_ONLY, agent_id))

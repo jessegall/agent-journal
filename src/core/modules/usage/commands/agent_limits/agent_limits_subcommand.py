@@ -38,7 +38,7 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         titles = {name: profile.display_title for name, profile in installed_profiles.items()}
         counts = []
-        for entry in self.registry.agent_types:
+        for entry in self.registry.helper_types:
             if not entry.run_limit_key:
                 continue
             agents = tuple(agent for agent in kept if agent.role == entry.key)

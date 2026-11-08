@@ -4,7 +4,7 @@ from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.agent_type import AgentType
+from core.base.helper_type import HelperType
 from core.base.driver.suite import Suite
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
@@ -43,11 +43,11 @@ class InvalidName(ProfileModule):
 
 
 class MissingDefault(ProfileModule):
-    agent_types = [AgentType("clerk", "Clerk", extends="helper", default_profile="missing-profile")]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="missing-profile")]
 
 
 class WrongDefaultType(ProfileModule):
-    agent_types = [AgentType("clerk", "Clerk", extends="helper", default_profile="module-reader")]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="module-reader")]
 
 
 class LegacySuite(Suite):
@@ -83,6 +83,6 @@ class ClerkModule(Module):
     requires_core = ">=5,<6"
     parent_suite = "coding"
     dependencies = ["journal.core.agents", "journal.suites.coding"]
-    agent_types = [AgentType("clerk", "Clerk", extends="helper", default_profile="sample-clerk")]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper", default_profile="sample-clerk")]
     profiles = [AgentProfile("sample-clerk", "Reads contracts", "Read the contracts.", agent_type="clerk", model="sonnet", codex_model="gpt-6.1-terra")]
     drivers = [ClerkDriver]

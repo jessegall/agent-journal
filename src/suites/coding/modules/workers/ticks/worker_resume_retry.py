@@ -3,7 +3,7 @@ from core.base.internet_connection import InternetConnection
 from core.base.journal_home import JournalHome
 from core.base.clock import Clock
 from core.base.actor import Actor
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.container import Container
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
@@ -34,5 +34,5 @@ class WorkerResumeRetry:
                 resume.replace_running_program(worker, Actor.core())
 
     def may_resume(self, container: Container, worker: Agent, lines: list[AgentLine]) -> bool:
-        return (worker.role == AgentRole.WORKER and worker.ended_at is not None
+        return (worker.role == CodingHelperKind.WORKER and worker.ended_at is not None
                 and container.get(WorkerStop).is_job_due(worker, lines) and container.get(WorkerResume).may_resume(worker))

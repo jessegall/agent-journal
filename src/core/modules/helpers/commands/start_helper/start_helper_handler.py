@@ -8,7 +8,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
@@ -44,7 +44,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
 
     command = StartHelper
 
-    def __init__(self, profiles: ProfileFiles, types: AgentTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts) -> None:
+    def __init__(self, profiles: ProfileFiles, types: HelperTypeBook, limits: HelperLimits, bus: Bus, repository: Repository, reuse: HelperReuse, programs: HelperPrograms, folders: AgentFolders, providers: Providers, sources: WorkSources, sandbox: ShellSandbox, kept: KeptHelpers, models: ProfileModels, shares: ProgramShares, states: ProgramStates, counts: HelperCounts) -> None:
         self.kept, self.models = kept, models
         self.sandbox = sandbox
         self.profiles, self.types, self.limits, self.bus, self.repository, self.reuse = profiles, types, limits, bus, repository, reuse

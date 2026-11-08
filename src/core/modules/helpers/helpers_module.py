@@ -41,6 +41,7 @@ from core.modules.helpers.support.helper_nudges import HELPER_NUDGES
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from core.modules.helpers.ticks.usage_limit_marks import UsageLimitMarks
 from core.modules.helpers.migrations.m006_usage_limits import UsageLimitsMigration
+from core.modules.helpers.migrations.m007_read_only_helper_setting_keys import ReadOnlyHelperSettingKeysMigration
 from core.modules.helpers.models.usage_limit import UsageLimit
 from core.modules.helpers.guards.usage_limit_guard import UsageLimitGuard
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_handler import SetUsageLimitHandler
@@ -64,7 +65,7 @@ class HelpersModule(Module):
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration]
+    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, ReadOnlyHelperSettingKeysMigration]
     models = [ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills"]
     marks = PROGRAM_MARKS

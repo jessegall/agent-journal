@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.support.context_line import CONTEXT_LINE
@@ -9,6 +9,6 @@ class HelperDriver(Driver):
 
     name = "coding.helper"
     suite = CodingSuite
-    role = AgentRole.HELPER
+    role = CodingHelperKind.READ_ONLY
     rules = []
     opening_lines = [CONTEXT_LINE]

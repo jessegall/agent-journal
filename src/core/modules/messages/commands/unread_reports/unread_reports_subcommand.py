@@ -27,7 +27,7 @@ class UnreadReports:
 
 class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
     """`journal message reports`: the newest reports sent to the caller that nobody has read yet, with their numbers
-    and how many more there are: a helper or worker reads those sent to it, and a main agent or a person those sent
+    and how many more there are: a helper reads those sent to it, and a main agent or a person those sent
     to the main agent."""
 
     cli_name = "message"

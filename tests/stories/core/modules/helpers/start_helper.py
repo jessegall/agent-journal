@@ -37,7 +37,7 @@ class OneHelperAllowed(StoryFixture):
     parent = LauncherRuns
 
     def steps(self, story):
-        story.run("setting set journal.core.helpers.helper-run-limit 1 --environment main", actor=story.user)
+        story.run("setting set journal.core.helpers.read-only-helper-run-limit 1 --environment main", actor=story.user)
 
 
 def fake_launcher(story, requests=1):
@@ -166,7 +166,7 @@ def test_each_environment_counts_its_own_helpers(new_story):
     story = new_story(fixture=OneHelperAllowed)
     story.run("environment make staging /work/staging")
     staging_main = Actor(story.new_row_id("agent start s-20 claude main --environment staging"), ActorType.AGENT)
-    story.run("setting set journal.core.helpers.helper-run-limit 1 --environment staging", actor=story.user)
+    story.run("setting set journal.core.helpers.read-only-helper-run-limit 1 --environment staging", actor=story.user)
     started(story)
     started(story, START.replace("main", "staging"), staging_main)
     story.expect_rows(len(helpers(story)) == 2)

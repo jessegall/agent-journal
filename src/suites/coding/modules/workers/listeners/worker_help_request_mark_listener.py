@@ -1,4 +1,4 @@
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from core.modules.waits.models.enums.wait_type import WaitType
@@ -16,5 +16,5 @@ class WorkerHelpRequestMarkListener(WorkerStopMarkListener[Created[Wait]]):
     def handle(self, event: Created[Wait], logged: LoggedEvent) -> None:
         wait = event.row
         worker = self.event_rows.required(Agent, wait.session_agent_id)
-        if wait.type is WaitType.HELP_REQUEST and worker.role == AgentRole.WORKER:
+        if wait.type is WaitType.HELP_REQUEST and worker.role == CodingHelperKind.WORKER:
             self.show_stop(logged, worker, WorkerMarkVariant.HELP_REQUEST, f"is stuck: {wait.focus}", self.unfinished.rows(worker.id))

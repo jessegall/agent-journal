@@ -92,7 +92,7 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
             </template>
             <template v-else>
                 <div class="columns"><span>Name</span><span>Running</span><span>Kept</span><span /></div>
-                <template v-if="helper"><div class="helper-head"><strong>Helpers</strong><span>{{ helper.running }} running, {{ helper.kept }} kept</span></div></template>
+                <template v-if="helper"><div class="helper-head"><strong>Read-only helpers</strong><span>{{ helper.running }} running, {{ helper.kept }} kept</span></div></template>
                 <template v-for="row in entries" :key="row.key"><button type="button" class="count-row" :data-agent-limit-type="row.type || row.key" :data-agent-limit-profile="row.profile" @click="select(row)">
                     <strong>{{ row.label }}</strong><template v-for="cell in [{count: row.running, limit: row.run_limit, unlimited: false}, {count: row.kept, limit: row.kept_limit, unlimited: true}]" :key="cell.unlimited"><span :class="{full: full(cell.count, cell.limit)}"><span>{{ cell.count }}<template v-if="cell.limit || !cell.unlimited"> of {{ cell.limit }}</template></span><template v-if="cell.limit"><span class="bar"><span :style="{width: width(cell.count, cell.limit)}" /><i :style="{width: overflow(cell.count, cell.limit)}" /></span></template></span></template><Icon name="chevronRight" :size="12" />
                 </button></template>

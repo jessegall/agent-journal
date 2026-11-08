@@ -12,7 +12,7 @@ from core.modules.skills.support.profile_skills import ProfileSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 
@@ -52,7 +52,7 @@ def test_every_skill_a_shipped_profile_names_exists_and_every_profile_names_some
 
 def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skill(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.container.get(Bus).run(StartAgent(RESEARCHER_SESSION, "claude", CodingAgentRole.HELPER, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
+    story.container.get(Bus).run(StartAgent(RESEARCHER_SESSION, "claude", CodingHelperKind.READ_ONLY, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
     story.expect_hook_allowed(RESEARCHER_SESSION, PLAN_LIST)
 
 

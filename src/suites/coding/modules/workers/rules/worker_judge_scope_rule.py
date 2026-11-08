@@ -1,6 +1,6 @@
 from pathlib import PurePath
 
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -22,7 +22,7 @@ class WorkerJudgeScopeRule(DriverRule):
     name = "workers.worker-judge-scope"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.*"]
-    roles = [AgentRole.WORKER]
+    roles = [CodingHelperKind.WORKER]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

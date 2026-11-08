@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.agent_type import AgentType
+from core.base.helper_type import HelperType
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -36,5 +36,5 @@ class ProfileNameCollision(ProfileVersionOne):
 
 
 class ProfileCustomType(ProfileVersionOne):
-    agent_types = [AgentType("clerk", "Clerk", extends="helper")]
+    helper_types = [HelperType("clerk", "Clerk", extends="helper")]
     profiles = []

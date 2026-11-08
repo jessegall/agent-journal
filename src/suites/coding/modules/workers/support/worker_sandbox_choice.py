@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.agent_sandbox_choice import AgentSandboxChoice, SandboxedAgent
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import MODULE_KEY, WORKER_SANDBOX
@@ -12,7 +12,7 @@ SANDBOX_KEY = "sandbox"
 class WorkerSandboxChoice(AgentSandboxChoice):
     """A worker's choice on its agent row decides whether it is sandboxed, else the project setting."""
 
-    def __init__(self, agents: AgentRows, types: AgentTypeBook, settings: SettingValues) -> None:
+    def __init__(self, agents: AgentRows, types: HelperTypeBook, settings: SettingValues) -> None:
         self.agents, self.types, self.settings = agents, types, settings
 
     def sandboxed(self, agent_id: int) -> bool:

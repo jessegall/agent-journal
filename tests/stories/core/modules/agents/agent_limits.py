@@ -9,7 +9,7 @@ from tests.stories.server.support.browser_story import expect_browser
 
 RUN = "journal.suites.coding.workers.worker-run-limit"
 KEPT = "journal.suites.coding.workers.worker-kept-limit"
-PROFILES = "journal.core.helpers.helper-profile-limits"
+PROFILES = "journal.core.helpers.read-only-helper-profile-limits"
 
 
 @pytest.fixture

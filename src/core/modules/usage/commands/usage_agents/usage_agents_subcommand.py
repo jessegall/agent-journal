@@ -7,7 +7,7 @@ from collections.abc import Mapping, Sequence
 from argparse import ArgumentParser, Namespace
 
 from core.base.agent_sandbox_choice import AgentSandboxChoice
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.clock import Clock
 from core.base.query.conditions.excluding import Excluding
@@ -45,7 +45,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: AgentTypeBook, share: ContextShare) -> None:
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: HelperTypeBook, share: ContextShare) -> None:
         self.share = share
         self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles

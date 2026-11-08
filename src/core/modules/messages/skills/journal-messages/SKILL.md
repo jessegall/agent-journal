@@ -27,7 +27,7 @@ A line typed into your terminal starts with `[journal]`: the journal typed it, n
 
 - `journal message work-source` shows the effective request. `journal message work-from N` explicitly switches to
   an authorized person request; replying to a person request also switches. Reading its context does not switch.
-- `journal message clear-work-source` ends attribution to the main agent's selected request. Helpers and workers
+- `journal message clear-work-source` ends attribution to the main agent's selected request. Helpers
   already running keep the authorized source snapshot captured for their job; a later parent read cannot replace it.
 - For a task use `journal task context N`; for a plan use `journal plan context N`. Follow the returned `--page`,
   `--message M --text-offset K` and `--ancestor-cursor TOKEN` commands to recover omitted messages and text.
@@ -56,8 +56,8 @@ A line typed into your terminal starts with `[journal]`: the journal typed it, n
 ## Messaging an agent
 
 - `journal message send "<text>" --to agent:N` is the one way to message an agent. The receiver gets a line naming the
-  message, and a stopped receiver is woken. A main agent messages its own helpers and workers and they message it; the
-  merger and the workers and helpers under the same main agent message each other. Any other agent is refused.
+  message, and a stopped receiver is woken. A main agent messages its own helpers and they message it; the
+  merger and the helpers under the same main agent message each other. Any other agent is refused.
 - `journal worker report` and `journal merger tell` send through it with their own checks.
 
 ## Questions

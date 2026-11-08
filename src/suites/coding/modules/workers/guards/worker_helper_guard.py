@@ -6,11 +6,11 @@ from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKERS_START_HELPERS
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class WorkerHelperGuard(Guard[Created[Agent]]):
-    """A worker starts no helper while workers may not use ordinary helpers."""
+    """A worker starts no read-only helper while workers may not use read-only helpers."""
 
     name = "workers.worker-starts-no-helper"
 
@@ -18,5 +18,5 @@ class WorkerHelperGuard(Guard[Created[Agent]]):
         self.queries, self.settings = queries, settings
 
     def check(self, event: Created[Agent], context: Context) -> None:
-        if event.row.role == AgentRole.HELPER and not self.settings.flag(WORKERS_START_HELPERS) and self.queries.query(Agent).filter(id=context.actor.id, role=AgentRole.WORKER).exists():
-            raise Refusal("a worker starts no helper here", "a person turns on journal.suites.coding.workers.workers-start-helpers")
+        if event.row.role == CodingHelperKind.READ_ONLY and not self.settings.flag(WORKERS_START_HELPERS) and self.queries.query(Agent).filter(id=context.actor.id, role=CodingHelperKind.WORKER).exists():
+            raise Refusal("a worker starts no read-only helper here", "a person turns on journal.suites.coding.workers.workers-start-read-only-helpers")

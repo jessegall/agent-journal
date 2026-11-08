@@ -13,7 +13,7 @@ longer true.
   at weight 0 a memory is removed. A higher weight lasts through more compactions.
 - What must keep applying is a rule, not a memory: see the journal-rules skill.
 - A memory belongs to the agent that made it, and no other agent can see it: every main agent of an environment counts
-  as one agent, and a worker or helper has its own. A worker or helper gets the project rules and its brief.
+  as one agent, and a helper has its own. A helper gets the project rules and its brief.
 - `--task <n>` ties it to a task and `--keywords a,b` to words that bring it back. Something to be told at a time or on an
   interval is a reminder, not a memory: `journal reminder make`.
 - `journal memory list` names every memory; `journal memory read <n>` reads one whole.

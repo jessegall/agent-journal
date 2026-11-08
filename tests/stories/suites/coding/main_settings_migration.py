@@ -7,7 +7,7 @@ from tests.stories.suites.coding.main_file_permissions import MAIN_SESSION, PROJ
 from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"
-PROFILE_LIMITS = "journal.core.helpers.helper-profile-limits"
+PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
 MERGE_COMMANDS = "journal.suites.coding.workers.merge-commands"
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 

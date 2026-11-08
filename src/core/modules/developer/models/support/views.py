@@ -23,9 +23,8 @@ SELECT id,
            ELSE coalesce((SELECT json_extract(value, '$.label')
                           || CASE WHEN coalesce(json_extract(payload, '$.agent'), '') <> ''
                                   THEN ' ' || json_extract(payload, '$.agent') ELSE '' END
-                          FROM registry, json_each(registry.entries, '$.agent_types')
-                          WHERE json_extract(value, '$.key') = json_extract(payload, '$.role')
-                            AND (json_extract(value, '$.key') = 'helper' OR json_extract(value, '$.extends') = 'helper')), 'Main agent')
+                          FROM registry, json_each(registry.entries, '$.helper_types')
+                          WHERE json_extract(value, '$.key') = json_extract(payload, '$.role')), 'Main agent')
        END AS sender,
        json_extract(payload, '$.outcome') AS outcome,
        coalesce(json_extract(payload, '$.body.event'), json_extract(payload, '$.body.hook_event_name'), 'hook') AS event,

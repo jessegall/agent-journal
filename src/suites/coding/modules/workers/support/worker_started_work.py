@@ -12,7 +12,7 @@ from suites.coding.modules.workers.support import worker_job
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class WorkerStartedWork:
@@ -28,7 +28,7 @@ class WorkerStartedWork:
         return [worker for worker in self.queries.query(Agent).find_many(holders) if self.is_stranded(worker)]
 
     def is_stranded(self, worker: Agent) -> bool:
-        if worker.role != AgentRole.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
+        if worker.role != CodingHelperKind.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
             return False
         if not self.unfinished.rows(worker.id):
             return False

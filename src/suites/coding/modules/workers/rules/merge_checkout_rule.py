@@ -11,7 +11,7 @@ from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 
 REMINDER_SPAN = Seconds(3600)
 

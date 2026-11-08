@@ -36,7 +36,7 @@ AFFECTED_TESTS_COMMAND = f"{MODULE_KEY}.affected-tests-command"
 PROJECT_TEST_COMMAND = f"{MODULE_KEY}.project-test-command"
 MAIN_MERGES_WORKERS = f"{MODULE_KEY}.main-agent-may-merge"
 RESUME_SILENT_AGENTS = f"{MODULE_KEY}.resume-silent-agents"
-WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-helpers"
+WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-read-only-helpers"
 WORKER_SANDBOX = f"{MODULE_KEY}.worker-sandbox"
 PROTECTED_FOLDERS = f"{MODULE_KEY}.protected-folders"
 WORKER_SETTING_VALUES = [
@@ -56,16 +56,16 @@ WORKER_SETTING_VALUES = [
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, depends_on=[MERGER_ENABLED]),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True, depends_on=[DISPATCHES_WORKERS_SETTING]),
-    SettingValue("resume-silent-agents", "Resume silent agents", "Whether a worker or helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True),
-    SettingValue("workers-start-helpers", "Workers may use ordinary helpers", "Whether a worker may start ordinary helpers for the task it works on.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("resume-silent-agents", "Resume silent agents", "Whether a helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("workers-start-read-only-helpers", "Workers may use read-only helpers", "Whether a worker may start read-only helpers for the task it works on.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("worker-sandbox", "Worker sandbox", "Workers run their commands in a sandbox that lets them write only in the working folder of the worker.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("protected-folders", "Protected folders", "Paths or globs workers may not change.", SettingType.LIST, default=(), person_set=True, main_agent_only=True),
     SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
     SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
     SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6, person_set=True),
     SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3, person_set=True),
-    SettingValue("quiet-helper-grace-minutes", "Quiet helper grace minutes", "Minutes without tool use, or with work that has not started, before the main agent first hears of a worker or helper.", SettingType.NUMBER, default=15, person_set=True),
-    SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the worker or helper is stopped or back at work.", SettingType.NUMBER, default=5, person_set=True),
+    SettingValue("quiet-helper-grace-minutes", "Quiet helper grace minutes", "Minutes without tool use, or with work that has not started, before the main agent first hears of a helper.", SettingType.NUMBER, default=15, person_set=True),
+    SettingValue("quiet-helper-minutes", "Quiet helper minutes", "Minutes between the reminders to the main agent, until the helper is stopped or back at work.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("library-links", "Library links", "Folders each worker's worktree links from the main checkout.", SettingType.LIST, default=()),
     SettingValue("library-copies", "Library copies", "Folders each worker's worktree gets a copy of.", SettingType.LIST, default=()),
     SettingValue(WORKTREE_COMMANDS_NAME, "Worktree commands", "Commands run in each new worker worktree before the worker starts.",
