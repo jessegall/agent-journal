@@ -7,27 +7,35 @@ from core.modules.waits.models.wait import Wait
 from core.modules.waits.commands.open_wait.open_wait import OpenWait
 from core.modules.waits.models.wait_target import WaitTarget
 from core.modules.waits.models.enums.wait_type import WaitType
+from core.modules.waits.support.wait_targets import WaitTargets
 
 
 class OpenWaitHandler(Handler[OpenWait, Wait]):
     """Opens the calling agent's wait, with a target row for each table:id it names; a wait on rows names at
-    least one."""
+    least one, and none of them is already done, which the refusal answers with the result."""
 
     command = OpenWait
 
-    def __init__(self, repository: Repository) -> None:
-        self.repository = repository
+    def __init__(self, repository: Repository, targets: WaitTargets) -> None:
+        self.repository, self.targets = repository, targets
 
     def handle(self, command: OpenWait, context: Context) -> Wait:
         if context.actor.type is not ActorType.AGENT:
             raise Refusal("only an agent waits", "an agent runs journal wait on or journal wait stuck")
         if command.type is WaitType.ROWS and not command.targets:
             raise Refusal("a wait for rows needs the rows that end it", "add --target tasks:<id>")
+        named = [self.named(target) for target in command.targets]
         wait = self.repository.save(Wait(session_agent_id=context.actor.id, creator_id=context.actor.id, type=command.type, focus=command.focus,
                                          opened_at=context.timestamp), context)
-        for target in command.targets:
-            table, _, row_id = target.partition(":")
-            if not row_id.isdigit():
-                raise Refusal(f"{target} is not a row", "write a target as table:id, such as tasks:7")
-            self.repository.save(WaitTarget(wait_id=wait.id, creator_id=context.actor.id, row_table=table, row_id=int(row_id)), context)
+        for table, row_id in named:
+            self.repository.save(WaitTarget(wait_id=wait.id, creator_id=context.actor.id, row_table=table, row_id=row_id), context)
         return wait
+
+    def named(self, target: str) -> tuple[str, int]:
+        word, _, row_id = target.partition(":")
+        if not row_id.isdigit():
+            raise Refusal(f"{target} is not a row", "write a target as table:id, such as tasks:7")
+        done = self.targets.done_row(word, int(row_id))
+        if done is not None:
+            raise Refusal(self.targets.result(done, target), "there is nothing to wait for: it is done, so use what it says")
+        return self.targets.table(word), int(row_id)
