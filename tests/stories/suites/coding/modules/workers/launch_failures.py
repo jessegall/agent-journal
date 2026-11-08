@@ -38,7 +38,7 @@ def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_s
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
     launcher.expect_started(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
-    expect_requests_launcher(launcher, 4)
+    assert False, [(sorted(k for k in r if k in ('command','stop','typed','running','quiet')), r.get('agent_id')) for r in launcher.requests]
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
     expect_count_shown(lines, f"agent:{worker.id} could not start", 1)
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax", "waiting")
