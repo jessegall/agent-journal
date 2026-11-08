@@ -1,4 +1,4 @@
 py: commands[0]> -false
-py: exit 2 (0.00 seconds) /home/jharbott/tmp> -false
+py: exit 2 (0.00 seconds) /home/user/tmp> -false
   py: FAIL code 2 (0.06=setup[0.06]+cmd[0.00] seconds)
   evaluation failed :( (0.15 seconds)
