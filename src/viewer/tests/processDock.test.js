@@ -230,3 +230,37 @@ test("a process with no progress shows no percent, and an unfolded card shows no
     expect(idle.querySelector(".output-dock-figure")).not.toBeNull();
     expect((await foldedTime({progress: 42}, false)).time.querySelector("[data-output-percent]")).toBeNull();
 });
+
+// a run that ends between two reads: the first read says it runs at 96%, the next says it ended with the row's percent still 96
+async function endedBetweenReads(ending) {
+    const window = context({"output peek 3": {ok: true, value: {lines: []}}});
+    const answers = [{id: 3, state: "running", line: "make build", created_at: "2026-11-02T10:00:00Z", progress: 96}, {id: 3, line: "make build", created_at: "2026-11-02T10:00:00Z", ended_at: "2026-11-02T10:00:05Z", progress: 96, ...ending}];
+    let reads = 0;
+    const read = window.read;
+    window.read = async (line) => (line === "process card 3" ? {ok: true, value: answers[Math.min(reads++, answers.length - 1)]} : read(line));
+    const heard = [];
+    window.follow = (patterns, handler) => heard.push(handler);
+    const head = document.createElement("span");
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(head, foot, time);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(true), collapsed: ref(true), row: ref({id: 7, target_id: 3})})[key];
+    await mounted(OutputDock, window);
+    expect(time.querySelector("[data-output-percent]").textContent).toBe("96%");
+    heard.forEach((handler) => handler({event: "process.finished", row_id: 3}));
+    await settle();
+    return {time, head};
+}
+
+test("a run that ends between two reads shows 100% and passed, never its last percent", async () => {
+    const {time, head} = await endedBetweenReads({state: "finished"});
+    expect(time.querySelector("[data-output-percent]").textContent).toBe("100%");
+    expect(head.querySelector("[data-state='good']")).not.toBeNull();
+    expect(head.querySelector(".output-dock-fill").style.width).toBe("100%");
+});
+
+test("a run that ends between two reads in failure shows the failure and no percent", async () => {
+    const {time, head} = await endedBetweenReads({state: "failed"});
+    expect(time.querySelector("[data-output-percent]")).toBeNull();
+    expect(head.querySelector("[data-state='bad']")).not.toBeNull();
+});

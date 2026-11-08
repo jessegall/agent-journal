@@ -66,8 +66,10 @@ const began = computed(() =>
 );
 // a card folded to its title line shows only the percent of the run, left of its duration; none while the run has made no progress
 const percent = computed(() => {
+  if (!unref(collapsed)) return "";
+  if (ended.value) return standing.value === "good" ? "100%" : "";
   const done = Math.round(Number(run.value?.progress ?? 0));
-  return unref(collapsed) && done > 0 ? `${done}%` : "";
+  return done > 0 ? `${done}%` : "";
 });
 const steps = computed(() => {
   if (!run.value?.steps_passed && !run.value?.steps_failed) return "";
@@ -107,6 +109,8 @@ async function load() {
 }
 
 watch(opened, (open) => open && load());
+// a run that ends between two reads is read once more, so the card shows its end and not the last percent it drew
+watch(ended, (done) => done && load());
 
 view.follow(
   ["process.*"],
