@@ -1,4 +1,4 @@
-from core.base.journal_home import JournalHome
+from core.modules.settings.support.context_share import ContextShare
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.kept_helpers import FULL_SESSION_PERCENT
 from core.modules.agents.models.agent import Agent
@@ -11,8 +11,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 class AvailableWorkers:
     """Finds reusable workers with a resumable session and no unmerged work."""
 
-    def __init__(self, places: WorkerPlaces, worktrees: WorktreeQuery, git: WorktreeGit, providers: Providers, home: JournalHome) -> None:
-        self.places, self.worktrees, self.git, self.providers, self.home = places, worktrees, git, providers, home
+    def __init__(self, places: WorkerPlaces, worktrees: WorktreeQuery, git: WorktreeGit, providers: Providers, share: ContextShare) -> None:
+        self.places, self.worktrees, self.git, self.providers, self.share = places, worktrees, git, providers, share
 
     def first(self, folder: str, request: WorkerRequest) -> Agent | None:
         matching = (worker for worker in self.places.kept_workers() if worker.ended_at is not None and request.matches(worker))
@@ -27,4 +27,4 @@ class AvailableWorkers:
         provider = self.providers.provider(worker.program)
         if not provider.session_matches_folder(last.folder, worker.session):
             return False
-        return (provider.context_percent(self.home, worker.session) or 0) < FULL_SESSION_PERCENT
+        return (self.share.percent(worker.program, worker.session) or 0) < FULL_SESSION_PERCENT

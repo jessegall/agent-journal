@@ -201,5 +201,6 @@ def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_give
     agent.run_listeners()
     agent.expect_success("task show 2", "state: open", actor=agent.agent)
     agent.expect_hook_allowed(SESSION, HookSamples.sample("post_tool_use"), "stop now")
+    agent.expect_success('memory skip "nothing to keep"', actor=agent.agent)
     agent.hook(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))

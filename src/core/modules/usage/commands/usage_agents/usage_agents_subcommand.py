@@ -1,3 +1,4 @@
+from core.modules.settings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.agent_policy import AgentPolicy
@@ -44,7 +45,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: AgentTypeBook) -> None:
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: AgentTypeBook, share: ContextShare) -> None:
+        self.share = share
         self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
@@ -90,9 +92,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
-        if status.context_percent is not None or status.is_reported:
-            return status.context_percent
-        return self.providers.context_percent(card.program, self.home, card.session)
+        if status.is_reported and status.context_percent is None:
+            return None
+        return self.share.percent(card.program, card.session)
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

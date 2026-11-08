@@ -1,3 +1,4 @@
+from core.modules.settings.support.context_share import ContextShare
 from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
@@ -19,8 +20,8 @@ class ColdSessions:
     starting over; such an agent gets a new program session under the same journal agent, which keeps its number,
     memories, tasks and worktree. A limit of 0 turns the check off. An agent past the context limit starts over the same way."""
 
-    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus) -> None:
-        self.queries, self.clock, self.providers, self.home, self.settings, self.bus = queries, clock, providers, home, settings, bus
+    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare) -> None:
+        self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share = queries, clock, providers, home, settings, bus, share
 
     def renewed(self, agent: Agent) -> Agent:
         if not self.is_cold(agent) and not self.is_past_context_limit(agent):
@@ -38,4 +39,4 @@ class ColdSessions:
         activity = self.queries.query(AgentActivity).find(agent.id)
         if not activity.is_inactive(self.clock.timestamp(), minutes * SECONDS_PER_MINUTE):
             return False
-        return (self.providers.provider(agent.program).context_percent(self.home, agent.session) or 0) >= percent
+        return (self.share.percent(agent.program, agent.session) or 0) >= percent
