@@ -4,7 +4,7 @@ import {ago} from "../../format/time.js";
 import {useNow} from "../../../kit/useNow.js";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
-import {agentState, agentTitle, detailRows, finishedWords, givenName, identityParts, rowsOf, stripCells, totalOf} from "./agentView.js";
+import {agentState, agentTitle, detailRows, finishedWords, givenName, rowsOf, stripCells, totalOf} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
 import AgentNow from "./AgentNow.vue";
@@ -22,6 +22,7 @@ const tool = ref({});
 const counts = ref({helpers: 0, skills: 0});
 const loads = ref(0);
 const points = ref([]);
+const programs = ref([]);
 const failure = ref("");
 let reading = 0;
 
@@ -34,13 +35,14 @@ async function load() {
     if (!shown.ok) return void (failure.value = shown.error);
     const id = String(props.id);
     const worker = shown.value.role === "worker";
-    const [listed, inspected, tooled, children, loaded, pointed] = await Promise.all([
+    const [listed, inspected, tooled, children, loaded, pointed, offered] = await Promise.all([
         props.read(["usage", "agents", "--closed", "--agent", id, "--environment", props.environment]),
         props.read(["usage", "agent", id]),
         shown.value.ended_at ? {ok: false} : props.read(["usage", "tool", "--agent", id]),
         props.read(["agent", "list", "--parent", id, "--limit", "1", "--columns", "id"]),
         props.read(["agent-skill", "list", "--agent", id, "--state", "loaded", "--limit", "1", "--columns", "id"]),
         worker ? props.read(["worker-worktree", "points", "--agent", id]) : {ok: false},
+        props.read(["agent", "programs"]),
     ]);
     if (turn !== reading) return;
     failure.value = inspected.ok ? "" : inspected.error;
@@ -50,6 +52,7 @@ async function load() {
     tool.value = tooled.ok ? tooled.value : {};
     counts.value = {helpers: totalOf(children), skills: totalOf(loaded)};
     points.value = pointed.ok ? pointed.value.points : [];
+    programs.value = rowsOf(offered);
     loads.value += 1;
 }
 
@@ -62,7 +65,7 @@ onMounted(load);
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-else-if="row && inspection">
-                <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :parts="identityParts(row, facts)" :started-by="inspection.started_by" :windows="facts?.windows ?? []" />
+                <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :started-by="inspection.started_by" :agent="row" :programs="programs" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" />
                 <AgentStrip :cells="stripCells({row, facts, inspection, now})" />
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
                 <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />

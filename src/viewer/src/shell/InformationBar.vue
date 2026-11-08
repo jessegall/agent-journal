@@ -60,7 +60,7 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
     <div :class="['information', {card}]" data-information-bar>
         <template v-if="agent">
             <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ agentPrograms.find((program) => program.name === agent.program)?.title || agent.program }}</button>
-            <AllowanceBar :windows="usage.windows" @open="(anchor) => emit('open', 'usage', anchor)" />
+            <AllowanceBar :windows="usage.windows" :disabled="card" @open="(anchor) => emit('open', 'usage', anchor)" />
             <template v-if="context !== null">
                 <button type="button" class="fact" :disabled="card" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%

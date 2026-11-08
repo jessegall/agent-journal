@@ -29,6 +29,7 @@ function opened(answers, props = {}) {
 
 const WORKER = {
     "agent show 12": row(),
+    "agent programs": {rows: [{name: "claude", title: "Claude Code"}, {name: "codex", title: "Codex"}]},
     "usage agents": {rows: [facts()]},
     "usage agent 12": inspection({
         failed_runs: 1, task: {id: 340, title: "Process queue inspector"}, plan: {id: 12, title: "Queue", phase: 2, done: 3, total: 5},
@@ -52,7 +53,11 @@ test("a running worker says who it is, how it does, what it does now and what it
     const {element} = opened(WORKER);
     await settle();
     expect(text(element, ".name")).toBe("Lovelace");
-    expect(text(element, "[data-agent-identity]")).toBe("Builder · claude · Sonnet 5.5 · medium effort");
+    expect(text(element, '[data-fact="agent"]')).toBe("Claude Code");
+    expect(element.querySelector('[data-fact="agent"]').title).toContain("Session 7c1f0d9e-52a4");
+    expect(text(element, '[data-fact="model"]')).toBe("Sonnet 5.5");
+    expect(element.querySelector('[data-fact="model"]').title).toContain("Sonnet 5.5");
+    expect(element.querySelector('[data-fact="context"]').title).toContain("Context 41% full");
     expect(text(element, "[data-agent-started-by]")).toBe("Started by: Ada, the main agent");
     expect(texts(element, "[data-agent-cell] small")).toEqual(["Running for", "Context used", "Cost", "Tasks an hour", "Failed runs"]);
     expect(text(element, '[data-agent-cell="context"] b')).toBe("41%");
@@ -77,7 +82,7 @@ test("a worker's and a helper's inspector show the program's plan allowance besi
         await settle();
         const bar = element.querySelector("[data-agent-who] [data-fact='usage']");
         expect(bar.textContent).toContain("30%");
-        expect(bar.title).toBe("30% of the plan's 5 hours allowance used");
+        expect(bar.title).toContain("30% of the plan's 5 hours allowance used");
         expect(bar.querySelector(".gauge.usage > span").style.width).toBe("30%");
         expect(bar.disabled).toBe(true);
         document.body.innerHTML = "";
@@ -220,13 +225,29 @@ test("a fold reads only its count while it is closed, and its list when it opens
 const CODEX = {
     ...WORKER,
     "agent show 12": row({program: "codex"}),
+    "agent programs": {rows: [{name: "claude", title: "Claude Code"}, {name: "codex", title: "Codex"}]},
     "usage agents": {rows: [facts({model: "gpt-6.1-sol", effort: "medium", context_percent: null, cost_dollars: null})]},
 };
 
 test("a Codex agent says its real model and that its cost is not known, never zero dollars", async () => {
     const {element} = opened(CODEX);
     await settle();
-    expect(text(element, "[data-agent-identity]")).toBe("Builder · codex · gpt-6.1-sol · medium effort");
+    expect(text(element, '[data-fact="agent"]')).toBe("Codex");
+    expect(text(element, '[data-fact="model"]')).toBe("gpt-6.1-sol");
     expect(text(element, '[data-agent-cell="cost"]')).toBe("CostNot known");
     expect(element.textContent).not.toContain("$0");
+});
+
+test("an inspected agent shows the bar the agents window shows, one component for both, and a missing usage value never reads NaN", async () => {
+    const who = readFileSync(resolve(__dirname, "../src/resource/agent/AgentWho.vue"), "utf8");
+    const card = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentCard.vue"), "utf8");
+    expect(who).toContain("shell/InformationBar.vue");
+    expect(card).toContain("shell/InformationBar.vue");
+    expect(who).not.toContain("AllowanceBar");
+    const missing = {...WORKER, "usage agents": {rows: [facts({windows: [{title: "five hour", used_percent: undefined}]})]}};
+    const {element} = opened(missing);
+    await settle();
+    expect(element.querySelector("[data-information-bar]")).not.toBeNull();
+    expect(element.textContent).not.toContain("NaN");
+    expect(element.querySelector('[data-fact="usage"]')).toBeNull();
 });
