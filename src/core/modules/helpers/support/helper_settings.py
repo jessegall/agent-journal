@@ -18,6 +18,7 @@ AGENT_OPTIONS = f"{MODULE_KEY}.agent-options"
 HELPER_INSTRUCTION_FILES = f"{MODULE_KEY}.helper-instruction-files"
 COLD_SESSION_MINUTES = f"{MODULE_KEY}.cold-session-minutes"
 COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
+CONTEXT_LIMIT_ON = f"{MODULE_KEY}.context-limit-on"
 CONTEXT_LIMIT_TOKENS = f"{MODULE_KEY}.context-limit-tokens"
 CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
@@ -33,9 +34,10 @@ HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use count
                    SettingValue("helper-instruction-files", "Instruction files for a helper's profile", "A helper starts in a folder of links with instruction files written for its profile.", SettingType.FLAG, default=True, person_set=True),
                    SettingValue("cold-session-minutes", "Prompt cache lifetime", "Minutes after an agent's last reply that its prompt cache counts as gone. At 0 this check is off.", SettingType.NUMBER, default=55, person_set=True),
                    SettingValue("cold-session-context-percent", "Context too large to resume cold", "A cold agent whose context fills this percent or more starts a new session. At 0 this check is off.", SettingType.NUMBER, default=20, person_set=True),
-                   SettingValue("context-limit-tokens", "Compact an agent at this context size", "An agent with this many tokens in its context is compacted between turns. At 0 this is off.", SettingType.NUMBER, default=0, person_set=True),
-                   SettingValue("context-limit-finish-task", "Let it finish its task first", "An agent past the limit first finishes the task in hand, and is compacted when it ends.", SettingType.FLAG, default=True, person_set=True),
-                   SettingValue("context-limit-hard-tokens", "Compact anyway at this context size", "Past this many tokens an agent is compacted even with a task in hand. At 0 this is off.", SettingType.NUMBER, default=0, person_set=True),
+                   SettingValue("context-limit-on", "Compact agents at a context size", "Compact an agent between its turns once its context reaches the size set here.", SettingType.FLAG, default=False, person_set=True),
+                   SettingValue("context-limit-tokens", "Compact at this context size", "An agent with this many tokens in its context is compacted between turns.", SettingType.NUMBER, default=400000, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
+                   SettingValue("context-limit-finish-task", "Let it finish its task first", "An agent past the limit first finishes the task in hand, and is compacted when it ends.", SettingType.FLAG, default=True, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
+                   SettingValue("context-limit-hard-tokens", "Compact anyway at this context size", "Past this many tokens an agent is compacted even with a task in hand.", SettingType.NUMBER, default=600000, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
                    SettingValue("agent-options", "Agent options", "Options of workers and helpers, a line each, such as worker allow_new=off or helper:researcher max_cost=2.", SettingType.LIST, default=(), person_set=True)]
 HELPER_SETTING_RULES = {COLD_SESSION_MINUTES: NumberRule(0),
                         CONTEXT_LIMIT_TOKENS: NumberRule(0),

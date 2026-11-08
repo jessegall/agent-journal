@@ -11,7 +11,7 @@ from core.modules.agents.commands.choose_agent_control.choose_agent_control impo
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED
@@ -35,7 +35,7 @@ class ContextLimitRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
-        if not limit or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
+        if not self.settings.flag(CONTEXT_LIMIT_ON) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
         agent = self.agents.find(hook.agent_id)
         tokens = self.providers.provider(agent.program).context_tokens(self.home, agent.session)
