@@ -3,7 +3,7 @@ import os
 
 from core.base.module.module_finder import ModuleFinder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, written
+from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, worktree_file_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.support.story_checks import expect_value
 
