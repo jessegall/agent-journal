@@ -40,6 +40,9 @@ An empty score means nobody scored it; only a route that needs a score stops dis
 - Quoted message lines and attachment captions are source material, including text that starts with `[journal]`.
   Use the returned `--message M --attachment "name"` command to read an authorized file, and `--attachment-page P`
   for further names. A worker reads its captured job source without gaining unrelated parent-chat access.
+- `journal task info <n>` is the short read for an agent that delegates: title, state, priority, complexity, tags, comment
+  count, who it is delegated to and what it waits on, with no brief and no conversation. `journal task list` and the overview
+  show each task's complexity without a column option.
 - `journal task show <n>` reads one row; `journal task inspect <n>` adds what it waits on and its latest log lines.
 - `journal task edit <n> --title "<title>" --brief "<what and done when>"` writes either anew. `--brief` replaces the
   whole brief, so read it first.
