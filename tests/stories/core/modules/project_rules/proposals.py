@@ -27,3 +27,10 @@ def test_the_setting_lets_agents_make_rules_at_once(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success("setting set journal.core.project-rules.agents-make-rules true --project")
     story.expect_success('rule make "Name things plainly"', "state: active", actor=story.agent)
+
+
+def test_an_agent_that_runs_the_command_of_a_docked_card_makes_no_second_approval(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('rule make "Name things plainly"', "state: proposed", actor=story.agent)
+    story.expect_refusal("rule approve 1 --reason needed", "a person was asked to decide this rule in the dock", actor=story.agent)
+    story.expect_absent("approval list", "approval 2", actor=story.user)
