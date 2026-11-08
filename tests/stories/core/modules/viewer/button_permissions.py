@@ -46,7 +46,7 @@ def test_a_button_the_journal_ships_needs_no_allowance(new_story):
 
 def test_an_agent_cannot_allow_a_module_buttons(new_story):
     window = window_story(new_story)
-    window.story.expect_refusal(ALLOW, "only the person a window permission is for may give it", actor=window.story.agent)
+    window.story.expect_refusal(ALLOW, "A person was asked in the dock", actor=window.story.agent)
 
 
 def test_removing_a_module_deletes_the_permission_for_its_buttons(new_story):
