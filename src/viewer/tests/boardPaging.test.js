@@ -124,18 +124,26 @@ test("a plan card shows its state as a badge, and no phase once none is left", a
     expect(element.querySelector(".plan-foot").textContent).toBe("3 of 3 tasks done");
 });
 
-test("the Open group has a switch that hides the tasks of a plan and shows them again, kept on the pane", async () => {
-    const planned = {ok: true, value: {rows: [{id: 5, label: "Plan 5, phase 1", task_ids: [1]}], page: 1, size: 50, total: 1}};
-    const {window} = reader((line) => (line.startsWith("plan places") ? planned : {ok: true, value: {groups: [{state: "open", total: 2, rows: [task(1, "In a plan"), task(2, "Alone")]}]}}));
+test("every section has a Show tasks in plans switch that hides the tasks of a plan and shows them again, kept on the pane", async () => {
+    const planned = {ok: true, value: {rows: [{id: 5, label: "Plan 5, phase 1", task_ids: [1, 3]}], page: 1, size: 50, total: 1}};
+    const {window} = reader((line) => (line.startsWith("plan places") ? planned : {ok: true, value: {groups: [{state: "open", total: 2, rows: [task(1, "In a plan"), task(2, "Alone")]}, {state: "started", total: 2, rows: [task(3, "Started in a plan"), task(4, "Started alone")]}]}}));
     const element = await mounted(TaskGroups, window);
-    const shown = () => [...element.querySelectorAll('[data-state="open"] [data-row]')].map((row) => row.dataset.row);
-    expect(shown()).toEqual(["1", "2"]);
-    element.querySelector("[data-open-plan-switch]").click();
-    await settle();
-    expect(shown()).toEqual(["2"]);
-    expect(window.state["board.hide-plan-tasks"]).toBe("true");
-    element.querySelector("[data-open-plan-switch]").click();
-    await settle();
-    expect(shown()).toEqual(["1", "2"]);
+    const shown = (state) => [...element.querySelectorAll(`[data-state="${state}"] [data-row]`)].map((row) => row.dataset.row);
+    const toggle = async (state) => {
+        element.querySelector(`[data-plan-switch="${state}"]`).click();
+        await settle();
+    };
+    expect(element.querySelector('[data-plan-switch="open"]').textContent).toContain("Show tasks in plans");
+    expect(element.querySelector('[data-plan-switch="started"]')).not.toBeNull();
+    expect([shown("open"), shown("started")]).toEqual([["1", "2"], ["3", "4"]]);
+    await toggle("open");
+    expect([shown("open"), shown("started")]).toEqual([["2"], ["3", "4"]]);
+    expect(window.state["board.hide-plan-tasks"]).toBe("open");
+    await toggle("started");
+    expect([shown("open"), shown("started")]).toEqual([["2"], ["4"]]);
+    expect(window.state["board.hide-plan-tasks"]).toBe("open,started");
+    await toggle("open");
+    await toggle("started");
+    expect([shown("open"), shown("started")]).toEqual([["1", "2"], ["3", "4"]]);
     expect(window.state["board.hide-plan-tasks"]).toBeUndefined();
 });

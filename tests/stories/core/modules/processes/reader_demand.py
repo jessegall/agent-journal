@@ -1,5 +1,7 @@
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.base.module.module_actors import ModuleActors
+import pytest
+
 from core.base.command.bus import Bus
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
@@ -47,6 +49,25 @@ def test_a_crashed_sample_does_not_make_a_working_reader_lose_its_standing(new_s
     end_run(story, crashed, "pytest could not load a package\n", exit_code=1)
     worker_run(story, "pytest tests", CommandCategory.TEST_RUN)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+
+
+@pytest.mark.parametrize("exit_code, text", [(0, "collected 3 items\n.. [ 66%]\n+++++++++++++ Timeout +++++++++++++\n"), (143, "collected 3 items\n.. [ 66%]\n"), (-9, "collected 3 items\n")],
+                         ids=["timeout line", "terminated", "killed"])
+def test_a_run_that_was_killed_before_its_summary_asks_for_no_reader(new_story, exit_code, text):
+    story = new_story(fixture=ForcedReaders)
+    process = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "collected 3 items\n... [100%]\n3 passed in 1.00s\n")
+    killed = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    end_run(story, killed, text, exit_code=exit_code)
+    end_run(story, worker_run(story, "pytest tests", CommandCategory.TEST_RUN), "collected 3 items\n... [100%]\n3 passed in 1.00s\n")
+    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
+
+
+def test_the_stock_pytest_reader_takes_a_timeout_line_as_the_summary(new_story):
+    story = new_story(fixture=ForcedReaders)
+    process = start_process(story, "pytest tests", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "collected 3 items\n.. [ 66%]\n+++++++++++++ Timeout +++++++++++++\n", exit_code=1)
+    story.expect_text(f"output read {process.id} --summary", "Timeout", actor=story.agent)
 
 
 def test_an_alias_that_names_its_own_reader_reads_with_that_reader(new_story):

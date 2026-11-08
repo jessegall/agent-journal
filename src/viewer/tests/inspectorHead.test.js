@@ -29,6 +29,16 @@ test("a plain inspector head has only the X", () => {
     expect(element.textContent).toContain("Plan 12 · ready");
 });
 
+test("the number of the row sits in the band of the buttons, and the title and abstract below it", () => {
+    const element = head({shareable: true, label: "Document 1225"});
+    const band = element.querySelector(".inspector-icons");
+    expect(band.querySelector("[data-resource-type]").textContent).toBe("Document 1225");
+    expect(band.querySelector("[data-resource-share]")).not.toBeNull();
+    expect(band.querySelector("[data-resource-close]")).not.toBeNull();
+    expect(element.querySelector(".resource-heading").textContent).not.toContain("Document 1225");
+    expect(element.querySelector(".resource-heading [data-resource-title]").textContent).toBe("A better journal");
+});
+
 test("a stacked inspector adds Back, and its X says it closes every row", () => {
     expect(titles(head({backed: true}))).toEqual(["Back", "Close all rows"]);
 });

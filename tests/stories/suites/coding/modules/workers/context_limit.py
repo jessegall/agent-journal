@@ -56,6 +56,18 @@ class LimitOnHoldingATask(StoryFixture):
         holds_a_task(story)
 
 
+class HardLimitOnHoldingATask(StoryFixture):
+    parent = LimitOnHoldingATask
+
+    def steps(self, story):
+        set_to(story, CONTEXT_LIMIT_HARD_TOKENS, HARD)
+
+
+@pytest.fixture
+def hard_limited_with_a_task(new_story):
+    return typing_recorded(new_story(fixture=HardLimitOnHoldingATask))
+
+
 @pytest.fixture
 def limited_with_a_task(new_story):
     return typing_recorded(new_story(fixture=LimitOnHoldingATask))
@@ -143,6 +155,22 @@ def test_past_the_second_limit_an_agent_is_compacted_even_with_a_task_in_hand(ag
     holds_a_task(agent)
     between_turns(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+
+
+def test_past_the_second_limit_a_tool_is_refused_and_the_compaction_is_typed_at_once_with_a_task_in_hand(hard_limited_with_a_task):
+    agent = hard_limited_with_a_task
+    has_context(agent, HARD)
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail="typed once while the last one runs")
+
+
+def test_between_the_limits_a_tool_with_a_task_in_hand_is_not_refused(hard_limited_with_a_task):
+    agent = hard_limited_with_a_task
+    has_context(agent, HARD - 1)
+    agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
 
 def test_with_finishing_first_switched_off_a_task_in_hand_does_not_hold_it_back(agent):

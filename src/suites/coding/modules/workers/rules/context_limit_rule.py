@@ -50,3 +50,4 @@ class ContextLimitStopNowRule(DriverRule):
         if self.over_limit.tokens(hook.agent_id) is None or self.tasks.started_tasks(hook.agent_id) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(CONTEXT_STOP_NOW.nudge())
+
