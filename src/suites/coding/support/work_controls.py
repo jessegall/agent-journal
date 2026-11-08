@@ -13,7 +13,8 @@ from core.modules.settings.support.setting_reader import SettingReader
 from suites.coding.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
 from suites.coding.support.main_options import PRESETS
 from suites.coding.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_BADGES, FIELD_CHOICES
-from suites.coding.support.work_settings import WorkField, WorkSettings
+from suites.coding.support.work_field import WorkField
+from suites.coding.support.work_settings import WorkSettings
 
 
 class WorkControls:

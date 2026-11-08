@@ -86,11 +86,11 @@ def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back
     story = new_story(fixture=MainControlsActors)
     story.expect_text("work-settings show --environment main", "workflow: builder", actor=story.user)
     with person_viewer(story) as viewer:
-        shown = work_reading(viewer)
-        expect_value((shown["workflow"], shown["controls"][AUTO_MODE]), ("builder", True))
-        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", shown["revision"]]})
-        applied = work_reading(viewer)
-        expect_value((applied["workflow"], applied["controls"][AUTO_MODE]), ("orchestrator", False))
+        before = work_reading(viewer)
+        expect_value((before["workflow"], before["controls"][AUTO_MODE]), ("builder", True))
+        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", before["revision"]]})
+        after = work_reading(viewer)
+        expect_value((after["workflow"], after["controls"][AUTO_MODE]), ("orchestrator", False))
 
 
 def test_s51_the_window_refuses_a_draft_made_from_an_older_reading_and_changes_nothing(new_story):
@@ -109,28 +109,28 @@ FAILURES = "journal.suites.coding.workers.own-test-failures-to-flag"
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 
 
-def field_values(reading: dict, group: str) -> dict:
-    return {field["key"]: field["value"] for field in reading["fields"] if field["group"] == group}
+def field_values(settings: dict, group: str) -> dict:
+    return {field["key"]: field["value"] for field in settings["fields"] if field["group"] == group}
 
 
 def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_text(f"setting show {TEST_BATCH} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
-        shown = work_reading(viewer)
-        expect_value(len(field_values(shown, "tests")) > 0, True)
-        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
-        applied = field_values(work_reading(viewer), "tests")
-        expect_value((applied[TEST_BATCH], applied[FAILURES]), (4, 7))
+        settings = work_reading(viewer)
+        expect_value(len(field_values(settings, "tests")) > 0, True)
+        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
+        after = field_values(work_reading(viewer), "tests")
+        expect_value((after[TEST_BATCH], after[FAILURES]), (4, 7))
 
 
 def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_nothing(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_text(f"setting show {RUN_LIMIT} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
-        shown = work_reading(viewer)
-        before = field_values(shown, "advanced")[RUN_LIMIT]
-        viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
+        settings = work_reading(viewer)
+        before = field_values(settings, "advanced")[RUN_LIMIT]
+        viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
         after = work_reading(viewer)
         expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (before, True))
 
@@ -140,7 +140,6 @@ def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(perso
     advanced = field_values(work_reading(viewer), "advanced")
     declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
     story.expect_rows({CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ON] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
-
 
 
 def test_the_context_limit_action_is_a_choice_of_compact_or_clear(person_in_viewer):
