@@ -38,7 +38,7 @@ class MemoryFolder:
             return relative == name or relative.startswith(f"{name}/")
         return any(fnmatch(part, name) for part in parts)
 
-    def snapshot(self, held: dict[str, str] | None = None) -> dict[str, str]:
+    def file_texts(self, committed_texts: dict[str, str] | None = None) -> dict[str, str]:
         patterns = self.patterns()
         files: dict[str, str] = {}
         for current, directories, names in os.walk(self.folder):
@@ -48,7 +48,7 @@ class MemoryFolder:
                 relative = self.joined(relative_folder, name)
                 if not self.hides(relative, patterns) and not Path(current, name).is_symlink():
                     files[relative] = Path(current, name).read_text(errors="surrogateescape")
-        return {**files, **(held or {})}
+        return {**files, **(committed_texts or {})}
 
     @staticmethod
     def joined(folder: str, name: str) -> str:

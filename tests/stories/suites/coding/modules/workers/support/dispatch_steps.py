@@ -24,7 +24,6 @@ def repository_folder(story: Story) -> Path:
 
 
 def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_git: bool = False) -> GitRepository:
-    """The environment's repository: kept in memory, with no git program, unless the story is about git and asks for real git."""
     repository = GitRepository.sample(repository_folder(story)) if real_git or REAL_GIT.get() else memory_repository(story)
     branch_flag = f" --branch {branch}" if branch else ""
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))}{branch_flag}", f"folder: {repository.folder}")
@@ -34,23 +33,21 @@ def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_
 def memory_repository(story: Story) -> MemoryRepository:
     repository = MemoryRepository.sample(repository_folder(story))
     story.bind(WorktreeGit, MemoryWorktreeGit(story.container.get(WorkerFolderRuns), repository.history))
-    known: dict[type, bool] = {}
-    for class_type in [key for key, held in story.container.instances.items() if uses_git(type(held), known)]:
+    checked: dict[type, bool] = {}
+    for class_type in [key for key, instance in story.container.instances.items() if uses_git(type(instance), checked)]:
         del story.container.instances[class_type]
     return repository
 
 
-def uses_git(class_type: type, known: dict[type, bool]) -> bool:
-    """Whether an object of the class, or one it is built from, holds a WorktreeGit."""
-    if class_type not in known:
-        known[class_type] = False
+def uses_git(class_type: type, checked: dict[type, bool]) -> bool:
+    if class_type not in checked:
+        checked[class_type] = False
         needed = [] if class_type.__module__.partition(".")[0] in UNBUILT_MODULES else [hint for _, hint in needed_values(class_type)]
-        known[class_type] = any(hint is WorktreeGit or (isinstance(hint, type) and uses_git(hint, known)) for hint in needed)
-    return known[class_type]
+        checked[class_type] = any(hint is WorktreeGit or (isinstance(hint, type) and uses_git(hint, checked)) for hint in needed)
+    return checked[class_type]
 
 
 def story_repository(story: Story) -> GitRepository:
-    """The repository an earlier step of the story made, in memory or with real git."""
     git = story.container.get(WorktreeGit)
     return MemoryRepository(repository_folder(story), git.history) if isinstance(git, MemoryWorktreeGit) else GitRepository(repository_folder(story))
 

@@ -16,26 +16,26 @@ from tests.stories.suites.coding.modules.workers.support.memory_git.tree_changes
 
 
 class MemoryWorktreeGit(WorktreeGit):
-    """Answers what the workers engine asks of git from a MemoryHistory instead of running git, for the stories
-    that are not about git. It follows WorktreeGit step by step; a step it cannot answer, a merge conflict or a
-    git command it does not know, raises GitStoryRequired: that story builds its repository with real git."""
+    """Answers what the workers engine asks of git from a MemoryHistory instead of running git, for the
+    stories that are not about git. It follows WorktreeGit step by step; a step it cannot answer, a merge
+    conflict or a git command it does not know, raises GitStoryRequired: that story needs real git."""
 
     def __init__(self, runs: WorkerFolderRuns, history: MemoryHistory) -> None:
         super().__init__(runs)
         self.history = history
-        self.held: dict[Path, set[str]] = {}
+        self.skipped: dict[Path, set[str]] = {}
 
     def folder_files(self, folder: str | Path) -> MemoryFolder:
         return MemoryFolder(self.history.root, Path(folder))
 
     def working_tree(self, folder: str | Path) -> dict[str, str]:
         path = Path(folder)
-        committed = self.history.tip(self.history.branch_of(path)).tree
-        held = {name: committed[name] for name in self.held.get(path.resolve(), set()) if name in committed}
-        return self.folder_files(path).snapshot(held)
+        committed = self.history.tip(self.history.folder_branch(path)).tree
+        skipped_texts = {name: committed[name] for name in self.skipped.get(path.resolve(), set()) if name in committed}
+        return self.folder_files(path).file_texts(skipped_texts)
 
     def committed_tree(self, folder: str | Path) -> dict[str, str]:
-        return self.history.tip(self.history.branch_of(Path(folder))).tree
+        return self.history.tip(self.history.folder_branch(Path(folder))).tree
 
     def uncommitted_names(self, folder: str | Path) -> tuple[str, ...]:
         return TreeChanges(self.committed_tree(folder), self.working_tree(folder)).names()
@@ -49,7 +49,7 @@ class MemoryWorktreeGit(WorktreeGit):
         path = Path(worktree.folder)
         if path.exists() or path.is_symlink():
             self.runs.check_owner(worktree)
-            if self.history.holds_folder(path):
+            if self.history.has_folder(path):
                 raise Refusal(f"a git worktree still exists at {path}", "merge or release its worktree before reusing the folder")
             self.runs.stop(worktree)
             shutil.rmtree(path)
@@ -62,7 +62,7 @@ class MemoryWorktreeGit(WorktreeGit):
     def added_worktree(self, folder: str, worktree: Worktree) -> None:
         if self.history.has_branch(worktree.branch) or not self.history.has_branch(worktree.base_branch):
             raise Refusal(f"git worktree add failed in {folder}", f"branch {worktree.branch} exists or {worktree.base_branch} does not")
-        self.history.branch_from(worktree.branch, worktree.base_branch)
+        self.history.create_branch(worktree.branch, worktree.base_branch)
         path = Path(worktree.folder)
         path.mkdir(parents=True)
         self.folder_files(path).write(self.history.tip(worktree.branch).tree)
@@ -73,7 +73,7 @@ class MemoryWorktreeGit(WorktreeGit):
         tree = self.working_tree(worktree.folder)
         if tree == self.committed_tree(worktree.folder):
             return False
-        self.history.commit_on(worktree.branch, tree, f"{message}\n\n{trailer}")
+        self.history.add_commit(worktree.branch, tree, f"{message}\n\n{trailer}")
         return True
 
     def commit_folders(self, folder: str, folders: tuple[str, ...], message: str) -> bool:
@@ -82,18 +82,18 @@ class MemoryWorktreeGit(WorktreeGit):
             return False
         tree = {name: text for name, text in self.committed_tree(folder).items() if name not in names}
         working = self.working_tree(folder)
-        self.history.commit_on(self.history.branch_of(Path(folder)), {**tree, **{name: working[name] for name in names if name in working}}, message)
+        self.history.add_commit(self.history.folder_branch(Path(folder)), {**tree, **{name: working[name] for name in names if name in working}}, message)
         return True
 
     def changed_names(self, folder: str, folders: tuple[str, ...]) -> tuple[str, ...]:
         existing = tuple(name for name in folders if Path(folder, name).exists())
         return tuple(name for name in self.uncommitted_names(folder) if name.split("/")[0] in existing)
 
-    def is_on_branch(self, folder: str, branch: str) -> bool:
-        return self.history.holds_folder(Path(folder)) and self.history.branch_of(Path(folder)) == branch
+    def is_current_branch(self, folder: str, branch: str) -> bool:
+        return self.history.has_folder(Path(folder)) and self.history.folder_branch(Path(folder)) == branch
 
     def head(self, folder: str) -> str:
-        return self.history.branch_of(Path(folder)) if self.history.holds_folder(Path(folder)) else ""
+        return self.history.folder_branch(Path(folder)) if self.history.has_folder(Path(folder)) else ""
 
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
         self.refuse_conflicts(worktree)
@@ -110,9 +110,9 @@ class MemoryWorktreeGit(WorktreeGit):
         if self.history.is_ancestor(base_tip.id, branch_tip.id):
             return
         current = base_tip
-        for commit in self.history.commits_since(self.history.merge_base(base_tip.id, branch_tip.id), branch_tip.id):
+        for commit in self.history.new_commits(self.history.merge_base(base_tip.id, branch_tip.id), branch_tip.id):
             tree = self.history.merged_tree(self.history.commits[commit.parents[0]].tree, current.tree, commit.tree)
-            current = self.history.record((current.id,), tree, commit.message)
+            current = self.history.record(tree, commit.message, current.id)
         self.history.branches[worktree.branch] = current.id
         self.moved_files(worktree.folder, branch_tip.tree, current.tree)
 
@@ -131,7 +131,7 @@ class MemoryWorktreeGit(WorktreeGit):
             return ()
         base = self.history.commits[self.history.merge_base(base_tip.id, branch_tip.id)]
         tree = self.history.merged_tree(base.tree, branch_tip.tree, base_tip.tree)
-        merge = self.history.record((branch_tip.id, base_tip.id), tree, f"Merge branch '{worktree.base_branch}' into {worktree.branch}")
+        merge = self.history.record(tree, f"Merge branch '{worktree.base_branch}' into {worktree.branch}", branch_tip.id, base_tip.id)
         self.history.branches[worktree.branch] = merge.id
         self.moved_files(worktree.folder, branch_tip.tree, tree)
         return ()
@@ -159,19 +159,19 @@ class MemoryWorktreeGit(WorktreeGit):
         return tuple(sorted(set(changed) & set(self.uncommitted_names(folder))))
 
     def merge(self, folder: str, worktree: Worktree, message: str) -> None:
-        base_branch = self.history.branch_of(Path(folder))
+        base_branch = self.history.folder_branch(Path(folder))
         base_tip, branch_tip = self.history.tip(base_branch), self.history.tip(worktree.branch)
         if self.history.is_ancestor(branch_tip.id, base_tip.id):
             return
         base = self.history.commits[self.history.merge_base(base_tip.id, branch_tip.id)]
         tree = self.history.merged_tree(base.tree, base_tip.tree, branch_tip.tree)
-        merge = self.history.record((base_tip.id, branch_tip.id), tree, message)
+        merge = self.history.record(tree, message, base_tip.id, branch_tip.id)
         self.history.branches[base_branch] = merge.id
         self.moved_files(folder, base_tip.tree, tree)
 
-    def hold_back(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
+    def untrack_files(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
         tracked = {name for name in names if name in self.committed_tree(folder)}
-        self.held.setdefault(Path(folder).resolve(), set()).update(tracked)
+        self.skipped.setdefault(Path(folder).resolve(), set()).update(tracked)
         return tuple(name for name in names if name not in tracked)
 
     def exclude_file(self, folder: str) -> Path:
@@ -200,7 +200,7 @@ class MemoryWorktreeGit(WorktreeGit):
             del self.history.checked_out[path]
 
     def keep_tip(self, folder: str, path: str, name: str) -> None:
-        self.history.tips[name] = self.history.branches[self.history.branch_of(Path(path))]
+        self.history.tips[name] = self.history.branches[self.history.folder_branch(Path(path))]
 
     def has_unmerged_branch(self, folder: str, worktree: Worktree) -> bool:
         return self.history.has_branch(worktree.branch) and not self.is_merged(folder, worktree.base_branch, worktree.branch)
@@ -216,12 +216,12 @@ class MemoryWorktreeGit(WorktreeGit):
     def remove_orphan(self, folder: str, path: str, base_branch: str, branch: str | None) -> bool:
         if not self.is_merged(folder, base_branch, branch):
             return False
-        if not self.uncommitted_names(path) or self.holds_only_published_folders(path):
+        if not self.uncommitted_names(path) or self.is_published_folder(path):
             shutil.rmtree(path)
         self.prune()
         return not Path(path).exists()
 
-    def holds_only_published_folders(self, path: str) -> bool:
+    def is_published_folder(self, path: str) -> bool:
         names = self.uncommitted_names(path)
         return bool(names) and all(name.split("/")[0] in PUBLISHED_FOLDERS and name not in self.committed_tree(path) for name in names)
 
@@ -236,7 +236,7 @@ class MemoryWorktreeGit(WorktreeGit):
         self.prune()
 
     def has_task_commit(self, worktree: Worktree, task_id: int) -> bool:
-        commits = self.history.commits_since(worktree.base_commit, self.history.branches[worktree.branch])
+        commits = self.history.new_commits(worktree.base_commit, self.history.branches[worktree.branch])
         return any(commit.message.splitlines()[0].startswith(f"task {task_id}: ") for commit in commits)
 
     def uncommitted_files(self, folder: str) -> tuple[str, ...]:
@@ -252,8 +252,8 @@ class MemoryWorktreeGit(WorktreeGit):
 
     def file_changes(self, folder: str, base: str) -> tuple[WorktreeFileChange, ...]:
         committed, working = self.committed_tree(folder), self.working_tree(folder)
-        tracked_now = {name: working[name] for name in committed if name in working}
-        tracked = TreeChanges(self.history.commits[base].tree, tracked_now).tracked_changes()
+        tracked_texts = {name: working[name] for name in committed if name in working}
+        tracked = TreeChanges(self.history.commits[base].tree, tracked_texts).tracked_changes()
         names = {change.relative for change in tracked}
         untracked = tuple(WorktreeFileChange(name, FileStatus.ADDED) for name in sorted(working) if name not in committed and name not in names)
         return (*tracked, *untracked)

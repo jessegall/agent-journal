@@ -3,9 +3,9 @@ from suites.coding.modules.workers.support.worktree_file_change import WorktreeF
 
 
 class TreeChanges:
-    """What differs between a base tree and a tracked tree the way git diff names it: a file only in the base is
-    deleted, a file only in the tracked tree is added, and a deleted and an added file with the same text are one
-    rename."""
+    """What differs between a base tree and a tracked tree the way git diff names it: a file only in the
+    base is deleted, a file only in the tracked tree is added, and a deleted and an added file with the same
+    text are one rename."""
 
     def __init__(self, base: dict[str, str], tracked: dict[str, str]) -> None:
         self.base, self.tracked = base, tracked
