@@ -270,7 +270,7 @@ class WorkloadServer:
                 database.connection.set_trace_callback(None)
                 queries = tuple(dict.fromkeys(sql for sql in statements if sql.lstrip().upper().startswith("SELECT")))
                 selected = tuple(sql for sql in queries if any(table in sql.lower() for table in (
-                    "from chat_messages", "from messages", "from tasks", "from process_rows", "from dock_items")))[:5]
+                    "from chat_messages", "from messages", "from tasks", "from process_rows", "from dock_items")))
                 for sql in selected:
                     rows = database.connection.execute("EXPLAIN QUERY PLAN " + sql).fetchall()
                     plans.append(QueryPlan(sql, tuple(str(row[3]) for row in rows)))
@@ -531,13 +531,15 @@ def test_one_and_fifty_message_rows_are_one_answer_with_the_same_statements(read
     expect_value((len(fifty.answers), len(fifty.answers[0]["value"]["rows"])), (1, 50))
     expect_value((one.connections, fifty.connections), (1, 1))
     expect_value(fifty.statement_count, one.statement_count)
+    expect_value((one.points.tables["chat_messages"], fifty.points.tables["chat_messages"]), (1, 50))
+    expect_greater(fifty.points.bytes, one.points.bytes)
 
 
 def test_one_and_ten_docks_are_one_answer_with_the_same_statements(read_sample):
     line = [ReadLine("messages.chat", ("dock-item", "main"))]
     read_sample.read(line)
     ten = read_sample.read(line)
-    for dock in ten.answers[0]["value"]["rows"][1:]:
+    for dock in [dock for dock in ten.answers[0]["value"]["rows"] if dock["state"] == "docked"][1:]:
         read_sample.action(("dock", "remove", str(dock["id"])))
     read_sample.read(line)
     one = read_sample.read(line)
@@ -549,9 +551,9 @@ def test_one_and_ten_docks_are_one_answer_with_the_same_statements(read_sample):
 
 def test_the_workload_reads_scan_no_large_table_whole(read_sample):
     measured = read_sample.read(read_sample.workload.reads)
-    print(json.dumps([asdict(plan) for plan in measured.plans], indent=1))
-    scans = [(plan.sql, step) for plan in measured.plans for step in plan.steps if step.startswith("SCAN") and "USING" not in step]
-    expect_value(scans, [])
+    whole_reads = [(plan.sql, step) for plan in measured.plans for step in plan.steps
+                   if (step.startswith("SCAN") and "USING" not in step) or step.startswith("USE TEMP B-TREE")]
+    expect_value(whole_reads, [])
 
 
 @pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
