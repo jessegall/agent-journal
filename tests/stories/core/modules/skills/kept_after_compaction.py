@@ -1,15 +1,18 @@
 import json
 from pathlib import Path
 
+from core.base.driver.command_category import CommandCategory
 from core.base.skill.skill_contents import SkillContents
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.skills.due import DUE, expect_due, expect_skills_absent, start
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 
 PRE_COMPACT = HookSamples.sample("compact").with_fields(accepts_lines=False)
+FIRST_TOOL_USE = HookSamples.shell("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"]))
 AFTER_COMPACTION = '\'["journal-notes", "journal-chores"]\''
 
 
@@ -36,30 +39,43 @@ def skill_body(story, folder: str) -> str:
     return SkillContents.read(Path(entry.path)).body
 
 
-def transcript_with_kept_skills(folder: Path, skills: dict[str, str]) -> Path:
+def kept_skill_records(folder: Path, skills: dict[str, str]) -> list[dict[str, object]]:
     kept = [{"name": name, "path": f"projectSettings:{name}", "content": f"Base directory for this skill: {folder}\n\n{body}"} for name, body in skills.items()]
-    records = [{"type": "system", "subtype": "compact_boundary"}, {"type": "user", "message": {"content": "summary"}},
-               {"attachment": {"type": "invoked_skills", "skills": kept}}]
-    path = folder / "session.jsonl"
-    path.write_text("".join(json.dumps(record) + "\n" for record in records))
-    return path
+    return [{"type": "system", "subtype": "compact_boundary"}, {"type": "user", "message": {"content": "summary"}},
+            {"attachment": {"type": "invoked_skills", "skills": kept}}]
 
 
-def compacted(story, transcript: Path) -> None:
-    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact", "transcript_path": str(transcript)}))
+def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[str, str], program: str = "claude") -> None:
+    """The real order: the session start hook of a compaction runs first, and only then does the program write its
+    record of the skills it put back; the agent's first tool use comes after that."""
+    transcript = folder / "session.jsonl"
+    transcript.write_text("")
+    raw = {"source": "compact", "transcript_path": str(transcript)}
+    story.hook("s-1", HookSamples.session_start().with_fields(program=program).with_raw(raw))
+    story.run_listeners()
+    expect_due(story, *skills)
+    transcript.write_text("".join(json.dumps(record) + "\n" for record in kept_skill_records(folder, skills)))
+    story.hook("s-1", FIRST_TOOL_USE.with_fields(program=program).with_raw({"transcript_path": str(transcript)}))
     story.run_listeners()
 
 
-def test_a_skill_claude_code_put_back_after_a_compaction_counts_as_loaded(new_story, tmp_path):
+def test_a_skill_claude_code_put_back_after_a_compaction_counts_as_loaded_at_the_first_tool_use(new_story, tmp_path):
     story = new_story(DUE, fixture=CompactingClaude)
-    compacted(story, transcript_with_kept_skills(tmp_path, {"journal-notes": skill_body(story, "journal-notes")}))
+    compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")})
     expect_skills_absent(story, "journal-notes")
     expect_due(story, "journal-chores")
 
 
+def test_every_skill_put_back_counts_so_the_first_tool_use_is_not_held(new_story, tmp_path):
+    story = new_story(DUE, fixture=CompactingClaude)
+    skills = {name: skill_body(story, name) for name in ("journal-notes", "journal-chores")}
+    compaction_written_after_its_start_hook(story, tmp_path, skills)
+    expect_skills_absent(story, "journal-notes", "journal-chores")
+
+
 def test_a_skill_put_back_in_an_older_text_is_still_due(new_story, tmp_path):
     story = new_story(DUE, fixture=CompactingClaude)
-    compacted(story, transcript_with_kept_skills(tmp_path, {"journal-notes": "# Notes\n\nAn older text."}))
+    compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": "# Notes\n\nAn older text."})
     expect_due(story, "journal-notes", "journal-chores")
 
 
@@ -68,7 +84,5 @@ def test_a_codex_session_has_every_skill_due_after_a_compaction(new_story, tmp_p
     start(story, HookSamples.session_start().with_fields(program="codex"))
     story.hook("s-1", PRE_COMPACT.with_fields(program="codex"))
     story.run_listeners()
-    transcript = transcript_with_kept_skills(tmp_path, {"journal-notes": skill_body(story, "journal-notes")})
-    story.hook("s-1", HookSamples.session_start().with_fields(program="codex").with_raw({"source": "compact", "transcript_path": str(transcript)}))
-    story.run_listeners()
+    compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, program="codex")
     expect_due(story, "journal-notes", "journal-chores")
