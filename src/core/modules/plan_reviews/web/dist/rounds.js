@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-38d19b73db7c")) { const style = document.createElement("style"); style.id = "window-styles-38d19b73db7c"; style.textContent = ".rounds[data-v-0e34cb31]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.round[data-v-0e34cb31]{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.when[data-v-0e34cb31],.reviewers[data-v-0e34cb31]{color:var(--text-3);font-size:12px}.running[data-v-0e34cb31]{color:var(--progress);font-size:12px}.report[data-v-0e34cb31]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.failure[data-v-0e34cb31]{margin:0;color:var(--tone-warn)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-fbaf60f93c69")) { const style = document.createElement("style"); style.id = "window-styles-fbaf60f93c69"; style.textContent = ".rounds[data-v-e3f1dc65]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.round[data-v-e3f1dc65]{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.when[data-v-e3f1dc65],.reviewers[data-v-e3f1dc65]{color:var(--text-3);font-size:12px}.running[data-v-e3f1dc65]{color:var(--progress);font-size:12px}.report[data-v-e3f1dc65]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.failure[data-v-e3f1dc65]{margin:0;color:var(--tone-warn)}\n"; document.head.appendChild(style); }
 import { computed as c, watch as x, openBlock as r, createBlock as f, unref as p, withCtx as h, createElementVNode as _, toDisplayString as u, createElementBlock as o, Fragment as k, renderList as y, createVNode as N, createCommentVNode as v } from "vue";
 import { useWindow as B, InspectorPart as g, TimeAgo as P, peekRef as V } from "@journal/window-kit";
 const E = (d, t) => {
@@ -64,7 +64,7 @@ const E = (d, t) => {
       _: 1
     }, 8, ["title"])) : v("", !0);
   }
-}, q = /* @__PURE__ */ E(O, [["__scopeId", "data-v-0e34cb31"]]);
+}, q = /* @__PURE__ */ E(O, [["__scopeId", "data-v-e3f1dc65"]]);
 export {
   q as default
 };
