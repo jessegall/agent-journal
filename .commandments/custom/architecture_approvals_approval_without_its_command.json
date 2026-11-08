@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "UserApprovalRefusal"
+            },
+            {
+                "not": {
+                    "textMatches": "command\\s*="
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "approval-without-its-command",
+        "description": "A UserApprovalRefusal names no command, so Accept re-runs the line the agent ran, with the flags the agent gave it, and the handler or guard has to ask the actor again.",
+        "rule": "Name the command Accept runs: UserApprovalRefusal(question, command=ResumeAgent(agent.id)); Accept runs exactly that command as the person.",
+        "skill": "drivers-architecture"
+    }
+}

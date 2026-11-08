@@ -10,7 +10,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
 from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
-from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_HELPER, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
+from core.modules.aliases.support.alias_nudges import SAVED_COMMAND_CHOICES, SAVED_COMMAND_DIRECT, SAVED_COMMAND_MIXED, SAVED_COMMAND_PIPED, SAVED_COMMAND_SILENT, SAVED_COMMAND_HELPER, SAVED_COMMAND_UNKNOWN, SAVED_COMMAND_UNREAD, SAVED_COMMAND_TIMEOUT
 from core.modules.drivers.support.suite_choice import SuiteChoice
 
 ASKING_FLAGS = ("--help", "-h", "--version", "-V")
@@ -75,10 +75,12 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_HELPER.nudge(category=category.value)
         return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 
-    @staticmethod
-    def saved_refusal(part: Part) -> Nudge | None:
+    def saved_refusal(self, part: Part) -> Nudge | None:
         if part.pipe_target is not None:
             return SAVED_COMMAND_PIPED.nudge(name=part.saved_command)
-        if not part.read_flag and not set(ASKING_FLAGS) & set(part.arguments):
+        if set(ASKING_FLAGS) & set(part.arguments):
+            return None
+        if not part.read_flag:
             return SAVED_COMMAND_UNREAD.nudge(name=part.saved_command)
-        return None
+        alias = self.aliases.saved(part.saved_command)
+        return SAVED_COMMAND_SILENT.nudge(name=alias.name) if alias is not None and alias.is_held else None

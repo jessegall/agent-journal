@@ -22,6 +22,9 @@ from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handl
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from core.base.database.request_watch import RequestWatch
 from core.base.module.module import Module
+from core.base.ticker.tick_handler import TickHandler
+from core.base.ticker.tick_interval import TickInterval
+from core.modules.developer.ticks.private_data_tick import PrivateDataTick
 from core.modules.developer.support.reporting_request_watch import ReportingRequestWatch
 from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS, TOOLS_SETTING, HOOK_DURATIONS_SETTING, HOOK_REQUEST_LOG_SETTING
 from core.modules.developer.support.skeletons import DEVELOPER_NUMBERS_SKELETON, DEVELOPER_HOOK_REQUESTS_SKELETON
@@ -36,10 +39,11 @@ class DeveloperModule(Module):
     name = "journal.core.developer"
     seed_reason = "its settings are the person's own choice"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.settings"]
+    dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments"]
     settings = DEVELOPER_SETTINGS
     migrations = [HookRequestsMigration]
     views = [HookRequest]
+    tick_handlers = [TickHandler(TickInterval(seconds=60), PrivateDataTick(), "private data scan")]
     handlers = [ResetHookNumbersHandler, RecordMarkMotionHandler, SendExceptionLineHandler]
     listeners = [ExceptionLineListener]
     nudges = DEVELOPER_NUDGES

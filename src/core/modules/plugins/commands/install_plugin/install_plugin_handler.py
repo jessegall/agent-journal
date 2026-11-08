@@ -39,7 +39,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
 
     def prepare(self, command: InstallPlugin, actor: Actor) -> None:
         if actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal(f"Install the plugin from {command.source}?", ("plugin", "install", command.source, "--yes"))
+            raise UserApprovalRefusal(f"Install the plugin from {command.source}?", command=InstallPlugin(command.source, True))
         self.staging.fetched(command.source)
         manifest = self.uninstalled(command)
         if not command.confirmed:

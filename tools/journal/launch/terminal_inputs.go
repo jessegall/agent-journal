@@ -6,6 +6,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
+)
+
+const (
+	backspace    = "\x7f"
+	loginCommand = "/login"
+	// neverTyped is the seconds since the last keys of a terminal nobody has typed in.
+	neverTyped = 1 << 30
 )
 
 // keyPause is how long a typed line waits before its Enter, because a program reading a terminal takes a line and its
@@ -28,25 +36,27 @@ type TerminalInputs struct {
 	typedAt  map[int]time.Time
 	programs map[int]*exec.Cmd
 	starting map[int]bool
+	pending  map[int]*inputLine
+	onLogin  func(agentID int)
 }
 
-// keyboardReader notes when keys come from the keyboard.
+// keyboardReader notes when keys come from the keyboard, and which.
 type keyboardReader struct {
 	source io.Reader
-	onRead func()
+	onRead func(keys []byte)
 }
 
 func (reader keyboardReader) Read(buffer []byte) (int, error) {
 	count, err := reader.source.Read(buffer)
 	if count > 0 {
-		reader.onRead()
+		reader.onRead(buffer[:count])
 	}
 	return count, err
 }
 
 // NewTerminalInputs makes the inputs of no program yet.
 func NewTerminalInputs() *TerminalInputs {
-	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}}
+	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}, pending: map[int]*inputLine{}}
 }
 
 // Open keeps an input for the agent, fed by the source as well, and returns what the program's terminal reads.
@@ -55,7 +65,7 @@ func (inputs *TerminalInputs) Open(agentID int, source io.Reader) io.Reader {
 	inputs.mutex.Lock()
 	inputs.writers[agentID] = writer
 	inputs.mutex.Unlock()
-	go func() { _, _ = io.Copy(writer, keyboardReader{source, func() { inputs.noteKeys(agentID) }}) }()
+	go func() { _, _ = io.Copy(writer, keyboardReader{source, func(keys []byte) { inputs.noteKeys(agentID, keys) }}) }()
 	return reader
 }
 
@@ -168,7 +178,9 @@ func (inputs *TerminalInputs) waitForExit(agentID int, limit time.Duration) bool
 	return false
 }
 
-// TypeLine types the line and its Enter into the agent's terminal, and says whether the agent has one.
+// TypeLine types the line and its Enter into the agent's terminal, and says whether the agent has one. Text the person
+// typed there and has not entered is cleared with one backspace for each character, never a key that could interrupt the
+// program, and typed again after the line, so the person goes on typing where they were.
 func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	inputs.mutex.Lock()
 	writer, ok := inputs.writers[agentID]
@@ -176,14 +188,26 @@ func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	if !ok {
 		return false
 	}
+	remembered := inputs.Pending(agentID)
 	inputs.mutex.Lock()
 	inputs.typedAt[agentID] = time.Now()
 	inputs.mutex.Unlock()
+	if remembered != "" {
+		if _, err := io.WriteString(writer, strings.Repeat(backspace, utf8.RuneCountInString(remembered))); err != nil {
+			return false
+		}
+	}
 	if _, err := io.WriteString(writer, line); err != nil {
 		return false
 	}
 	time.Sleep(keyPause)
-	_, err := io.WriteString(writer, "\r")
+	if _, err := io.WriteString(writer, "\r"); err != nil {
+		return false
+	}
+	if remembered == "" {
+		return true
+	}
+	_, err := io.WriteString(writer, remembered)
 	return err == nil
 }
 
@@ -226,8 +250,47 @@ func (inputs *TerminalInputs) TypedAt(agentID int) time.Time {
 	return inputs.typedAt[agentID]
 }
 
-func (inputs *TerminalInputs) noteKeys(agentID int) {
+func (inputs *TerminalInputs) noteKeys(agentID int, keys []byte) {
+	inputs.mutex.Lock()
+	inputs.keyedAt[agentID] = time.Now()
+	line := inputs.pending[agentID]
+	if line == nil {
+		line = &inputLine{}
+		inputs.pending[agentID] = line
+	}
+	submitted := line.keys(keys)
+	onLogin := inputs.onLogin
+	inputs.mutex.Unlock()
+	if onLogin != nil && strings.TrimSpace(submitted) == loginCommand {
+		onLogin(agentID)
+	}
+}
+
+// OnLogin sets what is done when a person enters the login command at the keyboard of an agent's terminal, which ends
+// the program's turn as an interrupt does.
+func (inputs *TerminalInputs) OnLogin(tell func(agentID int)) {
 	inputs.mutex.Lock()
 	defer inputs.mutex.Unlock()
-	inputs.keyedAt[agentID] = time.Now()
+	inputs.onLogin = tell
+}
+
+// Pending is the text the person typed at the keyboard of the agent's terminal and has not entered.
+func (inputs *TerminalInputs) Pending(agentID int) string {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	if line := inputs.pending[agentID]; line != nil {
+		return string(line.text)
+	}
+	return ""
+}
+
+// QuietSeconds is how many seconds ago the person last typed at the keyboard of the agent's terminal, or neverTyped.
+func (inputs *TerminalInputs) QuietSeconds(agentID int) int {
+	inputs.mutex.Lock()
+	defer inputs.mutex.Unlock()
+	keyed, ok := inputs.keyedAt[agentID]
+	if !ok {
+		return neverTyped
+	}
+	return int(time.Since(keyed).Seconds())
 }

@@ -324,6 +324,10 @@ class WorktreeGit:
         subjects = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--format=%s", f"{worktree.base_commit}..HEAD").stdout.splitlines()
         return any(subject.startswith(f"task {task_id}: ") for subject in subjects)
 
+    def uncommitted_files(self, folder: str) -> tuple[str, ...]:
+        listing = self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--untracked-files=all").stdout
+        return tuple(line[3:].split(" -> ")[-1] for line in listing.splitlines())
+
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
         return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
 

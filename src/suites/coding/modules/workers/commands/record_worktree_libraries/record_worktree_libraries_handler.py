@@ -16,4 +16,4 @@ class RecordWorktreeLibrariesHandler(Handler[RecordWorktreeLibraries, Worktree])
 
     def handle(self, command: RecordWorktreeLibraries, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        return self.repository.update(worktree, context, libraries_dropped_at=context.timestamp if command.dropped else None)
+        return self.repository.save_change(worktree, worktree.with_libraries_dropped_at(context.timestamp if command.dropped else None), context)

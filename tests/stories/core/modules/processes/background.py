@@ -234,11 +234,11 @@ def test_a_silent_test_gets_its_hint_once_and_again_when_it_stops_printing(new_s
     expect_streaming_line(story, f"output {process_id} has written nothing for {STALLED_SECONDS} seconds and still runs: run vitest with --reporter=verbose")
 
 
-def test_a_silent_saved_command_is_told_to_fix_the_saved_command(new_story):
+def test_a_silent_saved_command_is_told_to_fix_its_alias(new_story):
     story = new_story(fixture=SavedBuildMoved)
     story.expect_text("process show 1", "state: background", actor=story.agent)
     story.advance(timedelta(seconds=31))
-    expect_streaming_line(story, "saved command build-npm printed nothing for 30 seconds, fix its line")
+    expect_streaming_line(story, "alias build-npm printed nothing for 30 seconds: make it print each step; this run stays silent, the next shows its steps")
 
 
 def test_a_saved_command_that_fails_and_prints_nothing_is_told_to_fix_the_saved_command(new_story):

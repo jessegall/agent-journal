@@ -15,6 +15,9 @@ from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.base.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors
+from core.modules.drivers.commands.use_permission.use_permission import UsePermission
+from core.modules.drivers.models.enums.permission_state import PermissionState
+from core.modules.drivers.models.permission_request import PermissionRequest
 from core.modules.drivers.rules.readonly_rule import ReadonlyRule
 from core.modules.drivers.support.access_nudges import LIMITED_TOOL, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, UNJUDGED_LINE
 from core.modules.profiles.support.profile_files import ProfileFiles
@@ -28,7 +31,7 @@ HELP_FLAG = "--help"
 class AccessRule(ReadonlyRule):
     """An agent with read-only access reads, searches and runs journal commands, on every program and under every
     overlay; a line no one can judge, and a journal line that reaches past the journal, are refused. A file change
-    inside a folder its profile lets it write is allowed."""
+    inside a folder its profile lets it write is allowed, and so is the one thing a request for leave named, once."""
 
     name = "drivers.access"
     drivers = ["*"]
@@ -43,6 +46,9 @@ class AccessRule(ReadonlyRule):
         tool = hook.event.tool
         if hook.access != Access.READ or tool is None or self.is_listed(hook, tool) or self.is_writable(hook, tool):
             return RuleAnswer.allowed()
+        permitted = self.permitted(hook, tool)
+        if permitted is not None:
+            return RuleAnswer.allowed().running(UsePermission(permitted.id))
         if tool.category in LIMITED_TOOL_TYPES:
             return RuleAnswer.refused(LIMITED_TOOL.nudge(tool=tool.name))
         shell = tool.shell
@@ -77,6 +83,12 @@ class AccessRule(ReadonlyRule):
 
     def identity_variables(self) -> tuple[str, ...]:
         return (SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))
+
+    def permitted(self, hook: AgentHook, tool: Tool) -> PermissionRequest | None:
+        """The request of this agent, allowed once, that names this very command or file."""
+        allowed = self.queries.query(PermissionRequest).filter(asker_id=hook.agent_id, state=PermissionState.ALLOWED).oldest().all_rows()
+        named = (tool.shell.display_text if tool.shell is not None else "", *tool.files)
+        return next((request for request in allowed if request.action in named), None)
 
     def is_listed(self, hook: AgentHook, tool: Tool) -> bool:
         if tool.name in self.providers.provider(hook.event.program).safe_tools:

@@ -190,6 +190,11 @@ func (journal CommandJournal) TellProgramExit(agentID, exitCode, pid int) {
 	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode), "--pid", strconv.Itoa(pid))
 }
 
+// TellInterrupt tells the journal a person interrupted the agent's turn, or entered the login command in its terminal.
+func (journal CommandJournal) TellInterrupt(agentID int) {
+	_, _ = journal.Run("agent", "interrupted", strconv.Itoa(agentID))
+}
+
 // TellLaunchEnded tells the journal a program was stopped because the launch that ran it ended.
 func (journal CommandJournal) TellLaunchEnded(agentID, exitCode, pid int) {
 	_, _ = journal.Run("agent", "exited", strconv.Itoa(agentID), strconv.Itoa(exitCode), "--launch-ended", "--pid", strconv.Itoa(pid))

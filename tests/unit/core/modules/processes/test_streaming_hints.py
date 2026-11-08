@@ -2,7 +2,7 @@ import pytest
 
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.rules.silent_run_rule import SilentRunRule
+from core.modules.processes.support.silent_runs import SilentRuns
 from core.base.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
 from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMING_HINTS, StreamingHints
 
@@ -36,4 +36,17 @@ def test_every_hint_fits_a_nudge_field_whole():
 ])
 def test_tests_builds_and_python_are_watched_for_silence(category, program, is_watched):
     part = ProcessPart(id=1, version=1, process_id=1, position=1, text=program, program=program, category=category)
-    assert SilentRunRule.is_watched(part) is is_watched
+    assert SilentRuns.is_watched(part) is is_watched
+
+
+@pytest.mark.parametrize("command,is_held_back", [
+    ("go test ./...", True),
+    ("CI=1 go test -v ./internal/a ./internal/b", True),
+    ("go test ./internal/a", False),
+    ("go test -p 1 ./...", False),
+    ("go test -p=1 ./...", False),
+    ("cd tools && go test ./... | tee out", True),
+    ("npm test", False),
+])
+def test_go_test_over_several_packages_holds_back_the_output_of_each(command, is_held_back):
+    assert StreamingHints.holds_back_packages(command) is is_held_back
