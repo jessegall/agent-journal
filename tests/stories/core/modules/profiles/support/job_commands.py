@@ -28,6 +28,7 @@ PROFILE_COMMANDS = {
     "journal-medior": ("journal task overview", "journal task log", "journal proof make", "journal worker next", "journal worker deliver"),
     "journal-senior": ("journal task overview", "journal task log", "journal proof make", "journal worker next", "journal worker deliver"),
     "journal-code-reviewer": ("journal search find", "journal task make", "journal task list", "journal doc show", "journal report make"),
+    "journal-functional-designer": ("journal sequence list", "journal sequence run", "journal doc make", "journal search find"),
     "journal-designer": ("journal doc make", "journal doc show", "journal report make", "journal search find", "journal task show"),
 }
 PROJECT_COMMANDS = {

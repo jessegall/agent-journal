@@ -89,7 +89,9 @@ class CodingModule(Module):
     guards = [MainTaskStartGuard]
     suites = [CodingSuite]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
-    skills = [SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
+    skills = [SkillDeclaration("journal-plan-dispatch", "How the main agent gets a plan made: it dispatches a functional designer and then a planner; read it when the user asks for a plan", keywords=("plan", "roadmap")),
+              SkillDeclaration("journal-functional-design", "How a functional designer writes a design document: user stories, code examples and the phases in order; read it before you write one"),
+              SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]

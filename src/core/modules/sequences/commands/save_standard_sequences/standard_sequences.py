@@ -30,10 +30,22 @@ PLAN_BUILDING = Sequence(
     triggers=row_trigger("plan.create", end_events="plan.ready,plan.approve,plan.start,plan.close"),
     step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
     steps=(
-        f"Agree on the goal: {PLAIN_WRITING}Settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",
+        f"Agree on the goal: {PLAIN_WRITING}When your job names a design document, read it whole and take the goal and the phases from it; otherwise settle with the user what is true when the plan is done. Put the goal in the plan's brief with `journal plan edit <plan n> --brief \"<goal>\"`",
         "Add the phases: Add the plan's phases in order with `journal phase make --plan <plan n> \"<title>\" --goal \"<what is true when done>\"`, and `--checkpoint` where the user should look before it goes on",
-        "File the tasks: Split each phase into its real steps and file one task per step a person could check, with `journal task make \"<title>\" --brief \"<brief>\"` and `journal phase place <task> --phase <phase>`. Write each brief so it can be carried out alone: the files to change, what already does part of it and is reused, the stories to write, the tests to run by name, and the proof that shows each point",
+        "File the tasks: Split each phase into its real steps and file one task per step a person could check, each brief so complete that an agent on a cheaper model can carry it out without deciding anything itself, with `journal task make \"<title>\" --brief \"<brief>\"` and `journal phase place <task> --phase <phase>`. Write each brief so it can be carried out alone: the files to change, what already does part of it and is reused, the stories to write, the tests to run by name, and the proof that shows each point",
         "Mark the plan ready: When every phase has its tasks, `journal plan ready <plan n>` and tell the user in one line it is ready on the plan page. A phase with one task is refused until you give the reason one task is enough, with `--skip-guard plans.one-task-phase --skip-reason \"<why>\"`; otherwise split it. Only the user approves the plan; `journal plan start <plan n>` once they have, never before",
+    ),
+)
+FUNCTIONAL_DESIGN = Sequence(
+    creator_id=CORE_ACTOR_ID,
+    title="Writing a functional design",
+    triggers="[]",
+    step_guards=guards(FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED, FILE_EDITS_BLOCKED),
+    steps=(
+        f"Investigate: {PLAIN_WRITING}Read the skill journal-functional-design. Find out what the project does today in this area and what already does part of the job, and note what you could not establish",
+        "Write the user stories: Say what the application should do once this is done, as user stories: who does what and what they then see or get, including the cases that go wrong",
+        "Add examples and phases: When the work is about code, add code examples of the shapes that matter, with the files they belong in. Lay out the phases in order, each with what is true when it is done",
+        "File the document: File it with `journal doc make \"<title>\" --abstract \"<one line>\" --body - <<'EOF'`, the text, then a line `EOF`, and report its number in your last words so a planner can turn it into a plan",
     ),
 )
 UPDATE_WRITING = Sequence(
@@ -92,5 +104,5 @@ TRANSCRIPT_HANDLING = Sequence(
         "Tell the user in the chat what you made from the transcript, then close your task with journal task close <task> --outcome \"<the rows you made>\".",
     ),
 )
-STANDARD_SEQUENCES = (PLAN_BUILDING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING, TRANSCRIPT_HANDLING)
+STANDARD_SEQUENCES = (PLAN_BUILDING, PLAN_REVIEW_APPLYING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK, DOCUMENT_SORTING, TRANSCRIPT_HANDLING, FUNCTIONAL_DESIGN)
 STANDARD_SEQUENCE_FIELDS = ("steps", "triggers", "step_guards")

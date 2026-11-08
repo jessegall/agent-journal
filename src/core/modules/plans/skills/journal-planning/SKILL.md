@@ -5,7 +5,11 @@ description: How thorough a plan is: real steps in each phase, one task per step
 
 # Planning a plan thoroughly
 
-A plan is only as good as its tasks. Write it so a worker who knows nothing else can take one task and finish it.
+A plan is only as good as its tasks. Write it so a worker on a cheaper model who knows nothing else can take one task
+and finish it without having to decide anything for itself.
+
+- When your job names a functional design document, read it whole. Its goal, user stories and phases are your source:
+  turn them into the plan, and do not design it again.
 
 - Split each phase into its real steps. File one task per step a person could check.
 - A phase with one task needs a reason. `journal plan ready` refuses it until you pass
