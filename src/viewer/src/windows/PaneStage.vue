@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, provide, ref, watch, watchEffect} from "vue";
 import {INSPECTOR_HOST, OPEN_VIEW, PANE_PAGE, WINDOW_CONTEXT, windowContext} from "./windowContext.js";
 import {moveToPage} from "../shownPage.js";
 import LayoutPicker from "../agents/LayoutPicker.vue";
@@ -242,6 +242,17 @@ const guide = usePaneGuide(props.environment, {
     open: () => (menu.value = leaves(props.store.layout.value.tree)[0]),
     close: () => (menu.value = null),
 });
+// a pane's menu is drawn over the whole page, under its menu button, so no pane beside or below it covers it
+const menuPlace = ref({});
+watch(menu, async (id) => {
+    if (id === null) return;
+    menuPlace.value = {visibility: "hidden"};
+    await nextTick();
+    const button = document.querySelector(`[data-tabs-of="${id}"] .pane-menu-button`);
+    if (!button) return;
+    const rect = button.getBoundingClientRect();
+    menuPlace.value = {position: "fixed", top: `${rect.bottom + 4}px`, right: `${window.innerWidth - rect.right}px`, zIndex: 1000};
+});
 followFullscreen();
 const quickOpen = ref(false);
 const schemeLabel = computed(() => SCHEMES.find((scheme) => scheme.key === colorScheme.value)?.label ?? "");
@@ -370,8 +381,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     <template v-if="adding === id">
                         <PaneAddBar :windows="barWindows()" @grab="grabWindow" @add="(name) => addWindow(id, name)" />
                     </template>
-                    <template v-if="menu === id">
+                    <template v-if="menu === id"><Teleport to="body">
                         <PaneMenu
+                            :style="menuPlace"
                             :pane="pane"
                             :floats="floats"
                             :followable="followable"
@@ -387,7 +399,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                             @close="closePane(id); menu = null"
                             @reset="presets.apply(presets.presets.value[0].key); menu = null"
                         />
-                    </template>
+                    </Teleport></template>
                     <div :class="['pane-body', {contained: pane.options?.width === 'contained'}]">
                         <template v-if="pane.active">
                             <WindowPane
