@@ -40,7 +40,7 @@ class TranscriptionsModule(Module):
     listeners = [TranscriptionTaskListener]
     seeders = [TranscriptionsSeeder]
     windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, skeleton=TRANSCRIPTIONS_TRANSCRIPTIONS_SKELETON, search=WindowSearch(TranscriptionSearcher, "Search the transcriptions"), place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
-                                 reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*", "link.*"],
+                                 reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*"],
                                  keys=[WindowKey("transcriptions", "transcription list", events=["transcription.*"]),
                                        WindowKey("sources", "transcription sources"),
                                        WindowKey("links.*", "link list --row transcription:{id} --group-counterparts", arguments=["page", "page-size", "kind"], loading=KeyLoading.REQUESTED)])]

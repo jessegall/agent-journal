@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
 import { openBlock as t, createElementBlock as d, createElementVNode as s, computed as b, normalizeClass as X, toDisplayString as k, renderSlot as ke, createTextVNode as w, createCommentVNode as x, createVNode as O, unref as m, withCtx as j, reactive as ie, ref as A, watch as ne, Fragment as S, renderList as U, createBlock as T, withModifiers as ye, useModel as fe, normalizeStyle as le, mergeModels as be, onMounted as he } from "vue";
-import { useWindow as H, Btn as E, Switch as ee, TextInput as _e, useNow as $e, age as we, Icon as Ce, Segmented as re, WindowRoom as Ae } from "@journal/window-kit";
+import { useWindow as z, Btn as E, Switch as ee, TextInput as _e, useNow as $e, age as we, Icon as Ce, Segmented as re, WindowRoom as Ae } from "@journal/window-kit";
 import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l, label: l.title, type: g.key, key: `${g.key}:${l.profile}` })) : [{ ...g, type: g.key }]), te = (o, g) => g > 0 && o >= g, Se = { class: "step" }, Oe = ["disabled"], xe = ["value", "disabled"], Te = ["disabled"], je = {
   __name: "NumberStep",
@@ -30,14 +30,14 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       }, "+", 8, Te)
     ]));
   }
-}, Ne = /* @__PURE__ */ F(je, [["__scopeId", "data-v-e9d43b82"]]), Ie = { class: "ctl-text" }, Me = { class: "ctl-label" }, Ve = { class: "ctl-help" }, Be = { class: "ctl-input" }, Re = {
+}, Ne = /* @__PURE__ */ F(je, [["__scopeId", "data-v-e9d43b82"]]), Ie = { class: "ctl-text" }, Me = { class: "ctl-label" }, Re = { class: "ctl-help" }, Ve = { class: "ctl-input" }, Be = {
   key: 0,
   class: "ctl-src"
 }, We = {
   __name: "SettingRow",
   props: { label: { type: String, required: !0 }, help: { type: String, default: "" }, source: { type: String, default: "" }, changed: { type: Boolean, default: !1 } },
   setup(o) {
-    const g = o, l = H(), y = { environment: () => `This environment, ${l.environment}`, project: () => "Every environment", default: () => "Default" }, n = b(() => {
+    const g = o, l = z(), y = { environment: () => `This environment, ${l.environment}`, project: () => "Every environment", default: () => "Default" }, n = b(() => {
       var u;
       return g.changed ? "Changed, not applied" : ((u = y[g.source]) == null ? void 0 : u.call(y)) ?? "";
     });
@@ -46,12 +46,12 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
     }, [
       s("div", Ie, [
         s("span", Me, k(o.label), 1),
-        s("span", Ve, k(o.help), 1)
+        s("span", Re, k(o.help), 1)
       ]),
-      s("div", Be, [
+      s("div", Ve, [
         ke(u.$slots, "default", {}, void 0, !0)
       ]),
-      o.source ? (t(), d("div", Re, [
+      o.source ? (t(), d("div", Be, [
         s("span", {
           class: X(["src", { here: o.source === "environment", changed: o.changed }]),
           "data-setting-source": ""
@@ -67,7 +67,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
   props: { changes: { type: Number, default: 0 }, pending: { type: Boolean, default: !1 }, problem: { type: String, default: "" }, blocked: { type: Boolean, default: !1 } },
   emits: ["cancel", "apply"],
   setup(o, { emit: g }) {
-    const l = o, y = g, n = H(), u = b(() => l.problem ? l.problem : l.pending ? "Applying." : l.changes ? `${l.changes} ${l.changes === 1 ? "change" : "changes"} to apply to ${n.environment}.` : `No changes. For the environment ${n.environment}.`);
+    const l = o, y = g, n = z(), u = b(() => l.problem ? l.problem : l.pending ? "Applying." : l.changes ? `${l.changes} ${l.changes === 1 ? "change" : "changes"} to apply to ${n.environment}.` : `No changes. For the environment ${n.environment}.`);
     return (a, v) => (t(), d("div", Ee, [
       s("span", {
         class: X(["foot-note", { bad: o.problem, busy: o.pending }]),
@@ -101,29 +101,29 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
   __name: "AgentSettingsGroup",
   props: { group: { type: String, required: !0 } },
   setup(o) {
-    const g = o, l = H(), y = l.props.work, n = ie({}), u = A(""), a = A(""), v = A(!1), M = b(() => {
+    const g = o, l = z(), y = l.props.work, n = ie({}), u = A(""), a = A(""), v = A(!1), M = b(() => {
       var i;
       return (((i = y.data.value) == null ? void 0 : i.fields) ?? []).filter((C) => C.group === g.group);
     }), K = b(() => M.value.filter((i) => {
       var C, f;
       return (((f = (C = y.data.value) == null ? void 0 : C.depends) == null ? void 0 : f[i.key]) ?? []).every((q) => n[q] !== !1);
-    })), L = (i) => i.type === "flag" ? !!i.value : String(i.value), P = (i) => (i.type === "flag" ? n[i.key] : String(n[i.key])) !== L(i), N = b(() => M.value.filter(P)), I = b(() => N.value.length > 0), V = b(() => {
+    })), L = (i) => i.type === "flag" ? !!i.value : String(i.value), P = (i) => (i.type === "flag" ? n[i.key] : String(n[i.key])) !== L(i), N = b(() => M.value.filter(P)), I = b(() => N.value.length > 0), R = b(() => {
       var i;
       return I.value && u.value && ((i = y.data.value) == null ? void 0 : i.revision) !== u.value;
-    }), R = (i) => i.type === "flag" ? n[i.key] ? "on" : "off" : String(n[i.key]).trim(), W = b(() => N.value.some((i) => i.type !== "flag" && R(i) === ""));
-    function B() {
+    }), B = (i) => i.type === "flag" ? n[i.key] ? "on" : "off" : String(n[i.key]).trim(), W = b(() => N.value.some((i) => i.type !== "flag" && B(i) === ""));
+    function V() {
       var i;
       for (const C of M.value) n[C.key] = L(C);
       u.value = ((i = y.data.value) == null ? void 0 : i.revision) ?? "", a.value = "";
     }
     ne(() => y.data.value, () => {
-      (!u.value || !I.value) && B();
+      (!u.value || !I.value) && V();
     }, { immediate: !0 });
-    const z = b(() => a.value || (V.value ? "These settings changed since you opened them. Cancel to read them again." : "") || (W.value ? "A number is missing." : ""));
+    const G = b(() => a.value || (R.value ? "These settings changed since you opened them. Cancel to read them again." : "") || (W.value ? "A number is missing." : ""));
     async function D() {
       v.value = !0;
-      const i = await l.run(`work-settings apply --revision ${u.value} ${N.value.map((C) => `${C.key}=${R(C)}`).join(" ")}`);
-      v.value = !1, a.value = i.ok ? "" : i.error, await l.reload("work"), i.ok && B();
+      const i = await l.run(`work-settings apply --revision ${u.value} ${N.value.map((C) => `${C.key}=${B(C)}`).join(" ")}`);
+      v.value = !1, a.value = i.ok ? "" : i.error, await l.reload("work"), i.ok && V();
     }
     return (i, C) => (t(), d("section", {
       class: "group",
@@ -178,14 +178,14 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       O(de, {
         changes: N.value.length,
         pending: v.value,
-        problem: z.value,
-        blocked: V.value || W.value,
-        onCancel: B,
+        problem: G.value,
+        blocked: R.value || W.value,
+        onCancel: V,
         onApply: D
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ], 8, Pe));
   }
-}, ce = /* @__PURE__ */ F(De, [["__scopeId", "data-v-561ba16e"]]), He = {
+}, ce = /* @__PURE__ */ F(De, [["__scopeId", "data-v-561ba16e"]]), ze = {
   __name: "AgentSettingsAdvanced",
   setup(o) {
     return (g, l) => (t(), T(ce, {
@@ -193,7 +193,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       "data-agent-settings-advanced": ""
     }));
   }
-}, ze = { class: "action-buttons" }, Ge = {
+}, Ge = { class: "action-buttons" }, He = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -210,7 +210,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
         "data-agent-retire-reason": "",
         "onUpdate:modelValue": l[0] || (l[0] = (y) => g.$emit("update:reason", y))
       }, null, 8, ["model-value", "disabled"]),
-      s("div", ze, [
+      s("div", Ge, [
         O(m(E), {
           type: "submit",
           small: "",
@@ -235,7 +235,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ])
     ], 32));
   }
-}, Ye = /* @__PURE__ */ F(Ge, [["__scopeId", "data-v-23a905c0"]]), Je = ["data-edit-type"], Qe = { key: 0 }, Xe = { class: "stepper" }, Ze = ["disabled", "onClick"], et = ["value", "disabled", "data-agent-limit-input", "onChange"], tt = ["disabled", "onClick"], nt = { key: 0 }, at = { key: 1 }, st = {
+}, Ye = /* @__PURE__ */ F(He, [["__scopeId", "data-v-23a905c0"]]), Je = ["data-edit-type"], Qe = { key: 0 }, Xe = { class: "stepper" }, Ze = ["disabled", "onClick"], et = ["value", "disabled", "data-agent-limit-input", "onChange"], tt = ["disabled", "onClick"], nt = { key: 0 }, at = { key: 1 }, st = {
   __name: "AgentLimitEditor",
   props: { rows: { type: Array, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
@@ -249,7 +249,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
         "data-edit-type": u.key
       }, [
         s("div", null, [
-          s("strong", null, k(u.per_profile ? "Each helper type" : "Workers"), 1),
+          s("strong", null, k(u.per_profile ? "Each read-only helper type" : "Workers"), 1),
           u.per_profile ? (t(), d("small", Qe, "Researcher, Planner and the others")) : x("", !0)
         ]),
         (t(!0), d(S, null, U([{ name: "Most running", value: u.run_limit, key: u.run_setting, source: u.run_source, kind: "run" }, { name: "Most kept", value: u.kept_limit, key: u.kept_setting, source: u.kept_source, kind: "kept" }], (a) => (t(), d("label", {
@@ -281,7 +281,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ], 8, Je))), 128))
     ], 64));
   }
-}, lt = /* @__PURE__ */ F(st, [["__scopeId", "data-v-218442c9"]]), ot = { class: "counts-panel" }, it = { class: "counts" }, rt = ["data-count-agent"], ut = { class: "person-text" }, dt = {
+}, lt = /* @__PURE__ */ F(st, [["__scopeId", "data-v-fc209014"]]), ot = { class: "counts-panel" }, it = { class: "counts" }, rt = ["data-count-agent"], ut = { class: "person-text" }, dt = {
   key: 0,
   class: "helper-head"
 }, ct = ["data-agent-limit-type", "data-agent-limit-profile", "onClick"], gt = {
@@ -301,7 +301,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
   },
   emits: /* @__PURE__ */ be(["open-agent", "close"], ["update:title"]),
   setup(o, { emit: g }) {
-    const l = g, y = fe(o, "title"), n = H(), u = b(() => n.props.limits.rows.value ?? []), a = b(() => n.props.limits.failure.value), v = A([]), M = A(0), K = A(!1), L = $e(), P = A(null), N = A(!1), I = A(!1), V = A(""), R = A(""), W = A(null), B = A(""), z = b(() => ue(u.value)), D = b(() => u.value.find((c) => c.per_profile)), i = b(() => z.value.find((c) => c.key === P.value)), C = b(() => v.value.filter((c) => {
+    const l = g, y = fe(o, "title"), n = z(), u = b(() => n.props.limits.rows.value ?? []), a = b(() => n.props.limits.failure.value), v = A([]), M = A(0), K = A(!1), L = $e(), P = A(null), N = A(!1), I = A(!1), R = A(""), B = A(""), W = A(null), V = A(""), G = b(() => ue(u.value)), D = b(() => u.value.find((c) => c.per_profile)), i = b(() => G.value.find((c) => c.key === P.value)), C = b(() => v.value.filter((c) => {
       var e, r;
       return c.state !== "retired" && c.role === ((e = i.value) == null ? void 0 : e.type) && (!i.value.profile || (((r = c.facts) == null ? void 0 : r.profile) || c.profile) === i.value.profile);
     }).sort((c, e) => (c.state !== "running") - (e.state !== "running") || String(c.ended_at || c.created_at).localeCompare(String(e.ended_at || e.created_at)))), f = b(() => {
@@ -328,27 +328,27 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       P.value = c.key, v.value = [], $(c);
     }
     function Y() {
-      N.value = !1, P.value = null, W.value = null, V.value = "";
+      N.value = !1, P.value = null, W.value = null, R.value = "";
     }
     function ge() {
       Y(), l("close");
     }
     async function pe(c, e, r, h) {
       if (I.value || n.readOnly) return;
-      const G = Number(h);
-      if (!String(h).trim() || !Number.isInteger(G) || G < 0) {
-        V.value = "Use a whole number of 0 or more.";
+      const H = Number(h);
+      if (!String(h).trim() || !Number.isInteger(H) || H < 0) {
+        R.value = "Use a whole number of 0 or more.";
         return;
       }
-      I.value = !0, V.value = "";
-      const J = await n.run(["setting", "set", e, String(G), "--environment", n.environment]);
-      J.ok ? (await n.reload("limits"), R.value = "Saved.") : V.value = J.error, I.value = !1;
+      I.value = !0, R.value = "";
+      const J = await n.run(["setting", "set", e, String(H), "--environment", n.environment]);
+      J.ok ? (await n.reload("limits"), B.value = "Saved.") : R.value = J.error, I.value = !1;
     }
     async function ve(c) {
-      if (!B.value.trim() || I.value) return;
+      if (!V.value.trim() || I.value) return;
       I.value = !0;
-      const e = await n.run(["agent", "retire", String(c.id), "--reason", B.value.trim()]);
-      V.value = e.ok ? "" : "The agent could not be retired. Try again.", e.ok && (W.value = null, B.value = "", R.value = "Agent retired permanently.", await n.reload("limits"), await $(i.value)), I.value = !1;
+      const e = await n.run(["agent", "retire", String(c.id), "--reason", V.value.trim()]);
+      R.value = e.ok ? "" : "The agent could not be retired. Try again.", e.ok && (W.value = null, V.value = "", B.value = "Agent retired permanently.", await n.reload("limits"), await $(i.value)), I.value = !1;
     }
     function me(c) {
       ge(), l("open-agent", c);
@@ -398,7 +398,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
             e[11] || (e[11] = s("p", null, "An agent shows here as soon as one of this type starts.", -1))
           ], 64)),
           (t(!0), d(S, null, U(C.value, (r) => {
-            var h, G, J, ae, se;
+            var h, H, J, ae, se;
             return t(), d("div", {
               key: r.id,
               class: "person",
@@ -410,7 +410,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
               s("div", ut, [
                 s("strong", null, k(((h = r.facts) == null ? void 0 : h.given_name) || r.id), 1),
                 w(" " + k(r.state === "running" ? "Running" : "Idle") + ", " + k(m(we)(r.state === "running" ? r.process_started_at || r.created_at : r.ended_at, m(L))), 1),
-                s("small", null, k([r.program, (G = r.facts) == null ? void 0 : G.model, (J = r.facts) == null ? void 0 : J.effort, `${r.role} ${r.id}`].filter(Boolean).join(", ")), 1),
+                s("small", null, k([r.program, (H = r.facts) == null ? void 0 : H.model, (J = r.facts) == null ? void 0 : J.effort, `${r.role} ${r.id}`].filter(Boolean).join(", ")), 1),
                 s("small", null, k(((ae = r.facts) == null ? void 0 : ae.task_title) || ((se = r.facts) == null ? void 0 : se.helper_job)), 1)
               ]),
               O(m(E), {
@@ -426,7 +426,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
                 key: 0,
                 small: "",
                 onClick: (Q) => {
-                  W.value = r.id, B.value = "";
+                  W.value = r.id, V.value = "";
                 }
               }, {
                 default: j(() => [...e[13] || (e[13] = [
@@ -436,8 +436,8 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
               }, 8, ["onClick"])) : x("", !0),
               W.value === r.id ? (t(), T(Ye, {
                 key: 1,
-                reason: B.value,
-                "onUpdate:reason": e[1] || (e[1] = (Q) => B.value = Q),
+                reason: V.value,
+                "onUpdate:reason": e[1] || (e[1] = (Q) => V.value = Q),
                 pending: I.value,
                 onSubmit: (Q) => ve(r),
                 onCancel: e[2] || (e[2] = (Q) => W.value = null)
@@ -462,10 +462,10 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
             s("span")
           ], -1)),
           D.value ? (t(), d("div", dt, [
-            e[15] || (e[15] = s("strong", null, "Helpers", -1)),
+            e[15] || (e[15] = s("strong", null, "Read-only helpers", -1)),
             s("span", null, k(D.value.running) + " running, " + k(D.value.kept) + " kept", 1)
           ])) : x("", !0),
-          (t(!0), d(S, null, U(z.value, (r) => (t(), d("button", {
+          (t(!0), d(S, null, U(G.value, (r) => (t(), d("button", {
             key: r.key,
             type: "button",
             class: "count-row",
@@ -499,11 +499,11 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
             })
           ], 8, ct))), 128))
         ], 64)),
-        V.value ? (t(), d("p", pt, k(V.value), 1)) : R.value ? (t(), d("p", vt, k(R.value), 1)) : x("", !0)
+        R.value ? (t(), d("p", pt, k(R.value), 1)) : B.value ? (t(), d("p", vt, k(B.value), 1)) : x("", !0)
       ]),
       s("div", mt, [
         N.value ? (t(), d(S, { key: 0 }, [
-          s("span", kt, k(R.value || `Changes apply to ${m(n).environment}.`), 1),
+          s("span", kt, k(B.value || `Changes apply to ${m(n).environment}.`), 1),
           O(m(E), { onClick: Y }, {
             default: j(() => [...e[17] || (e[17] = [
               w("Done", -1)
@@ -524,13 +524,13 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ])
     ]));
   }
-}, ft = /* @__PURE__ */ F(yt, [["__scopeId", "data-v-6aa51086"]]), bt = {
+}, ft = /* @__PURE__ */ F(yt, [["__scopeId", "data-v-604ef447"]]), bt = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, ht = {
   __name: "AgentSettingsAgents",
   setup(o) {
-    const g = H(), l = A("Agent counts"), y = (n) => g.open("agents.agents", n.id);
+    const g = z(), l = A("Agent counts"), y = (n) => g.open("agents.agents", n.id);
     return he(() => g.reload("limits")), (n, u) => (t(), d("section", bt, [
       O(ft, {
         title: l.value,
@@ -563,19 +563,19 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       { key: "journal.suites.coding.workers.main-dispatches-workers", label: "Main agent sends workers", line: "Whether the main agent may send workers to do tasks." },
       { key: "journal.suites.coding.continue-while-delegatable", label: "Keep going while work can be delegated", line: "Keep the main agent working while open tasks can still be sent to workers." },
       { key: "journal.suites.coding.workers.merger-on", label: "Merger takes in workers", line: "A helper merges workers whose tests passed, and passes on what the main agent must judge." },
-      { key: "journal.suites.coding.main-starts-helpers", label: "Use ordinary helpers", line: "Whether the main agent may start ordinary helpers." },
+      { key: "journal.suites.coding.main-starts-read-only-helpers", label: "Use read-only helpers", line: "Whether the main agent may start read-only helpers." },
       { key: "journal.suites.coding.designer-enabled", label: "Use a designer", line: "Whether the main agent may start a designer, which writes a design document and changes no code." },
       { key: "journal.suites.coding.workers.main-agent-may-merge", label: "Main agent may merge workers", line: "Whether the main agent may merge the work of a worker itself." }
-    ], l = [{ key: "builder", label: "Builder" }, { key: "orchestrator", label: "Orchestrator" }], y = [oe], n = H(), u = n.props.work, a = ie({}), v = A(""), M = A(""), K = A(!1), L = b(() => g.filter((p) => {
+    ], l = [{ key: "builder", label: "Builder" }, { key: "orchestrator", label: "Orchestrator" }], y = [oe], n = z(), u = n.props.work, a = ie({}), v = A(""), M = A(""), K = A(!1), L = b(() => g.filter((p) => {
       var $, _;
       return a[p.key] !== ((_ = ($ = u.data.value) == null ? void 0 : $.controls) == null ? void 0 : _[p.key]);
     })), P = b(() => L.value.length > 0), N = b(() => P.value && u.data.value && v.value && u.data.value.revision !== v.value), I = b(() => {
       var p;
       return ((p = u.data.value) == null ? void 0 : p.workflow) ?? "";
-    }), V = b(() => {
+    }), R = b(() => {
       var p;
       return ((p = u.data.value) == null ? void 0 : p.depends) ?? {};
-    }), R = (p) => (V.value[p.key] ?? []).every(($) => a[$] !== !1), W = b(() => g.filter((p) => y.includes(p.key) && R(p))), B = b(() => g.filter((p) => !y.includes(p.key) && R(p))), z = b(() => M.value || (N.value ? "These settings changed since you opened them. Cancel to read them again." : "")), D = b(() => a[oe] === !1 && a[Tt] === !1);
+    }), B = (p) => (R.value[p.key] ?? []).every(($) => a[$] !== !1), W = b(() => g.filter((p) => y.includes(p.key) && B(p))), V = b(() => g.filter((p) => !y.includes(p.key) && B(p))), G = b(() => M.value || (N.value ? "These settings changed since you opened them. Cancel to read them again." : "")), D = b(() => a[oe] === !1 && a[Tt] === !1);
     function i() {
       const p = u.data.value;
       if (p) {
@@ -629,7 +629,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       s("div", St, [
         $[1] || ($[1] = s("p", { class: "section-title" }, "How the main agent works", -1)),
         $[2] || ($[2] = s("p", { class: "section-help" }, "Your models, maximums and tests stay as you set them.", -1)),
-        (t(!0), d(S, null, U(B.value, (_) => (t(), T(Z, {
+        (t(!0), d(S, null, U(V.value, (_) => (t(), T(Z, {
           key: _.key,
           label: _.label,
           help: _.line,
@@ -650,25 +650,25 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       O(de, {
         changes: L.value.length,
         pending: K.value,
-        problem: z.value,
+        problem: G.value,
         blocked: N.value,
         onCancel: i,
         onApply: f
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ]));
   }
-}, Nt = /* @__PURE__ */ F(jt, [["__scopeId", "data-v-c5fb9f6f"]]), It = {
+}, Nt = /* @__PURE__ */ F(jt, [["__scopeId", "data-v-9f39da05"]]), It = {
   class: "settings",
   "data-agent-settings": ""
-}, Mt = { class: "settings-bar" }, Vt = { class: "settings-body" }, Bt = {
+}, Mt = { class: "settings-bar" }, Rt = { class: "settings-body" }, Vt = {
   key: 0,
   class: "note lock",
   role: "note",
   "data-settings-lock": ""
-}, Rt = {
+}, Bt = {
   __name: "AgentSettings",
   setup(o) {
-    const g = H(), l = A("work"), y = b(() => {
+    const g = z(), l = A("work"), y = b(() => {
       var a;
       return ue(((a = g.props.limits) == null ? void 0 : a.rows.value) ?? []).filter((v) => te(v.running, v.run_limit) || te(v.kept, v.kept_limit)).length;
     }), n = b(() => [{ key: "work", label: "Work" }, { key: "agents", label: y.value ? `Agents ${y.value}` : "Agents" }, { key: "tests", label: "Tests" }, { key: "advanced", label: "Advanced" }]);
@@ -685,16 +685,16 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
               onPick: u
             }, null, 8, ["options", "value"])
           ]),
-          s("div", Vt, [
-            m(g).readOnly ? (t(), d("p", Bt, "Only a person can change these settings. You can read every value, and ask a person for a change.")) : x("", !0),
-            l.value === "work" ? (t(), T(Nt, { key: 1 })) : l.value === "agents" ? (t(), T(_t, { key: 2 })) : l.value === "tests" ? (t(), T($t, { key: 3 })) : (t(), T(He, { key: 4 }))
+          s("div", Rt, [
+            m(g).readOnly ? (t(), d("p", Vt, "Only a person can change these settings. You can read every value, and ask a person for a change.")) : x("", !0),
+            l.value === "work" ? (t(), T(Nt, { key: 1 })) : l.value === "agents" ? (t(), T(_t, { key: 2 })) : l.value === "tests" ? (t(), T($t, { key: 3 })) : (t(), T(ze, { key: 4 }))
           ])
         ])
       ]),
       _: 1
     }));
   }
-}, Pt = /* @__PURE__ */ F(Rt, [["__scopeId", "data-v-f9bdd5f3"]]);
+}, Pt = /* @__PURE__ */ F(Bt, [["__scopeId", "data-v-f9bdd5f3"]]);
 export {
   Pt as A
 };

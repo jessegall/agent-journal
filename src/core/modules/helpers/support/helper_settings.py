@@ -43,7 +43,7 @@ HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use count
                    SettingValue("context-limit-hard-tokens", "Compact anyway at this context size", "Past this many tokens an agent is compacted even with a task in hand.", SettingType.NUMBER, default=600000, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
                    SettingValue("context-limit-action", "At the context size", "Compact the context, or clear it and let the journal give back the open tasks and memories.", SettingType.CHOICE, default=CONTEXT_ACTIONS[0], choices=CONTEXT_ACTIONS, person_set=True),
                    SettingValue("skips-need-approval", "Main agent approves skips", "A skip of a refusal by a helper passes only once its main agent approves it.", SettingType.FLAG, default=True, person_set=True),
-                   SettingValue("agent-options", "Agent options", "Options of each helper kind, a line each, such as worker allow_new=off or, read-only, helper:researcher max_cost=2.", SettingType.LIST, default=(), person_set=True)]
+                   SettingValue("agent-options", "Agent options", "One option per line for each helper type, for example worker allow_new=off or helper:researcher max_cost=2.", SettingType.LIST, default=(), person_set=True)]
 HELPER_SETTING_RULES = {COLD_SESSION_MINUTES: NumberRule(0),
                         CONTEXT_LIMIT_TOKENS: NumberRule(0),
                         CONTEXT_LIMIT_HARD_TOKENS: NumberRule(0),

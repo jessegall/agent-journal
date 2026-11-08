@@ -108,7 +108,7 @@ def test_agents_are_found_by_a_word_of_their_name_or_number(new_story):
     helper = started_agent(story, "s-10", "helper")
     worker_memory(story, "s-10", "A helper's note", helper)
     story.expect_rows(names(story, f"--name worker") == [f"Worker {worker.id}"])
-    story.expect_rows(names(story, f"--name {helper.id}") == [f"Helper {helper.id}"])
+    story.expect_rows(names(story, f"--name {helper.id}") == [f"Read-only helper {helper.id}"])
     story.expect_rows(names(story, "--name nobody") == [])
 
 

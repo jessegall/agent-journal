@@ -93,7 +93,7 @@ def test_only_a_person_can_save_a_profile_and_its_effective_model_is_listed(new_
 def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_refusal('profile save "no good" --description "x"', "no good cannot name a profile", actor=story.user)
-    story.expect_refusal('profile save critic --description "x" --type boss', "boss is no agent type: no installed module registers it", actor=story.user)
+    story.expect_refusal('profile save critic --description "x" --type boss', "boss is no helper type: no installed module or suite registers it", actor=story.user)
     story.expect_refusal("profile save critic", "a profile needs a description", actor=story.user)
 
 

@@ -1,13 +1,13 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-88e1bc679db0")) { const style = document.createElement("style"); style.id = "window-styles-88e1bc679db0"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-3d819ba9]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-3d819ba9]{display:flex;align-items:center;gap:8px}input[data-v-3d819ba9]{min-width:0;flex:1}output[data-v-3d819ba9]{min-width:36px;text-align:right}small[data-v-3d819ba9]{color:var(--text-3)}p[data-v-3d819ba9]{margin:0}.actions[data-v-3d819ba9]{display:flex;gap:6px}.route[data-v-de22f389]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-de22f389]{margin:0}small[data-v-de22f389]{color:var(--text-3)}.actions[data-v-de22f389]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-0362f63d]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-0362f63d]{margin:0}label[data-v-0362f63d]{display:flex;align-items:center;gap:8px}select[data-v-0362f63d],input[type=number][data-v-0362f63d]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-7ea51616]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-7ea51616]{display:flex;gap:8px}input[data-v-7ea51616]{min-width:0;flex:1}.split[data-v-48203f6c]{display:flex;flex-direction:column;gap:8px}p[data-v-48203f6c],h3[data-v-48203f6c]{margin:0}p[data-v-48203f6c]{color:var(--text-3);font-size:12px}h3[data-v-48203f6c]{margin-top:12px;font-size:13px}label[data-v-48203f6c]{display:flex;align-items:center;gap:8px}input[data-v-48203f6c]{width:54px}[role=alert][data-v-48203f6c]{color:var(--danger)}.worker-tab-body[data-v-8fe373bc]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-9a80c2fceec5")) { const style = document.createElement("style"); style.id = "window-styles-9a80c2fceec5"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-3ab2fdf7]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-3ab2fdf7]{display:flex;align-items:center;gap:8px}input[data-v-3ab2fdf7]{min-width:0;flex:1}output[data-v-3ab2fdf7]{min-width:36px;text-align:right}small[data-v-3ab2fdf7]{color:var(--text-3)}p[data-v-3ab2fdf7]{margin:0}.actions[data-v-3ab2fdf7]{display:flex;gap:6px}.route[data-v-de22f389]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-de22f389]{margin:0}small[data-v-de22f389]{color:var(--text-3)}.actions[data-v-de22f389]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-0362f63d]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-0362f63d]{margin:0}label[data-v-0362f63d]{display:flex;align-items:center;gap:8px}select[data-v-0362f63d],input[type=number][data-v-0362f63d]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-7ea51616]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-7ea51616]{display:flex;gap:8px}input[data-v-7ea51616]{min-width:0;flex:1}.split[data-v-ab331a12]{display:flex;flex-direction:column;gap:8px}p[data-v-ab331a12],h3[data-v-ab331a12]{margin:0}p[data-v-ab331a12]{color:var(--text-3);font-size:12px}h3[data-v-ab331a12]{margin-top:12px;font-size:13px}label[data-v-ab331a12]{display:flex;align-items:center;gap:8px}input[data-v-ab331a12]{width:54px}[role=alert][data-v-ab331a12]{color:var(--danger)}.worker-tab-body[data-v-8fe373bc]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
 import { openBlock as d, createBlock as V, unref as r, withCtx as S, createElementVNode as l, toDisplayString as b, createVNode as w, createElementBlock as v, createTextVNode as m, Fragment as U, renderList as q, createCommentVNode as C, ref as x, withModifiers as G, withDirectives as W, vModelSelect as j, vModelText as F, vModelCheckbox as Y, computed as T, watch as Z } from "vue";
-import { useWindow as P, RowList as H, peekRef as _, TimeAgo as ee, Btn as R, WindowRoom as te, InnerTabs as oe, TabBody as le, SwitchCase as ae, AgentRowList as re } from "@journal/window-kit";
+import { useWindow as P, RowList as z, peekRef as _, TimeAgo as ee, Btn as R, WindowRoom as te, InnerTabs as oe, TabBody as le, SwitchCase as ae, AgentRowList as re } from "@journal/window-kit";
 import { _ as N } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
   __name: "WorkerRecent",
   setup(e) {
     const a = P(), { rows: o, failure: i, loaded: f, older: y, more: p } = a.props.recent;
-    return (n, g) => (d(), V(r(H), {
+    return (n, g) => (d(), V(r(z), {
       rows: r(o),
       failure: r(i),
       loaded: r(f),
@@ -57,7 +57,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
         }, null, 40, ve),
         l("output", null, b(e.share) + "%", 1)
       ]),
-      l("small", null, b(e.row.recent) + " recent worker tasks · " + b(e.row.helpers_recent) + " recent helper tasks", 1),
+      l("small", null, b(e.row.recent) + " recent worker tasks · " + b(e.row.helpers_recent) + " recent read-only helper tasks", 1),
       (d(!0), v(U, null, q(e.row.windows, (i) => (d(), v("small", { key: i }, b(i), 1))), 128)),
       e.row.is_ready ? C("", !0) : (d(), v("p", be, [
         m(b(e.row.line), 1),
@@ -91,7 +91,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
       ])
     ], 8, de));
   }
-}, ke = /* @__PURE__ */ N(pe, [["__scopeId", "data-v-3d819ba9"]]), we = ["data-split-route"], ye = { key: 0 }, $e = { key: 1 }, ce = { class: "actions" }, Se = {
+}, ke = /* @__PURE__ */ N(pe, [["__scopeId", "data-v-3ab2fdf7"]]), we = ["data-split-route"], ye = { key: 0 }, $e = { key: 1 }, ce = { class: "actions" }, Se = {
   __name: "WorkerRouteRow",
   props: { row: { type: Object, required: !0 }, count: { type: Number, required: !0 }, disabled: Boolean },
   emits: ["move", "delete"],
@@ -335,7 +335,7 @@ const De = {
     Z(o, (k) => {
       s.value = k.map((u) => ({ ...u }));
     }, { immediate: !0 });
-    const z = (k) => {
+    const H = (k) => {
       var u;
       return ((u = s.value.find((c) => c.id === k.id)) == null ? void 0 : u.share) ?? k.share;
     };
@@ -377,8 +377,8 @@ const De = {
           onChange: u[0] || (u[0] = (c) => Q(c.target.value))
         }, null, 40, Le)
       ])) : C("", !0),
-      u[3] || (u[3] = l("p", null, "Shares apply to new tasks. Helpers and workers are counted separately. A program that is out passes its share to the others.", -1)),
-      w(r(H), {
+      u[3] || (u[3] = l("p", null, "Shares apply to new tasks. Read-only helpers and workers are counted separately. A program that is out passes its share to the others.", -1)),
+      w(r(z), {
         rows: r(o),
         failure: r(i),
         loaded: r(f),
@@ -388,7 +388,7 @@ const De = {
         default: S(({ row: c }) => [
           w(ke, {
             row: c,
-            share: z(c),
+            share: H(c),
             disabled: B.value,
             onShare: (O) => J(c, O),
             onSave: K,
@@ -424,7 +424,7 @@ const De = {
       }, null, 8, ["programs", "tags", "disabled"])
     ]));
   }
-}, He = /* @__PURE__ */ N(Ge, [["__scopeId", "data-v-48203f6c"]]), ze = {
+}, ze = /* @__PURE__ */ N(Ge, [["__scopeId", "data-v-ab331a12"]]), He = {
   __name: "WorkerDropdown",
   setup(e) {
     var p;
@@ -459,7 +459,7 @@ const De = {
                   w(ue)
                 ]),
                 split: S(() => [
-                  w(He)
+                  w(ze)
                 ]),
                 _: 1
               }, 8, ["value"])
@@ -471,7 +471,7 @@ const De = {
       _: 1
     }));
   }
-}, Xe = /* @__PURE__ */ N(ze, [["__scopeId", "data-v-8fe373bc"]]);
+}, Xe = /* @__PURE__ */ N(He, [["__scopeId", "data-v-8fe373bc"]]);
 export {
   Xe as default
 };
