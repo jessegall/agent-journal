@@ -7,7 +7,7 @@ test("an opened helper has its own information band and stop button", async () =
     const row = {id: 6, role: "helper", access: "read-only", session: "s-6", program: "claude", created_at: new Date().toISOString()};
     const progress = {branch: "worker-6"};
     const facts = {id: 6, tasks: [], model: "model-six", effort: "high", context_percent: 25, cost_dollars: 5.94};
-    const ctx = context({"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}});
+    const ctx = context({"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}, "agent programs": {ok: true, value: {rows: [{name: "claude", title: "Claude"}]}}});
     const element = await mounted({render: () => h(AgentCard, {row, facts, progress, open: true})}, ctx);
     const band = element.querySelector("[data-information-bar]");
     expect(band.textContent).toContain("Claude");

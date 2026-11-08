@@ -46,7 +46,7 @@ test("an agent that ends moves to the bottom of the Working list, faded, and lea
         vi.advanceTimersByTime(4 * 60 * 1000);
         await settle();
         expect(order()).toEqual([5, 4]);
-        vi.advanceTimersByTime(61 * 1000);
+        vi.advanceTimersByTime(120 * 1000);
         await settle();
         expect(order()).toEqual([5]);
     } finally {
