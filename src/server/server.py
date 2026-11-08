@@ -49,6 +49,7 @@ from server.urgent_listener_work import UrgentListenerWork
 from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
 from server.viewer.viewer_listener import ViewerListener
+from server.viewer.viewer_socket_listener import ViewerSocketListener
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_login import ViewerLogin
@@ -80,6 +81,12 @@ def last_port(home: JournalHome) -> int:
     return int(text) if text.isdigit() else 0
 
 
+def refused_start_code(files: ServerFiles, refusal: Refusal) -> int:
+    files.log_line(refusal.text, LogLevel.ERROR)
+    print(refusal.text, file=sys.stderr)
+    return UNSAFE_HOST_CODE
+
+
 def begin_files(home: JournalHome, files: ServerFiles) -> None:
     PerformanceState(home).begin_start()
     TimingLog(home).rotate()
@@ -104,12 +111,12 @@ def main(argv: list[str]) -> int:
     code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
     code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)
     files = ServerFiles(home)
+    hosting = HostedFile.shared_hosting(home)
+    start_check = HostedStartCheck(hosting, HostProbe(), HOSTED_FILE_PATH)
     try:
-        HostedStartCheck(HostedFile.shared_hosting(home), HostProbe(), HOSTED_FILE_PATH).check_host()
+        start_check.check_host()
     except Refusal as refusal:
-        files.log_line(refusal.text, LogLevel.ERROR)
-        print(refusal.text, file=sys.stderr)
-        return UNSAFE_HOST_CODE
+        return refused_start_code(files, refusal)
     waiting_server = WaitingServer(home, HandoverDescriptors.parsed(arguments.take_over)) if arguments.take_over else None
     if waiting_server is not None:
         files.keep_lock_descriptor(waiting_server.descriptors.lock)
@@ -132,8 +139,17 @@ def main(argv: list[str]) -> int:
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
-    home.viewer_port_file.write_text(str(viewer.port))
+    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue)
+    inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
+    if hosting.is_hosted:
+        viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, inherited_viewer)
+        try:
+            start_check.check_socket(files.viewer_socket)
+        except Refusal as refusal:
+            return refused_start_code(files, refusal)
+    else:
+        viewer = ViewerListener(login, routes, last_port(home), inherited_socket=inherited_viewer)
+        home.viewer_port_file.write_text(str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     plugin_services = ServerPluginServices(home)
@@ -145,7 +161,8 @@ def main(argv: list[str]) -> int:
 
     ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
     ticker.register(TickHandler(TickInterval(seconds=CHECK_PERIOD_SECONDS), lambda container: container.get(PeriodicChecks).run(), "checks"))
-    ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
+    if not hosting.is_hosted:
+        ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
     ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
     ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))

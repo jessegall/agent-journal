@@ -8,7 +8,7 @@ from server.hook.hook_database import HookDatabase
 from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
 from server.server_tunnel import ServerTunnel
-from server.viewer.viewer_listener import ViewerListener
+from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.request_log import RequestLog
 
 HOOK_LIMIT_SECONDS = 3.5
@@ -28,7 +28,7 @@ class ServerContext:
     started_at: Timestamp
     listener_thread: ListenerThread
     hook_database: HookDatabase
-    viewer: ViewerListener
+    viewer: ViewerEndpoint
     tunnel: ServerTunnel
     reported_findings: ReportedFindings
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
