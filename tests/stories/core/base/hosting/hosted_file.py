@@ -52,6 +52,6 @@ def test_a_file_that_is_not_toml_is_refused(tmp_path):
         hosted_file(tmp_path, "public_origin = = 1").hosting()
 
 
-def test_the_container_holds_the_hosting_built_for_its_home(new_story):
+def test_a_story_container_is_local_whatever_file_the_machine_holds(new_story):
     story = new_story()
-    expect_value(story.container.get(Hosting), HostedFile.shared_hosting(story.home))
+    expect_value(story.container.get(Hosting), Hosting.local())
