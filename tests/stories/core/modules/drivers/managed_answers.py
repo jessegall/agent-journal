@@ -58,9 +58,17 @@ def test_a_journal_refusal_comes_before_a_project_refusal(new_story):
 def test_project_context_is_kept_on_a_line_event(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     reply = story.hook("s-1", managed(LISTING, {"lines": ["project guidance"]}))
-    expect_reply_line(reply, "project hooks answered for agent:")
-    expect_absent_reply_line(reply, "project guidance")
+    expect_reply_line(reply, "project guidance")
+    expect_absent_reply_line(reply, "project hooks answered for agent:")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "project guidance", actor=story.agent)
+
+
+def test_the_same_words_of_a_project_hook_are_not_said_again_until_they_change(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    expect_reply_line(story.hook("s-1", managed(LISTING, {"lines": ["project guidance"]})), "project guidance")
+    expect_absent_reply_line(story.hook("s-1", managed(LISTING, {"lines": ["project guidance"]})), "project guidance")
+    expect_reply_line(story.hook("s-1", managed(LISTING, {"lines": ["new guidance"]})), "new guidance")
+    expect_reply_line(story.hook("s-1", managed(LISTING, {"lines": ["project guidance"]})), "project guidance")
 
 
 def test_project_context_is_dropped_on_an_event_without_lines(new_story):
