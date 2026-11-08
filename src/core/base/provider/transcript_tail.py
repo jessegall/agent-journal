@@ -26,11 +26,16 @@ class TranscriptTail:
         size = self.path.stat().st_size
         window = TAIL_BYTES
         while True:
-            with self.path.open("rb") as log:
-                log.seek(max(size - window, 0))
-                lines = log.read().decode(errors="replace").splitlines()
-            if size <= window:
+            lines = self.lines_within(window)
+            if size <= window or len(lines) > count:
                 return lines
-            if len(lines) > count + 1:
-                return lines[1:]
             window *= 2
+
+    def lines_within(self, window: int) -> list[str]:
+        if not self.path.is_file():
+            return []
+        size = self.path.stat().st_size
+        with self.path.open("rb") as log:
+            log.seek(max(size - window, 0))
+            lines = log.read().decode(errors="replace").splitlines()
+        return lines if size <= window else lines[1:]

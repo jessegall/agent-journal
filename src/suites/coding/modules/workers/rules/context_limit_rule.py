@@ -18,13 +18,15 @@ from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTE
 from suites.coding.support.coding_agent_role import CodingAgentRole
 
 RETRY_SECONDS = Seconds(600)
+TICK_RULE = "workers.context-limit"
+STOP_RULE = "workers.context-limit-stop"
 
 
 class ContextLimitRule(DriverRule):
     """A tick compacts an agent between its turns once its context has passed the token limit, first letting it finish
     the task in hand when that is switched on, unless it has also passed the second limit."""
 
-    name = "workers.context-limit"
+    name = TICK_RULE
     hook = HookEventName.TICK
     drivers = ["*"]
     roles = [CodingAgentRole.MAIN, CodingAgentRole.WORKER]
@@ -35,12 +37,21 @@ class ContextLimitRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
-        if not self.settings.flag(CONTEXT_LIMIT_ON) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
+        if not self.settings.flag(CONTEXT_LIMIT_ON) or self.was_just_compacted(hook):
             return RuleAnswer.allowed()
         agent = self.agents.find(hook.agent_id)
         tokens = self.providers.provider(agent.program).context_tokens(self.home, agent.session)
-        if tokens is None or tokens < limit or not self.hook_calls.is_idle(agent.id, hook.timestamp) or self.waits_for_its_task(agent, tokens):
+        if tokens is None or tokens < limit or not self.is_between_turns(hook) or self.waits_for_its_task(agent, tokens):
             return RuleAnswer.allowed()
+        return self.compaction(agent, tokens)
+
+    def was_just_compacted(self, hook: AgentHook) -> bool:
+        return any(self.history.has_recent_answer(rule, hook, RETRY_SECONDS) for rule in (TICK_RULE, STOP_RULE))
+
+    def is_between_turns(self, hook: AgentHook) -> bool:
+        return self.hook_calls.is_idle(hook.agent_id, hook.timestamp)
+
+    def compaction(self, agent: Agent, tokens: int) -> RuleAnswer:
         return RuleAnswer.with_nudges(CONTEXT_COMPACTED.nudge(tokens=tokens)).running(ChooseAgentControl(agent.id, "context", "compact"))
 
     def waits_for_its_task(self, agent: Agent, tokens: int) -> bool:
@@ -48,3 +59,13 @@ class ContextLimitRule(DriverRule):
         if hard and tokens >= hard:
             return False
         return self.settings.flag(CONTEXT_LIMIT_FINISH_TASK) and bool(self.tasks.started_tasks(agent.id))
+
+
+class ContextLimitStopRule(ContextLimitRule):
+    """A stop compacts an agent the moment it has passed the token limit, under the same conditions as the tick."""
+
+    name = STOP_RULE
+    hook = HookEventName.STOP
+
+    def is_between_turns(self, hook: AgentHook) -> bool:
+        return True

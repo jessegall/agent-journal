@@ -1,3 +1,4 @@
+from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.agents.agents_module import AgentsModule
 import json
 import socket
@@ -46,7 +47,7 @@ def test_a_choice_types_the_programs_own_line(new_story):
     story.expect_success(f"agent control {story.agent.id} model opus", f"applied to agent {story.agent.id}", actor=story.user)
     story.expect_success(f"agent control {story.agent.id} effort high", actor=story.user)
     story.expect_success(f"agent control {story.agent.id} context compact", actor=story.user)
-    story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, "/compact")])
+    story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, COMPACT_LINE)])
 
 
 def test_a_choice_the_program_does_not_offer_and_an_ended_agent_are_refused(new_story):

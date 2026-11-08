@@ -8,7 +8,7 @@ from core.base.type_guards import is_list, is_mapping
 
 KEPT_SKILLS_TYPE = "invoked_skills"
 COMPACT_BOUNDARY = "compact_boundary"
-SEARCHED_LINES = 40
+RECORD_WINDOW_BYTES = 4 * 1024 * 1024
 CONTENT_SEPARATOR = "\n\n"
 
 
@@ -20,7 +20,7 @@ class ClaudeKeptSkills:
         self.transcript = transcript
 
     def digests(self) -> Mapping[str, str]:
-        for line in reversed(TranscriptTail(self.transcript).lines(SEARCHED_LINES)):
+        for line in reversed(TranscriptTail(self.transcript).lines_within(RECORD_WINDOW_BYTES)):
             record = self.record(line)
             if record.get("subtype") == COMPACT_BOUNDARY:
                 return {}

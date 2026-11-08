@@ -45,7 +45,7 @@ def kept_skill_records(folder: Path, skills: dict[str, str]) -> list[dict[str, o
             {"attachment": {"type": "invoked_skills", "skills": kept}}]
 
 
-def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[str, str], program: str = "claude") -> None:
+def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[str, str], program: str = "claude", written_after: tuple[dict[str, object], ...] = ()) -> None:
     """The real order: the session start hook of a compaction runs first, and only then does the program write its
     record of the skills it put back; the agent's first tool use comes after that."""
     transcript = folder / "session.jsonl"
@@ -54,7 +54,7 @@ def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[st
     story.hook("s-1", HookSamples.session_start().with_fields(program=program).with_raw(raw))
     story.run_listeners()
     expect_due(story, *skills)
-    transcript.write_text("".join(json.dumps(record) + "\n" for record in kept_skill_records(folder, skills)))
+    transcript.write_text("".join(json.dumps(record) + "\n" for record in (*kept_skill_records(folder, skills), *written_after)))
     story.hook("s-1", FIRST_TOOL_USE.with_fields(program=program).with_raw({"transcript_path": str(transcript)}))
     story.run_listeners()
 
@@ -64,6 +64,13 @@ def test_a_skill_claude_code_put_back_after_a_compaction_counts_as_loaded_at_the
     compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")})
     expect_skills_absent(story, "journal-notes")
     expect_due(story, "journal-chores")
+
+
+def test_a_skill_put_back_counts_with_most_of_a_megabyte_written_between_the_record_and_the_first_tool_use(new_story, tmp_path):
+    story = new_story(DUE, fixture=CompactingClaude)
+    rows_between = tuple({"attachment": {"type": "deferred_tools", "text": "x" * 40_000}} for _ in range(20))
+    compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, written_after=rows_between)
+    expect_skills_absent(story, "journal-notes")
 
 
 def test_every_skill_put_back_counts_so_the_first_tool_use_is_not_held(new_story, tmp_path):

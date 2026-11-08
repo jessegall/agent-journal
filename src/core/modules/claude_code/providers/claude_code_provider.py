@@ -51,6 +51,7 @@ MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("f
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 SESSION_EFFORT = "high"
 
+COMPACT_LINE = "/compact Keep the summary short: what the user asked, what is decided and what is open. Leave out what comes back after a compaction: rules, memories, task briefs and skill texts."
 
 class ClaudeCodeProvider(Provider):
     """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's
@@ -89,7 +90,7 @@ class ClaudeCodeProvider(Provider):
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
                 ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
-                ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear"))))
+                ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", COMPACT_LINE), ControlChoice("clear", "Clear context", "/clear"))))
     models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST),
               ProgramModel("fable", ModelTier.RARE)]
     session_tier = ModelTier.STRONGEST

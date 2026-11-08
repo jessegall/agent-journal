@@ -3,15 +3,17 @@ from datetime import timedelta
 import pytest
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
+from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
-COMPACT = "/compact"
 LIMIT = 400_000
 HARD = 600_000
 SESSION = "s-1"
+COMPACTION_START = HookSamples.session_start().with_raw({"source": "compact"})
 
 
 class RecordedTyping(TerminalTyping):
@@ -22,12 +24,51 @@ class RecordedTyping(TerminalTyping):
         self.typed.append(line)
 
 
-@pytest.fixture
-def agent(new_story):
-    story = new_story(fixture=BuilderWithUser)
+def typing_recorded(story):
     story.typing = RecordedTyping()
     story.container.bind(TerminalTyping, story.typing)
     return story
+
+
+@pytest.fixture
+def agent(new_story):
+    return typing_recorded(new_story(fixture=BuilderWithUser))
+
+
+class LimitOn(StoryFixture):
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        turned_on_at(story, LIMIT)
+
+
+class HoldingATask(StoryFixture):
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        holds_a_task(story)
+
+
+class LimitOnHoldingATask(StoryFixture):
+    parent = LimitOn
+
+    def steps(self, story):
+        holds_a_task(story)
+
+
+@pytest.fixture
+def limited_with_a_task(new_story):
+    return typing_recorded(new_story(fixture=LimitOnHoldingATask))
+
+
+@pytest.fixture
+def limited(new_story):
+    return typing_recorded(new_story(fixture=LimitOn))
+
+
+@pytest.fixture
+def with_a_task(new_story):
+    return typing_recorded(new_story(fixture=HoldingATask))
 
 
 def has_context(story, tokens):
@@ -55,12 +96,13 @@ def holds_a_task(story):
 
 def test_with_the_switch_off_an_agent_is_never_compacted(agent):
     has_context(agent, 900_000)
-    between_turns(agent)
+    agent.tick(SESSION)
+    stops(agent)
     agent.expect_rows(agent.typing.typed == [])
 
 
-def test_an_agent_is_compacted_between_its_turns_once_its_context_reaches_the_limit(agent):
-    turned_on_at(agent, LIMIT)
+def test_an_agent_is_compacted_between_its_turns_once_its_context_reaches_the_limit(limited):
+    agent = limited
     between_turns(agent)
     agent.expect_rows(agent.typing.typed == [], detail="no size reported")
     has_context(agent, LIMIT - 1)
@@ -82,8 +124,8 @@ def test_an_agent_in_the_middle_of_a_turn_is_not_compacted(agent):
     agent.expect_rows(agent.typing.typed == [])
 
 
-def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(agent):
-    holds_a_task(agent)
+def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(with_a_task):
+    agent = with_a_task
     turned_on_at(agent, LIMIT)
     has_context(agent, LIMIT + 1)
     between_turns(agent)
@@ -109,3 +151,43 @@ def test_with_finishing_first_switched_off_a_task_in_hand_does_not_hold_it_back(
     has_context(agent, LIMIT)
     between_turns(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+
+
+def stops(story):
+    story.hook(SESSION, HookSamples.prompt("go on"))
+    story.hook(SESSION, HookSamples.stop())
+
+
+def test_an_agent_with_no_task_in_hand_is_compacted_the_moment_it_stops(limited):
+    agent = limited
+    has_context(agent, LIMIT)
+    stops(agent)
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail="the tick does not type it a second time")
+
+
+def test_an_agent_that_stops_with_a_task_in_hand_is_not_compacted_at_the_stop(limited_with_a_task):
+    agent = limited_with_a_task
+    has_context(agent, LIMIT)
+    agent.hook(SESSION, HookSamples.stop())
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+
+
+def test_an_agent_left_at_its_prompt_by_a_compaction_is_woken(agent):
+    agent.hook(SESSION, COMPACTION_START)
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_rows(len(agent.typing.typed) == 1, detail="woken once")
+
+
+def test_an_agent_working_again_after_a_compaction_is_not_woken(agent):
+    agent.hook(SESSION, COMPACTION_START)
+    agent.hook(SESSION, HookSamples.prompt("go on"))
+    agent.advance(timedelta(seconds=10))
+    agent.tick(SESSION)
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
