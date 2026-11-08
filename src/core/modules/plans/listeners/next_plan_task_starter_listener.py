@@ -34,7 +34,7 @@ class NextPlanTaskStarterListener(CommitListener[Moved[Task]]):
         place = self.plans.find_phase(event.row.id)
         plan = self.plans.find(event.row.id)
         assigner = self.assigners.assigner()
-        if plan is None or assigner is None or plan.state is not PlanState.STARTED or self.tasks.holder(logged.actor_id).started().exists() or self.urgent_task_waits() or assigner.holds_back_from(logged.actor_id):
+        if plan is None or assigner is None or plan.state is not PlanState.STARTED or self.tasks.holder(logged.actor_id).started().exists() or self.urgent_task_waits() or assigner.exceeds_context_limit(logged.actor_id):
             return
         following = self.next_tasks.following(place.plan_id)
         if following is not None:

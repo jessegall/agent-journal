@@ -66,7 +66,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
         if not AssignableTasks.has_open(tasks):
             raise Refusal("every task here is blocked, and a new worker starts on an open one",
-                          "assign blocked tasks to a kept worker with journal worker send <n> --task, or dispatch once one opens")
+                          "assign blocked tasks to an existing worker with journal worker send <n> --task, or dispatch once one opens")
         with self.scopes.row_scope(tasks[0]):
             return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
 

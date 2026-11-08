@@ -13,8 +13,8 @@ from core.modules.tasks.models.task import Task
 
 
 class StartedReservedTaskListener(SaveListener[Moved[Task]]):
-    """A main agent that starts a task reserved for it holds it from then on, as it holds any task it starts: the
-    reservation ends, unlike a worker's assignment, which lasts until its work is merged."""
+    """A main agent that starts a task reserved for it holds it from then on, as it holds any task it starts,
+    so the reservation ends."""
 
     name = "tasks.started-reserved-task"
     moves = tuple([TaskLifecycle.start])

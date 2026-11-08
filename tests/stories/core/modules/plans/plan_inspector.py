@@ -29,7 +29,7 @@ def test_an_approved_plan_offers_start_and_cancel(new_story):
 def test_assigning_a_plan_runs_plan_assign_with_a_worker_or_without(new_story):
     registry, declaration = declaration_of(new_story(fixture=MainEnvironment))
     runs = {action.label: action.runs for action in declaration.actions}
-    expect_value(bool(runs["Assign to an agent"] == "plan assign {row_id} --worker={worker}" and runs["Let the agent pick"] == "plan assign {row_id}"), True)
+    expect_value(bool(runs["Assign to an agent"] == "plan assign {row_id} --to={agent}" and runs["Let the agent pick"] == "plan assign {row_id}"), True)
 
 
 def test_a_completed_plan_offers_nothing(new_story):

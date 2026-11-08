@@ -13,10 +13,10 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 class SecondAssigner:
     """A task assigner of another suite: it hands out nothing by itself."""
 
-    def holds_back_from(self, agent_id: int) -> bool:
+    def exceeds_context_limit(self, agent_id: int) -> bool:
         return False
 
-    def may_stop_holding_tasks(self, agent_id: int) -> bool:
+    def allows_stop_with_tasks(self, agent_id: int) -> bool:
         return False
 
     def is_automatic(self) -> bool:

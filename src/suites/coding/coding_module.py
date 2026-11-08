@@ -55,6 +55,7 @@ from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
+from suites.coding.drivers.main.guards.main_reservation_guard import MainReservationGuard
 from suites.coding.drivers.main.guards.main_task_start_guard import MainTaskStartGuard
 from suites.coding.drivers.main.rules.main_file_write_rule import MainFileWriteRule
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
@@ -87,7 +88,7 @@ class CodingModule(Module):
     settings = CODING_SETTINGS
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.viewer", "journal.core.plugins"]
-    guards = [MainTaskStartGuard]
+    guards = [MainTaskStartGuard, MainReservationGuard]
     suites = [CodingSuite]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-plan-dispatch", "How the main agent gets a plan made: it dispatches a functional designer and then a planner; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),

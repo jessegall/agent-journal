@@ -73,7 +73,7 @@ class TaskQuery(Query[Task]):
                               f"delegated_to = ? AND state = ? AND {self.no_open_dependency().statement().sql}",
                               [agent_id, TaskState.OPEN], name="tasks.next_delegated")
 
-    def reserved_for_main(self, task_ids: Sequence[int]) -> Self:
+    def main_reserved(self, task_ids: Sequence[int]) -> Self:
         running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).column("id")
         return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents))
 

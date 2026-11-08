@@ -71,7 +71,7 @@ class KeptWorkerTasks:
     def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> AgentLine:
         tasks = AssignableTasks.open_first(self.read_tasks(task_ids))
         if worktree.state is WorktreeState.DELIVERED:
-            return self.queued_behind_delivery(worker, tasks, job, context)
+            return self.queued_after_delivery(worker, tasks, job, context)
         self.record_sources(worktree, tasks, replace(context, environment_id=worktree.environment_id))
         self.delegate(worker, tasks, context)
         if AssignableTasks.all_blocked(tasks):
@@ -80,7 +80,7 @@ class KeptWorkerTasks:
         first = tasks[0].id
         return self.nudger.send_text(worker.id, job or f"Task:{first} is yours next: journal task overview {first}", WORKER_JOB_SOURCE, context)
 
-    def queued_behind_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> AgentLine:
+    def queued_after_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> AgentLine:
         self.delegate(worker, tasks, context)
         queued = ", ".join(f"task:{task.id}" for task in tasks)
         return self.nudger.send_text(worker.id, job or f"{queued} are yours once your delivered work is merged: stay as you are until then", WAITING_TASKS_SOURCE, context)
