@@ -11,6 +11,7 @@ from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.agent_type_entry import AgentTypeEntry
 from dataclasses import asdict, dataclass, field, replace
 from functools import cached_property, lru_cache
+from core.base.registry.parsed_registries import ParsedRegistries
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
@@ -56,6 +57,7 @@ from core.base.viewer.layout_shape import loaded_layout, stored_layout
 LEGACY_PLACES = {"environment": "pane", "agent": "pane"}
 LEGACY_SHOWS = {"agent": "one-agent"}
 KEPT_REGISTRIES = 32
+PARSED_REGISTRIES = ParsedRegistries(KEPT_REGISTRIES)
 BUILT_READS = ("make", "show", "list")
 
 
@@ -125,9 +127,11 @@ class Registry:
         return cls.parsed(row["fingerprint"], row["entries"])
 
     @classmethod
-    @lru_cache(maxsize=KEPT_REGISTRIES)
     def parsed(cls, fingerprint: str, entries_text: str) -> "Registry":
-        LazyLoading.registry_built(hash((fingerprint, entries_text)))
+        return PARSED_REGISTRIES.kept((fingerprint, entries_text), lambda: cls.built(fingerprint, entries_text))
+
+    @classmethod
+    def built(cls, fingerprint: str, entries_text: str) -> "Registry":
         entries = json.loads(entries_text)
         return cls(
             fingerprint=fingerprint,
