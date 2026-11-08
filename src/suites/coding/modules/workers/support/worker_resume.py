@@ -108,7 +108,9 @@ class WorkerResume:
             return LaunchAnswer.SKIPPED
         environment = self.queries.query(Environment).find(worktree.environment_id)
         self.instruction_files.refresh(worktree)
-        current = self.cold.renewed(worker)
+        current = self.cold.renewed_if_silent(worker)
+        if current.session == worker.session:
+            self.cold.require_fresh(current)
         command = self.worker_command.resumed(worker, worktree, environment, job.text) if current.session == worker.session else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)
         answer = self.launcher.hand(current, environment, command)
         if answer is not LaunchAnswer.STARTED:

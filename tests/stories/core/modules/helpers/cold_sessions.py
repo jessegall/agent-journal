@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.helpers.support.cold_sessions import ColdSessions
+from core.modules.helpers.support.stale_session_error import StaleSessionError
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
@@ -166,3 +167,14 @@ def test_a_helper_past_the_context_limit_starts_a_new_session_when_it_is_sent_a_
     ended_helper.run_listeners()
     launcher.wait_for_requests()
     ended_helper.expect_rows(helper_agent(ended_helper).session != helper.session, "--resume" not in launcher.requests[0]["command"], detail=str(launcher.requests[0]))
+
+
+def test_a_session_whose_last_message_is_over_an_hour_old_may_not_be_resumed(ended_helper):
+    ended_helper.advance(timedelta(minutes=61))
+    with pytest.raises(StaleSessionError):
+        ended_helper.container.get(ColdSessions).require_fresh(helper_agent(ended_helper))
+
+
+def test_a_session_whose_last_message_is_under_an_hour_old_may_be_resumed(ended_helper):
+    ended_helper.advance(timedelta(minutes=59))
+    ended_helper.container.get(ColdSessions).require_fresh(helper_agent(ended_helper))
