@@ -1,4 +1,6 @@
+import pickle
 import sqlite3
+from dataclasses import dataclass
 
 from core.testing.template_adaptation import TemplateAdaptation
 
@@ -31,3 +33,19 @@ def test_the_builders_own_template_is_left_as_it_is(tmp_path):
     assert TemplateAdaptation(tmp_path / "project").built_in(template) == str(tmp_path / "project")
     rows = sqlite3.connect(template / "version-5.db").execute("SELECT path FROM skills WHERE id = 1").fetchall()
     assert rows == [(f"{tmp_path / 'project'}/src/core/skills/one/SKILL.md",)]
+
+
+def test_a_path_inside_the_pickled_story_state_is_replaced_too(tmp_path):
+    template = built_template(tmp_path, tmp_path / "project")
+    (template / "story-state.pickle").write_bytes(pickle.dumps(PathState(str(tmp_path / "project" / "bin"), ("keep", str(tmp_path / "project")))))
+    adapted = tmp_path / "adapted"
+    TemplateAdaptation(tmp_path / "worktree").adapted(template, adapted)
+    state = pickle.loads((adapted / "story-state.pickle").read_bytes())
+    assert state == PathState(str(tmp_path / "worktree" / "bin"), ("keep", str(tmp_path / "worktree")))
+
+
+
+@dataclass(frozen=True)
+class PathState:
+    folder: str
+    more: tuple[str, ...]
