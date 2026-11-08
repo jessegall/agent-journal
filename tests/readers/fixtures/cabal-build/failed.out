@@ -1,5 +1,5 @@
 Wrote tarball sdist to
-/home/farzeen/Projects/CHIP8_Haskell/dist-newstyle/sdist/CHIP8-Haskell-0.1.0.0.tar.gz
+/home/user/Projects/CHIP8_Haskell/dist-newstyle/sdist/CHIP8-Haskell-0.1.0.0.tar.gz
 Resolving dependencies...
 Build profile: -w ghc-8.6.5 -O1
 In order, the following will be built (use -v for more details):
@@ -14,7 +14,7 @@ Symlinking vty-demo
 
 Failed to build microlens-mtl-0.2.0.1.
 Build log (
-/home/farzeen/.cabal/logs/ghc-8.6.5/microlens-mtl-0.2.0.1-7f417dfce27f756c385800304bd46c1af81b501ab82fcb967eadb910dc2a13ca.log
+/home/user/.cabal/logs/ghc-8.6.5/microlens-mtl-0.2.0.1-7f417dfce27f756c385800304bd46c1af81b501ab82fcb967eadb910dc2a13ca.log
 ):
 Configuring library for microlens-mtl-0.2.0.1..
 Preprocessing library for microlens-mtl-0.2.0.1..
