@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from core.base.agent_role import AgentRole
 from core.base.database.statement import Statement
 from core.base.timestamp import Timestamp
 from core.modules.tasks.models.support.views import closed_task_counts_select
@@ -71,6 +72,10 @@ class TaskQuery(Query[Task]):
         return self.kept.read(self.table.name, lambda: tuple(self.filter(delegated_to=agent_id, state=TaskState.OPEN).matching(self.no_open_dependency()).all_rows()),
                               f"delegated_to = ? AND state = ? AND {self.no_open_dependency().statement().sql}",
                               [agent_id, TaskState.OPEN], name="tasks.next_delegated")
+
+    def reserved_for_main(self, task_ids: Sequence[int]) -> Self:
+        running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).column("id")
+        return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents))
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)

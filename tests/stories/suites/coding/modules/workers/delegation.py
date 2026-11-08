@@ -110,7 +110,7 @@ def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(n
 def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text(f"task assign 2 --to {story.agent.id}", "task:2", actor=story.agent)
-    story.expect_absent("task show 2", "delegated_to", actor=story.agent)
+    story.expect_text("task show 2", f"delegated_to: {story.agent.id}", actor=story.agent)
     story.expect_text(f"task assign 2 --to {worker.id}", "task:2", actor=story.agent)
     story.expect_text("task show 2", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
 
@@ -128,8 +128,7 @@ def test_a_task_a_worker_releases_leaves_its_queue_and_it_goes_on_with_its_next(
 def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text(f"task assign 1 --to {story.agent.id}", "task:1", actor=story.agent)
-    story.expect_text("task show 1", "state: open", "reason: assigned to agent", actor=story.agent)
-    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
+    story.expect_text("task show 1", "state: open", "reason: assigned to agent", f"delegated_to: {story.agent.id}", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "task:1 was taken from you: leave it", "your next task is task:2")

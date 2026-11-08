@@ -1,3 +1,4 @@
+TASK_HELPER_MATCH = "helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND (helper.role != 'main' OR helper.id = tasks.delegated_to)"
 USER_TASK_WAIT = "EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user')"
 AUTOMATIC_TASK_WAIT = "EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND (command != '' OR target != 'user'))"
 
@@ -43,7 +44,7 @@ TASK_INSPECTIONS_SELECT = (
     " FROM (SELECT id, reason, created_at FROM task_block_renewals WHERE task_id = tasks.id ORDER BY id) AS renewal) AS block_renewals,"
     " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
     " FROM tasks"
-    " LEFT JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
+    f" LEFT JOIN agents AS helper ON {TASK_HELPER_MATCH}"
 )
 
 TASK_BLOCK_REVIEWS_SELECT = (

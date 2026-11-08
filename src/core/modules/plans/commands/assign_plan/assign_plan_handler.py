@@ -20,8 +20,10 @@ ENDED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 
 
 class AssignPlanHandler(Handler[AssignPlan, Plan]):
-    """Keeps the agent a plan is assigned to on the plan and moves the plan's open tasks to it, taking them
-    from the agent that held them; a person or a main agent may assign a plan, a helper may not."""
+    """Keeps the agent a plan is assigned to on the plan and moves the open tasks of the plan or of one phase to it,
+    taking them from the agent that held them; with no agent named they are left free for the main agent to pick. A
+    phase changes only its own tasks, never who the plan is assigned to. A person or a main agent may assign a plan,
+    a helper may not."""
 
     command = AssignPlan
 
@@ -34,10 +36,12 @@ class AssignPlanHandler(Handler[AssignPlan, Plan]):
         if plan.state in ENDED_STATES:
             raise Refusal(f"plan {plan.id} is {plan.state.value}", "only a plan that is not finished is assigned")
         assignee = self.assignee(command)
-        for phase in self.outlines.outline(plan.id).phases:
+        for phase in self.outlines.outline(plan.id).chosen(command.phase_id):
             for task in phase.tasks:
                 if task.state == TaskState.OPEN.value:
-                    self.bus.run_with_context(AssignTask(task.id, assignee.id), context)
+                    self.bus.run_with_context(AssignTask(task.id, assignee.id, command.worker_id is not None), context)
+        if command.phase_id is not None:
+            return plan
         return self.repository.save_metadata(plan, PlanAssignee.with_agent(plan, assignee.id), context)
 
     def assignee(self, command: AssignPlan) -> Agent:

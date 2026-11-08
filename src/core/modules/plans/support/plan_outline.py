@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.refusal import Refusal
 from core.modules.plans.support.outline_phase import OutlinePhase
 from core.modules.plans.support.plan_agent import PlanAgent
 from core.modules.plans.support.plan_outline_json_record import PlanOutlineJsonRecord
@@ -11,6 +12,14 @@ class PlanOutline:
 
     plan_id: int
     phases: tuple[OutlinePhase, ...]
+
+    def chosen(self, phase_id: int | None) -> tuple[OutlinePhase, ...]:
+        if phase_id is None:
+            return self.phases
+        phases = tuple(phase for phase in self.phases if phase.id == phase_id)
+        if not phases:
+            raise Refusal(f"phase {phase_id} is not in plan {self.plan_id}", f"journal plan outline {self.plan_id} lists its phases")
+        return phases
 
     def agents(self) -> tuple[PlanAgent, ...]:
         return tuple(PlanAgent(task.helper_id, task.helper_name, task.id, task.title) for phase in self.phases for task in phase.tasks
