@@ -40,7 +40,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         if actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal(f"Upgrade the plugin {command.name}?", ("plugin", "upgrade", command.name, "--yes"))
+            raise UserApprovalRefusal(f"Upgrade the plugin {command.name}?", command=UpgradePlugin(command.name, True))
         plugin = self.plugins.find_name(command.name)
         source = self.staging.fetched(plugin.source)
         manifest = PluginManifest.read(source)

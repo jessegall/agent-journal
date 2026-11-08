@@ -15,7 +15,7 @@ MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeTyp
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
 AGENT_INTERRUPTED = NudgeDeclaration("drivers.interrupted", NudgeType.STEERING, "you were interrupted: go on with your work", turn_limited=False, wakes_agent=True)
-CONTINUED_SESSION = NudgeDeclaration("drivers.continued_session", NudgeType.STEERING, "you continue a previous session, agent {agent}: read where things stand before you act", turn_limited=False)
+CONTINUED_SESSION = NudgeDeclaration("drivers.continued_session", NudgeType.NOTICE, "you are back in a conversation that went on before, session {agent}: say so to the user in a line, in your voice; then carry on with what was in hand, or ask what to do", turn_limited=False)
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.NOTICE, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
 
 PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, 'the user paused you: only journal commands and reads run until you are resumed; answer in the chat', turn_limited=False)

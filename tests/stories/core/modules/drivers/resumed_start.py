@@ -25,7 +25,7 @@ def test_a_resumed_session_gets_no_start_lines_but_the_one_saying_it_continues(n
 
 
 def continued_line(story) -> str:
-    return f"you continue a previous session, agent {story.agent.id}: read where things stand before you act"
+    return f"you are back in a conversation that went on before, session {story.agent.id}: say so to the user in a line, in your voice; then carry on with what was in hand, or ask what to do"
 
 
 def test_a_main_agent_that_was_working_is_idle_when_started_again_and_told_once_that_it_continues(new_story):

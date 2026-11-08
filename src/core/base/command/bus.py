@@ -28,9 +28,9 @@ class Bus:
         self.container, self.database, self.registry, self.clock, self.deadline, self.timing, self.scopes, self.policy = container, database, registry, clock, deadline, timing, scopes, policy
 
     def run(self, command: Command[R], actor: Actor, skipped_guards: frozenset[str] = frozenset(), cause_id: int | None = None,
-            environment_id: int | None = None, plugin_script: str = "") -> R:
+            environment_id: int | None = None, plugin_script: str = "", approval_id: int | None = None) -> R:
         if self.database.nested and (self.database.has_transaction or not command.lock):
-            return self.dispatch(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id, outside_runs=OutsideRuns(True, plugin_script, SINGLE_RUN_REASON)))
+            return self.dispatch(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id, outside_runs=OutsideRuns(True, plugin_script, SINGLE_RUN_REASON), approval_id=approval_id))
         if self.database.has_transaction:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
@@ -39,12 +39,12 @@ class Bus:
             runs = self.create_deferred_runs(command, handler, plugin_script)
             if not command.lock:
                 with self.database.savepoint(command.label()):
-                    return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs)), command)
+                    return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs, approval_id=approval_id)), command)
             while True:
                 try:
                     with self.database.transaction(), self.database.savepoint(command.label()):
                         self.timing.stamp("write_started")
-                        context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs.next_round())
+                        context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs.next_round(), approval_id=approval_id)
                         command_output = self.result(handler.handle(command, context), command)
                         self.timing.stamp("handled")
                         runs.refuse_unfinished_work()
@@ -78,7 +78,7 @@ class Bus:
     def dispatch(self, command: Command[R], context: Context) -> R:
         if not self.database.has_transaction and (command.lock or not self.database.nested):
             return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id,
-                            environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script)
+                            environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script, approval_id=context.approval_id)
         handler = self.handler(command)
         if type(handler).prepare is not Handler.prepare and not handler.caller_prepares:
             if self.database.has_transaction:

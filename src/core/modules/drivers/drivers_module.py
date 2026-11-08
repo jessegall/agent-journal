@@ -108,6 +108,7 @@ from core.modules.drivers.migrations.m002_hook_call_updated_input import HookCal
 from core.modules.drivers.migrations.m003_hook_call_hook_index import HookCallHookIndexMigration
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.listeners.typed_line_listener import TypedLineListener
+from core.modules.drivers.guards.agent_resume_guard import AgentResumeGuard
 from core.modules.drivers.commands.type_waiting_lines.type_waiting_lines_handler import TypeWaitingLinesHandler
 from core.modules.drivers.commands.wake_interrupted_agent.wake_interrupted_agent_handler import WakeInterruptedAgentHandler
 from core.modules.drivers.ticks.interrupted_agent_wake import InterruptedAgentWake
@@ -181,7 +182,7 @@ class DriversModule(Module):
     handlers = [WakeInterruptedAgentHandler, TypeWaitingLinesHandler, RecordReminderPassesHandler, RecordAgentNoticeHandler, RecordAgentNudgeHandler, SkipRefusalHandler, UseRefusalSkipHandler, RestoreRefusalSkipHandler, SendJournalStartedLineHandler, PruneTempFoldersHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, RecordBypassLineHandler, RecordMissingPromptHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [HookCallStopsSubcommand, EnvironmentMenuSubcommand, SkipRefusalSubcommand, RestoreRefusalSkipSubcommand, SkipAgentBlockSubcommand,PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
-    guards = [DriverSettingGuard]
+    guards = [AgentResumeGuard, DriverSettingGuard]
     listeners = [JournalStartedListener, ManageHooksListener, AgentBlockSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, StopLineTypingListener, ClaimedLineReleaseListener, NewDriverLinesListener]
     overlays = [PausedOverlay]
     marks = [*BYPASS_MARKS, *DISPATCH_MARKS]

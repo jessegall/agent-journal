@@ -1,9 +1,11 @@
-import { fileURLToPath } from "node:url";
-import { windowBuild } from "../../../../viewer/kit/build.js";
+import {fileURLToPath} from "node:url";
+import {windowBuild} from "../../../../viewer/kit/build.js";
 
 const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export default windowBuild({
-  entries: { "approval-dock": here("./src/approval-dock.js") },
-  outDir: here("./dist"),
+    entries: {
+        standing: here("./src/standing.js"),
+    },
+    outDir: here("./dist"),
 });

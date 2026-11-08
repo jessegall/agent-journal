@@ -74,6 +74,14 @@ def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_s
     story.expect_rows(requests(story)[2].state is ApprovalState.OPEN, len(requests(story)) == 3)
 
 
+def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_story):
+    story = new_story(NOTES, fixture=ResumeAlwaysSame)
+    story.expect_text("standing-approval list", "ResumeAgent", actor=story.user)
+    ask_for_resume(story)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment main", f"Standing yes {standing_yeses(story)[0].id} accepted approval {requests(story)[1].id}", actor=story.user)
+
+
 def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever_follows(new_story):
     story = new_story(NOTES, fixture=UserJoined)
     story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
