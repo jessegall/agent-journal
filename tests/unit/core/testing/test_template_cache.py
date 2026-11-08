@@ -44,6 +44,8 @@ def test_a_code_change_leaves_a_folder_a_running_suite_uses(tmp_path, monkeypatc
 def test_a_code_change_removes_a_folder_unused_for_a_day(tmp_path, monkeypatch):
     cache, sample = sample_cache(tmp_path, monkeypatch)
     unused = cache.folder()
+    for lease in unused.glob(".in-use-*"):
+        lease.unlink()
     expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
     os.utime(unused, (expired_at, expired_at))
 
@@ -109,3 +111,27 @@ def test_the_sources_are_read_only_once_in_a_process(tmp_path, monkeypatch):
     sample.write_text("class Sample: changed = True\n")
     assert cache.folder() == initial
     assert reads == [sample]
+
+
+def test_a_folder_a_running_process_holds_is_never_removed_by_age_or_size(tmp_path):
+    cache = TemplateCache(tmp_path / "cache", limit_bytes=1)
+    held = cache.root / "held"
+    held.mkdir(parents=True)
+    (held / "data").write_bytes(b"x" * 500)
+    (held / f".in-use-{os.getpid()}").touch()
+    expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
+    os.utime(held, (expired_at, expired_at))
+    cache.remove_old()
+    assert held.is_dir()
+
+
+def test_a_lease_of_a_process_that_is_gone_holds_nothing(tmp_path):
+    cache = TemplateCache(tmp_path / "cache", limit_bytes=1)
+    left = cache.root / "left"
+    left.mkdir(parents=True)
+    (left / "data").write_bytes(b"x" * 500)
+    (left / ".in-use-999999").touch()
+    expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
+    os.utime(left, (expired_at, expired_at))
+    cache.remove_old()
+    assert not left.exists()
