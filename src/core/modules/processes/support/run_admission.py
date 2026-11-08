@@ -1,5 +1,6 @@
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_counts import RunCounts
+from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
 from core.base.agent_role import AgentRole
 from core.base.timestamp import Timestamp
@@ -20,6 +21,8 @@ class RunAdmission:
         self.suites, self.settings, self.visibility = suites, settings, visibility
 
     def needs_slot(self, process: Process, agent: Agent) -> bool:
+        if process.plugin:
+            return process.category is not CommandCategory.BACKGROUND_JOB
         return process.is_queue_run and agent.role in self.suites.agent_policy().queued_run_roles
 
     def uses_slot(self, process: Process) -> bool:

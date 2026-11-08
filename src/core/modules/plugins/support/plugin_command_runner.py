@@ -40,7 +40,7 @@ class PluginCommandRunner:
             raise Refusal(f"the checkout of agent {agent_id} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
         if not self.runner.is_installed():
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
-        start = StartProcess.single_part(agent_id, line, str(checkout.root), CommandCategory.UNKNOWN, RUN_LIMIT_SECONDS)
+        start = StartProcess.single_part(agent_id, line, str(checkout.root), CommandCategory.UNKNOWN, RUN_LIMIT_SECONDS, plugin)
         process = self.bus.run(start, context.actor, environment_id=self.queries.query(Agent).find(agent_id).environment_id)
         runner_line = RunnerLine.build(self.runner.path, process.id, self.foreground_run(checkout, is_readonly), line, "")
         running = subprocess.Popen(["sh", "-c", runner_line], cwd=checkout.root, env={name: value for name, value in os.environ.items() if name != SESSION_VARIABLE}, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
@@ -58,4 +58,4 @@ class PluginCommandRunner:
     def foreground_run(self, checkout: Checkout, is_readonly: bool) -> ForegroundRun:
         folder: Path | None = checkout.root if checkout.checkout_type is CheckoutType.WORKTREE and not is_readonly else None
         reads = self.reads.folders(checkout.project_root) if checkout.checkout_type is CheckoutType.WORKTREE else ()
-        return ForegroundRun(RUN_LIMIT_SECONDS, False, shell_sandbox=is_readonly or folder is not None, folder=folder, read_folders=reads)
+        return ForegroundRun(RUN_LIMIT_SECONDS, False, queued=True, queue_wait_seconds=RUN_LIMIT_SECONDS, shell_sandbox=is_readonly or folder is not None, folder=folder, read_folders=reads)
