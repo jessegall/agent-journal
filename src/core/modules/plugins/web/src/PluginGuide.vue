@@ -95,7 +95,7 @@ const CALLS = [
 </script>
 
 <template>
-    <Dialog title="Create a plugin" @close="emit('close')">
+    <Dialog padded title="Create a plugin" @close="emit('close')">
         <div class="plugin-guide" data-plugin-guide>
             <h3>Manifest</h3>
             <p>A plugin is a folder or a repository with a <code>journal-plugin.json</code>. The journal reads it, shows you everything it would run, and copies it when you install it, using the latest version tag for a repository.</p>

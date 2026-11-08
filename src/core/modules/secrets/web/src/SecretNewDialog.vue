@@ -29,7 +29,7 @@ async function make() {
 </script>
 
 <template>
-    <Dialog title="New secret" @close="emit('close')">
+    <Dialog padded title="New secret" @close="emit('close')">
         <div class="sections">
             <div class="choice">
                 <span class="question">What type of secret is it?</span>

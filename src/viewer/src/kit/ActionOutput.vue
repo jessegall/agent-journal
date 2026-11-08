@@ -6,7 +6,7 @@ const emit = defineEmits(["close"]);
 </script>
 
 <template>
-    <Dialog title="Action completed" fits @close="emit('close')">
+    <Dialog padded title="Action completed" fits @close="emit('close')">
         <pre class="action-output" data-action-output>{{ text }}</pre>
     </Dialog>
 </template>

@@ -11,7 +11,8 @@ from core.modules.agents.support.agent_people import AgentPeople
 
 
 class AgentPeopleSubcommand(ReadSubcommand[AgentPeople]):
-    """`journal agent people [--creator <actor>] [--owner <agent>]`: who made a row and which agent it belongs to, in one read."""
+    """`journal agent people [--creator <actor>] [--owner <agent>]`: who made a row and which agent it belongs
+    to, in one read."""
 
     cli_name = "agent"
     name = "people"

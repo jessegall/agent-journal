@@ -109,12 +109,10 @@ class Module:
 
     @classmethod
     def declared_helper_types(cls) -> list[HelperType]:
-        """The funnel of helper types: those the module registers and those of each of its suites, whole."""
         return [*cls.helper_types, *(declaration for suite in cls.suites for declaration in suite.helper_types)]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:
-        """The buttons of the module and the actions of its inspectors, which register as buttons on the row slot of their model."""
         return [*cls.buttons, *(action for inspector in cls.inspectors for action in inspector.slotted_actions())]
 
     @classmethod

@@ -21,9 +21,9 @@ TYPE_CHECKS: Mapping[str, Callable[[object], bool]] = {
 
 @dataclass(frozen=True)
 class JsonSchema:
-    """A JSON schema, checked against a document with the keywords a plugin's config schema uses: a keyword it does
-    not know refuses the schema, so a rule is never skipped without saying so. Each problem names the place in the
-    document as a JSON pointer."""
+    """A JSON schema, checked against a document with the keywords a plugin's config schema uses: a keyword it
+    does not know refuses the schema, so a rule is never skipped without saying so. Each problem names the
+    place in the document as a JSON pointer."""
 
     document: Mapping[str, object]
 

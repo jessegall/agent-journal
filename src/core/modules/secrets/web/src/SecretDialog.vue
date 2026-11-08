@@ -71,7 +71,7 @@ async function save() {
 </script>
 
 <template>
-    <Dialog :title="row.title" @close="emit('close')">
+    <Dialog padded :title="row.title" @close="emit('close')">
         <div class="sections">
             <template v-if="row.waiting">
                 <p class="lead">The agent requested these credentials. Add them below, then save.</p>

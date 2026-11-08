@@ -17,7 +17,7 @@ async function save() {
 </script>
 
 <template>
-    <Dialog title="Edit the document" wide @close="emit('close')">
+    <Dialog padded title="Edit the document" wide @close="emit('close')">
         <form class="edit-form" data-text-form @submit.prevent="save">
             <label><span>Abstract</span><input v-model="edited.abstract"></label>
             <label><span>Text</span><textarea v-model="edited.body" rows="20" /></label>

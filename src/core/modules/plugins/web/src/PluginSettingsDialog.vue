@@ -14,7 +14,7 @@ const turnAll = (group, on) => group.flags.filter((setting) => isOn(setting) !==
 </script>
 
 <template>
-    <Dialog wide :title="plugin.title" @close="emit('close')">
+    <Dialog padded wide :title="plugin.title" @close="emit('close')">
         <div class="plugin-settings" data-plugin-setting-list>
             <div class="plugin-settings-head">
                 <span class="plugin-settings-version">{{ plugin.version }}</span>

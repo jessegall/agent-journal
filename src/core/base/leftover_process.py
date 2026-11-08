@@ -11,10 +11,10 @@ POLL_SECONDS = 0.05
 
 
 class LeftoverProcess:
-    """A process a killed journal left running, found by its saved pid and stopped with its group. Its command line
-    is checked once, by the program it runs (the name of its first or second word, as for an interpreter), never by
-    a word anywhere in it, since a path such as /tmp/claude-501 holds a program's name; after the signal it is
-    watched by its pid alone, so the wait starts no process per poll."""
+    """A process a killed journal left running, found by its saved pid and stopped with its group. Its command
+    line is checked once, by the program it runs (the name of its first or second word, as for an
+    interpreter), never by a word anywhere in it, since a path such as /tmp/claude-501 holds a program's
+    name; after the signal it is watched by its pid alone, so the wait starts no process per poll."""
 
     @classmethod
     def stop(cls, pid: int, program: str) -> bool:

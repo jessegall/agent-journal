@@ -9,9 +9,9 @@ from core.base.viewer.window_place import WindowPlace
 
 
 class InspectorCheck:
-    """Checks the inspectors the modules declare before a sync writes anything: each model has one, the parts it draws
-    are section windows of its own module or one it depends on, it reads a read subcommand, it follows only events of the
-    model it reads, and its actions sit on the row of its own model."""
+    """Checks the inspectors the modules declare before a sync writes anything: each model has one, the parts
+    it draws are section windows of its own module or one it depends on, it reads a read subcommand, it
+    follows only events of the model it reads, and its actions sit on the row of its own model."""
 
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
         reads, runs = WindowCheck.lines(modules)

@@ -9,8 +9,9 @@ from core.base.change.event_pattern import EventPattern
 @dataclass(frozen=True)
 class SkillEntry:
     """A registered skill: its folder and the module that declares it, its description, keywords, command
-    nouns and event patterns, the digest of its text, the file the text is in, and whether the journal ships
-    its module, the agent types it is for, none meaning every type, and the agent groups that have it when a listing asked."""
+    nouns and event patterns, the digest of its text, the file the text is in, and whether the journal
+    ships its module, the agent types it is for, none meaning every type, and the agent groups that have it
+    when a listing asked."""
 
     folder: str
     module: str

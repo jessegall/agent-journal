@@ -14,8 +14,8 @@ IMPORT_LINE = re.compile(r"^@(\S+\.md)\s*$", re.MULTILINE)
 
 class InstructionImports:
     """The CLAUDE.md and AGENTS.md files of a project and the files they import with an @ line, which an agent
-    program reads into every context: an import named twice, or two files that import each other, puts the same
-    text into the context more than once."""
+    program reads into every context: an import named twice, or two files that import each other, puts the
+    same text into the context more than once."""
 
     def __init__(self, root: Path) -> None:
         self.root = root

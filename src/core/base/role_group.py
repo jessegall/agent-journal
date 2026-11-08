@@ -5,9 +5,9 @@ from core.base.helper_type_book import HelperTypeBook
 
 
 class RoleGroup(StrEnum):
-    """A group of agent roles whose members a suite declares, or, for read-only helpers, whose members the registered
-    helper types say by their access. A rule that names AgentRole.HELPER in its roles covers every helper, workers too;
-    one that holds only for read-only helpers says so with READ_ONLY_HELPERS."""
+    """A group of agent roles whose members a suite declares, or, for read-only helpers, whose members the
+    registered helper types say by their access. A rule that names AgentRole.HELPER in its roles covers
+    every helper, workers too; one that holds only for read-only helpers says so with READ_ONLY_HELPERS."""
 
     ANY = "any"
     TASK = "task"

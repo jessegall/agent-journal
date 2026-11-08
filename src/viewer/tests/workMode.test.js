@@ -142,12 +142,12 @@ test("the context limit action is a choice of Compact or Clear, not a number", a
     expect(document.querySelector(`.step[data-field="${LIMIT_ACTION}"]`)).toBeNull();
 });
 
-test("the agent settings dialog is flush, so its tabs and footer reach its edges and only its settings scroll", async () => {
+test("the agent settings dialog has no padding, so its tabs and footer reach its edges and only its settings scroll", async () => {
     const {element} = await mount();
     element.querySelector("[data-open-agent-settings]").click();
     await settled();
     const body = document.querySelector("[data-agent-settings]").closest(".dialog-body");
-    expect(body.classList.contains("flush")).toBe(true);
+    expect(body.classList.contains("padded")).toBe(false);
     expect(body.querySelector(".settings-bar")).not.toBeNull();
 });
 

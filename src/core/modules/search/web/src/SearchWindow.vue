@@ -78,7 +78,7 @@ function openHit(hit) {
             <template v-else><p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p></template>
         </template>
         <template v-if="shown">
-            <Dialog :title="`${shown.cli_name} ${shown.id}`" small data-hit-dialog @close="shown = null">
+            <Dialog padded :title="`${shown.cli_name} ${shown.id}`" small data-hit-dialog @close="shown = null">
                 <p class="search-dialog-text">{{ shown.excerpt }}</p>
             </Dialog>
         </template>
