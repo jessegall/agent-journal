@@ -1,6 +1,5 @@
 <script setup>
-// one tooltip look for the dot, the task and the count of an agent: it opens on hover or focus under the element it belongs to,
-// which the parent positions
+// the one tooltip look: it opens on hover or focus under the element it belongs to, which the parent positions
 defineProps({as: {type: String, default: "span"}, place: {type: String, default: "left"}});
 </script>
 

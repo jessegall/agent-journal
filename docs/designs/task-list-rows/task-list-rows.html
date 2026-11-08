@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task list rows: agent-journal viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* colours copied from src/viewer/src/tokens.css and light.css */
+.t-dark{color-scheme:dark;--bg:#131416;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--progress:#5b8def;--open:#8b8e96;--seq:#a78bfa;--blocking:#d9a441;--warn:#d8a94a;--danger:#df8b7e;--danger-soft:#d98c8c;--tip-bg:#212329;--tip-edge:#3a3d44;--tip-shadow:0 8px 22px rgba(0,0,0,.5)}
+.t-light{color-scheme:light;--bg:#ffffff;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--progress:#2f6cc9;--open:#8b8e96;--seq:#7c5cc4;--blocking:#a4731a;--warn:#a4731a;--danger:#bf4f3d;--danger-soft:#c4675a;--tip-bg:#ffffff;--tip-edge:#d9dbe0;--tip-shadow:0 6px 20px rgba(20,22,30,.13)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#e7e6e2;color:#1a1b1f;font:14px/1.5 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif}
+a{color:#4a50b5}a:hover{color:#1a1b1f}
+.doc{max-width:860px;padding:36px 40px 8px}
+.doc h1{margin:0 0 6px;font-size:24px;font-weight:600}
+.doc p{margin:0 0 10px;text-wrap:pretty}
+.turn{padding:28px 40px 32px;border-top:1px solid rgba(0,0,0,.09)}
+.turn>h2{margin:0 0 4px;font-size:16px;font-weight:600}
+.turn>p{margin:0 0 18px;max-width:800px;color:#474a52;text-wrap:pretty}
+.opts{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.opt{display:flex;flex-direction:column;gap:8px;max-width:100%;min-width:0}
+.opt-label{font-size:12.5px;color:#474a52}
+.pane{position:relative;width:660px;padding:0 12px 14px;border:1px solid rgba(0,0,0,.2);border-radius:10px;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-ligatures:none}
+.pane.narrow{width:400px}
+:where(.pane,.legend) button{font:inherit;color:inherit;cursor:pointer}
+.search{display:flex;align-items:center;height:30px;margin:10px 0 4px;padding:0 9px;border:1px solid var(--border-2);border-radius:7px;color:var(--text-4);font-size:12.5px}
+.group{margin-top:12px}
+.group-head{display:flex;gap:5px;align-items:center;margin:0 0 4px;padding:0 8px;color:var(--text-3);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.group-head em{color:var(--text-4);font-style:normal;font-weight:400}
+.caret{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+/* a row: status, number, title with its tags, and at the right one column for each icon */
+.task{position:relative;display:flex;gap:9px;align-items:center;min-height:34px;padding:5px 8px;border-radius:8px;cursor:pointer}
+.task:hover{background:var(--hover)}
+.id{flex:none;color:var(--text-4);font-size:12px;font-variant-numeric:tabular-nums}
+.what{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:3px 8px;align-items:baseline}
+.title{flex:0 1 auto;min-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tags{flex:none;display:flex;gap:4px}
+.tag{padding:0 6px;border:1px solid var(--border-2);border-radius:99px;color:var(--text-3);font-size:11px;line-height:16px}
+.reason{flex:none;max-width:34%;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.icons{flex:none;display:grid;grid-template-columns:22px 22px 22px;gap:2px;align-items:center}
+.cell{position:relative;display:grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:6px;background:none;color:var(--text-3);cursor:pointer}
+.cell:hover{background:var(--sel)}
+.cell:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.cell.empty{pointer-events:none}
+/* the status ring, as src/viewer/src/tasks/TaskStatusIcon.vue draws it */
+.ring{--tone:var(--open);display:block;flex:none}
+.ring.started{--tone:var(--progress)}
+.ring.testing{--tone:var(--seq)}
+.ring.blocked{--tone:var(--blocking)}
+.ring .stroke{fill:none;stroke:var(--tone);stroke-width:1.5}
+.ring .fill{fill:var(--tone)}
+.status{position:relative;display:inline-flex;flex:none}
+.warn{flex:none;color:var(--danger)}
+/* the complexity icon: five rising bars, as many filled as the score */
+.cx rect{fill:var(--border-3)}
+.cx rect.on{fill:var(--text-3)}
+.cx.hard rect.on{fill:var(--warn)}
+/* the priority icon, as src/viewer/src/kit/PriorityIcon.vue draws it */
+.prio{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;color:var(--text-4)}
+.prio.high{color:var(--accent)}
+.prio.hot{color:var(--danger-soft)}
+/* the agent: its initials in a small circle, solid when it holds the task, dashed when the task waits for it */
+.agent{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--chip);color:var(--text-2);font-size:8.5px;font-weight:600;letter-spacing:.02em;box-shadow:inset 0 0 0 1.25px var(--progress)}
+.agent.queued{box-shadow:none;outline:1.25px dashed var(--border-3);outline-offset:-1.25px;color:var(--text-3)}
+/* one tooltip look */
+.tip{position:absolute;z-index:6;top:26px;right:-4px;display:none;width:max-content;max-width:260px;padding:7px 10px;border:1px solid var(--tip-edge);border-radius:8px;background:var(--tip-bg);box-shadow:var(--tip-shadow);color:var(--text);font-size:12px;font-weight:400;line-height:1.45;text-align:left;white-space:normal;pointer-events:none}
+.tip b{display:block;font-weight:500}
+.tip span{display:block;color:var(--text-3)}
+.status .tip{left:-6px;right:auto;top:22px}
+.has-tip:hover>.tip,.has-tip:focus-visible>.tip,.has-tip.show>.tip{display:block}
+/* the priority dropdown, opened by hovering the icon, or by a click or Enter */
+.menu{position:absolute;z-index:7;top:24px;right:-4px;display:none;width:178px;padding:4px;border:1px solid var(--border-3);border-radius:9px;background:var(--sel);box-shadow:var(--tip-shadow);cursor:default}
+.menu::before{content:"";position:absolute;top:-8px;right:0;left:0;height:8px}
+.prio-cell:hover>.menu,.prio-cell:focus-within>.menu,.prio-cell.show>.menu{display:block}
+.menu-head{display:block;padding:4px 8px 3px;color:var(--text-3);font-size:11px;font-weight:600}
+.menu-item{display:flex;gap:8px;align-items:center;width:100%;padding:5px 8px;border:0;border-radius:6px;background:none;color:var(--text);font-size:12.5px;text-align:left}
+.menu-item:hover{background:var(--hover)}
+.menu-item .check{margin-left:auto;width:12px;height:12px;fill:none;stroke:var(--accent-text);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.menu-item.on{font-weight:500}
+.narrow .title{flex:1 1 100%}
+/* the key */
+.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:780px;padding:16px;border:1px solid rgba(0,0,0,.2);border-radius:10px;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",system-ui,sans-serif}
+.key{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border);border-radius:8px}
+.key h3{margin:0 0 2px;font-size:12.5px;font-weight:600}
+.key-row{display:flex;gap:10px;align-items:center;font-size:12px;color:var(--text-2)}
+.key-row span{color:var(--text-3)}
+.key-row .cell{flex:none;cursor:default}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>Task list rows</h1>
+  <p>The rows of the Tasks window, cleaned up. The status ring, the number, the title and the reason a task waits stay as they are. Three things move into icons in fixed columns at the right, so they line up from row to row: the agent on the task, its complexity and its priority. The tags, still written in full, follow the title, so a row reads as the task and what it is about, then its facts.</p>
+  <p>Every icon has a tooltip saying what it means. Hovering the priority icon opens a small menu to change it; a click or Enter opens it too, for a keyboard or a touch screen. Hover anything in the frames. All data is invented.</p>
+</div>
+
+<section class="turn" data-screen-label="Rows">
+  <h2>The rows</h2>
+  <p>The agent is its initials in a small circle: a solid ring when the agent holds the task, a dashed one when the task waits for it. Complexity is five rising bars, as many filled as its score, turning amber at 4 and 5. Priority keeps its chevrons. A task with no complexity or no agent leaves that column empty, so the columns never shift.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark, the priority menu open</div><div data-frame='{"theme":"t-dark","show":"prio:7347"}'></div></div>
+    <div class="opt"><div class="opt-label">Light, the complexity tooltip</div><div data-frame='{"theme":"t-light","show":"cx:7360"}'></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Narrow">
+  <h2>A narrow window</h2>
+  <p>When the title and its tags no longer fit on one line, the tags move under the title. The icon columns stay where they are.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark, the tooltip of an agent the task waits for</div><div data-frame='{"theme":"t-dark","narrow":true,"show":"agent:7372"}'></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Key">
+  <h2>What the icons mean</h2>
+  <p>The words in the key are the words of the tooltips.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark</div><div class="legend t-dark" data-legend></div></div>
+    <div class="opt"><div class="opt-label">Light</div><div class="legend t-light" data-legend></div></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+/* the words the journal-tasks skill gives each score, from src/viewer/src/tasks/TaskFacts.vue */
+const MEANINGS = ["A line or two, nothing to decide", "One file, the way is clear", "A few files in one module", "Several modules, or a choice to make", "Core paths, migrations, concurrency, or a design"];
+const PRIORITIES = [[100, "Low"], [200, "Normal"], [300, "High"], [400, "Critical"]];
+const STATES = {open: "Open", started: "Started", testing: "Being tested", blocked: "Blocked"};
+
+const GROUPS = [
+  ["Started", [
+    {id: 7347, state: "started", title: "A blocked task shows what waits on what", tags: ["viewer"], cx: 3, agent: "Joan Clarke", held: true, prio: 300},
+    {id: 7351, state: "testing", title: "Move the sidebar's page list into one component", tags: ["agents"], cx: 4, agent: "Florence Nightingale", held: true, prio: 200},
+    {id: 7360, state: "started", title: "The story fixture starts each journal with a fresh registry", tags: ["stories", "testing"], cx: 4, agent: "Grace Hopper", held: true, prio: 400}
+  ]],
+  ["Open", [
+    {id: 7372, state: "open", title: "Agent cards show the status dot in the corner", tags: ["viewer", "agents"], cx: 2, agent: "Joan Clarke", held: false, prio: 200},
+    {id: 7375, state: "open", title: "Task rows show complexity as an icon", tags: [], cx: 1, agent: "", prio: 100},
+    {id: 7380, state: "open", title: "The merger reads the proofs before it merges", tags: ["workers"], cx: 5, agent: "", prio: 300},
+    {id: 7381, state: "open", title: "A note on how a plan names its phases", tags: [], cx: 0, agent: "", prio: 200}
+  ]],
+  ["Blocked", [
+    {id: 7340, state: "blocked", title: "Move the old task tags to their own table", tags: ["migration"], cx: 5, agent: "", prio: 200, reason: "Waits on task 7333", person: true}
+  ]]
+];
+
+const initials = (name) => name.split(/\s+/).map((word) => word[0]).slice(0, 2).join("").toUpperCase();
+const level = (prio) => PRIORITIES.filter(([key]) => key <= prio).pop()[0];
+
+function ring(state) {
+  const shapes = {
+    open: '<circle cx="8" cy="8" r="5.6" class="stroke"/>',
+    started: '<circle cx="8" cy="8" r="5.6" class="stroke"/><path d="M8 4.2 A3.8 3.8 0 0 1 8 11.8 Z" class="fill"/>',
+    testing: '<circle cx="8" cy="8" r="5.6" class="stroke"/><path d="M8 4.2 A3.8 3.8 0 0 1 8 11.8 Z" class="fill"/>',
+    blocked: '<circle cx="6.3" cy="8" r="4.7" class="stroke"/><rect x="10.8" y="7.3" width="3.2" height="1.4" rx="0.7" class="fill"/><circle cx="14.5" cy="8" r="1.25" class="fill"/>'
+  };
+  return `<svg class="ring ${state}" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">${shapes[state]}</svg>`;
+}
+function complexityIcon(score) {
+  const bars = [0, 1, 2, 3, 4].map((place) => {
+    const height = 3 + place * 2;
+    return `<rect x="${1.6 + place * 2.7}" y="${13 - height}" width="1.8" height="${height}" rx="0.6" class="${place < score ? "on" : ""}"/>`;
+  }).join("");
+  return `<svg class="cx ${score >= 4 ? "hard" : ""}" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">${bars}</svg>`;
+}
+function priorityIcon(prio) {
+  const named = level(prio);
+  const bars = named < 200 ? [1, 0.25, 0.25] : named === 200 ? [1, 1, 0.25] : [1, 1, 1];
+  return `<svg class="prio ${named >= 400 ? "hot" : named >= 300 ? "high" : ""}" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 13l3.5-2.25L11.5 13" style="opacity:${bars[0]}"/><path d="M4.5 9.25L8 7l3.5 2.25" style="opacity:${bars[1]}"/><path d="M4.5 5.5L8 3.25l3.5 2.25" style="opacity:${bars[2]}"/></svg>`;
+}
+const warnIcon = '<svg class="warn" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.5 14 13H2z"/><path d="M8 6.5v3M8 11.2v.1"/></svg>';
+const tip = (bold, line) => `<span class="tip" role="tooltip"><b>${esc(bold)}</b>${line ? `<span>${esc(line)}</span>` : ""}</span>`;
+
+function agentCell(task, shown) {
+  if (!task.agent) return '<span class="cell empty"></span>';
+  const words = task.held ? [`${task.agent} works on it`, "Open the agent"] : [`Waiting for ${task.agent}`, "It takes this task after the one it is on"];
+  return `<button type="button" class="cell has-tip ${shown ? "show" : ""}" aria-label="${esc(words[0])}"><span class="agent ${task.held ? "" : "queued"}">${initials(task.agent)}</span>${tip(words[0], words[1])}</button>`;
+}
+function complexityCell(task, shown) {
+  if (!task.cx) return '<span class="cell empty"></span>';
+  const words = `Complexity ${task.cx} of 5`;
+  return `<span class="cell has-tip ${shown ? "show" : ""}" tabindex="0" role="img" aria-label="${words}: ${MEANINGS[task.cx - 1]}">${complexityIcon(task.cx)}${tip(words, MEANINGS[task.cx - 1])}</span>`;
+}
+/* a span, not a button, because the menu inside it holds buttons of its own */
+function priorityCell(task, shown) {
+  const named = level(task.prio);
+  const items = PRIORITIES.slice().reverse().map(([key, word]) => `<button type="button" class="menu-item ${key === named ? "on" : ""}" role="menuitemradio" aria-checked="${key === named}" data-prio="${task.id}:${key}">${priorityIcon(key)}${word}${key === named ? '<svg class="check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.8 8.3l2.6 2.6 5.8-6.1"/></svg>' : ""}</button>`).join("");
+  const label = PRIORITIES.find(([key]) => key === named)[1];
+  return `<span class="cell prio-cell ${shown ? "show" : ""}" tabindex="0" role="button" aria-haspopup="menu" aria-label="Priority: ${label}. Change it">${priorityIcon(task.prio)}<span class="menu" role="menu"><span class="menu-head">Priority: ${label}</span>${items}</span></span>`;
+}
+
+function rowHtml(task, show) {
+  const status = `<span class="status has-tip ${show === `status:${task.id}` ? "show" : ""}" tabindex="0" role="img" aria-label="${STATES[task.state]}">${ring(task.state)}${tip(STATES[task.state])}</span>`;
+  const person = task.person ? `<span class="status has-tip" tabindex="0" role="img" aria-label="Does not open by itself: needs a person">${warnIcon}${tip("Does not open by itself", "It needs a person")}</span>` : "";
+  const tags = task.tags.length ? `<span class="tags">${task.tags.map((word) => `<span class="tag">${esc(word)}</span>`).join("")}</span>` : "";
+  const reason = task.reason ? `<span class="reason">${esc(task.reason)}</span>` : "";
+  return `<div class="task" role="button" tabindex="0">${status}${person}<span class="id">${task.id}</span><span class="what"><span class="title">${esc(task.title)}</span>${tags}</span>${reason}<span class="icons">${agentCell(task, show === `agent:${task.id}`)}${complexityCell(task, show === `cx:${task.id}`)}${priorityCell(task, show === `prio:${task.id}`)}</span></div>`;
+}
+
+function paneHtml(c) {
+  const caret = '<svg class="caret" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 6.5l3 3 3-3"/></svg>';
+  return `<div class="search">Search tasks</div>${GROUPS.map(([name, tasks]) => `<section class="group"><h3 class="group-head">${caret}${name} <em>${tasks.length}</em></h3>${tasks.map((task) => rowHtml(task, c.show || "")).join("")}</section>`).join("")}`;
+}
+
+function mount(root) {
+  const c = JSON.parse(root.dataset.frame);
+  root.className = `pane ${c.theme} ${c.narrow ? "narrow" : ""}`;
+  const draw = () => { root.innerHTML = paneHtml(c); };
+  root.addEventListener("click", (event) => {
+    const item = event.target.closest("[data-prio]");
+    if (!item) return;
+    event.stopPropagation();
+    const [id, prio] = item.dataset.prio.split(":").map(Number);
+    GROUPS.forEach(([, tasks]) => tasks.forEach((task) => { if (task.id === id) task.prio = prio; }));
+    c.show = "";
+    document.querySelectorAll("[data-frame]").forEach((other) => other.dispatchEvent(new Event("redraw")));
+  });
+  root.addEventListener("redraw", draw);
+  draw();
+}
+document.querySelectorAll("[data-frame]").forEach(mount);
+
+const KEY = () => {
+  const cx = [1, 2, 3, 4, 5].map((score) => `<div class="key-row"><span class="cell">${complexityIcon(score)}</span>${score}<span>${MEANINGS[score - 1]}</span></div>`).join("");
+  const prio = PRIORITIES.map(([key, word]) => `<div class="key-row"><span class="cell">${priorityIcon(key)}</span>${word}</div>`).join("");
+  const agent = `<div class="key-row"><span class="cell"><span class="agent">JC</span></span>Joan Clarke works on it</div><div class="key-row"><span class="cell"><span class="agent queued">JC</span></span>Waiting for Joan Clarke</div><div class="key-row"><span class="cell empty"></span><span>No agent: the column stays empty</span></div>`;
+  return `<div class="key"><h3>Agent</h3>${agent}</div><div class="key"><h3>Complexity</h3>${cx}</div><div class="key"><h3>Priority</h3>${prio}<span style="color:var(--text-3);font-size:12px">Hover the icon to change it.</span></div>`;
+};
+document.querySelectorAll("[data-legend]").forEach((holder) => { holder.innerHTML = KEY(); });
+</script>
+</body>
+</html>

@@ -1,7 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {peekRef} from "@journal/window-kit";
-import AgentTip from "./AgentTip.vue";
+import {HoverTip, peekRef} from "@journal/window-kit";
 import {taskLine} from "./agentTaskLine.js";
 
 // the bottom line of an agent's row: "Task" and its number with its title in a tooltip, how many of its tasks are done at the far right
@@ -12,12 +11,12 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 
 <template>
     <span v-if="job && !line" class="task-line" data-agent-task-line>
-        <AgentTip as="button" class="task" data-agent-job>Job<template #tip><b>{{ job }}</b></template></AgentTip>
+        <HoverTip as="button" class="task" data-agent-job>Job<template #tip><b>{{ job }}</b></template></HoverTip>
     </span>
     <template v-else-if="line">
         <span class="task-line" data-agent-task-line>
-            <AgentTip as="button" class="task" data-agent-task :data-peek="`tasks:${line.number}`" :aria-label="`Task ${line.number}: ${line.title}`" @click.stop="peekRef(`tasks:${line.number}`)">Task {{ line.number }}<template #tip><b>{{ line.title }}</b><span>{{ line.taskTip }}</span></template></AgentTip>
-            <AgentTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><span v-if="line.paceTip">{{ line.paceTip }}</span></template></AgentTip>
+            <HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${line.number}`" :aria-label="`Task ${line.number}: ${line.title}`" @click.stop="peekRef(`tasks:${line.number}`)">Task {{ line.number }}<template #tip><b>{{ line.title }}</b><span>{{ line.taskTip }}</span></template></HoverTip>
+            <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><span v-if="line.paceTip">{{ line.paceTip }}</span></template></HoverTip>
         </span>
         <span :class="['bar', {continuous: line.bar.continuous}]" :data-state="state" :style="line.bar.continuous ? {'--done': `${line.bar.done}%`, '--now': `${line.bar.now}%`} : undefined" data-agent-bar aria-hidden="true">
             <i v-for="(segment, place) in line.bar.segments" :key="place" :class="segment.kind" :style="segment.kind === 'now' ? {'--fill': `${segment.fill}%`} : undefined" />
