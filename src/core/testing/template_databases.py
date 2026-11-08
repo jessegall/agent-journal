@@ -12,12 +12,14 @@ from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.journal_container import opened_container
 from core.base.journal_home import JournalHome
+from core.base.module.code_fingerprint import CORE_FOLDER
 from core.base.module.module_sync import ModuleSync
 from core.testing.manual_clock import ManualClock
 from core.testing.story import Story
 from core.testing.story_state import StoryState
 from core.testing.story_fixture import StoryFixture
 from core.testing.template import Template
+from core.testing.template_adaptation import TemplateAdaptation
 
 STATE_FILE = "story-state.pickle"
 
@@ -27,6 +29,7 @@ class TemplateDatabases:
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
+        self.adaptation = TemplateAdaptation(CORE_FOLDER.parent.parent.resolve())
         self.templates: dict[tuple[tuple[str, ...], type[StoryFixture] | None], Template] = {}
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
@@ -51,7 +54,18 @@ class TemplateDatabases:
                 state = folder / (STATE_FILE + ".new")
                 FileAccess.shared().write_binary(state, pickle.dumps(built.state))
                 FileAccess.shared().replace(state, folder / STATE_FILE)
-            return Template(JournalHome(folder), pickle.loads(FileAccess.shared().binary(folder / STATE_FILE)))
+                self.adaptation.mark(folder)
+            usable = self.usable_folder(folder, name)
+            return Template(JournalHome(usable), pickle.loads(FileAccess.shared().binary(usable / STATE_FILE)))
+
+    def usable_folder(self, folder: Path, name: str) -> Path:
+        """The built template itself when this checkout built it, else its copy adapted to this checkout, made once."""
+        if self.adaptation.built_in(folder) == self.adaptation.checkout:
+            return folder
+        adapted = self.folder / f"{name}-{hashlib.sha1(self.adaptation.checkout.encode()).hexdigest()[:16]}"
+        if not (adapted / STATE_FILE).is_file() or self.adaptation.built_in(adapted) != self.adaptation.checkout:
+            self.adaptation.adapted(folder, adapted)
+        return adapted
 
     @staticmethod
     def template_key(modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> list[object]:
