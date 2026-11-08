@@ -20,8 +20,8 @@ PLAN_INSPECTOR = InspectorDeclaration(
     events=tuple(["plan.*"]),
     actions=(
         ButtonDeclaration("plans.mark-ready", (), "Mark the plan ready", "plan ready {row_id}", icon="plan", condition=ButtonCondition("state", tuple(["draft"]))),
-        ButtonDeclaration("plans.assign-worker", (), "Assign to an agent", "plan assign {row_id} --worker={worker}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE),
-                          fields=tuple([TextField("worker", "Agent number")])),
+        ButtonDeclaration("plans.assign-agent", (), "Assign to an agent", "plan assign {row_id} --to={agent}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE),
+                          fields=tuple([TextField("agent", "Agent number")])),
         ButtonDeclaration("plans.assign-main", (), "Let the agent pick", "plan assign {row_id}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE)),
         ButtonDeclaration("plans.start", (), "Start the plan", "plan start {row_id}", icon="start", primary=True, condition=ButtonCondition("state", tuple(["approved"]))),
         ButtonDeclaration("plans.pause", (), "Pause the plan", "plan block {row_id} --reason={reason}", icon="pause", condition=ButtonCondition("state", tuple(["started"])),

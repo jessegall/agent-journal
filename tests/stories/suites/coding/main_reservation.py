@@ -13,7 +13,7 @@ BUILD_PHASE_TASKS = (1, 2, 3)
 SHIP_PHASE_TASK = 4
 
 
-def own_task(story):
+def assigned_task(story):
     with in_environment(story):
         return story.container.get(AvailableWork).answer(story.agent.id).own_task
 
@@ -80,9 +80,9 @@ def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_st
 
 def test_an_open_task_stays_with_auto_mode_while_a_reservation_ends_when_the_main_agent_starts_it(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    expect_value(own_task(story), None)
+    expect_value(assigned_task(story), None)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
-    expect_value(own_task(story).id, 1)
+    expect_value(assigned_task(story).id, 1)
     story.expect_success("task start 1", actor=story.agent)
     story.expect_absent("task show 1", "delegated_to", actor=story.agent)
     story.expect_text("task show 1", f"holder_id: {story.agent.id}", actor=story.agent)
@@ -91,15 +91,15 @@ def test_an_open_task_stays_with_auto_mode_while_a_reservation_ends_when_the_mai
 def test_a_reserved_task_of_a_plan_waits_for_the_plan_to_start_and_comes_in_its_order(new_story):
     story = planned_story(new_story)
     story.expect_success(f"plan assign 1 --to {story.agent.id}", actor=story.user)
-    expect_value(own_task(story), None)
+    expect_value(assigned_task(story), None)
     story.expect_success("plan start 1", actor=story.user)
-    expect_value(own_task(story).id, 1)
+    expect_value(assigned_task(story).id, 1)
 
 
-def test_a_main_agent_that_writes_no_code_keeps_no_reservation(new_story):
+def test_a_main_agent_that_writes_no_code_cannot_have_a_task_reserved(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_success(f"setting set {WRITES_CODE} off --environment main")
-    story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.agent.id}", "task 1 goes to a worker", actor=story.agent)
     story.expect_absent("task show 1", "delegated_to", actor=story.agent)
 
 

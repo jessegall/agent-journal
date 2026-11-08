@@ -5,12 +5,12 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class MainReservedTasks:
-    """Keeps a task reserved for a running main agent from being sent to a worker: moving it is an assignment of its own."""
+    """Refuses to send a task reserved for a running main agent to a worker; task assign moves it instead."""
 
     def __init__(self, tasks: TaskQuery) -> None:
         self.tasks = tasks
 
     def check(self, task_ids: Sequence[int]) -> None:
-        reserved = self.tasks.reserved_for_main(task_ids).first()
+        reserved = self.tasks.main_reserved(task_ids).first()
         if reserved is not None:
             raise Refusal(f"task {reserved.id} is reserved for agent {reserved.delegated_to}", f"journal task assign {reserved.id} --to <worker> moves it")
