@@ -34,7 +34,7 @@ from core.modules.drivers.commands.support.rule_history_writer import RuleHistor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, KEPT_SKILLS, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, KEPT_SKILLS, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.module.driver_entries import DRIVERS_MODULE
@@ -84,6 +84,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                 metadata[KEPT_SKILLS] = dict(provider.skills_kept_after_compaction(command.event))
         if command.event.displayed_text:
             metadata[DISPLAYED_TEXT] = command.event.displayed_text
+        if tool is not None and tool.category is ToolType.MONITOR:
+            metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
