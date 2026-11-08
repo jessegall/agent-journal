@@ -13,7 +13,8 @@ HOOK_RUNNER = "bin/journal-hook"
 
 class HelperPrograms:
     """Makes sure a program can run under the journal's rules in a folder: it is installed, its hooks are written
-    there, and it trusts them, since a program with no hooks runs with no rule at all."""
+    there and trusted, and the folder itself is trusted, so no person has to accept either; a program with no hooks
+    runs with no rule at all."""
 
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks) -> None:
         self.home, self.providers, self.managed = home, providers, managed
@@ -27,7 +28,8 @@ class HelperPrograms:
         self.installed(program)
         provider = self.providers.provider(program)
         hooks = ProgramHooks.hooks(type(provider), folder)
-        if not hooks.is_complete():
+        if not hooks.is_complete() or provider.hook_trust(folder) is not HookTrust.READY:
             hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', folder, self.managed.all())
+        provider.folder_trusted(folder)
         if provider.hook_trust(folder) is not HookTrust.READY:
             raise Refusal(f"the journal cannot use untrusted {program} hooks in {folder}", "install the journal's hooks in that folder")

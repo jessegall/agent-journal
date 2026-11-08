@@ -21,3 +21,7 @@ class LazyLoading:
         if content in cls.built_registries:
             cls.refuse("a registry was built again from rows already built in this process")
         cls.built_registries.add(content)
+
+    @classmethod
+    def registry_dropped(cls, content: int) -> None:
+        cls.built_registries.discard(content)
