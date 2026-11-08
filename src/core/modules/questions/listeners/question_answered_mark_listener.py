@@ -9,7 +9,7 @@ from core.modules.questions.models.lifecycles.question_lifecycle import Question
 from core.modules.questions.models.question import Question
 
 
-ANSWER_SHOWN_CHARACTERS = 120
+ANSWER_SHOWN_CHARACTERS = 1000
 
 
 class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):

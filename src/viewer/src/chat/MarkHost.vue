@@ -9,6 +9,7 @@ import {markLook} from "../domain/markLook.js";
 const OUTPUT_MODELS = new Set(["output", "process"]);
 const USER_SIDE_VARIANTS = new Set(["user"]);
 const DOCK_LINE = "dock add";
+const ANSWER_MARK = "questions.answer";
 
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
 const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}, docked: Boolean});
@@ -18,6 +19,7 @@ const look = computed(() => markLook(props.mark, declaration.value));
 // row it names is opened by the small action link on the mark, never by the click on its line
 const hasBody = computed(() => Boolean(props.mark.lines || look.value.detail || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
 const opens = computed(() => hasBody.value || Boolean(look.value.handlers.onAct));
+const isAnswer = computed(() => props.mark.type === ANSWER_MARK);
 const opened = ref(false);
 function clicked() {
     opened.value = !opened.value;
@@ -34,7 +36,7 @@ const buttons = computed(() => (declaration.value?.buttons || []).filter((button
         </div>
     </template>
     <template v-else>
-        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked, 'user-side': USER_SIDE_VARIANTS.has(mark.variant)}]" :data-ref="`chat_mark:${mark.id}`">
+        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked, 'user-side': USER_SIDE_VARIANTS.has(mark.variant), 'answer-bubble': isAnswer}]" :data-ref="`chat_mark:${mark.id}`">
             <span class="mark-row">
                 <ChatMark :mark="look" :open="opens ? opened : undefined" @act="look.handlers.onAct" @click="clicked">
                     <template v-if="hasBody" #default="{shown}">
@@ -65,6 +67,18 @@ const buttons = computed(() => (declaration.value?.buttons || []).filter((button
     align-items: flex-end;
     align-self: flex-end;
     margin-left: auto;
+}
+
+/* the answer to a question is the user's own turn, in a bubble of its own colour */
+.thread-turn.answer-bubble {
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent) 22%, var(--bg));
+}
+
+.thread-turn.answer-bubble :deep(*) {
+    white-space: normal;
+    color: var(--text);
 }
 
 /* a mark drawn as a card takes the chat's width and keeps to the card's own limit */

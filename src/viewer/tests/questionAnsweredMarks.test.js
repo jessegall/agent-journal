@@ -38,3 +38,9 @@ test("the mark of an answer names the question and the answer given, on the user
     expect(element.querySelectorAll("[data-ref^='chat_mark:']")).toHaveLength(1);
     expect(element.querySelector(".user-side")).not.toBeNull();
 });
+
+test("the answer to a question is a bubble on the user's side", () => {
+    const element = drawn({type: "questions.answer", variant: "user", state: "shown", text: "Question 1 answered: Yes"});
+    expect(element.querySelector(".answer-bubble.user-side")).not.toBeNull();
+});
+
