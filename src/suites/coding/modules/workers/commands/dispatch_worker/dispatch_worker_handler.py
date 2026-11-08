@@ -105,8 +105,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
 
     @staticmethod
     def check_unstarted(command: DispatchWorker, context: Context, environment: Environment) -> None:
-        granted = environment.test and environment.test_agent_id == context.actor.id
-        if not command.starts_program and context.actor.type is not ActorType.USER and not granted:
+        if not command.starts_program and context.actor.type is not ActorType.USER and not environment.grants(context.actor.id):
             raise Refusal("only a person dispatches a worker with no program", "an agent dispatches a worker without --no-program")
 
     def check_idle(self, folder: str, request: WorkerRequest, tasks: list[Task], command: DispatchWorker) -> None:
