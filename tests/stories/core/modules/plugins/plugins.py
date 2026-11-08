@@ -1,4 +1,5 @@
 import json
+import shutil
 
 from tests.stories.core.modules.plugins.support.plugin_samples import MANIFEST, sample_plugin_folder
 from tests.stories.core.support.fixtures import UserJoined
@@ -18,6 +19,25 @@ def test_the_user_installs_a_plugin_from_its_folder_and_it_is_listed_on_with_its
     story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
     story.expect_text("plugin list", "sample", "on", "1.0.0", actor=story.user)
     story.expect_rows((story.home.folder / "plugins" / "sample" / "run.sh").is_file(), (story.home.folder / "plugin-data" / "sample").is_dir())
+
+
+def test_a_plugin_is_upgraded_once_from_a_local_folder_and_keeps_its_own_source(new_story):
+    story = plugin_story(new_story)
+    story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
+    local_build = story.home.folder.parent / "local-build"
+    shutil.copytree(story.plugin_folder, local_build)
+    (local_build / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "2.0.0"}))
+
+    story.expect_text(f"plugin upgrade sample --from {local_build} --yes", "sample is now 2.0.0", actor=story.user)
+
+    story.expect_text("plugin list", "sample", "on", "2.0.0", actor=story.user)
+    story.expect_text("plugin upgrade sample", "sample 2.0.0 to 1.0.0", actor=story.user)
+
+
+def test_an_upgrade_from_something_that_is_no_folder_is_refused(new_story):
+    story = plugin_story(new_story)
+    story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
+    story.expect_refusal("plugin upgrade sample --from /no/such/folder --yes", "/no/such/folder is not a folder", actor=story.user)
 
 
 def test_without_yes_an_install_only_shows_what_it_would_install(new_story):
