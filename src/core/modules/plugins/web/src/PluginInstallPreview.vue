@@ -8,7 +8,7 @@ const CATEGORIES = {files: "Part of what it runs", requires: "Checks", setup: "S
 </script>
 
 <template>
-    <Dialog :title="preview.title" @close="emit('close')">
+    <Dialog padded :title="preview.title" @close="emit('close')">
         <div data-plugin-preview>
             <p class="preview-from">Version {{ preview.version }} from {{ preview.source }}</p>
             <p class="preview-lead">It runs as you, with your files and your network. This is everything it runs:</p>

@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from suites.coding.modules.workers.support.worker_instruction_files import InstructionInjection
+from suites.coding.modules.workers.support.instruction_injection import InstructionInjection
 
 
 @dataclass(frozen=True)

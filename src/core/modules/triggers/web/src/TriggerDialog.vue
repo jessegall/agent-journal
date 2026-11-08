@@ -79,7 +79,7 @@ const end = () => ran(["trigger", "strike", String(held.id)]);
 </script>
 
 <template>
-    <Dialog :title="isNew ? 'New trigger' : 'Edit trigger'" @close="emit('close')">
+    <Dialog padded :title="isNew ? 'New trigger' : 'Edit trigger'" @close="emit('close')">
         <div class="trigger-form">
             <template v-if="isNew">
                 <div class="field">

@@ -66,12 +66,10 @@ class ButtonCheck:
         return tuple(problems)
 
     def declared_warnings(self, modules: Sequence[type[Module]], shipped: frozenset[str]) -> dict[str, str]:
-        """The style problems of the buttons of modules the journal does not ship, by button name: they are warned, not refused."""
         warnings = {button.name: "; ".join(self.style_problems(module, button)) for module in modules if module.name not in shipped for button in module.declared_buttons()}
         return {name: text for name, text in warnings.items() if text}
 
     def style_problems(self, module: type[Module], button: ButtonDeclaration) -> list[str]:
-        """A button on a card or in an inspector shows an icon, and a button on a row or a card has a label that starts with no panel word."""
         owner = f"the button {button.name} of module {module.name}"
         inspector_actions = {action.name for inspector in module.inspectors for action in inspector.actions}
         on_card = button.name in inspector_actions or any(slot.startswith(CARD_SLOT_PREFIX) for slot in button.slots)

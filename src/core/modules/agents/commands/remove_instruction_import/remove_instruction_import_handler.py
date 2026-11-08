@@ -7,13 +7,14 @@ from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import import RemoveInstructionImport
+from core.modules.agents.commands.remove_instruction_import.instruction_import_question import InstructionImportQuestion
 
 COMMAND_WORDS = ("instruction-import", "remove")
 
 
 class RemoveInstructionImportHandler(Handler[RemoveInstructionImport, str]):
-    """Removes the extra import lines of a file from an instruction file, or its one import line when two files import
-    each other; it changes a person's file, so anyone else is asked through an approval card."""
+    """Removes the extra import lines of a file from an instruction file, or its one import line when two
+    files import each other; it changes a person's file, so anyone else is asked through an approval card."""
 
     command = RemoveInstructionImport
 
@@ -29,11 +30,3 @@ class RemoveInstructionImportHandler(Handler[RemoveInstructionImport, str]):
             raise Refusal(f"{command.file} is not a CLAUDE.md or AGENTS.md file of this project", "name the file as the approval card does")
         FileAccess.shared().write(file, InstructionImports.without_import(FileAccess.shared().read(file), command.imported))
         return f"{command.file} imports {command.imported} once less"
-
-
-class InstructionImportQuestion:
-    """The words of the approval card that offers to remove an import line."""
-
-    @staticmethod
-    def text(file: str, imported: str) -> str:
-        return f"{file} puts {imported} into every context more than once. Remove the extra import line?"

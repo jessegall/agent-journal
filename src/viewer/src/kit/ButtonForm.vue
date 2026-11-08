@@ -31,7 +31,7 @@ async function send() {
 </script>
 
 <template>
-    <Dialog :title="heading" fits small sheet @close="emit('close')">
+    <Dialog padded :title="heading" fits small sheet @close="emit('close')">
         <div class="button-form" data-button-form>
             <template v-if="row?.title">
                 <p class="button-form-title">{{ row.title }}</p>

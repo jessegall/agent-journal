@@ -5,8 +5,8 @@ SPAN_SECONDS = 600
 
 
 class HookTimeouts:
-    """The hooks of each agent the journal answered after the program had given up on them, kept for the span they count in,
-    and when each agent's timeouts were last told; it lives as long as the server."""
+    """The hooks of each agent the journal answered after the program had given up on them, kept for the span
+    they count in, and when each agent's timeouts were last told; it lives as long as the server."""
 
     def __init__(self) -> None:
         self.timed_out_at: dict[int, list[Timestamp]] = {}

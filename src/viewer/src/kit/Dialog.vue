@@ -17,7 +17,7 @@ const props = defineProps({
     tall: Boolean,
     large: Boolean,
     bare: Boolean,
-    flush: Boolean,
+    padded: Boolean,
     open: {type: Boolean, default: null},
     closable: {type: Boolean, default: true},
     modal: Boolean,
@@ -80,7 +80,7 @@ onUnmounted(() => watcher.disconnect());
                             </template>
                         </header>
                     </template>
-                    <div ref="body" :class="['dialog-body', {bare, flush}]">
+                    <div ref="body" :class="['dialog-body', {bare, padded}]">
                         <slot />
                     </div>
                     <template v-if="$slots.foot">
@@ -164,11 +164,6 @@ onUnmounted(() => watcher.disconnect());
     flex-direction: column;
     padding: 0;
     overflow: hidden;
-}
-
-/* the content owns its padding, so its sticky bar and footer reach the dialog's edges */
-.dialog-body.flush {
-    padding: 0;
 }
 
 @media (max-width: 600px) {
@@ -255,6 +250,9 @@ onUnmounted(() => watcher.disconnect());
 .dialog-body {
     min-height: 0;
     overflow: auto;
+}
+
+.dialog-body.padded {
     padding: 14px;
 }
 

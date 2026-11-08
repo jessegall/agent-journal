@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
 from typing import TypeVar, cast
 
 from core.base.database.kept_rows import KEPT_ROW_COUNT
@@ -8,18 +7,9 @@ from core.base.model.view_model import ViewModel
 from core.base.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
+from core.base.listener.cached_event_row import CachedEventRow
 
 M = TypeVar("M", bound=Model)
-
-
-@dataclass(frozen=True)
-class CachedEventRow:
-    row: Model | None
-    generation: tuple[int, int]
-
-    @property
-    def version(self) -> int | None:
-        return self.row.version if self.row is not None else None
 
 
 class EventRows:

@@ -12,7 +12,7 @@ const request = computed(() => {
 
 <template>
     <template v-if="request">
-        <Dialog title="Allow module buttons" fits small sheet @close="prompts.answer(false)">
+        <Dialog padded title="Allow module buttons" fits small sheet @close="prompts.answer(false)">
             <AllowancePrompt role="group" :request="request" @answer="prompts.answer($event)" />
         </Dialog>
     </template>

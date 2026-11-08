@@ -53,7 +53,7 @@ onMounted(fit);
 </script>
 
 <template>
-    <Dialog :title="title" large @close="emit('close')">
+    <Dialog padded :title="title" large @close="emit('close')">
         <div class="flowchart-tools">
             <Btn small @click="zoomCentre(ZOOM.step)">Zoom in</Btn>
             <Btn small @click="zoomCentre(1 / ZOOM.step)">Zoom out</Btn>

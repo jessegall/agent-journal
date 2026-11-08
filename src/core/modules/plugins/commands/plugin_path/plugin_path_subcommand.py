@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.agent_checkouts import AgentCheckouts
@@ -10,17 +9,7 @@ from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
-
-
-@dataclass(frozen=True)
-class CheckoutPath:
-    """An absolute path as a plugin matches it: its name relative to the checkout that holds it, and that checkout."""
-
-    relative: str
-    checkout: Checkout
-
-    def values(self) -> dict[str, object]:
-        return {"relative": self.relative, "checkout": self.checkout.values()}
+from core.modules.plugins.commands.plugin_path.checkout_path import CheckoutPath
 
 
 class PluginPathSubcommand(ReadSubcommand[CheckoutPath]):

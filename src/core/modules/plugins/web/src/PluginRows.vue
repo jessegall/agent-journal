@@ -225,7 +225,7 @@ async function showRecord(row) {
             <PluginGuide @close="guide = false" />
         </template>
         <template v-if="board">
-            <Dialog :title="board.title" @close="board = null">
+            <Dialog padded :title="board.title" @close="board = null">
                 <template v-if="context.props[board.key].failure.value"><p class="plugin-fault">{{ context.props[board.key].failure.value }}</p></template>
                 <template v-else-if="context.props[board.key].data.value"><Dashboard :document="context.props[board.key].data.value" @file="openFile" /></template>
             </Dialog>

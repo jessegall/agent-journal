@@ -19,11 +19,11 @@ from core.base.query.queries import Queries
 
 
 class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched[CommandType]]):
-    """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the journal
-    anything, and judges an alias by the command under it, the names of the aliases saved as tests and builds, and
-    the category of each alias, which the hook gives a command it cannot classify itself, and the types agents gave
-    such commands by their leading words.
-    It runs ahead of slow listeners, since an agent runs a new alias right after adding it."""
+    """Writes each alias's shell line to a file, since the Go hook classifies a line before it can ask the
+    journal anything, and judges an alias by the command under it, the names of the aliases saved as tests
+    and builds, and the category of each alias, which the hook gives a command it cannot classify itself,
+    and the types agents gave such commands by their leading words. It runs ahead of slow listeners, since
+    an agent runs a new alias right after adding it."""
 
     name = "aliases.alias-file"
     run_order = -1

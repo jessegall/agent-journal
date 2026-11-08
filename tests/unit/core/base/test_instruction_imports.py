@@ -1,4 +1,5 @@
-from core.base.instruction_imports import InstructionImport, InstructionImports
+from core.base.instruction_imports import InstructionImports
+from core.base.instruction_import import InstructionImport
 
 
 def test_an_import_named_twice_is_a_fault(tmp_path):

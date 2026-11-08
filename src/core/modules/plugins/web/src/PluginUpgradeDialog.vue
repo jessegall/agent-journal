@@ -7,7 +7,7 @@ const emit = defineEmits(["close", "apply"]);
 </script>
 
 <template>
-    <Dialog :title="`Upgrade ${upgrade.name}`" @close="emit('close')">
+    <Dialog padded :title="`Upgrade ${upgrade.name}`" @close="emit('close')">
         <div data-plugin-upgrade-body>
             <p class="plugin-note">{{ upgrade.installed }} to {{ upgrade.version }}. Services that run keep the old code until the journal restarts.</p>
             <template v-if="!upgrade.changes.length">

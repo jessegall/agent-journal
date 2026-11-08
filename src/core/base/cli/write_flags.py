@@ -21,7 +21,6 @@ class WriteFlags:
 
     @staticmethod
     def add_reason(parser: ArgumentParser) -> None:
-        """--reason says why an agent runs a line that asks a person; a command with a --reason of its own keeps it, and that text serves."""
         try:
             parser.add_argument("--reason", default="", help="why this is asked, shown to the person when the line needs their approval")
         except ArgumentError:
@@ -30,7 +29,6 @@ class WriteFlags:
 
     @staticmethod
     def without_reason(argv: list[str]) -> tuple[str, ...]:
-        """The line without the --reason this flag added: the reason is kept on the approval, not in the line a person runs."""
         kept: list[str] = []
         words = iter(argv)
         for word in words:

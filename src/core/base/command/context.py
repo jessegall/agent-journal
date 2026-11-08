@@ -9,9 +9,9 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class Context:
-    """What a command runs with: who asked, when, which guards they chose to pass, the approval that let it run, with --explain,
-    where every refusal is collected instead of the first one stopping the command, and its outside
-    runs, closed unless the bus opened them."""
+    """What a command runs with: who asked, when, which guards they chose to pass, the approval that let it
+    run, with --explain, where every refusal is collected instead of the first one stopping the command,
+    and its outside runs, closed unless the bus opened them."""
 
     actor: Actor
     timestamp: Timestamp

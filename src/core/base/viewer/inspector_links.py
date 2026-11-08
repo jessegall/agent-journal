@@ -4,8 +4,9 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class InspectorLinks:
-    """The folding links section of an inspector: the kinds of linked rows that get a tab (none named: every kind the row has),
-    whether it starts open, whether it leaves out the rows of the row's own plan and how many rows load per page."""
+    """The folding links section of an inspector: the kinds of linked rows that get a tab (none named: every
+    kind the row has), whether it starts open, whether it leaves out the rows of the row's own plan and how
+    many rows load per page."""
 
     kinds: Sequence[str] = ()
     open: bool = False

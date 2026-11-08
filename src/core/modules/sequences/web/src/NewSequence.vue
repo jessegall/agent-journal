@@ -21,7 +21,7 @@ async function create() {
 </script>
 
 <template>
-    <Dialog title="New sequence" @close="emit('close')">
+    <Dialog padded title="New sequence" @close="emit('close')">
         <div class="new-sequence">
             <label class="field">
                 <span class="label">Title</span>

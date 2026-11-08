@@ -63,9 +63,9 @@ BUILT_READS = ("make", "show", "list")
 
 @dataclass(frozen=True)
 class Registry:
-    """The module entries found by sync, kept by database, fingerprint and sync timestamp. Journals whose registry rows
-    hold the same fingerprint and entries share one registry, so its event lookup, built in full when it loads, is
-    built once per process however many journals open."""
+    """The module entries found by sync, kept by database, fingerprint and sync timestamp. Journals whose
+    registry rows hold the same fingerprint and entries share one registry, so its event lookup, built in
+    full when it loads, is built once per process however many journals open."""
 
     fingerprint: str
     models: dict[str, ModelEntry]
@@ -348,7 +348,6 @@ class Registry:
         return tuple(button.permission_line for button in self.button_lines(ButtonWindow.MARKS) if button.subject == subject)
 
     def sharing_windows(self, model: str) -> tuple[WindowEntry, ...]:
-        """The windows that list a read of the model as shareable, in registry order."""
         return tuple(window for window in self.windows if any(entry.split(" ", 1)[0] == model for entry in window.shared_reads))
 
     def dock(self, type_name: str) -> DockEntry | None:

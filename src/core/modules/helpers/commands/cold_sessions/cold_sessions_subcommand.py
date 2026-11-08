@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
@@ -8,12 +7,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.settings.support.context_share import ContextShare
-
-
-@dataclass(frozen=True)
-class ColdSession:
-    session: str
-    context_percent: int
+from core.modules.helpers.commands.cold_sessions.cold_session import ColdSession
 
 
 class ColdSessionsSubcommand(ReadSubcommand[tuple[ColdSession, ...]]):

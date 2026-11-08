@@ -18,7 +18,7 @@ const outputTime = (createdAt) => new Date(createdAt).toLocaleString([], {dateSt
 </script>
 
 <template>
-    <Dialog :title="`What ${record.name} did`" @close="emit('close')">
+    <Dialog padded :title="`What ${record.name} did`" @close="emit('close')">
         <div data-plugin-record-body>
             <template v-if="record.services?.length">
                 <p class="plugin-note" data-plugin-services>Keeps running: {{ record.services.map((service) => service.name).join(", ") }}</p>

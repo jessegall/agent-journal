@@ -1,4 +1,8 @@
+import http.client
+import os
+import signal
 import sys
+from contextlib import suppress
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
@@ -7,13 +11,15 @@ from install.code_replacement import CodeReplacement
 from install.run_drain import RunDrain
 from install.chat_update_steps import ChatUpdateSteps
 
+TAKEN_OVER_STATUS = 200
 OLD_SERVER_STATUS = 404
+NO_ANSWER_STATUS = 0
 
 
 class WorkingTreeInstall(CodeHandover):
     """What `journal server update` runs: a project's own source tree goes into its journal by a hand-over once
-    no run is going; a running server too old to hand over is stopped as before, and the next command starts
-    the new code."""
+    no run is going; a running server too old to hand over is stopped as before, a server that does not answer
+    is killed, and the next command starts the new code."""
 
     def __init__(self, home: JournalHome) -> None:
         super().__init__(home, ChatUpdateSteps(home))
@@ -25,10 +31,23 @@ class WorkingTreeInstall(CodeHandover):
         finally:
             self.files.clear_run_lock()
 
+    def takeover_status(self, tag: str) -> int:
+        running_pid = self.server_pid()
+        try:
+            return super().takeover_status(tag)
+        except (OSError, http.client.HTTPException):
+            return NO_ANSWER_STATUS if self.server_pid() == running_pid else TAKEN_OVER_STATUS
+
     def refuse(self, tag: str, status: int) -> None:
-        if status != OLD_SERVER_STATUS:
+        if status == NO_ANSWER_STATUS:
+            self.kill_server()
+        elif status != OLD_SERVER_STATUS:
             super().refuse(tag, status)
         CodeReplacement(self.home).run([lambda: self.versions.switch(tag)])
+
+    def kill_server(self) -> None:
+        with suppress(ProcessLookupError):
+            os.kill(int(self.server_pid()), signal.SIGKILL)
 
     def wait_new_server(self, running_pid: str) -> None:
         if self.server_pid() == running_pid:

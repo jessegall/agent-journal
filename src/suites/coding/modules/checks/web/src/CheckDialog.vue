@@ -29,7 +29,7 @@ onUnmounted(() => stopFollowing?.());
 </script>
 
 <template>
-    <Dialog :title="`Check ${row.id}: ${row.title}`" wide data-check-dialog @close="emit('close')">
+    <Dialog padded :title="`Check ${row.id}: ${row.title}`" wide data-check-dialog @close="emit('close')">
         <div class="check-tools">
             <Segmented :options="VIEWS" :value="tab" @pick="tab = $event" />
             <span class="check-space" />
