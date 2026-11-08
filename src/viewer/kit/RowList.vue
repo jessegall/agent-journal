@@ -21,8 +21,10 @@ const props = defineProps({
     more: {type: Boolean, default: true},
     // how a row comes in and goes out, {enter, leave} each given the row's element and the call that ends it; with none given rows just appear
     arrival: {type: Object, default: null},
+    // whether rows glide to their new place when their order changes, with the move of the activity list
+    moves: Boolean,
 });
-const motion = computed(() => (props.arrival ? {tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : {}));
+const motion = computed(() => (props.arrival ? {tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : props.moves ? {tag: "ul", name: "row-list", "data-row-list-moves": ""} : {}));
 const finished = ref(false);
 async function showMore(older) {
     finished.value = !(await older());
@@ -40,7 +42,7 @@ async function showMore(older) {
         <EmptyState :title="searching ? matches : empty" data-row-list-empty :data-searching="searching ? '' : undefined">{{ searching ? "Try other words, or clear the search." : hint }}</EmptyState>
     </template>
     <template v-else>
-        <component :is="arrival ? TransitionGroup : 'ul'" v-bind="motion" class="row-list">
+        <component :is="arrival || moves ? TransitionGroup : 'ul'" v-bind="motion" class="row-list">
             <template v-for="row in rows" :key="row.id">
                 <li class="row-list-row" :data-row="row.id">
                     <slot :row="row" />
@@ -102,6 +104,16 @@ async function showMore(older) {
 @keyframes row-list-in {
     from {
         opacity: 0;
+    }
+}
+
+.row-list-move {
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .row-list-move {
+        transition: none;
     }
 }
 </style>

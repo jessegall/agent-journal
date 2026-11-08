@@ -5,15 +5,15 @@ import {HoverTip} from "@journal/window-kit";
 // the dot in the top-right corner of an agent's header and of each list row: it pulses while the agent works or thinks, stays still
 // when it waits, is blocked or idle, and is a ring once retired; on hover or focus it says what the agent does and since when
 const PULSING = new Set(["running", "working", "thinking"]);
-const props = defineProps({state: {type: String, default: ""}, doing: {type: String, required: true}, since: {type: String, default: ""}});
+const props = defineProps({state: {type: String, default: ""}, doing: {type: String, required: true}, since: {type: String, default: ""}, seen: {type: String, default: ""}});
 const pulses = computed(() => PULSING.has(props.state));
-const label = computed(() => (props.since ? `${props.doing}. ${props.since}` : props.doing));
+const label = computed(() => [props.doing, props.since, props.seen].filter(Boolean).join(". "));
 </script>
 
 <template>
     <HoverTip as="button" place="corner" :class="['agent-dot', {pulse: pulses}]" :data-state="state" :aria-label="label" data-agent-status @click.stop>
         <i />
-        <template #tip><b>{{ doing }}</b><span v-if="since">{{ since }}</span></template>
+        <template #tip><b class="line">{{ doing }}</b><span v-if="since" class="line" data-agent-since>{{ since }}</span><span v-if="seen" class="line" data-agent-seen>{{ seen }}</span></template>
     </HoverTip>
 </template>
 
@@ -37,6 +37,7 @@ const label = computed(() => (props.since ? `${props.doing}. ${props.since}` : p
     cursor: default;
 }
 
+.line { display: block; }
 .agent-dot:focus-visible { outline: 2px solid var(--accent); }
 .agent-dot i { position: relative; z-index: 1; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
 .agent-dot[data-state="running"], .agent-dot[data-state="working"], .agent-dot[data-state="thinking"] { --c: var(--accent); }

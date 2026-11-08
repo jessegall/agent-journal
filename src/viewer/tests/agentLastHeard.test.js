@@ -8,10 +8,10 @@ test("the card shows and updates the last hook time", async () => {
     const row = {id: 6, role: "worker", access: "writing", session: "s-6", program: "claude", created_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row, facts, open: true})}, context({"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}}));
     expect(element.querySelector("[data-agent-identity]").textContent).toBe("claude · worker 6");
-    expect(element.querySelector("[data-agent-last-heard]").textContent).toContain("Last heard 2m ago");
+    expect(element.querySelector("[data-agent-last-heard]").textContent).toContain("Seen 2m ago");
     facts.last_activity = new Date().toISOString();
     await settle();
-    expect(element.querySelector("[data-agent-last-heard]").textContent).toContain("Last heard just now");
+    expect(element.querySelector("[data-agent-last-heard]").textContent).toContain("Seen just now");
 });
 
 test("a closed card reads no command until it opens", async () => {

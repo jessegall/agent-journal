@@ -49,7 +49,8 @@ const statusAt = computed(() => {
     const held = dotState.value === "blocked" || dotState.value === "waiting";
     return props.row.ended_at || (held && props.facts?.last_activity) || props.row.process_started_at || props.row.created_at;
 });
-const statusSince = computed(() => (statusAt.value ? `Since ${new Date(statusAt.value).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}, ${ago(statusAt.value, now.value)}` : ""));
+const statusSince = computed(() => (statusAt.value ? `Since: ${new Date(statusAt.value).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}, ${ago(statusAt.value, now.value)}` : ""));
+const statusSeen = computed(() => (props.facts?.last_activity ? `Seen: ${ago(props.facts.last_activity, now.value)}` : ""));;
 </script>
 
 <template>
@@ -65,14 +66,14 @@ const statusSince = computed(() => (statusAt.value ? `Since ${new Date(statusAt.
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
             <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>
             <template v-if="open"><span class="agent-first-dispatched" data-agent-first-dispatched>Started <TimeAgo :at="row.created_at" /></span></template>
-            <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Last heard <TimeAgo :at="facts.last_activity" /></span></template>
+            <template v-if="open && facts?.last_activity"><span class="agent-last-heard" data-agent-last-heard>Seen <TimeAgo :at="facts.last_activity" /></span></template>
         </span>
         <template v-if="open"><InformationBar :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card>
             <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :state="dotState" :per-hour="rate" /></template>
-        <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" />
+        <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>
 </template>

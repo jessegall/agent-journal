@@ -40,6 +40,6 @@ test.each([
     const element = await mounted({render: () => h(AgentCard, {row, facts, open})}, context({"usage tool --agent 8": {ok: true, value: {tool: "", note: ""}}}));
     expect(element.querySelector(".agent-dot").dataset.state).toBe("waiting");
     expect(element.querySelector("[data-agent-status] [role='tooltip'] b").textContent).toBe(`Status: ${status}`);
-    expect(element.querySelector("[data-agent-status] [role='tooltip'] span").textContent).toMatch(/^Since \d/);
+    expect(element.querySelector("[data-agent-status] [role='tooltip'] span").textContent).toMatch(/^Since: \d/);
     expect(element.querySelector("[data-agent-stopped]")).toBeNull();
 });

@@ -299,7 +299,7 @@ test("an agent that has just ended reads just now, never now ago", async () => {
     const ended = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row: ended})}, context({}));
     expect(element.querySelector(".agent-time")).toBeNull();
-    expect(element.querySelector("[data-agent-status] [role='tooltip']").textContent).toBe("Idle: its process has stoppedSince " + new Date(ended.ended_at).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) + ", just now");
+    expect(element.querySelector("[data-agent-status] [role='tooltip']").textContent).toBe("Idle: its process has stoppedSince: " + new Date(ended.ended_at).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) + ", just now");
 });
 
 test("an open helper has transcript and terminal tabs with its instruction folded", async () => {

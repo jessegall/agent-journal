@@ -4116,7 +4116,7 @@ const Wp = { class: "band" }, Hp = { key: 0 }, zp = {
         }, "Task " + v(e.inspection.task.id) + ": " + v(e.inspection.task.title), 1)) : (u(), f("span", d1, v(e.nothing), 1)),
         n.value ? (u(), f("span", f1, v(n.value), 1)) : b("", !0),
         e.inspection.last_activity ? (u(), f("span", h1, [
-          o[3] || (o[3] = Y("Last heard: ", -1)),
+          o[3] || (o[3] = Y("Seen: ", -1)),
           T(et, {
             at: e.inspection.last_activity
           }, null, 8, ["at"])
@@ -4141,7 +4141,7 @@ const Wp = { class: "band" }, Hp = { key: 0 }, zp = {
       ])) : b("", !0)
     ], 64));
   }
-}, b1 = /* @__PURE__ */ U(y1, [["__scopeId", "data-v-cbe6a9f7"]]), k1 = ["onClick"], w1 = { class: "text" }, $1 = {
+}, b1 = /* @__PURE__ */ U(y1, [["__scopeId", "data-v-ff25c609"]]), k1 = ["onClick"], w1 = { class: "text" }, $1 = {
   key: 1,
   class: "move",
   "data-agent-move": ""
@@ -6786,10 +6786,12 @@ const Fy = {
     // whether the server holds a page behind the rows, which is what shows the button to read it
     more: { type: Boolean, default: !0 },
     // how a row comes in and goes out, {enter, leave} each given the row's element and the call that ends it; with none given rows just appear
-    arrival: { type: Object, default: null }
+    arrival: { type: Object, default: null },
+    // whether rows glide to their new place when their order changes, with the move of the activity list
+    moves: Boolean
   },
   setup(e) {
-    const t = e, n = E(() => t.arrival ? { tag: "ul", css: !1, onEnter: t.arrival.enter, onLeave: t.arrival.leave } : {}), a = A(!1);
+    const t = e, n = E(() => t.arrival ? { tag: "ul", css: !1, onEnter: t.arrival.enter, onLeave: t.arrival.leave } : t.moves ? { tag: "ul", name: "row-list", "data-row-list-moves": "" } : {}), a = A(!1);
     async function s(o) {
       a.value = !await o();
     }
@@ -6807,7 +6809,7 @@ const Fy = {
       ]),
       _: 1
     }, 8, ["title", "data-searching"])) : (u(), f(j, { key: 3 }, [
-      (u(), W(rt(e.arrival ? Os : "ul"), Pe(n.value, { class: "row-list" }), {
+      (u(), W(rt(e.arrival || e.moves ? Os : "ul"), Pe(n.value, { class: "row-list" }), {
         default: F(() => [
           (u(!0), f(j, null, ne(e.rows, (i) => (u(), f("li", {
             key: i.id,
@@ -6828,7 +6830,7 @@ const Fy = {
       }, "Show more")) : b("", !0)
     ], 64));
   }
-}, e0 = /* @__PURE__ */ U(Zy, [["__scopeId", "data-v-6c7ba696"]]), t0 = {
+}, e0 = /* @__PURE__ */ U(Zy, [["__scopeId", "data-v-059675a8"]]), t0 = {
   class: "agent-rows",
   "data-agent-rows": ""
 }, n0 = {
@@ -14086,7 +14088,7 @@ function rC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const uC = su(() => import("./VoiceFigure-MbQD5O9v.js").then((e) => e.V)), cC = "1.2.0", dC = "3.5";
+const uC = su(() => import("./VoiceFigure-BIYdFzGl.js").then((e) => e.V)), cC = "1.2.0", dC = "3.5";
 export {
   Tf as $,
   Ee as A,

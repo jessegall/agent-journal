@@ -66,7 +66,7 @@ test("a running worker says who it is, how it does, what it does now and what it
     expect(element.querySelector('[data-agent-cell="failed"] b').classList.contains("bad")).toBe(true);
     expect(text(element, "[data-agent-task-link]")).toBe("Task 340: Process queue inspector");
     expect(text(element, "[data-agent-doing]")).toBe("Command: Bash pytest -q");
-    expect(text(element, "[data-agent-last-activity]")).toBe("Last heard: just now");
+    expect(text(element, "[data-agent-last-activity]")).toBe("Seen: just now");
     expect(text(element, "[data-agent-plan]")).toContain("Plan 12, phase 2");
     expect(text(element, "[data-agent-plan]")).toContain("3 of 5 tasks done");
     expect(text(element, "[data-agent-plan-link]")).toBe("Show the plan");

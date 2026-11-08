@@ -18,7 +18,7 @@ test("a working agent has a pulsing dot whose tooltip says it works and since wh
     expect(dotOf(element).dataset.state).toBe("running");
     expect(dotOf(element).classList.contains("pulse")).toBe(true);
     expect(words(element)).toBe("Working");
-    expect(since(element)).toMatch(/^Since \d.*, 7m ago$/);
+    expect(since(element)).toMatch(/^Since: \d.*, 7m ago$/);
     expect(dotOf(element).getAttribute("aria-label")).toBe(`Working. ${since(element)}`);
 });
 
@@ -57,11 +57,11 @@ test("a row shows no age and no dot at its left, and the dot is a button a keybo
     expect(element.contains(dotOf(element))).toBe(true);
 });
 
-test("an open header shows the run time, Started and Last heard as plain text, and the information bar shows no run time", async () => {
+test("an open header shows the run time, Started and Seen as plain text, and the information bar shows no run time", async () => {
     const element = await card(worker(), {tasks: [], last_activity: new Date().toISOString()}, true);
     expect(element.querySelector("[data-agent-run-time]").textContent).toBe("7m");
     expect(element.querySelector("[data-agent-first-dispatched]").textContent).toBe("Started 6h ago");
-    expect(element.querySelector("[data-agent-last-heard]").textContent).toBe("Last heard just now");
+    expect(element.querySelector("[data-agent-last-heard]").textContent).toBe("Seen just now");
     expect(element.querySelector("[data-agent-first-dispatched] [data-icon]")).toBeNull();
     expect(element.querySelector("[data-information-bar] [data-fact='uptime']")).toBeNull();
     expect(element.querySelector("[data-information-bar] [data-icon='reminders']")).toBeNull();
@@ -71,4 +71,14 @@ test("an open header shows the run time, Started and Last heard as plain text, a
 test("reduced motion turns the pulse into a still halo", () => {
     const source = readFileSync(resolve(__dirname, "../../core/modules/agents/web/src/AgentStatusDot.vue"), "utf8");
     expect(source).toMatch(/prefers-reduced-motion: reduce\)\s*\{\s*\.agent-dot\.pulse::before \{ animation: none;/);
+});
+
+test("the tooltip of the dot puts each fact on its own labelled line, Seen last", async () => {
+    const element = await card(worker(), {tasks: [], last_activity: new Date().toISOString()});
+    const lines = [...element.querySelectorAll("[data-agent-status] [role='tooltip'] .line")].map((line) => line.textContent);
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toBe("Working");
+    expect(lines[1]).toMatch(/^Since: \d.*, 7m ago$/);
+    expect(lines[2]).toBe("Seen: just now");
+    expect(element.querySelector("[data-agent-status]").getAttribute("aria-label")).toBe(lines.join(". "));
 });
