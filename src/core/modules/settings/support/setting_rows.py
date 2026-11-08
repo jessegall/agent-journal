@@ -1,4 +1,6 @@
+from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
+from core.base.database.shared_tables import SharedTables
 from core.base.query.queries import Queries
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
@@ -10,16 +12,16 @@ TABLES: dict[SettingModel, str] = {Setting: "settings", SecretSetting: "secret_s
 class SettingRows:
     """Finds the one row of a key for an environment, or for the whole project with no environment,
     in the settings table or the secret settings table, and the keys either table stores; a
-    table is read once and again only when it changes."""
+    table is read once, across containers, and again only when it changes."""
 
-    def __init__(self, queries: Queries, kept: KeptRows) -> None:
-        self.queries, self.kept = queries, kept
+    def __init__(self, queries: Queries, kept: KeptRows, shared: SharedTables, database: Database) -> None:
+        self.queries, self.kept, self.shared, self.database = queries, kept, shared, database
 
     def row(self, model: SettingModel, key: str, environment_id: int | None) -> Setting | SecretSetting | None:
         return self.kept_table(model).get((key, environment_id))
 
     def kept_table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
-        return self.kept.read(TABLES[model], lambda: self.table(model), name="settings.rows")
+        return self.kept.read(TABLES[model], lambda: self.shared.read(self.database, TABLES[model], lambda: self.table(model)), name="settings.rows")
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}
