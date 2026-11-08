@@ -30,7 +30,7 @@ class ProfileFormat:
                 fields[name] = ""
         if fields.get("agent_type") == "subagent":
             fields["agent_type"] = "helper"
-        for name in ("independent", "program_if_possible"):
+        for name in ("independent", "program_if_possible", "keeps_project_instructions"):
             if name not in fields:
                 continue
             value = fields[name]
@@ -42,11 +42,20 @@ class ProfileFormat:
             if not is_mapping(models) or not all(isinstance(name, str) and isinstance(model, str) for name, model in models.items()):
                 raise Refusal("program-models must contain a model name for each program name")
             fields["program_models"] = {name: "" if model == "inherit" else model for name, model in models.items()}
+        if "injections" in fields:
+            fields["injections"] = ProfileFormat.injections(fields["injections"])
         if "mcp_tools" in fields:
             fields["mcp_tools"] = ProfileFormat.tools(fields["mcp_tools"])
         if "writable_folders" in fields:
             fields["writable_folders"] = ProfileFormat.tools(fields["writable_folders"])
         return fields
+
+    @staticmethod
+    def injections(value: object) -> dict[str, bool]:
+        switches = json.loads(value) if isinstance(value, str) else value
+        if not is_mapping(switches) or not all(isinstance(name, str) and isinstance(switch, bool) for name, switch in switches.items()):
+            raise Refusal("injections must name each injection with true or false")
+        return dict(switches)
 
     @staticmethod
     def header(text: str) -> ProfileText:

@@ -26,7 +26,7 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
 
     def handle(self, command: RecordParentReport, context: Context) -> Message:
         text = command.text or EMPTY_REPORT_TEXT
-        message = self.bus.run(SendAgentMessage(command.parent_id, text, notifies=self.should_notify(command)), Actor(command.agent_id, ActorType.AGENT), environment_id=context.environment_id)
+        message = self.bus.run(SendAgentMessage(command.parent_id, text, notifies=self.should_notify(command), ends_job=command.job_id is not None), Actor(command.agent_id, ActorType.AGENT), environment_id=context.environment_id)
         if command.job_id is not None:
             job = self.rows.required(HelperJob, command.job_id)
             self.repository.save(job.changed(ended_at=context.timestamp, returned=text, report_message_id=message.id), context)

@@ -36,6 +36,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--body", default="")
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
+        parser.add_argument("--keeps-project-instructions", action=BooleanOptionalAction, default=None, help="a worker's worktree keeps the project's instruction files beside the ones written for this profile")
+        parser.add_argument("--injections", help='JSON naming each injection into the instruction files with true or false, such as {"journal": false}')
         parser.add_argument("--program-if-possible", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveProfile:
@@ -45,11 +47,13 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
             profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
-        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "program_if_possible", "access", "independent") and value is not None}
+        fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "program_if_possible", "access", "independent", "keeps_project_instructions") and value is not None}
         if arguments.tier is not None:
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
         if arguments.type is not None:
             fields["agent_type"] = arguments.type
+        if arguments.injections is not None:
+            fields["injections"] = ProfileFormat.injections(arguments.injections)
         if arguments.mcp_tools is not None:
             fields["mcp_tools"] = ProfileFormat.tools(arguments.mcp_tools)
         if arguments.writable_folders is not None:

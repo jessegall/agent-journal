@@ -97,6 +97,15 @@ def test_a_report_to_a_parent_that_ended_for_good_goes_to_the_running_main_agent
     story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.", actor=second)
 
 
+class ExitedHelper(StoryFixture):
+    """A helper whose program exited with its job open and no report, leaving a terminal log."""
+
+    parent = StartedHelper
+
+    def steps(self, story):
+        exited(story, 0, "some output")
+
+
 def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story), monkeypatch)
@@ -106,6 +115,21 @@ def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypat
     story.hook(helper_agent(story).session, stop_with_report("The listener side is fine."))
     jobs = jobs_of(story, helper_agent(story))
     story.expect_rows(len(jobs) == 2, jobs[1].returned == "The listener side is fine.")
+
+
+def test_two_jobs_in_a_row_that_end_without_a_report_both_close(new_story, monkeypatch):
+    # merger helper 709 on 8 November: its program exited with job 411 unreported, and again at 03:30:55 with job 412,
+    # whose report was held as a repeat of the first, so the job stayed open and no merger started again
+    story = new_story(fixture=ExitedHelper)
+    helper = helper_agent(story)
+    story.expect_text(f"message read {helper_report(story).id}", "", actor=story.agent)
+    resumable_session(story, helper, monkeypatch)
+    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
+    story.run_listeners()
+    story.hook(helper.session, HookSamples.session_start())
+    exited(story, 0)
+    jobs = jobs_of(story, helper)
+    story.expect_rows(len(jobs) == 2, all(job.ended_at is not None for job in jobs), jobs[0].returned == jobs[1].returned)
 
 
 def test_a_stop_with_no_open_job_reports_nothing(new_story):
@@ -241,8 +265,7 @@ def test_a_helper_with_no_cost_is_held_by_time_alone(new_story):
 
 
 def test_a_retired_helpers_terminal_log_goes_with_it(new_story):
-    story = new_story(fixture=StartedHelper)
-    exited(story, 0, "some output")
+    story = new_story(fixture=ExitedHelper)
     story.expect_rows(not story.home.terminal_file(helper_agent(story).id).exists())
 
 
@@ -268,8 +291,8 @@ def test_a_message_the_main_agent_sends_a_helper_is_not_among_the_main_agents_re
 
 
 def test_unread_reports_are_found_by_their_agent_and_their_words(new_story):
-    story = reported(new_story, StartedHelper, "The cart adds tax twice.")
+    story = new_story(fixture=ReportedHelper)
     report = helper_report(story)
     story.expect_text(f"message reports --agent {helper_agent(story).id} --environment main", f"message:{report.id}", actor=story.agent)
     story.expect_text(f"message reports --agent {story.agent.id} --environment main", "no unread reports", actor=story.agent)
-    story.expect_text("message reports --search 'tax twice' --environment main", "The cart adds tax twice.", actor=story.agent)
+    story.expect_text("message reports --search 'total wrong' --environment main", "The total is wrong.", actor=story.agent)

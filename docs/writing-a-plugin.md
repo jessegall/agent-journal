@@ -28,6 +28,7 @@ command refers to the plugin.
 | `dashboard` | A page it writes, with a name, a title and `events`, the keys of the events that make the viewer read it again while it is open. With no `events` an open page reads once a minute. |
 | `description` | What it is for. |
 | `hook_stamp` | The text its own project hooks carry in their command. When the plugin is installed, switched on or upgraded, the managed hooks carrying it are removed, since the plugin runs them itself. `journal managed-hook remove --stamp <text>` removes them by hand. |
+| `instruction_blocks` | Text blocks it offers for the instruction files of a worker's profile, each with a `key`, a `title` for the profile's switch, a `file` of the plugin holding the text and an optional `default` (on). A worker's worktree gets CLAUDE.md and AGENTS.md written for its profile with each block the profile has on, as `<plugin>.<key>`; `journal worker injections <profile>` shows the switches and `journal profile save <profile> --injections '{"<plugin>.<key>": false}'` sets them. |
 | `project_reads` | Folders of the project a worker's shell line may read for it. |
 | `files` | Other files that count as what it runs. Changing one switches the plugin off until a person has read the change. A folder counts every file in it, and a big folder costs time at every step of an agent. |
 
@@ -143,6 +144,8 @@ To say you could not judge something, answer with a `tell`, and put the reason i
 | `journal plugin run [--agent <n>] [--read-only] -- <command>` | Runs a command at the root of a checkout with the sandbox of its agent. | A plugin or a person, never an agent. |
 
 A plugin's own alias or command run by an agent gets `JOURNAL_CHECKOUT_TYPE`, `JOURNAL_CHECKOUT_ROOT`, `JOURNAL_PROJECT_ROOT`, `JOURNAL_BRANCH`, `JOURNAL_BASE_BRANCH` and `JOURNAL_BASE_COMMIT` in its environment, so it needs no git call to learn where it runs.
+
+The same alias also gets `JOURNAL_ENV`, the name of the environment the agent runs in, and `JOURNAL_SETTINGS`, the path of a JSON file with the plugin's settings for that environment: the environment's own values over the project's, over each setting's default. The settings object of an event's input line holds the same values.
 
 ## The config
 

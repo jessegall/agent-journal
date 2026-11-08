@@ -18,6 +18,8 @@ class ProfileFields(TypedDict, total=False):
     codex_model: str
     program_models: dict[str, str]
     independent: bool
+    keeps_project_instructions: bool
+    injections: dict[str, bool]
     mcp_tools: tuple[str, ...]
     writable_folders: tuple[str, ...]
     module: str

@@ -93,3 +93,11 @@ def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_stor
     scanned_edit(story, "s-1", f"{folder}/src/cart.py")
     story.expect_rows(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["path"] == "src/cart.py")
 
+
+
+def test_a_scan_is_kept_for_the_agent_of_its_session_whatever_environment_it_works_in(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
+    elsewhere = story.new_row_id("agent start s-9 claude worker --environment elsewhere")
+    scanned_edit(story, "s-9", "src/cart.py", 2, 0)
+    story.expect_success("file-edit show 1", "path: src/cart.py", f"session_agent_id: {elsewhere}")

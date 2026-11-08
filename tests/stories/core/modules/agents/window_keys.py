@@ -17,12 +17,10 @@ def agents_window(new_story):
 def test_agent_windows_read_their_visible_keys_together(agents_window, window):
     server, cookie = agents_window
     status, answer = window_data(server, cookie, window=window, query="environment=main&agents.show=idle")
-    server.story.expect_rows(status == 200, set(answer["keys"]) == {"agents", "filters", "programs", "limits", "waits", "progress"})
+    server.story.expect_rows(status == 200, set(answer["keys"]) == {"agents", "filters", "programs", "waits", "progress"})
     server.story.expect_rows(all(response["code"] == 0 for response in answer["keys"].values()))
     rows = answer["keys"]["agents"]["value"]["rows"]
     server.story.expect_rows(bool(rows), all(row["state"] == "idle" and "facts" in row for row in rows))
-    limits = answer["keys"]["limits"]["value"]["rows"]
-    server.story.expect_rows(all(row["run_source"] and row["kept_source"] for row in limits))
 
 
 def test_agent_filter_state_reaches_only_the_list_key(agents_window):

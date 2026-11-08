@@ -86,7 +86,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             base_commit = self.git.tip(environment.folder, environment.branch)
             self.git.cut(environment.folder, opened.worktree)
             try:
-                self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
+                self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies, profile.name), context)
                 worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links)))), json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_COPIES), *command.library_copies))))), context)
             except Exception:
                 self.git.remove(environment.folder, opened.worktree)
