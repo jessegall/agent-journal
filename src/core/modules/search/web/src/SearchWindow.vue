@@ -1,24 +1,14 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, SearchBar, Skeleton, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, SearchBar, Skeleton, peekRef, tableOfWord, useWindow} from "@journal/window-kit";
 
-// the window a hit opens, by the model it names; a model with no window of its own shows its hit without a link
-const WINDOW_OF = {
-    task: "tasks.tasks",
-    plan: "plans.plans",
-    doc: "documents.documents",
-    question: "questions.questions",
-    template: "templates.templates",
-    sequence: "sequences.sequences",
-    trigger: "triggers.triggers",
-    check: "checks.checks",
-};
 const context = useWindow();
 const terms = ref("");
 const picked = ref(new Set());
 const answer = ref(null);
 const failure = ref("");
 const searching = ref(false);
+const shown = ref(null);
 // the models a search can be narrowed to: those the last answer held and those already picked
 const models = computed(() => [...new Set([...(answer.value?.hits || []).map((hit) => hit.cli_name), ...picked.value])].sort());
 
@@ -44,7 +34,12 @@ function toggle(model) {
     find();
 }
 
-const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
+// a hit opens its row in the inspector of its model; a model with no inspector shows the hit's text in a dialog
+function openHit(hit) {
+    const table = tableOfWord(hit.cli_name);
+    if (table) peekRef(`${table}:${hit.id}`);
+    else shown.value = hit;
+}
 </script>
 
 <template>
@@ -72,7 +67,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
             <ul class="search-hits">
                 <template v-for="hit in answer.hits" :key="`${hit.cli_name}:${hit.id}`">
                     <li>
-                        <button type="button" class="search-hit" data-hit :disabled="!windowOf(hit)" @click="context.open(windowOf(hit))">
+                        <button type="button" class="search-hit" data-hit @click="openHit(hit)">
                             <span class="search-hit-name">{{ hit.cli_name }} {{ hit.id }}</span>
                             <span class="search-hit-excerpt">{{ hit.excerpt }}</span>
                         </button>
@@ -81,6 +76,11 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
             </ul>
             <template v-if="answer.closest"><p class="search-note" data-closest>No result holds all these words: {{ terms.trim() }}, these hold most of them, the closest first</p></template>
             <template v-else><p class="search-note" data-total>{{ answer.total }} {{ answer.total === 1 ? "result matches" : "results match" }} all these words: {{ terms.trim() }}{{ answer.total > answer.hits.length ? `, the newest ${answer.hits.length} are shown` : "" }}</p></template>
+        </template>
+        <template v-if="shown">
+            <Dialog :title="`${shown.cli_name} ${shown.id}`" small data-hit-dialog @close="shown = null">
+                <p class="search-dialog-text">{{ shown.excerpt }}</p>
+            </Dialog>
         </template>
     </div>
 </template>
@@ -136,12 +136,13 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
     cursor: pointer;
 }
 
-.search-hit:hover:not(:disabled) {
+.search-hit:hover {
     background: var(--hover);
 }
 
-.search-hit:disabled {
-    cursor: default;
+.search-dialog-text {
+    margin: 0;
+    white-space: pre-wrap;
 }
 
 .search-hit-name {
