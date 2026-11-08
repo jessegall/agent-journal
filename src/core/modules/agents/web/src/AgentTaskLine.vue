@@ -19,7 +19,7 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
             <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><span v-if="line.paceTip">{{ line.paceTip }}</span></template></HoverTip>
         </span>
         <span :class="['bar', {continuous: line.bar.continuous}]" :data-state="state" :style="line.bar.continuous ? {'--done': `${line.bar.done}%`, '--now': `${line.bar.now}%`} : undefined" data-agent-bar aria-hidden="true">
-            <i v-for="(segment, place) in line.bar.segments" :key="place" :class="segment.kind" :style="segment.kind === 'now' ? {'--fill': `${segment.fill}%`} : undefined" />
+            <i v-for="(segment, place) in line.bar.segments" :key="place" :class="segment.kind" />
         </span>
     </template>
 </template>
@@ -34,6 +34,6 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 .bar[data-state="blocked"] { --c: var(--blocking); }
 .bar i { flex: 1; border-radius: 2px; background: var(--border-2); overflow: hidden; }
 .bar i.done { background: var(--text-3); }
-.bar i.now { background: linear-gradient(90deg, var(--c) var(--fill), var(--border-2) var(--fill)); }
+.bar i.now { background: var(--c); }
 .bar.continuous { gap: 0; border-radius: 2px; background: linear-gradient(90deg, var(--text-3) var(--done), var(--c) var(--done) calc(var(--done) + var(--now)), var(--border-2) calc(var(--done) + var(--now))); }
 </style>
