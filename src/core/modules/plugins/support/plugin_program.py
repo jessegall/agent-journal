@@ -14,8 +14,11 @@ from core.base.change.event_log import HIDDEN
 from core.base.journal_home import JournalHome
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
+from core.base.scope.environment_scope import EnvironmentScope
+from core.base.scope.scopes import Scopes
 from core.base.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
@@ -44,9 +47,9 @@ class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows,
-                 plugins: PluginQuery, places: PluginPlaces) -> None:
+                 plugins: PluginQuery, places: PluginPlaces, scopes: Scopes, environments: EnvironmentRows) -> None:
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
-        self.plugins, self.places = plugins, places
+        self.plugins, self.places, self.scopes, self.environments = plugins, places, scopes, environments
         self.written_settings: dict[Path, str] = {}
 
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
@@ -125,11 +128,18 @@ class PluginProgram:
     def facts(self, agent_id: int | None, file_checkout: Checkout | None) -> AgentFacts:
         if agent_id is None:
             return AgentFacts(file_checkout)
-        return AgentFacts(file_checkout or self.checkouts.checkout(agent_id), self.agents.find(agent_id).role, tuple(self.skills.names(agent_id)))
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            return AgentFacts(file_checkout or self.checkouts.checkout(agent_id), self.agents.find(agent_id).role, tuple(self.skills.names(agent_id)))
+
+    def granted_checkout(self, call: PluginCall) -> Checkout | None:
+        environment = next((row for row in self.environments.all() if row.name == call.environment), None)
+        if environment is None or call.agent_id is None or not environment.grants(call.agent_id):
+            return None
+        return Checkout.project_checkout(Path(environment.folder), environment.branch)
 
     def line(self, call: PluginCall, limit_ms: int | None) -> str:
         facts = call.facts if call.facts is not None else self.facts(call.agent_id, call.file_checkout)
-        checkout = call.file_checkout or facts.checkout
+        checkout = call.file_checkout or self.granted_checkout(call) or facts.checkout
         fields = {"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms,
                   "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "settings": dict(call.settings), "data": dict(call.event.data)}
         if call.manifest.config is not None:

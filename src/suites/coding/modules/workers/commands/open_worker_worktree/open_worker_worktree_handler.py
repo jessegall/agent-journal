@@ -29,7 +29,8 @@ class OpenWorkerWorktreeHandler(Handler[OpenWorkerWorktree, OpenedWorker]):
     def handle(self, command: OpenWorkerWorktree, context: Context) -> OpenedWorker:
         task = self.rows.required(Task, command.task_id)
         environment = self.environments.find(task.environment_id)
-        self.places.check_new_place()
+        if not environment.test:
+            self.places.check_new_place()
         worker = self.bus.dispatch(command.start, context)
         name = f"worker-{worker.id}"
         try:

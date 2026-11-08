@@ -42,3 +42,9 @@ def test_the_granted_agent_is_readable_while_it_dispatches_in_its_test_environme
     story.expect_success('task make "Fake work" --brief "A fake agent works it" --environment story-engine', actor=story.user)
     outcome = story.run("worker dispatch 1 --no-program --program claude --session s-7 --environment story-engine --fresh 'a story'", actor=story.agent)
     assert "no agent" not in outcome.output_text, outcome.output_text
+
+
+def test_the_granted_agent_may_review_a_workers_logs_in_its_test_environment(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
+    story.expect_refusal("worker logs 99 --environment story-engine", "has delivered nothing to review", actor=story.agent)
