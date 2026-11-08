@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -81,5 +82,70 @@ func TestWhatThePersonTypesStillReachesTheTerminalAndAClosedInputTakesNoLine(t *
 	inputs.Close(3)
 	if inputs.TypeLine(3, "ls") {
 		t.Fatal("a closed input took a line")
+	}
+}
+
+func TestATerminalsAnswersToItsProgramsQuestionsAreNotTypedText(t *testing.T) {
+	answers := map[string]string{
+		"version":           "\x1bP>|iTerm2 3.7.3\x1b\\",
+		"keyboard":          "\x1b[?0u",
+		"device attributes": "\x1b[?64;1;2;4;6;17;18;21;22c",
+		"mode report":       "\x1b[?2026;2$y",
+		"colour":            "\x1b]11;rgb:1818/1919/1c1c\x07",
+	}
+	for name, answer := range answers {
+		t.Run(name, func(t *testing.T) {
+			line := &inputLine{}
+			line.keys([]byte("ab" + answer + "c"))
+			if got := string(line.text); got != "abc" {
+				t.Fatalf("pending text is %q", got)
+			}
+		})
+	}
+}
+
+func TestATerminalAnswerSplitAcrossTwoReadsIsNotTypedText(t *testing.T) {
+	line := &inputLine{}
+	line.keys([]byte("\x1bP>|iTe"))
+	line.keys([]byte("rm2 3.7.3\x1b"))
+	line.keys([]byte("\\x"))
+	if got := string(line.text); got != "x" {
+		t.Fatalf("pending text is %q", got)
+	}
+}
+
+func TestAKeyWithAnEscapeSequenceStaysOutOfTheLineAndTypingGoesOn(t *testing.T) {
+	for _, key := range []string{"\x1b[A", "\x1b[3~", "\x1bOP", "\x1bO1;5P", "\x1bb"} {
+		line := &inputLine{}
+		line.keys([]byte("a" + key + "b"))
+		if got := string(line.text); got != "ab" {
+			t.Fatalf("after %q the pending text is %q", key, got)
+		}
+	}
+}
+
+func TestTwoLinesTypedTogetherAreEnteredOneAtATime(t *testing.T) {
+	inputs := NewTerminalInputs()
+	reader, _ := io.Pipe()
+	terminal := bufio.NewReader(inputs.Open(1, reader))
+	var typing sync.WaitGroup
+	for _, line := range []string{"first line", "second line"} {
+		typing.Add(1)
+		go func() {
+			defer typing.Done()
+			inputs.TypeLine(1, line)
+		}()
+	}
+	entered := []string{}
+	for range 2 {
+		text, err := terminal.ReadString('\r')
+		if err != nil {
+			t.Fatal(err)
+		}
+		entered = append(entered, strings.TrimSuffix(text, "\r"))
+	}
+	typing.Wait()
+	if !(entered[0] == "first line" && entered[1] == "second line" || entered[0] == "second line" && entered[1] == "first line") {
+		t.Fatalf("entered %q", entered)
 	}
 }

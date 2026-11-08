@@ -29,6 +29,9 @@ const (
 	AskPrompts           = "ask for permissions"
 	SkipPrompts          = "skip permission prompts"
 	ConversationPrefix   = "carry on "
+	ColdQuestion         = "This conversation's cache has gone cold"
+	StartOverCold        = "start a new session"
+	CarryOnCold          = "carry on anyway"
 	MainWorktreeRefusal  = "main is the project's own checkout, never a worktree: give --worktree another name, or leave the name out for a made-up one"
 	EnvironmentVariable  = "JOURNAL_ENV"
 	ActiveVariable       = "AGENT_JOURNAL_ACTIVE"
@@ -50,6 +53,8 @@ type Conversation struct {
 	Session    string
 	Title      string
 	ModifiedAt time.Time
+	// ColdPercent is how full the context of a conversation whose prompt cache has gone cold is, and 0 for any other.
+	ColdPercent int
 }
 
 // Journal is what the boot menu reads from the journal and asks it to make.
@@ -369,14 +374,28 @@ func (menu *boot) conversation() (bool, error) {
 	} else {
 		conversations = limited(conversations)
 	}
-	options, sessions, currentAt := []string{}, map[string]string{}, time.Now()
+	options, sessions, coldPercents, currentAt := []string{}, map[string]string{}, map[string]int{}, time.Now()
 	for _, conversation := range conversations {
 		label := conversation.Label(currentAt)
-		options, sessions[label] = append(options, label), conversation.Session
+		options, sessions[label], coldPercents[label] = append(options, label), conversation.Session, conversation.ColdPercent
 	}
 	answer, err := menu.answer(Question{Title: ConversationQuestion, Notes: []string{"Carrying on opens an earlier conversation of this environment again."}, Options: append(options, FreshConversation), ApartLast: true})
 	menu.choice.Session = sessions[answer]
-	return true, err
+	if err != nil || coldPercents[answer] == 0 {
+		return true, err
+	}
+	return true, menu.coldConversation(coldPercents[answer])
+}
+
+// coldConversation lets the person start over from a conversation whose cache has gone cold: carrying on writes its whole
+// context to the cache again, and a new session keeps the environment's tasks, memories and chat.
+func (menu *boot) coldConversation(percent int) error {
+	notes := []string{fmt.Sprintf("Its context is %d%% full, and carrying on writes all of that to the cache again.", percent), "A new session keeps this environment's tasks, memories and chat."}
+	answer, err := menu.answer(Question{Title: ColdQuestion, Warning: true, Notes: notes, Options: []string{StartOverCold, CarryOnCold}})
+	if answer == StartOverCold {
+		menu.choice.Session = ""
+	}
+	return err
 }
 
 func (menu *boot) prompts() (bool, error) {

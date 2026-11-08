@@ -37,6 +37,7 @@ type TerminalInputs struct {
 	programs map[int]*exec.Cmd
 	starting map[int]bool
 	pending  map[int]*inputLine
+	typing   map[int]*sync.Mutex
 	onLogin  func(agentID int)
 }
 
@@ -56,7 +57,7 @@ func (reader keyboardReader) Read(buffer []byte) (int, error) {
 
 // NewTerminalInputs makes the inputs of no program yet.
 func NewTerminalInputs() *TerminalInputs {
-	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}, pending: map[int]*inputLine{}}
+	return &TerminalInputs{writers: map[int]*io.PipeWriter{}, keyedAt: map[int]time.Time{}, typedAt: map[int]time.Time{}, programs: map[int]*exec.Cmd{}, starting: map[int]bool{}, pending: map[int]*inputLine{}, typing: map[int]*sync.Mutex{}}
 }
 
 // Open keeps an input for the agent, fed by the source as well, and returns what the program's terminal reads.
@@ -180,14 +181,19 @@ func (inputs *TerminalInputs) waitForExit(agentID int, limit time.Duration) bool
 
 // TypeLine types the line and its Enter into the agent's terminal, and says whether the agent has one. Text the person
 // typed there and has not entered is cleared with one backspace for each character, never a key that could interrupt the
-// program, and typed again after the line, so the person goes on typing where they were.
+// program, and typed again after the line, so the person goes on typing where they were. Lines for one agent go in one at
+// a time, with a pause after each Enter, so two that come together are entered as two.
 func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	inputs.mutex.Lock()
 	writer, ok := inputs.writers[agentID]
+	turn := inputs.typingTurn(agentID)
 	inputs.mutex.Unlock()
 	if !ok {
 		return false
 	}
+	turn.Lock()
+	defer turn.Unlock()
+	defer time.Sleep(keyPause)
 	remembered := inputs.Pending(agentID)
 	inputs.mutex.Lock()
 	inputs.typedAt[agentID] = time.Now()
@@ -209,6 +215,16 @@ func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	}
 	_, err := io.WriteString(writer, remembered)
 	return err == nil
+}
+
+// typingTurn is the agent's lock on its terminal for one typed line; the caller holds inputs.mutex.
+func (inputs *TerminalInputs) typingTurn(agentID int) *sync.Mutex {
+	turn := inputs.typing[agentID]
+	if turn == nil {
+		turn = &sync.Mutex{}
+		inputs.typing[agentID] = turn
+	}
+	return turn
 }
 
 // PressKeys presses keys in the agent's terminal, with the same pause before an Enter as a typed line. They count neither

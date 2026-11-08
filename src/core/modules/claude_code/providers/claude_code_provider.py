@@ -3,6 +3,7 @@ from core.modules.claude_code.providers.support.claude_server_file import Claude
 from dataclasses import replace
 from core.base.profile.agent_profile import AgentProfile
 from core.base.file_access import FileAccess
+from core.base.provider.status_file_fields import StatusFileFields
 import json
 import os
 import re
@@ -199,8 +200,8 @@ class ClaudeCodeProvider(Provider):
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
-        path = home.status_folder / f"{session}.json"
-        fields: object = json.loads(FileAccess.shared().read(path) or "{}") if path.is_file() else {}
+        path = home.status_file(session)
+        fields = StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {}
         window = fields.get("context_window") if is_mapping(fields) else None
         used = window.get("used_percentage") if is_mapping(window) else None
         return int(used) if isinstance(used, int | float) and not isinstance(used, bool) else None

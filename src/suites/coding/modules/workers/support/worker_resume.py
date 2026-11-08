@@ -5,6 +5,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.block_until import BlockUntil
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
+from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.modules.tasks.support.task_nudges import TASK_BRIEF_FIRST
 from core.modules.tasks.support.block_conditions.task_brief_read import TaskBriefRead
@@ -31,6 +32,7 @@ from suites.coding.modules.workers.support.worker_started_work import WorkerStar
 from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
+from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_shares import ProgramShares
@@ -46,9 +48,10 @@ class WorkerResume:
     with no job waiting is given the line that tells it to go on."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork) -> None:
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions) -> None:
         self.admission, self.started_work = admission, started_work
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
+        self.cold = cold
         self.requirement, self.places, self.program = requirement, places, program
         self.rows = rows
         self.states, self.reports, self.routes = states, reports, routes
@@ -103,7 +106,9 @@ class WorkerResume:
         if not self.may_resume(worker) or not self.places.can_resume(worker):
             return LaunchAnswer.SKIPPED
         environment = self.queries.query(Environment).find(worktree.environment_id)
-        answer = self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text))
+        current = self.cold.renewed(worker)
+        command = self.worker_command.resumed(worker, worktree, environment, job.text) if current.session == worker.session else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)
+        answer = self.launcher.hand(current, environment, command)
         if answer is not LaunchAnswer.STARTED:
             return answer
         stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
