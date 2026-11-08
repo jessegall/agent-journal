@@ -15,7 +15,8 @@ class ServerPluginServices:
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
-        self.processes = ServiceProcesses()
+        self.processes = ServiceProcesses.shared(home)
+        self.processes.serving = True
 
     def follow(self) -> None:
         LoginPath(self.home).fill_missing()

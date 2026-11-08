@@ -48,6 +48,26 @@ def served_story(new_story):
     return story
 
 
+def test_an_upgrade_starts_the_service_again_with_the_new_code_before_it_reports_done(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    source = service_plugin_folder(story.home.folder.parent)
+    story.run(f"plugin install {source} --yes", actor=story.user)
+    processes = ServiceProcesses.shared(story.home)
+    processes.serving = True
+    try:
+        story.container.get(PluginServices).follow(processes)
+        first = processes.running[("served", "answers")]
+        manifest = json.loads((source / "journal-plugin.json").read_text())
+        (source / "journal-plugin.json").write_text(json.dumps({**manifest, "version": "1.1.0"}))
+        upgraded = story.run("plugin upgrade served --yes", actor=story.user)
+        second = processes.running[("served", "answers")]
+        story.expect_rows(upgraded.code == 0, second.pid != first.pid, second.running(), not first.running(), detail=upgraded.output_text)
+        story.expect_text("plugin services", "served answers: running", actor=story.user)
+    finally:
+        processes.close()
+
+
 def expect_service_refusal(story, sample):
     story.expect_hook_refusal("s-1", sample, "plugin:1 refused")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin served] the service says no", actor=story.agent)
