@@ -90,7 +90,7 @@ class Console:
         approval = refusal.original
         if not isinstance(approval, UserApprovalRefusal):
             return
-        arguments = approval.arguments or tuple(argv)
+        arguments = approval.arguments or (() if approval.command is not None else tuple(argv))
         self.bus.run(RequestUserApproval(approval, arguments), caller.actor, environment_id=caller.environment_id)
         self.run_commit_listeners(argv)
 

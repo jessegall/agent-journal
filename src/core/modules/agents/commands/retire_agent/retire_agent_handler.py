@@ -25,7 +25,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
 
     def prepare(self, command: RetireAgent, actor: Actor) -> None:
         agent = self.queries.query(Agent).find(command.agent_id)
-        self.check_actor(agent, actor)
+        self.check_actor(agent, actor, command)
         self.check_state(agent, command.reason)
         roster = self.roster(agent)
         if roster is None:
@@ -43,12 +43,12 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
             roster.release_pending_work(agent, context)
         return self.repository.save(agent.retired(context.timestamp, command.reason.strip(), context.actor.id), context)
 
-    def check_actor(self, agent: Agent, actor: Actor) -> None:
+    def check_actor(self, agent: Agent, actor: Actor, command: RetireAgent) -> None:
         if actor.type is not ActorType.AGENT:
             return
         caller = self.queries.query(Agent).find(actor.id)
         if caller.id != agent.parent_id and (caller.role != AgentRole.MAIN or caller.environment_id != agent.environment_id):
-            raise UserApprovalRefusal(f"Retire agent {agent.id}, which belongs to agent {agent.parent_id}?")
+            raise UserApprovalRefusal(f"Retire agent {agent.id}, which belongs to agent {agent.parent_id}?", command=command)
 
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():

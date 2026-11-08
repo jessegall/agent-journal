@@ -1,3 +1,4 @@
+from core.base.command.command_json import CommandJson
 from core.base.command.context import Context
 from core.base.agent_role import AgentRole
 from core.base.command.handler import Handler
@@ -36,7 +37,8 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
         original_suggestion = command.approval.suggestion
         if recipient is not None:
             command.approval.suggestion = f"The main agent was asked to review this request: agent {recipient}."
-        actions = self.queries.query(ApprovalRequest).filter(arguments=command.arguments,
+        command_json = CommandJson.dump(command.approval.command) if command.approval.command is not None else ""
+        actions = self.queries.query(ApprovalRequest).filter(arguments=command.arguments, command_json=command_json,
                                                           required_person_id=command.approval.required_person_id,
                                                           continued_arguments=command.approval.continued_arguments)
         requests = actions.filter(requester_id=requester_id)
@@ -66,4 +68,4 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
                                                     recipient_agent_id=recipient,
                                                     source_version=command.approval.source_version,
                                                     returns_output=command.approval.returns_output,
-                                                    continued_arguments=command.approval.continued_arguments), context)
+                                                    continued_arguments=command.approval.continued_arguments, command_json=command_json), context)

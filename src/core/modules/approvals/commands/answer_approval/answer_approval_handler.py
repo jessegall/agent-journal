@@ -5,6 +5,7 @@ from core.base.caller.caller import Caller
 from core.base.cli.console import Console, SUCCESS_CODE
 from core.base.cli.module_remove_line import MODULE_REMOVAL_ARGUMENTS, ModuleRemoveLine
 from core.base.command.bus import Bus
+from core.base.command.command_json import CommandJson
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -35,6 +36,8 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
             with self.scopes.opened(None):
                 caller = Caller(context.actor, context.environment_id)
                 code = self.run_action(arguments, caller, output)
+                if code == SUCCESS_CODE and request.command_json and command.decision.choose(True, False):
+                    self.bus.run(CommandJson.load(request.command_json), context.actor, environment_id=context.environment_id)
                 continued = command.decision.choose(request.continued_arguments, ())
                 if code == SUCCESS_CODE and continued:
                     code = self.run_action(continued, caller, output)
