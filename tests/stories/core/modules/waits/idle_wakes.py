@@ -3,7 +3,7 @@ from datetime import timedelta
 from core.base.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.modules.processes.support.process_samples import start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run, start_process
 from tests.stories.core.modules.tasks.task_waits import kept_typing
 from tests.stories.core.modules.approvals.approvals import CHANGE_SETTING
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
@@ -66,3 +66,16 @@ def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_qu
     story.run_listeners()
     story.expect_rows(entered == [(story.agent.id, "[journal] new message 1")], detail=str(entered))
     story.expect_text(f"task show {task}", "state: open", actor=story.agent)
+
+
+def test_an_agent_stopped_while_a_run_it_moved_to_the_background_ends_is_woken_whether_it_failed_or_passed(new_story):
+    for exit_code in (0, 2):
+        story = new_story(fixture=BuilderStarted)
+        entered = kept_typing(story)
+        process = moved_run(story, "make build")
+        story.hook("s-1", HookSamples.stop().with_fields(accepts_lines=False))
+        story.advance(timedelta(seconds=IDLE_SECONDS))
+        story.expect_rows(entered == [])
+        end_run(story, process, "built\n", exit_code)
+        story.run_listeners()
+        story.expect_rows(entered == [(story.agent.id, f"[journal] output {process.id} ended")], detail=f"exit {exit_code}: {entered}")

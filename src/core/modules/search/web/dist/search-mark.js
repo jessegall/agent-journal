@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-bdbfefa59792")) { const style = document.createElement("style"); style.id = "window-styles-bdbfefa59792"; style.textContent = ".search-mark[data-v-7bd5473b]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-7bd5473b]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-7bd5473b]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-7bd5473b]:disabled{cursor:default}.search-child-name[data-v-7bd5473b]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-7bd5473b]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-7bd5473b]{align-items:center;color:var(--text-3)}.search-none[data-v-7bd5473b]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-1dcc7fbc]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-1dcc7fbc]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-1dcc7fbc]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-1dcc7fbc]{background:var(--accent);color:#fff}.search-hits[data-v-1dcc7fbc]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-1dcc7fbc]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-1dcc7fbc]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-1dcc7fbc]:disabled{cursor:default}.search-hit-name[data-v-1dcc7fbc]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-1dcc7fbc]{flex:1;min-width:0}.search-note[data-v-1dcc7fbc]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
-import { computed as i, openBlock as s, createElementBlock as o, Fragment as k, renderList as v, createElementVNode as r, toDisplayString as n, createCommentVNode as h, unref as u, createVNode as f } from "vue";
+if (!document.getElementById("window-styles-36d3c8c8ce43")) { const style = document.createElement("style"); style.id = "window-styles-36d3c8c8ce43"; style.textContent = ".search-mark[data-v-1c0a0a5e]{display:flex;flex-direction:column;gap:1px;min-width:260px;max-width:520px;margin:2px 0 2px 12px}.search-child[data-v-1c0a0a5e]{display:flex;gap:10px;align-items:baseline;padding:4px 8px;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;text-align:left;cursor:pointer}.search-child[data-v-1c0a0a5e]:hover:not(:disabled){background:var(--hover);color:var(--text)}.search-child[data-v-1c0a0a5e]:disabled{cursor:default}.search-child-name[data-v-1c0a0a5e]{flex:none;min-width:64px;color:var(--text-3)}.search-child-excerpt[data-v-1c0a0a5e]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.search-more[data-v-1c0a0a5e]{align-items:center;color:var(--text-3)}.search-none[data-v-1c0a0a5e]{margin:0;padding:4px 8px;color:var(--text-3);font-size:12px}.search[data-v-932ed316]{display:flex;flex-direction:column;gap:14px}.search-chips[data-v-932ed316]{display:flex;flex-wrap:wrap;gap:6px}.search-chip[data-v-932ed316]{padding:2px 10px;border:0;border-radius:10px;background:var(--raised);color:var(--text-2);font-size:12px;cursor:pointer}.search-chip.on[data-v-932ed316]{background:var(--accent);color:#fff}.search-hits[data-v-932ed316]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.search-hit[data-v-932ed316]{display:flex;gap:12px;width:100%;padding:8px 10px;border:0;border-radius:7px;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}.search-hit[data-v-932ed316]:hover:not(:disabled){background:var(--hover)}.search-hit[data-v-932ed316]:disabled{cursor:default}.search-hit-name[data-v-932ed316]{flex:none;width:110px;color:var(--text-3)}.search-hit-excerpt[data-v-932ed316]{flex:1;min-width:0}.search-note[data-v-932ed316]{margin:0;color:var(--text-3)}\n"; document.head.appendChild(style); }
+import { computed as i, openBlock as s, createElementBlock as o, Fragment as k, renderList as v, createElementVNode as n, toDisplayString as c, createCommentVNode as h, unref as u, createVNode as f } from "vue";
 import { useWindow as b, Icon as C, peekRef as x, tableOfWord as y } from "@journal/window-kit";
-import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const g = {
   class: "search-mark",
   "data-search-mark": ""
@@ -13,7 +13,7 @@ const g = {
 }, A = "search.search", O = {
   __name: "SearchMarkCard",
   setup(V) {
-    const c = b(), m = c.option("row"), a = i(() => {
+    const r = b(), m = r.option("row"), a = i(() => {
       var e;
       return JSON.parse(((e = m.value) == null ? void 0 : e.lines) || '{"terms": [], "total": 0, "hits": []}');
     }), p = i(() => a.value.total - a.value.hits.length), l = (e) => y(e.cli_name), _ = (e) => x(`${l(e)}:${e.id}`);
@@ -26,26 +26,26 @@ const g = {
         disabled: !l(t),
         onClick: (B) => _(t)
       }, [
-        r("span", S, n(t.cli_name) + " " + n(t.id), 1),
-        r("span", E, n(t.excerpt), 1)
+        n("span", S, c(t.cli_name) + " " + c(t.id), 1),
+        n("span", E, c(t.excerpt), 1)
       ], 8, N))), 128)),
-      a.value.hits.length ? h("", !0) : (s(), o("p", w, "No results match all these words: " + n(a.value.terms.join(" ")), 1)),
+      a.value.hits.length ? h("", !0) : (s(), o("p", w, "No results match all these words: " + c(a.value.terms.join(" ")), 1)),
       p.value > 0 ? (s(), o("button", {
         key: 1,
         type: "button",
         class: "search-child search-more",
         "data-search-more": "",
-        onClick: d[0] || (d[0] = (t) => u(c).open(A))
+        onClick: d[0] || (d[0] = (t) => u(r).open(A))
       }, [
         f(u(C), {
           name: "search",
           size: 12
         }),
-        r("span", null, "All " + n(a.value.total) + " results on the search page", 1)
+        n("span", null, "All " + c(a.value.total) + " results on the search page", 1)
       ])) : h("", !0)
     ]));
   }
-}, W = /* @__PURE__ */ $(O, [["__scopeId", "data-v-7bd5473b"]]);
+}, W = /* @__PURE__ */ $(O, [["__scopeId", "data-v-1c0a0a5e"]]);
 export {
   W as default
 };
