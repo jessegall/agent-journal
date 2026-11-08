@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_value_with
+from tests.stories.support.story_checks import expect_value, expect_value_with
 
 
 def test_task_info_prints_the_delegating_facts_and_no_brief(new_story):

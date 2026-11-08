@@ -3,7 +3,7 @@ from core.base.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_value_with
+from tests.stories.support.story_checks import expect_value, expect_value_with
 
 
 def window_story(new_story) -> WindowStory:

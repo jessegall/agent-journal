@@ -4,7 +4,7 @@ import json
 from datetime import timedelta
 
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_id_cancelled, expect_index, expect_value_with, expect_value_without
+from tests.stories.support.story_checks import expect_id_cancelled, expect_index, expect_value, expect_value_with, expect_value_without
 
 
 def test_the_board_brings_the_first_page_of_every_group_in_one_answer(new_story):
