@@ -104,6 +104,15 @@ def test_an_alias_of_a_journal_command_stays_in_the_foreground(new_story):
     expect_updated_input_reply_without(reply, "--background")
 
 
+def test_a_check_alias_goes_through_the_run_queue(new_story):
+    # the hook classifies a journal line that runs an alias by what the alias runs, here a check such as the commandments judge
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('alias add sins "echo judged" --category check', actor=story.agent)
+    line = HookSamples.shell("journal sins --changes", ShellPart("journal", CommandCategory.CHECK, ["sins", "--changes"], subcommand="sins"))
+    reply = story.hook("s-1", line)
+    story.expect_rows("--limit 15" in str(reply.updated_input), "--queue" in str(reply.updated_input), detail=str(reply.updated_input))
+
+
 def expect_updated_input_reply_without(reply, expected) -> None:
     actual = str(reply.updated_input)
     assert expected not in actual, actual

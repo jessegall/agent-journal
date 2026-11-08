@@ -56,3 +56,13 @@ def test_s82_a_manifest_with_protocol_two_installs_runs_nothing_and_says_so_on_t
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not script_calls(story, "see.sh"))
     story.expect_rows(any(row["state"] == "needs a newer journal" for row in event_page.card()))
+
+
+def test_an_alias_of_a_switched_off_plugin_is_refused_and_runs_again_once_it_is_on(new_story):
+    # the code-commandments plugin on 8 November: switched off, its sins alias still ran the judge for every worker
+    story = event_plugin_story(new_story, scripts={"judge.sh": "#!/bin/sh\nexit 0\n"}, project_reads=[".rules"], aliases=[{"name": "judge", "line": "judge.sh"}])
+    story.expect_success("plugin disable events", actor=story.user)
+    story.expect_refusal("judge", "switched off", actor=story.agent)
+    story.expect_refusal("judge", "switched off", actor=story.user)
+    story.expect_success("plugin enable events", actor=story.user)
+    story.expect_success("judge", actor=story.user)
