@@ -1,20 +1,34 @@
-from argparse import Namespace
+from argparse import ArgumentParser, Namespace
+from dataclasses import dataclass
 
 from core.base.actor_type import ActorType
 from core.base.caller.caller import Caller
+from core.base.query.conditions.contains_every import ContainsEvery
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 
+SHOWN_REPORTS = 20
+TITLE_CHARACTERS = 100
 
-class UnreadReportsSubcommand(ReadSubcommand[tuple[Message, ...]]):
-    """`journal message reports`: the reports sent to the caller that nobody has read yet, with their numbers: a
-    helper or worker reads those sent to it, and a main agent or a person those sent to the main agent."""
+
+@dataclass(frozen=True)
+class UnreadReports:
+    """One page of unread reports, newest page first and oldest first on a page, and how many there are in all."""
+
+    reports: tuple[Message, ...]
+    total: int
+    page: int
+
+
+class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
+    """`journal message reports`: the newest reports sent to the caller that nobody has read yet, with their numbers
+    and how many more there are: a helper or worker reads those sent to it, and a main agent or a person those sent
+    to the main agent."""
 
     cli_name = "message"
     name = "reports"
@@ -22,16 +36,30 @@ class UnreadReportsSubcommand(ReadSubcommand[tuple[Message, ...]]):
     def __init__(self, queries: Queries, agents: AgentRows) -> None:
         self.queries, self.agents = queries, agents
 
-    def read(self, arguments: Namespace, caller: Caller) -> tuple[Message, ...]:
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--page", type=int, default=1)
+        parser.add_argument("--search", default="")
+        parser.add_argument("--agent", type=int)
+
+    def read(self, arguments: Namespace, caller: Caller) -> UnreadReports:
         reports = self.queries.query(Message).filter(type=MessageType.AGENT, is_chat_visible=False).matching(IsNull("read_at"))
         if self.reads_own_reports(caller):
-            return tuple(reports.filter(target_agent_id=caller.actor.id).oldest().all_rows())
-        return tuple(reports.matching(IsNull("target_agent_id")).oldest().all_rows())
+            reports = reports.filter(target_agent_id=caller.actor.id)
+        else:
+            reports = reports.matching(IsNull("target_agent_id"))
+        if arguments.agent is not None:
+            reports = reports.filter(session_agent_id=arguments.agent)
+        if arguments.search:
+            reports = reports.matching(ContainsEvery(["text"], arguments.search.split()))
+        page = reports.newest().page(arguments.page, SHOWN_REPORTS)
+        return UnreadReports(tuple(reversed(page.rows)), page.total, arguments.page)
 
     def reads_own_reports(self, caller: Caller) -> bool:
         return caller.actor.type is ActorType.AGENT and not self.agents.is_main(caller.actor.id)
 
     def write_output(self, value: object, output: Output) -> None:
-        if is_tuple(value):
-            lines = [f"message:{report.id} from agent:{report.session_agent_id}: journal message read {report.id}" for report in value if isinstance(report, Message)]
-            output.write("\n".join(lines) or "no unread reports", {"rows": [report.id for report in value if isinstance(report, Message)]})
+        if isinstance(value, UnreadReports):
+            lines = [f"message:{report.id} from agent:{report.session_agent_id}: {report.text.splitlines()[0][:TITLE_CHARACTERS] if report.text else ''}" for report in value.reports]
+            older = value.total - value.page * SHOWN_REPORTS
+            text = "\n".join([*lines, f"{older} older unread reports: --page {value.page + 1}"] if older > 0 else lines)
+            output.write(text or "no unread reports", {"rows": [report.id for report in value.reports], "total": value.total})
