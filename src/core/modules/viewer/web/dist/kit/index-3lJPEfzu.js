@@ -12155,27 +12155,29 @@ const w8 = (e, t, n, a) => Kn(e.label, n, { row_id: a, id: a }) || Jw(t, n, a), 
       }, null, 8, ["more", "loading", "failure"])
     ], 2));
   }
-}, El = /* @__PURE__ */ U(C8, [["__scopeId", "data-v-276284a3"]]), E8 = { class: "resource-heading" }, A8 = { class: "resource-type" }, O8 = {
+}, El = /* @__PURE__ */ U(C8, [["__scopeId", "data-v-276284a3"]]), E8 = { class: "resource-heading" }, A8 = {
   key: 0,
   class: "resource-title",
   "data-resource-title": ""
-}, T8 = {
+}, O8 = {
   key: 1,
   class: "resource-abstract"
-}, I8 = {
+}, T8 = {
   __name: "ResourceHeading",
-  props: { label: String, title: String, abstract: String },
+  props: { title: String, abstract: String },
   setup(e) {
     return (t, n) => (u(), f("div", E8, [
-      m("p", A8, v(e.label), 1),
-      e.title ? (u(), f("h2", O8, v(e.title), 1)) : b("", !0),
-      e.abstract ? (u(), f("p", T8, v(e.abstract), 1)) : b("", !0)
+      e.title ? (u(), f("h2", A8, v(e.title), 1)) : b("", !0),
+      e.abstract ? (u(), f("p", O8, v(e.abstract), 1)) : b("", !0)
     ]));
   }
-}, B8 = /* @__PURE__ */ U(I8, [["__scopeId", "data-v-e70bb004"]]), R8 = {
+}, I8 = /* @__PURE__ */ U(T8, [["__scopeId", "data-v-d65ef53f"]]), B8 = {
   class: "inspector-head",
   "data-inspector-head": ""
-}, L8 = { class: "inspector-icons" }, N8 = { class: "inspector-icons-start" }, q8 = { class: "inspector-icons-end" }, D8 = ["href"], P8 = {
+}, R8 = { class: "inspector-icons" }, L8 = { class: "inspector-icons-start" }, N8 = {
+  class: "inspector-label",
+  "data-resource-type": ""
+}, q8 = { class: "inspector-icons-end" }, D8 = ["href"], P8 = {
   __name: "InspectorHead",
   props: {
     label: { type: String, default: "" },
@@ -12191,9 +12193,9 @@ const w8 = (e, t, n, a) => Kn(e.label, n, { row_id: a, id: a }) || Jw(t, n, a), 
   emits: ["close", "back", "step"],
   setup(e, { emit: t }) {
     const n = e, a = t, s = C(() => `${n.opened.table}:${n.opened.id}`), o = C(() => n.shareable && !n.readOnly), l = C(() => n.backed ? "Close all rows" : "Close");
-    return (i, r) => (u(), f("header", R8, [
-      m("div", L8, [
-        m("span", N8, [
+    return (i, r) => (u(), f("header", B8, [
+      m("div", R8, [
+        m("span", L8, [
           e.backed ? (u(), W(pe, {
             key: 0,
             variant: "icon",
@@ -12243,6 +12245,7 @@ const w8 = (e, t, n, a) => Kn(e.label, n, { row_id: a, id: a }) || Jw(t, n, a), 
             })
           ], 64)) : b("", !0)
         ]),
+        m("p", N8, v(e.label), 1),
         m("span", q8, [
           e.embedded ? (u(), W(pe, {
             key: 0,
@@ -12291,14 +12294,13 @@ const w8 = (e, t, n, a) => Kn(e.label, n, { row_id: a, id: a }) || Jw(t, n, a), 
           }, 8, ["title", "aria-label"]))
         ])
       ]),
-      A(B8, {
-        label: e.label,
+      A(I8, {
         title: e.title,
         abstract: e.description
-      }, null, 8, ["label", "title", "abstract"])
+      }, null, 8, ["title", "abstract"])
     ]));
   }
-}, j8 = /* @__PURE__ */ U(P8, [["__scopeId", "data-v-51401f06"]]), F8 = {
+}, j8 = /* @__PURE__ */ U(P8, [["__scopeId", "data-v-2928b6ca"]]), F8 = {
   class: "section field-grid",
   "data-resource-fields": ""
 }, W8 = { class: "field-name" }, H8 = {
@@ -14100,7 +14102,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = su(() => import("./VoiceFigure-CI1hmYfd.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = su(() => import("./VoiceFigure-DHxvhqT3.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Tf as $,
   Ee as A,

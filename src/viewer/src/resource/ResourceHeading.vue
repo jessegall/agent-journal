@@ -1,10 +1,9 @@
 <script setup>
-defineProps({label: String, title: String, abstract: String});
+defineProps({title: String, abstract: String});
 </script>
 
 <template>
     <div class="resource-heading">
-        <p class="resource-type">{{ label }}</p>
         <template v-if="title">
             <h2 class="resource-title" data-resource-title>{{ title }}</h2>
         </template>
