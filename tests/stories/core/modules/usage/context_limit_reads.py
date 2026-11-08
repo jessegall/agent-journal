@@ -32,3 +32,12 @@ def test_with_no_limit_on_or_a_smaller_window_the_usage_read_gives_no_limit(new_
     row = reported(new_story(fixture=UserJoined), limit_on, limit_tokens)
     assert row["context_limit_tokens"] is None, row
     assert row["context_tokens"] == USED_TOKENS, row
+
+
+def test_a_status_file_in_the_shape_the_launcher_writes_for_a_headless_agent_gives_its_tokens_to_the_usage_read(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=story.user)
+    story.expect_success(f"setting set {CONTEXT_LIMIT_ON} true --project", actor=story.user)
+    save_status_file(story, "s-1", {"session_id": "s-1", "context_window": {"used_percentage": 20, "total_input_tokens": 200100}, "cost": {"total_cost_usd": 1.5}})
+    row = agent_row(story)
+    assert (row["context_tokens"], row["context_limit_tokens"], row["cost_dollars"]) == (200100, 400000, 1.5), row

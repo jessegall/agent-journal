@@ -7,7 +7,7 @@ def test_a_codex_agent_shows_the_model_its_rollout_ran_and_no_cost_where_codex_r
     story = new_story(fixture=BuilderWithUser)
     monkeypatch.setenv("CODEX_HOME", str(story.home.folder / "codex"))
     worker_id = story.new_row_id("agent start codex-model codex worker --environment main")
-    rollout = story.home.folder / "codex" / "sessions" / "rollout-test-codex-model.jsonl"
+    rollout = story.home.folder / "codex" / "sessions" / "2026" / "11" / "06" / "rollout-2026-11-06T18-31-51-codex-model.jsonl"
     rollout.parent.mkdir(parents=True)
     rollout.write_text(json.dumps({"type": "turn_context", "payload": {"model": "gpt-6.1-sol", "effort": "medium"}}) + "\n")
     facts = json.loads(story.run("usage agents --environment main --json").output_text)["rows"]

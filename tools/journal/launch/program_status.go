@@ -23,7 +23,8 @@ type statusReport struct {
 }
 
 type statusContext struct {
-	UsedPercentage int `json:"used_percentage"`
+	UsedPercentage   int `json:"used_percentage"`
+	TotalInputTokens int `json:"total_input_tokens,omitempty"`
 }
 
 type statusCost struct {
@@ -110,7 +111,7 @@ func (status *ProgramStatus) keep(session string) {
 		}
 	}
 	if status.tokens > 0 {
-		status.report.Context = &statusContext{UsedPercentage: int(math.Round(float64(status.tokens) * 100 / float64(status.windowTokens)))}
+		status.report.Context = &statusContext{UsedPercentage: int(math.Round(float64(status.tokens) * 100 / float64(status.windowTokens))), TotalInputTokens: status.tokens}
 	}
 	body, err := json.Marshal(status.report)
 	if err != nil || os.MkdirAll(status.folder, 0o755) != nil {

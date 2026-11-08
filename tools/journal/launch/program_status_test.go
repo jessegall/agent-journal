@@ -35,6 +35,15 @@ func TestAnAssistantLineKeepsTheContextInUseAndSkipsItsChildrensLines(t *testing
 	}
 }
 
+func TestAnAssistantLineKeepsTheTokensInUseForTheContextLimit(t *testing.T) {
+	home := t.TempDir()
+	status := NewProgramStatus(home)
+	fmt.Fprint(status, assistantLine)
+	if report := keptStatus(t, home, ""); report.Context.TotalInputTokens != 200100 {
+		t.Fatalf("kept %+v", report.Context)
+	}
+}
+
 func TestAResultLineKeepsTheCostAndTheModelsContextWindow(t *testing.T) {
 	home := t.TempDir()
 	status := NewProgramStatus(home)

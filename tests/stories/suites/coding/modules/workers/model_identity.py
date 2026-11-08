@@ -38,9 +38,10 @@ def test_dispatch_send_resume_and_restart_keep_the_model_on_the_command_and_card
                             answers=(b"started\n", b"started\n", b"failed\n", b"started\n"), request_count=4)
     worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} 1")
     session = worker_session(story, worker)
-    rollout = story.home.folder / "codex" / "sessions" / f"rollout-test-{session}.jsonl"
-    rollout.parent.mkdir(parents=True)
-    rollout.write_text(json.dumps({"type": "turn_context", "payload": {"effort": "high"}}) + "\n")
+    if program == "codex":
+        rollout = story.home.folder / "codex" / "sessions" / "2026" / "11" / "06" / f"rollout-2026-11-06T18-31-51-{session}.jsonl"
+        rollout.parent.mkdir(parents=True)
+        rollout.write_text(json.dumps({"type": "turn_context", "payload": {"effort": "high"}}) + "\n")
     story.run_listeners()
     expect_identity(story, worker, model)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)

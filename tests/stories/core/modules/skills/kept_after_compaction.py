@@ -39,13 +39,14 @@ def skill_body(story, folder: str) -> str:
     return SkillContents.read(Path(entry.path)).body
 
 
-def kept_skill_records(folder: Path, skills: dict[str, str]) -> list[dict[str, object]]:
+def kept_skill_records(folder: Path, skills: dict[str, str], is_recorded: bool = True) -> list[dict[str, object]]:
     kept = [{"name": name, "path": f"projectSettings:{name}", "content": f"Base directory for this skill: {folder}\n\n{body}"} for name, body in skills.items()]
-    return [{"type": "system", "subtype": "compact_boundary"}, {"type": "user", "message": {"content": "summary"}},
-            {"attachment": {"type": "invoked_skills", "skills": kept}}]
+    boundary = [{"type": "system", "subtype": "compact_boundary"}, {"type": "user", "message": {"content": "summary"}}]
+    return [*boundary, {"attachment": {"type": "invoked_skills", "skills": kept}}] if is_recorded else boundary
 
 
-def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[str, str], program: str = "claude", written_after: tuple[dict[str, object], ...] = ()) -> None:
+def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[str, str], program: str = "claude", written_after: tuple[dict[str, object], ...] = (),
+                                            earlier: tuple[dict[str, object], ...] = (), is_recorded: bool = True) -> None:
     """The real order: the session start hook of a compaction runs first, and only then does the program write its
     record of the skills it put back; the agent's first tool use comes after that."""
     transcript = folder / "session.jsonl"
@@ -54,7 +55,7 @@ def compaction_written_after_its_start_hook(story, folder: Path, skills: dict[st
     story.hook("s-1", HookSamples.session_start().with_fields(program=program).with_raw(raw))
     story.run_listeners()
     expect_due(story, *skills)
-    transcript.write_text("".join(json.dumps(record) + "\n" for record in (*kept_skill_records(folder, skills), *written_after)))
+    transcript.write_text("".join(json.dumps(record) + "\n" for record in (*earlier, *kept_skill_records(folder, skills, is_recorded), *written_after)))
     story.hook("s-1", FIRST_TOOL_USE.with_fields(program=program).with_raw({"transcript_path": str(transcript)}))
     story.run_listeners()
 
@@ -86,10 +87,16 @@ def test_a_skill_put_back_in_an_older_text_is_still_due(new_story, tmp_path):
     expect_due(story, "journal-notes", "journal-chores")
 
 
-def test_a_codex_session_has_every_skill_due_after_a_compaction(new_story, tmp_path):
-    story = new_story(DUE, fixture=SkillsAfterCompaction)
-    start(story, HookSamples.session_start().with_fields(program="codex"))
-    story.hook("s-1", PRE_COMPACT.with_fields(program="codex"))
-    story.run_listeners()
-    compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, program="codex")
+def test_only_the_latest_compactions_record_counts_when_a_second_compaction_comes_after_an_older_one(new_story, tmp_path):
+    story = new_story(DUE, fixture=CompactingClaude)
+    older = tuple(kept_skill_records(tmp_path, {"journal-notes": skill_body(story, "journal-notes")}))
+    compaction_written_after_its_start_hook(story, tmp_path, {"journal-chores": skill_body(story, "journal-chores")}, earlier=older)
+    expect_skills_absent(story, "journal-chores")
+    expect_due(story, "journal-notes")
+
+
+def test_the_record_of_an_older_compaction_does_not_count_while_the_latest_has_none_yet(new_story, tmp_path):
+    story = new_story(DUE, fixture=CompactingClaude)
+    older = tuple(kept_skill_records(tmp_path, {"journal-notes": skill_body(story, "journal-notes")}))
+    compaction_written_after_its_start_hook(story, tmp_path, {}, earlier=older, is_recorded=False)
     expect_due(story, "journal-notes", "journal-chores")
