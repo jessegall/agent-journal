@@ -29,7 +29,7 @@ class WorkerTaskCommit:
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
     def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
-        for path in self.git.changed_files(worktree):
+        for path in self.git.uncommitted_files(worktree.folder):
             folder = self.protected.match(worktree.folder, path)
             if folder:
                 raise Refusal(f"{folder} is protected", "report the change to the main agent")

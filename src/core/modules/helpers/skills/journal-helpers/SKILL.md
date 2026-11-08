@@ -61,6 +61,8 @@ replaces the project's list. Limits written in a profile file have no effect.
 
 ## As a read-only helper
 
+- A full context is no reason to hurry or stop: it is compacted, and you get your task's overview, your memories and
+  the memory marks back, so nothing you keep is lost. Keep working as before.
 - You read, search, run journal reads and read version control. You write no file and run no program, and journal lines
   that change another agent's work are refused. Each refusal says what to do instead.
 - Report by stopping: your last words are your report.
