@@ -5,12 +5,23 @@ import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
 import {markLook} from "../src/domain/markLook.js";
 import {lineResult, WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 
+const OUTPUT = {ok: true, value: {lines: ["compiling the cart", "1 failed"], first_byte: 0, last_byte: 30, cut_bytes: 0, total: 30}};
 const mounted = [];
 afterEach(() => {
     mounted.splice(0).forEach((element) => element.remove());
     vi.unstubAllGlobals();
 });
-const inWindow = (component, props) => createApp(() => h(component, props)).provide(WINDOW_CONTEXT, {environment: "development", run: (line) => lineResult("messages.chat", line, "development")});
+const asked = [];
+const inWindow = (component, props, answer = OUTPUT) => createApp(() => h(component, props)).provide(WINDOW_CONTEXT, {
+    environment: "development",
+    run: (line) => lineResult("messages.chat", line, "development"),
+    follow: () => {},
+    visible: {value: true},
+    async readKeys({only = []}) {
+        asked.push(...only);
+        return {ok: true, value: {declared: {}, keys: Object.fromEntries(only.map((name) => [name, answer]))}};
+    },
+});
 const settled = async () => {
     for (let turn = 0; turn < 6; turn++) await nextTick();
     await new Promise((resolve) => setTimeout(resolve));
@@ -18,12 +29,7 @@ const settled = async () => {
 };
 
 test("a process mark opens to its run's output and folds on the next click", async () => {
-    const asked = [];
-    vi.stubGlobal("fetch", async (url, init) => {
-        const {attribution, ...line} = JSON.parse(init.body);
-        asked.push(line);
-        return {json: async () => ({code: 0, value: {lines: ["compiling the cart", "1 failed"], first_byte: 0, last_byte: 30, total: 30}, error: ""})};
-    });
+    asked.length = 0;
     const element = document.createElement("div");
     document.body.append(element);
     mounted.push(element);
@@ -32,17 +38,16 @@ test("a process mark opens to its run's output and folds on the next click", asy
     await settled();
     element.querySelector("button, [role=button], .chat-mark")?.click();
     await settled();
-    expect(asked).toContainEqual({window: "messages.chat", line: ["output", "page", "7"], environment: "development"});
+    expect(asked).toContain("output.7");
     expect(element.textContent).toContain("compiling the cart");
 });
 
 test("a process mark whose output cannot be read says why, not that it printed nothing", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "output 7 was pruned"})}));
     const element = document.createElement("div");
     document.body.append(element);
     mounted.push(element);
     const mark = {id: 3, type: "processes.command", variant: "finished", text: "Ran make build", target_model: "process", target_id: 7, ended_at: "2026-11-01T10:00:00Z", state: "ended"};
-    inWindow(MarkHost, {mark}).mount(element);
+    inWindow(MarkHost, {mark}, {ok: false, failure: "refused", error: "output 7 was pruned"}).mount(element);
     await settled();
     element.querySelector("button, [role=button], .chat-mark")?.click();
     await settled();
