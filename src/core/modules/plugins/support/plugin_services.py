@@ -58,12 +58,12 @@ class PluginServices:
                 key = (plugin.name, service.name)
                 wanted.add(key)
                 if key in processes.running and processes.digests.get(key, plugin.files_digest) != plugin.files_digest:
-                    processes.stop(key)
+                    processes.stop(key, self.places)
                     self.sockets.pid(*key).unlink(missing_ok=True)
                 if self.is_checkable(processes, key):
                     faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest, plugin.files_digest))
         for key in [key for key in processes.running if key not in wanted]:
-            processes.stop(key)
+            processes.stop(key, self.places)
         self.scripts.keep_services({process.pid: plugin_name for (plugin_name, _), process in processes.running.items()})
         return faults
 
@@ -76,7 +76,7 @@ class PluginServices:
             return []
         if process is not None:
             self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} restarted after exit {process.exit_code()}")
-            processes.leave(key, process.exit_code() or 0)
+            processes.leave(key, process.exit_code() or 0, self.places)
         environment = self.environment(key, manifest)
         if process is None and service.condition:
             limit_seconds = self.setting_values.project.number(CONDITION_LIMIT_SETTING)
@@ -143,7 +143,7 @@ class PluginServices:
                 if self.is_healthy(path, manifest.health):
                     continue
                 self.system_log.write(LogLevel.WARNING, f"plugin {plugin.name} service {service.name} restarted after a missed health check")
-                processes.stop((plugin.name, service.name))
+                processes.stop((plugin.name, service.name), self.places)
                 self.keep(processes, (plugin.name, service.name), folder, service, manifest, plugin.files_digest)
                 misses.append(ServiceFault(plugin, f"its service {service.name} missed its health check"))
         return misses

@@ -1,4 +1,4 @@
-from core.modules.plugins.support.plugin_place import PluginPlace
+from core.modules.plugins.support.plugin_place import PluginPlace, PluginPlaceRows
 
 
 class NoPluginPlace(PluginPlace):
@@ -12,3 +12,6 @@ class NoPluginPlace(PluginPlace):
 
     def leave(self, exit_code: int) -> None:
         return
+
+    def through(self, places: PluginPlaceRows) -> PluginPlace:
+        return self

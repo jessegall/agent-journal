@@ -19,3 +19,6 @@ class PluginPlace:
 
     def leave(self, exit_code: int) -> None:
         self.places.leave(self.process_id, exit_code)
+
+    def through(self, places: PluginPlaceRows) -> "PluginPlace":
+        return PluginPlace(self.process_id, places)
