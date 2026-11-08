@@ -1,6 +1,7 @@
 import {createApp, h} from "vue";
 import {expect, test, vi} from "vitest";
 import MarkHost from "../src/chat/MarkHost.vue";
+import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 vi.mock("../src/domain/markRegistry.js", async (importOriginal) => ({
@@ -10,7 +11,9 @@ vi.mock("../src/domain/markRegistry.js", async (importOriginal) => ({
 
 function drawn(mark) {
     const element = document.createElement("div");
-    createApp({render: () => h(MarkHost, {mark: {id: 1, text: "Question 1 answered", state: "shown", created_at: "2026-11-02T10:00:00Z", ...mark}})}).mount(element);
+    createApp({render: () => h(MarkHost, {mark: {id: 1, text: "Question 1 answered", state: "shown", created_at: "2026-11-02T10:00:00Z", ...mark}})})
+        .provide(WINDOW_CONTEXT, {props: {}, state: {}, reload: vi.fn(), readKey: vi.fn()})
+        .mount(element);
     return element;
 }
 
