@@ -10,6 +10,7 @@ import {clock} from "../src/format/time.js";
 import {useTextRender} from "../src/text/useTextRender.js";
 import {peekChip, peekRef} from "../src/route.js";
 import {meta, tableOfWord} from "../src/domain/tables.js";
+import {foldOf} from "../src/domain/messageFold.js";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
@@ -31,10 +32,8 @@ const commentedRow = computed(() => {
     return table ? {ref: `${table}:${id}`, label: `${meta(table).title.toLowerCase()} ${id}`} : null;
 });
 const worker = computed(() => props.message.worker_id ?? null);
-const REPORT_FOLD_CHARS = 140;
-const REPORT_FOLD_LINES = 2;
-const reportOpen = ref(false);
-const longReport = computed(() => worker.value !== null && ((props.message.text ?? "").length > REPORT_FOLD_CHARS || (props.message.text ?? "").split("\n").filter((line) => line.trim()).length > REPORT_FOLD_LINES));
+const folding = computed(() => foldOf(props.message));
+const textOpen = ref(false);
 const deletable = computed(() => fromPerson.value && !props.message.read_at && !props.message.local);
 async function copy() {
     await navigator.clipboard?.writeText(props.message.text ?? "");
@@ -96,9 +95,9 @@ function pick(face) {
                     <template v-if="worker !== null">
                         <button type="button" class="message-worker" data-message-worker :title="`Open worker ${worker}`" @click.stop="peekRef(`agents:${worker}`)">Worker {{ worker }}</button>
                     </template>
-                    <div :class="{'message-folded': longReport && !reportOpen}" data-message-text v-html="html" />
-                    <template v-if="longReport">
-                        <button type="button" class="message-more" data-message-more @click.stop="reportOpen = !reportOpen">{{ reportOpen ? "Show less" : "Show more" }}</button>
+                    <div :class="{'message-folded': folding.long && !textOpen}" :style="{'--fold-lines': folding.shown}" data-message-text v-html="html" />
+                    <template v-if="folding.long">
+                        <button type="button" class="message-more" data-message-more @click.stop="textOpen = !textOpen">{{ textOpen ? "Show less" : "Show more" }}</button>
                     </template>
                     <template v-if="edges.length">
                         <button type="button" class="message-flowchart" data-flowchart-open @click="chartOpen = true">Open the flowchart</button>
@@ -349,8 +348,8 @@ function pick(face) {
     display: -webkit-box;
     overflow: hidden;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: var(--fold-lines, 2);
+    line-clamp: var(--fold-lines, 2);
 }
 
 .message-card:has(.message-quote) {
