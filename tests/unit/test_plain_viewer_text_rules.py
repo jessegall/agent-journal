@@ -3,6 +3,8 @@ from pathlib import Path
 import shutil
 import subprocess
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
 RULES = (
     "naming_plain_viewer_text",
@@ -47,7 +49,9 @@ SettingValue("saved", "Window settings", "Each window saves its own data.", TYPE
 SettingValue("saved", "Window settings", "Saved window preferences.", TYPE),
 ]''')
     plugin = Path(".journal/plugins/code-commandments/bin/commandments-release")
-    executable = next(str(folder / plugin) for folder in (ROOT, *ROOT.parents) if (folder / plugin).is_file())
+    executable = next((str(folder / plugin) for folder in (ROOT, *ROOT.parents) if (folder / plugin).is_file()), None)
+    if executable is None:
+        pytest.skip("the code-commandments plugin is not installed")
     completed_process = subprocess.run([executable, "rule", "prove"], cwd=tmp_path, capture_output=True, text=True, timeout=30)
     assert completed_process.returncode == 0, completed_process.stdout + completed_process.stderr
     for name in RULES:

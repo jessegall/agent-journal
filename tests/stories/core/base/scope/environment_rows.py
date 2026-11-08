@@ -20,7 +20,7 @@ MAIN_TASK = 1
 STAGING_TASK = 2
 MAIN_TITLE = "Main release"
 STAGING_TITLE = "Staging release"
-STATED_EXCEPTIONS = {"Setting", "SecretSetting", "Reader", "JournalException", "PluginDelivery", "PluginOutput"}
+STATED_EXCEPTIONS = {"Setting", "SecretSetting", "Reader", "JournalException", "PluginDelivery", "PluginOutput", "PluginSetting"}
 
 
 def staging_agent(story):

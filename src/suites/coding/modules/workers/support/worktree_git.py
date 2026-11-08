@@ -150,8 +150,8 @@ class WorktreeGit:
         found = HASHED_BUILT_FILE.fullmatch(Path(path).name)
         return found.group(1) if found is not None else None
 
-    def refuse_deleted_built_files(self, worktree: Worktree) -> None:
-        deleted = [change.relative for change in self.comparison(worktree).changes if change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative]
+    def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
+        deleted = [change.relative for change in changes.changes if change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative]
         kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",

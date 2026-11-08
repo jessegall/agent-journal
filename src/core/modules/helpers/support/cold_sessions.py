@@ -1,3 +1,4 @@
+from core.modules.processes.support.output_check_schedule import SECONDS_PER_MINUTE
 from core.modules.settings.support.context_share import ContextShare
 from core.base.actor import Actor
 from core.base.clock import Clock
@@ -13,7 +14,6 @@ from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PE
 from core.modules.helpers.support.stale_session_error import StaleSessionError
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
-SECONDS_PER_MINUTE = 60
 STALE_SESSION_SECONDS = 3600
 
 

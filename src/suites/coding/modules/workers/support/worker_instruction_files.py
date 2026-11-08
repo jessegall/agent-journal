@@ -53,6 +53,8 @@ class WorkerInstructionFiles:
         journal_text = "\n".join(driver.opening_lines) if driver is not None else ""
         found = [InstructionInjection(JOURNAL_KEY, JOURNAL_TITLE, journal_text, profile.injections.get(JOURNAL_KEY, True))]
         for plugin in self.plugins.enabled_plugins():
+            if self.folders.is_upgrading(plugin.name):
+                continue
             folder = self.folders.code(plugin.name)
             for block in PluginManifest.read(folder).instruction_blocks:
                 key = f"{plugin.name}.{block.key}"

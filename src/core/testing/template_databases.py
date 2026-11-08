@@ -19,9 +19,8 @@ from core.testing.story import Story
 from core.testing.story_state import StoryState
 from core.testing.story_fixture import StoryFixture
 from core.testing.template import Template
-from core.testing.template_adaptation import TemplateAdaptation
+from core.testing.template_adaptation import STATE_FILE, TemplateAdaptation
 
-STATE_FILE = "story-state.pickle"
 
 
 class TemplateDatabases:

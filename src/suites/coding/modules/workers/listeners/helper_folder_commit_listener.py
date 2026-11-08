@@ -24,5 +24,5 @@ class HelperFolderCommitListener(CommitListener[Changed[HelperJob]]):
             return
         writable = self.profiles.effective(job.profile).writable_folders
         if writable:
-            folder = str(self.folders.folder(self.agents.find(job.helper_id)))
+            folder = str(self.folders.checkout_folder(self.agents.find(job.helper_id)))
             self.git.commit_folders(folder, writable, f"{job.profile} {job.helper_id}: saved {', '.join(writable)}")

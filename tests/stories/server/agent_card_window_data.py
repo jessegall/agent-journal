@@ -43,10 +43,10 @@ def test_agent_counts_and_a_page_of_thirty_idle_agents_do_not_read_worktrees_per
         story.expect_success(f"agent end {agent}")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        status, answer = window_data(server, cookie, keys="limits", window="agents.agents")
+        status, answer = window_data(server, cookie, keys="limits", window="coding.agent-settings")
         counts = answer["keys"]["limits"]["value"]["rows"]
         worker = next(row for row in counts if row["key"] == "worker")
         story.expect_rows(status == 200, answer["keys"]["limits"]["code"] == 0, worker["kept"] == 30, worker["running"] == 0)
-        status, answer = window_data(server, cookie, keys="count-agents", window="agents.agents", query="environment=main&count-agents.role=worker&count-agents.page=1")
+        status, answer = window_data(server, cookie, keys="count-agents", window="coding.agent-settings", query="environment=main&count-agents.role=worker&count-agents.page=1")
         cards = answer["keys"]["count-agents"]
         story.expect_rows(status == 200, cards["code"] == 0, len(cards["value"]["rows"]) == 25, cards["value"]["total"] == 30)

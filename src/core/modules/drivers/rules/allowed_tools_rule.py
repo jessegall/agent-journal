@@ -4,6 +4,7 @@ from typing import ClassVar
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
+from core.base.provider.providers import Providers
 from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommandTypesRule
 from core.modules.drivers.support.access_nudges import TOOL_RESTRICTION
 
@@ -14,6 +15,9 @@ class AllowedToolsRule(AllowedCommandTypesRule):
     name = "drivers.allowed-tools"
     allowed_tools: ClassVar[Sequence[ToolType]] = tuple(ToolType)
     refusal = TOOL_RESTRICTION
+
+    def __init__(self, providers: Providers) -> None:
+        self.providers = providers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

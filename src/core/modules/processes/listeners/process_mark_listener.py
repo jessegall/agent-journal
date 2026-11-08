@@ -49,6 +49,8 @@ class ProcessMarkListener(CommitListener[E]):
         self.outputs = outputs
 
     def show(self, process: Process, logged: LoggedEvent) -> None:
+        if process.plugin:
+            return
         key = f"process:{process.id}"
         shown = self.marks.keyed(key)
         if shown is not None and shown.state is ChatMarkState.ENDED:

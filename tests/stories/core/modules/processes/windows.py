@@ -12,7 +12,7 @@ def window_story(new_story) -> WindowStory:
 def test_the_outputs_and_output_windows_are_component_windows_of_the_environment(new_story):
     window = window_story(new_story)
     window.expect_declared_window(OUTPUTS, "component", "pane")
-    window.expect_declared_window(OUTPUT, "component", "pane")
+    window.expect_declared_window(OUTPUT, "component", "page")
 
 
 def test_the_windows_read_outputs_processes_and_the_text_of_an_output_with_no_allowance(new_story):

@@ -18,7 +18,7 @@ READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 EXTENSIONS = WindowExtensions((*DEFAULT_MODULES, *DEFAULT_SUITES))
-INTERNAL_WINDOWS = {"questions.question", "viewer.shell"}
+INTERNAL_WINDOWS = {"questions.question", "viewer.shell", "suggestions.suggestions", "reviews.reviewer", "reviews.reviewers", "phone.phones", "usage.fitness"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
 

@@ -19,6 +19,7 @@
     ],
     "base": "main",
     "detectors": [
+        "architecture_approvals_approval_without_its_command",
         "architecture_plans_names_no_mod_identifier",
         "architecture_plans_names_no_mod_literal",
         "architecture_plans_names_no_mod_viewer",

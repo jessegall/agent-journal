@@ -18,7 +18,7 @@ def test_a_working_agent_offers_pause_and_stop(new_story):
     registry, declaration = registry_of(new_story(fixture=MainEnvironment))
     found = conditions(registry)
     assert found["agents.pause"] == ("activity", ("working",))
-    assert found["agents.stop"] == ("activity", ("working", "paused"))
+    assert found["agents.stop"] == ("activity", ("working", "paused", "at usage limit"))
     assert {action.name: action.confirm for action in declaration.actions}["agents.stop"] == "Stop the agent? It stops what it is doing."
 
 

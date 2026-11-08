@@ -33,6 +33,9 @@ class AgentFolders:
     def folder(self, agent: Agent) -> Path:
         if agent.role == AgentRole.HELPER and self.start_folder(agent).is_dir():
             return self.start_folder(agent)
+        return self.checkout_folder(agent)
+
+    def checkout_folder(self, agent: Agent) -> Path:
         if agent.parent_id is None:
             return Path(self.environments.find(agent.environment_id).folder)
         return self.folder(self.agents.find(agent.parent_id))

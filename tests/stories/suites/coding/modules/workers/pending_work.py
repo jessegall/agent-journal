@@ -67,12 +67,14 @@ def waiting_place(new_story, monkeypatch, request):
 
 
 def expect_working(server, cookie, worker_id, status):
-    code, data = window_data(server, cookie, keys="agents,limits", window="agents.agents", query="environment=main&agents.show=running&agents.roles=worker")
+    code, data = window_data(server, cookie, keys="agents", window="agents.agents", query="environment=main&agents.show=running&agents.roles=worker")
     rows = data["keys"]["agents"]["value"]["rows"]
     matching = [row for row in rows if row["id"] == worker_id]
     assert code == 200 and len(matching) == 1, data
     assert matching[0]["facts"]["work_status"] == status, matching
-    limits = data["keys"]["limits"]["value"]["rows"]
+    code, settings = window_data(server, cookie, keys="limits", window="coding.agent-settings")
+    assert code == 200, settings
+    limits = settings["keys"]["limits"]["value"]["rows"]
     assert next(row for row in limits if row["key"] == "worker")["running"] == 1, limits
     code, shell = window_data(server, cookie, keys="usage", window="viewer.shell")
     agents = shell["keys"]["usage"]["value"]["agents"]

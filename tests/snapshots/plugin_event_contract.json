@@ -316,7 +316,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.begin": {
@@ -342,7 +343,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.close": {
@@ -368,7 +370,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.created": {
@@ -394,7 +397,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.deleted": {
@@ -420,7 +424,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.refuse": {
@@ -446,7 +451,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.retry": {
@@ -472,7 +478,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.approval.updated": {
@@ -498,7 +505,8 @@
       "source_version",
       "standing_id",
       "state",
-      "text"
+      "text",
+      "why"
     ]
   },
   "core.approvals.standing_approval.created": {
@@ -1688,6 +1696,102 @@
       "last_delivered_at",
       "session_agent_id",
       "text"
+    ]
+  },
+  "core.drivers.permission_request.allow": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "answered_by_id",
+      "asker_id",
+      "environment_id",
+      "needs_person",
+      "reason",
+      "state"
+    ]
+  },
+  "core.drivers.permission_request.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "answered_by_id",
+      "asker_id",
+      "environment_id",
+      "needs_person",
+      "reason",
+      "state"
+    ]
+  },
+  "core.drivers.permission_request.decline": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "answered_by_id",
+      "asker_id",
+      "environment_id",
+      "needs_person",
+      "reason",
+      "state"
+    ]
+  },
+  "core.drivers.permission_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "answered_by_id",
+      "asker_id",
+      "environment_id",
+      "needs_person",
+      "reason",
+      "state"
+    ]
+  },
+  "core.drivers.permission_request.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "answered_by_id",
+      "asker_id",
+      "environment_id",
+      "needs_person",
+      "reason",
+      "state"
+    ]
+  },
+  "core.drivers.permission_request.use": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "action",
+      "answered_by_id",
+      "asker_id",
+      "environment_id",
+      "needs_person",
+      "reason",
+      "state"
     ]
   },
   "core.drivers.refusal_skip.created": {
@@ -3238,6 +3342,7 @@
     ],
     "fields": [
       "creator_id",
+      "environment_id",
       "key",
       "plugin_id",
       "value"
@@ -3249,6 +3354,7 @@
     ],
     "fields": [
       "creator_id",
+      "environment_id",
       "key",
       "plugin_id",
       "value"
@@ -3260,6 +3366,7 @@
     ],
     "fields": [
       "creator_id",
+      "environment_id",
       "key",
       "plugin_id",
       "value"
@@ -7332,6 +7439,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7367,6 +7476,82 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.change_cut_libraries": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
+      "library_links",
+      "logs_output_id",
+      "logs_read_at",
+      "merged_at",
+      "merged_task_ids",
+      "new_agent_reason",
+      "pass_reason",
+      "removed_at",
+      "route_reason",
+      "session_agent_id",
+      "starts_program",
+      "state",
+      "task_count",
+      "task_id",
+      "tests_passed_at"
+    ]
+  },
+  "suites.coding.workers.worker_worktree.change_delivered_libraries": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "base_branch",
+      "base_commit",
+      "branch",
+      "commit_after_merge",
+      "commit_before_merge",
+      "creator_id",
+      "cut_at",
+      "delivered_at",
+      "environment_id",
+      "folder",
+      "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7402,6 +7587,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7437,6 +7624,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7472,6 +7661,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7507,6 +7698,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7542,6 +7735,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7577,6 +7772,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7612,6 +7809,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7647,6 +7846,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7682,6 +7883,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7717,6 +7920,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7752,6 +7957,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",
@@ -7787,6 +7994,8 @@
       "environment_id",
       "folder",
       "left_to_main_at",
+      "libraries_dropped_at",
+      "library_copies",
       "library_links",
       "logs_output_id",
       "logs_read_at",

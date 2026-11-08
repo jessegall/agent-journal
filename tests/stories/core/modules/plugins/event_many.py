@@ -67,6 +67,7 @@ def test_s32_a_plugin_that_is_off_gets_no_script_and_coming_back_on_replays_noth
 
 def test_s33_a_command_on_thirty_rows_stops_asking_after_twenty_rounds_and_still_commits(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES])
+    story.expect_success(f"setting set journal.core.processes.run-batch-size {NOTE_COUNT * 2} --environment main", actor=story.user)
     story.container.get(Bus).run(ManyNotes(NOTE_COUNT), story.user)
     notes = list(story.container.get(Queries).query(EventNote).all_rows())
     story.expect_rows(len(notes) == NOTE_COUNT, len(script_calls(story, "see.sh")) == ROUND_LIMIT, "were skipped" in story.system_log_text())

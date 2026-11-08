@@ -64,7 +64,7 @@ def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_qu
     story.expect_rows(entered == [])
     story.expect_success(f"question answer {question} --answer sqlite", actor=story.user)
     story.run_listeners()
-    story.expect_rows(entered == [(story.agent.id, "[journal] new message 1")], detail=str(entered))
+    story.expect_rows(entered == [(story.agent.id, "[journal] task:1 is open again: what it waited on has ended"), (story.agent.id, "[journal] wait:1 is over")], detail=str(entered))
     story.expect_text(f"task show {task}", "state: open", actor=story.agent)
 
 

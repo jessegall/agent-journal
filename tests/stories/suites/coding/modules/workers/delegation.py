@@ -314,7 +314,7 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
     story, _, worker = delegated_story(new_story)
     story.run('task make "My own job" --environment main', actor=story.agent)
     groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
-    expect_id_delegated_groups(groups, [2, 1])
+    expect_id_delegated_groups(groups, [1, 2])
     expect_total_delegated_groups(groups, 2)
     expect_delegated_groups(groups, {worker.id})
     expect_total_started_groups(groups, 0)

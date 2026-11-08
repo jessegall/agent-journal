@@ -38,12 +38,13 @@ class WorkerTaskCommit:
         if conflicts:
             raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", "settle the conflict markers in those files, then hand in again")
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
-        if not self.git.changed_files(current):
+        changes = self.git.comparison(current)
+        if not changes.files:
             raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
         if task.state is TaskState.STARTED and not self.git.has_task_commit(current, task.id):
             raise Refusal(f"task {task.id} changed no file, so it is not built",
                           f"block it on what it waits for with journal task block {task.id} --on task:<n>, or tell the main agent with journal worker report")
-        self.git.refuse_deleted_built_files(current)
+        self.git.refuse_deleted_built_files(current, changes)
         if base_commit != worktree.base_commit:
             self.git.rebuild(current, self.queries.query(Environment).find(worktree.environment_id).folder)
         self.bus.run(RecordWorktreeBase(worktree.id, base_commit), actor, environment_id=worktree.environment_id)

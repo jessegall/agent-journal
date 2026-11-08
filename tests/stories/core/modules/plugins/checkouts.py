@@ -277,7 +277,7 @@ def test_s60_the_full_line_of_a_file_edited_for_a_worker_does_not_move(new_story
     call = edit_event(story, story.worker_session)
     worktree, project = real(story.worktree), real(story.repository.folder)
     data = event_data(call)
-    story.expect_rows(set(call) == {"v", "event", "at", "environment", "agent", "role", "window_ms", "skills", "checkout", "data"})
+    story.expect_rows(set(call) == {"v", "event", "at", "environment", "agent", "role", "window_ms", "skills", "checkout", "settings", "data"})
     story.expect_rows(call["v"] == 1, call["event"] == "file_edited", call["environment"] == "main", call["agent"] == story.worker.id, call["role"] == "worker", call["window_ms"] == DELIVERY_LIMIT_MS)
     story.expect_rows(call["checkout"] == {"type": "worktree", "root": worktree, "project_root": project, "branch": story.repository.worker_branch(story.worker.id), "base_branch": ENVIRONMENT_BRANCH,
                                             "base_commit": story.repository.tip(ENVIRONMENT_BRANCH), "exists": True})

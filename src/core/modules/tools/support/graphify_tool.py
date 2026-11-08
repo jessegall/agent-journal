@@ -5,13 +5,13 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
+from core.base.git.hook_files_git import GIT_LIMIT_SECONDS
 from core.base.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tools.support.graph_files import FAILED_FILE, RUNNING_FILE, GraphFiles
 from core.modules.tools.support.graph_status import GraphStatus
 from core.modules.tools.support.tool_setting import ToolSetting
 
-GIT_LIMIT_SECONDS = 10
 INSTALL_LIMIT_SECONDS = 600
 AGENT_INSTALLS = (("install",), ("claude", "install"), ("codex", "install"))
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the

@@ -30,7 +30,7 @@ OLD_TABLE_STATEMENTS = (
 def test_the_chat_module_declares_the_exception_and_upgrade_marks_under_the_journal_group(new_story):
     story = new_story(fixture=UserJoined)
     marks = [mark for mark in Registry.read(story.container.get(Database)).marks if mark.module == "journal.core.chat"]
-    expect_type_mark_family(marks, [("chat.exception", "chat.exceptions", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True)])
+    expect_type_mark_family(marks, [("chat.exception", "chat.exceptions", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True), ("chat.private-data", "chat.private-data", "journal", True)])
 
 
 def test_a_repeated_exception_shows_once_within_a_minute_and_again_after_it(new_story):

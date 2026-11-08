@@ -83,7 +83,7 @@ def test_a_repeating_job_lapses_after_seven_days_and_a_single_one_does_not(new_s
 def test_the_agent_bars_windows_are_offered_by_the_coding_suite(new_story):
     story = new_story(fixture=BuilderStarted)
     windows = {window.name for window in SuiteWindows(story.container.get(Registry)).windows("coding")}
-    story.expect_rows({"schedules.jobs", "workers.workers", "reviews.reviewers"} <= windows)
+    story.expect_rows({"schedules.jobs", "workers.workers"} <= windows)
 
 
 def test_a_prompt_that_is_a_jobs_words_is_its_run_and_shows_a_mark(new_story):

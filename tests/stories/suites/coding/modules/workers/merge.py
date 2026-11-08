@@ -410,6 +410,7 @@ def test_two_jobs_close_together_start_the_worker_once(new_story):
 
 def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.run(f'worker send --wait {worker.id} "Add the tax as well"', actor=story.agent)
@@ -425,6 +426,7 @@ def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_st
 
 def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.run(f'worker send --wait {worker.id} "Add the tax as well"', actor=story.agent)

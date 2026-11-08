@@ -84,12 +84,12 @@ def limit(over_limit: bool = False, waiting: bool = False, journal_commands: boo
     return ForegroundLimit(Settings(), Background(journal_commands), Rows(over_limit), Messages(waiting))  # type: ignore[arg-type]
 
 
-def test_a_journal_only_line_has_a_foreground_limit():
-    assert limit().decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).seconds == 15
+def test_a_journal_only_line_has_no_foreground_limit():
+    assert limit().decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).seconds == 0
 
 
-def test_a_journal_line_marked_for_the_background_moves_at_once():
-    assert limit(journal_commands=True).decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).background
+def test_a_journal_line_marked_for_the_background_stays_in_the_foreground():
+    assert not limit(journal_commands=True).decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).background
 
 
 def test_a_test_run_and_a_build_run_in_line_up_to_the_foreground_seconds():

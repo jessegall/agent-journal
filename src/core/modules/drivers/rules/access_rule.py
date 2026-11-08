@@ -100,7 +100,8 @@ class AccessRule(ReadonlyRule):
             return False
         agent = self.queries.query(Agent).find(hook.agent_id)
         root = self.folders.folder(agent)
-        writable = [(root / name).resolve() for name in self.profiles.effective(agent.profile).writable_folders]
+        checkout = self.folders.checkout_folder(agent)
+        writable = [(checkout / name).resolve() for name in self.profiles.effective(agent.profile).writable_folders]
         return all(any((root / file).resolve().is_relative_to(folder) for folder in writable) for file in tool.files)
 
     def profile_tools(self, agent_id: int) -> tuple[str, ...]:

@@ -26,8 +26,8 @@ def test_a_worker_and_a_helper_start_with_the_rules_and_none_of_the_main_agents_
     subagent_lines = story.hook("sub-2", HookSamples.session_start()).lines
     expect_value_with(" ".join(worker_lines), RULE_LINE)
     expect_value_with(" ".join(subagent_lines), RULE_LINE)
-    expect_value_without(" ".join(worker_lines), "memories")
-    expect_value_without(" ".join(subagent_lines), "memories")
+    expect_value_without(" ".join(worker_lines), SHARED_MEMORY)
+    expect_value_without(" ".join(subagent_lines), SHARED_MEMORY)
 
 
 def test_a_worker_that_starts_again_is_told_only_of_the_memories_it_made_itself(new_story):
