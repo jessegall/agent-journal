@@ -25,3 +25,13 @@ def test_a_wait_on_a_task_that_is_already_cancelled_is_refused_with_its_state(ne
     task = story.new_row_id('task make "Dropped idea"', actor=story.agent)
     story.expect_success(f'task cancel {task} --reason "no longer needed"', actor=story.agent)
     story.expect_refusal(f"wait on 'the idea' --target tasks:{task}", f"tasks:{task} is already cancelled", actor=story.agent)
+
+
+def test_a_wait_on_a_word_no_table_has_is_refused_with_the_words_it_takes(new_story):
+    story = new_story(fixture=BuilderStarted, environment="main")
+    process = start_process(story, "make test")
+    story.expect_refusal(f"wait on 'the tests' --target outptu:{process.id}", "outptu is not a kind of row a wait can end on", actor=story.agent)
+    story.expect_refusal(f"wait on 'the tests' --target outptu:{process.id}", "output", actor=story.agent)
+    story.expect_refusal(f"wait on 'the tests' --target outptu:{process.id}", "question", actor=story.agent)
+    story.expect_refusal(f"wait on 'the tests' --target outptu:{process.id}", "task", actor=story.agent)
+    story.expect_success(f"wait on 'the tests' --target output:{process.id}", actor=story.agent)

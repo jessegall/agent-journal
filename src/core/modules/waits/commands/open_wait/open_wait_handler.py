@@ -35,7 +35,10 @@ class OpenWaitHandler(Handler[OpenWait, Wait]):
         word, _, row_id = target.partition(":")
         if not row_id.isdigit():
             raise Refusal(f"{target} is not a row", "write a target as table:id, such as tasks:7")
-        done = self.targets.done_row(word, int(row_id))
+        model = self.targets.model(word)
+        if model is None:
+            raise Refusal(f"{word} is not a kind of row a wait can end on", f"write a target as word:id with one of these words: {', '.join(self.targets.taken())}")
+        done = self.targets.done_row(model, int(row_id))
         if done is not None:
             raise Refusal(self.targets.result(done, target), "there is nothing to wait for: it is done, so use what it says")
-        return self.targets.table(word), int(row_id)
+        return self.targets.table(model), int(row_id)
