@@ -77,6 +77,12 @@ const steps = computed(() => {
     ? `${run.value.steps_passed} passed, ${run.value.steps_failed} failed`
     : `${run.value.steps_passed} passed`;
 });
+// a run that gives a percent but no step count shows its percent where the steps would go
+const progressText = computed(() => {
+  if (steps.value || ended.value) return "";
+  const done = Math.round(Number(run.value?.progress ?? 0));
+  return done > 0 ? `${done}%` : "";
+});
 const ranFor = computed(() => {
   if (!run.value?.created_at) return "";
   const until = run.value.ended_at ? Date.parse(run.value.ended_at) : now.value;
@@ -173,6 +179,13 @@ usePoll(load, isRunning, () =>
       ><Teleport :to="unref(foot)"
         ><span data-output-steps
           >Steps: <b>{{ steps }}</b></span
+        ></Teleport
+      ></template
+    >
+    <template v-if="unref(foot) && progressText"
+      ><Teleport :to="unref(foot)"
+        ><span data-output-progress
+          >Progress: <b>{{ progressText }}</b></span
         ></Teleport
       ></template
     >

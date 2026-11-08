@@ -99,6 +99,15 @@ test("the pending dots go once a run has steps or a percent", async () => {
     expect((await dockedHead({progress: 40})).querySelector("[data-output-pending]")).toBeNull();
 });
 
+test("a run with a percent and no steps shows the percent where the steps would be, and a run with steps shows the steps", async () => {
+    const percent = await dockedHead({progress: 40});
+    expect(percent.querySelector("[data-output-progress]").textContent).toBe("Progress: 40%");
+    expect(percent.querySelector("[data-output-steps]")).toBeNull();
+    const stepped = await dockedHead({progress: 40, steps_passed: 3});
+    expect(stepped.querySelector("[data-output-steps]").textContent).toBe("Steps: 3 passed");
+    expect(stepped.querySelector("[data-output-progress]")).toBeNull();
+});
+
 test("a chained run's temporary title never shows its script in the header or tooltip", async () => {
     const line = "rm -rf /tmp/example && python3 - <<'PY'\nprint('private script')\nPY";
     const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line, title: "Removing files"}}});
