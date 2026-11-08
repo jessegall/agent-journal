@@ -1,11 +1,11 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-634429ca0ca5")) { const style = document.createElement("style"); style.id = "window-styles-634429ca0ca5"; style.textContent = ".cards[data-v-f0ec99cc]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-f0ec99cc]{display:flex;flex-direction:column;gap:8px;min-height:130px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-f0ec99cc]:hover,.card.open[data-v-f0ec99cc]{border-color:var(--border-strong, var(--border))}.card-head[data-v-f0ec99cc]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-f0ec99cc]{width:14px;height:14px}.card-title[data-v-f0ec99cc]{font-weight:600}.card-origin[data-v-f0ec99cc],.card-brief[data-v-f0ec99cc]{color:var(--text-2);font-size:13px}.card-steps[data-v-f0ec99cc]{margin:0;padding-left:18px;color:var(--text-2);font-size:13px;line-height:1.6}.card-foot[data-v-f0ec99cc]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-f0ec99cc]{margin:0;color:var(--text-2)}.card-age[data-v-f0ec99cc]{margin-left:auto}\n"; document.head.appendChild(style); }
-import { openBlock as s, createElementBlock as o, unref as t, createBlock as b, toDisplayString as a, createCommentVNode as g, createVNode as u, Fragment as _, renderList as m, normalizeClass as C, createElementVNode as c, createTextVNode as v } from "vue";
+if (!document.getElementById("window-styles-ff6a03ee9735")) { const style = document.createElement("style"); style.id = "window-styles-ff6a03ee9735"; style.textContent = ".cards[data-v-be47722d]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-be47722d]{display:flex;flex-direction:column;gap:8px;min-height:130px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-be47722d]:hover,.card.open[data-v-be47722d]{border-color:var(--border-strong, var(--border))}.card-head[data-v-be47722d]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-be47722d]{width:14px;height:14px}.card-title[data-v-be47722d]{font-weight:600}.card-origin[data-v-be47722d],.card-brief[data-v-be47722d]{color:var(--text-2);font-size:13px}.card-steps[data-v-be47722d]{margin:0;padding-left:18px;color:var(--text-2);font-size:13px;line-height:1.6}.card-foot[data-v-be47722d]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-be47722d]{margin:0;color:var(--text-2)}.card-age[data-v-be47722d]{margin-left:auto}\n"; document.head.appendChild(style); }
+import { openBlock as s, createElementBlock as o, unref as t, createBlock as T, toDisplayString as a, createCommentVNode as f, createVNode as u, Fragment as _, renderList as m, normalizeClass as C, createElementVNode as c, createTextVNode as b } from "vue";
 import { useWindow as N, useListTools as x, useOpenRow as V, Skeleton as B, ListTools as L, Icon as $, TimeAgo as E } from "@journal/window-kit";
 const F = (i, p) => {
   const l = i.__vccOpts || i;
-  for (const [r, d] of p)
-    l[r] = d;
+  for (const [d, r] of p)
+    l[d] = r;
   return l;
 }, I = { class: "cards" }, O = {
   key: 1,
@@ -19,9 +19,9 @@ const F = (i, p) => {
 }, M = { class: "card-foot" }, q = {
   __name: "TemplateCards",
   setup(i) {
-    const p = N(), { rows: l, failure: r, loaded: d } = p.props.templates, h = x(l, { title: (y) => y.title }), { opened: k, toggle: T } = V();
-    return (y, f) => (s(), o("div", I, [
-      t(d) ? t(r) ? (s(), o("p", O, a(t(r)), 1)) : t(d) && !t(l).length ? (s(), o("p", R, "No templates yet")) : g("", !0) : (s(), b(t(B), {
+    const p = N(), { rows: l, failure: d, loaded: r } = p.props.templates, h = x(l, { title: (y) => y.title }), { opened: k, toggle: v } = V();
+    return (y, g) => (s(), o("div", I, [
+      t(r) ? t(d) ? (s(), o("p", O, a(t(d)), 1)) : t(r) && !t(l).length ? (s(), o("p", R, "No templates yet")) : f("", !0) : (s(), T(t(B), {
         key: 0,
         shape: "cards"
       })),
@@ -31,14 +31,14 @@ const F = (i, p) => {
         type: "button",
         class: C(["card", { open: t(k) === e.id }]),
         "data-row": e.id,
-        onClick: (n) => t(T)(e)
+        onClick: (n) => t(v)(e)
       }, [
         c("span", W, [
           u(t($), {
             name: "board",
             class: "card-icon"
           }),
-          v(" Template " + a(e.id), 1),
+          b(" Template " + a(e.id), 1),
           u(t(E), {
             class: "card-age",
             at: e.created_at
@@ -50,15 +50,15 @@ const F = (i, p) => {
         t(k) === e.id ? (s(), o("ul", D, [
           (s(!0), o(_, null, m(e.parts, (n) => (s(), o("li", { key: n }, a(n), 1))), 128)),
           (s(!0), o(_, null, m(e.commands, (n) => (s(), o("li", { key: n }, [
-            f[0] || (f[0] = v("Runs at each phase end: ", -1)),
+            g[0] || (g[0] = b("Runs at each phase end: ", -1)),
             c("code", null, a(n), 1)
           ]))), 128))
-        ])) : g("", !0),
+        ])) : f("", !0),
         c("span", M, "For " + a(e.targets.length ? e.targets.join(", ") : "any item") + a(e.purpose ? ` · ${e.purpose}` : ""), 1)
       ], 10, S))), 128))
     ]));
   }
-}, J = /* @__PURE__ */ F(q, [["__scopeId", "data-v-f0ec99cc"]]);
+}, J = /* @__PURE__ */ F(q, [["__scopeId", "data-v-be47722d"]]);
 export {
   J as default
 };

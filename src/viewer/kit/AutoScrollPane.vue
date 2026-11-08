@@ -51,12 +51,14 @@ defineExpose({pane});
         <div ref="pane" :class="['auto-scroll-pane', paneClass]" @scroll="followScroll">
             <slot />
         </div>
-        <Transition name="auto-scroll-rise">
-            <button v-show="paused" type="button" class="auto-scroll-newest" data-scroll-newest title="Back to the newest" @click="scrollToEdge">
-                <Icon :name="followsTop ? 'up' : 'down'" />
-                Newest
-            </button>
-        </Transition>
+        <div class="auto-scroll-newest-line" data-scroll-newest-line>
+            <Transition name="auto-scroll-rise">
+                <button v-show="paused" type="button" class="auto-scroll-newest" data-scroll-newest title="Back to the newest" @click="scrollToEdge">
+                    <Icon :name="followsTop ? 'up' : 'down'" />
+                    Newest
+                </button>
+            </Transition>
+        </div>
     </div>
 </template>
 
@@ -75,10 +77,18 @@ defineExpose({pane});
     overflow-y: auto;
 }
 
-.auto-scroll-newest {
-    position: absolute;
+/* a line with no height at the foot of the list that sticks 6px above the foot of what the reader can see, so the button is inside the visible
+   area of the window however tall the list is drawn; the button stands on that line */
+.auto-scroll-newest-line {
+    position: sticky;
     z-index: 3;
     bottom: 6px;
+    height: 0;
+}
+
+.auto-scroll-newest {
+    position: absolute;
+    bottom: 0;
     left: 50%;
     display: inline-flex;
     gap: 5px;
