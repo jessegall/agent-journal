@@ -36,7 +36,7 @@ const buttons = computed(() => (declaration.value?.buttons || []).filter((button
     <template v-else>
         <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked, 'user-side': USER_SIDE_VARIANTS.has(mark.variant)}]" :data-ref="`chat_mark:${mark.id}`">
             <span class="mark-row">
-                <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="clicked">
+                <ChatMark :mark="look" :open="opens ? opened : undefined" @act="look.handlers.onAct" @click="clicked">
                     <template v-if="hasBody" #default="{shown}">
                         <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
                     </template>
