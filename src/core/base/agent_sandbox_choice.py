@@ -1,4 +1,13 @@
 from collections.abc import Sequence
+from typing import Any, Protocol
+
+
+class SandboxedAgent(Protocol):
+    """What the sandbox choice reads of an agent row."""
+
+    id: int
+    role: str
+    metadata: Any
 
 
 class AgentSandboxChoice:
@@ -7,5 +16,5 @@ class AgentSandboxChoice:
     def sandboxed(self, agent_id: int) -> bool:
         return True
 
-    def sandboxed_among(self, agent_ids: Sequence[int]) -> dict[int, bool]:
-        return {agent_id: self.sandboxed(agent_id) for agent_id in agent_ids}
+    def sandboxed_among(self, agents: Sequence[SandboxedAgent]) -> dict[int, bool]:
+        return {agent.id: self.sandboxed(agent.id) for agent in agents}

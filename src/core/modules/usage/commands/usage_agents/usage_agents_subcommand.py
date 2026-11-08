@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.agent_policy import AgentPolicy
 import json
@@ -64,7 +65,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cards_read = (*running, *ended)
         statuses = self.statuses(cards_read)
         account = self.files.plan_windows(statuses)
-        sandboxes = self.sandbox.sandboxed_among([card.id for card in cards_read])
+        sandboxes = self.sandbox.sandboxed_among(self.queries.query(Agent).find_many([card.id for card in cards_read]))
         return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes[card.id]) for card in cards_read))
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:

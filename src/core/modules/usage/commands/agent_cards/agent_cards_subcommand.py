@@ -11,7 +11,6 @@ from core.base.provider.providers import Providers
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.usage.commands.usage_agents.usage_agents_subcommand import UsageAgentsSubcommand
 from core.base.page import Page, is_page
 from core.base.query.conditions.among import Among
@@ -38,8 +37,8 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
     name = "cards"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry, agents: AgentRows) -> None:
-        self.queries, self.activity, self.profiles, self.agents = queries, activity, profiles, agents
+    def __init__(self, queries: Queries, activity: AgentActivity, profiles: ProfileFiles, providers: Providers, folders: AgentFolders, usage: UsageAgentsSubcommand, registry: Registry) -> None:
+        self.queries, self.activity, self.profiles = queries, activity, profiles
         self.providers, self.folders = providers, folders
         self.usage = usage
         self.registry = registry
@@ -99,7 +98,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         running = {row.id for row in selected.matching(activity).all_rows()}
         idle = {row.id for row in selected.matching(AvailableAgents(activity)).all_rows()}
         states = {**dict.fromkeys(running, AgentListState.RUNNING), **dict.fromkeys(idle, AgentListState.IDLE)}
-        agents = {agent.id: agent for agent in self.agents.find_many([row.id for row in page.rows])}
+        agents = {agent.id: agent for agent in self.queries.query(Agent).find_many(tuple(row.id for row in page.rows))}
         locations = self.folders.resume_locations(tuple(agents[row.id] for row in page.rows if row.id in idle))
         policy = self.usage.suites.agent_policy()
         pending = activity.pending
@@ -107,7 +106,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         statuses = self.usage.statuses(page.rows)
         account = self.usage.files.plan_windows(statuses)
-        sandboxes = self.usage.sandbox.sandboxed_among([row.id for row in page.rows])
+        sandboxes = self.usage.sandbox.sandboxed_among(tuple(agents.values()))
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
                                            facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id]).json(),
