@@ -2,6 +2,7 @@ import json
 
 from core.modules.plugins.ticks.plugin_config_reading import PluginConfigReading
 from tests.stories.core.modules.plugins.support.event_stories import TASK_CREATED, event_plugin_story, plugin_row, script_calls
+from tests.stories.support.story_checks import expect_value
 
 CONFIG = {"file": ".events/config.json", "schema": ".events/config.schema.json"}
 SCHEMA = {"type": "object", "properties": {"level": {"type": "integer", "minimum": 1}, "paths": {"type": "array", "items": {"type": "string"}}},
@@ -31,7 +32,7 @@ def test_a_change_at_a_pointer_is_written_as_the_next_version_with_the_places_it
     story = configured_story(new_story)
     story.expect_text("plugin config events", "version 1", actor=story.user)
     story.expect_text("plugin config events --set /level=3", "version 2", '"level": 3', actor=story.user)
-    assert config_file(story) == {"level": 3, "paths": ["src"]}
+    expect_value(config_file(story), {"level": 3, "paths": ["src"]})
     story.expect_rows(plugin_row(story).config_pointers == '["/level"]')
 
 
@@ -39,7 +40,7 @@ def test_a_change_the_schema_refuses_names_its_place_and_writes_nothing(new_stor
     story = configured_story(new_story)
     story.expect_refusal("plugin config events --set /level=0", "/level: is below 1", actor=story.user)
     story.expect_refusal('plugin config events --set /colour=\'"red"\'', "/colour: nothing is allowed here", actor=story.user)
-    assert config_file(story) == DOCUMENT
+    expect_value(config_file(story), DOCUMENT)
 
 
 def test_a_hand_edit_is_taken_in_and_a_broken_one_keeps_the_last_good_copy(new_story):
@@ -59,7 +60,7 @@ def test_a_line_to_the_plugin_names_its_config_version(new_story):
     story.run("plugin config events", actor=story.user)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     story.run_listeners()
-    assert script_calls(story, "see.sh")[-1]["config"] == {"version": 1}
+    expect_value(script_calls(story, "see.sh")[-1]["config"], {"version": 1})
 
 
 def test_a_config_file_that_does_not_exist_yet_is_served_as_nothing_and_taken_in_once_it_appears(new_story):

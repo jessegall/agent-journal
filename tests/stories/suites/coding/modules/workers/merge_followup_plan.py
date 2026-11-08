@@ -8,6 +8,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.support.story_checks import expect_value
 
 MERGE_COMMANDS = "journal.suites.coding.workers.merge-commands"
 
@@ -41,7 +42,7 @@ def test_s57_restart_retains_successful_steps(new_story):
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     ran = Path(repository.folder, "ran.txt").read_text().splitlines()
-    assert ran == ["ran"], ran
+    expect_value(ran, ["ran"])
 
 
 def test_s57_uncertain_command_needs_reconciliation(new_story, monkeypatch):

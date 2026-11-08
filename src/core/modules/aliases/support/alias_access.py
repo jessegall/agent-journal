@@ -9,8 +9,8 @@ from core.modules.plugins.models.plugin import Plugin
 
 
 class AliasAccess:
-    """Checks alias permissions for the roles a suite restricts, a saved test or build being open to every role, and refuses
-    everyone an alias whose plugin is switched off."""
+    """Checks alias permissions for the roles a suite restricts, a saved test or build being open to every
+    role, and refuses everyone an alias whose plugin is switched off."""
 
     def __init__(self, queries: Queries, suites: SuiteChoice) -> None:
         self.queries, self.suites = queries, suites

@@ -16,7 +16,7 @@ class Plugin(Model):
     event_forms = tuple([EventForm.COMMIT])
     cli_name = "plugin"
     search_fields = ["name", "title"]
-    change_names = (CONFIG_CHANGED,)
+    change_names = tuple([CONFIG_CHANGED])
 
     creator_id: int
     name: str

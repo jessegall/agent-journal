@@ -45,7 +45,6 @@ class PeerMessageRule(DriverRule):
 
     @staticmethod
     def named(recipient: str, notes: Sequence[PeerNote]) -> str:
-        """The name the transcript shows for a session addressed by its address, else the address as given."""
         return next((note.sender for note in reversed(notes) if recipient and note.address == recipient), recipient)
 
     def is_agent_message(self, hook: AgentHook) -> bool:

@@ -29,6 +29,6 @@ def test_a_search_of_logs_outputs_or_another_folder_is_not_counted(path):
 
 
 def test_a_tool_that_does_not_search_is_not_counted():
-    assert SearchKind.of(Tool("Edit", ToolType.EDIT, ("src/cart.py",), None, None), "/work/project", PROJECT) == ""
+    assert SearchKind.of(Tool("Edit", ToolType.EDIT, tuple(["src/cart.py"]), None, None), "/work/project", PROJECT) == ""
     assert SearchKind.of(None, "/work/project", PROJECT) == ""
 

@@ -8,6 +8,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_row import expect_row
+from tests.stories.support.story_checks import expect_value
 
 
 def test_history_counts_each_outcome_and_returns_the_last_run(new_story):
@@ -57,7 +58,7 @@ def test_the_read_of_a_hooks_history_walks_only_the_calls_that_ran_a_project_hoo
     story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing="ran", foreign=[run]))
     condition = ForeignHook(hook.id).statement()
     plan = " ".join(str(row[3]) for row in story.container.get(Database).rows(Statement(f"EXPLAIN QUERY PLAN SELECT * FROM hook_calls WHERE {condition.sql} ORDER BY id DESC LIMIT 100", condition.parameters)))
-    assert "hook_calls_foreign_runs" in plan, plan
+    expect_value("hook_calls_foreign_runs" in plan, True)
     expect_row(story.container.get(ManagedHookHistoryQuery).read(hook), runs=1)
 
 

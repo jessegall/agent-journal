@@ -19,8 +19,9 @@ MESSAGE = "Output {output} has no reader that gives its progress, and its box is
 
 
 class AskForReaderHandler(Handler[AskForReader, ReaderRequest]):
-    """Opens the reader request of a run's visible command and posts one chat message, from the person, to the agent that ran it,
-    naming the output and the request; the part keeps the request, which is how the card knows the agent was asked."""
+    """Opens the reader request of a run's visible command and posts one chat message, from the person, to the
+    agent that ran it, naming the output and the request; the part keeps the request, which is how the card
+    knows the agent was asked."""
 
     command = AskForReader
 

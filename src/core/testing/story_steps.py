@@ -3,9 +3,9 @@ from core.testing.story_budget import StoryBudget
 
 
 class StorySteps:
-    """The commands a story ran during its test body, excluding pytest fixture setup and teardown, and what that
-    body cost in database points and processor time, counted from the test's start or from the story's own start
-    when the test body opens it."""
+    """The commands a story ran during its test body, excluding pytest fixture setup and teardown, and what
+    that body cost in database points and processor time, counted from the test's start or from the story's
+    own start when the test body opens it."""
 
     def __init__(self, story: Story) -> None:
         self.story = story

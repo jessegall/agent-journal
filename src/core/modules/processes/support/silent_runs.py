@@ -17,7 +17,6 @@ class SilentRuns:
         self.folder, self.parts = folder, parts
 
     def quiet_part(self, process: Process, timestamp: Timestamp) -> ProcessPart | None:
-        """The part still running of a watched run, at least 30 seconds old, whose output stopped for 30 seconds or never began."""
         if process.creation_timestamp().elapsed_seconds(timestamp) < SILENT_SECONDS:
             return None
         if self.folder.total_bytes(process.id) and self.folder.run_silent_seconds(process.id, timestamp) < SILENT_SECONDS:

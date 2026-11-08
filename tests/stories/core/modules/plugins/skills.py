@@ -26,6 +26,7 @@ from tests.stories.core.modules.plugins.support.plugin_samples import SKILL
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from tests.stories.support.story_checks import expect_value
 
 GIT_REMOTE_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
@@ -91,7 +92,6 @@ def test_s41_a_compaction_resets_the_skills_and_the_next_event_lists_none(new_st
 
 
 def plugin_with_the_rules(new_story, **manifest):
-    """A plugin that publishes the skill sample-rules, the only plugin of the story."""
     story = install_runner(new_story(fixture=EventPluginStarted))
     folder = event_folder(story, skills="skills", **manifest)
     (folder / "skills" / "sample-rules").mkdir(parents=True)
@@ -173,7 +173,7 @@ def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_
     lines_before = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
     story.hook("s-1", LISTING_SAMPLE)
     lines_after = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
-    assert lines_after == lines_before
+    expect_value(lines_after, lines_before)
     story.expect_rows(rules_state(story) == AgentSkillState.LOADED)
 
 

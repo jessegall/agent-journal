@@ -61,14 +61,12 @@ class ProgramStates:
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
 
     def limit_resets_at(self, program: str) -> Timestamp | None:
-        """When the program's plan allowance starts again while a window of it is used up in full, else nothing."""
         window = self.window_at(program, AT_LIMIT_PERCENT)
         plan_end = None if window is None else Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc))
         ends = [end for end in (plan_end, self.own_limit_resets_at(program)) if end is not None]
         return max(ends, key=lambda end: end.value) if ends else None
 
     def own_limit_resets_at(self, program: str) -> Timestamp | None:
-        """When the last limit a person set on the program that its windows have reached ends, else nothing."""
         return self.limits.reached_until(program, self.windows(program), self.clock.timestamp())
 
     def window_at(self, program: str, percent: float) -> PlanWindow | None:

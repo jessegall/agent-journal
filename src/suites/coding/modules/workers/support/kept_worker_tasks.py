@@ -26,9 +26,9 @@ from suites.coding.modules.workers.support.worker_assignments import WorkerAssig
 
 
 class KeptWorkerTasks:
-    """Hands new tasks to a kept worker. An open worktree takes them as its next tasks; a delivered one keeps its
-    delivery mergeable, the tasks wait and start once it is merged; a merged worker gets a new cut in its old folder on the same session; an unmerged branch is never
-    overwritten."""
+    """Hands new tasks to a kept worker. An open worktree takes them as its next tasks; a delivered one keeps
+    its delivery mergeable, the tasks wait and start once it is merged; a merged worker gets a new cut in
+    its old folder on the same session; an unmerged branch is never overwritten."""
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,

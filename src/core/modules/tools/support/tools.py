@@ -43,8 +43,6 @@ class Tools:
         return self.graphify.tick(Path(folder) if folder else self.home.project_folder)
 
     def worktree_graph(self, source: str, folder: str) -> list[str]:
-        """Gives a new worktree a copy of the source checkout's graph when a tool keeps one, and names what git
-        must leave out; the worktree's own commits refresh it after that."""
         if not any(self.hooks.is_on(tool) for tool in self.catalogue.all()):
             return []
         self.graphify.copy_graph(Path(source), Path(folder))

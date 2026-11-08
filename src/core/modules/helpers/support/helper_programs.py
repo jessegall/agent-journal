@@ -12,9 +12,10 @@ HOOK_RUNNER = "bin/journal-hook"
 
 
 class HelperPrograms:
-    """Makes sure a program can run under the journal's rules in a folder: it is installed, its hooks are written
-    there and trusted, each naming the project root where the journal's server runs even in a worktree, and the
-    folder itself is trusted, so no person has to accept either; a program with no hooks runs with no rule at all."""
+    """Makes sure a program can run under the journal's rules in a folder: it is installed, its hooks are
+    written there and trusted, each naming the project root where the journal's server runs even in a
+    worktree, and the folder itself is trusted, so no person has to accept either; a program with no hooks
+    runs with no rule at all."""
 
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks) -> None:
         self.home, self.providers, self.managed = home, providers, managed

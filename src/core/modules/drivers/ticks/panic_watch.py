@@ -19,9 +19,9 @@ HOOK_WORD = "hook"
 
 
 class PanicWatch:
-    """Watches the panic file the main agent writes when the journal does not answer: when it appears with a reason
-    it shows a chat mark with that reason and logs it, and when it is removed it shows that the panic ended. It runs
-    on a tick, since no hook comes while the file exists."""
+    """Watches the panic file the main agent writes when the journal does not answer: when it appears with a
+    reason it shows a chat mark with that reason and logs it, and when it is removed it shows that the
+    panic ended. It runs on a tick, since no hook comes while the file exists."""
 
     def __call__(self, container: Container) -> None:
         home, log = container.get(JournalHome), container.get(SystemLogWriter)

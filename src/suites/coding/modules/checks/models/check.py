@@ -47,7 +47,6 @@ class Check(Removable, Model):
 
     @property
     def state(self) -> str:
-        """Whether the check runs, was stopped or was removed, as one plain word for a button condition."""
         if self.removed_at is not None:
             return "removed"
         return "stopped" if self.stopped else "running"

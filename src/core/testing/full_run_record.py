@@ -18,9 +18,10 @@ ALLOWED_GROWTH = 0.3
 
 @dataclass(frozen=True)
 class FullRunRecord:
-    """One run of the whole suite: how many tests it ran, how many failed, how long it took on the clock and how many
-    processor seconds the test runners spent together, kept as a line in the checkout's journal folder so a check can
-    warn when the time per test grows. A line from before the processor seconds were kept reads with none."""
+    """One run of the whole suite: how many tests it ran, how many failed, how long it took on the clock and
+    how many processor seconds the test runners spent together, kept as a line in the checkout's journal
+    folder so a check can warn when the time per test grows. A line from before the processor seconds were
+    kept reads with none."""
 
     tests: int
     failed: int
@@ -44,8 +45,8 @@ class FullRunRecord:
 
 @dataclass(frozen=True)
 class FullRunRecords:
-    """The recorded runs of the whole suite, oldest first, and whether the newest took longer per test than the runs
-    before it."""
+    """The recorded runs of the whole suite, oldest first, and whether the newest took longer per test than
+    the runs before it."""
 
     records: list[FullRunRecord]
 

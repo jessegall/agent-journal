@@ -7,7 +7,7 @@ DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer
 
 
 def button(icon: str, **fields: object) -> ButtonDeclaration:
-    return ButtonDeclaration(f"iconic.{icon}", ("row.task",), "Start the task", "task start {row_id}", icon=icon, **fields)
+    return ButtonDeclaration(f"iconic.{icon}", tuple(["row.task"]), "Start the task", "task start {row_id}", icon=icon, **fields)
 
 
 class NewIconModule(Module):

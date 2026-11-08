@@ -18,10 +18,10 @@ SILENT_STREAK_REFUSED = 2
 
 
 class SilentStartRule(DriverRule):
-    """Before an alias or a command runs again after a run that lasted over a minute and showed no percent in the
-    chat, tells the agent once what its output looks like and that a reader fixes it; refuses the start after a
-    second such run until a reader was made or changed since, or the agent skips once and says why; and says once
-    that progress shows when a later run does."""
+    """Before an alias or a command runs again after a run that lasted over a minute and showed no percent in
+    the chat, tells the agent once what its output looks like and that a reader fixes it; refuses the start
+    after a second such run until a reader was made or changed since, or the agent skips once and says why;
+    and says once that progress shows when a later run does."""
 
     name = "processes.silent-start"
     hook = HookEventName.PRE_TOOL_USE

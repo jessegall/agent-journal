@@ -20,9 +20,9 @@ RETRY_SECONDS = Seconds(600)
 
 
 class CacheKeepAliveRule(DriverRule):
-    """A tick wakes an idle main agent with a short line once its prompt cache has lasted the cold session minutes
-    since its last hook, so the cache never expires and the agent does not pay to write its context again; the line
-    asks for no work and the agent stops again at once. At 0 minutes the rule is off."""
+    """A tick wakes an idle main agent with a short line once its prompt cache has lasted the cold session
+    minutes since its last hook, so the cache never expires and the agent does not pay to write its context
+    again; the line asks for no work and the agent stops again at once. At 0 minutes the rule is off."""
 
     name = "workers.cache-keepalive"
     hook = HookEventName.TICK

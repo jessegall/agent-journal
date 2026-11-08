@@ -8,9 +8,9 @@ HANDOFF_FOLDER = Path(".journal") / "handoffs"
 
 
 class MainTaskHandoff:
-    """Moves the uncommitted file progress a main agent made on a task into the worktree of the worker that takes
-    the task over. The progress is saved as a patch first; the main checkout is cleaned of it only after the worker's
-    worktree has taken it, and files the patch does not name are never touched."""
+    """Moves the uncommitted file progress a main agent made on a task into the worktree of the worker that
+    takes the task over. The progress is saved as a patch first; the main checkout is cleaned of it only
+    after the worker's worktree has taken it, and files the patch does not name are never touched."""
 
     def __init__(self, git: WorktreeGit) -> None:
         self.git = git

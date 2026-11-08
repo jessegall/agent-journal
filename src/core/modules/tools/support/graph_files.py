@@ -14,7 +14,8 @@ CLAIM_GRACE_SECONDS = 30
 
 class GraphFiles:
     """The files the journal keeps in one folder's graphify-out: the stamp of the last refresh, the claim a
-    running refresh holds, and the commit a refresh failed for. The folder ignores itself, so git never takes it in."""
+    running refresh holds, and the commit a refresh failed for. The folder ignores itself, so git never
+    takes it in."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
@@ -38,7 +39,6 @@ class GraphFiles:
         return FileAccess.shared().read(path).strip() if path.is_file() else ""
 
     def is_running(self) -> bool:
-        """Whether a refresh holds the claim; a claim whose process is gone is removed."""
         if not self.running_path.is_file():
             return False
         text = FileAccess.shared().read(self.running_path).strip()

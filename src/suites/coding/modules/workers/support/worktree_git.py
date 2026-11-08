@@ -193,9 +193,6 @@ class WorktreeGit:
 
     @contextmanager
     def written_files_set_aside(self, folder: str) -> Generator[None]:
-        """Puts the instruction files the journal wrote into the worktree back to what git holds while the base is merged in, so a
-        change of the base to one of them meets no local text to clash with, and writes each one back, held out of the commits as
-        before, once the merge is done."""
         held = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
         texts = {name: FileAccess.shared().read(Path(folder) / name) for name in held}
         for name in held:
@@ -274,8 +271,6 @@ class WorktreeGit:
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
 
     def hold_back(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
-        """Keeps the changes to the tracked files among the names out of the worktree's commits and gives back the
-        names git does not track."""
         tracked = set(self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "--", *names).stdout.split())
         if tracked:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", *sorted(tracked))
@@ -348,7 +343,7 @@ class WorktreeGit:
     def remove_orphan(self, folder: str, path: str, base_branch: str, branch: str | None) -> bool:
         if not self.is_merged(folder, base_branch, branch):
             return False
-        force = ("--force",) if self.holds_only_published_folders(path) else ()
+        force = tuple(["--force"]) if self.holds_only_published_folders(path) else ()
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", *force, path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         return not Path(path).exists()

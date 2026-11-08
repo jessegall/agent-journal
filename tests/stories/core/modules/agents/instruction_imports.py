@@ -6,6 +6,7 @@ from server.booting_work import BootingWork
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value
 
 
 def doubled_import(story):
@@ -21,10 +22,10 @@ def test_a_doubled_import_asks_the_person_and_their_accept_removes_the_extra_lin
     story = new_story(fixture=UserJoined)
     claude = doubled_import(story)
     approval = story.container.get(Queries).query(ApprovalRequest).newest().first()
-    assert approval.text == "CLAUDE.md puts AGENTS.md into every context more than once. Remove the extra import line?"
+    expect_value(approval.text, "CLAUDE.md puts AGENTS.md into every context more than once. Remove the extra import line?")
     story.expect_success(f"approval accept {approval.id} --environment main", actor=story.user)
     story.run_listeners()
-    assert claude.read_text() == "@AGENTS.md\n\nWords\n"
+    expect_value(claude.read_text(), "@AGENTS.md\n\nWords\n")
 
 
 class StartedMain(StoryFixture):
@@ -50,4 +51,4 @@ def test_a_journal_start_asks_about_a_doubled_import_too(new_story):
     (project / "CLAUDE.md").write_text("@AGENTS.md\n@AGENTS.md\n")
     BootingWork().run(story.container)
     story.run_listeners()
-    assert story.container.get(Queries).query(ApprovalRequest).newest().first().arguments == ("instruction-import", "remove", "CLAUDE.md", "AGENTS.md")
+    expect_value(story.container.get(Queries).query(ApprovalRequest).newest().first().arguments, ("instruction-import", "remove", "CLAUDE.md", "AGENTS.md"))

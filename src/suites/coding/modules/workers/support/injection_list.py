@@ -6,7 +6,8 @@ from suites.coding.modules.workers.support.instruction_injection import Instruct
 
 @dataclass(frozen=True)
 class InjectionList:
-    """The injections a profile can have in its instruction files, each with its title and whether the profile has it on."""
+    """The injections a profile can have in its instruction files, each with its title and whether the profile
+    has it on."""
 
     profile: str
     injections: tuple[InstructionInjection, ...]

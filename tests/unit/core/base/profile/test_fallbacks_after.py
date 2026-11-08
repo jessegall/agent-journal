@@ -16,4 +16,4 @@ def test_a_profile_with_a_list_tries_those_programs_in_the_order_it_names_them()
 
 
 def test_the_program_that_could_not_start_and_a_repeated_name_are_left_out_of_the_list():
-    assert profile("claude", "gemini", "gemini").fallbacks_after("claude", REGISTERED) == ("gemini",)
+    assert profile("claude", "gemini", "gemini").fallbacks_after("claude", REGISTERED) == tuple(["gemini"])

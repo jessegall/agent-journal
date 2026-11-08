@@ -8,9 +8,9 @@ PUBLISHED_FOLDERS = (".claude/agents", ".codex/agents", ".agents/profiles", ".cl
 
 
 class PublishedFilesCommitListener(CommitListener[FilePublishing]):
-    """Commits the profile and skill copies the journal writes into each environment's checkout, once it has written
-    them, when the folder is a git work tree on the environment's branch, so a merge never meets them as uncommitted
-    work."""
+    """Commits the profile and skill copies the journal writes into each environment's checkout, once it has
+    written them, when the folder is a git work tree on the environment's branch, so a merge never meets
+    them as uncommitted work."""
 
     name = "workers.published-files-commit"
     run_order = 10

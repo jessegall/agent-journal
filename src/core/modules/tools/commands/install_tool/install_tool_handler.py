@@ -11,7 +11,8 @@ from core.modules.tools.support.tools import Tools
 
 
 class InstallToolHandler(Handler[InstallTool, ToolCard]):
-    """Runs the tool's install command, takes the hooks it wrote under the journal's management and records the change."""
+    """Runs the tool's install command, takes the hooks it wrote under the journal's management and records
+    the change."""
 
     command = InstallTool
     runs_once = True

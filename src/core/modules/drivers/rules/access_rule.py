@@ -29,9 +29,10 @@ HELP_FLAG = "--help"
 
 
 class AccessRule(ReadonlyRule):
-    """An agent with read-only access reads, searches and runs journal commands, on every program and under every
-    overlay; a line no one can judge, and a journal line that reaches past the journal, are refused. A file change
-    inside a folder its profile lets it write is allowed, and so is the one thing a request for leave named, once."""
+    """An agent with read-only access reads, searches and runs journal commands, on every program and under
+    every overlay; a line no one can judge, and a journal line that reaches past the journal, are refused.
+    A file change inside a folder its profile lets it write is allowed, and so is the one thing a request
+    for leave named, once."""
 
     name = "drivers.access"
     drivers = ["*"]
@@ -85,7 +86,6 @@ class AccessRule(ReadonlyRule):
         return (SESSION_VARIABLE, RUNNER_VARIABLE, *(provider.session_variable for provider in self.providers.all()))
 
     def permitted(self, hook: AgentHook, tool: Tool) -> PermissionRequest | None:
-        """The request of this agent, allowed once, that names this very command or file."""
         allowed = self.queries.query(PermissionRequest).filter(asker_id=hook.agent_id, state=PermissionState.ALLOWED).oldest().all_rows()
         named = (tool.shell.display_text if tool.shell is not None else "", *tool.files)
         return next((request for request in allowed if request.action in named), None)

@@ -17,8 +17,8 @@ NANOSECONDS = 1_000_000_000
 
 
 class RepeatedFileReadRule(DriverRule):
-    """Reading a whole file that is still in the agent's context names it: a file the program reads in at every start,
-    or one read since the last compaction that has not changed since."""
+    """Reading a whole file that is still in the agent's context names it: a file the program reads in at
+    every start, or one read since the last compaction that has not changed since."""
 
     name = "drivers.repeated-file-read"
     hook = HookEventName.PRE_TOOL_USE

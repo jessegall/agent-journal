@@ -8,8 +8,8 @@ from core.modules.processes.models.reader_request import ReaderRequest
 
 
 class AskForReaderSubcommand(Subcommand[AskForReader, ReaderRequest]):
-    """`journal output ask-reader <n>`: opens a reader request for the command of an output that has no reader and tells the agent that ran it,
-    in the chat, from the person."""
+    """`journal output ask-reader <n>`: opens a reader request for the command of an output that has no reader
+    and tells the agent that ran it, in the chat, from the person."""
 
     cli_name = "output"
     name = "ask-reader"

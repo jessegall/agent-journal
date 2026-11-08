@@ -12,8 +12,9 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class PrivateDataTick:
-    """With the developer tools and the private data scan on, each pass looks at one slice of the project's new or changed files
-    and shows one card in the chat for each finding, naming the file, the line number and the kind, never the text."""
+    """With the developer tools and the private data scan on, each pass looks at one slice of the project's
+    new or changed files and shows one card in the chat for each finding, naming the file, the line number
+    and the kind, never the text."""
 
     def __call__(self, container: Container) -> None:
         settings = container.get(SettingValues).project

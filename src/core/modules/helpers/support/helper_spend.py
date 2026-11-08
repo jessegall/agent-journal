@@ -6,9 +6,10 @@ COST_LIMIT = "cost"
 
 @dataclass(frozen=True)
 class HelperSpend:
-    """What a job has used against its limits. Its cost is the session's reported cost less the cost the session had
-    when the job began; a reading or a baseline that is missing, or a reading below the baseline because the program's
-    counter started over, leaves the cost unknown, never zero. A limit of 0 counts for nothing."""
+    """What a job has used against its limits. Its cost is the session's reported cost less the cost the
+    session had when the job began; a reading or a baseline that is missing, or a reading below the
+    baseline because the program's counter started over, leaves the cost unknown, never zero. A limit of 0
+    counts for nothing."""
 
     minutes: float
     cost_dollars: float | None

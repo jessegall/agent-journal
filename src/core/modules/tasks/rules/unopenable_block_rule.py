@@ -18,9 +18,9 @@ from core.modules.tasks.support.block_conditions.task_blocks_reviewed import Tas
 from core.modules.tasks.support.task_nudges import BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, BLOCK_REVIEW_REMINDER, USER_BLOCK_REVIEW
 
 class UnopenableBlockRule(DriverRule):
-    """Reminds the main agent of its blocked tasks every 15 minutes or 5 closed tasks. The reminder may pass twice;
-    the third time, with none of the tasks named having moved, it blocks the agent until the tasks are acted on or
-    the block is skipped with a reason."""
+    """Reminds the main agent of its blocked tasks every 15 minutes or 5 closed tasks. The reminder may pass
+    twice; the third time, with none of the tasks named having moved, it blocks the agent until the tasks
+    are acted on or the block is skipped with a reason."""
 
     name = "tasks.unopenable-blocks"
     hook = HookEventName.POST_TOOL_USE

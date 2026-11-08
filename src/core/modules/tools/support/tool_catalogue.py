@@ -10,7 +10,7 @@ class ToolCatalogue:
     """The tools the journal supports."""
 
     def all(self) -> tuple[ToolDefinition, ...]:
-        return (GRAPHIFY,)
+        return tuple([GRAPHIFY])
 
     def find(self, name: str) -> ToolDefinition:
         for tool in self.all():

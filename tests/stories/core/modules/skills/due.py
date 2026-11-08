@@ -13,7 +13,7 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
-from tests.stories.support.story_checks import expect_value_with, expect_value_without
+from tests.stories.support.story_checks import expect_value, expect_value_with, expect_value_without
 
 DUE = f"{PATH}:DueSkillsModule"
 JOURNAL_TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
@@ -55,7 +55,6 @@ def expect_countdown(story, sample, skill: str, remaining: int, session: str = "
 
 
 def use_up_countdown(story, sample, skill: str, session: str = "s-1") -> None:
-    """Three tool uses pass with the skill named and the count going down; the fourth is the one that is held."""
     for remaining in (3, 2, 1):
         expect_countdown(story, sample, skill, remaining, session)
 
@@ -120,7 +119,7 @@ def test_loading_the_skill_during_the_countdown_ends_it(defaults_loaded):
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", digest_of(story, "journal-memory")), story.agent)
     for _ in range(4):
         story.expect_hook_allowed("s-1", MEMORY_LIST)
-    assert "load skill" not in story.hook("s-1", MEMORY_LIST).lines
+    expect_value("load skill" not in story.hook("s-1", MEMORY_LIST).lines, True)
 
 
 def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(tasks_held):

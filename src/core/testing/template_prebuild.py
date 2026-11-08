@@ -9,9 +9,10 @@ FIXTURE_MARK = "StoryFixture"
 
 
 class TemplatePrebuild:
-    """Builds the template of every fixture the stories declare, and the empty one, before the test runners start, so
-    no runner builds one inside the run: a template already built costs a look at its folder. A module that does not
-    import, or a fixture that does not build, is left for the story that needs it to report."""
+    """Builds the template of every fixture the stories declare, and the empty one, before the test runners
+    start, so no runner builds one inside the run: a template already built costs a look at its folder. A
+    module that does not import, or a fixture that does not build, is left for the story that needs it to
+    report."""
 
     def __init__(self, templates: TemplateDatabases, tests: Path, package: str = "tests") -> None:
         self.templates, self.tests, self.package = templates, tests, package

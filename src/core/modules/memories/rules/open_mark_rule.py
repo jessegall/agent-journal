@@ -18,10 +18,11 @@ from core.base.role_group import RoleGroup
 
 
 class OpenMarkRule(DriverRule):
-    """When the agent's context, counted against the context limit when one is on, passes a mark of memories.marks
-    it has not reached since its last compaction, a mark opens and the agent is given its memories,
-    heaviest first, to weigh. It is blocked once the mark's tool uses have passed. Helpers get the marks too;
-    a jump past two marks gives one line, naming the highest. Two marks too few tokens apart count as the higher."""
+    """When the agent's context, counted against the context limit when one is on, passes a mark of
+    memories.marks it has not reached since its last compaction, a mark opens and the agent is given its
+    memories, heaviest first, to weigh. It is blocked once the mark's tool uses have passed. Helpers get
+    the marks too; a jump past two marks gives one line, naming the highest. Two marks too few tokens apart
+    count as the higher."""
 
     name = "memories.open-mark"
     hook = HookEventName.POST_TOOL_USE

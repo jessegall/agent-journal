@@ -10,8 +10,9 @@ from core.modules.helpers.models.usage_limit import UsageLimit
 
 
 class SetUsageLimitSubcommand(Subcommand[SetUsageLimit, UsageLimit]):
-    """`journal usage-limit set <program> <window> <fixed|budget> <percent>`: halts the program's agents at that percent of the
-    window ("5 hours", "7 days" or "hour"), or after that many percent more than it holds now; the same window and mode again changes the limit."""
+    """`journal usage-limit set <program> <window> <fixed|budget> <percent>`: halts the program's agents at
+    that percent of the window ("5 hours", "7 days" or "hour"), or after that many percent more than it
+    holds now; the same window and mode again changes the limit."""
 
     cli_name = "usage-limit"
     name = "set"

@@ -5,6 +5,7 @@ from tests.stories.core.modules.plugins.support.plugin_samples import event_plug
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.support.story_checks import expect_value
 
 PROJECT_TEXT = "The project's own briefing.\n"
 PLUGIN_TEXT = "Run the commandments before you hand in."
@@ -31,8 +32,8 @@ def test_a_worker_s_worktree_gets_instruction_files_for_its_profile_and_not_the_
     worker = dispatched_worker(story)
     for name in ("CLAUDE.md", "AGENTS.md"):
         text = written(repository, worker, name)
-        assert "You are a worker" in text and PROJECT_TEXT not in text, text
-    assert not (repository.worktree_folder(worker.id) / "CLAUDE.original.md").exists()
+        expect_value(bool("You are a worker" in text and PROJECT_TEXT not in text), True)
+    expect_value(bool((repository.worktree_folder(worker.id) / "CLAUDE.original.md").exists()), False)
     repository.expect_clean(worker.id)
 
 
@@ -42,9 +43,9 @@ def test_a_profile_keeps_the_project_s_files_beside_its_own_when_it_says_so(new_
     story.expect_success(NOTES_PROFILE, actor=story.user)
     worker = dispatched_worker(story, DISPATCH.replace("--model sonnet", "--model sonnet --profile notes-worker"))
     text = written(repository, worker, "AGENTS.md")
-    assert "Work through the notes." in text and "You are a worker" not in text, text
-    assert written(repository, worker, "AGENTS.original.md") == PROJECT_TEXT
-    assert written(repository, worker, "CLAUDE.original.md") == PROJECT_TEXT
+    expect_value(bool("Work through the notes." in text and "You are a worker" not in text), True)
+    expect_value(written(repository, worker, "AGENTS.original.md"), PROJECT_TEXT)
+    expect_value(written(repository, worker, "CLAUDE.original.md"), PROJECT_TEXT)
     repository.expect_clean(worker.id)
 
 
@@ -53,7 +54,7 @@ def test_a_person_turns_the_instruction_files_off_and_the_worktree_keeps_the_pro
     repository = project_with_instructions(story)
     story.expect_success("setting set journal.core.profiles.worker-instruction-files false --project", actor=story.user)
     worker = dispatched_worker(story)
-    assert written(repository, worker, "CLAUDE.md") == PROJECT_TEXT
+    expect_value(written(repository, worker, "CLAUDE.md"), PROJECT_TEXT)
 
 
 def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unless_the_profile_turns_it_off(new_story):
@@ -63,7 +64,7 @@ def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unle
     (folder / "briefing.md").write_text(PLUGIN_TEXT)
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.expect_text("worker injections journal-worker", "commandments.briefing: Inject our briefing into the agent file: on", "journal: Inject the journal briefing: on", actor=story.user)
-    assert PLUGIN_TEXT in written(repository, dispatched_worker(story), "AGENTS.md")
+    expect_value(PLUGIN_TEXT in written(repository, dispatched_worker(story), "AGENTS.md"), True)
     story.expect_success('profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --injections \'{"commandments.briefing": false}\'', actor=story.user)
     story.expect_text("worker injections notes-worker", "commandments.briefing: Inject our briefing into the agent file: off", actor=story.user)
 
@@ -77,6 +78,6 @@ def test_a_change_of_the_base_to_an_instruction_file_merges_into_a_worktree_that
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success(DELIVERY, actor=worker)
     worktree = repository.worktree_folder(worker.id)
-    assert "You are a worker" in written(repository, worker, "AGENTS.md")
-    assert repository.git("show", "HEAD:AGENTS.md", folder=worktree).stdout == "The base changed its agent file.\n"
+    expect_value("You are a worker" in written(repository, worker, "AGENTS.md"), True)
+    expect_value(repository.git("show", "HEAD:AGENTS.md", folder=worktree).stdout, "The base changed its agent file.\n")
     repository.expect_clean(worker.id)

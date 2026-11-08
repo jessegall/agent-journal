@@ -9,9 +9,9 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class KeptSkills:
-    """The skills still due that the agent's program put back into its context after a compaction, each only while
-    the text it put back is the skill's current text. The program writes that record after its session start hook,
-    so it is read at the agent's first tool use."""
+    """The skills still due that the agent's program put back into its context after a compaction, each only
+    while the text it put back is the skill's current text. The program writes that record after its
+    session start hook, so it is read at the agent's first tool use."""
 
     def __init__(self, providers: Providers, catalogue: SkillCatalogue) -> None:
         self.providers, self.catalogue = providers, catalogue

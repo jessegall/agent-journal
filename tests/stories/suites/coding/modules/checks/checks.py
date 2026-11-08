@@ -134,7 +134,7 @@ def test_a_running_check_offers_run_and_stop(new_story):
     story.run('check make "Suite" --command "true" --every 0', actor=story.user)
     story.expect_text("check show 1", "state: running", actor=story.user)
     buttons = {entry.declaration.name: entry.declaration for entry in story.container.get(Registry).buttons}
-    story.expect_rows(buttons["checks.run"].condition.values == ("running",), buttons["checks.stop"].condition.values == ("running",), tuple(buttons["checks.run"].slots) == ("row.check",))
+    story.expect_rows(buttons["checks.run"].condition.values == tuple(["running"]), buttons["checks.stop"].condition.values == tuple(["running"]), tuple(buttons["checks.run"].slots) == tuple(["row.check"]))
 
 
 def test_a_stopped_check_offers_to_start_again(new_story):
@@ -143,4 +143,4 @@ def test_a_stopped_check_offers_to_start_again(new_story):
     story.run("check stop 1", actor=story.user)
     story.expect_text("check show 1", "state: stopped", actor=story.user)
     buttons = {entry.declaration.name: entry.declaration for entry in story.container.get(Registry).buttons}
-    story.expect_rows(buttons["checks.start"].condition.values == ("stopped",), buttons["checks.start"].label == "Start the check again")
+    story.expect_rows(buttons["checks.start"].condition.values == tuple(["stopped"]), buttons["checks.start"].label == "Start the check again")

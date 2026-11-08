@@ -364,12 +364,12 @@ class WorkersModule(Module):
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
     dependencies = ["journal.suites.coding", "journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes", "journal.core.chat", "journal.core.messages", "journal.core.documents", "journal.core.usage", "journal.core.aliases", "journal.core.viewer", "journal.core.mcp", "journal.core.waits", "journal.core.reviews", "journal.core.profiles", "journal.core.tools"]
-    buttons = [ButtonDeclaration("workers.send-job", ("row.agent",), "Send the worker a job", "worker send {row_id} --job={job}", icon="send", condition=ButtonCondition("working_role", ("worker",)),
-                                 fields=(TextField("job", "What should it do?"),)),
-               ButtonDeclaration("workers.merge", ("row.agent",), "Merge the work of the worker", "worker merge {row_id}", icon="branch", primary=True, condition=ButtonCondition("working_role", ("worker",)),
+    buttons = [ButtonDeclaration("workers.send-job", tuple(["row.agent"]), "Send the worker a job", "worker send {row_id} --job={job}", icon="send", condition=ButtonCondition("working_role", tuple(["worker"])),
+                                 fields=tuple([TextField("job", "What should it do?")])),
+               ButtonDeclaration("workers.merge", tuple(["row.agent"]), "Merge the work of the worker", "worker merge {row_id}", icon="branch", primary=True, condition=ButtonCondition("working_role", tuple(["worker"])),
                                  confirm="Merge its work? Each point needs a checked proof."),
-               ButtonDeclaration("workers.release", ("row.agent",), "Release the worker from its task", "worker release {row_id} --reason={reason}", icon="restore", condition=ButtonCondition("working_role", ("worker",)),
-                                 fields=(TextField("reason", "Why is it taken off its task?"),))]
+               ButtonDeclaration("workers.release", tuple(["row.agent"]), "Release the worker from its task", "worker release {row_id} --reason={reason}", icon="restore", condition=ButtonCondition("working_role", tuple(["worker"])),
+                                 fields=tuple([TextField("reason", "Why is it taken off its task?")]))]
     skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(WorkerOperation, query=WorkerOperationQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRoute, excluded_subcommands=["make", "edit", "delete", "list"]), ModelDeclaration(WorkerTestRun, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(AffectedTest, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerRefusalCount), ModelDeclaration(MergerLine, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WorkerTestFailure, excluded_subcommands=["make", "edit", "delete", "show", "list"]), ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, excluded_subcommands=["make", "edit", "delete", "revise", "queue", "run"]),

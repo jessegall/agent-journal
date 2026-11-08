@@ -7,10 +7,10 @@ CONTROL_VALUE = "compact"
 
 
 class WorkerCompaction:
-    """Compacts a worker past the context limit by resuming its session on the compaction line before its next job,
-    because a worker's program runs in print mode and takes no typed lines. A line whose compaction left the token
-    count as it was is not given again, so the worker starts over instead. A worker that reached the limit at worker
-    next is told to stop before it works on its next task."""
+    """Compacts a worker past the context limit by resuming its session on the compaction line before its next
+    job, because a worker's program runs in print mode and takes no typed lines. A line whose compaction
+    left the token count as it was is not given again, so the worker starts over instead. A worker that
+    reached the limit at worker next is told to stop before it works on its next task."""
 
     def __init__(self, over_limit: ContextOverLimit, providers: Providers) -> None:
         self.over_limit, self.providers = over_limit, providers

@@ -17,10 +17,10 @@ from suites.coding.modules.workers.support.worker_stop import WorkerStop
 
 
 class WorkerResumeRetry:
-    """Every few seconds, each ended worker with a waiting job is resumed again. The launcher refuses a
-    worker while its program is open, and nothing else asks once the program has ended. A program still
-    open under an ended row is stopped, on this tick's own thread. A job sent before a person or another
-    agent stopped the worker stays waiting. A worker that holds started work with no job waiting is resumed too."""
+    """Every few seconds, each ended worker with a waiting job is resumed again. The launcher refuses a worker
+    while its program is open, and nothing else asks once the program has ended. A program still open under
+    an ended row is stopped, on this tick's own thread. A job sent before a person or another agent stopped
+    the worker stays waiting. A worker that holds started work with no job waiting is resumed too."""
 
     def __call__(self, container: Container) -> None:
         InternetConnection.shared(container.get(JournalHome)).check(container.get(ConnectionProbe), container.get(Clock).timestamp())

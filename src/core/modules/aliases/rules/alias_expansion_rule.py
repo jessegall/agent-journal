@@ -11,8 +11,8 @@ from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCES
 
 
 class AliasExpansionRule(DriverRule):
-    """Checks expanded alias references and permissions before the shell line runs; an alias of a plugin that is switched off
-    is refused, so nothing of that plugin runs."""
+    """Checks expanded alias references and permissions before the shell line runs; an alias of a plugin that
+    is switched off is refused, so nothing of that plugin runs."""
 
     name = "aliases.expansion"
     hook = HookEventName.PRE_TOOL_USE

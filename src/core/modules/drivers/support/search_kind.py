@@ -35,4 +35,4 @@ class SearchKind:
         if not path.is_relative_to(project):
             return False
         inside = path.relative_to(project).parts
-        return not inside or inside[0] != JOURNAL_FOLDER or inside[1:2] == (WORKTREES_FOLDER,)
+        return not inside or inside[0] != JOURNAL_FOLDER or inside[1:2] == tuple([WORKTREES_FOLDER])

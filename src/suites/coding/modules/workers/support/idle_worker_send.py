@@ -20,9 +20,9 @@ from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class IdleWorkerSend:
-    """Sends a task given to a worker to that worker at once, on the main agent's behalf, when the worker is idle:
-    no started task, no command running, and no worktree, a delivered one with no tests waiting, or an open one
-    whose program has ended. A busy worker takes the task as its next one by itself."""
+    """Sends a task given to a worker to that worker at once, on the main agent's behalf, when the worker is
+    idle: no started task, no command running, and no worktree, a delivered one with no tests waiting, or
+    an open one whose program has ended. A busy worker takes the task as its next one by itself."""
 
     def __init__(self, rows: EventRows, tasks: TaskQuery, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue,
                  operations: WorkerOperationQuery, bus: Bus) -> None:

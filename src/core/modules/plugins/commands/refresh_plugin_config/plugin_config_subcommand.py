@@ -15,9 +15,10 @@ POINTER_SEPARATOR = "="
 
 
 class PluginConfigSubcommand(Subcommand[RefreshPluginConfig, Plugin]):
-    """`journal plugin config <name> [--set <pointer>=<json value>]... [--stdin] [--json]`: the plugin's config as the
-    project holds it, from any checkout, with its version; --set changes the values at those places and --stdin hands
-    in a whole document, each checked against the plugin's schema before it is written."""
+    """`journal plugin config <name> [--set <pointer>=<json value>]... [--stdin] [--json]`: the plugin's
+    config as the project holds it, from any checkout, with its version; --set changes the values at those
+    places and --stdin hands in a whole document, each checked against the plugin's schema before it is
+    written."""
 
     cli_name = "plugin"
     name = "config"

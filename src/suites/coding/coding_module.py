@@ -71,8 +71,8 @@ class CodingModule(Module):
     name = "journal.suites.coding"
     profiles = HELPER_PROFILES
     helper_types = [HelperType("verifier", "Verifier")]
-    agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", ("journal-merger",)),
-                    AgentGroup("designer", "Designer", "helper", ("journal-designer",)), AgentGroup("helpers", "Helpers", "helper")]
+    agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", tuple(["journal-merger"])),
+                    AgentGroup("designer", "Designer", "helper", tuple(["journal-designer"])), AgentGroup("helpers", "Helpers", "helper")]
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]

@@ -10,7 +10,7 @@ def built_template(tmp_path, builder):
     template.mkdir()
     connection = sqlite3.connect(template / "version-5.db", autocommit=True)
     connection.execute("CREATE TABLE skills (id INTEGER PRIMARY KEY, path TEXT, count INTEGER)")
-    connection.execute("INSERT INTO skills (path, count) VALUES (?, 3)", (f"{builder}/src/core/skills/one/SKILL.md",))
+    connection.execute("INSERT INTO skills (path, count) VALUES (?, 3)", tuple([f"{builder}/src/core/skills/one/SKILL.md"]))
     connection.execute("INSERT INTO skills (path, count) VALUES ('elsewhere/SKILL.md', 4)")
     connection.close()
     (template / "module_list").write_text(f'["{builder}/modules"]')
@@ -32,7 +32,7 @@ def test_the_builders_own_template_is_left_as_it_is(tmp_path):
     template = built_template(tmp_path, tmp_path / "project")
     assert TemplateAdaptation(tmp_path / "project").built_in(template) == str(tmp_path / "project")
     rows = sqlite3.connect(template / "version-5.db").execute("SELECT path FROM skills WHERE id = 1").fetchall()
-    assert rows == [(f"{tmp_path / 'project'}/src/core/skills/one/SKILL.md",)]
+    assert rows == [tuple([f"{tmp_path / 'project'}/src/core/skills/one/SKILL.md"])]
 
 
 def test_a_path_inside_the_pickled_story_state_is_replaced_too(tmp_path):

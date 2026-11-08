@@ -13,8 +13,8 @@ from core.modules.plugins.commands.plugin_path.checkout_path import CheckoutPath
 
 
 class PluginPathSubcommand(ReadSubcommand[CheckoutPath]):
-    """`journal plugin path <absolute> [--agent <n>]`: the relative name of a file and the checkout it belongs to, the
-    agent's own worktree or else the project, the other way round from `journal plugin file`."""
+    """`journal plugin path <absolute> [--agent <n>]`: the relative name of a file and the checkout it belongs
+    to, the agent's own worktree or else the project, the other way round from `journal plugin file`."""
 
     cli_name = "plugin"
     name = "path"

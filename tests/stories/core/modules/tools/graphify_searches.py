@@ -7,6 +7,7 @@ from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value
 
 SESSION = "s-1"
 BLOCK_AFTER = "journal.core.tools.graphify.block-after"
@@ -54,48 +55,48 @@ def blocked(graphify_on):
 
 def test_searches_without_graphify_are_nudged_at_ten_and_again_at_twenty(nine_searched):
     story = nine_searched
-    assert is_nudged(search(story))
-    assert not any(is_nudged(search(story)) for _ in range(9))
-    assert is_nudged(search(story))
+    expect_value(bool(is_nudged(search(story))), True)
+    expect_value(bool(any(is_nudged(search(story)) for _ in range(9))), False)
+    expect_value(bool(is_nudged(search(story))), True)
 
 
 def test_after_twenty_five_searches_every_search_that_is_not_graphify_is_refused_and_other_tools_still_pass(blocked):
     story = blocked
     story.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     reply = search(story)
-    assert "use graphify query, path or explain first" in reply.refusal, reply.refusal
-    assert search(story, SHELL_SEARCH).refusal
+    expect_value("use graphify query, path or explain first" in reply.refusal, True)
+    expect_value(bool(search(story, SHELL_SEARCH).refusal), True)
 
 
 def test_using_graphify_lifts_the_block_and_starts_the_count_again(blocked):
     story = blocked
-    assert not search(story, GRAPHIFY_QUERY).refusal
+    expect_value(bool(search(story, GRAPHIFY_QUERY).refusal), False)
     searched(story, 25)
-    assert search(story).refusal
+    expect_value(bool(search(story).refusal), True)
 
 
 def test_with_the_tool_off_nothing_is_nudged_or_refused(new_story):
     story = new_story(fixture=UserJoined)
     for _ in range(30):
         reply = search(story, SHELL_SEARCH)
-        assert not reply.refusal and not is_nudged(reply)
+        expect_value(bool(not reply.refusal and not is_nudged(reply)), True)
 
 
 def test_a_search_outside_the_code_does_not_count(graphify_on):
     story = graphify_on
     for _ in range(30):
         reply = search(story, LOG_SEARCH)
-        assert not reply.refusal and not is_nudged(reply)
+        expect_value(bool(not reply.refusal and not is_nudged(reply)), True)
 
 
 def test_the_numbers_are_settings_and_shell_searches_count_too(graphify_on):
     story = graphify_on
     story.expect_success(f"setting set {BLOCK_AFTER} 3 --project", actor=story.user)
     story.expect_success(f"setting set {NUDGE_AFTER} 2 --project", actor=story.user)
-    assert not is_nudged(search(story, SHELL_SEARCH))
-    assert is_nudged(search(story, SHELL_SEARCH))
+    expect_value(bool(is_nudged(search(story, SHELL_SEARCH))), False)
+    expect_value(bool(is_nudged(search(story, SHELL_SEARCH))), True)
     searched(story, 1, SHELL_SEARCH)
-    assert search(story, SHELL_SEARCH).refusal
+    expect_value(bool(search(story, SHELL_SEARCH).refusal), True)
 
 
 def test_the_graphify_settings_show_in_the_settings_tree_only_while_the_tool_is_on(new_story):

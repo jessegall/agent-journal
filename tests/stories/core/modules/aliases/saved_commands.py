@@ -15,6 +15,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.server.support.alias_hook import AliasHook
 from tests.stories.server.support.server_client import server_story
+from tests.stories.support.story_checks import expect_value
 
 REGISTER = 'alias add build-npm "npm run build" --category build'
 
@@ -110,7 +111,7 @@ def test_each_alias_with_a_category_writes_its_category_for_the_hook(new_story):
     story.expect_success('alias add sins ".journal/plugins/judge/bin/judge --changes" --category check', actor=story.agent)
     story.expect_success('alias add notes "cat notes.md"', actor=story.agent)
     story.run_listeners()
-    assert json.loads(story.home.alias_category_file.read_text()) == {"build-npm": "build", "sins": "check"}
+    expect_value(json.loads(story.home.alias_category_file.read_text()), {"build-npm": "build", "sins": "check"})
 
 
 def test_a_saved_build_refuses_a_pipe(saved_hook):

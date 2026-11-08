@@ -8,10 +8,10 @@ from core.base.registry.registry import Registry
 
 
 class WaitTargets:
-    """Names the row a wait target points at and tells whether it is already done: a row whose lifecycle has left its
-    editable states. A target's word is the name of a model, of its table, or one of `words`, other names for a table, which
-    a module that owns the row's model adds in a subclass it binds to this one, together with the way to say what a done row
-    ended with."""
+    """Names the row a wait target points at and tells whether it is already done: a row whose lifecycle has
+    left its editable states. A target's word is the name of a model, of its table, or one of `words`,
+    other names for a table, which a module that owns the row's model adds in a subclass it binds to this
+    one, together with the way to say what a done row ended with."""
 
     words: Mapping[str, str] = {}
 
@@ -22,12 +22,10 @@ class WaitTargets:
         return self.tables.table(model).name
 
     def taken(self) -> tuple[str, ...]:
-        """The words a target may start with: the models that have a lifecycle, which is what ends a wait, and the other names."""
         models = [cli_name for cli_name, entry in self.registry.models.items() if self.book.lifecycle(entry.model.checked_class(Model)) is not None]
         return tuple(sorted({*models, *self.words}))
 
     def done_row(self, model: type[Model], row_id: int) -> Model | None:
-        """The row a target names when it exists and has already left its editable states."""
         lifecycle = self.book.lifecycle(model)
         row = self.queries.query(model).filter(id=row_id).first()
         if row is None or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
@@ -43,6 +41,5 @@ class WaitTargets:
         return None
 
     def result(self, row: Model, reference: str) -> str:
-        """What a done row ended with, as the refusal of a wait on it says."""
         state = getattr(row, "state", None)
         return f"{reference} is already {getattr(state, 'value', state)}"

@@ -4,7 +4,7 @@ import json
 from datetime import timedelta
 
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_id_cancelled, expect_index, expect_value_with, expect_value_without
+from tests.stories.support.story_checks import expect_id_cancelled, expect_index, expect_value, expect_value_with, expect_value_without
 
 
 def test_the_board_brings_the_first_page_of_every_group_in_one_answer(new_story):
@@ -83,7 +83,7 @@ def test_the_blocked_tasks_come_whole_whatever_the_limit(three_board_tasks):
         story.expect_success(f'task block {number} --reason "waits"', actor=story.user)
     groups = json.loads(story.run("task board --environment main --limit 1 --json", actor=story.user).output_text)["groups"]
     rows = {group["state"]: group for group in groups}
-    assert [row["id"] for row in rows["blocked"]["rows"]] == [3, 2, 1]
+    expect_value([row["id"] for row in rows["blocked"]["rows"]], [3, 2, 1])
 
 
 @pytest.fixture

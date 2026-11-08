@@ -18,10 +18,11 @@ STALE_SESSION_SECONDS = 3600
 
 
 class ColdSessions:
-    """Says whether resuming an agent would be wasteful: its prompt cache has gone cold because it has not replied for
-    longer than the cache lasts, and its context is large enough that writing it to the cache again costs more than
-    starting over; such an agent gets a new program session under the same journal agent, which keeps its number,
-    memories, tasks and worktree. A limit of 0 turns the check off. An agent past the context limit starts over the same way."""
+    """Says whether resuming an agent would be wasteful: its prompt cache has gone cold because it has not
+    replied for longer than the cache lasts, and its context is large enough that writing it to the cache
+    again costs more than starting over; such an agent gets a new program session under the same journal
+    agent, which keeps its number, memories, tasks and worktree. A limit of 0 turns the check off. An agent
+    past the context limit starts over the same way."""
 
     def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare, rows: EventRows) -> None:
         self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share, self.rows = queries, clock, providers, home, settings, bus, share, rows

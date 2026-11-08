@@ -7,7 +7,8 @@ from core.modules.plans.models.plan import Plan
 
 
 class AssignPlanSubcommand(Subcommand[AssignPlan, Plan]):
-    """`journal plan assign <plan> [--worker <n>]`: the plan and its open tasks go to the worker, or to the main agent."""
+    """`journal plan assign <plan> [--worker <n>]`: the plan and its open tasks go to the worker, or to the
+    main agent."""
 
     cli_name = "plan"
     name = "assign"

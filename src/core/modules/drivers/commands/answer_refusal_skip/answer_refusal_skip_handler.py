@@ -15,9 +15,10 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
-    """Confirms or withdraws an agent's own held skip, once: a confirmed skip passes the refusal's next attempt and
-    keeps what the agent tried beside its reason; a withdrawn one leaves the refusal in force. Neither can be changed
-    afterwards. A helper's confirmed skip passes only once its parent approves it, while that setting is on."""
+    """Confirms or withdraws an agent's own held skip, once: a confirmed skip passes the refusal's next
+    attempt and keeps what the agent tried beside its reason; a withdrawn one leaves the refusal in force.
+    Neither can be changed afterwards. A helper's confirmed skip passes only once its parent approves it,
+    while that setting is on."""
 
     command = AnswerRefusalSkip
 

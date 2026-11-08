@@ -25,7 +25,7 @@ def test_s04_auto_off_hands_nothing_to_the_main_agent_but_the_task_can_be_delega
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_success(f"setting set {AUTO} off --environment main")
     answer = available(story)
-    expect_value((answer.own_task, answer.delegatable, answer.may_stop), (None, (1,), False))
+    expect_value((answer.own_task, answer.delegatable, answer.may_stop), (None, tuple([1]), False))
 
 
 def test_s47_no_worker_permission_or_no_place_leaves_nothing_to_do_and_the_main_agent_may_stop(new_story):

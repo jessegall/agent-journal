@@ -7,8 +7,9 @@ PRESETS = {"builder": BUILDER, "orchestrator": ORCHESTRATOR}
 
 @dataclass(frozen=True)
 class MainOptions:
-    """What the main agent may do in an environment: the eight workflow controls, where each was set, and what is
-    wrong with a stored value. A control that holds something other than on or off reads as off until repaired."""
+    """What the main agent may do in an environment: the eight workflow controls, where each was set, and what
+    is wrong with a stored value. A control that holds something other than on or off reads as off until
+    repaired."""
 
     auto: bool
     sends_workers: bool

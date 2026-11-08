@@ -10,8 +10,8 @@ LINE_SOURCE = "processes.output-ended"
 
 
 class EndedRunLineListener(SaveListener[Moved[Process]]):
-    """A run an agent moved to the background that finishes or fails leaves the agent a line that wakes it, since an agent
-    that stopped sends no hook that could carry the news."""
+    """A run an agent moved to the background that finishes or fails leaves the agent a line that wakes it,
+    since an agent that stopped sends no hook that could carry the news."""
 
     name = "processes.ended-run-line"
     moves = (ProcessLifecycle.finish, ProcessLifecycle.fail)

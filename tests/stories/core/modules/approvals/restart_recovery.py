@@ -11,6 +11,7 @@ from core.modules.approvals.models.lifecycles.approval_lifecycle import Approval
 from server.booting_work import BootingWork
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
+from tests.stories.support.story_checks import expect_value
 
 
 def test_a_claim_from_a_stopped_server_is_reopened(new_story):
@@ -22,11 +23,11 @@ def test_a_claim_from_a_stopped_server_is_reopened(new_story):
         story.advance(timedelta(seconds=1))
         story.container.get(Bus).run(MoveApproval(request.id, ApprovalLifecycle.begin), story.user, environment_id=request.environment_id)
         story.advance(timedelta(minutes=6))
-        assert story.container.get(Bus).run(RecoverApprovals(), Actor.core()) == 0
+        expect_value(story.container.get(Bus).run(RecoverApprovals(), Actor.core()), 0)
     story.advance(timedelta(seconds=1))
     with viewer_client(story) as viewer:
         BootingWork().run(story.container)
-        assert story.container.get(Bus).run(RecoverApprovals(), Actor.core()) == 1
+        expect_value(story.container.get(Bus).run(RecoverApprovals(), Actor.core()), 1)
         story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
         story.expect_refusal("phone pair --reason needed", "A person was asked in the dock", actor=story.agent)
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])

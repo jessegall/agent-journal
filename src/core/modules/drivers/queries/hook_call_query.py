@@ -69,7 +69,6 @@ class HookCallQuery(Query[HookCall]):
         return self.agent(agent_id).matching(Among("hook", events)).matching(Greater("created_at", cutoff_at.text)).oldest().first()
 
     def code_searches_since_graphify(self, agent_id: int, tool_uses: int) -> int:
-        """The searches of the project's code that did not use Graphify among the agent's last tool uses, back to its latest Graphify use."""
         count = 0
         for call in self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).newest().limited(tool_uses):
             if call.search_kind == GRAPHIFY:

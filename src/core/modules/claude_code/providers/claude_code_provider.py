@@ -81,7 +81,7 @@ class ClaudeCodeProvider(Provider):
                        "Glob": ToolType.SEARCH, "ToolSearch": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}
     safe_tools = ("WebFetch", "WebSearch", "TodoWrite")
-    web_reader_agents = ("web-fetch",)
+    web_reader_agents = tuple(["web-fetch"])
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "PostToolUseFailure": "tool_name",
                 "SessionStart": "source", "SessionEnd": "reason", "PreCompact": "trigger"}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})

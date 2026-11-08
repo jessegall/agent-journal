@@ -10,9 +10,9 @@ from core.modules.plugins.support.plugin_settings import PluginSettings
 
 
 class PluginAliasVariables:
-    """The variables a plugin's alias gets from an agent's run, as an event's script gets them: JOURNAL_ENV, the
-    name of the environment the agent runs in, and JOURNAL_SETTINGS, the file holding the plugin's settings for that
-    environment, its overrides over the project's values, written before the run."""
+    """The variables a plugin's alias gets from an agent's run, as an event's script gets them: JOURNAL_ENV,
+    the name of the environment the agent runs in, and JOURNAL_SETTINGS, the file holding the plugin's
+    settings for that environment, its overrides over the project's values, written before the run."""
 
     def __init__(self, queries: Queries, folders: PluginFolders, settings: PluginSettings, program: PluginProgram) -> None:
         self.queries, self.folders, self.settings, self.program = queries, folders, settings, program

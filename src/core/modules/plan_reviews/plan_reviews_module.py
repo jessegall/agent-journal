@@ -27,16 +27,16 @@ class PlanReviewsModule(Module):
     added_states = tuple([REVIEW_STATE])
     listeners = [CritiqueReportListener]
     subcommands = [PlanRoundsSubcommand, PlanReviewTipSubcommand]
-    buttons = [ButtonDeclaration("plan_reviews.critique", ("row.plan",), "Critique",
+    buttons = [ButtonDeclaration("plan_reviews.critique", tuple(["row.plan"]), "Critique",
                                  "template send {template} --on=plan:{row_id} --set=agents={agents} --set=size={size}", icon="review",
                                  condition=ButtonCondition("state", tuple(["ready"])), tip="Reviewers read it before you approve",
                                  fields=(ChoiceField("agents", "How many agents", tuple(Choice("one agent" if count == 1 else f"{count} agents", str(count)) for count in range(1, 6)), "2 agents"),
                                          ChoiceField("size", "How thorough", tuple(Choice(size, size) for size in ("a quick look", "a normal read", "a thorough review")), "a normal read"),
                                          TemplateField("template", "Template", "plan", "critique", "General critique"))),
-               ButtonDeclaration("plan_reviews.end-review", ("row.plan",), "End review", "plan reviewed {row_id}", icon="tick",
+               ButtonDeclaration("plan_reviews.end-review", tuple(["row.plan"]), "End review", "plan reviewed {row_id}", icon="tick",
                                  condition=ButtonCondition("state", tuple(["reviewing"])), tip="The plan is ready again"),
-               ButtonDeclaration("plan_reviews.cancel", ("row.plan",), "Cancel the plan", "plan cancel {row_id} --reason={reason}", icon="stop", danger=True,
-                                 condition=ButtonCondition("state", tuple(["reviewing"])), fields=(TextField("reason", "Why is it cancelled?"),))]
+               ButtonDeclaration("plan_reviews.cancel", tuple(["row.plan"]), "Cancel the plan", "plan cancel {row_id} --reason={reason}", icon="stop", danger=True,
+                                 condition=ButtonCondition("state", tuple(["reviewing"])), fields=tuple([TextField("reason", "Why is it cancelled?")]))]
     windows = [WindowDeclaration("plan_reviews.rounds", "Review rounds", "rounds.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION,
                                  slots=tuple(["inspector.plan"]), icon=WindowIcon.REVIEW,
                                  reads=["plan rounds"], keys=[WindowKey("rounds.*", "plan rounds {id}", loading=KeyLoading.REQUESTED)], events=["plan.*"],

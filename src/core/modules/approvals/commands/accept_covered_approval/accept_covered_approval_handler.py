@@ -14,8 +14,9 @@ from core.modules.approvals.models.standing_approval import StandingApproval
 
 
 class AcceptCoveredApprovalHandler(Handler[AcceptCoveredApproval, str | None]):
-    """Accepts the caller's newest open request a standing yes covers, as the person who gave that yes, and gives what
-    the accepted command printed; a command that fails is refused with its reason, and the request waits in the dock."""
+    """Accepts the caller's newest open request a standing yes covers, as the person who gave that yes, and
+    gives what the accepted command printed; a command that fails is refused with its reason, and the
+    request waits in the dock."""
 
     command = AcceptCoveredApproval
 

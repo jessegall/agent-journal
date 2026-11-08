@@ -10,9 +10,9 @@ TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
 
 class RunSize:
-    """Counts the tests a run names from its files, without importing them, and stops counting at the limit, to
-    choose how many test runners it starts: one for every started block of tests, up to the most, since starting
-    a runner costs more time than it saves on a few tests."""
+    """Counts the tests a run names from its files, without importing them, and stops counting at the limit,
+    to choose how many test runners it starts: one for every started block of tests, up to the most, since
+    starting a runner costs more time than it saves on a few tests."""
 
     def __init__(self, targets: Iterable[str], limit: int) -> None:
         self.targets, self.limit = tuple(targets), limit
@@ -21,8 +21,6 @@ class RunSize:
         return all(target.rstrip("/") == WHOLE_SUITE for target in self.targets)
 
     def is_heavy(self) -> bool:
-        """Whether the run needs the machine to itself: the whole suite, or more than a handful of tests; one named file or test
-        never does."""
         if not self.targets or self.is_whole_suite():
             return True
         named = len(self.targets) == 1 and (TEST_NAME_SEPARATOR in self.targets[0] or Path(self.targets[0]).is_file())

@@ -37,11 +37,11 @@ SERVICE_LOG_LIMIT_BYTES = 1_000_000
 
 class PluginServices:
     """Keeps the services of the plugins switched on running beside the journal: each started where its
-    condition passes, a condition past its limit a fault and one that failed checked again after ten minutes;
-    started again by its restart rule once it ended, an answering one counted as started once its socket and its health socket are
-    up, and each stopped once its plugin is switched off or removed; a service that misses its health check is
-    started again and named; a service a crashed server left running is stopped, by the pid kept for it,
-    before its new one starts."""
+    condition passes, a condition past its limit a fault and one that failed checked again after ten
+    minutes; started again by its restart rule once it ended, an answering one counted as started once its
+    socket and its health socket are up, and each stopped once its plugin is switched off or removed; a
+    service that misses its health check is started again and named; a service a crashed server left
+    running is stopped, by the pid kept for it, before its new one starts."""
 
     def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths, setting_values: SettingValues,
                  clock: Clock, scripts: PluginScriptProcesses, system_log: SystemLogWriter, places: PluginPlaces) -> None:

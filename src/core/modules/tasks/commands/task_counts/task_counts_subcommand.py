@@ -15,8 +15,9 @@ DEFAULT_HOURS = 24
 
 
 class TaskCountsSubcommand(ReadSubcommand[TaskCounts]):
-    """`journal task counts [--hours <n> | --since <time>]`: the tasks in progress (started or in testing), blocked and open
-    as they stand now, delegated ones included, and the tasks completed in the last hours (24 by default) or after a time."""
+    """`journal task counts [--hours <n> | --since <time>]`: the tasks in progress (started or in testing),
+    blocked and open as they stand now, delegated ones included, and the tasks completed in the last hours
+    (24 by default) or after a time."""
 
     cli_name = "task"
     name = "counts"

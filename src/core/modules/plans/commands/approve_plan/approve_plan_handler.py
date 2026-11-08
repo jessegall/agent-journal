@@ -12,8 +12,8 @@ from core.modules.plans.support.plan_approval import PlanApproval
 
 
 class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
-    """Approves a plan for a person and saves their comment in the same transaction; an agent is refused, since only a person
-    approves, on the docked card of the plan, and no approval is made of the attempt."""
+    """Approves a plan for a person and saves their comment in the same transaction; an agent is refused,
+    since only a person approves, on the docked card of the plan, and no approval is made of the attempt."""
 
     command = ApprovePlan
 

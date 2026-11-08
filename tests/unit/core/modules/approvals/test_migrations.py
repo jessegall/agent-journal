@@ -14,7 +14,7 @@ def test_upgrade_addresses_helpers_to_main_and_closes_old_task_wait_approvals(ma
                                  "CREATE TABLE agents(id INTEGER PRIMARY KEY, role TEXT, environment_id INTEGER, parent_id INTEGER);"
                                  "INSERT INTO actors VALUES(1),(2); INSERT INTO environments VALUES(1);"
                                  "INSERT INTO agents VALUES(1,'main',1,NULL),(2,'helper',1,1);")
-        connection.execute("UPDATE agents SET role = ? WHERE id = 1", (main_role,))
+        connection.execute("UPDATE agents SET role = ? WHERE id = 1", tuple([main_role]))
         for sql in ApprovalRequestsMigration.statements:
             connection.execute(sql)
         connection.executemany("INSERT INTO approvals(id,environment_id,creator_id,requester_id,text,arguments,created_at,updated_at)"

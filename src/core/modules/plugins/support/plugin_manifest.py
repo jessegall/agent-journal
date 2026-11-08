@@ -34,13 +34,14 @@ LINE_VERSION = 1
 
 @dataclass(frozen=True)
 class PluginManifest:
-    """What a plugin folder says about itself in the manifest this journal version reads: its name,
-    title and version, the program run for each event, the events it takes and the ones it answers
-    inside a window, the settings its settings file lists, the tone of each type of card it shows, the
-    folder of its skills, the services it keeps running, and what its install requires, sets up and
-    reads back, how its services answer a health check, which helpers besides the main agent each
-    event reaches, the aliases it ships, the dashboard it writes, what it says it is for, the folders of
-    the project a limited agent's shell line may read for it, and the scripts it runs for event keys, and the stamp its own project hooks carry."""
+    """What a plugin folder says about itself in the manifest this journal version reads: its name, title and
+    version, the program run for each event, the events it takes and the ones it answers inside a window,
+    the settings its settings file lists, the tone of each type of card it shows, the folder of its skills,
+    the services it keeps running, and what its install requires, sets up and reads back, how its services
+    answer a health check, which helpers besides the main agent each event reaches, the aliases it ships,
+    the dashboard it writes, what it says it is for, the folders of the project a limited agent's shell
+    line may read for it, and the scripts it runs for event keys, and the stamp its own project hooks
+    carry."""
 
     name: str
     title: str

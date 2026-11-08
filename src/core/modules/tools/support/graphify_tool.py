@@ -13,7 +13,7 @@ from core.modules.tools.support.graph_status import GraphStatus
 from core.modules.tools.support.tool_setting import ToolSetting
 
 INSTALL_LIMIT_SECONDS = 600
-AGENT_INSTALLS = (("install",), ("claude", "install"), ("codex", "install"))
+AGENT_INSTALLS = (tuple(["install"]), ("claude", "install"), ("codex", "install"))
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the
 # claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
@@ -26,8 +26,8 @@ REFRESH_SCRIPT = (
 
 
 class GraphifyTool:
-    """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph in
-    the background with its incremental update, never two at once for the folder."""
+    """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
+    in the background with its incremental update, never two at once for the folder."""
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
@@ -74,7 +74,6 @@ class GraphifyTool:
         return bool(commit) and GraphFiles(folder).failed_commit() == commit
 
     def refresh(self, folder: Path) -> GraphStatus:
-        """Starts a refresh for the folder's commit unless one runs."""
         self.checked_folder(folder)
         if not self.is_installed():
             raise Refusal("Graphify is not installed", "install it on the Tools page or with journal tool install graphify")
@@ -84,7 +83,6 @@ class GraphifyTool:
         return status if status.is_running else self.after_start(folder, status)
 
     def tick(self, folder: Path) -> GraphStatus:
-        """Starts a refresh only when a commit has landed since the last one and none failed for it or runs."""
         self.checked_folder(folder)
         status = self.status(folder)
         if not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder):

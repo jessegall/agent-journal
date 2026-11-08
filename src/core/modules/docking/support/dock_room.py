@@ -9,8 +9,8 @@ MOST_PLACES = 1_000_000
 
 
 class DockRoom:
-    """The places a dock has for more items: those below its limits, and one more for each item that may leave, which is
-    one that is not kept and whose row has ended or is not still running."""
+    """The places a dock has for more items: those below its limits, and one more for each item that may
+    leave, which is one that is not kept and whose row has ended or is not still running."""
 
     def __init__(self, docks: EnvironmentDocks, items: ChatDockedItems, limits: DockLimits, row_end: RowEnd, leave_time: LeaveTime) -> None:
         self.docks, self.items, self.limits, self.row_end, self.leave_time = docks, items, limits, row_end, leave_time

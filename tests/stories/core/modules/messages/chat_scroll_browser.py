@@ -6,6 +6,7 @@ from pathlib import Path
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.browser_story import VIEWER_FOLDER
 from tests.stories.server.support.server_client import server_story
+from tests.stories.support.story_checks import expect_value
 
 WAIT_SECONDS = 60
 BROWSER_SECONDS = 90
@@ -27,4 +28,4 @@ def test_the_chat_scroll_position_only_grows_after_a_send_and_after_an_arrival(n
             time.sleep(0.05)
         story.expect_success('message send "A message from the agent" --environment main', actor=story.agent)
         output, _ = browser.communicate(timeout=BROWSER_SECONDS)
-    assert browser.returncode == 0, output
+    expect_value(browser.returncode, 0)
