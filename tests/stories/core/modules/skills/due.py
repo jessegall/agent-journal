@@ -47,17 +47,17 @@ def expect_skills_absent(story, *folders: str) -> None:
     assert not any(f"  {folder}  due" in text for folder in folders), text
 
 
-def expect_countdown(story, sample, skill: str, remaining: int) -> None:
+def expect_countdown(story, sample, skill: str, remaining: int, session: str = "s-1") -> None:
     story.advance(timedelta(seconds=1))
-    reply = story.hook("s-1", sample)
+    reply = story.hook(session, sample)
     line = f"load skill {skill} due: {remaining} tool uses"
     assert line in reply.lines and not reply.refusal, f"{line!r} not in {reply.lines!r}, refusal {reply.refusal!r}"
 
 
-def use_up_countdown(story, sample, skill: str) -> None:
+def use_up_countdown(story, sample, skill: str, session: str = "s-1") -> None:
     """Three tool uses pass with the skill named and the count going down; the fourth is the one that is held."""
     for remaining in (3, 2, 1):
-        expect_countdown(story, sample, skill, remaining)
+        expect_countdown(story, sample, skill, remaining, session)
 
 
 def digest_of(story, skill: str) -> str:

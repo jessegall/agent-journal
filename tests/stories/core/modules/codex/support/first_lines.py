@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.support.skill_files import SkillFiles
+from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.modules.processes.support.process_nudges import SILENT_RUN
 from core.modules.processes.support.streaming_hints import StreamingHints
@@ -48,9 +49,10 @@ def expect_image_read(story) -> None:
     binary = GoBuild.built("journal-hook", home.parent / "journal-hook")
     with server_story(story):
         story.expect_success(f"skill require {story.agent.id} journal-memory")
-        codex_tool(binary, home, "apply_patch", {"patch": "*** Begin Patch\n*** Add File: preview.txt\n+new\n*** End Patch"})
-        writes = list(story.container.get(Queries).query(HookCall).filter(tool="apply_patch").all_rows())
-        assert len(writes) == 1 and "read this first" in writes[0].refusal, writes
+        for _ in range(SKILL_TOOL_USES + 1):
+            codex_tool(binary, home, "apply_patch", {"patch": "*** Begin Patch\n*** Add File: preview.txt\n+new\n*** End Patch"})
+        writes = list(story.container.get(Queries).query(HookCall).filter(tool="apply_patch").oldest().all_rows())
+        assert len(writes) == SKILL_TOOL_USES + 1 and "read this first" in writes[-1].refusal, writes
         finished = codex_tool(binary, home, "view_image", {"path": str(home.parent / "preview.png")})
     assert finished.returncode == 0, finished.stderr
     calls = list(story.container.get(Queries).query(HookCall).filter(tool="view_image").all_rows())

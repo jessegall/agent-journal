@@ -70,7 +70,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         answers = command.answers
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
-        self.compaction_end.settle(command.event, agent.id, context)
+        self.compaction_end.settle(command.event, agent, context)
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()

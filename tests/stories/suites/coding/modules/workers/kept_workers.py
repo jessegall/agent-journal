@@ -261,7 +261,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     worker = merged_kept_worker(story, repository_environment(story))
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
-    monkeypatch.setattr(ClaudeCodeProvider, "context_percent", lambda provider, home, session: 80)
+    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: (80, None))
     stopped(story, worker)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     dispatched_worker(story, f"worker dispatch --model sonnet {task_id}")

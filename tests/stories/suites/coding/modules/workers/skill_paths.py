@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 import pytest
 
+from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.skills.support.skill_samples import PATH
@@ -20,4 +23,7 @@ def test_a_workers_skill_refusal_names_the_whole_long_folder(new_story, program,
     story.expect_success(f"skill require {worker.id} {folder}")
     expected = repository.worktree_folder(worker.id) / skills_folder / folder / "SKILL.md"
     instruction = f"read this first: {expected}" if program == "codex" else f"load this first with the Skill tool: {folder}"
+    for _ in range(SKILL_TOOL_USES):
+        story.advance(timedelta(seconds=1))
+        story.hook(session, HookSamples.edit("cart.py").with_fields(program=program))
     story.expect_hook_refusal(session, HookSamples.edit("cart.py").with_fields(program=program), instruction)

@@ -182,7 +182,7 @@ from suites.coding.modules.workers.commands.record_todo_list.record_todo_list_ha
 from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTableMigration
 from suites.coding.modules.workers.models.todo_item import TodoItem
 from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodoListRule
-from suites.coding.modules.workers.rules.cache_keepalive_rule import CacheKeepAliveRule
+from suites.coding.modules.workers.rules.cache_keep_alive_rule import CacheKeepAliveRule
 from suites.coding.modules.workers.rules.compaction_wake_rule import CompactionWakeRule
 from suites.coding.modules.workers.rules.context_limit_rule import ContextLimitRule, ContextLimitStopNowRule
 from suites.coding.modules.workers.rules.context_limit_hard_stop_rule import ContextLimitHardStopRule
