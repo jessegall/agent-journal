@@ -87,12 +87,20 @@ export function appended(component, props) {
     return element;
 }
 
+const mountedApps = new Set();
+
+export function unmountAll() {
+    mountedApps.forEach((app) => app.unmount());
+    mountedApps.clear();
+}
+
 export async function mounted(component, windowContext, props = {}) {
     const element = document.createElement("div");
     const app = createApp({render: () => h(component, props)});
     app.provide(WINDOW_CONTEXT, windowContext);
     if (windowContext.inspectorHost) app.provide(INSPECTOR_HOST, windowContext.inspectorHost);
     app.mount(element);
+    mountedApps.add(app);
     await settle();
     return element;
 }

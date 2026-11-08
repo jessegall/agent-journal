@@ -1,5 +1,6 @@
 import {afterEach, expect, test, vi} from "vitest";
 import {context, mounted, settle} from "./support/teamsContext.js";
+import {unmountAll} from "./support/windowContext.js";
 import TeamsPage from "../../core/modules/library/web/src/TeamsPage.vue";
 import {diffRows} from "../../core/modules/library/web/src/copyDiff.js";
 
@@ -10,6 +11,7 @@ vi.stubGlobal("ResizeObserver", class {
 });
 
 afterEach(() => {
+    unmountAll();
     document.body.replaceChildren();
     vi.restoreAllMocks();
 });
