@@ -87,9 +87,9 @@ A script gets one line of JSON on its input:
 
 - `v`: the version of this line.
 - `event`: the key.
-- `agent`, its `role`, `skills`, `environment` and `at`. `checkout.kind` is not the role: a main agent can edit inside a worktree.
+- `agent`, its `role`, `skills`, `environment` and `at`. `checkout.type` is not the role: a main agent can edit inside a worktree.
 - `window_ms`: the limit this call runs under, or null for no limit.
-- `checkout`: the checkout of the agent, with `kind`, `root`, `project_root`, `branch`, `base_branch`, `base_commit` and `exists`.
+- `checkout`: the checkout of the agent, with `type`, `root`, `project_root`, `branch`, `base_branch`, `base_commit` and `exists`.
 - `data`: for a script named by key, `form`, `final`, `log_name`, `event_id`, `actor`, `command`, `cause_id`, `row`, `old_row` and `changed`. A hidden field reads as hidden. An event about a file also has `file`.
 
 The rules of this line:

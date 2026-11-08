@@ -80,7 +80,7 @@ def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_sto
     story = filled_story(new_story)
     worker = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
     helper = Actor(worker, ActorType.AGENT)
-    story.expect_refusal("secret run 1 -- head -c 64", "A person was asked in the dock", actor=helper)
+    story.expect_refusal("secret run 1 -- head -c 64", "The main agent was asked to review this request", actor=helper)
     story.expect_success("secret allow 1 --helpers", "helpers may use secret 1", actor=story.user)
     story.expect_text("secret run 1 -- head -c 64", MASK, actor=helper)
 

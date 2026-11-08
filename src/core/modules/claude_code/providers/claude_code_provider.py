@@ -36,6 +36,7 @@ from core.base.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
 from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
+from core.modules.claude_code.providers.support.claude_kept_skills import ClaudeKeptSkills
 from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
 
@@ -150,6 +151,10 @@ class ClaudeCodeProvider(Provider):
         if path.is_file():
             return path
         return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
+
+    def skills_kept_after_compaction(self, event: HookEvent) -> Mapping[str, str]:
+        path = self.transcript_path(event)
+        return ClaudeKeptSkills(path).digests() if path is not None else {}
 
     def session_matches_folder(self, project: Path, session: str) -> bool:
         return (self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl").is_file()

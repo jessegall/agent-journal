@@ -16,6 +16,7 @@ SESSION_START = "session_start"
 PROMPT = "prompt"
 SUMMARY_CHARACTERS = 200
 DISPLAYED_TEXT = "displayed"
+KEPT_SKILLS = "kept_skills"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
 HOOK_CHANGE_NAMES = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
@@ -99,6 +100,11 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def is_compaction_start(self) -> bool:
         return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
+
+    @property
+    def kept_skills(self) -> Mapping[str, str]:
+        kept = self.metadata.module_part(DRIVERS_MODULE).get(KEPT_SKILLS)
+        return {str(name): str(digest) for name, digest in kept.items()} if is_mapping(kept) else {}
 
     @property
     def is_session_start(self) -> bool:

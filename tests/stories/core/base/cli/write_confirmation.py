@@ -7,7 +7,7 @@ from tests.stories.support.story_checks import expect_changed_code_outcome
 
 def test_making_a_resource_prints_only_what_was_created(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_output_3(story, 'task make "Fix the totals" --environment main', ["created: task:1"])
+    expect_output_3(story, 'task make "Fix the totals" --tag cart --complexity 2 --confirm --environment main', ["created: task:1, task_tag:1"])
 
 
 def test_changing_a_resource_prints_only_what_was_updated(new_story):

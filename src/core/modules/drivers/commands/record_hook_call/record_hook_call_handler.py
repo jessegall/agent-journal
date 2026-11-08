@@ -33,7 +33,7 @@ from core.modules.drivers.commands.support.rule_history_writer import RuleHistor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, KEPT_SKILLS, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.module.driver_entries import DRIVERS_MODULE
@@ -75,9 +75,12 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
-            percent = self.providers.provider(command.event.program).context_percent(self.home, command.event.session)
+            provider = self.providers.provider(command.event.program)
+            percent = provider.context_percent(self.home, command.event.session)
             if percent is not None:
                 metadata["context_percent"] = percent
+            if command.event.is_compaction_start:
+                metadata[KEPT_SKILLS] = dict(provider.skills_kept_after_compaction(command.event))
         if command.event.displayed_text:
             metadata[DISPLAYED_TEXT] = command.event.displayed_text
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
