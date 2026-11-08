@@ -132,7 +132,6 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
                     <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ badge }}</span>
                 </template>
                 <template v-if="rowWord"><span data-dock-row>{{ rowWord }} {{ item.target_id }}</span></template>
-                <template v-if="item.kept"><span class="dock-kept">Kept</span></template>
                 <span ref="foot" class="dock-module-facts" />
             </span>
             <template v-if="declaration?.folds">
@@ -253,8 +252,7 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
 .dock-module-actions {
     display: contents;
 }
-.dock-facts :deep(b),
-.dock-kept {
+.dock-facts :deep(b) {
     color: var(--text-2);
     font-weight: 400;
 }
