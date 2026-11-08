@@ -27,11 +27,12 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 @pytest.mark.parametrize(("program", "model"), [("claude", "sonnet"), ("codex", "gpt-6.1-sol")])
 @pytest.mark.parametrize("answer", [b"started 123456789\n", b"started\n"], ids=["with-pid", "without-pid"])
 @pytest.mark.parametrize("merged", [False, True], ids=["open-worktree", "merged-worktree"])
-def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch, request, program, model, merged, answer):
+def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch, program, model, merged, answer):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = GitRepository.sample(story.home.project_folder)
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))} --branch {ENVIRONMENT_BRANCH}")
-    worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} --name {request.node.callspec.id.replace('.', '-')} 1")
+    worker_name = f"{program.title()}{'Merged' if merged else 'Open'}{'Pid' if b'123456789' in answer else 'Bare'}"
+    worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} --name {worker_name} 1")
     if merged:
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
