@@ -132,6 +132,19 @@ def test_install_runs_the_install_command_and_the_card_shows_installed(new_story
     story.expect_rows(calls == ["install", "claude install", "codex install"], detail=str(calls))
 
 
+def test_the_hook_an_agent_install_writes_comes_under_management(new_story, tmp_path):
+    story, _ = story_with_graphify(new_story, tmp_path)
+    writer = tmp_path / "hook-writing-graphify"
+    settings = {"hooks": {"PreToolUse": [{"matcher": "Grep", "hooks": [{"type": "command", "command": "graphify-guard"}]}]}}
+    writer.write_text(f"#!/bin/sh\nif [ \"$1\" = claude ]; then mkdir -p .claude; echo '{json.dumps(settings)}' > .claude/settings.json; fi\n")
+    writer.chmod(0o755)
+    story.expect_success(f"setting set {COMMAND_SETTING} {writer} --project", actor=story.user)
+    story.expect_success(f"setting set {INSTALL_SETTING} true --project", actor=story.user)
+    story.expect_success("tool install graphify", actor=story.user)
+    commands = [hook.command for hook in story.container.get(ManagedHooks).all()]
+    story.expect_rows("graphify-guard" in commands, detail=str(commands))
+
+
 def test_an_agent_install_that_fails_is_refused_with_its_last_line(new_story, tmp_path):
     story, _ = story_with_graphify(new_story, tmp_path)
     failing = tmp_path / "failing-graphify"

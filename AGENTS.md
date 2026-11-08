@@ -59,46 +59,18 @@ Answer the user's messages before anything else. At a context mark, decide what 
 A guard that raises lets the event through and says so in the chat: a block is never the result of a fault.
 <!-- END: agent-journal, form 4 -->
 
-<!-- BEGIN: code-commandments briefing (auto-generated, run `composer update`) -->
-## Code Commandments — the disciplines in force here
-
-This project's architecture is judged by code-commandments: each discipline is a skill in
-`.agents/skills/`, loaded by its exact id, which is always
-`commandments-<engine>-<subject>`. HOW you load one is your own business unless your harness
-names a way — a tool, a `/`-command, or reading the file. Read the discipline that covers what
-you are about to write.
-
-**Load `commandments` for the index** — every discipline, when each one fires, and the rest of
-the commands. It is the whole canon, loadable, so it is not copied here. A `judge` finding names
-the skill that fixes it, so you are never guessing which to read.
-
-**⚠️ THE ONE RULE EVERY OTHER DEFERS TO — TRACE TO THE SOURCE.** Every sin has an origin; fix it
-THERE, never where it surfaces. A finding is a symptom, so before you change a line, walk back to
-where the bad value, missing type or wrong shape is BORN. Do NOT silence it: a `?? default`, a
-cast, a null-check, a wrapper, a try/catch, or dropping a type to satisfy a detector launders the
-problem and grows the code. If the honest fix touches many call sites, touch them — that breadth
-IS the bug surfacing. Load `commandments-php-fix-at-the-source` before your first edit, and
-again rather than working from memory, since a compaction drops it silently.
-
-**Finding and fixing sins.** Run `journal sins` ONCE, scoped — `--changes` for your
-uncommitted work, `--branch` for what differs from main, or a path to judge that tree. A full scan is
-slow, so it writes a checklist (the run prints the path) and THAT file, not repeated scans, is how
-you work: top to bottom, one line at a time — read that section's skill, fix the sin at its
-source, delete the line. Re-run only when the file is empty, and keep going until a run is clean.
-Where your harness raises each sin as you change a file, those marks cover what you changed and
-nothing else: a tree you have not touched is judged only by asking.
-
-**Work another agent wrote is judged as it comes in, and its worker is told.** A merge is judged the
-moment it lands and the findings go to the worker that wrote them. You hear of one only when that
-worker could not be told or the merge could not be judged in full, and then it is yours: fix each at
-its source, or hand it to a worker. Where nothing told you, `journal sins --changes` says it.
-
-**Don't recognise a rule?** `.journal/plugins/code-commandments/bin/commandments-release info <sin>` prints what it flags, why, how it is fixed and
-a worked example — the detector name off the checklist works. Guessing at a rule you have not read
-is how a finding gets "fixed" by silencing it.
-
-**Leave it cleaner than you found it.** A finding on code you touch, or read past while working, is
-yours to resolve at its source.
-<!-- END: code-commandments briefing -->
 
 To look at any screen you change, run `journal look-at-screen --window <window> --setup "<journal line, with --environment main>"` (a worker needs its sandbox off): it saves a screenshot in the worktree, prints its path and stops its server.
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
