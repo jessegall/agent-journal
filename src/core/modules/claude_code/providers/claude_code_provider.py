@@ -187,6 +187,9 @@ class ClaudeCodeProvider(Provider):
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
         ProgramHooks.hooks(type(self), folder).write(runner, root)
+        self.folder_trusted(folder)
+
+    def folder_trusted(self, folder: Path) -> None:
         ClaudeTrust(self.state_file()).trusted(folder)
 
     def user_hook_files(self) -> tuple[Path, ...]:
