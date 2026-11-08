@@ -1478,7 +1478,7 @@ const ha = ["disabled", "title"], ka = ["title"], ya = { class: "gauge usage" },
       ], 42, La);
     };
   }
-}, ln = /* @__PURE__ */ _(nn, [["__scopeId", "data-v-54506a72"]]), on = ["data-edit-type"], sn = { key: 0 }, rn = { class: "stepper" }, un = ["disabled", "onClick"], dn = ["value", "disabled", "data-agent-limit-input", "onChange"], cn = ["disabled", "onClick"], vn = { key: 0 }, pn = { key: 1 }, gn = {
+}, ln = /* @__PURE__ */ _(nn, [["__scopeId", "data-v-acc705c1"]]), on = ["data-edit-type"], sn = { key: 0 }, rn = { class: "stepper" }, un = ["disabled", "onClick"], dn = ["value", "disabled", "data-agent-limit-input", "onChange"], cn = ["disabled", "onClick"], vn = { key: 0 }, pn = { key: 1 }, gn = {
   __name: "AgentLimitEditor",
   props: { rows: { type: Array, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
