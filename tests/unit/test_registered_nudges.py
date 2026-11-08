@@ -16,8 +16,8 @@ ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "ta
     "messages", "minutes", "name", "other", "output", "outputs", "percent", "phase", "place", "plan", "process", "program", "programs", "proof", "proofs", "question", "queue", "refusal", "request",
     "path", "instruction", "reader", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then",
 })
-# Static driver instructions and runtime rule diagnostics have no stored resource.
-FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED"})
+# Static driver instructions, runtime rule diagnostics and the words a managed hook printed have no stored resource.
+FOREIGN_TEMPLATES = frozenset({"OPENING_LINE", "RULE_FAILED", "MANAGED_HOOK_LINE"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]

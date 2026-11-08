@@ -27,7 +27,7 @@ class MainStopRule(DriverRule):
         if available.delegatable and self.options.options().keeps_going:
             return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=", ".join(str(task_id) for task_id in available.delegatable)))
         if available.delegatable:
-            notice = FREE_WORKER_PLACE.nudge(places=available.free_places, tasks=", ".join(str(task_id) for task_id in available.delegatable))
+            notice = FREE_WORKER_PLACE.nudge(count=available.free_places, tasks=", ".join(str(task_id) for task_id in available.delegatable))
             if not self.notices.is_told(hook.agent_id, notice.text):
                 return RuleAnswer.refused(notice)
         return RuleAnswer.allowed("no task can be handed to the main agent or sent to a worker")

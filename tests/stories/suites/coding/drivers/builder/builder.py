@@ -16,6 +16,7 @@ def test_a_main_agent_with_auto_on_that_stops_with_nothing_in_hand_is_started_on
 def test_a_main_agent_with_auto_off_that_stops_is_not_given_the_open_task(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.run("setting make journal.suites.coding.auto-mode false")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(lines.TASK_DETAILS, "state: open")
 
