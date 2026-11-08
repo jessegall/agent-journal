@@ -1,13 +1,15 @@
 <script setup>
 import {onUnmounted, ref, watch} from "vue";
-import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journal/window-kit";
+import {computed} from "vue";
+import {Icon, Switch, WindowRoom, useOutside, useWindow} from "@journal/window-kit";
 
 const AUTO_MODE = "journal.suites.coding.auto-mode";
 const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 const MERGER = "journal.suites.coding.workers.merger-on";
+const AGENT_SETTINGS_WINDOW = "coding.agent-settings";
 const MODES = [
-    {key: "builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code itself and assigns work to workers when useful."}},
-    {key: "orchestrator", label: "Orchestrator", tip: {title: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes no project file."}},
+    {key: "builder", label: "Builder", line: "The agent writes code itself and assigns work to workers when useful."},
+    {key: "orchestrator", label: "Orchestrator", line: "The agent plans, hands the work to workers, then reviews and merges it; it writes no project file."},
 ];
 const view = useWindow();
 const mode = ref("");
@@ -16,8 +18,10 @@ const auto = ref(true);
 const dispatches = ref(true);
 const merger = ref(true);
 const open = ref(false);
+const presetsOpen = ref(false);
+const presetLabel = computed(() => MODES.find((one) => one.key === mode.value)?.label ?? "Custom");
 const root = ref(null);
-useOutside(root, () => (open.value = false));
+useOutside(root, () => { open.value = false; presetsOpen.value = false; });
 const failure = ref("");
 
 watch(view.props.work.data, (current) => {
@@ -45,6 +49,7 @@ async function switchMode(key) {
 
 // a switch while the agent works asks first, so a stray click never changes it; none while it is idle
 async function pickMode(key) {
+    presetsOpen.value = false;
     if (key === mode.value) return;
     const refreshed = await view.reload("bars");
     const bars = view.props.bars;
@@ -86,7 +91,21 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     <WindowRoom>
         <span ref="root" class="agentset" data-work-mode>
             <Switch :on="auto" word="Auto" title="Auto mode: the journal hands the agent its next task, and it keeps going while tasks are left" data-auto-toggle @change="toggleAuto" />
-            <Segmented class="agentset-mode" :options="MODES" :value="mode" @pick="pickMode" />
+            <button type="button" class="agentset-preset" aria-haspopup="menu" :aria-expanded="presetsOpen" data-preset-menu @click.stop="presetsOpen = !presetsOpen">
+                {{ presetLabel }}<Icon name="caret" :size="12" />
+            </button>
+            <template v-if="presetsOpen">
+                <div class="agentset-menu" role="menu" aria-label="Way of working" data-preset-list>
+                    <template v-for="one in MODES" :key="one.key">
+                        <button type="button" class="agentset-option" role="menuitemradio" :aria-checked="one.key === mode" :data-preset="one.key" @click="pickMode(one.key)">
+                            <b>{{ one.label }}</b><small>{{ one.line }}</small>
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <button type="button" class="agentset-settings" title="Agent settings" aria-label="Agent settings" data-open-agent-settings @click="view.open(AGENT_SETTINGS_WINDOW)">
+                <Icon name="settings" :size="14" />
+            </button>
             <template v-if="asking">
                 <div class="agentset-menu" role="dialog" aria-label="Switch the work mode" data-mode-ask>
                     <p class="agentset-ask">{{ asking.question }}</p>
@@ -102,7 +121,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             <template v-if="open">
                 <div class="agentset-menu" role="dialog" aria-label="Work mode settings" data-work-menu>
                     <label class="agentset-row">
-                        <span>Builder sends workers</span>
+                        <span>Main agent sends workers</span>
                         <Switch :on="dispatches" @change="toggleDispatches" />
                     </label>
                     <template v-if="dispatches">
@@ -129,6 +148,49 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     padding: 3px 4px 3px 8px;
     border: 1px solid var(--border-2);
     border-radius: 8px;
+}
+
+.agentset-preset {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.agentset-preset:hover,
+.agentset-preset[aria-expanded="true"] {
+    background: var(--hover);
+}
+
+.agentset-option {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: none;
+    color: var(--text);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.agentset-option[aria-checked="true"] {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+}
+
+.agentset-option small {
+    color: var(--text-2);
+    font-size: 12px;
 }
 
 .agentset-settings {

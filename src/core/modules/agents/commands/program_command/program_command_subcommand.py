@@ -12,7 +12,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_text_list
 
-FIRST_PROMPT = "The journal started this session: follow its opening lines."
+FIRST_PROMPT = "[journal] the journal started this session: follow its opening lines"
 
 
 class ProgramCommandSubcommand(ReadSubcommand[list[str]]):

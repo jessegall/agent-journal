@@ -6,7 +6,7 @@ import {settle as settled} from "./support/windowContext.js";
 import {context as windowContext} from "./support/windowContext.js";
 
 const KEYS = {
-    mode: {line: "suite current {environment}", events: ["setting.*"]},
+    mode: {line: "suite current main", events: ["setting.*"]},
     auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
     dispatches: {line: "setting show journal.suites.coding.workers.main-dispatches-workers", tab: "settings", events: ["setting.*"]},
     merger: {line: "setting show journal.suites.coding.workers.merger-on", tab: "settings", events: ["setting.*"]},
@@ -46,15 +46,14 @@ async function mount({driver = "coding.builder", values = {}, follow = () => {}}
     return {element, runs, opened, context};
 }
 
-test("the work modes show the current choice and a pick chooses the driver", async () => {
-    const {element, runs} = await mount({driver: "coding.orchestrator"});
-    const options = [...element.querySelectorAll(".segmented-option")];
-    expect(options.map((option) => option.textContent.trim())).toEqual(["Builder", "Orchestrator"]);
-    expect(options[1].classList.contains("on")).toBe(true);
-    options[0].click();
+test("the top bar shows the way of working as one menu and a button that opens the Agent settings", async () => {
+    const {element, opened} = await mount({driver: "coding.orchestrator"});
+    expect(element.querySelectorAll(".segmented-option")).toHaveLength(0);
+    element.querySelector("[data-preset-menu]").click();
     await settled();
-    expect(runs).toEqual(["driver choose coding.builder --environment main"]);
-    expect(element.querySelector(".segmented-option.on").textContent.trim()).toBe("Builder");
+    expect([...element.querySelectorAll("[data-preset]")].map((option) => option.querySelector("b").textContent)).toEqual(["Builder", "Orchestrator"]);
+    element.querySelector("[data-open-agent-settings]").click();
+    expect(opened).toEqual(["coding.agent-settings"]);
 });
 
 test("the settings menu has the merger's switch only while the builder sends workers", async () => {
@@ -104,7 +103,9 @@ test("a switch while the agent works asks first and can be kept", async () => {
     const {element, runs, context} = await mount({driver: "coding.orchestrator"});
     const read = context.read;
     context.read = async (line) => (line.startsWith("usage bars") ? {ok: true, value: {task_id: 12, helpers: 0}} : read(line));
-    element.querySelectorAll(".segmented-option")[0].click();
+    element.querySelector("[data-preset-menu]").click();
+    await settled();
+    element.querySelector('[data-preset="builder"]').click();
     await settled();
     expect(runs).toEqual([]);
     expect(element.querySelector("[data-mode-ask]").textContent).toContain("working on task 12");
@@ -112,10 +113,12 @@ test("a switch while the agent works asks first and can be kept", async () => {
     await settled();
     expect(element.querySelector("[data-mode-ask]")).toBeNull();
     expect(runs).toEqual([]);
-    element.querySelectorAll(".segmented-option")[0].click();
+    element.querySelector("[data-preset-menu]").click();
+    await settled();
+    element.querySelector('[data-preset="builder"]').click();
     await settled();
     element.querySelector("[data-mode-switch]").click();
     await settled();
-    expect(runs).toEqual(["driver choose coding.builder --environment main"]);
+    expect(runs).toEqual(["work-settings preset builder --revision "]);
 });
 

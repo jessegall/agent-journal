@@ -116,8 +116,13 @@ class Scopes:
     def owner(self, actor_id: int | None, environment_id: int | None, disabled: WholeScopes = ()) -> RowOwner | None:
         owner = self.actors.row_owner(actor_id) or RowOwner(None, environment_id)
         agent = None if ActorScope in disabled else owner.agent
-        environment = None if EnvironmentScope in disabled else owner.environment_id
+        environment = None if EnvironmentScope in disabled else self.working_environment(actor_id, owner, environment_id)
         return None if agent is None and environment is None else RowOwner(agent, environment)
+
+    def working_environment(self, actor_id: int | None, owner: RowOwner, environment_id: int | None) -> int | None:
+        if actor_id is None or environment_id is None or environment_id == owner.environment_id:
+            return owner.environment_id
+        return environment_id if self.actors.is_granted_test_environment(actor_id, environment_id) else owner.environment_id
 
     def passed(self, disabled: DisabledScopes, subject: LoggedEvent | Change[Model]) -> WholeScopes:
         return tuple(entry.scope if isinstance(entry, ScopeOpening) else entry for entry in disabled if not isinstance(entry, ScopeOpening) or entry.passes(subject))

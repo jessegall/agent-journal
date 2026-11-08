@@ -71,7 +71,7 @@ class LinkPinCheck:
         made = []
         for url in links:
             project, filename = self.design_key(url)
-            if (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):
+            if not filename or (project, filename) in existing:
                 continue
             made.append(MakePin(self.design_title(url), url, OPEN_LABEL))
             existing.add((project, filename))

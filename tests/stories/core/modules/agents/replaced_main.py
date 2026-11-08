@@ -81,3 +81,10 @@ def test_a_worker_that_starts_ends_no_main(replaced_story):
     story, old = replaced_story
     story.run(f"agent start w-1 claude worker --parent {old.id} --environment main")
     story.expect_absent(f"agent show {old.id}", "ended_at: 20")
+
+
+def test_an_agent_cannot_register_a_main_agent_that_would_end_the_running_one(replaced_story):
+    story, running = replaced_story
+    story.expect_refusal("agent start story-ada-1 claude main --environment main", f"main agent {running.id} runs in this environment, and an agent does not replace it",
+                         actor=running)
+    story.expect_absent(f"agent show {running.id}", "ended_at: 20")
