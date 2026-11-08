@@ -142,8 +142,8 @@ test("worker identity stays the same when opened", async () => {
     expect(opened.querySelector("[data-agent-open]").title).toBe("");
     expect(opened.querySelector("[data-agent-last-heard]").parentElement).toBe(opened.querySelector("[data-agent-identity]").parentElement);
     const dispatched = opened.querySelector("[data-agent-first-dispatched]");
-    expect(dispatched.textContent).toBe("First started: 6m ago");
-    expect(dispatched.querySelector("[data-icon]").dataset.icon).toBe("time");
+    expect(dispatched.textContent).toBe("Started 6m ago");
+    expect(dispatched.querySelector("[data-icon]")).toBeNull();
     expect(dispatched.querySelector("time").dateTime).toBe(row.created_at);
     expect(dispatched.nextElementSibling).toBe(opened.querySelector("[data-agent-last-heard]"));
     expect(opened.querySelector("[data-information-bar]").previousElementSibling).toBe(opened.querySelector("[data-agent-identity]").parentElement);
@@ -298,7 +298,8 @@ test("a running helper's card names the command it runs", async () => {
 test("an agent that has just ended reads just now, never now ago", async () => {
     const ended = {id: 6, session: "s-1", program: "claude", role: "helper", ended_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row: ended})}, context({}));
-    expect(element.querySelector(".agent-time").textContent).toBe("Idle, just now");
+    expect(element.querySelector(".agent-time")).toBeNull();
+    expect(element.querySelector("[data-agent-status-tip]").textContent).toBe("Idle: its process has stoppedSince " + new Date(ended.ended_at).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}) + ", just now");
 });
 
 test("an open helper has transcript and terminal tabs with its instruction folded", async () => {

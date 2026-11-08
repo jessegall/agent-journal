@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent status dot: agent-journal viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* colours copied from src/viewer/src/tokens.css and light.css */
+.t-dark{color-scheme:dark;--side:#0d0e10;--bg:#131416;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--paused:#5fa8a0;--blocking:#d9a441;--warn:#d8a94a;--tip-bg:#212329;--tip-edge:#3a3d44;--tip-shadow:0 8px 22px rgba(0,0,0,.5)}
+.t-light{color-scheme:light;--side:#f5f5f7;--bg:#ffffff;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--paused:#3f8a82;--blocking:#a4731a;--warn:#a4731a;--tip-bg:#ffffff;--tip-edge:#d9dbe0;--tip-shadow:0 6px 20px rgba(20,22,30,.13)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#e7e6e2;color:#1a1b1f;font:14px/1.5 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif}
+a{color:#4a50b5}a:hover{color:#1a1b1f}
+.doc{max-width:860px;padding:36px 40px 8px}
+.doc h1{margin:0 0 6px;font-size:24px;font-weight:600}
+.doc p{margin:0 0 10px;text-wrap:pretty}
+.doc code{padding:0 4px;border-radius:4px;background:rgba(0,0,0,.07);font-size:13px}
+.turn{padding:28px 40px 32px;border-top:1px solid rgba(0,0,0,.09)}
+.turn>h2{margin:0 0 4px;font-size:16px;font-weight:600}
+.turn>p{margin:0 0 18px;max-width:800px;color:#474a52;text-wrap:pretty}
+.opts{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
+.opt{display:flex;flex-direction:column;gap:8px;max-width:100%;min-width:0}
+.opt-label{font-size:12.5px;color:#474a52}
+.pane{position:relative;display:flex;flex-direction:column;width:640px;overflow:visible;border:1px solid rgba(0,0,0,.2);border-radius:10px;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-ligatures:none}
+.pane.phone{width:390px}
+:where(.pane) button{font:inherit;color:inherit;cursor:pointer}
+.ico{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.tabs{display:flex;gap:16px;align-items:center;height:34px;padding:0 14px;border-bottom:1px solid var(--border);color:var(--text-3);font-size:12.5px;white-space:nowrap;overflow:hidden;border-radius:10px 10px 0 0}
+.tabs .on{align-self:stretch;display:flex;align-items:center;border-bottom:1px solid var(--accent);color:var(--text)}
+.toolbar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border)}
+.search{flex:1;min-width:0;height:30px;padding:0 9px;border:1px solid var(--border-2);border-radius:7px;color:var(--text-4);font-size:12.5px;line-height:28px}
+.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--border-2);border-radius:7px;font-size:12px}
+.seg span{padding:3px 8px;border-radius:5px;color:var(--text-3)}
+.seg .on{background:var(--sel);color:var(--text)}
+.phone .toolbar{flex-wrap:wrap}
+.phone .search{flex:1 1 100%;height:40px;line-height:38px}
+/* the status dot: in the top-right corner, pulsing while the agent works, still otherwise, its tooltip on hover or focus */
+.status{position:absolute;top:6px;right:6px;z-index:2;display:grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:none;--c:var(--text-3)}
+.status:focus-visible{outline:2px solid var(--accent);outline-offset:0}
+.status i{position:relative;z-index:1;width:8px;height:8px;border-radius:50%;background:var(--c)}
+.status[data-state="working"],.status[data-state="thinking"]{--c:var(--accent)}
+.status[data-state="waiting"]{--c:var(--paused)}
+.status[data-state="blocked"]{--c:var(--blocking)}
+.status[data-state="idle"]{--c:var(--text-3)}
+.status[data-state="retired"] i{background:none;box-shadow:inset 0 0 0 1.5px var(--text-3)}
+.status.pulse::before{content:"";position:absolute;width:8px;height:8px;border-radius:50%;background:var(--c);animation:ping 1.8s cubic-bezier(.2,.8,.2,1) infinite}
+@keyframes ping{0%{transform:scale(1);opacity:.55}75%,100%{transform:scale(2.7);opacity:0}}
+@media (prefers-reduced-motion:reduce){.status.pulse::before{animation:none;opacity:.25;transform:scale(1.9)}}
+.phone .status{top:4px;right:4px;width:40px;height:40px}
+.tip{position:absolute;top:26px;right:-2px;display:none;width:max-content;max-width:260px;padding:7px 10px;border:1px solid var(--tip-edge);border-radius:8px;background:var(--tip-bg);box-shadow:var(--tip-shadow);color:var(--text);font-size:12px;line-height:1.45;text-align:left;white-space:normal;pointer-events:none}
+.tip b{display:block;font-weight:500}
+.tip span{display:block;color:var(--text-3)}
+.status:hover .tip,.status:focus-visible .tip,.status.show .tip{display:block}
+.phone .status .tip{top:38px}
+/* a row of the agents and helpers lists */
+.row{position:relative;display:flex;flex-direction:column;gap:2px;padding:9px 36px 9px 14px;border-bottom:1px solid var(--border-inner);cursor:pointer}
+.row:hover{background:var(--hover)}
+.line{display:flex;gap:8px;align-items:baseline;min-width:0}
+.type{flex:none;font-weight:500}
+.name{min-width:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.ident{flex:1;min-width:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.sandbox{flex:none;color:var(--paused);font-size:12px}
+.pace{flex:none;color:var(--text-4);font-size:11.5px}
+.job{flex:1;min-width:0;overflow:hidden;color:var(--text-2);font-size:12.5px;text-overflow:ellipsis;white-space:nowrap}
+.plan{flex:none;color:var(--accent-text);font-size:11.5px}
+.words{flex:none;color:var(--text);font-size:12px}
+.row.retired .type{color:var(--text-2);font-weight:400}
+.row.retired .job{color:var(--text-3)}
+.phone .row{padding:11px 44px 11px 14px}
+.phone .line.third{flex-wrap:wrap}
+.phone .job{flex:1 1 100%}
+/* the agent's header and its information bar */
+.header{position:relative;padding:8px 36px 8px 8px;background:var(--side);border-bottom:1px solid var(--border-inner)}
+.h-top{display:flex;gap:9px;align-items:center}
+.back{display:grid;place-items:center;flex:none;width:24px;height:24px;padding:0;border:0;border-radius:6px;background:none;color:var(--text-3)}
+.back:hover{background:var(--hover);color:var(--text)}
+.h-title{font-weight:600}
+.h-run{margin-left:auto;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums}
+.h-line{display:flex;flex-wrap:wrap;gap:2px 14px;align-items:baseline;padding:2px 0 0 33px}
+.h-line .ident{flex:0 1 auto}
+.h-times{display:flex;gap:14px;margin-left:auto;color:var(--text-3);font-size:12px;white-space:nowrap}
+.info{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;min-height:32px;padding:6px 14px;border-bottom:1px solid var(--border-inner);color:var(--text-2);font-size:12px}
+.fact{display:inline-flex;gap:5px;align-items:center;white-space:nowrap}
+.fact.lead{color:var(--text)}
+.fact .ico{color:var(--text-3)}
+.gauge{display:inline-block;width:38px;height:4px;border-radius:2px;background:var(--chip);overflow:hidden}
+.gauge i{display:block;height:100%;background:var(--text-2)}
+.under{display:flex;flex-direction:column;gap:12px;padding:14px}
+.under i{display:block;height:10px;border-radius:5px;background:var(--hover)}
+.under b{color:var(--text-3);font-size:12px;font-weight:500}
+/* the legend */
+.legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:760px;padding:16px;border:1px solid rgba(0,0,0,.2);border-radius:10px;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",system-ui,sans-serif}
+.state{position:relative;display:flex;flex-direction:column;gap:4px;min-height:96px;padding:10px 40px 10px 12px;border:1px solid var(--border);border-radius:8px}
+.state b{font-weight:500}
+.state span{color:var(--text-3);font-size:12px;text-wrap:pretty}
+</style>
+</head>
+<body>
+
+<div class="doc">
+  <h1>The agent status dot</h1>
+  <p>Three changes to the agent's header, its information bar and the rows of the agents and helpers lists. The bar under an agent's header is the <b>information bar</b>: that is its name in the code (<code>src/viewer/src/shell/InformationBar.vue</code>, marked <code>data-information-bar</code>).</p>
+  <p>1. The information bar no longer shows the run time or its clock icon. 2. The header says "Started 6 hours ago" and "Last heard just now" as plain text, with no clock icon. 3. The status dot leaves the left of the row and sits in its top-right corner: it pulses while the agent works, stays still otherwise, and on hover or focus says what the agent is doing and since when. A row no longer shows its age.</p>
+  <p>Hover a dot in any frame to see its tooltip. All data is invented.</p>
+</div>
+
+<section class="turn" data-screen-label="Header">
+  <h2>The agent's header and the information bar</h2>
+  <p>The header keeps the session's run time, 7m, beside the dot. The line under it says when the agent was first started and when it was last heard from, in words. The information bar keeps the program, context, model, effort, cost and branch, without the run time.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark, the dot's tooltip shown</div><div data-frame='{"theme":"t-dark","view":"header","show":0}'></div></div>
+    <div class="opt"><div class="opt-label">Light</div><div data-frame='{"theme":"t-light","view":"header"}'></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="List rows">
+  <h2>The rows of the agents and helpers lists</h2>
+  <p>The left edge is free, so the type and name line up with the job. The corner holds the dot and nothing else: no dispatch time, no age. The words that matter for a stuck agent, such as "Waiting: tests" and "Blocked", stay on the row.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark, the tooltip of a working worker</div><div data-frame='{"theme":"t-dark","view":"list","show":0}'></div></div>
+    <div class="opt"><div class="opt-label">Light, the tooltip of a worker waiting for its tests</div><div data-frame='{"theme":"t-light","view":"list","show":2}'></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="States">
+  <h2>What the dot says</h2>
+  <p>It pulses only while the agent itself is doing something. The colour is never the only sign: the tooltip always says the state in words, and the dot is a button a keyboard can reach, so the tooltip opens on focus too. With reduced motion on, a pulsing dot shows a still halo instead.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark</div><div class="legend t-dark" data-legend></div></div>
+    <div class="opt"><div class="opt-label">Light</div><div class="legend t-light" data-legend></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Phone">
+  <h2>Phone width</h2>
+  <p>The dot's touch area grows to 40 points, and a tap opens its tooltip.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">The list, dark</div><div data-frame='{"theme":"t-dark","view":"list","phone":true,"show":1}'></div></div>
+    <div class="opt"><div class="opt-label">The header, light</div><div data-frame='{"theme":"t-light","view":"header","phone":true}'></div></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+/* the viewer's own icon shapes, from src/viewer/src/kit/Icon.vue */
+const ICON = {
+  agents: '<circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/>',
+  gauge: '<path d="M2.6 11.5a5.4 5.4 0 1 1 10.8 0"/><path d="M8 11.5 10.4 7.4"/><circle cx="8" cy="11.5" r=".6" fill="currentColor"/>',
+  model: '<path d="M8 2.2c.5 2.9 2 4.4 4.9 4.9-2.9.5-4.4 2-4.9 4.9-.5-2.9-2-4.4-4.9-4.9 2.9-.5 4.4-2 4.9-4.9z"/>',
+  bolt: '<path d="M9.2 2 4.2 8.8h3.6L6.8 14l5-6.8H8.2z"/>',
+  branch: '<circle cx="5" cy="3.6" r="1.6"/><circle cx="5" cy="12.4" r="1.6"/><circle cx="11.6" cy="5.4" r="1.6"/><path d="M5 5.2v5.6M11.6 7v.6a3.6 3.6 0 0 1-3.6 3.6H6.6"/>',
+  left: '<path d="M10 3 5 8l5 5"/>'
+};
+const icon = (name) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICON[name]}</svg>`;
+const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const PULSING = ["working", "thinking"];
+
+const ROWS = [
+  {state: "working", type: "Worker", name: "Lillian Gilbreth", ident: "claude · sonnet · high · worker 699", sandbox: true, pace: "7 per hour", job: "A blocked task shows what waits on what", plan: "plan 1098", doing: "Running a command: npm test", since: "Since 13:42, 2 minutes ago"},
+  {state: "thinking", type: "Researcher", name: "Rosalind Franklin", ident: "claude · haiku · helper 702", job: "How does the phone app read the chat when it was away?", doing: "Thinking", since: "Since 13:44, just now"},
+  {state: "waiting", type: "Worker", name: "Isambard Brunel", ident: "claude · sonnet · high · worker 696", job: "Move the sidebar's page list into one component", words: "Waiting: tests", doing: "Waiting for its tests, 2 runs ahead in the queue", since: "Since 13:31, 13 minutes ago"},
+  {state: "blocked", type: "Worker", name: "Thomas Bewick", ident: "codex · gpt-5 · high · worker 694", job: "The trigger form names the skill it makes the agent read", plan: "plan 1101", words: "Blocked", doing: "Blocked: it waits on task 7340", since: "Since 12:50, 54 minutes ago"},
+  {state: "idle", type: "Planner", name: "Gerardus Mercator", ident: "claude · opus · helper 690", job: "Plan the Memories page", doing: "Idle: its job is done", since: "Since 12:04, 1 hour ago"},
+  {state: "retired", type: "Worker", name: "Ibn al-Haytham", ident: "claude · sonnet · worker 641", job: "The search window remembers its last words", doing: "Retired: its work is merged", since: "Since Nov 6, 2 days ago"}
+];
+
+const dot = (row, shown) => `<button type="button" class="status ${PULSING.includes(row.state) ? "pulse" : ""} ${shown ? "show" : ""}" data-state="${row.state}" aria-label="${esc(`${row.doing}. ${row.since}`)}"><i></i><span class="tip" role="tooltip"><b>${esc(row.doing)}</b><span>${esc(row.since)}</span></span></button>`;
+
+function rowHtml(row, shown) {
+  const third = row.job || row.words ? `<span class="line third"><span class="job">${esc(row.job)}</span>${row.plan ? `<span class="plan">${row.plan}</span>` : ""}${row.words ? `<span class="words">${esc(row.words)}</span>` : ""}</span>` : "";
+  return `<div class="row ${row.state === "retired" ? "retired" : ""}" role="button" tabindex="0"><span class="line"><span class="type">${esc(row.type)}</span><span class="name">${esc(row.name)}</span></span><span class="line"><span class="ident">${esc(row.ident)}</span>${row.sandbox ? '<span class="sandbox">sandbox off</span>' : ""}${row.pace ? `<span class="pace">${row.pace}</span>` : ""}</span>${third}${dot(row, shown)}</div>`;
+}
+
+function listHtml(c) {
+  return `<div class="tabs"><span>Tasks</span><span>Plans</span>${c.phone ? "" : "<span>Questions</span>"}<span class="on">Agents</span></div><div class="toolbar"><span class="search">Search agents</span><span class="seg"><span class="on">All</span><span>Working</span><span>Idle</span><span>Retired</span></span></div>${ROWS.map((row, place) => rowHtml(row, c.show === place)).join("")}`;
+}
+
+function headerHtml(c) {
+  const row = ROWS[0];
+  const header = `<div class="header"><div class="h-top"><button type="button" class="back" aria-label="Back to the list" title="Back to the list">${icon("left")}</button><span class="h-title">Worker</span><span class="name">Lillian Gilbreth</span><span class="h-run" title="How long this session has run">7m</span></div><div class="h-line"><span class="ident">${esc(row.ident)}</span><span class="sandbox">sandbox off</span><span class="h-times"><span>Started 6 hours ago</span><span>Last heard just now</span></span></div>${dot(row, c.show === 0)}</div>`;
+  const info = `<div class="info" data-information-bar><span class="fact lead">${icon("agents")}Claude Code</span><span class="fact">${icon("gauge")}<span class="gauge"><i style="width:37%"></i></span>37%</span><span class="fact">${icon("model")}sonnet</span><span class="fact">${icon("bolt")}high</span><span class="fact">$61.46</span><span class="fact">${icon("branch")}journal/development/worker-699-cut-292</span></div>`;
+  return `<div class="tabs"><span>Tasks</span><span>Plans</span>${c.phone ? "" : "<span>Questions</span>"}<span class="on">Agents</span></div>${header}${info}<div class="under"><b>Doing now</b><i style="width:62%"></i><i style="width:40%"></i><b>Tasks</b><i style="width:75%"></i><i style="width:55%"></i></div>`;
+}
+
+document.querySelectorAll("[data-frame]").forEach((root) => {
+  const c = JSON.parse(root.dataset.frame);
+  root.className = `pane ${c.theme} ${c.phone ? "phone" : ""}`;
+  root.innerHTML = c.view === "header" ? headerHtml(c) : listHtml(c);
+});
+
+const LEGEND = [
+  ["working", "Working", "Pulses. Running a command or editing a file."],
+  ["thinking", "Thinking", "Pulses. Between commands, working out the next step."],
+  ["waiting", "Waiting", "Still, in teal. Waiting for its tests, for a reply, or stopped with work left."],
+  ["blocked", "Blocked", "Still, in amber. Its task waits on another."],
+  ["idle", "Idle", "Still, in grey. Its process has stopped and it can take another job."],
+  ["retired", "Retired", "A grey ring. It cannot be resumed."]
+];
+document.querySelectorAll("[data-legend]").forEach((holder) => {
+  holder.innerHTML = LEGEND.map(([state, word, text]) => {
+    const row = ROWS.find((item) => item.state === state);
+    return `<div class="state"><b>${word}</b><span>${text}</span>${dot(row, false)}</div>`;
+  }).join("");
+});
+</script>
+</body>
+</html>

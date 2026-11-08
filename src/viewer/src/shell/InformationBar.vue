@@ -9,8 +9,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import {useAgentControls} from "../composables/agentControls.js";
 import {compactionLine} from "../domain/compaction.js";
 
-// the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, how
-// long it has run, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
+// the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
 const props = defineProps({
     agent: {type: Object, default: null},
     card: Boolean,
@@ -21,7 +20,6 @@ const props = defineProps({
     jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     branch: {type: String, default: ""},
-    now: {type: Number, default: () => Date.now()},
     fitness: {type: Object, default: null},
     run: {type: Function, default: null},
 });
@@ -56,12 +54,6 @@ const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
 const context = computed(() => (status.value?.context_percent == null ? null : Math.round(status.value.context_percent)));
 const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_dollars.toFixed(2)}` : ""));
-const uptime = computed(() => {
-    const started = props.agent?.process_started_at ? new Date(props.agent.process_started_at).getTime() : 0;
-    if (!started) return "";
-    const minutes = Math.max(0, Math.floor((props.now - started) / 60000));
-    return minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
-});
 </script>
 
 <template>
@@ -82,9 +74,6 @@ const uptime = computed(() => {
             </template>
             <template v-if="cost">
                 <button type="button" class="fact" :disabled="card" data-fact="cost" title="The predicted API price of this session: open its breakdown" @click="emit('open', 'cost', $event.currentTarget)">{{ cost }}</button>
-            </template>
-            <template v-if="uptime">
-                <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>
             </template>
             <template v-if="branch">
                 <span class="fact" data-fact="branch" title="Current branch"><Icon name="branch" :size="12" /> {{ branch }}</span>
