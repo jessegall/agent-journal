@@ -10,8 +10,8 @@ from core.base.registry.skill_entry import SkillEntry
 from core.base.request_values import RequestValues
 from core.base.skill.skill_declaration import SKILL_FILE
 from core.base.skill.skill_digest import SkillDigest
+from core.base.skill.skill_contents import FRONT_MATTER_MARK
 
-FRONT_MATTER_MARK = "---"
 PLUGIN_KEY = "plugin"
 
 

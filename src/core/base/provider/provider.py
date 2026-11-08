@@ -166,6 +166,9 @@ class Provider(ABC):
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()
 
+    def skills_kept_after_compaction(self, event: HookEvent) -> Mapping[str, str]:
+        return {}
+
     def transcript_path(self, event: HookEvent) -> Path | None:
         path = event.raw.get("transcript_path")
         return Path(path).expanduser() if isinstance(path, str) and path else None
