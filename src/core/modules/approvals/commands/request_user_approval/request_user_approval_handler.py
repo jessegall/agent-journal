@@ -1,7 +1,4 @@
 from core.base.command.command_json import CommandJson
-from core.base.actor import Actor
-from core.base.actor_type import ActorType
-from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.agent_role import AgentRole
 from core.base.command.handler import Handler
@@ -11,9 +8,7 @@ from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
 from core.modules.approvals.models.approval_request import ApprovalRequest
-from core.modules.approvals.models.enums.approval_decision import ApprovalDecision
 from core.modules.approvals.support.standing_approvals import StandingApprovals
 from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -25,9 +20,9 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
 
     command = RequestUserApproval
 
-    def __init__(self, queries: Queries, repository: Repository, actors: ActorTable, rows: EventRows, standing: StandingApprovals, bus: Bus) -> None:
+    def __init__(self, queries: Queries, repository: Repository, actors: ActorTable, rows: EventRows, standing: StandingApprovals) -> None:
         self.queries, self.repository = queries, repository
-        self.standing, self.bus = standing, bus
+        self.standing = standing
         self.actors, self.rows = actors, rows
 
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
@@ -79,6 +74,4 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
         covering = self.standing.covering(saved)
         if covering is None:
             return saved
-        self.repository.update(saved, context, standing_id=covering.id)
-        self.bus.run(AnswerApproval(saved.id, ApprovalDecision.ACCEPT), Actor(covering.creator_id, ActorType.USER), environment_id=saved.environment_id)
-        return self.queries.query(ApprovalRequest).find(saved.id)
+        return self.repository.update(saved, context, standing_id=covering.id)
