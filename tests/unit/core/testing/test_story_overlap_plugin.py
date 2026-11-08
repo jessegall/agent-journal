@@ -42,3 +42,14 @@ def test_second(new_story):
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.OK
     pytest_run.assert_outcomes(passed=2)
+
+
+def test_a_run_of_the_whole_suite_prints_its_wall_and_cpu_seconds_in_its_summary(pytester, monkeypatch, tmp_path):
+    configure_run(pytester, monkeypatch)
+    record = tmp_path / "runtime" / "full-test-runs.jsonl"
+    record.parent.mkdir()
+    monkeypatch.setenv("JOURNAL_FULL_RUN_RECORD", str(record))
+    pytester.makepyfile(**{"tests/test_plain": "def test_plain():\n    assert sum(range(100000)) > 0\n"})
+    pytest_run = pytester.runpytest_subprocess("tests", "-q", "-n", "2", "--maxschedchunk=1")
+    assert "wall seconds," in pytest_run.stdout.str() and "cpu seconds in the test runners" in pytest_run.stdout.str()
+    assert '"cpu_seconds": ' in record.read_text()

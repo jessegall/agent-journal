@@ -24,3 +24,18 @@ def test_only_a_run_of_the_whole_suite_counts_as_full():
     assert RunSize([], 1000).is_whole_suite()
     assert RunSize(["tests/"], 1000).is_whole_suite()
     assert not RunSize(["tests/unit"], 1000).is_whole_suite()
+
+
+def test_a_full_run_record_keeps_wall_and_cpu_seconds(tmp_path):
+    file = tmp_path / "runs.jsonl"
+    FullRunRecord(4000, 0, 120.0, 310.5).write(file)
+    record = FullRunRecords.read(file).records[0]
+    assert (record.seconds, record.cpu_seconds) == (120.0, 310.5)
+    assert "120.0 wall seconds, 310.5 cpu seconds" in record.summary_line()
+
+
+def test_an_old_record_without_cpu_seconds_still_reads(tmp_path):
+    file = tmp_path / "runs.jsonl"
+    file.write_text('{"tests": 4000, "failed": 1, "seconds": 120.0, "finished_at": "2026-11-01T00:00:00+00:00"}\n')
+    record = FullRunRecords.read(file).records[0]
+    assert (record.tests, record.seconds, record.cpu_seconds) == (4000, 120.0, 0.0)
