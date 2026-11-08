@@ -1,10 +1,10 @@
 /* @code-commandments-generated */
 if (!document.getElementById("window-styles-9a43d7b5fe06")) { const style = document.createElement("style"); style.id = "window-styles-9a43d7b5fe06"; style.textContent = ".band[data-v-9cc4041c]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-9cc4041c]{color:var(--text-3)}.band span[data-v-9cc4041c]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-a9ae298b]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-a9ae298b]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-a9ae298b]{flex:1;margin:0;font-size:14px}.limits[data-v-a9ae298b],.empty[data-v-a9ae298b]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-a9ae298b]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-a9ae298b]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-a9ae298b]:last-child{text-align:right;font-variant-numeric:tabular-nums}.detail-head[data-v-68f1d146]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-68f1d146]{margin:0;color:var(--text);font-size:14px}.slow[data-v-68f1d146]{color:#c58b35}.refused[data-v-68f1d146]{color:#d76b6b}.heading[data-v-68f1d146]{margin:0 0 8px;font-size:12px}pre[data-v-68f1d146]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-68f1d146]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-68f1d146]{padding:16px;line-height:1.6}.toolbar[data-v-97ad52fd]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-97ad52fd]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-97ad52fd]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-97ad52fd]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-97ad52fd]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-97ad52fd]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-97ad52fd],.row[data-v-97ad52fd]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-97ad52fd]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-97ad52fd]>:last-child,.duration[data-v-97ad52fd],.queued[data-v-97ad52fd],.parts[data-v-97ad52fd]{text-align:right}.parts[data-v-97ad52fd]{padding-right:12px;color:var(--text-3);font-variant-numeric:tabular-nums}.sender[data-v-97ad52fd]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.sender[data-v-97ad52fd]:hover{color:var(--accent);text-decoration:underline}.day[data-v-97ad52fd]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-97ad52fd]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-97ad52fd]:hover,.row.open[data-v-97ad52fd]{background:var(--surface-2, var(--border))}.event[data-v-97ad52fd]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-97ad52fd]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-97ad52fd],.duration[data-v-97ad52fd],.queued[data-v-97ad52fd]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-97ad52fd],.detail-head .slow[data-v-97ad52fd]{color:#c58b35}.refused .event[data-v-97ad52fd],.refused .duration[data-v-97ad52fd],.detail-head .refused[data-v-97ad52fd]{color:#d76b6b}.note[data-v-97ad52fd]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-97ad52fd]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-97ad52fd]{background:var(--border)}.message[data-v-97ad52fd]{padding:16px;line-height:1.6}.detail-head[data-v-97ad52fd]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-97ad52fd]{margin:0;color:var(--text);font-size:14px}.heading[data-v-97ad52fd]{margin:0 0 8px;font-size:12px}pre[data-v-97ad52fd]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-97ad52fd]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-97ad52fd]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-97ad52fd]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-97ad52fd]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.request-rows[data-v-97ad52fd]{display:contents}.request-row-move[data-v-97ad52fd]{transition:transform .32s cubic-bezier(.2,.9,.25,1)}.request-row-enter-active[data-v-97ad52fd]{transition:opacity .2s ease-out}.request-row-enter-from[data-v-97ad52fd]{opacity:0}.request-row-leave-active[data-v-97ad52fd]{display:none}@media(prefers-reduced-motion:reduce){.request-row-move[data-v-97ad52fd],.request-row-enter-active[data-v-97ad52fd]{transition:none}}.numbers-tools[data-v-6d815671]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-6d815671]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-6d815671]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-6d815671],.numbers-table td[data-v-6d815671]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-6d815671]{color:var(--text-3);font-weight:500}.logs[data-v-8e791de4]{display:flex;flex-direction:column;height:100%;min-height:0}.toolbar[data-v-8e791de4],nav[data-v-8e791de4]{display:flex;align-items:center;gap:12px;padding:10px 12px;flex:none}.toolbar[data-v-8e791de4]{border-bottom:1px solid var(--border)}.toolbar label[data-v-8e791de4]{display:flex;align-items:center;gap:6px}.toolbar button[data-v-8e791de4]{margin-left:auto}.scroll[data-v-8e791de4]{flex:1;min-height:0;overflow:auto}table[data-v-8e791de4]{width:100%;border-collapse:collapse;font-size:12px}th[data-v-8e791de4]{position:sticky;top:0;background:var(--surface);text-align:left;color:var(--text-3)}th[data-v-8e791de4],td[data-v-8e791de4]{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}time[data-v-8e791de4]{white-space:nowrap}.message[data-v-8e791de4]{white-space:pre-wrap;overflow-wrap:anywhere;width:100%;font-family:monospace}[data-level=error][data-v-8e791de4],[data-level=critical][data-v-8e791de4]{color:var(--danger, #c53a3a)}[data-level=warning][data-v-8e791de4]{color:var(--warning, #a76a13)}.empty[data-v-8e791de4]{padding:12px;color:var(--text-3)}nav[data-v-8e791de4]{justify-content:center;border-top:1px solid var(--border)}\n"; document.head.appendChild(style); }
-import { openBlock as s, createElementBlock as n, normalizeStyle as Y, createVNode as v, renderSlot as ee, toDisplayString as r, createCommentVNode as k, createElementVNode as t, unref as l, Fragment as g, withCtx as M, createTextVNode as u, renderList as w, normalizeClass as D, ref as _, computed as A, watch as Z, createBlock as $, TransitionGroup as te, withKeys as ae, withModifiers as j } from "vue";
-import { useWindow as E, usePoll as J, Icon as re, CloseButton as se, highlight as le, WindowRoom as ne, Btn as I, MenuPanel as oe, MenuLabel as O, MenuItem as L, peekRef as ie, toggleFilter as de } from "@journal/window-kit";
+import { openBlock as s, createElementBlock as n, normalizeStyle as Y, createVNode as v, renderSlot as ee, toDisplayString as r, createCommentVNode as k, createElementVNode as t, unref as l, Fragment as g, withCtx as M, createTextVNode as u, renderList as w, normalizeClass as Q, ref as _, computed as A, watch as Z, createBlock as $, TransitionGroup as te, withKeys as ae, withModifiers as j } from "vue";
+import { useWindow as D, usePoll as J, Icon as re, CloseButton as se, highlight as le, WindowRoom as ne, Btn as I, MenuPanel as oe, MenuLabel as O, MenuItem as L, peekRef as ie, toggleFilter as de } from "@journal/window-kit";
 import { _ as S } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
-import { u as he, t as ce } from "./usePausedProp-C5dSctRP.mjs";
-const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
+import { u as ce, t as he } from "./usePausedProp-C5dSctRP.mjs";
+const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', pe = ["data-icon", "stroke-width", "innerHTML"], Me = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -13,7 +13,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
     bold: Boolean
   },
   setup(o) {
-    const y = o, f = { right: 0, down: 90, left: 180, up: 270 }, h = {
+    const y = o, f = { right: 0, down: 90, left: 180, up: 270 }, c = {
       mail: "inbox",
       circle: "todos",
       play: "work",
@@ -38,6 +38,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
       more: "dots",
       chevron: "arrow"
     }, d = {
+      agent: ue,
       time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5V8l2.4 1.5"/>',
       allowance: '<path d="M3 4.5h10v7H3zM5 6.5h1M10 9.5h1"/><circle cx="8" cy="8" r="1.4"/>',
       phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
@@ -147,7 +148,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
       family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
       loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
     };
-    return (c, m) => (s(), n("svg", {
+    return (h, m) => (s(), n("svg", {
       class: "ico",
       "data-icon": o.name,
       style: Y({
@@ -161,44 +162,44 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
       "aria-hidden": "true",
-      innerHTML: d[h[o.name] || o.name] || d.dot
-    }, null, 12, ue));
+      innerHTML: d[c[o.name] || o.name] || d.dot
+    }, null, 12, pe));
   }
-}, Me = { class: "band" }, ve = { key: 0 }, ye = {
+}, ve = { class: "band" }, ye = { key: 0 }, me = {
   __name: "ProcessQueueBand",
   props: { icon: { type: String, required: !0 }, count: { type: Number, default: null } },
   setup(o) {
-    return (y, f) => (s(), n("h2", Me, [
-      v(pe, {
+    return (y, f) => (s(), n("h2", ve, [
+      v(Me, {
         name: o.icon,
         size: 12
       }, null, 8, ["name"]),
       ee(y.$slots, "default", {}, void 0, !0),
-      o.count !== null ? (s(), n("span", ve, r(o.count), 1)) : k("", !0)
+      o.count !== null ? (s(), n("span", ye, r(o.count), 1)) : k("", !0)
     ]));
   }
-}, F = /* @__PURE__ */ S(ye, [["__scopeId", "data-v-9cc4041c"]]), me = {
+}, F = /* @__PURE__ */ S(me, [["__scopeId", "data-v-9cc4041c"]]), ke = {
   class: "inspector",
   "data-request-queue": ""
-}, ke = {
+}, xe = {
   key: 0,
   class: "empty",
   role: "alert"
-}, xe = { class: "limits" }, ge = {
+}, ge = { class: "limits" }, fe = {
   key: 0,
   class: "empty",
   "data-request-queue-empty": ""
-}, fe = {
+}, qe = {
   key: 1,
   class: "empty"
-}, qe = {
+}, _e = {
   __name: "RequestQueueInspector",
   emits: ["close"],
   setup(o, { emit: y }) {
-    const f = y, h = E(), { data: d, failure: c } = h.props.queue;
-    J(() => h.reload("queue"), () => h.visible.value);
+    const f = y, c = D(), { data: d, failure: h } = c.props.queue;
+    J(() => c.reload("queue"), () => c.visible.value);
     const m = (q) => `${Math.round(q.waited_ms)} ms`;
-    return (q, x) => (s(), n("aside", me, [
+    return (q, x) => (s(), n("aside", ke, [
       t("header", null, [
         v(l(re), {
           name: "terminal",
@@ -210,8 +211,8 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
           onClick: x[0] || (x[0] = (p) => f("close"))
         })
       ]),
-      l(c) ? (s(), n("p", ke, r(l(c)), 1)) : l(d) ? (s(), n(g, { key: 1 }, [
-        t("div", xe, "Hooks at once: " + r(l(d).hook_limit) + " · Main agent wait: " + r(l(d).main_hook_seconds) + " s · Other agent wait: " + r(l(d).agent_hook_seconds) + " s · Viewer wait: " + r(l(d).viewer_wait_seconds) + " s", 1),
+      l(h) ? (s(), n("p", xe, r(l(h)), 1)) : l(d) ? (s(), n(g, { key: 1 }, [
+        t("div", ge, "Hooks at once: " + r(l(d).hook_limit) + " · Main agent wait: " + r(l(d).main_hook_seconds) + " s · Other agent wait: " + r(l(d).agent_hook_seconds) + " s · Viewer wait: " + r(l(d).viewer_wait_seconds) + " s", 1),
         v(F, {
           icon: "start",
           count: l(d).running.length
@@ -221,7 +222,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
           ])]),
           _: 1
         }, 8, ["count"]),
-        l(d).running.length ? k("", !0) : (s(), n("p", ge, "No running requests.")),
+        l(d).running.length ? k("", !0) : (s(), n("p", fe, "No running requests.")),
         (s(!0), n(g, null, w(l(d).running, (p, b) => (s(), n("div", {
           key: `running-${b}`,
           class: "entry",
@@ -245,7 +246,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
           ])]),
           _: 1
         }, 8, ["count"]),
-        l(d).waiting.length ? k("", !0) : (s(), n("p", fe, "No waiting requests.")),
+        l(d).waiting.length ? k("", !0) : (s(), n("p", qe, "No waiting requests.")),
         (s(!0), n(g, null, w(l(d).waiting, (p, b) => (s(), n("div", {
           key: `waiting-${b}`,
           class: "entry",
@@ -263,108 +264,108 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
       ], 64)) : k("", !0)
     ]));
   }
-}, _e = /* @__PURE__ */ S(qe, [["__scopeId", "data-v-a9ae298b"]]), we = {
+}, we = /* @__PURE__ */ S(_e, [["__scopeId", "data-v-a9ae298b"]]), be = {
   key: 0,
   "data-hook-request-detail": ""
-}, be = { class: "detail-head" }, Ve = ["innerHTML"], Ce = ["innerHTML"], $e = {
+}, Ve = { class: "detail-head" }, Ce = ["innerHTML"], $e = ["innerHTML"], He = {
   key: 1,
   class: "note message"
-}, He = {
+}, ze = {
   __name: "RequestDetails",
   props: { request: { type: Object, default: null } },
   setup(o) {
-    const y = (c) => le(JSON.stringify(c, null, 2), "json").join(`
-`), f = (c) => c.outcome === "refused", h = (c) => !f(c) && c.duration_ms >= 500, d = (c) => `${Math.round(c.duration_ms)} ms`;
-    return (c, m) => o.request ? (s(), n("div", we, [
-      t("div", be, [
+    const y = (h) => le(JSON.stringify(h, null, 2), "json").join(`
+`), f = (h) => h.outcome === "refused", c = (h) => !f(h) && h.duration_ms >= 500, d = (h) => `${Math.round(h.duration_ms)} ms`;
+    return (h, m) => o.request ? (s(), n("div", be, [
+      t("div", Ve, [
         t("h2", null, r(o.request.event), 1),
         t("span", {
-          class: D({ slow: h(o.request), refused: f(o.request) })
+          class: Q({ slow: c(o.request), refused: f(o.request) })
         }, r(o.request.sender) + " · queued " + r(Math.round(o.request.queued_ms)) + " ms · " + r(o.request.outcome) + " · " + r(d(o.request)), 3)
       ]),
       m[0] || (m[0] = t("h3", { class: "heading" }, "Headers", -1)),
       t("pre", {
         "data-hook-request-headers": "",
         innerHTML: y(o.request.headers)
-      }, null, 8, Ve),
+      }, null, 8, Ce),
       m[1] || (m[1] = t("h3", { class: "heading" }, "Body", -1)),
       t("pre", {
         "data-hook-request-body": "",
         innerHTML: y(o.request.body)
-      }, null, 8, Ce)
-    ])) : (s(), n("p", $e, "Select a request to see its headers and body."));
+      }, null, 8, $e)
+    ])) : (s(), n("p", He, "Select a request to see its headers and body."));
   }
-}, ze = /* @__PURE__ */ S(He, [["__scopeId", "data-v-68f1d146"]]), Le = {
+}, Le = /* @__PURE__ */ S(ze, [["__scopeId", "data-v-68f1d146"]]), Se = {
   class: "requests",
   "data-hook-requests": ""
-}, Se = {
+}, Re = {
   class: "list",
   "aria-label": "Recorded requests"
-}, Re = { class: "toolbar" }, Ne = {
+}, Ne = { class: "toolbar" }, Te = {
   key: 0,
   "data-filter-count": ""
-}, Te = {
+}, Ae = {
   class: "list-scroll",
   "data-hook-request-list": ""
-}, Ae = {
+}, Ie = {
   key: 0,
   class: "note message",
   role: "alert"
-}, Ie = {
+}, Oe = {
   key: 1,
   class: "note message"
-}, Oe = {
+}, Be = {
   key: 0,
   class: "day",
   "data-hook-day": ""
-}, Be = ["data-hook-request", "aria-pressed", "title", "onClick", "onKeydown"], Pe = { class: "event" }, Ze = { class: "tool" }, je = {
+}, Pe = ["data-hook-request", "aria-pressed", "title", "onClick", "onKeydown"], Ze = { class: "event" }, je = { class: "tool" }, Fe = {
   class: "parts",
   "data-hook-parts": ""
-}, Fe = ["datetime"], Qe = ["data-peek", "onClick"], De = { key: 1 }, Ee = { class: "queued" }, Je = { class: "duration" }, Ke = {
+}, Ee = ["datetime"], Qe = ["data-peek", "onClick"], De = { key: 1 }, Je = { class: "queued" }, Ke = { class: "duration" }, We = {
   class: "detail",
   "data-hook-request-detail-area": "",
   "aria-label": "Request details"
-}, Q = "journal.hook-requests.filters", We = {
+}, E = "journal.hook-requests.filters", Ge = {
   __name: "HookRequests",
   setup(o) {
     const y = () => ({ kind: [], family: [], sender: [] });
     function f() {
       try {
-        return { ...y(), ...JSON.parse(localStorage.getItem(Q) || "{}") };
+        return { ...y(), ...JSON.parse(localStorage.getItem(E) || "{}") };
       } catch {
         return y();
       }
     }
-    const h = _(f()), d = _(!1), c = _({ family: ["process bookkeeping"], sender: [] }), m = A(() => Object.values(h.value).reduce((i, a) => i + a.length, 0)), q = E(), { data: x, failure: p, loaded: b, reload: R } = he(q, "requests", d), K = { kind: "kinds", family: "families", sender: "senders" };
+    const c = _(f()), d = _(!1), h = _({ family: ["process bookkeeping"], sender: [] }), m = A(() => Object.values(c.value).reduce((i, a) => i + a.length, 0)), q = D(), { data: x, failure: p, loaded: b, reload: R } = ce(q, "requests", d), K = { kind: "kinds", family: "families", sender: "senders" };
     function B(i) {
       for (const [a, e] of Object.entries(i)) q.state[`requests.${K[a]}`] = JSON.stringify(e);
     }
-    B(h.value);
+    B(c.value);
     const N = A(() => {
       var i;
       return ((i = x.value) == null ? void 0 : i.rows) ?? [];
     });
     Z(x, (i) => {
-      c.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...i.families || [], ...h.value.family])].sort(), c.value.sender = [.../* @__PURE__ */ new Set([...i.senders || [], ...h.value.sender])].sort();
-    }), Z(h, (i) => {
+      h.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...i.families || [], ...c.value.family])].sort(), h.value.sender = [.../* @__PURE__ */ new Set([...i.senders || [], ...c.value.sender])].sort();
+    }), Z(c, (i) => {
       try {
-        localStorage.setItem(Q, JSON.stringify(i));
+        localStorage.setItem(E, JSON.stringify(i));
       } catch {
       }
       B(i), d.value || R();
     });
     function T(i, a) {
-      h.value = de(h.value, i, a);
+      c.value = de(c.value, i, a);
     }
-    const H = _(null), V = _(0), z = _(!1), W = A(() => N.value.find((i) => i.id === V.value)), P = (i) => i.outcome === "refused", U = (i) => !P(i) && i.duration_ms >= 500, G = (i) => `${Math.round(i.duration_ms)} ms`;
+    const H = _(null), V = _(0), z = _(!1), W = A(() => N.value.find((i) => i.id === V.value)), P = (i) => i.outcome === "refused", G = (i) => !P(i) && i.duration_ms >= 500, U = (i) => `${Math.round(i.duration_ms)} ms`;
     function X() {
-      ce(d, R);
+      he(d, R);
     }
     return J(() => b.value && R(), () => !d.value && q.visible.value), (i, a) => (s(), $(l(ne), { padding: "0" }, {
       default: M(() => [
-        t("div", Le, [
-          t("section", Se, [
-            t("div", Re, [
+        t("div", Se, [
+          t("section", Re, [
+            t("div", Ne, [
               v(l(I), {
                 small: "",
                 "data-filter-open": "",
@@ -372,7 +373,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
               }, {
                 default: M(() => [
                   a[6] || (a[6] = u("Filters", -1)),
-                  m.value ? (s(), n("span", Ne, " (" + r(m.value) + ")", 1)) : k("", !0)
+                  m.value ? (s(), n("span", Te, " (" + r(m.value) + ")", 1)) : k("", !0)
                 ]),
                 _: 1
               }),
@@ -416,8 +417,8 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
                     key: e,
                     "data-filter-kind": e,
                     role: "menuitemcheckbox",
-                    checked: h.value.kind.includes(e),
-                    "aria-checked": h.value.kind.includes(e),
+                    checked: c.value.kind.includes(e),
+                    "aria-checked": c.value.kind.includes(e),
                     onClick: (C) => T("kind", e)
                   }, {
                     default: M(() => [
@@ -431,12 +432,12 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
                     ])]),
                     _: 1
                   }),
-                  (s(!0), n(g, null, w(c.value.family, (e) => (s(), $(l(L), {
+                  (s(!0), n(g, null, w(h.value.family, (e) => (s(), $(l(L), {
                     key: e,
                     "data-filter-family": e,
                     role: "menuitemcheckbox",
-                    checked: h.value.family.includes(e),
-                    "aria-checked": h.value.family.includes(e),
+                    checked: c.value.family.includes(e),
+                    "aria-checked": c.value.family.includes(e),
                     onClick: (C) => T("family", e)
                   }, {
                     default: M(() => [
@@ -450,11 +451,11 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
                     ])]),
                     _: 1
                   }),
-                  (s(!0), n(g, null, w(c.value.sender, (e) => (s(), $(l(L), {
+                  (s(!0), n(g, null, w(h.value.sender, (e) => (s(), $(l(L), {
                     key: e,
                     role: "menuitemcheckbox",
-                    checked: h.value.sender.includes(e),
-                    "aria-checked": h.value.sender.includes(e),
+                    checked: c.value.sender.includes(e),
+                    "aria-checked": c.value.sender.includes(e),
                     onClick: (C) => T("sender", e)
                   }, {
                     default: M(() => [
@@ -465,7 +466,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
                   m.value ? (s(), $(l(L), {
                     key: 0,
                     "data-filter-clear": "",
-                    onClick: a[2] || (a[2] = (e) => h.value = y())
+                    onClick: a[2] || (a[2] = (e) => c.value = y())
                   }, {
                     default: M(() => [...a[11] || (a[11] = [
                       u("Clear filters", -1)
@@ -488,8 +489,8 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
               t("span", { "data-hook-column": "" }, "Queued"),
               t("span", { "data-hook-column": "" }, "Duration")
             ], -1)),
-            t("div", Te, [
-              l(p) ? (s(), n("p", Ae, r(l(p)), 1)) : N.value.length ? k("", !0) : (s(), n("p", Ie, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
+            t("div", Ae, [
+              l(p) ? (s(), n("p", Ie, r(l(p)), 1)) : N.value.length ? k("", !0) : (s(), n("p", Oe, "Nothing recorded yet. Record agent calls in the developer settings turns the log on.")),
               v(te, {
                 name: "request-row",
                 tag: "div",
@@ -499,26 +500,26 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
                   (s(!0), n(g, null, w(N.value, (e) => (s(), n(g, {
                     key: e.id
                   }, [
-                    e.day_start ? (s(), n("div", Oe, [
+                    e.day_start ? (s(), n("div", Be, [
                       u(r(e.day), 1),
                       a[12] || (a[12] = t("span", null, "UTC", -1))
                     ])) : k("", !0),
                     t("div", {
                       role: "button",
                       tabindex: "0",
-                      class: D(["row", { open: e.id === V.value, slow: U(e), refused: P(e) }]),
+                      class: Q(["row", { open: e.id === V.value, slow: G(e), refused: P(e) }]),
                       "data-hook-request": e.id,
                       "aria-pressed": e.id === V.value,
                       title: e.outcome,
                       onClick: (C) => V.value = e.id,
                       onKeydown: ae((C) => V.value = e.id, ["enter"])
                     }, [
-                      t("span", Pe, r(e.event), 1),
-                      t("span", Ze, r(e.tool || "—"), 1),
-                      t("span", je, r(e.part_count || ""), 1),
+                      t("span", Ze, r(e.event), 1),
+                      t("span", je, r(e.tool || "—"), 1),
+                      t("span", Fe, r(e.part_count || ""), 1),
                       t("time", {
                         datetime: e.received_at
-                      }, r(e.time), 9, Fe),
+                      }, r(e.time), 9, Ee),
                       e.agent_id ? (s(), n("button", {
                         key: 0,
                         type: "button",
@@ -526,9 +527,9 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
                         "data-peek": `agents:${e.agent_id}`,
                         onClick: j((C) => l(ie)(`agents:${e.agent_id}`), ["stop"])
                       }, r(e.sender), 9, Qe)) : (s(), n("span", De, r(e.sender), 1)),
-                      t("span", Ee, r(Math.round(e.queued_ms)) + " ms", 1),
-                      t("span", Je, r(G(e)), 1)
-                    ], 42, Be)
+                      t("span", Je, r(Math.round(e.queued_ms)) + " ms", 1),
+                      t("span", Ke, r(U(e)), 1)
+                    ], 42, Pe)
                   ], 64))), 128))
                 ]),
                 _: 1
@@ -541,15 +542,15 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
             role: "separator",
             "aria-orientation": "vertical"
           }, null, -1)),
-          t("section", Ke, [
-            v(ze, { request: W.value }, null, 8, ["request"])
+          t("section", We, [
+            v(Le, { request: W.value }, null, 8, ["request"])
           ]),
           z.value ? (s(), n("div", {
             key: 0,
             class: "queue-veil",
             onClick: a[5] || (a[5] = j((e) => z.value = !1, ["self"]))
           }, [
-            v(_e, {
+            v(we, {
               onClose: a[4] || (a[4] = (e) => z.value = !1)
             })
           ])) : k("", !0)
@@ -558,7 +559,7 @@ const ue = ["data-icon", "stroke-width", "innerHTML"], pe = {
       _: 1
     }));
   }
-}, et = /* @__PURE__ */ S(We, [["__scopeId", "data-v-97ad52fd"]]);
+}, tt = /* @__PURE__ */ S(Ge, [["__scopeId", "data-v-97ad52fd"]]);
 export {
-  et as default
+  tt as default
 };
