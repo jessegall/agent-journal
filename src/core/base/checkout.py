@@ -28,9 +28,9 @@ class Checkout:
         return cls(CheckoutType.WORKTREE, folder.resolve(), project_folder.resolve(), branch, base_branch, base_commit, exists)
 
     def variables(self) -> dict[str, str]:
-        return {"JOURNAL_CHECKOUT_KIND": self.checkout_type.value, "JOURNAL_CHECKOUT_ROOT": str(self.root), "JOURNAL_PROJECT_ROOT": str(self.project_root),
+        return {"JOURNAL_CHECKOUT_TYPE": self.checkout_type.value, "JOURNAL_CHECKOUT_ROOT": str(self.root), "JOURNAL_PROJECT_ROOT": str(self.project_root),
                 "JOURNAL_BRANCH": self.branch, "JOURNAL_BASE_BRANCH": self.base_branch, "JOURNAL_BASE_COMMIT": self.base_commit}
 
     def values(self) -> dict[str, object]:
-        return {"kind": self.checkout_type.value, "root": str(self.root), "project_root": str(self.project_root), "branch": self.branch, "base_branch": self.base_branch,
+        return {"type": self.checkout_type.value, "root": str(self.root), "project_root": str(self.project_root), "branch": self.branch, "base_branch": self.base_branch,
                 "base_commit": self.base_commit, "exists": self.exists}

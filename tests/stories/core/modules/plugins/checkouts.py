@@ -81,7 +81,7 @@ def test_s45_an_edit_in_a_worktree_gives_its_relative_name_real_path_kind_and_br
     story = checkout_story(new_story)
     call = edit_event(story, story.worker_session)
     checkout, file = checkout_of(call), file_of(call)
-    story.expect_rows(checkout["kind"] == "worktree", checkout["branch"] == story.repository.worker_branch(story.worker.id), checkout["root"] == real(story.worktree))
+    story.expect_rows(checkout["type"] == "worktree", checkout["branch"] == story.repository.worker_branch(story.worker.id), checkout["root"] == real(story.worktree))
     story.expect_rows(file["relative"] == ORDER, file["path"] == real(story.worktree / ORDER))
 
 
@@ -96,7 +96,7 @@ def test_s46_an_edit_in_the_main_checkout_gives_the_same_path_twice_and_kind_mai
     story = checkout_story(new_story)
     call = edit_event(story, "s-1", folder=story.repository.folder)
     checkout, file = checkout_of(call), file_of(call)
-    story.expect_rows(checkout["kind"] == "main", checkout["root"] == checkout["project_root"], file["path"] == file["project_path"], file["relative"] == ORDER)
+    story.expect_rows(checkout["type"] == "main", checkout["root"] == checkout["project_root"], file["path"] == file["project_path"], file["relative"] == ORDER)
 
 
 def test_s47_a_worktree_inside_the_project_folder_gives_the_relative_name_of_the_checkout(new_story):
@@ -132,7 +132,7 @@ def test_s48_a_project_behind_a_link_gives_real_paths_and_the_same_event_for_bot
 def test_s49_an_edit_under_a_linked_library_is_linked_and_stays_with_the_worktree(new_story):
     story = checkout_story(new_story, dispatch=f"{DISPATCH} --library-link node_modules", setup_repository=lambda story: story.repository.library("node_modules", "x.js", "A\n"))
     call = edit_event(story, story.worker_session, name=LIBRARY_FILE)
-    story.expect_rows(file_of(call)["relative"] == LIBRARY_FILE, file_of(call)["linked"] is True, checkout_of(call)["kind"] == "worktree", checkout_of(call)["root"] == real(story.worktree))
+    story.expect_rows(file_of(call)["relative"] == LIBRARY_FILE, file_of(call)["linked"] is True, checkout_of(call)["type"] == "worktree", checkout_of(call)["root"] == real(story.worktree))
 
 
 def released_with_an_edit(new_story):
@@ -256,13 +256,13 @@ def test_s56_a_helper_of_a_worker_gets_the_checkout_of_the_worker(new_story):
     story = checkout_story(new_story)
     helper = worker_helper(story)
     call = edit_event(story, helper.session)
-    story.expect_rows(call["agent"] == helper.id, checkout_of(call)["root"] == real(story.worktree), checkout_of(call)["kind"] == "worktree")
+    story.expect_rows(call["agent"] == helper.id, checkout_of(call)["root"] == real(story.worktree), checkout_of(call)["type"] == "worktree")
 
 
 def test_s57_the_main_agent_editing_inside_a_worktree_gets_that_worktree_and_is_named(new_story):
     story = checkout_story(new_story)
     call = edit_event(story, "s-1", folder=story.worktree)
-    story.expect_rows(call["agent"] == story.agent.id, call["role"] == "main", checkout_of(call)["kind"] == "worktree", checkout_of(call)["root"] == real(story.worktree), file_of(call)["relative"] == ORDER)
+    story.expect_rows(call["agent"] == story.agent.id, call["role"] == "main", checkout_of(call)["type"] == "worktree", checkout_of(call)["root"] == real(story.worktree), file_of(call)["relative"] == ORDER)
 
 
 def test_s59_the_checkout_call_and_the_checkout_of_an_event_are_equal_behind_a_link(new_story):
@@ -279,7 +279,7 @@ def test_s60_the_full_line_of_a_file_edited_for_a_worker_does_not_move(new_story
     data = event_data(call)
     story.expect_rows(set(call) == {"v", "event", "at", "environment", "agent", "role", "window_ms", "skills", "checkout", "data"})
     story.expect_rows(call["v"] == 1, call["event"] == "file_edited", call["environment"] == "main", call["agent"] == story.worker.id, call["role"] == "worker", call["window_ms"] == DELIVERY_LIMIT_MS)
-    story.expect_rows(call["checkout"] == {"kind": "worktree", "root": worktree, "project_root": project, "branch": story.repository.worker_branch(story.worker.id), "base_branch": ENVIRONMENT_BRANCH,
+    story.expect_rows(call["checkout"] == {"type": "worktree", "root": worktree, "project_root": project, "branch": story.repository.worker_branch(story.worker.id), "base_branch": ENVIRONMENT_BRANCH,
                                             "base_commit": story.repository.tip(ENVIRONMENT_BRANCH), "exists": True})
     story.expect_rows(data["path"] == ORDER, data["cwd"] == str(story.worktree))
     story.expect_rows(data["file"] == {"relative": ORDER, "path": f"{worktree}/{ORDER}", "project_path": f"{project}/{ORDER}", "status": "changed", "renamed_from": "", "in_base": True, "linked": False})
@@ -306,12 +306,14 @@ def test_s62_changes_since_base_reads_the_commit_the_worktree_was_cut_from(new_s
 
 def test_a_path_in_a_worktree_or_in_the_project_names_its_relative_name_and_checkout(new_story):
     story = checkout_story(new_story)
-    story.expect_text(f"plugin path {story.worktree.resolve() / ORDER} --agent {story.worker.id}", f"relative: {ORDER}", "kind: worktree", actor=story.user)
-    story.expect_text(f"plugin path {story.repository.folder.resolve() / ORDER} --agent {story.worker.id}", f"relative: {ORDER}", "kind: main", actor=story.user)
+    story.expect_text(f"plugin path {story.worktree.resolve() / ORDER} --agent {story.worker.id}", f"relative: {ORDER}", "type: worktree", actor=story.user)
+    story.expect_text(f"plugin path {story.repository.folder.resolve() / ORDER} --agent {story.worker.id}", f"relative: {ORDER}", "type: main", actor=story.user)
     story.expect_refusal(f"plugin path /tmp/elsewhere.py --agent {story.worker.id}", "is in no checkout of this project", actor=story.user)
 
 
 def test_an_alias_run_by_a_worker_is_told_its_checkout(new_story):
     story = checkout_story(new_story)
     story.expect_success('alias add checkout-facts "printenv" --category check --agents --environment main', actor=story.user)
-    story.expect_text("checkout-facts", "worktree", story.repository.tip(ENVIRONMENT_BRANCH), str(story.repository.folder.resolve()), actor=story.worker)
+    story.expect_text("checkout-facts JOURNAL_CHECKOUT_TYPE", "worktree", actor=story.worker)
+    story.expect_text("checkout-facts JOURNAL_BASE_COMMIT", read_checkout(story, story.worker.id).base_commit, actor=story.worker)
+    story.expect_text("checkout-facts JOURNAL_PROJECT_ROOT", str(story.repository.folder.resolve()), actor=story.worker)
