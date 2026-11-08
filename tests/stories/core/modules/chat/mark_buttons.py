@@ -8,8 +8,8 @@ CHAT = "messages.chat"
 
 
 def chat_story(new_story) -> tuple[WindowStory, int]:
-    story = new_story(SAMPLE, fixture=UserJoined)
-    task_id = story.new_row_id('task make "Fix it" --environment main', actor=story.user)
+    story = new_story(SAMPLE, fixture=UserJoined, environment="main")
+    task_id = story.new_row_id('task make "Fix it"', actor=story.user)
     story.container.get(Bus).run(ShowMark(SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "moment:1", "A mark", row_model="task", row_id=task_id),
                                  module_actor(story, "chatsample"), environment_id=1)
     return WindowStory(story), task_id

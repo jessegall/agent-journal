@@ -37,11 +37,11 @@ def test_the_main_agent_must_read_the_review_applying_skill_when_the_critique_re
 
 
 def test_a_helper_that_made_the_plan_must_read_the_skill_when_the_critique_report_arrives(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=BuilderWithUser, environment="main")
     story.run("skill write")
-    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"), ActorType.AGENT)
     story.expect_success('template make "Read it" --brief "Say what is wrong" --applies-to plan --purpose critique', actor=story.user)
-    story.expect_success('plan make "Helper plan" --environment main', actor=helper)
+    story.expect_success('plan make "Helper plan"', actor=helper)
     story.expect_success("plan ready 1", actor=helper)
     story.expect_success(CRITIQUE_COMMAND, actor=story.user)
     story.expect_success(REPORT_COMMAND, actor=story.agent)
@@ -50,8 +50,8 @@ def test_a_helper_that_made_the_plan_must_read_the_skill_when_the_critique_repor
 
 
 def test_a_report_about_a_plan_not_under_review_makes_no_skill_due(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    story.expect_success('plan make "Cart plan" --environment main', actor=story.agent)
+    story = new_story(fixture=BuilderWithUser, environment="main")
+    story.expect_success('plan make "Cart plan"', actor=story.agent)
     story.expect_success(REPORT_COMMAND, actor=story.agent)
     story.run_listeners()
     story.expect_rows(SKILL_LINE not in due_skills(story, story.agent))

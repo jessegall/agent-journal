@@ -21,7 +21,7 @@ def test_a_wait_on_an_output_that_still_runs_is_made_and_ends_with_it(new_story)
 
 
 def test_a_wait_on_a_task_that_is_already_cancelled_is_refused_with_its_state(new_story):
-    story = new_story(fixture=BuilderStarted)
-    task = story.new_row_id('task make "Dropped idea" --environment main', actor=story.agent)
+    story = new_story(fixture=BuilderStarted, environment="main")
+    task = story.new_row_id('task make "Dropped idea"', actor=story.agent)
     story.expect_success(f'task cancel {task} --reason "no longer needed"', actor=story.agent)
     story.expect_refusal(f"wait on 'the idea' --target tasks:{task}", f"tasks:{task} is already cancelled", actor=story.agent)

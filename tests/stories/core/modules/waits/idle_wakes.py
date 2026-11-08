@@ -21,8 +21,8 @@ def stopped_on_a_wait(story, target):
 
 
 def test_an_agent_stopped_on_a_wait_on_a_task_is_woken_when_the_task_ends(new_story):
-    story = new_story(fixture=BuilderStarted)
-    task = story.new_row_id('task make "Waited on" --environment main', actor=story.agent)
+    story = new_story(fixture=BuilderStarted, environment="main")
+    task = story.new_row_id('task make "Waited on"', actor=story.agent)
     entered = stopped_on_a_wait(story, f"tasks:{task}")
     story.expect_rows(entered == [])
     story.expect_success(f'task cancel {task} --reason "no longer needed"', actor=story.agent)
@@ -53,11 +53,11 @@ def test_an_agent_stopped_while_a_person_decides_its_approval_is_woken_by_the_de
 
 
 def test_an_agent_stopped_with_a_task_blocked_on_a_question_is_woken_when_the_question_is_answered(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=BuilderWithUser, environment="main")
     entered = kept_typing(story)
-    story.expect_success('question ask "Which database?" --context "A story asks this so the task can wait on its answer." --options sqlite postgres --environment main', actor=story.agent)
+    story.expect_success('question ask "Which database?" --context "A story asks this so the task can wait on its answer." --options sqlite postgres', actor=story.agent)
     question = 1
-    task = story.new_row_id('task make "Needs the answer" --environment main', actor=story.agent)
+    task = story.new_row_id('task make "Needs the answer"', actor=story.agent)
     story.expect_success(f"task block {task} --on question:{question}", actor=story.agent)
     story.hook("s-1", HookSamples.stop().with_fields(accepts_lines=False))
     story.advance(timedelta(seconds=IDLE_SECONDS))

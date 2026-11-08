@@ -4,24 +4,24 @@ from tests.stories.fixtures.row_sequences import prepare_row_sequences
 
 
 def test_an_upgraded_plan_sequence_starts_when_a_plan_is_created(new_story):
-    story = new_story(fixture=UpgradedRowSequences)
-    story.expect_success('plan make "Build the cart" --brief "The total is correct" --environment main', actor=story.agent)
+    story = new_story(fixture=UpgradedRowSequences, environment="main")
+    story.expect_success('plan make "Build the cart" --brief "The total is correct"', actor=story.agent)
     story.run_listeners()
     expect_active_sequence(story, "Building a plan")
 
 
 def test_an_upgraded_document_sequence_starts_when_a_document_is_created(new_story):
-    story = new_story(fixture=UpgradedRowSequences)
-    story.expect_success('doc make "Cart design" --abstract "The total" --body "Keep totals in cents" --environment main', actor=story.agent)
+    story = new_story(fixture=UpgradedRowSequences, environment="main")
+    story.expect_success('doc make "Cart design" --abstract "The total" --body "Keep totals in cents"', actor=story.agent)
     story.run_listeners()
     expect_active_sequence(story, "Filing a document that is already written")
 
 
 def test_an_upgraded_plan_review_sequence_starts_when_reviewers_are_assigned(new_story):
-    story = new_story(fixture=UpgradedRowSequences)
+    story = new_story(fixture=UpgradedRowSequences, environment="main")
     story.expect_success("setting make journal.core.reviews.reviewer true")
     story.expect_success("setting make journal.core.reviews.reviewers-most 1")
-    story.expect_success("review request plan 1 --points 2 --environment main", actor=story.agent)
+    story.expect_success("review request plan 1 --points 2", actor=story.agent)
     story.run_listeners()
     expect_active_sequence(story, "Applying a plan's reviews")
 
