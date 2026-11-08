@@ -19,13 +19,15 @@ class StoppedWorkerLibraries:
     cost nothing and stay."""
 
     def __call__(self, container: Container) -> bool:
-        now = container.get(Clock).timestamp()
+        stamp = container.get(Clock).timestamp()
         queries, libraries, bus = container.get(Queries), container.get(LibraryFolders), container.get(Bus)
+        worktrees = container.get(WorktreeQuery).open_worktrees()
+        workers = {worker.id: worker for worker in queries.query(Agent).find_many(list(dict.fromkeys(row.session_agent_id for row in worktrees)))}
         dropped = False
-        for worktree in container.get(WorktreeQuery).open_worktrees():
+        for worktree in worktrees:
             copies = json.loads(worktree.library_copies)
-            worker = queries.query(Agent).find(worktree.session_agent_id)
-            if not copies or worktree.libraries_dropped_at is not None or worker.ended_at is None or worker.ended_at.elapsed_seconds(now) < STOPPED_SECONDS:
+            worker = workers[worktree.session_agent_id]
+            if not copies or worktree.libraries_dropped_at is not None or worker.ended_at is None or worker.ended_at.elapsed_seconds(stamp) < STOPPED_SECONDS:
                 continue
             libraries.drop(worktree.folder, copies)
             bus.run(RecordWorktreeLibraries(worktree.id, True), Actor.core(), environment_id=worktree.environment_id)

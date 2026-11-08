@@ -61,7 +61,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         held = tasks.matching(Among("holder_id", agent_ids)).all_rows()
         delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
         working = {agent_id for task in (*held, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
-        main_has_work = tasks.exists()
+        tasks_remain = tasks.exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.waiting(agent_ids, context)
@@ -77,7 +77,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         for agent in agents:
             if not resumes and agent.role != CodingAgentRole.MAIN:
                 continue
-            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and main_has_work and self.is_automatic(agent))
+            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and tasks_remain and self.is_automatic(agent))
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
                 continue

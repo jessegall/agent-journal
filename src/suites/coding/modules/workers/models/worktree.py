@@ -51,7 +51,7 @@ class Worktree(Removable, EnvironmentScoped, Model):
     def cut(self, timestamp: Timestamp, actor: Actor, base_commit: str, task_count: int = 1) -> "Worktree":
         return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp, task_count=task_count)
 
-    def with_libraries_dropped_at(self, dropped_at: Timestamp | None) -> "Worktree":
+    def change_libraries(self, dropped_at: Timestamp | None) -> "Worktree":
         move = WorktreeLifecycle.change_delivered_libraries if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.change_cut_libraries
         return self.moved(move, libraries_dropped_at=dropped_at)
 
