@@ -1,5 +1,6 @@
 import argparse
 import math
+import resource
 from datetime import datetime, timezone
 import signal
 import sys
@@ -53,6 +54,8 @@ from server.server_backup import ServerBackup
 from server.server_files import ServerFiles
 from server.waiting_server import WaitingServer
 
+FILE_LIMIT = 10240
+
 ANSWER_LIMIT_SECONDS = 2
 SECOND_SERVER_CODE = 0
 
@@ -78,7 +81,15 @@ def begin_files(home: JournalHome, files: ServerFiles) -> None:
     files.rotate_log()
 
 
+def raise_file_limit() -> None:
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    target = FILE_LIMIT if hard == resource.RLIM_INFINITY else min(FILE_LIMIT, hard)
+    if soft < target:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (target, hard))
+
+
 def main(argv: list[str]) -> int:
+    raise_file_limit()
     parser = argparse.ArgumentParser(prog="journal server")
     parser.add_argument("--home", required=True)
     parser.add_argument("--take-over", default="")
