@@ -104,6 +104,13 @@ processes module (300 by default) is stopped, and you are woken with the output 
 output stays kept: read its last lines with `--tail 20`. A command that is silent but busy, with its processor time
 rising, is left alone.
 
+## A stopped run keeps its output
+
+A run stopped part way, by a person, by you or by the journal, keeps what it printed, and you are told so. Read it
+for the failures it named before you start the run again, and rerun only what is left: do not start the whole run
+over. A run killed before its summary names only what it printed, so have a test run print each failure by name as
+it happens (for pytest, `-rf` or `-v`), and a stopped run still names them.
+
 ## Commands of unknown type
 
 A command whose program the journal does not know is refused until you say what type it is, by its leading words:
