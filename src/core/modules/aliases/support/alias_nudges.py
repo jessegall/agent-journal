@@ -4,6 +4,7 @@ from core.base.driver.nudge_type import NudgeType
 ALIAS_UNEXPANDED = NudgeDeclaration("aliases.unexpanded", NudgeType.REFUSAL, "the alias in this line could not be expanded")
 ALIAS_ACCESS_REFUSED = NudgeDeclaration("aliases.access_refused", NudgeType.REFUSAL, "this agent runs only aliases marked for agents: ask the main agent to mark this one")
 ALIAS_MISSING = NudgeDeclaration("aliases.missing", NudgeType.REFUSAL, "the alias in this line no longer exists")
+ALIAS_PLUGIN_OFF = NudgeDeclaration("aliases.plugin_off", NudgeType.REFUSAL, "the alias in this line belongs to plugin:{plugin}, which is switched off")
 SAVED_COMMAND_TIMEOUT = NudgeDeclaration("aliases.saved_command_timeout", NudgeType.REFUSAL, 'this --timeout does not read as a duration: use seconds, or 30s, 5m, 2h or 1d')
 SAVED_COMMAND_UNKNOWN = NudgeDeclaration("aliases.saved_command_unknown", NudgeType.REFUSAL,
                                          'save this command as an alias of category {category}')

@@ -31,6 +31,7 @@ from core.modules.approvals.models.standing_approval import StandingApproval
 from core.modules.approvals.guards.standing_approval_guard import StandingApprovalGuard
 from core.modules.approvals.commands.make_standing_approval.make_standing_approval_handler import MakeStandingApprovalHandler
 from core.base.viewer.button_menu_item import ButtonMenuItem
+from core.modules.approvals.commands.accept_covered_approval.accept_covered_approval_handler import AcceptCoveredApprovalHandler
 from core.modules.approvals.listeners.standing_approval_accept_listener import StandingApprovalAcceptListener
 from core.modules.approvals.listeners.standing_approval_mark_listener import StandingApprovalMarkListener
 from core.modules.approvals.support.approval_marks import APPROVAL_MARKS
@@ -53,7 +54,7 @@ class ApprovalsModule(Module):
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer", "journal.core.chat"]
     models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"]), ModelDeclaration(StandingApproval, excluded_subcommands=["make", "edit"])]
     migrations = [ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
-    handlers = [MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
+    handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
     listeners = [StandingApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]

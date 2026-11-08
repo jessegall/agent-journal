@@ -20,6 +20,7 @@ from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.check_approval_works import CheckApprovalWorks
+from core.base.command.accept_covered_approval import AcceptCoveredApproval
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.command.handler import Handler
@@ -87,16 +88,19 @@ class Console:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
 
-    def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller, parsed: Namespace) -> None:
+    def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller, parsed: Namespace) -> str | None:
         approval = refusal.original
         if not isinstance(approval, UserApprovalRefusal):
-            return
+            return None
         line = WriteFlags.without_reason(argv) if getattr(parsed, "reason_is_ours", False) else tuple(argv)
         why = getattr(parsed, "reason", "")
         arguments = approval.arguments or (() if approval.command is not None else line)
         self.bus.run(CheckApprovalWorks(approval, arguments), caller.actor, environment_id=caller.environment_id)
         self.bus.run(RequestUserApproval(approval, arguments, why=why), caller.actor, environment_id=caller.environment_id)
-        self.run_commit_listeners(argv)
+        try:
+            return self.bus.run(AcceptCoveredApproval(), caller.actor, environment_id=caller.environment_id)
+        finally:
+            self.run_commit_listeners(argv)
 
     def subcommand_help(self, cli_name: str, stream: TextIO) -> int:
         names = self.line_parser.lookup.names(cli_name)
@@ -131,8 +135,11 @@ class Console:
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
         except Refusal as refusal:
-            self.request_approval(refusal, argv, caller, arguments)
-            raise
+            accepted = self.request_approval(refusal, argv, caller, arguments)
+            if accepted is None:
+                raise
+            output.write(accepted, {"accepted": accepted})
+            return SUCCESS_CODE
 
     def parsed_run(self, argv: list[str], subcommand: Subcommand | ReadSubcommand, arguments: Namespace,
                    caller: Caller, output: Output) -> int:

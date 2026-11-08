@@ -72,14 +72,12 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
                 Among("state", (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED))).newest().first()
             if decided is not None:
                 return decided
-        saved = self.repository.save(ApprovalRequest(creator_id=context.actor.id, requester_id=requester_id, text=command.approval.reason, why=why,
-                                                    arguments=command.arguments, refused_arguments=command.approval.refused_arguments,
-                                                    required_person_id=command.approval.required_person_id,
-                                                    recipient_agent_id=recipient,
-                                                    source_version=command.approval.source_version,
-                                                    returns_output=command.approval.returns_output,
-                                                    continued_arguments=command.approval.continued_arguments, command_json=command_json), context)
-        covering = self.standing.covering(saved)
-        if covering is None:
-            return saved
-        return self.repository.update(saved, context, standing_id=covering.id)
+        request = ApprovalRequest(creator_id=context.actor.id, requester_id=requester_id, text=command.approval.reason, why=why,
+                                  arguments=command.arguments, refused_arguments=command.approval.refused_arguments,
+                                  required_person_id=command.approval.required_person_id,
+                                  recipient_agent_id=recipient,
+                                  source_version=command.approval.source_version,
+                                  returns_output=command.approval.returns_output,
+                                  continued_arguments=command.approval.continued_arguments, command_json=command_json)
+        covering = self.standing.covering(request.changed(environment_id=context.environment_id))
+        return self.repository.save(request.changed(standing_id=covering.id) if covering is not None else request, context)
