@@ -14,6 +14,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.grown_outputs import GrownOutputs
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 WARNING_REPEAT_TICKS = 5
 
@@ -29,7 +30,8 @@ class OutputReading:
     def __call__(self, container: Container) -> bool:
         tools = container.get(PerformanceTools)
         started = tools.begin()
-        has_read = self.read(container)
+        with container.get(SettingValues).keep_rows():
+            has_read = self.read(container)
         cost = tools.cost(started)
         if cost is not None:
             self.warn_if_slow(container, cost)
