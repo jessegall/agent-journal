@@ -88,6 +88,7 @@ def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever
     accepted_always(story, requests(story)[0], "like")
     story.expect_rows(standing_yeses(story)[0].scope is StandingScope.LIKE)
     story.expect_refusal(save_preset("Other"), "", actor=story.agent)
+    story.run_listeners()
     story.expect_rows(len(requests(story)) == 2, requests(story)[1].state is ApprovalState.ACCEPTED, requests(story)[1].standing_id == standing_yeses(story)[0].id)
     ask_for_resume(story)
     story.expect_rows(requests(story)[2].state is ApprovalState.OPEN)
