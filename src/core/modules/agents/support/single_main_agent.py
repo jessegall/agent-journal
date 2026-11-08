@@ -14,9 +14,10 @@ from core.modules.agents.support.agent_rows import AgentRows
 
 
 class SingleMainAgent:
-    """Keeps one main agent to an environment: an agent that opens as main ends every other that runs there. Only a
-    person, the launcher or the journal replaces a running main agent this way; an agent that registers a main agent
-    beside a running one is refused, outside a test environment granted to it, so it can never end a person's own."""
+    """Keeps one main agent to an environment: an agent that opens as main ends every other that runs there.
+    Only a person, the launcher or the journal replaces a running main agent this way; an agent that
+    registers a main agent beside a running one is refused, outside a test environment granted to it, so it
+    can never end a person's own."""
 
     def __init__(self, agents: AgentRows, scopes: Scopes, bus: Bus, actors: ActorTable) -> None:
         self.agents, self.scopes, self.bus, self.actors = agents, scopes, bus, actors

@@ -32,8 +32,6 @@ def watch_effects() -> None:
 
 @contextmanager
 def dry_run() -> Generator[None]:
-    """Runs a command only to learn whether it works: its reads are left uncounted, since they repeat the reads the request
-    already made, and its first effect outside the database ends it with DryRunReachedEffect."""
     watch_effects()
     uncounted, running = OPEN_REQUEST.set(None), DRY_RUN.set(True)
     try:

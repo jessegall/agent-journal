@@ -46,7 +46,6 @@ class AgentProfile:
         return self.title or self.name
 
     def fallbacks_after(self, preferred: str, registered: Sequence[str]) -> tuple[str, ...]:
-        """The programs a start tries after the preferred one cannot start: this profile's own list in its order, else every registered program."""
         return tuple(name for name in dict.fromkeys(self.fallback_programs or registered) if name != preferred)
 
     @property

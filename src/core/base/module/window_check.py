@@ -59,7 +59,6 @@ class WindowCheck:
 
     @staticmethod
     def slotless_section_problems(modules: Sequence[type[Module]]) -> list[str]:
-        """A section with no slot is drawn only where an inspector names it as a component."""
         named = {component.window for module in modules for inspector in module.inspectors for component in inspector.components}
         return [f"{window.name} is a section and names no slot" for module in modules for window in module.windows
                 if window.place is WindowPlace.SECTION and not window.slots and window.name not in named]

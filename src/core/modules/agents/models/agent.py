@@ -60,8 +60,6 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def activity(self) -> AgentActivity:
-        """Ended when its session ended, otherwise paused while it is held, at the usage limit while its program's plan
-        allowance is used up, otherwise working."""
         if self.ended_at is not None:
             return AgentActivity.ENDED
         if self.paused_at is not None:
@@ -70,12 +68,10 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def working_role(self) -> str:
-        """Its role while its session lives, and nothing once it ended, so a button for one role never shows on an ended agent."""
         return "" if self.ended_at is not None else self.role
 
     @property
     def display_name(self) -> str:
-        """What the title band of its inspector says: the main agent has no number to say, any other says its role and number."""
         return MAIN_TITLE if self.role == MAIN_ROLE else f"{self.role.capitalize()} {self.id}"
 
     @property

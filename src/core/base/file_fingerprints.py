@@ -11,9 +11,10 @@ BIGGEST_FILE_BYTES = 1_000_000
 
 
 class FileFingerprints:
-    """One shared way for any part of the journal to ask which files are new or changed since its own last pass: each named
-    pass keeps a fingerprint of the content of every file it has finished with, in a file under the journal's folder, so the
-    memory survives a restart. A pass remembers a file only when it says it is done with it."""
+    """One shared way for any part of the journal to ask which files are new or changed since its own last
+    pass: each named pass keeps a fingerprint of the content of every file it has finished with, in a file
+    under the journal's folder, so the memory survives a restart. A pass remembers a file only when it says
+    it is done with it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.file = home.folder / FINGERPRINT_FILE

@@ -10,8 +10,9 @@ SIMPLE_TYPES = (str, int, float, bool, type(None))
 
 
 class CommandJson:
-    """A command as the text an approval keeps, so its card survives a restart and Accept runs exactly that command; only
-    a command whose fields are text, numbers, booleans, nothing or lists of those can be kept."""
+    """A command as the text an approval keeps, so its card survives a restart and Accept runs exactly that
+    command; only a command whose fields are text, numbers, booleans, nothing or lists of those can be
+    kept."""
 
     @staticmethod
     def dump(command: Command[object]) -> str:

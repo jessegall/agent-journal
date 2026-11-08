@@ -59,7 +59,6 @@ class Output:
         return {"value": self.json_value(record)}
 
     def properties(self, record: object) -> dict[str, object]:
-        """The derived values a model shows beside its columns when one row is shown, never in a list."""
         return {name: self.json_value(getattr(record, name)) for name in type(record).shown_properties} if isinstance(record, Model) else {}
 
     def json_value(self, value: object) -> object:

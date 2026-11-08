@@ -18,8 +18,8 @@ REFUSED_PAUSE_SECONDS = 0.1
 
 class LauncherLink:
     """Hands the running launcher a request on its socket; with an answer asked for, gives what it answered,
-    and gives nothing when it could not be reached. A socket nobody answers on, left by a launcher that was killed,
-    is removed, and a request to start a program then goes to a launcher started in its place."""
+    and gives nothing when it could not be reached. A socket nobody answers on, left by a launcher that was
+    killed, is removed, and a request to start a program then goes to a launcher started in its place."""
 
     def __init__(self, home: JournalHome, service: LauncherService) -> None:
         self.home, self.service = home, service
@@ -32,8 +32,6 @@ class LauncherLink:
         return self.sent({"agent_id": agent_id, STOP_FIELD: True}, ANSWER_BYTES) == STOPPED_ANSWER
 
     def quiet_seconds(self, agent_id: int) -> int | None:
-        """How many seconds ago a person last typed at the keyboard of the agent's terminal, nothing when the launcher
-        could not say."""
         answer = self.sent({"agent_id": agent_id, QUIET_FIELD: True}, ANSWER_BYTES)
         words = answer.split() if answer else []
         return int(words[1]) if len(words) == 2 and words[0] == b"quiet" and words[1].isdigit() else None
@@ -53,7 +51,6 @@ class LauncherLink:
             return None
 
     def after_refusal(self, request: Mapping[str, object], answer_bytes: int) -> bytes | None:
-        """A launcher with a full queue refuses too, so the socket is taken for stale only when it refuses every try."""
         for _ in range(REFUSED_TRIES):
             time.sleep(REFUSED_PAUSE_SECONDS)
             try:
