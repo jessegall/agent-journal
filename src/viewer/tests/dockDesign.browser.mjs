@@ -200,13 +200,8 @@ try {
         const {items} = window.dockDesign;
         items.push(...[16, 17].map((id) => ({...items[14], id, target_id: id, kept: false})));
     });
-    const shared = page.locator(".dock-runs-row");
-    await shared.waitFor();
-    assert.equal(await shared.locator(".chat-dock-head").innerText(), "3 runs");
-    assert.equal(await shared.locator("[data-run-chip]").count(), 3);
-    assert.equal(await shared.locator('[data-dock-action="undock"]').count(), 0);
-    await shared.locator("[data-dock-runs-open]").click();
-    assert.equal((await page.locator("[data-dock-runs-fold]").innerText()).trim(), "Runs");
+    assert.equal(await page.locator(".dock-runs-row").count(), 0);
+    assert.equal(await page.locator("[data-run-chip]").count(), 0);
     console.log("Dock design browser: 1 passed, 0 failed");
 } finally {
     await browser.close();

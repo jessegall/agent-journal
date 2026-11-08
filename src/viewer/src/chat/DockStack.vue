@@ -3,25 +3,21 @@ import {computed, inject, ref, watch} from "vue";
 import {useNow} from "../composables/now.js";
 import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {pressButton} from "./markButtons.js";
-import ChatDock, {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
+import {DOCK_ARRIVAL_MS} from "../kit/ChatDock.vue";
 import Btn from "../kit/Btn.vue";
 import FoldSign from "../kit/FoldSign.vue";
-import Icon from "../kit/Icon.vue";
 import DockWrapper from "./DockWrapper.vue";
-import RunChip from "./RunChip.vue";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockFolded} from "../domain/dockFold.js";
-import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../domain/dockItems.js";
+import {dockedItems, isLeaving, isRunItem, keptRuns} from "../domain/dockItems.js";
 import {store} from "../state/store.js";
 import {rememberedRef} from "../windows/rememberedState.js";
 
 // the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it,
-// and from three runs they share one row, which dissolves into single cards once fewer than two are still going
+// and every run docks as a card of its own
 const props = defineProps({items: {type: Array, required: true}, folded: Boolean, collapsed: Boolean, insidesFolded: Boolean});
 const now = useNow(500);
 const held = ref(new Set());
-const grouped = ref(false);
-const opened = ref(false);
 
 const context = inject(WINDOW_CONTEXT);
 // a card leaves the moment its close is pressed, and comes back with the reason if the server refuses
@@ -51,7 +47,6 @@ const runs = computed(() =>
     )
 );
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
-const going = computed(() => runs.value.filter((run) => !isLeaving(run)));
 const sizeChoice = rememberedRef(`dock-size:${store.identity?.root || location.host}`, null);
 const waitsOnPerson = (item) => Boolean(dockDeclaration(item.type)?.needs_user);
 // a card that waits on the person, or the only card in the dock, docks open whatever the chat's scroll or the others' size choice says, until the person folds it
@@ -61,7 +56,6 @@ const alone = computed(() => docked.value.length === 1);
 const opensUnfolded = (item) => waitsOnPerson(item) || alone.value;
 const collapsedFor = (item) => opensUnfolded(item) ? handFolded.value.has(item.id) || scrollFolded.value.has(item.id) : sizeChoice.value ? sizeChoice.value.collapsed && !sizeChoice.value.opened.includes(item.id) : props.collapsed;
 const anyCollapsed = computed(() => docked.value.some(collapsedFor));
-const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value, going.value.length)) && !opened.value && !docked.value.some(collapsedFor));
 
 watch(() => props.collapsed, (collapsed) => {
     scrollFolded.value = new Set(collapsed ? docked.value.filter(waitsOnPerson).map((item) => item.id) : []);
@@ -94,17 +88,6 @@ function fold(item) {
     byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
 }
 
-// a click on a chip opens that run's card and folds the others
-function chooseRun(chosen) {
-    byHand.value = {...byHand.value, ...Object.fromEntries(runs.value.map((run) => [run.id, run.id !== chosen.id]))};
-    opened.value = true;
-}
-
-function foldRuns() {
-    byHand.value = Object.fromEntries(Object.entries(byHand.value).filter(([id]) => !runs.value.some((run) => String(run.id) === id)));
-    opened.value = false;
-}
-
 function hold(item) {
     held.value = new Set([...held.value, item.id]);
 }
@@ -134,16 +117,7 @@ function release(item) {
                 @mouseleave="release(item)"
             />
         </template>
-        <template v-if="grouped && opened && !anyCollapsed">
-            <div key="runs-head" class="dock-runs-head">
-                <span>{{ runs.length }} runs</span>
-                <Btn small bordered aria-expanded="true" data-dock-runs-fold @click="foldRuns">
-                    Runs
-                    <FoldSign open />
-                </Btn>
-            </div>
-        </template>
-        <template v-for="item in shared ? [] : runs" :key="item.id">
+        <template v-for="item in runs" :key="item.id">
             <DockWrapper
                 :item="item"
                 :class="{timed: isLeaving(item)}"
@@ -157,25 +131,6 @@ function release(item) {
                 @mouseenter="hold(item)"
                 @mouseleave="release(item)"
             />
-        </template>
-        <template v-if="shared">
-            <ChatDock key="runs-row" :label="`${runs.length} runs`" type="dock-runs-row">
-                <template #head>
-                    <Icon name="runs" :size="14" />
-                    <span class="dock-runs-title">{{ runs.length }} runs</span>
-                </template>
-                <template #foot>
-                    <span class="dock-runs-chips">
-                        <template v-for="run in runs" :key="run.id">
-                            <RunChip :item="run" @click="chooseRun(run)" />
-                        </template>
-                    </span>
-                    <Btn small bordered aria-expanded="false" data-dock-runs-open @click="opened = true">
-                        Runs
-                        <FoldSign />
-                    </Btn>
-                </template>
-            </ChatDock>
         </template>
     </TransitionGroup>
 </template>
@@ -218,28 +173,4 @@ function release(item) {
     border-top: none;
 }
 
-.dock-runs-chips {
-    display: flex;
-    flex: 1;
-    gap: 4px;
-    min-width: 0;
-}
-
-.dock-runs-head {
-    display: flex;
-    align-items: center;
-    height: 32px;
-    justify-content: space-between;
-    padding: 0 14px 0 36px;
-    border-top: 1px solid var(--border);
-    background: var(--raised);
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.dock-runs-title {
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 500;
-}
 </style>
