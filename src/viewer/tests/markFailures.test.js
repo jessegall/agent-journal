@@ -64,7 +64,7 @@ test("a mark opens its reason and keeps the worker action", async () => {
     element.querySelector(".fold").click();
     await nextTick();
     expect(element.textContent).toContain("Fix the total");
-    element.querySelector(".top").click();
+    element.querySelector(".mact").click();
     expect(peekRef).toHaveBeenCalledWith("agents:9");
     element.querySelector(".fold").click();
     await nextTick();

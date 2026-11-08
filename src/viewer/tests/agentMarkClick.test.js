@@ -35,12 +35,12 @@ test("a mark's key on the page is the one the figure's cards go by", () => {
 });
 
 test("a click on a worker's mark opens that worker", () => {
-    drawn(WORKER).querySelector(".top").click();
+    drawn(WORKER).querySelector(".mact").click();
     expect(peekRef).toHaveBeenCalledWith("agents:57");
 });
 
 test("a click on a dispatch's mark opens its helper once that has started", () => {
-    drawn({...DISPATCH, target_model: "agents", target_id: 61}).querySelector(".top").click();
+    drawn({...DISPATCH, target_model: "agents", target_id: 61}).querySelector(".mact").click();
     expect(peekRef).toHaveBeenCalledWith("agents:61");
 });
 
