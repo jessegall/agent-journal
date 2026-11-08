@@ -21,6 +21,10 @@ class ContextOverLimit:
         tokens = self.providers.provider(agent.program).context_tokens(self.home, agent.session)
         return tokens if tokens is not None and tokens >= self.settings.number(CONTEXT_LIMIT_TOKENS) else None
 
+    def is_past_second_limit(self, agent_id: int) -> bool:
+        tokens, hard = self.tokens(agent_id), self.settings.number(CONTEXT_LIMIT_HARD_TOKENS)
+        return tokens is not None and bool(hard) and tokens >= hard
+
     def compacts_at_stop(self, agent_id: int) -> bool:
         tokens = self.tokens(agent_id)
         return tokens is not None and not self.waits_for_its_task(agent_id, tokens)
