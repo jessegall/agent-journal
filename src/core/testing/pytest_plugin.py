@@ -110,7 +110,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     if process_output is not None:
         process_output[STORY_STEPS_KEY] = overlap.stories
         return
-    if RunSize(session.config.args, 1).is_whole_suite():
+    if RunSize(session.config.args, 1).is_whole_suite() and not session.config.option.collectonly:
         FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START]).write()
     lines = overlap.report_lines()
     if not lines:
