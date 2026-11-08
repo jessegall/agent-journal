@@ -8,6 +8,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.commands.deliver_file_edit.deliver_file_edit import DeliverFileEdit
 from core.modules.processes.models.process import Process
 from suites.coding.commands.record_file_changes.record_file_changes import RecordFileChanges
@@ -21,8 +22,8 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
 
     command = RecordFileChanges
 
-    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes) -> None:
-        self.queries, self.bus, self.files, self.scopes = queries, bus, files, scopes
+    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes, agents: AgentRows) -> None:
+        self.queries, self.bus, self.files, self.scopes, self.agents = queries, bus, files, scopes, agents
 
     def handle(self, command: RecordFileChanges, context: Context) -> None:
         agent = self.scan_agent(command)
@@ -36,7 +37,7 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
     def scan_agent(self, command: RecordFileChanges) -> Agent:
         if command.process_id is not None:
             return self.queries.query(Agent).find(self.queries.query(Process).find(command.process_id).session_agent_id)
-        agent = self.queries.query(Agent).filter(session=command.session).first()
+        agent = self.agents.session(command.session)
         if agent is None:
             raise Refusal(f"no agent has session {command.session}", "name a process or a session the journal knows")
         return agent
