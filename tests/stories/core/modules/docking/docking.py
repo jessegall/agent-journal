@@ -4,6 +4,8 @@ from datetime import timedelta
 import pytest
 
 from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.scope.scopes import Scopes
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
@@ -36,6 +38,17 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended
     with story.repeated_work.request():
         added = docked(story, third)
     expect_docked_state_3(story, oldest, newer, added, ("docked", "undocked", "docked"))
+
+
+def test_two_items_docked_in_one_request_read_the_items_of_the_chat_once(ended_pair):
+    story, first, second = ended_pair
+    bus, database = story.container.get(Bus), story.container.get(Database)
+    added = []
+    with story.repeated_work.request(), story.container.get(Scopes).command_scope((), story.agent, 1), database.transaction():
+        for task in (first, second):
+            command = AddDockItem(SampleDockType.TASK, "task", task)
+            added.append(bus.dispatch(command, Context(story.agent, story.clock.timestamp(), command, environment_id=1)))
+    story.expect_rows(all(docked_state(story, item) == "docked" for item in added))
 
 
 def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(kept_dock):
