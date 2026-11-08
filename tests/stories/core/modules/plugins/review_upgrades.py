@@ -2,7 +2,10 @@ import json
 
 import pytest
 
+from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_line import READ_FOLDERS_VARIABLE, RunnerLine
@@ -66,3 +69,29 @@ def test_an_alias_of_a_switched_off_plugin_is_refused_and_runs_again_once_it_is_
     story.expect_refusal("judge", "switched off", actor=story.user)
     story.expect_success("plugin enable events", actor=story.user)
     story.expect_success("judge", actor=story.user)
+
+
+def plugin_program_line(plugin, *words):
+    program = f"/project/.journal/plugins/{plugin}/bin/judge"
+    return HookSamples.shell(" ".join((program, *words)), ShellPart(program, CommandCategory.CHECK, list(words)))
+
+
+def test_a_program_of_a_switched_off_plugin_is_refused_and_runs_again_once_it_is_on(new_story):
+    story = event_plugin_story(new_story)
+    story.expect_success("plugin disable events", actor=story.user)
+    story.expect_hook_refusal("s-1", plugin_program_line("events", "--changes"), "switched off or not installed")
+    story.expect_success("plugin enable events", actor=story.user)
+    story.expect_hook_allowed("s-1", plugin_program_line("events", "--changes"))
+
+
+def test_a_program_of_a_plugin_that_is_not_installed_is_refused(new_story):
+    story = event_plugin_story(new_story)
+    story.expect_hook_refusal("s-1", plugin_program_line("gone"), "switched off or not installed")
+
+
+def test_reading_a_file_of_a_switched_off_plugin_goes_on(new_story):
+    story = event_plugin_story(new_story)
+    story.expect_success("plugin disable events", actor=story.user)
+    path = "/project/.journal/plugins/events/see.sh"
+    story.expect_hook_allowed("s-1", HookSamples.shell(f"cat {path}", ShellPart("cat", CommandCategory.READ, [path])))
+

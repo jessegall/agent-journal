@@ -90,6 +90,7 @@ from core.base.ticker.tick_interval import TickInterval
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.ticks.plugin_card_reading import PluginCardReading
 from core.modules.plugins.rules.plugin_rule import PluginRule
+from core.modules.plugins.rules.plugin_program_rule import PluginProgramRule
 from core.modules.plugins.support.plugin_marks import PLUGIN_MARKS
 from core.modules.plugins.upgrade.plugins_move import PluginsMove
 from core.modules.plugins.support.skeletons import PLUGINS_PLUGINS_SKELETON
@@ -131,7 +132,7 @@ class PluginsModule(Module):
                              SettingType.NUMBER, default=50, scope=SettingScope.PROJECT),
                 SettingValue("condition_limit_seconds", "Service condition limit", "The most seconds a plugin service's condition may take before it counts as failed.",
                              SettingType.NUMBER, default=10, scope=SettingScope.PROJECT)]
-    driver_rules = [PluginRule]
+    driver_rules = [PluginRule, PluginProgramRule]
     bindings = {ProjectReads: PluginProjectReads}
     declared_plugin_events = [*PLAIN_EVENTS.values(), "tool_starting", "command_starting", "file_edited"]
     marks = PLUGIN_MARKS

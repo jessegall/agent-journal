@@ -14,7 +14,7 @@ MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTI
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "project hooks refused for agent:{agent}", turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
-HOOKS_TIMED_OUT = NudgeDeclaration("drivers.hooks_timed_out", NudgeType.STEERING, "agent {agent} had {count} hook timeouts in ten minutes, slowest rule {rule}: look at that rule", turn_limited=False, wakes_agent=True)
+HOOKS_TIMED_OUT = NudgeDeclaration("drivers.hooks_timed_out", NudgeType.STEERING, "agent {agent} had {count} hook timeouts in ten minutes: its chat mark names the slowest rule", turn_limited=False, wakes_agent=True)
 PERMISSION_ASKED = NudgeDeclaration("drivers.permission_asked", NudgeType.STEERING, "agent {agent} asks leave to do one thing, request {request}: allow it once or decline it", turn_limited=False, wakes_agent=True)
 AGENT_INTERRUPTED = NudgeDeclaration("drivers.interrupted", NudgeType.STEERING, "you were interrupted: go on with your work", turn_limited=False, wakes_agent=True)
 CONTINUED_SESSION = NudgeDeclaration("drivers.continued_session", NudgeType.NOTICE, "you are back in a conversation that went on before, session {agent}: say so to the user in a line, in your voice; then carry on with what was in hand, or ask what to do", turn_limited=False)
