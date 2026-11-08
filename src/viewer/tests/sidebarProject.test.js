@@ -24,6 +24,26 @@ test("the sidebar shows every page in one list, under no heading", () => {
     expect(element.textContent).toContain("Home");
 });
 
+test("the sidebar lists Hooks, and neither Worker models nor Updates", () => {
+    const offered = [...windows, {name: "settings.project-hooks", title: "Hooks", group: "project"}, {name: "updates.updates", title: "Updates", group: "footer"}];
+    const element = drawn(SidebarPages, {windows: offered, environments: [], current: "main"});
+    const titles = [...element.querySelectorAll("[data-sidebar-window]")].map((page) => page.textContent.trim());
+    expect(titles).toContain("Hooks");
+    expect(titles).not.toContain("Worker models");
+    expect(titles).not.toContain("Updates");
+});
+
+test("the name and version in the footer open the change log", () => {
+    const opened = [];
+    const element = drawn(SidebarPages, {windows, environments: [], current: "main", journalVersion: "7.18.14", navigate: (name) => opened.push(name)});
+    const footer = element.querySelector("[data-sidebar-footer]");
+    expect(footer.textContent).toContain("Agent journal");
+    expect(footer.textContent).toContain("7.18.14");
+    expect(footer.getAttribute("href")).toBe("?environment=main&page=updates.updates");
+    footer.dispatchEvent(new MouseEvent("click", {bubbles: true, cancelable: true, button: 0}));
+    expect(opened).toEqual(["updates.updates"]);
+});
+
 test("a new environment needs its name and folder, and is made with its branch", async () => {
     const ran = [];
     const made = [];

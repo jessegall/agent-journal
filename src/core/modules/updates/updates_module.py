@@ -39,7 +39,7 @@ class UpdatesModule(Module):
     handlers = [RecordReleaseInstallHandler, InstallReleaseHandler, ShowUpdateStepHandler]
     subcommands = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand, ShowUpdateStepSubcommand]
     marks = UPDATE_MARKS
-    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.UPDATE,
+    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="footer", place=WindowPlace.PAGE, icon=WindowIcon.UPDATE,
                                  reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*", "release_install.*"],
                                  keys=[WindowKey("releases", "release list", events=["release.*"]),
                                        WindowKey("standing", "update check", events=["release.*", "release_install.*"]),

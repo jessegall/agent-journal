@@ -100,4 +100,7 @@ def test_the_window_menu_of_the_coding_suite_lists_only_the_kept_windows(new_sto
     assert all(name in menu for name in MENU_KEPT), sorted(menu)
     assert menu["workers.points"].title == "Brief points"
     pages = {window.name for window in offered if window.place == "page"}
-    assert {"processes.output", "templates.templates", "updates.updates", "workers.models", "tunnel.tunnel"} <= pages
+    assert {"processes.output", "templates.templates", "updates.updates", "tunnel.tunnel"} <= pages
+    assert "workers.models" not in {window.name for window in offered}
+    assert {window.name: window.title for window in offered}["settings.project-hooks"] == "Hooks"
+    assert {window.name: window.group for window in offered}["updates.updates"] == "footer"

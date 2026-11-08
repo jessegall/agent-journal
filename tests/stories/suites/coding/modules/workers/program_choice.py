@@ -85,7 +85,7 @@ def test_profile_tier_fits_any_program_saved_model(split_story, split_viewer, pr
 
 def test_allowed_models_narrow_a_tier(split_story, split_viewer):
     story = split_story
-    split_viewer.value('workers.models', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
+    split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
     worker = dispatch(story, flags='--program claude --tier strongest')
     expect_program(story, worker, 'claude', 'sonnet')
     story.run_listeners()
@@ -94,7 +94,7 @@ def test_allowed_models_narrow_a_tier(split_story, split_viewer):
 
 def test_allowed_models_narrow_a_tier_named_model_is_refused(split_story, split_viewer):
     story = split_story
-    split_viewer.value('workers.models', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
+    split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
     story.expect_refusal('worker dispatch 1 --model opus --program claude', 'sonnet', actor=story.agent)
 
 
