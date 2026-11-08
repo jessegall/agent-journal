@@ -15,6 +15,7 @@ from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.agent_facts import AgentFacts
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
@@ -41,8 +42,10 @@ PLACE_LIMIT_SECONDS = 3600
 class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""
 
-    def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows, places: PluginPlaces) -> None:
-        self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents, self.places = home, folders, sockets, skills, checkouts, scripts, agents, places
+    def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows,
+                 plugins: PluginQuery, places: PluginPlaces) -> None:
+        self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
+        self.plugins, self.places = plugins, places
         self.written_settings: dict[Path, str] = {}
 
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
@@ -126,7 +129,11 @@ class PluginProgram:
     def line(self, call: PluginCall, limit_ms: int | None) -> str:
         facts = call.facts if call.facts is not None else self.facts(call.agent_id, call.file_checkout)
         checkout = call.file_checkout or facts.checkout
-        return json.dumps({"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms, "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)})
+        fields = {"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms,
+                  "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)}
+        if call.manifest.config is not None:
+            fields["config"] = {"version": self.plugins.find_name(call.manifest.name).config_version}
+        return json.dumps(fields)
 
     @staticmethod
     def stop(process: "subprocess.Popen[str]") -> None:

@@ -20,7 +20,10 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
 - `journal plugin checkout`, `journal plugin changes [--since <commit>]` and `journal plugin file <relative> [--from
   checkout, project or base]` answer the same for an agent. A plugin or a person may name any agent with `--agent`; an agent
   names only itself, and reads the project only in the folders plugins declare in `project_reads`. A name that is not
-  there exits with code 4.
+  there exits with code 4. `journal plugin path <absolute>` gives a path's relative name and its checkout, and
+  `--since base` is the commit the checkout was cut from.
+- `journal plugin config <name>` prints a plugin's config as the project holds it, with its version; `--set
+  <pointer>=<value>` or `--stdin` changes it, checked against the plugin's schema. A change raises `plugin.config_changed`.
 - `journal plugin run [--agent <n>] [--read-only] -- <command>` runs a command at the root of a checkout with the sandbox of
   its agent. Only a plugin or a person may call it.
 - `journal plugin card <name> --label "<one line>" --detail "<text>" [--tone good|warn|danger|note|muted]` shows a card in the
