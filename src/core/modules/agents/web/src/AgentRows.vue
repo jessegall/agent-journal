@@ -81,11 +81,11 @@ const openRow = computed(() => {
 const visible = computed(() => (openRow.value ? [openRow.value] : listed.value));
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-let changing = false;
+const changing = ref(false);
 let scrollTop = 0;
 async function open(row) {
-    if (changing) return;
-    changing = true;
+    if (changing.value) return;
+    changing.value = true;
     scrollTop = list.value.scrollTop;
     const card = agents.value.querySelector(`[data-agent-open="${row.id}"]`);
     if (!reduced()) {
@@ -102,7 +102,7 @@ async function open(row) {
     if (!reduced()) {
         const after = elements.map((element) => element.getBoundingClientRect());
         elements.forEach((element, index) => {
-            const parent = bands.indexOf(element.parentElement);
+            const parent = bands.findIndex((band) => band !== element && band.contains(element));
             const x = before[index].left - after[index].left - (parent < 0 ? 0 : before[parent].left - after[parent].left);
             const y = before[index].top - after[index].top - (parent < 0 ? 0 : before[parent].top - after[parent].top);
             element.animate([{transform: `translate(${x}px, ${y}px)`}, {transform: "none"}], {duration: 280, easing});
@@ -111,11 +111,11 @@ async function open(row) {
             element.animate([{opacity: 0, transform: "translateY(6px)"}, {opacity: 1, transform: "none"}], {duration: 240, delay: 60, easing, fill: "backwards"});
         });
     }
-    changing = false;
+    changing.value = false;
 }
 async function close() {
-    if (changing || !openRow.value) return;
-    changing = true;
+    if (changing.value || !openRow.value) return;
+    changing.value = true;
     const card = agents.value.querySelector(`[data-agent-open="${openId.value}"]`);
     const parts = [...card.children];
     const fades = reduced() ? [] : parts.map((element) => element.animate([{opacity: 1}, {opacity: 0}], {duration: 120, fill: "forwards"}));
@@ -131,7 +131,7 @@ async function close() {
             element.animate([{opacity: 0}, {opacity: 1}], {duration: 160, easing});
         });
     }
-    changing = false;
+    changing.value = false;
 }
 function inspectAgent(row) {
     openedRow.value = row;
@@ -147,7 +147,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
 
 <template>
-    <div ref="agents" :class="['agents', {focused: openRow}]">
+    <div ref="agents" :class="['agents', {focused: openRow, 'card-changing': changing}]">
         <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
                 <template #menu>
                     <MenuLabel>Type</MenuLabel>
@@ -165,7 +165,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <template v-if="loaded && !failure && !visible.length && filterCount"><EmptyState title="No agents match the filters" data-filter-empty>
             <Btn small data-empty-clear @click="clearFilters">Clear filters</Btn>
         </EmptyState></template>
-        <template v-else><RowList moves :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
+        <template v-else><RowList moves :leaves-at-once="changing" :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
                 <div :class="['agent-row', {lingering: lingerIds.has(row.id) && row.id !== openId}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
@@ -201,6 +201,8 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 }
 
 /* with a card open the list, its row and the card stretch down to the band at the foot */
+.agents.card-changing :deep(.row-list-move) { transition: none; }
+
 .agents.focused .agents-view {
     display: flex;
     flex: 1;

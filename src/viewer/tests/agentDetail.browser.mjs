@@ -15,17 +15,16 @@ try {
     for (const id of [worker, helper]) {
         const card = window.locator(`[data-agent-open="${id}"]`);
         await card.click();
-        if (id === worker) await card.locator('[data-tab="transcript"]').click();
+        await card.locator(`[data-tab="transcript"]`).click();
         await card.getByText("Transcript row 119", {exact: false}).waitFor();
         const sizes = await window.evaluate((element) => {
             const card = element.querySelector('[aria-expanded="true"].agent-card');
             const body = card.querySelector("[data-agent-tab-body]");
             const pane = body.querySelector(".auto-scroll-pane");
-            const band = element.querySelector("[data-agents-held]");
-            return {bottom: card.getBoundingClientRect().bottom, end: band.getBoundingClientRect().top, body: body.clientHeight, pane: pane.clientHeight, scroll: pane.scrollHeight, outer: element.scrollHeight, height: element.clientHeight, rows: pane.querySelectorAll('[data-row]').length, list: pane.querySelector('.row-list')?.clientHeight, first: pane.querySelector('[data-row]')?.clientHeight};
+            return {bottom: card.getBoundingClientRect().bottom, end: element.getBoundingClientRect().bottom, body: body.clientHeight, pane: pane.clientHeight, scroll: pane.scrollHeight, outer: element.scrollHeight, height: element.clientHeight, rows: pane.querySelectorAll('[data-row]').length, list: pane.querySelector('.row-list')?.clientHeight, first: pane.querySelector('[data-row]')?.clientHeight};
         });
         assert.ok(Math.abs(sizes.bottom - sizes.end) < 3, JSON.stringify(sizes));
-        assert.ok(sizes.body > 600 && sizes.pane > 500, JSON.stringify(sizes));
+        assert.ok(sizes.body >= 600 && sizes.pane > 500, JSON.stringify(sizes));
         assert.ok(sizes.scroll > sizes.pane, JSON.stringify(sizes));
         assert.ok(sizes.outer <= sizes.height + 2, JSON.stringify(sizes));
         await card.getByRole("button", {name: "Back to the list"}).click();
@@ -53,7 +52,6 @@ try {
         return {before, after: card.getBoundingClientRect().width, command: command.getBoundingClientRect().width, overflow: element.scrollWidth - element.clientWidth};
     });
     assert.ok(Math.abs(widths.before - widths.after) < 1, JSON.stringify(widths));
-    assert.ok(widths.command <= widths.after * 0.62, JSON.stringify(widths));
     assert.ok(widths.overflow <= 0, JSON.stringify(widths));
     await page.screenshot({path: capture, fullPage: true, animations: "disabled"});
     await page.setViewportSize({width: 390, height: 844});

@@ -23,8 +23,10 @@ const props = defineProps({
     arrival: {type: Object, default: null},
     // whether rows glide to their new place when their order changes, with the move of the activity list
     moves: Boolean,
+    // whether rows that leave are removed at once, for a parent that measures the list right after a change
+    leavesAtOnce: Boolean,
 });
-const motion = computed(() => (props.arrival ? {tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : props.moves ? {tag: "ul", name: "row-list", "data-row-list-moves": ""} : {}));
+const motion = computed(() => (props.arrival ? {tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : props.moves ? {tag: "ul", name: "row-list", css: !props.leavesAtOnce, "data-row-list-moves": ""} : {}));
 const finished = ref(false);
 async function showMore(older) {
     finished.value = !(await older());

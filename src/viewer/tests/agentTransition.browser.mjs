@@ -86,13 +86,13 @@ try {
     await page.locator(".agents-view").evaluate((element) => { element.scrollTop = 200; });
     const scrolled = await page.locator(`[data-agent-open="${agent}"] [data-agent-title]`).boundingBox();
     await page.locator(`[data-agent-open="${agent}"]`).press("Enter");
-    await page.locator("[data-agents-held]").waitFor();
-    await page.locator(".agents").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).map((animation) => animation.finished)));
-    await page.locator("[data-agents-held]").click();
+    await page.locator(`[data-agent-open="${agent}"][aria-expanded="true"]`).waitFor();
+    await page.locator(".agents").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).filter((animation) => animation.effect.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished)));
+    await page.getByRole("button", {name: "Back to the list"}).click();
     await page.waitForFunction((agent) => document.querySelector(`[data-agent-open="${agent}"]`)?.getAttribute("aria-expanded") === "false", agent);
-    await page.locator(".agents").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).map((animation) => animation.finished)));
+    await page.locator(".agents").evaluate((element) => Promise.all(element.getAnimations({subtree: true}).filter((animation) => animation.effect.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished)));
     const restored = await page.locator(`[data-agent-open="${agent}"] [data-agent-title]`).boundingBox();
-    assert.ok(Math.abs(scrolled.y - restored.y) < 1, "Closing must restore the scrolled list position");
+    assert.ok(Math.abs(scrolled.y - restored.y) < 1, `Closing must restore the scrolled list position: ${scrolled.y} then ${restored.y}`);
     assert.deepEqual(errors, []);
 } finally {
     await browser.close();

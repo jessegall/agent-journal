@@ -6817,10 +6817,12 @@ const Hy = {
     // how a row comes in and goes out, {enter, leave} each given the row's element and the call that ends it; with none given rows just appear
     arrival: { type: Object, default: null },
     // whether rows glide to their new place when their order changes, with the move of the activity list
-    moves: Boolean
+    moves: Boolean,
+    // whether rows that leave are removed at once, for a parent that measures the list right after a change
+    leavesAtOnce: Boolean
   },
   setup(e) {
-    const t = e, n = E(() => t.arrival ? { tag: "ul", css: !1, onEnter: t.arrival.enter, onLeave: t.arrival.leave } : t.moves ? { tag: "ul", name: "row-list", "data-row-list-moves": "" } : {}), a = O(!1);
+    const t = e, n = E(() => t.arrival ? { tag: "ul", css: !1, onEnter: t.arrival.enter, onLeave: t.arrival.leave } : t.moves ? { tag: "ul", name: "row-list", css: !t.leavesAtOnce, "data-row-list-moves": "" } : {}), a = O(!1);
     async function s(o) {
       a.value = !await o();
     }
@@ -6859,7 +6861,7 @@ const Hy = {
       }, "Show more")) : k("", !0)
     ], 64));
   }
-}, n0 = /* @__PURE__ */ U(t0, [["__scopeId", "data-v-059675a8"]]), a0 = {
+}, n0 = /* @__PURE__ */ U(t0, [["__scopeId", "data-v-e9f251f3"]]), a0 = {
   class: "agent-rows",
   "data-agent-rows": ""
 }, s0 = {
@@ -14105,7 +14107,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = au(() => import("./VoiceFigure-Bgh0aVyC.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = au(() => import("./VoiceFigure-CeDlYwD4.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Of as $,
   Ae as A,
