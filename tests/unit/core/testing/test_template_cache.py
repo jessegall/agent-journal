@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from core.testing.template_cache import RUNNING_FOLDER_SECONDS, TemplateCache
+from core.testing.template_cache import UNUSED_FOLDER_SECONDS, TemplateCache
 import core.testing.template_cache as template_cache
 
 
@@ -41,10 +41,10 @@ def test_a_code_change_leaves_a_folder_a_running_suite_uses(tmp_path, monkeypatc
     assert running.is_dir()
 
 
-def test_a_code_change_removes_a_folder_unused_for_an_hour(tmp_path, monkeypatch):
+def test_a_code_change_removes_a_folder_unused_for_a_day(tmp_path, monkeypatch):
     cache, sample = sample_cache(tmp_path, monkeypatch)
     unused = cache.folder()
-    expired_at = time.time() - RUNNING_FOLDER_SECONDS - 1
+    expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
     os.utime(unused, (expired_at, expired_at))
 
     sample.write_text("class Sample: value = 1\n")

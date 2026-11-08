@@ -19,7 +19,8 @@ INSTALL_FOLDER = "install"
 BROWSER_MARK = "browser_job"
 BROWSER_CALL = "expect_browser"
 READER_MARK = "reader_job"
-SEPARATE_JOBS = (TYPE_CHECK_MARK, INSTALL_MARK, BROWSER_MARK, READER_MARK)
+VIEWER_MARK = "viewer_job"
+SEPARATE_JOBS = (TYPE_CHECK_MARK, INSTALL_MARK, BROWSER_MARK, READER_MARK, VIEWER_MARK)
 os.environ.pop("JOURNAL_AGENT_SESSION", None)
 
 
@@ -36,6 +37,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", f"{TYPE_CHECK_MARK}: the strict type check, a gate of its own: python3 -m pytest -m {TYPE_CHECK_MARK}")
     config.addinivalue_line("markers", f"{BROWSER_MARK}: drives a real browser, a gate of its own: python3 -m pytest -m {BROWSER_MARK} tests")
     config.addinivalue_line("markers", f"{INSTALL_MARK}: runs the real install or upgrade, a gate of its own: python3 -m pytest -m {INSTALL_MARK} tests")
+    config.addinivalue_line("markers", f"{VIEWER_MARK}: runs the viewer's whole vitest suite, a gate of its own: python3 -m pytest -m {VIEWER_MARK} tests")
     config.addinivalue_line("markers", f"{READER_MARK}: runs every stock reader on its fixture outputs, a gate of its own: python3 -m pytest -m {READER_MARK} tests")
 
 

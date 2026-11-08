@@ -1,5 +1,5 @@
-from core.base.file_access import FileAccess
 import hashlib
+from core.base.file_access import FileAccess
 import shutil
 import time
 from pathlib import Path
@@ -12,12 +12,14 @@ CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
 UNUSED_FOLDER_SECONDS = 24 * 3600
 PRUNE_EVERY_SECONDS = 3600
 PRUNED_STAMP = ".pruned"
-CACHE_LIMIT_BYTES = 1024 ** 3
+CACHE_LIMIT_BYTES = 3 * 1024 ** 3
+UNTEMPLATED_FOLDERS = frozenset(("viewer", "__pycache__"))
 HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates within a checkout, and when a new one is made removes
+    """Shares complete story templates within a checkout, keyed on its python sources (the viewer's sources are no
+    part of a template, so editing them rebuilds nothing), and when a new one is made removes
     the ones unused for a day and then the least recently used until the cache is under its size limit; a cache
     already pruned within the hour is left alone. The
     templates are kept for the source code and the stories' support folders; a story file's own fixtures are in each
@@ -29,7 +31,8 @@ class TemplateCache:
     def folder(self) -> Path:
         checkout = CORE_FOLDER.parent.parent.resolve()
         support_folders = tuple(sorted(folder for folder in (checkout / "tests").rglob("support") if folder.is_dir()))
-        source_hash = SourceHash.text((CORE_FOLDER.parent, *support_folders))
+        source_folders = tuple(sorted(folder for folder in CORE_FOLDER.parent.iterdir() if folder.is_dir() and folder.name not in UNTEMPLATED_FOLDERS))
+        source_hash = SourceHash.text((*source_folders, *support_folders))
         checkout_hash = hashlib.sha256(str(checkout).encode()).hexdigest()[:HASH_CHARACTERS]
         current = self.root / f"{checkout_hash}-{source_hash[:HASH_CHARACTERS]}"
         is_new = not current.is_dir()
