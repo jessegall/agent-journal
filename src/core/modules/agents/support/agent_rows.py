@@ -31,7 +31,7 @@ class AgentRows:
         return self.rows.required(Agent, agent_id)
 
     def find_many(self, agent_ids: list[int]) -> list[Agent]:
-        return self.queries.query(Agent).find_many(agent_ids)
+        return self.kept.scoped_current(lambda: self.queries.query(Agent).find_many(agent_ids), name=f"agents.find_many:{agent_ids}")
 
     def is_main(self, agent_id: int) -> bool:
         return self.find(agent_id).role == AgentRole.MAIN
