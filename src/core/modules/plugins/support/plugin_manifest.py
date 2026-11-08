@@ -15,6 +15,7 @@ from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, Manif
 from core.modules.plugins.support.plugin_declared_event import PluginDeclaredEvent
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
+from core.modules.plugins.support.manifest_config import ManifestConfig
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_setting import ManifestSetting
@@ -64,6 +65,7 @@ class PluginManifest:
     declared_events: tuple[PluginDeclaredEvent, ...] = ()
     protocol: int = LINE_VERSION
     listed_files: tuple[str, ...] = ()
+    config: ManifestConfig | None = None
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -86,7 +88,8 @@ class PluginManifest:
                    cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
-                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed))
+                   tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
+                   cls.read_config(fields["config"] if "config" in fields else None))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -105,6 +108,12 @@ class PluginManifest:
         if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
             return Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
         return fields
+
+    @staticmethod
+    def read_config(config: object) -> ManifestConfig | None:
+        if not is_mapping(config) or "file" not in config or "schema" not in config:
+            return None
+        return ManifestConfig(str(config["file"]), str(config["schema"]))
 
     @staticmethod
     def read_dashboard(dashboard: object) -> ManifestDashboard | None:

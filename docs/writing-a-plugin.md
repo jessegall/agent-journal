@@ -90,6 +90,7 @@ A script gets one line of JSON on its input:
 - `agent`, its `role`, `skills`, `environment` and `at`. `checkout.type` is not the role: a main agent can edit inside a worktree.
 - `window_ms`: the limit this call runs under, or null for no limit.
 - `checkout`: the checkout of the agent, with `type`, `root`, `project_root`, `branch`, `base_branch`, `base_commit` and `exists`.
+- `config`: `{"version": <n>}`, for a plugin that declares a config; read the document again when the version is newer than your copy.
 - `data`: for a script named by key, `form`, `final`, `log_name`, `event_id`, `actor`, `command`, `cause_id`, `row`, `old_row` and `changed`. A hidden field reads as hidden. An event about a file also has `file`.
 
 The rules of this line:
@@ -133,9 +134,18 @@ To say you could not judge something, answer with a `tell`, and put the reason i
 | Call | What it answers | Who may call it |
 |---|---|---|
 | `journal plugin checkout` | The checkout of an agent. | A plugin or a person for any agent with `--agent`; an agent for itself. |
-| `journal plugin changes [--since <commit>]` | Each name that differs from a commit. | The same. |
+| `journal plugin changes [--since <commit or base>]` | Each name that differs from a commit; `base`, the default, is the commit the checkout was cut from. | The same. |
+| `journal plugin path <absolute> [--agent <n>]` | The relative name of a file and the checkout that holds it: the agent's worktree, else the project. | The same. |
+| `journal plugin config <name> [--json]` | The plugin's config as the project holds it, from any checkout, with its version. | Anyone. |
+| `journal plugin config <name> --set <pointer>=<json value>` or `--stdin` | Changes it: checked against the schema, refused naming each wrong place, written whole. | A plugin, a person or an agent that may write. |
 | `journal plugin file <relative> [--from checkout, project or base]` | The text of a file. A name that is not there exits with code 4. | The same; an agent reads the project only in declared folders. |
 | `journal plugin run [--agent <n>] [--read-only] -- <command>` | Runs a command at the root of a checkout with the sandbox of its agent. | A plugin or a person, never an agent. |
+
+A plugin's own alias or command run by an agent gets `JOURNAL_CHECKOUT_TYPE`, `JOURNAL_CHECKOUT_ROOT`, `JOURNAL_PROJECT_ROOT`, `JOURNAL_BRANCH`, `JOURNAL_BASE_BRANCH` and `JOURNAL_BASE_COMMIT` in its environment, so it needs no git call to learn where it runs.
+
+## The config
+
+A plugin keeps its config in the project and names it in its manifest: `"config": {"file": ".commandments/config.json", "schema": ".commandments/config.schema.json"}`, both relative to the project root. The journal holds the last good copy and a version, the same in every worktree. A hand edit is taken in within seconds; one that breaks the schema keeps the last good copy served and records the plugin's fault. Each change raises the event `plugin.config_changed`, whose row holds `config_version` and `config_pointers`, the JSON pointers that changed. The schema may use `$ref` to `#/$defs`, `type`, `properties`, `required`, `additionalProperties`, `items`, `enum`, `const`, `anyOf`, `minLength`, `minimum`, `pattern`, `propertyNames` and `uniqueItems`, beside `title`, `description`, `$schema` and `default`; any other keyword refuses it.
 
 A `journal worker send <worker> "<job>"` call exits with code 5 when the worker is retired; a general refusal exits with code 1.
 

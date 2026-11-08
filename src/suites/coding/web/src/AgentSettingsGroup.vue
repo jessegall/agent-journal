@@ -24,7 +24,7 @@ function reset() {
     failure.value = "";
 }
 
-watch(() => work.data.value, () => { if (!dirty.value) reset(); }, {immediate: true});
+watch(() => work.data.value, () => { if (!base.value || !dirty.value) reset(); }, {immediate: true});
 
 async function apply() {
     pending.value = true;
