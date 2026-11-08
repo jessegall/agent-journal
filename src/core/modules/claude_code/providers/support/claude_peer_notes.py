@@ -30,4 +30,5 @@ class ClaudePeerNotes:
         if arrived is None:
             return []
         sender = SENDER_NAME.search(arrived[1]) or SENDER_ADDRESS.search(arrived[1])
-        return [PeerNote(sender[1] if sender else UNKNOWN_SENDER, arrived[2].strip(), str(fields.get("timestamp", "")))]
+        address = SENDER_ADDRESS.search(arrived[1])
+        return [PeerNote(sender[1] if sender else UNKNOWN_SENDER, arrived[2].strip(), str(fields.get("timestamp", "")), address[1] if address else "")]
