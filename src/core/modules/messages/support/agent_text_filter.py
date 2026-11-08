@@ -34,8 +34,19 @@ class AgentTextFilter:
         return reply is not None and not self.messages.has_person_message_past(reply.id)
 
     def is_duplicate_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
-        if "?" in text or not self.has_recent_reply(agent_id, created_at):
-            return False
+        return self.is_after_reply(agent_id, text, created_at) and self.repeats_reply(agent_id, text, created_at)
+
+    def is_after_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
+        return "?" not in text and self.has_recent_reply(agent_id, created_at)
+
+    def is_single_line(self, text: str) -> bool:
+        """A single line after a reply is an acknowledgement or a last line, whatever its words."""
+        return "\n" not in text.strip()
+
+    def is_held_after_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
+        return self.is_after_reply(agent_id, text, created_at) and (self.is_single_line(text) or self.repeats_reply(agent_id, text, created_at))
+
+    def repeats_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         if prompt is None:
             return False
@@ -58,9 +69,7 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         return prompt is not None and self.is_reaction_prompt(prompt.summary)
 
-    def is_reaction_closing(self, hook: AgentHook, created_at: Timestamp) -> bool:
-        if not self.is_reaction_turn(hook.agent_id, created_at):
-            return False
+    def is_closing(self, hook: AgentHook, created_at: Timestamp) -> bool:
         following = self.hook_calls.next_turn_event(hook.agent_id, created_at)
         return hook.event.tool is None if following is None else following.hook not in TOOL_HOOKS
 
