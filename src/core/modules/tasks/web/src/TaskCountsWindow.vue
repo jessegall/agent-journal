@@ -5,8 +5,9 @@ import {WindowRoom, useWindow} from "@journal/window-kit";
 // four counts: the tasks started, blocked and delegated now, and the tasks completed in the period chosen in the window's menu: the last hours,
 // or after the moment the reader chose "From now"; the menu also chooses how many columns the counts take, or Auto to follow the window's width
 const NOW = "now";
+const TODAY = "today";
 const AUTO = "auto";
-const PERIOD_WORDS = {"1": "in the last hour", "6": "in the last 6 hours", "24": "today", "168": "this week"};
+const PERIOD_WORDS = {"1": "in the last hour", "6": "in the last 6 hours", "24": "in the last 24 hours", [TODAY]: "today", "168": "in the last 7 days"};
 const COUNTS = [["started", "Started"], ["blocked", "Blocked"], ["delegated", "Delegated"], ["completed", "Completed"]];
 const view = useWindow();
 const columns = view.option("columns");
@@ -14,6 +15,7 @@ const period = view.option("completed");
 const since = view.option("since");
 const {data, failure} = view.props.counts;
 
+const startOfToday = () => new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 const clockOf = (text) => new Date(text).toLocaleString([], {dateStyle: "medium", timeStyle: "short"});
 const periodText = computed(() => {
     if (period.value === NOW) return since.value ? `since ${clockOf(since.value)}` : "";
@@ -22,8 +24,14 @@ const periodText = computed(() => {
 const labelOf = (name, label) => (name === "completed" ? `${label} ${periodText.value}` : label);
 
 // the key reads the period through its own arguments: set before the window's first read, and read again when the period changes;
-// choosing "From now" keeps that moment on the pane
+// choosing "From now" keeps that moment on the pane, and "Today" counts from the reader's midnight
 function askFor(chosen) {
+    if (chosen === TODAY) {
+        if (since.value) view.setOption("since", null);
+        view.state["counts.since"] = startOfToday();
+        delete view.state["counts.hours"];
+        return;
+    }
     if (chosen === NOW) {
         const moment = since.value ?? new Date().toISOString();
         view.setOption("since", moment);
