@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, toRef} from "vue";
 import AgentSkillsMenu from "./AgentSkillsMenu.vue";
+import AllowanceBar from "./AllowanceBar.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
@@ -53,8 +54,6 @@ const effort = computed(() => controls.chosen.value.effort ?? status.value?.effo
 const LOW_FITNESS = 75;
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
-const allowance = computed(() => props.usage.windows?.[0] ?? null);
-const used = computed(() => (allowance.value ? Math.max(0, Math.min(100, Math.round(allowance.value.used_percent))) : null));
 const context = computed(() => (status.value?.context_percent == null ? null : Math.round(status.value.context_percent)));
 const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_dollars.toFixed(2)}` : ""));
 const uptime = computed(() => {
@@ -69,11 +68,7 @@ const uptime = computed(() => {
     <div :class="['information', {card}]" data-information-bar>
         <template v-if="agent">
             <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ agentPrograms.find((program) => program.name === agent.program)?.title || agent.program }}</button>
-            <template v-if="used !== null">
-                <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
-                    <Icon name="allowance" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
-                </button>
-            </template>
+            <AllowanceBar :windows="usage.windows" @open="(anchor) => emit('open', 'usage', anchor)" />
             <template v-if="context !== null">
                 <button type="button" class="fact" :disabled="card" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
@@ -263,10 +258,6 @@ button.fact:not(:disabled):hover {
     height: 100%;
     border-radius: inherit;
     background: var(--text-3);
-}
-
-.gauge.usage > span {
-    background: var(--accent-text);
 }
 
 .space {

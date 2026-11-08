@@ -62,7 +62,7 @@ onMounted(load);
         <div class="scroll">
             <template v-if="failure"><p class="failure" role="alert" data-resource-failure>{{ failure }}</p></template>
             <template v-else-if="row && inspection">
-                <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :parts="identityParts(row, facts)" :started-by="inspection.started_by" />
+                <AgentWho :name="givenName(row, facts)" :state="agentState(row, facts)" :parts="identityParts(row, facts)" :started-by="inspection.started_by" :windows="facts?.windows ?? []" />
                 <AgentStrip :cells="stripCells({row, facts, inspection, now})" />
                 <AgentNow :inspection="inspection" :tool="tool" :nothing="nothing" />
                 <AgentBrief :label="row.access === 'read-only' ? 'Instruction' : 'Brief'" :text="facts?.instruction ?? ''" :points="points" />

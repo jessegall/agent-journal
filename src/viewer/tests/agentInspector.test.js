@@ -69,6 +69,27 @@ test("a running worker says who it is, how it does, what it does now and what it
     expect(texts(element, "[data-agent-point]")).toEqual(["1Every label is the one in the specChecked: labels match", "2The tests passNo proof yet"]);
 });
 
+const WINDOWS = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}, {title: "7 days", used_percent: 65, reset_epoch_seconds: 1793876400}];
+
+test("a worker's and a helper's inspector show the program's plan allowance beside the provider, as the status bar does", async () => {
+    for (const role of ["worker", "helper"]) {
+        const {element} = opened({...WORKER, "agent show 12": row({role}), "usage agents": {rows: [facts({windows: WINDOWS})]}});
+        await settle();
+        const bar = element.querySelector("[data-agent-who] [data-fact='usage']");
+        expect(bar.textContent).toContain("30%");
+        expect(bar.title).toBe("30% of the plan's 5 hours allowance used");
+        expect(bar.querySelector(".gauge.usage > span").style.width).toBe("30%");
+        expect(bar.disabled).toBe(true);
+        document.body.innerHTML = "";
+    }
+});
+
+test("an agent whose program reports no allowance shows no allowance bar", async () => {
+    const {element} = opened(WORKER);
+    await settle();
+    expect(element.querySelector("[data-fact='usage']")).toBeNull();
+});
+
 test("the recent moves list the newest with their times, and one that has a row opens it", async () => {
     const {element} = opened(WORKER);
     await settle();

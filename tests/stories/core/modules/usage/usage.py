@@ -13,7 +13,7 @@ from core.modules.usage.support.status_files import StatusFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
-from tests.stories.core.modules.usage.support.status_files import SEVEN_DAYS_RESET, full_status, save_status_file
+from tests.stories.core.modules.usage.support.status_files import FIVE_HOURS_RESET, SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, HelperUnderBuilder
 from tests.stories.core.support.fixtures import UserJoined
@@ -56,6 +56,23 @@ def test_a_worker_shows_the_context_and_cost_the_launcher_kept_from_its_output(n
     helper = story.new_row_id(HELPER_START.format(parent=story.agent.id))
     save_status_file(story, "s-2", {"session_id": "s-2", "context_window": {"used_percentage": 20}, "cost": {"total_cost_usd": 1.5}})
     story.expect_text("usage agents --environment main --json", f'"id": {helper}', '"context_percent": 20', '"cost_dollars": 1.5', actor=story.user)
+
+
+def test_each_agents_facts_carry_the_plan_windows_its_own_session_reported(new_story):
+    story = new_story(fixture=UserJoined)
+    full_status(story, "s-1", 42, 1.234)
+    rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
+    story.expect_rows([(window["title"], window["used_percent"]) for window in rows[0]["windows"]] == [("5 hours", 30), ("7 days", 65)])
+
+
+def test_an_agent_that_reported_no_windows_carries_the_account_windows_of_the_newest_report(new_story):
+    story = new_story(fixture=UserJoined)
+    save_status_file(story, "s-1", {"context_window": {"used_percentage": 20}, "rate_limits": {"five_hour": {"used_percentage": 30, "resets_at": FIVE_HOURS_RESET}, "seven_day": {"used_percentage": 65, "resets_at": SEVEN_DAYS_RESET}}})
+    helper = story.new_row_id(HELPER_START.format(parent=story.agent.id))
+    story.expect_text("usage show --environment main", "plan: 5 hours 30% used", actor=story.user)
+    rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
+    helper_row = next(row for row in rows if row["id"] == helper)
+    story.expect_rows([window["title"] for window in helper_row["windows"]] == ["5 hours", "7 days"])
 
 
 def test_with_no_report_at_all_the_plan_says_nothing_is_reported_yet(new_story):

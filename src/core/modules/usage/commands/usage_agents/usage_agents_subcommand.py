@@ -1,6 +1,7 @@
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.agent_policy import AgentPolicy
 import json
+from collections.abc import Mapping, Sequence
 from argparse import ArgumentParser, Namespace
 
 from core.base.agent_sandbox_choice import AgentSandboxChoice
@@ -23,6 +24,7 @@ from core.modules.usage.models.agent_card import AgentCard
 from core.modules.usage.support.agent_blocked import AgentBlocked
 from core.modules.usage.support.agent_facts import AgentFacts
 from core.modules.usage.support.agent_facts_list import AgentFactsList
+from core.modules.usage.support.plan_window import PlanWindow
 from core.modules.usage.support.session_status import SessionStatus
 from core.modules.usage.support.status_files import StatusFiles
 
@@ -58,14 +60,19 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         pending = activity.pending
         policy = self.suites.agent_policy()
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
-        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id)) for card in (*running, *ended)))
+        cards_read = (*running, *ended)
+        statuses = self.statuses(cards_read)
+        account = self.files.plan_windows(statuses)
+        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account) for card in cards_read))
 
-    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None = None) -> AgentFacts:
+    def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
+        return {card.session: self.files.status(card.session) for card in cards}
+
+    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...]) -> AgentFacts:
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
-        status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not self.sandbox.sandboxed(card.id))
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not self.sandbox.sandboxed(card.id), status.windows or account)
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:
