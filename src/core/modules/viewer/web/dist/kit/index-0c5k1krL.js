@@ -2064,7 +2064,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
     tall: Boolean,
     large: Boolean,
     bare: Boolean,
-    flush: Boolean,
+    padded: Boolean,
     open: { type: Boolean, default: null },
     closable: { type: Boolean, default: !0 },
     modal: Boolean,
@@ -2122,7 +2122,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
               m("div", {
                 ref_key: "body",
                 ref: r,
-                class: V(["dialog-body", { bare: e.bare, flush: e.flush }])
+                class: V(["dialog-body", { bare: e.bare, padded: e.padded }])
               }, [
                 fe(B.$slots, "default", {}, void 0, !0)
               ], 2),
@@ -2136,7 +2136,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
       }, 8, ["onAfterLeave"])
     ]));
   }
-}, pa = /* @__PURE__ */ U(Jd, [["__scopeId", "data-v-5cf443e0"]]), Zd = {
+}, pa = /* @__PURE__ */ U(Jd, [["__scopeId", "data-v-24a11f8a"]]), Zd = {
   class: "action-output",
   "data-action-output": ""
 }, ef = {
@@ -2146,6 +2146,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
   setup(e, { emit: t }) {
     const n = t;
     return (a, s) => (u(), F(pa, {
+      padded: "",
       title: "Action completed",
       fits: "",
       onClose: s[0] || (s[0] = (o) => n("close"))
@@ -2156,7 +2157,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
       _: 1
     }));
   }
-}, tf = /* @__PURE__ */ U(ef, [["__scopeId", "data-v-423a045c"]]);
+}, tf = /* @__PURE__ */ U(ef, [["__scopeId", "data-v-b32f94a4"]]);
 function nf(e) {
   const t = document.body.appendChild(document.createElement("div")), n = Kr(tf, { text: e, onClose: () => {
     n.unmount(), t.remove();
@@ -2355,6 +2356,7 @@ const Gt = (e) => ga[e], ri = new Map(ii.flatMap((e) => [e, e.replace(/s$/, ""),
       o.value = !1, l.value = d.ok ? "" : d.error, d.ok && (a("done"), a("close"));
     }
     return (d, h) => (u(), F(pa, {
+      padded: "",
       title: r.value,
       fits: "",
       small: "",
@@ -2404,7 +2406,7 @@ const Gt = (e) => ga[e], ri = new Map(ii.flatMap((e) => [e, e.replace(/s$/, ""),
       _: 1
     }, 8, ["title"]));
   }
-}, ff = /* @__PURE__ */ U(df, [["__scopeId", "data-v-f26c27a7"]]), hf = {
+}, ff = /* @__PURE__ */ U(df, [["__scopeId", "data-v-8b377219"]]), hf = {
   key: 0,
   class: "menu-item-check",
   "aria-hidden": "true"
@@ -6188,6 +6190,7 @@ const Fv = {
       o.value = i.ok ? "" : i.error, i.ok && a("saved");
     }
     return (i, r) => (u(), F(pa, {
+      padded: "",
       title: "Edit the document",
       wide: "",
       onClose: r[3] || (r[3] = (c) => a("close"))
@@ -6241,7 +6244,7 @@ const Fv = {
       _: 1
     }));
   }
-}, Sy = /* @__PURE__ */ U(xy, [["__scopeId", "data-v-e99f14e0"]]);
+}, Sy = /* @__PURE__ */ U(xy, [["__scopeId", "data-v-db47c1f2"]]);
 function Wi(e, t) {
   const n = O([]), a = O(!1), s = O(null), o = O(0), l = O(!1), i = O("");
   let r = 0, c = 0;
@@ -7045,6 +7048,7 @@ const Go = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       r && (i.value = { ...i.value, x: A.clientX - r.x, y: A.clientY - r.y });
     }
     return Me(c), (A, S) => (u(), F(pa, {
+      padded: "",
       title: e.title,
       large: "",
       onClose: S[4] || (S[4] = (x) => a("close"))
@@ -7168,7 +7172,7 @@ const Go = (e, t) => e.x < t.x + t.width && t.x < e.x + e.width && e.y < t.y + t
       _: 1
     }, 8, ["title"]));
   }
-}, N0 = /* @__PURE__ */ U(L0, [["__scopeId", "data-v-51d24cfe"]]), q0 = ["innerHTML"], D0 = {
+}, N0 = /* @__PURE__ */ U(L0, [["__scopeId", "data-v-e98799dc"]]), q0 = ["innerHTML"], D0 = {
   __name: "MarkIcon",
   props: { name: { type: String, required: !0 } },
   setup(e) {
@@ -14108,7 +14112,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = au(() => import("./VoiceFigure-jErlvc9V.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = au(() => import("./VoiceFigure-C4BOIrhY.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Of as $,
   Ae as A,
