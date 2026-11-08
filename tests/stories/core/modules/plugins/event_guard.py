@@ -1,5 +1,7 @@
 import subprocess
 import sys
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -81,6 +83,14 @@ def test_s22_a_plugin_reads_the_agent_granted_a_test_environment_from_inside_it(
     with story.container.get(Scopes).opened(None, 2):
         facts = story.container.get(PluginProgram).facts(story.agent.id, None)
     story.expect_rows(facts.role == AgentRole.MAIN)
+
+
+def test_s22_a_plugin_is_given_the_test_environments_checkout_for_the_agent_granted_it(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
+    story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
+    program = story.container.get(PluginProgram)
+    granted = program.granted_checkout(SimpleNamespace(environment="story-engine", agent_id=story.agent.id))
+    story.expect_rows(granted.project_root == Path("/work/story-engine").resolve(), program.granted_checkout(SimpleNamespace(environment="main", agent_id=story.agent.id)) is None)
 
 
 def test_s22_an_allowing_guard_tells_the_agent_and_shows_its_card_once(new_story):
