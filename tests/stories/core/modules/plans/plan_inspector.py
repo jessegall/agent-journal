@@ -17,19 +17,19 @@ def offered(declaration, state: str) -> list[str]:
 
 def test_a_started_plan_offers_pause_complete_and_cancel(new_story):
     registry, declaration = declaration_of(new_story(fixture=MainEnvironment))
-    expect_value(offered(declaration, "started"), ["Assign to worker", "Let the agent pick", "Pause the plan", "Complete the plan", "Cancel the plan"])
+    expect_value(offered(declaration, "started"), ["Assign to an agent", "Let the agent pick", "Pause the plan", "Complete the plan", "Cancel the plan"])
     expect_value(next(action for action in declaration.actions if action.label == "Complete the plan").runs, "plan close {row_id}")
 
 
 def test_an_approved_plan_offers_start_and_cancel(new_story):
     registry, declaration = declaration_of(new_story(fixture=MainEnvironment))
-    expect_value(offered(declaration, "approved"), ["Assign to worker", "Let the agent pick", "Start the plan", "Cancel the plan"])
+    expect_value(offered(declaration, "approved"), ["Assign to an agent", "Let the agent pick", "Start the plan", "Cancel the plan"])
 
 
 def test_assigning_a_plan_runs_plan_assign_with_a_worker_or_without(new_story):
     registry, declaration = declaration_of(new_story(fixture=MainEnvironment))
     runs = {action.label: action.runs for action in declaration.actions}
-    expect_value(bool(runs["Assign to worker"] == "plan assign {row_id} --worker={worker}" and runs["Let the agent pick"] == "plan assign {row_id}"), True)
+    expect_value(bool(runs["Assign to an agent"] == "plan assign {row_id} --worker={worker}" and runs["Let the agent pick"] == "plan assign {row_id}"), True)
 
 
 def test_a_completed_plan_offers_nothing(new_story):

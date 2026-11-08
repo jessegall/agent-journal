@@ -1,4 +1,5 @@
 
+from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
@@ -10,9 +11,9 @@ MOST_LISTED_TASKS = 5
 
 
 class AvailableWork:
-    """Reads the work the main agent can act on under its workflow controls: with auto mode on it is handed
-    the next eligible task; while it may send workers and a worker can start, open tasks can be delegated;
-    a task it already holds is never offered again."""
+    """Reads the work the main agent can act on under its workflow controls: a task reserved for it always
+    reaches it, and with auto mode on it is handed the next eligible task; while it may send workers and a
+    worker can start, open tasks can be delegated; a task it already holds is never offered again."""
 
     def __init__(self, options: CodingMainOptions, next_task: NextTask, tasks: TaskQuery, worktrees: WorktreeQuery, places: WorkerPlaces) -> None:
         self.options, self.next_task, self.tasks, self.worktrees, self.places = options, next_task, tasks, worktrees, places
@@ -22,9 +23,12 @@ class AvailableWork:
             return AvailableWorkAnswer(None, ())
         controls = self.options.options()
         holds_started_task = self.tasks.holder(main_agent_id).started().exists()
-        own_task = self.next_task.following() if controls.auto and not holds_started_task else None
+        own_task = None if holds_started_task else self.own_task(main_agent_id, controls.auto)
         delegatable = self.delegatable(controls.sends_workers)
         return AvailableWorkAnswer(own_task, delegatable, self.places.free_count() if delegatable else 0)
+
+    def own_task(self, main_agent_id: int, auto: bool) -> Task | None:
+        return self.next_task.following(main_agent_id) if auto else self.next_task.reserved(main_agent_id)
 
     def delegatable(self, may_send: bool) -> tuple[int, ...]:
         if not may_send or not self.places.can_start_new():

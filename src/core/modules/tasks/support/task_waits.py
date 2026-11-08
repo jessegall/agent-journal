@@ -40,10 +40,10 @@ class TaskWaits:
         return all(wait.target.startswith(TASK_TARGET_PREFIX) for wait in self.pending_task(task_id))
 
     def notify_agents(self, tasks: Sequence[Task], context: Context) -> None:
-        reopened = [task for task in tasks if task.delegated_to is None]
-        for agent in MainAgentFinder.rows(self.queries) if reopened else ():
-            for task in reopened:
-                self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
+        for agent in MainAgentFinder.rows(self.queries):
+            for task in tasks:
+                if task.delegated_to in (None, agent.id):
+                    self.nudger.send(agent.id, TASK_REOPENED, WAIT_ENDED_SOURCE, context, task=task.id)
 
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))

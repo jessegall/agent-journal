@@ -14,6 +14,7 @@ from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
+from suites.coding.modules.workers.support.main_reserved_tasks import MainReservedTasks
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -32,19 +33,20 @@ class KeptWorkerTasks:
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,
-                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.sources, self.copies, self.proof_queue = environments, sources, copies, proof_queue
         self.scopes = scopes
         self.kept = kept
         self.dependency_waits = dependency_waits
-        self.assignments = assignments
+        self.assignments, self.reservations = assignments, reservations
 
     def read_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
                                         name=f"workers.sent_tasks:{task_ids}")
 
     def check_tasks(self, task_ids: tuple[int, ...], sender_id: int | None = None) -> list[Task]:
+        self.reservations.check(task_ids)
         return AssignableTasks.checked(self.read_tasks(task_ids), sender_id)
 
     def checked_cut(self, worker: Agent, task_ids: tuple[int, ...], read: list[Task] | None = None) -> list[Task]:

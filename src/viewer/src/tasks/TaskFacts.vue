@@ -35,11 +35,11 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
                 <span class="fact-label">{{ task.state === "open" ? "Queued for" : "Delegated to" }}</span>
                 <button type="button" class="fact-value agent-link" :title="`Open ${task.helper_name}`" data-task-agent @click="peekRef(`agents:${task.helper_id}`)">{{ task.helper_name }}</button>
             </div>
-            <template v-if="HELD_STATES.has(task.state)">
+            <template v-if="HELD_STATES.has(task.state) && task.holder_id">
                 <p class="held-note" data-task-held-by>{{ task.helper_name }} holds it: merging its work finishes it, and releasing the worker opens it again.</p>
             </template>
             <template v-else-if="task.state === 'open'">
-                <p class="held-note" data-task-held-by>{{ task.helper_name }} takes it after the task it is on. Releasing the worker opens it again.</p>
+                <p class="held-note" data-task-held-by>{{ task.helper_name }} takes it after the task it is on.</p>
             </template>
         </template>
         <template v-else-if="task.state === 'started' && task.holder_id">

@@ -12618,7 +12618,7 @@ const Q8 = {
               onClick: i[1] || (i[1] = (d) => L(qe)(`agents:${e.task.helper_id}`))
             }, v(e.task.helper_name), 9, m3)
           ]),
-          L(o).has(e.task.state) ? (u(), f("p", p3, v(e.task.helper_name) + " holds it: merging its work finishes it, and releasing the worker opens it again.", 1)) : e.task.state === "open" ? (u(), f("p", g3, v(e.task.helper_name) + " takes it after the task it is on. Releasing the worker opens it again.", 1)) : k("", !0)
+          L(o).has(e.task.state) && e.task.holder_id ? (u(), f("p", p3, v(e.task.helper_name) + " holds it: merging its work finishes it, and releasing the worker opens it again.", 1)) : e.task.state === "open" ? (u(), f("p", g3, v(e.task.helper_name) + " takes it after the task it is on.", 1)) : k("", !0)
         ], 64)) : e.task.state === "started" && e.task.holder_id ? (u(), f("div", v3, [
           i[6] || (i[6] = m("span", { class: "fact-label" }, "Assigned to", -1)),
           m("span", y3, "Agent " + v(e.task.holder_id), 1)
@@ -12651,7 +12651,7 @@ const Q8 = {
       ]);
     };
   }
-}, S3 = /* @__PURE__ */ U(x3, [["__scopeId", "data-v-a8bf3e2c"]]);
+}, S3 = /* @__PURE__ */ U(x3, [["__scopeId", "data-v-95418036"]]);
 function M3(e, t) {
   const n = new Map(t.tasks.map((r) => [r.id, r])), a = (r) => t.edges.filter(([, c]) => c === r).map(([c]) => c), s = /* @__PURE__ */ new Set([e]), o = [];
   for (let r = a(e); r.length; r = [...new Set(r.flatMap(a))].filter((c) => !s.has(c)))
@@ -14112,7 +14112,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = au(() => import("./VoiceFigure-C4BOIrhY.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = au(() => import("./VoiceFigure-DzUgqAl6.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Of as $,
   Ae as A,

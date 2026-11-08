@@ -20,7 +20,7 @@ class TaskInfo:
     def lines(self) -> Sequence[str]:
         return [f"task {self.id}: {self.title}", f"state: {self.state}", f"priority: {self.priority}",
                 f"complexity: {self.complexity if self.complexity is not None else 'not scored'}", f"tags: {', '.join(self.tags) or 'none'}",
-                f"comments: {self.comment_count}", f"delegated to: {f'worker {self.delegated_to}' if self.delegated_to is not None else 'nobody'}",
+                f"comments: {self.comment_count}", f"delegated to: {f'agent {self.delegated_to}' if self.delegated_to is not None else 'nobody'}",
                 f"waits on: {'; '.join(self.waits) or 'nothing'}"]
 
     def json(self) -> Mapping[str, object]:

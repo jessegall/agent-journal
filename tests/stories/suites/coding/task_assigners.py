@@ -25,7 +25,7 @@ class SecondAssigner:
     def urgent(self, excluded_id: int | None = None) -> Task | None:
         return None
 
-    def following(self, excluded_id: int | None = None) -> Task | None:
+    def following(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
         return None
 
 
