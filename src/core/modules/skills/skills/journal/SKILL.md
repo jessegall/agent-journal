@@ -21,8 +21,10 @@ task 12, plan 3, message 7: write both, so the chat links it.
 - A sequence is steps followed one at a time; an output is a command's output, kept and read by its number.
 
 When the journal holds you, its line says why and names the way out: reading and journal commands still go through.
-A refusal that does not apply can be passed once, after it met you, with a reason: `journal refusal skip <rule> --reason "<why>"`,
-or `--skip-guard <guard> --skip-reason "<why>"` on a command. Obey when you can: five skips in a row lose it. A safety refusal has no skip.
+Only a refusal that is wrong for the case in hand is skipped, never to get on faster. `journal refusal skip <rule> --reason "<why>"`
+holds a skip; `journal refusal confirm <n> --tried "<what you tried>"` lets it pass the next attempt once, and
+`journal refusal withdraw <n>` gives it up. Either answer is final. A `--skip-guard` flag only spends a confirmed skip.
+Obey when you can: five skips in a row lose it. A safety refusal has no skip.
 After a compaction or a new start, run `journal overview` before anything else: until you do, nothing else passes but
 loading the skills it lists with the program’s native method. `journal skill required` lists them on its own. Search before you say you do not know
 or ask the user again: `journal search find "<words>"`.
