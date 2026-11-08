@@ -69,6 +69,7 @@ class PluginManifest:
     config: ManifestConfig | None = None
     hook_stamp: str = ""
     instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
+    injected_instructions: tuple[str, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -81,10 +82,11 @@ class PluginManifest:
         windows: object = fields["holds"] if "holds" in fields else None
         project_reads: object = fields["project_reads"] if "project_reads" in fields else None
         listed: object = fields["files"] if "files" in fields else None
+        injected: object = fields["injected_instructions"] if "injected_instructions" in fields else None
         listeners = cls.read_listeners(fields["listen"], folder) if "listen" in fields else ()
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (*manifests.names, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(listed, folder)) if file and not file.startswith(SERVICE_PREFIX))),
+                   cls.read_settings(folder, settings_file), tuple(dict.fromkeys(file for file in (*manifests.names, program, settings_file, *(listener.allowed_script(form) for listener in listeners for form in EventForm), *cls.extra_files(listed, folder), *cls.extra_files(injected, folder)) if file and not file.startswith(SERVICE_PREFIX))),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
@@ -93,7 +95,7 @@ class PluginManifest:
                    str(fields["description"]) if "description" in fields else "",
                    tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
                    cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "",
-                   cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None))
+                   cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None), cls.read_listed_files(injected))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:

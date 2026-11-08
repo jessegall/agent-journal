@@ -7,6 +7,7 @@ from pathlib import Path
 from core.base.file_access import FileAccess
 
 INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")
+JOURNAL_FILE = "JOURNAL.md"
 SKIPPED_FOLDERS = frozenset((".git", ".journal", "node_modules", ".venv", "dist", "vendor"))
 IMPORT_LINE = re.compile(r"^@(\S+\.md)\s*$", re.MULTILINE)
 
@@ -28,6 +29,7 @@ class InstructionImports:
 
     def __init__(self, root: Path) -> None:
         self.root = root
+        self.names: dict[Path, list[str]] = {}
 
     def faults(self) -> list[InstructionImport]:
         found = [entry for file in self.files() for entry in self.imports(file)]
@@ -39,10 +41,16 @@ class InstructionImports:
             yield from (folder / name for name in names if name in INSTRUCTION_FILES)
 
     def imports(self, file: Path) -> Iterator[InstructionImport]:
-        for name, count in Counter(self.imported_names(file)).items():
+        for name, count in Counter(self.names_of(file)).items():
             imported = (file.parent / name).resolve()
-            imports_back = file.resolve() < imported and imported.is_file() and any((imported.parent / back).resolve() == file.resolve() for back in self.imported_names(imported))
+            imports_back = file.resolve() < imported and imported.is_file() and any((imported.parent / back).resolve() == file.resolve() for back in self.names_of(imported))
             yield InstructionImport(str(file.relative_to(self.root)), name, count, imports_back)
+
+    def names_of(self, file: Path) -> list[str]:
+        resolved = file.resolve()
+        if resolved not in self.names:
+            self.names[resolved] = self.imported_names(file)
+        return self.names[resolved]
 
     @staticmethod
     def imported_names(file: Path) -> list[str]:

@@ -9,6 +9,8 @@ from pathlib import Path
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
+from core.base.file_access import FileAccess
+from core.base.instruction_imports import JOURNAL_FILE
 from core.base.journal_home import JournalHome
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
@@ -97,8 +99,15 @@ class CodexProvider(Provider):
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
         model = [] if launch.names_flag("-m") or launch.names_flag("--model") else ["-m", launch.model]
-        arguments = [self.executable, "--no-daemon", *model, *skip, *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
+        arguments = [self.executable, "--no-daemon", *model, *skip, *self.journal_instructions(launch.folder), *launch.program_arguments, *launch.session.arguments(self), *launch.prompt_arguments]
         return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
+
+    @staticmethod
+    def journal_instructions(folder: Path) -> list[str]:
+        path = folder / JOURNAL_FILE
+        if not path.is_file():
+            return []
+        return ["-c", f"developer_instructions={json.dumps(FileAccess.shared().read(path), ensure_ascii=False)}"]
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",

@@ -68,6 +68,7 @@ BULK_SEEDS = "core/base/seed/demo.py"
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py", "unittest/mock.py", "<string>")
 WATCH_FILES = ("core/base/database/repeated_work.py", "core/base/database/collecting_repeated_work.py", *READ_HELPERS)
 ALLOWED_FILE_READS = {
+    "core/modules/plugins/support/journal_instruction_file.py": "The check for doubled imports reads the same instruction files in the journal's start round.",
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
     "core/modules/claude_code/providers/support/claude_trust.py": "A helper's start marks its parent's folder trusted and its launch marks its own start folder, each against the file as it is then.",
 }
