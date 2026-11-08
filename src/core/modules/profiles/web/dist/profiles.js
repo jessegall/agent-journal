@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-85f954bec28a")) { const style = document.createElement("style"); style.id = "window-styles-85f954bec28a"; style.textContent = ".helper-start[data-v-082e841a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-082e841a]{margin:0;font-size:14px;font-weight:600}.field[data-v-082e841a]{display:grid;gap:4px}.field>span[data-v-082e841a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-082e841a],.notice[data-v-082e841a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-082e841a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel[data-v-71715cc7]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-71715cc7]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-71715cc7]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-71715cc7]{flex:1}.profiles[data-v-caf65a01]{padding:0 0 40px}.bar[data-v-caf65a01]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-caf65a01]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-caf65a01]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-caf65a01]{color:var(--danger)}.empty[data-v-caf65a01]{margin:40px auto;max-width:480px}.rows[data-v-caf65a01]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-caf65a01]{text-align:left}.profile-meta[data-v-caf65a01]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-caf65a01]{color:var(--text-2)}.profile-used[data-v-caf65a01]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-caf65a01]{color:var(--tone-warn)}.profile-used.never[data-v-caf65a01]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-caf65a01]{flex:1 1 100%}.profile-meta[data-v-caf65a01]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-bb8a9a14b116")) { const style = document.createElement("style"); style.id = "window-styles-bb8a9a14b116"; style.textContent = ".helper-start[data-v-c954766e]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-c954766e]{margin:0;font-size:14px;font-weight:600}.field[data-v-c954766e]{display:grid;gap:4px}.field>span[data-v-c954766e]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-c954766e],.notice[data-v-c954766e]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-c954766e]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-panel[data-v-dd5c62f2]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-dd5c62f2]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-dd5c62f2]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-dd5c62f2]{flex:1}.profiles[data-v-6ccfd527]{padding:0 0 40px}.bar[data-v-6ccfd527]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-6ccfd527]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-6ccfd527]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-6ccfd527]{color:var(--danger)}.empty[data-v-6ccfd527]{margin:40px auto;max-width:480px}.rows[data-v-6ccfd527]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-6ccfd527]{text-align:left}.profile-meta[data-v-6ccfd527]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-6ccfd527]{color:var(--text-2)}.profile-used[data-v-6ccfd527]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-6ccfd527]{color:var(--tone-warn)}.profile-used.never[data-v-6ccfd527]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-6ccfd527]{flex:1 1 100%}.profile-meta[data-v-6ccfd527]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as k, computed as h, watch as J, openBlock as s, createElementBlock as m, withModifiers as oe, createElementVNode as c, createVNode as i, unref as l, withDirectives as X, Fragment as F, renderList as q, toDisplayString as y, vModelSelect as se, withCtx as u, createTextVNode as A, createCommentVNode as g, createBlock as _, renderSlot as ne, vModelCheckbox as re, normalizeClass as ie } from "vue";
 import { useWindow as Z, TextArea as z, Btn as B, TextInput as D, SidePanel as ue, FormField as R, Segmented as U, ModelPicker as pe, DiffCard as de, matchesSearch as fe, SearchBar as ve, EmptyState as H, ListRow as me, ago as ce } from "@journal/window-kit";
 const Y = (v, W) => {
@@ -126,7 +126,7 @@ const Y = (v, W) => {
       E.value ? (s(), m("p", Se, y(E.value), 1)) : g("", !0)
     ], 32));
   }
-}, Te = /* @__PURE__ */ Y(Ce, [["__scopeId", "data-v-082e841a"]]), Ie = {
+}, Te = /* @__PURE__ */ Y(Ce, [["__scopeId", "data-v-c954766e"]]), Ie = {
   class: "profile-panel",
   "data-profile-panel": ""
 }, xe = { key: 0 }, Pe = {
@@ -418,7 +418,7 @@ const Y = (v, W) => {
       _: 3
     }, 8, ["title", "abstract"]));
   }
-}, Ne = /* @__PURE__ */ Y(Ae, [["__scopeId", "data-v-71715cc7"]]), Ve = {
+}, Ne = /* @__PURE__ */ Y(Ae, [["__scopeId", "data-v-dd5c62f2"]]), Ve = {
   class: "profiles",
   "data-profiles": ""
 }, We = {
@@ -581,7 +581,7 @@ const Y = (v, W) => {
       }, 8, ["programs", "types", "profile", "used"])) : g("", !0)
     ]));
   }
-}, Ge = /* @__PURE__ */ Y(Ue, [["__scopeId", "data-v-caf65a01"]]);
+}, Ge = /* @__PURE__ */ Y(Ue, [["__scopeId", "data-v-6ccfd527"]]);
 export {
   Ge as default
 };
