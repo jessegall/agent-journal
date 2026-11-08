@@ -4,10 +4,10 @@ from datetime import timedelta
 import pytest
 
 from core.modules.helpers.support.cold_sessions import ColdSessions
-from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES
+from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
-from tests.stories.core.modules.usage.support.status_files import full_status
+from tests.stories.core.modules.usage.support.status_files import full_status, save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 LIMIT_MINUTES = 55
@@ -153,3 +153,15 @@ def test_the_boot_menu_reads_no_cold_session_of_another_program(main_session):
     full_status(main_session, MAIN_SESSION, 100, 0.0)
     main_session.advance(timedelta(minutes=300))
     main_session.expect_rows(json.loads(main_session.run("helper cold-sessions codex --environment main --json", actor=main_session.user).output_text)["rows"] == [])
+
+
+def test_a_helper_past_the_context_limit_starts_a_new_session_when_it_is_sent_a_job(ended_helper, monkeypatch):
+    ended_helper.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=ended_helper.user)
+    helper = helper_agent(ended_helper)
+    save_status_file(ended_helper, helper.session, {"context_window": {"total_input_tokens": 400000}})
+    resumable_session(ended_helper, helper, monkeypatch)
+    launcher = FakeLauncher(ended_helper.home.socket("launcher"), answer=b"started 701\n")
+    ended_helper.expect_success(f'helper send {helper.id} "{JOB}"', actor=ended_helper.agent)
+    ended_helper.run_listeners()
+    launcher.wait_for_requests()
+    ended_helper.expect_rows(helper_agent(ended_helper).session != helper.session, "--resume" not in launcher.requests[0]["command"], detail=str(launcher.requests[0]))

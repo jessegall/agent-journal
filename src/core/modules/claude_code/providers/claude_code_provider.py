@@ -201,11 +201,18 @@ class ClaudeCodeProvider(Provider):
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
+        return self.context_number(home, session, "used_percentage")
+
+    def context_tokens(self, home: JournalHome, session: str) -> int | None:
+        return self.context_number(home, session, "total_input_tokens")
+
+    @staticmethod
+    def context_number(home: JournalHome, session: str, name: str) -> int | None:
         path = home.status_file(session)
         fields = StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {}
         window = fields.get("context_window") if is_mapping(fields) else None
-        used = window.get("used_percentage") if is_mapping(window) else None
-        return int(used) if isinstance(used, int | float) and not isinstance(used, bool) else None
+        value = window.get(name) if is_mapping(window) else None
+        return int(value) if isinstance(value, int | float) and not isinstance(value, bool) else None
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))

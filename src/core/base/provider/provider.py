@@ -170,6 +170,9 @@ class Provider(ABC):
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()
 
+    def context_tokens(self, home: JournalHome, session: str) -> int | None:
+        return None
+
     def uses_web_reader(self, event: HookEvent) -> bool:
         return (event.tool_input().get("subagent_type") or event.raw.get("agent_type")) in self.web_reader_agents
 
