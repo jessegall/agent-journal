@@ -37,7 +37,7 @@ def test_a_plan_of_another_environment_is_refused_without_a_message(new_story):
 @pytest.mark.parametrize("message", ["", '--message "Approve this"'])
 def test_an_agent_cannot_approve_even_when_skipping_a_guard(new_story, flags, message):
     story = new_story(fixture=ReadyApprovalPlan)
-    story.expect_refusal(f"plan approve 1 --environment main {flags} {message}",
+    story.expect_refusal(f"plan approve 1 --reason needed --environment main {flags} {message}",
                          "A person was asked in the dock", actor=story.agent)
     story.expect_rows(story.container.get(Queries).query(Message).count() == 0)
     story.expect_success("plan show 1", "state: ready")

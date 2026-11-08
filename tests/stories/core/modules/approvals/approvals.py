@@ -13,7 +13,7 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 SETTING = "journal.core.project-rules.agents-make-rules"
-CHANGE_SETTING = f"setting set {SETTING} true --project"
+CHANGE_SETTING = f"setting set {SETTING} true --project --reason needed"
 
 
 class PendingSetting(NamedTuple):

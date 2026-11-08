@@ -26,6 +26,22 @@ class WriteFlags:
             parser.add_argument("--reason", default="", help="why this is asked, shown to the person when the line needs their approval")
         except ArgumentError:
             return None
+        parser.set_defaults(reason_is_ours=True)
+
+    @staticmethod
+    def without_reason(argv: list[str]) -> tuple[str, ...]:
+        """The line without the --reason this flag added: the reason is kept on the approval, not in the line a person runs."""
+        kept: list[str] = []
+        words = iter(argv)
+        for word in words:
+            if word == "--":
+                kept.append(word)
+                kept.extend(words)
+            elif word == "--reason":
+                next(words, None)
+            elif not word.startswith("--reason="):
+                kept.append(word)
+        return tuple(kept)
 
     def skipped_guards(self, arguments: Namespace) -> frozenset[str]:
         flag_guards: list[str] = list(arguments.skip_guard)

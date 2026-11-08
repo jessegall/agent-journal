@@ -111,7 +111,7 @@ def test_a_user_revokes_their_own_token_and_not_that_of_another(new_story, share
     admin_story.expect_rows(server.send(owner_token, "DELETE", f"/tokens/{token_numbers['Rue']}")[0] == 200, not token_works(server, owner_token))
 
 
-@pytest.mark.parametrize("line", ["library-user add Tess --role edit", "library-user role 3 edit", "library-user remove 3", "library-user revoke 1"])
+@pytest.mark.parametrize("line", ["library-user add Tess --role edit --reason needed", "library-user role 3 edit --reason needed", "library-user remove 3 --reason needed", "library-user revoke 1 --reason needed"])
 def test_an_agent_cannot_change_users_or_tokens(new_story, shared_server, line):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.admin)
@@ -121,7 +121,7 @@ def test_an_agent_cannot_change_users_or_tokens(new_story, shared_server, line):
 def test_the_viewer_accepts_a_team_user_request_and_receives_the_token_only_once(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.admin)
-    story.expect_refusal("library-user add ConsentTess --role edit", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("library-user add ConsentTess --role edit --reason needed", "A person was asked in the dock", actor=story.agent)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         answer = viewer.value("messages.chat", ["approval", "accept", str(approval.id)])

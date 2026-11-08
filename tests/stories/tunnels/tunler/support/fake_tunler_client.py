@@ -1,3 +1,4 @@
+from core.base.command.dry_run import DRY_RUN, DryRunReachedEffect
 from core.base.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
 from tunnels.tunler.support.tunler_client import TunlerClient
@@ -62,6 +63,8 @@ class FakeTunlerClient(TunlerClient):
         return TunlerLogin(True)
 
     def logout(self) -> None:
+        if DRY_RUN.get():
+            raise DryRunReachedEffect("tunler logout")  # the real client runs the tunler program, which a dry run must not
         self.logged_out += 1
         self.authenticated = False
 

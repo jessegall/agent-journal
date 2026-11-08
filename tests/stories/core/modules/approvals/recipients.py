@@ -25,7 +25,7 @@ class HelperApproval(NamedTuple):
 def helper_request(new_story):
     story = new_story(fixture=BuilderWithUser)
     helper = Actor(story.new_row_id(f"agent start help-shop claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
-    story.expect_refusal("phone pair", "main agent was asked", actor=helper)
+    story.expect_refusal("phone pair --reason needed", "main agent was asked", actor=helper)
     approval = story.container.get(Queries).query(ApprovalRequest).filter(requester_id=helper.id).first()
     return HelperApproval(story, helper, approval)
 
@@ -46,7 +46,7 @@ def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).all_rows())
     story.expect_rows(saved.recipient_agent_id is None, saved.relayed_by_id == story.agent.id, len(items) == 1)
-    story.expect_refusal("phone pair", "A person was asked", actor=helper)
+    story.expect_refusal("phone pair --reason needed", "A person was asked", actor=helper)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.recipient_agent_id is None)
     with viewer_client(story) as viewer:

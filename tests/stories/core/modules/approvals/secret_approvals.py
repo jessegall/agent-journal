@@ -18,7 +18,7 @@ def secret_story(new_story, private_folder):
     return story
 
 
-@pytest.fixture(params=["secret propose 1 head", "secret allow 1 head", "secret run 1 -- head -c 64"])
+@pytest.fixture(params=["secret propose 1 head --reason needed", "secret allow 1 head --reason needed", "secret run 1 --reason needed -- head -c 64"])
 def pending_program(secret_story, request):
     story = secret_story
     outcome = story.run(request.param, actor=story.agent)

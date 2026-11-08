@@ -15,7 +15,7 @@ ASKED = "A person was asked in the dock"
 
 
 def save_preset(name: str) -> str:
-    return f"person-preset save --page home --name {name} --shape '{SHAPE}' --environment main"
+    return f"person-preset save --page home --name {name} --shape '{SHAPE}' --reason needed --environment main"
 
 
 def requests(story: Story) -> list[ApprovalRequest]:
@@ -33,7 +33,7 @@ def accepted_always(story: Story, request: ApprovalRequest, scope: str) -> None:
 
 def ask_for_resume(story: Story) -> None:
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent resume {story.agent.id}", ASKED, actor=story.agent)
+    story.expect_refusal(f"agent resume {story.agent.id} --reason needed", ASKED, actor=story.agent)
 
 
 class ResumeAsked(StoryFixture):

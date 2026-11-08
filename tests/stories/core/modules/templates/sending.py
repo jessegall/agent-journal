@@ -13,7 +13,7 @@ from tests.stories.core.modules.templates.support.sending_templates import Sendi
 from tests.stories.server.support.server_client import server_story
 from tests.stories.core.modules.templates.support.active_template_fixture import installed_review
 
-CRITIQUE = 'template send 1 --on=plan:1 --set=agents="2 agents" --set=size="a normal read" --environment main'
+CRITIQUE = 'template send 1 --on=plan:1 --set=agents="2 agents" --set=size="a normal read" --reason needed --environment main'
 
 
 def expect_empty_messages(story):

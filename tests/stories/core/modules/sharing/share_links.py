@@ -57,7 +57,7 @@ def test_an_agent_only_asks_nothing_opens_and_the_person_is_told(new_story):
 def test_a_person_accepts_an_agents_link_owns_it_and_sees_its_token_once(new_story):
     story = new_story(fixture=PlanWithPhases)
     story.run("share make plans:1 --environment main", actor=story.agent)
-    story.expect_refusal("share accept 1", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("share accept 1 --reason needed", "A person was asked in the dock", actor=story.agent)
     accepted = json.loads(story.run("share accept 1 --json", actor=story.user).output_text)
     expect_row(accepted, state="active")
     expect_row(accepted, link=f"/viewer/share/{accepted['token']}")
@@ -68,7 +68,7 @@ def test_a_person_accepts_an_agents_link_owns_it_and_sees_its_token_once(new_sto
 def test_a_person_denies_an_agents_link_and_an_agent_cannot(new_story):
     story = new_story(fixture=PlanWithPhases)
     story.run("share make plans:1 --environment main", actor=story.agent)
-    story.expect_refusal("share deny 1", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("share deny 1 --reason needed", "A person was asked in the dock", actor=story.agent)
     story.expect_success("share deny 1", "state: denied", actor=story.user)
     story.expect_refusal("share accept 1", "accept", actor=story.user)
 
@@ -168,7 +168,7 @@ def test_the_person_who_made_a_link_revokes_it(new_story):
 def test_no_one_else_revokes_a_link(new_story):
     story = new_story(fixture=PlanWithPhases)
     story.run("share make plans:1", actor=story.user)
-    story.expect_refusal("share revoke 1", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("share revoke 1 --reason needed", "A person was asked in the dock", actor=story.agent)
     story.expect_success("share show 1", "state: active", actor=story.user)
 
 

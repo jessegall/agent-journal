@@ -121,7 +121,7 @@ def test_a_wrapper_or_a_program_named_by_its_path_is_never_proposed(new_story):
 
 def test_only_the_user_allows_a_program(new_story):
     story = made_story(new_story)
-    story.expect_refusal("secret allow 1 curl", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("secret allow 1 curl --reason needed", "A person was asked in the dock", actor=story.agent)
 
 
 def test_a_deleted_secret_leaves_the_list_and_comes_back_with_its_value_on_a_restore(new_story, private_folder):

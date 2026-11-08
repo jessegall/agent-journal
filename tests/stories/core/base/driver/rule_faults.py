@@ -16,7 +16,7 @@ def test_a_rule_that_raises_is_recorded_written_to_the_error_log_and_the_others_
 def test_a_rule_another_module_marks_essential_is_ordinary_until_it_is_allowed(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.expect_text("driver show samples.lead", "samples.essential-claim: essential, waiting for the user")
-    story.expect_refusal("driver allow-essential samples.essential-claim", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("driver allow-essential samples.essential-claim --reason needed", "A person was asked in the dock", actor=story.agent)
     story.run("driver allow-essential samples.essential-claim")
     story.hook("s-1", HookSamples.stop())
     story.expect_text(lines.SECOND_HOOK_CALL, "samples.essential-claim: lines")

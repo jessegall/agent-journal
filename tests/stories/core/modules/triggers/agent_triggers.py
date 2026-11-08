@@ -31,13 +31,13 @@ def test_a_trigger_the_user_makes_is_on_at_once(new_story):
 def test_an_agent_cannot_enable_a_trigger(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run(TRIGGER_LINE, actor=story.agent)
-    story.expect_refusal("trigger enable 1", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("trigger enable 1 --reason needed", "A person was asked in the dock", actor=story.agent)
 
 
 def test_an_agent_cannot_change_what_an_enabled_trigger_does(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run(TRIGGER_LINE, actor=story.user)
-    story.expect_refusal('trigger edit 1 --text "Do something else"', "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal('trigger edit 1 --text "Do something else" --reason needed', "A person was asked in the dock", actor=story.agent)
 
 
 def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):

@@ -16,11 +16,14 @@ const description = computed(() => lines.value.slice(1).join("\n").trim());
   <template v-if="description">
     <p class="approval-description" data-approval-description>{{ description }}</p>
   </template>
+  <template v-if="request?.why">
+    <p class="approval-why" data-approval-why>{{ request.why }}</p>
+  </template>
   <details class="approval-details">
     <summary>Action details</summary>
-    <pre>{{ request?.arguments?.join(" ") }}</pre>
+    <pre data-approval-action>{{ request?.arguments?.join(" ") }}</pre>
     <template v-if="request?.continued_arguments?.length">
-      <pre>{{ request.continued_arguments.join(" ") }}</pre>
+      <pre data-approval-action>{{ request.continued_arguments.join(" ") }}</pre>
     </template>
   </details>
 </template>
@@ -39,10 +42,19 @@ const description = computed(() => lines.value.slice(1).join("\n").trim());
   font-weight: 400;
   white-space: pre-wrap;
 }
+.approval-why {
+  margin: 0 14px 8px 36px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 400;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .approval-details {
   margin: 4px 14px 8px 36px;
 }
 .approval-details pre {
+  margin: 6px 0 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
