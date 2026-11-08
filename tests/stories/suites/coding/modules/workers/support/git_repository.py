@@ -28,7 +28,8 @@ class GitRepository:
 
     @classmethod
     def sample(cls, folder: Path) -> "GitRepository":
-        shutil.copytree(cls.sample_source(), folder, dirs_exist_ok=True, symlinks=True)
+        shutil.rmtree(folder, ignore_errors=True)
+        shutil.copytree(cls.sample_source(), folder, symlinks=True)
         return cls(folder)
 
     @classmethod

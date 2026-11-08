@@ -44,8 +44,8 @@ function setTime(event) {
     keep({kind: TIME, since: event.target.value ? new Date(event.target.value).toISOString() : ""});
 }
 
-// the key reads the range through its own arguments
-watch(range, (chosen) => {
+// the key reads the range through its own arguments: set before the window's first read, and read again when the range changes
+function askFor(chosen) {
     const hours = hoursOf(chosen);
     if (hours === null) {
         view.state["counts.since"] = chosen.since;
@@ -54,8 +54,13 @@ watch(range, (chosen) => {
         view.state["counts.hours"] = String(hours);
         delete view.state["counts.since"];
     }
+}
+
+askFor(range.value);
+watch(range, (chosen) => {
+    askFor(chosen);
     view.reload("counts");
-}, {immediate: true});
+});
 </script>
 
 <template>
