@@ -62,6 +62,7 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
     ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
+    ("core/base/listener/event_rows.py", "prepare"): "Cached rows are checked by version only after a write, from a listener or another process, changed the database mark.",
 }
 BULK_SEEDS = "core/base/seed/demo.py"
 READ_HELPERS = ("core/base/database/database.py", "core/base/database/bookkeeping_table.py", "unittest/mock.py", "<string>")

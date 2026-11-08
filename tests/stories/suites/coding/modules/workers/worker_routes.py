@@ -301,9 +301,9 @@ def test_agent_cannot_change_a_route_a_person_made_own_route_can_change(split_st
     story.expect_text(f'worker-route show {route}', 'program: claude')
 
 
-def test_agent_cannot_change_a_route_a_person_made_agent_change_has_a_mark(split_story, split_viewer):
+def test_agent_cannot_change_a_route_a_person_made_agent_change_has_a_mark(split_story):
     story = split_story
-    set_split(story, 'claude 70,codex 30', viewer=split_viewer)
+    set_split(story, 'claude 70,codex 30')
     story.expect_success('worker-route make --program codex --tags marked --environment main', actor=story.agent)
     story.run_listeners()
     story.expect_text('chat-mark list --json', 'split', 'route', 'codex')
