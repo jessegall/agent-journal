@@ -34,3 +34,11 @@ def test_the_granted_agent_may_dispatch_a_worker_with_no_program_in_its_test_env
     story.expect_refusal("worker dispatch 1 --no-program --environment main", "only a person dispatches a worker with no program", actor=story.agent)
     outcome = story.run("worker dispatch 2 --no-program --environment story-engine", actor=story.agent)
     assert "only a person dispatches a worker with no program" not in outcome.output_text, outcome.output_text
+
+
+def test_the_granted_agent_is_readable_while_it_dispatches_in_its_test_environment(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
+    story.expect_success('task make "Fake work" --brief "A fake agent works it" --environment story-engine', actor=story.user)
+    outcome = story.run("worker dispatch 1 --no-program --program claude --session s-7 --environment story-engine --fresh 'a story'", actor=story.agent)
+    assert "no agent" not in outcome.output_text, outcome.output_text

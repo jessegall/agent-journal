@@ -30,6 +30,10 @@ class AgentRows:
     def find(self, agent_id: int) -> Agent:
         return self.rows.required(Agent, agent_id)
 
+    def of_any_environment(self, agent_id: int) -> Agent:
+        with self.scopes.opened(None, disabled=[EnvironmentScope]):
+            return self.rows.required(Agent, agent_id)
+
     def find_many(self, agent_ids: list[int]) -> list[Agent]:
         return self.queries.query(Agent).find_many(agent_ids)
 
