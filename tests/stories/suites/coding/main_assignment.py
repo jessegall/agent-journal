@@ -5,7 +5,7 @@ from tests.stories.suites.coding.support.main_controls_fixture import in_environ
 from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"
-DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers"
+DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
 WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 
 

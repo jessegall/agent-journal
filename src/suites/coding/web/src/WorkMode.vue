@@ -3,7 +3,7 @@ import {onUnmounted, ref, watch} from "vue";
 import {Icon, Segmented, Switch, WindowRoom, useOutside, useWindow} from "@journal/window-kit";
 
 const AUTO_MODE = "journal.suites.coding.auto-mode";
-const DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers";
+const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 const MERGER = "journal.suites.coding.workers.merger-on";
 const MODES = [
     {key: "builder", label: "Builder", tip: {title: "Builder", line: "The agent writes code itself and assigns work to workers when useful."}},

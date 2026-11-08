@@ -8,7 +8,7 @@ import {context as windowContext} from "./support/windowContext.js";
 const KEYS = {
     mode: {line: "suite current {environment}", events: ["setting.*"]},
     auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
-    dispatches: {line: "setting show journal.suites.coding.workers.builder-dispatches-workers", tab: "settings", events: ["setting.*"]},
+    dispatches: {line: "setting show journal.suites.coding.workers.main-dispatches-workers", tab: "settings", events: ["setting.*"]},
     merger: {line: "setting show journal.suites.coding.workers.merger-on", tab: "settings", events: ["setting.*"]},
     bars: {line: "usage bars", loading: "requested"},
 };
@@ -76,17 +76,17 @@ test("opening the menu reads its remaining settings for this environment", async
     context.read = async (line) => { reads.push(line); return read(line); };
     element.querySelector("[data-work-settings]").click();
     await settled();
-    expect(reads).toEqual(["setting show journal.suites.coding.workers.builder-dispatches-workers", "setting show journal.suites.coding.workers.merger-on"]);
+    expect(reads).toEqual(["setting show journal.suites.coding.workers.main-dispatches-workers", "setting show journal.suites.coding.workers.merger-on"]);
     expect(reads.some((line) => line.includes("worker-run-limit"))).toBe(false);
 });
 
 test("a setting event refreshes the mode menu settings", async () => {
-    const values = {"journal.suites.coding.workers.builder-dispatches-workers": true};
+    const values = {"journal.suites.coding.workers.main-dispatches-workers": true};
     const followed = [];
     const {element} = await mount({values, follow: (patterns, handler) => followed.push({patterns, handler})});
     element.querySelector("[data-work-settings]").click();
     await settled();
-    values["journal.suites.coding.workers.builder-dispatches-workers"] = false;
+    values["journal.suites.coding.workers.main-dispatches-workers"] = false;
     followed.find((one) => one.patterns.includes("setting.*")).handler({event: "setting.update"});
     await new Promise((resolve) => setTimeout(resolve, 60));
     await settled();

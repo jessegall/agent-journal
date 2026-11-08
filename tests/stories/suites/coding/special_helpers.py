@@ -14,7 +14,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, record
 from tests.stories.support.story_checks import expect_value
 
 DESIGNER = "journal.suites.coding.designer-enabled"
-HELPERS = "journal.suites.coding.builder-starts-helpers"
+HELPERS = "journal.suites.coding.main-starts-helpers"
 MERGER = "journal.suites.coding.workers.merger-on"
 START_DESIGNER = 'helper start journal-designer --brief "Design the cart page" --environment main'
 

@@ -17,4 +17,4 @@ class MainDispatchGuard(Guard[Created[Worktree]]):
 
     def check(self, event: Created[Worktree], context: Context) -> None:
         if self.caller.is_main(context) and not self.options.options().sends_workers:
-            raise Refusal("the main agent sends no workers here", "a person turns on journal.suites.coding.workers.builder-dispatches-workers")
+            raise Refusal("the main agent sends no workers here", "a person turns on journal.suites.coding.workers.main-dispatches-workers")

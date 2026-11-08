@@ -27,4 +27,4 @@ class MainHelperGuard(Guard[Created[Agent]]):
         if event.row.profile == DESIGNER_PROFILE and not options.designer:
             raise Refusal("the main agent starts no designer here", "a person turns on journal.suites.coding.designer-enabled")
         if event.row.profile != DESIGNER_PROFILE and not options.helpers:
-            raise Refusal("the main agent starts no helper here", "a person turns on journal.suites.coding.builder-starts-helpers")
+            raise Refusal("the main agent starts no helper here", "a person turns on journal.suites.coding.main-starts-helpers")

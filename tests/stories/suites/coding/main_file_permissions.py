@@ -14,8 +14,8 @@ from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"
 WRITES_CODE = "journal.suites.coding.main-writes-code"
-DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers"
-HELPERS = "journal.suites.coding.builder-starts-helpers"
+DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
+HELPERS = "journal.suites.coding.main-starts-helpers"
 DESIGNER = "journal.suites.coding.designer-enabled"
 MERGE = "journal.suites.coding.workers.main-agent-may-merge"
 WORKER_HELPERS = "journal.suites.coding.workers.workers-start-helpers"

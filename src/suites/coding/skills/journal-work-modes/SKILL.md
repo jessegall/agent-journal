@@ -11,9 +11,9 @@ environment, not from a mode. Your first line of a session tells you to read the
 ## The work controls
 
 - `coding.auto-mode` (per environment): whether you may write project files and start tasks yourself.
-- `coding.workers.builder-dispatches-workers`: whether you may send workers (`journal worker dispatch`). Set to false it
+- `coding.workers.main-dispatches-workers`: whether you may send workers (`journal worker dispatch`). Set to false it
   refuses your dispatches.
-- `coding.builder-starts-helpers`: whether you may start ordinary helpers. Set to false it refuses them.
+- `coding.main-starts-helpers`: whether you may start ordinary helpers. Set to false it refuses them.
 - `coding.continue-while-delegatable`: whether a stop is held while open tasks can still go to workers.
 - `coding.workers.merger-on`, `coding.designer-enabled` and `coding.workers.main-agent-may-merge` decide the merger, the
   designer and whether you merge workers yourself.

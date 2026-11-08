@@ -4,7 +4,7 @@ from core.modules.settings.upgrade.settings_move import FEATURE_FLAG_REASON, Set
 
 RENAMED = {
     "workers.most_out": "journal.suites.coding.workers.worker-run-limit",
-    "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
+    "workers.builder_may_dispatch": "journal.suites.coding.workers.main-dispatches-workers",
     "workers.command_kinds": "journal.suites.coding.worker-command-types",
 }
 LISTED_KEY = "journal.suites.coding.worker-command-types"
