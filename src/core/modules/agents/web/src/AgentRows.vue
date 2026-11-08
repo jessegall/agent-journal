@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
-import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useWindow} from "@journal/window-kit";
+import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useNow, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
 import AgentLimits from "./AgentLimits.vue";
 
@@ -44,6 +44,28 @@ watch([show, words, filters], () => {
 setState();
 const factsOf = (row) => row.facts ?? null;
 const shown = rows;
+// an agent that ends leaves the Working tab, so it stays at the bottom of that list, faded, for five minutes first
+const LINGER_MILLISECONDS = 5 * 60 * 1000;
+const now = useNow();
+const lingering = ref([]);
+const lingerIds = computed(() => new Set(lingering.value.filter((held) => now.value - held.left < LINGER_MILLISECONDS).map((held) => held.row.id)));
+const lingerRows = computed(() => lingering.value.filter((held) => lingerIds.value.has(held.row.id)).map((held) => held.row));
+const listed = computed(() => [...shown.value, ...lingerRows.value]);
+let readFor = "";
+let readRows = [];
+async function keepEnded(row) {
+    await view.reload(`card.${row.id}`);
+    const fresh = view.props[`card.${row.id}`].rows.value.find((found) => found.id === row.id);
+    if (fresh?.ended_at && !lingering.value.some((held) => held.row.id === row.id)) lingering.value = [...lingering.value, {row: fresh, left: Date.now()}];
+}
+watch(rows, (current) => {
+    const sameRead = readFor === `${show.value}|${words.value}|${JSON.stringify(filters.value)}` && show.value === "running";
+    const gone = sameRead ? readRows.filter((row) => !current.some((found) => found.id === row.id)) : [];
+    readFor = `${show.value}|${words.value}|${JSON.stringify(filters.value)}`;
+    readRows = current;
+    lingering.value = sameRead ? lingering.value.filter((held) => now.value - held.left < LINGER_MILLISECONDS && !current.some((found) => found.id === held.row.id)) : [];
+    gone.forEach(keepEnded);
+}, {immediate: true});
 // a search is what makes an empty list mean nothing matches; the tab alone does not
 const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);
 const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty, hint: ""});
@@ -57,7 +79,7 @@ const openRow = computed(() => {
     if (openId.value === null) return null;
     return view.props[`card.${openId.value}`].rows.value.find((row) => row.id === openId.value) ?? openedRow.value;
 });
-const visible = computed(() => (openRow.value ? [openRow.value] : shown.value));
+const visible = computed(() => (openRow.value ? [openRow.value] : listed.value));
 const easing = "cubic-bezier(0.2, 0.9, 0.25, 1)";
 const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let changing = false;
@@ -147,7 +169,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         </EmptyState></template>
         <template v-else><RowList :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
-                <div class="agent-row" :data-agent-row="row.id">
+                <div :class="['agent-row', {lingering: lingerIds.has(row.id)}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
@@ -203,6 +225,8 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
     display: flex;
     min-height: 0;
 }
+
+.agent-row.lingering { opacity: 0.5; }
 
 .agent-row {
     position: relative;
