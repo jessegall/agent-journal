@@ -144,6 +144,8 @@ To say you could not judge something, answer with a `tell`, and put the reason i
 
 A plugin's own alias or command run by an agent gets `JOURNAL_CHECKOUT_TYPE`, `JOURNAL_CHECKOUT_ROOT`, `JOURNAL_PROJECT_ROOT`, `JOURNAL_BRANCH`, `JOURNAL_BASE_BRANCH` and `JOURNAL_BASE_COMMIT` in its environment, so it needs no git call to learn where it runs.
 
+The same alias also gets `JOURNAL_ENV`, the name of the environment the agent runs in, and `JOURNAL_SETTINGS`, the path of a JSON file with the plugin's settings for that environment: the environment's own values over the project's, over each setting's default. The settings object of an event's input line holds the same values.
+
 ## The config
 
 A plugin keeps its config in the project and names it in its manifest: `"config": {"file": ".commandments/config.json", "schema": ".commandments/config.schema.json"}`, both relative to the project root. The journal holds the last good copy and a version, the same in every worktree. A hand edit is taken in within seconds; one that breaks the schema keeps the last good copy served and records the plugin's fault. Each change raises the event `plugin.config_changed`, whose row holds `config_version` and `config_pointers`, the JSON pointers that changed. The schema may use `$ref` to `#/$defs`, `type`, `properties`, `required`, `additionalProperties`, `items`, `enum`, `const`, `anyOf`, `minLength`, `minimum`, `pattern`, `propertyNames`, `uniqueItems`, `minProperties` and `maxProperties`, beside `title`, `description`, `$schema` and `default`; any other keyword refuses it.
