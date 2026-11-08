@@ -9,7 +9,7 @@ def test_an_agent_starts_no_fake_agent_in_another_environment_until_a_person_gra
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
     story.expect_refusal(FAKE_START, f"agent {story.agent.id} works only in its own environment", actor=story.agent)
     story.expect_success(f"environment edit 2 --test --test-agent-id {story.agent.id}", "test: True", actor=story.user)
-    story.expect_success(FAKE_START, "role: main", actor=story.agent)
+    story.expect_success(FAKE_START, "role: main", "environment_id: 2", actor=story.agent)
     story.expect_refusal("agent start s-10 claude main --environment elsewhere", "works only in its own environment", actor=story.agent)
 
 

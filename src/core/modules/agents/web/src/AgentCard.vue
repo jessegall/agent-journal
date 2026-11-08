@@ -120,7 +120,7 @@ const retired = computed(() => Boolean(props.row.retired_at) || props.row.state 
     background: var(--text-3);
 }
 .agent-dot[data-state="retired"] { background: transparent; border: 1px solid var(--text-3); }
-.agent-sandbox-off { flex: none; color: var(--paused); font-size: 11.5px; }
+.agent-sandbox-off { flex: none; color: var(--warn); font-size: 11.5px; }
 .agent-work-status { flex: 0 1 auto; overflow: hidden; color: var(--text-3); font-size: 11.5px; text-overflow: ellipsis; white-space: nowrap; }
 .agent-session { flex: none; color: var(--text-3); font-size: 11px; }
 
