@@ -16,7 +16,7 @@ def test_an_agent_starts_no_fake_agent_in_another_environment_until_a_person_gra
 def test_an_agent_cannot_grant_itself_a_test_environment(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success("environment make story-engine /work/story-engine --test", actor=story.user)
-    story.expect_refusal(f"environment edit 2 --test-agent-id {story.agent.id}", f"Let agent {story.agent.id} work in test environment story-engine?",
+    story.expect_refusal(f"environment edit 2 --test-agent-id {story.agent.id} --reason 'a story asks'", f"Let agent {story.agent.id} work in test environment story-engine?",
                          actor=story.agent)
 
 

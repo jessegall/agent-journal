@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cache
 
+from core.base.command.dry_run_reached_effect import DryRunReachedEffect
 from core.base.database.repeated_work import OPEN_REQUEST
 
 DRY_RUN: ContextVar[bool] = ContextVar("dry_run", default=False)
@@ -15,11 +16,6 @@ EFFECT_EVENTS = frozenset({
     "tempfile.mkstemp", "tempfile.mkdtemp", "subprocess.Popen", "os.system", "os.posix_spawn", "os.exec", "os.fork",
     "socket.connect", "socket.sendto", "socket.sendmsg",
 })
-
-
-class DryRunReachedEffect(BaseException):
-    """Stops a dry run at its first effect outside the database, which it must not have: everything before it passed. It is no
-    Exception, so a handler's own error handling lets it through."""
 
 
 def audited(event: str, details: tuple[object, ...]) -> None:

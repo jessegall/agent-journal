@@ -17,4 +17,4 @@ class HelperSkillReads:
         if tool is None or not tool.is_skill_read:
             return RuleAnswer.allowed()
         unlisted = next((folder for folder in (PurePath(path).parent.name for path in tool.files) if self.skills.refuses(hook.agent_id, folder)), None)
-        return RuleAnswer.allowed() if unlisted is None else RuleAnswer.refused(HELPER_SKILL_REFUSAL.nudge(skill=unlisted))
+        return RuleAnswer.allowed() if unlisted is None else RuleAnswer.refused(HELPER_SKILL_REFUSAL.nudge())

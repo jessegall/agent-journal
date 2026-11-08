@@ -420,7 +420,7 @@ def test_an_agent_cannot_resolve_a_copy(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = conflicted_copy(story, server, tokens, "Opal agent resolve")
-    story.expect_refusal(f"library resolve {copy.id} --keep library", "only a person chooses between a copy and its item", actor=story.agent)
+    story.expect_refusal(f"library resolve {copy.id} --keep library --reason 'a story asks'", "only a person chooses between a copy and its item", actor=story.agent)
     story.expect_rows(stored_copy(story, copy).state is CopyState.CONFLICT)
 
 

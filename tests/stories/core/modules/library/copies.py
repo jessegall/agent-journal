@@ -91,7 +91,7 @@ def test_an_agent_cannot_leave_and_a_copy_that_is_not_there_is_refused(new_story
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story,server, tokens.admin, "Slate agent")
-    story.expect_refusal(f"library leave {copy.id}", "an agent cannot stop following for the team", actor=story.agent)
+    story.expect_refusal(f"library leave {copy.id} --reason 'a story asks'", "an agent cannot stop following for the team", actor=story.agent)
     story.expect_refusal("library leave 99", "no library-copy 99", actor=story.user)
     story.expect_rows(copy_of_item(story, copy.item_id) is not None)
 

@@ -47,4 +47,4 @@ def test_a_helper_in_the_main_checkout_is_refused_reading_a_skill_its_profile_do
     listed = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/journal/SKILL.md"], None)
     unlisted = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/{MAIN_ONLY}/SKILL.md"], None)
     story.expect_hook_allowed("s-helper", listed)
-    story.expect_hook_refusal("s-helper", unlisted, f"{MAIN_ONLY} is not one of the skills of your profile")
+    story.expect_hook_refusal("s-helper", unlisted, "that skill is not one of the skills of your profile")

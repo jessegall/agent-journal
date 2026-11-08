@@ -102,7 +102,7 @@ def test_an_agent_cannot_send_an_agent_change(new_story, shared_server):
     copy = made_copy(story, server, tokens.admin, "Pearl agent cannot send")
     edit_body(story, copy, "Edited by an agent.", agent=True)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_refusal(f"library resolve {copy.id} --keep mine", "only a person chooses between a copy and its item", actor=story.agent)
+    story.expect_refusal(f"library resolve {copy.id} --keep mine --reason 'a story asks'", "only a person chooses between a copy and its item", actor=story.agent)
     story.expect_rows(server_body(server, tokens.admin, copy) == "Tag first.")
 
 

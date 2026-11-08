@@ -124,8 +124,8 @@ def test_the_address_guard_cannot_be_skipped_and_no_token_leaves(new_story, shar
     with StubServer(StubAnswer(200, b"{}")) as stub:
         story = new_story(fixture=BuilderWithUser)
         story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
-        story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project", "library.address-by-person", actor=story.agent)
-        story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project {SKIP_ADDRESS_GUARD}", "safety refusal", actor=story.agent)
+        story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project --reason 'a story asks'", "library.address-by-person", actor=story.agent)
+        story.expect_refusal(f"setting set {ADDRESS_SETTING} {stub.address} --project {SKIP_ADDRESS_GUARD} --reason 'a story asks'", "safety refusal", actor=story.agent)
         library_client(story).state()
         story.expect_rows(stub.requests == [])
 
@@ -165,7 +165,7 @@ def test_an_agent_cannot_disconnect(new_story, shared_server):
     server, token = shared_server
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(f"library connect {server.address} --token {token}", actor=story.user)
-    story.expect_refusal("library disconnect --forget", "only a person connects to the shared server or disconnects from it", actor=story.agent)
+    story.expect_refusal("library disconnect --forget --reason 'a story asks'", "only a person connects to the shared server or disconnects from it", actor=story.agent)
     story.expect_rows(library_connection(story) is not None, TOKEN_VARIABLE in story.container.get(SecretValues).values())
 
 
