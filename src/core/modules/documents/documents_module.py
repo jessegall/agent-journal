@@ -47,6 +47,7 @@ from core.modules.documents.commands.edit_text.edit_text_handler import EditText
 from core.modules.documents.commands.keep_revision.keep_revision_handler import KeepRevisionHandler
 from core.modules.documents.commands.keep_revision.keep_revision_subcommand import KeepRevisionSubcommand
 from core.modules.documents.commands.link_list.link_list_subcommand import LinkListSubcommand
+from core.modules.documents.commands.link_receipts.link_receipts_subcommand import LinkReceiptsSubcommand
 from core.modules.documents.commands.make_text.make_text_handler import MakeTextHandler
 from core.modules.documents.commands.record_mentions.record_mentions_handler import RecordMentionsHandler
 from core.modules.documents.commands.report_close.report_close_subcommand import ReportCloseSubcommand
@@ -129,4 +130,4 @@ class DocumentsModule(Module):
     bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader}
     subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, ReadPlanContextSubcommand]
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, LinkReceiptsSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, ReadPlanContextSubcommand]

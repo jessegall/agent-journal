@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-f8c632917358")) { const style = document.createElement("style"); style.id = "window-styles-f8c632917358"; style.textContent = ".failure[data-v-332f7ee1]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.notice[data-v-332f7ee1]{margin:0 0 8px;color:var(--text-2);font-size:12px}.top[data-v-332f7ee1]{display:flex;align-items:baseline;gap:10px}.top .heading[data-v-332f7ee1]{flex:1}.add[data-v-332f7ee1]{display:flex;flex-wrap:wrap;gap:6px}.add input[data-v-332f7ee1]{flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.heading[data-v-332f7ee1]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-332f7ee1]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-332f7ee1]{display:flex;align-items:baseline;gap:10px}.title[data-v-332f7ee1]{flex:1;font-weight:600}.standing[data-v-332f7ee1],.subject[data-v-332f7ee1],.key label[data-v-332f7ee1]{color:var(--text-3);font-size:12px}.key[data-v-332f7ee1]{display:flex;flex-direction:column;gap:4px}.key input[data-v-332f7ee1]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-332f7ee1]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { reactive as N, computed as _, ref as V, watch as F, openBlock as r, createBlock as M, unref as n, withCtx as g, createElementBlock as u, toDisplayString as d, createCommentVNode as m, createElementVNode as s, createTextVNode as S, createVNode as p, withModifiers as j, withDirectives as $, vModelText as w } from "vue";
+if (!document.getElementById("window-styles-74cc4c2fb46d")) { const style = document.createElement("style"); style.id = "window-styles-74cc4c2fb46d"; style.textContent = ".failure[data-v-5c237943]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.notice[data-v-5c237943]{margin:0 0 8px;color:var(--text-2);font-size:12px}.top[data-v-5c237943]{display:flex;align-items:baseline;gap:10px}.top .heading[data-v-5c237943]{flex:1}.add[data-v-5c237943]{display:flex;flex-wrap:wrap;gap:6px}.add input[data-v-5c237943]{flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.heading[data-v-5c237943]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-5c237943]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-5c237943]{display:flex;align-items:baseline;gap:10px}.title[data-v-5c237943]{flex:1;font-weight:600}.standing[data-v-5c237943],.subject[data-v-5c237943],.key label[data-v-5c237943]{color:var(--text-3);font-size:12px}.key[data-v-5c237943]{display:flex;flex-direction:column;gap:4px}.key input[data-v-5c237943]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-5c237943]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { reactive as N, computed as f, ref as V, watch as F, openBlock as r, createBlock as M, unref as n, withCtx as g, createElementBlock as u, toDisplayString as d, createCommentVNode as m, createElementVNode as s, createTextVNode as S, createVNode as p, withModifiers as j, withDirectives as $, vModelText as w } from "vue";
 import { useWindow as P, useListTools as K, WindowRoom as q, TimeAgo as z, Btn as x, ListTools as G, RowList as R, removed as A, added as H } from "@journal/window-kit";
 const J = (k, i) => {
   const l = k.__vccOpts || k;
@@ -25,7 +25,7 @@ const J = (k, i) => {
 }, de = ["onSubmit"], ce = ["for"], re = ["id", "onUpdate:modelValue"], ue = { class: "server" }, me = { class: "head" }, pe = { class: "title" }, ve = ["onClick"], he = { class: "subject" }, ge = {
   __name: "ServerRows",
   setup(k) {
-    const i = P(), l = i.props.installed, c = i.props.suggested, v = K(l.rows, { title: (t) => t.title }), f = N({}), L = _(() => new Set(l.rows.value.map((t) => t.name))), T = _(() => c.rows.value.filter((t) => !L.value.has(t.name))), y = V(""), C = _(() => l.actionFailure.value || c.actionFailure.value), o = N({ name: "", target: "" }), B = _(() => {
+    const i = P(), l = i.props.installed, c = i.props.suggested, v = K(l.rows, { title: (t) => t.title }), _ = N({}), L = f(() => new Set(l.rows.value.map((t) => t.name))), T = f(() => c.rows.value.filter((t) => !L.value.has(t.name))), y = V(""), C = f(() => l.actionFailure.value || c.actionFailure.value), o = N({ name: "", target: "" }), B = f(() => {
       var t;
       return ((t = i.props.check.data.value) == null ? void 0 : t.lines) ?? [];
     }), b = V(null);
@@ -51,9 +51,9 @@ const J = (k, i) => {
       await c.act(["mcp", "install", t.name], A(t.id)), await i.reload("installed");
     }
     async function W(t) {
-      const a = (f[t.name] || "").trim();
+      const a = (_[t.name] || "").trim();
       if (!a) return;
-      (await l.act(["mcp", "key", t.name, a])).ok && (f[t.name] = "");
+      (await l.act(["mcp", "key", t.name, a])).ok && (_[t.name] = "");
     }
     return (t, a) => (r(), M(n(q), null, {
       default: g(() => [
@@ -116,12 +116,12 @@ const J = (k, i) => {
                 }, d(e.key_variable), 9, ce),
                 $(s("input", {
                   id: `key-${e.name}`,
-                  "onUpdate:modelValue": (h) => f[e.name] = h,
+                  "onUpdate:modelValue": (h) => _[e.name] = h,
                   type: "password",
                   autocomplete: "off",
                   placeholder: "Paste the key"
                 }, null, 8, re), [
-                  [w, f[e.name]]
+                  [w, _[e.name]]
                 ]),
                 a[5] || (a[5] = s("button", { type: "submit" }, "Save", -1))
               ], 40, de)) : m("", !0)
@@ -187,7 +187,7 @@ const J = (k, i) => {
       _: 1
     }));
   }
-}, ke = /* @__PURE__ */ J(ge, [["__scopeId", "data-v-332f7ee1"]]);
+}, ke = /* @__PURE__ */ J(ge, [["__scopeId", "data-v-5c237943"]]);
 export {
   ke as default
 };

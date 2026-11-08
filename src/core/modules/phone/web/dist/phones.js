@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-0d8d30318c4c")) { const style = document.createElement("style"); style.id = "window-styles-0d8d30318c4c"; style.textContent = ".phones[data-v-0d6c6d71]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-0d6c6d71]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-0d6c6d71]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-0d6c6d71],.phones-failure[data-v-0d6c6d71]{margin:0;color:var(--text-2)}.phones-abilities[data-v-0d6c6d71]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-0d6c6d71]{flex:1}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-be200a937ca6")) { const style = document.createElement("style"); style.id = "window-styles-be200a937ca6"; style.textContent = ".phones[data-v-d2849f80]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-d2849f80]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-d2849f80]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-d2849f80],.phones-failure[data-v-d2849f80]{margin:0;color:var(--text-2)}.phones-abilities[data-v-d2849f80]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-d2849f80]{flex:1}\n"; document.head.appendChild(style); }
 import { computed as N, openBlock as s, createBlock as T, unref as e, withCtx as c, createElementVNode as o, createElementBlock as l, toDisplayString as a, createCommentVNode as h, createVNode as d, createTextVNode as x, Fragment as C, renderList as A } from "vue";
 import { useWindow as I, useListTools as P, WindowRoom as S, Btn as R, QrCode as V, ListTools as E, RowList as q, removed as F } from "@journal/window-kit";
 const O = (u, _) => {
@@ -83,7 +83,7 @@ const O = (u, _) => {
       _: 1
     }));
   }
-}, X = /* @__PURE__ */ O(H, [["__scopeId", "data-v-0d6c6d71"]]);
+}, X = /* @__PURE__ */ O(H, [["__scopeId", "data-v-d2849f80"]]);
 export {
   X as default
 };
