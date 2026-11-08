@@ -3,6 +3,7 @@ from core.testing.story_fixture import StoryFixture
 import pytest
 
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
 def task_pair(story):
@@ -83,6 +84,19 @@ def test_a_released_task_is_not_given_back_at_once(new_story):
     story.run_listeners()
     expect_started_holder(story, 1, "state: open")
     expect_started_holder(story, 2, "state: started")
+
+
+def test_a_task_delegated_to_a_worker_is_not_started_for_the_main_agent(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    repository_environment(story)
+    story.run('task make "Fix the totals" --environment main --priority high', actor=story.agent)
+    story.run('task make "Write the notes" --environment main --priority low', actor=story.agent)
+    worker = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    story.expect_success('task release 1 --reason "later"', actor=story.agent)
+    story.run_listeners()
+    expect_started_holder(story, 2, f"delegated_to: {worker.id}")
+    expect_started_holder(story, 2, "state: open")
+    expect_started_holder(story, 3, f"holder_id: {story.agent.id}")
 
 
 class PrioritizedTasks(StoryFixture):
