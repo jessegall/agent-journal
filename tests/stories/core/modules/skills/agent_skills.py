@@ -3,10 +3,13 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
+from core.base.database.database import Database
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.base.skill.skill_digest import SkillDigest
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.testing.hook_samples import HookSamples
+from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -93,3 +96,17 @@ def test_each_agent_has_its_own_loaded_rows(skill_files):
 @pytest.fixture
 def skill_files(new_story):
     return started(new_story)
+
+
+def test_a_shell_line_naming_one_skill_in_many_parts_reads_its_row_once(skill_files):
+    story = skill_files
+    due_notes(story)
+    connection = story.container.get(Database).connection
+    statements: list[str] = []
+    connection.set_trace_callback(statements.append)
+    start_process(story, " && ".join(f"grep word{number} {story.home.project_folder / NOTES_FILE}" for number in range(12)), category=CommandCategory.READ)
+    story.run_listeners()
+    connection.set_trace_callback(None)
+    expect_rows_loaded = [statement for statement in statements if statement.startswith("SELECT * FROM agent_skills WHERE session_agent_id") and "journal-notes" in statement]
+    story.expect_rows(len(expect_rows_loaded) == 1, detail="\n".join(expect_rows_loaded))
+    story.expect_success("agent-skill unread " + str(story.agent.id))
