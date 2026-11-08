@@ -1,22 +1,22 @@
 import {afterEach, expect, test} from "vitest";
-import {createApp, h, nextTick} from "vue";
+import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import WorkMode from "../../suites/coding/web/src/WorkMode.vue";
 import {settle as settled} from "./support/windowContext.js";
 import {context as windowContext} from "./support/windowContext.js";
 
 const KEYS = {
-    mode: {line: "suite current main", events: ["setting.*"]},
+    work: {line: "work-settings show", events: ["setting.*"]},
     auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
-    dispatches: {line: "setting show journal.suites.coding.workers.main-dispatches-workers", tab: "settings", events: ["setting.*"]},
-    merger: {line: "setting show journal.suites.coding.workers.merger-on", tab: "settings", events: ["setting.*"]},
-    bars: {line: "usage bars", loading: "requested"},
+    limits: {line: "agent limits", tab: "agents", events: ["agent.*", "setting.*"]},
 };
+const CONTROL_KEYS = ["auto-mode", "main-writes-code", "workers.main-dispatches-workers", "continue-while-delegatable", "workers.merger-on", "main-starts-helpers", "designer-enabled", "workers.main-agent-may-merge"];
+const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true]))};
 
 const mounted = [];
 afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
 
-async function mount({driver = "coding.builder", values = {}, follow = () => {}} = {}) {
+async function mount() {
     const runs = [];
     const opened = [];
     const context = {
@@ -24,16 +24,15 @@ async function mount({driver = "coding.builder", values = {}, follow = () => {}}
         environment: "main",
         read: async (line) => {
             context.reads.push(line);
-            if (line.startsWith("suite current")) return {ok: true, value: {suite: "coding", drivers: `main: ${driver}, worker: coding.worker`}};
-            if (line.startsWith("usage bars")) return {ok: true, value: {task_id: null, helpers: 0}};
-            const key = line.split(" ")[2];
-            return {ok: true, value: {value: values[key] ?? true}};
+            if (line.startsWith("work-settings show")) return {ok: true, value: WORK};
+            if (line.startsWith("agent limits")) return {ok: true, value: {rows: []}};
+            return {ok: true, value: {value: true}};
         },
         run: async (line) => {
             runs.push(line);
             return {ok: true};
         },
-        follow,
+        follow: () => {},
         open: (window) => opened.push(window),
         option: () => ({value: null}),
     };
@@ -46,50 +45,33 @@ async function mount({driver = "coding.builder", values = {}, follow = () => {}}
     return {element, runs, opened, context};
 }
 
-test("the top bar shows the way of working as one menu and a button that opens the Agent settings", async () => {
-    const {element, opened} = await mount({driver: "coding.orchestrator"});
-    expect(element.querySelectorAll(".segmented-option")).toHaveLength(0);
-    element.querySelector("[data-preset-menu]").click();
-    await settled();
-    expect([...element.querySelectorAll("[data-preset]")].map((option) => option.querySelector("b").textContent)).toEqual(["Builder", "Orchestrator"]);
-    element.querySelector("[data-open-agent-settings]").click();
-    expect(opened).toEqual(["coding.agent-settings"]);
-});
-
-test("the settings menu has the merger's switch only while the builder sends workers", async () => {
+test("the top bar keeps only the auto switch and the settings button", async () => {
     const {element} = await mount();
-    element.querySelector("[data-work-settings]").click();
-    await settled();
-    expect(element.querySelector("[data-open-agent-limits]")).toBeNull();
-    expect(element.querySelector("[data-work-menu]").textContent).toContain("Merger takes in workers");
-    element.querySelector("[data-work-menu] .agentset-row input, [data-work-menu] .agentset-row button").click();
-    await settled();
-    expect(element.querySelector("[data-work-menu]").textContent).not.toContain("Merger takes in workers");
+    expect(element.querySelector("[data-auto-toggle]")).not.toBeNull();
+    expect(element.querySelector("[data-open-agent-settings]")).not.toBeNull();
+    expect(element.querySelector("[data-preset-menu]")).toBeNull();
+    expect(element.querySelector("[data-work-settings]")).toBeNull();
+    expect(element.querySelector("[data-merger-toggle]")).toBeNull();
 });
 
-test("opening the menu reads its remaining settings for this environment", async () => {
-    const {element, context} = await mount();
-    expect(context.reads).toEqual(["suite current main", "setting show journal.suites.coding.auto-mode"]);
-    const reads = [];
-    const read = context.read;
-    context.read = async (line) => { reads.push(line); return read(line); };
-    element.querySelector("[data-work-settings]").click();
+test("the settings button opens the agent settings in a modal, where a preset is chosen", async () => {
+    const {element, runs, opened} = await mount();
+    expect(document.querySelector("[data-agent-settings]")).toBeNull();
+    element.querySelector("[data-open-agent-settings]").click();
     await settled();
-    expect(reads).toEqual(["setting show journal.suites.coding.workers.main-dispatches-workers", "setting show journal.suites.coding.workers.merger-on"]);
-    expect(reads.some((line) => line.includes("worker-run-limit"))).toBe(false);
+    expect(opened).toEqual([]);
+    expect(document.querySelector(".dialog [data-agent-settings], [role=dialog] [data-agent-settings]")).not.toBeNull();
+    expect([...document.querySelectorAll("[data-agent-settings] [data-preset]")].map((button) => button.textContent.trim())).toEqual(["Builder", "Orchestrator"]);
+    document.querySelector('[data-agent-settings] [data-preset="builder"]').click();
+    await settled();
+    expect(runs).toEqual(["work-settings preset builder --revision r1"]);
 });
 
-test("a setting event refreshes the mode menu settings", async () => {
-    const values = {"journal.suites.coding.workers.main-dispatches-workers": true};
-    const followed = [];
-    const {element} = await mount({values, follow: (patterns, handler) => followed.push({patterns, handler})});
-    element.querySelector("[data-work-settings]").click();
+test("the modal has the tabs of the agent settings", async () => {
+    const {element} = await mount();
+    element.querySelector("[data-open-agent-settings]").click();
     await settled();
-    values["journal.suites.coding.workers.main-dispatches-workers"] = false;
-    followed.find((one) => one.patterns.includes("setting.*")).handler({event: "setting.update"});
-    await new Promise((resolve) => setTimeout(resolve, 60));
-    await settled();
-    expect(element.querySelector("[data-work-menu] [role=switch]").getAttribute("aria-checked")).toBe("false");
+    expect(document.querySelector("[data-agent-settings]").textContent).toMatch(/Work.*Agents.*Tests.*Advanced/s);
 });
 
 test("the auto switch lives here and sets auto mode", async () => {
@@ -98,27 +80,3 @@ test("the auto switch lives here and sets auto mode", async () => {
     await settled();
     expect(runs).toEqual(["setting set journal.suites.coding.auto-mode false --environment main"]);
 });
-
-test("a switch while the agent works asks first and can be kept", async () => {
-    const {element, runs, context} = await mount({driver: "coding.orchestrator"});
-    const read = context.read;
-    context.read = async (line) => (line.startsWith("usage bars") ? {ok: true, value: {task_id: 12, helpers: 0}} : read(line));
-    element.querySelector("[data-preset-menu]").click();
-    await settled();
-    element.querySelector('[data-preset="builder"]').click();
-    await settled();
-    expect(runs).toEqual([]);
-    expect(element.querySelector("[data-mode-ask]").textContent).toContain("working on task 12");
-    element.querySelector("[data-mode-keep]").click();
-    await settled();
-    expect(element.querySelector("[data-mode-ask]")).toBeNull();
-    expect(runs).toEqual([]);
-    element.querySelector("[data-preset-menu]").click();
-    await settled();
-    element.querySelector('[data-preset="builder"]').click();
-    await settled();
-    element.querySelector("[data-mode-switch]").click();
-    await settled();
-    expect(runs).toEqual(["work-settings preset builder --revision "]);
-});
-
