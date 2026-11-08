@@ -4,6 +4,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 TEST_NAME_SEPARATOR = "::"
+WHOLE_SUITE = "tests"
 TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
 
@@ -14,6 +15,9 @@ class RunSize:
 
     def __init__(self, targets: Iterable[str], limit: int) -> None:
         self.targets, self.limit = tuple(targets), limit
+
+    def is_whole_suite(self) -> bool:
+        return all(target.rstrip("/") == WHOLE_SUITE for target in self.targets)
 
     def workers(self, tests_per_worker: int, most_workers: int) -> int:
         if not self.targets:
