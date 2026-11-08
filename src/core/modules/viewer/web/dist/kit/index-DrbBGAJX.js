@@ -8466,9 +8466,9 @@ const Rw = (e, t, n) => (t == null ? void 0 : t.draws_head) && (n == null ? void
               }, null, 8, ["name"]),
               m("span", Bw, [
                 m("span", {
-                  class: "dock-title",
+                  class: Y(["dock-title", { strip: e.collapsed }]),
                   title: S.value
-                }, y(S.value), 9, Lw)
+                }, y(S.value), 11, Lw)
               ])
             ], 64)),
             m("span", {
@@ -8604,7 +8604,7 @@ const Rw = (e, t, n) => (t == null ? void 0 : t.draws_head) && (n == null ? void
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, el = /* @__PURE__ */ z(Fw, [["__scopeId", "data-v-dadb9f55"]]), Ww = ["title", "aria-label"], Hw = { class: "run-chip-in" }, zw = {
+}, el = /* @__PURE__ */ z(Fw, [["__scopeId", "data-v-03eeaf95"]]), Ww = ["title", "aria-label"], Hw = { class: "run-chip-in" }, zw = {
   key: 0,
   class: "run-chip-ring"
 }, Uw = { class: "run-chip-name" }, Vw = { class: "run-chip-bar" }, Gw = {
@@ -13629,7 +13629,7 @@ function DM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const PM = tu(() => import("./VoiceFigure-CKVCmhVu.js").then((e) => e.V)), jM = "1.2.0", FM = "3.5";
+const PM = tu(() => import("./VoiceFigure-zWPIZsHf.js").then((e) => e.V)), jM = "1.2.0", FM = "3.5";
 export {
   Af as $,
   Oe as A,
