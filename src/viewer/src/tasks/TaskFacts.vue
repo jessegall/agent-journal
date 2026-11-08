@@ -2,13 +2,12 @@
 import InfoTip from "../kit/InfoTip.vue";
 import Segmented from "../kit/Segmented.vue";
 import {peekRef} from "../route.js";
+import {SCORE_MEANINGS} from "../domain/taskComplexity.js";
 import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
 
 // where a task sits: its plan and phase, the agent it is queued for or held by, and its priority
 const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
 const COMPLEXITIES = [1, 2, 3, 4, 5].map((score) => ({key: String(score), label: String(score)}));
-// what each score means, in the words the journal-tasks skill gives agents
-const SCORE_MEANINGS = ["a line or two, nothing to decide", "one file, the way is clear", "a few files in one module", "several modules, or a choice to make", "core paths, migrations, concurrency, or a design"];
 defineProps({task: {type: Object, required: true}, place: {type: Object, default: null}, refusal: {type: String, default: ""}});
 const emit = defineEmits(["priority", "complexity"]);
 const HELD_STATES = new Set(["started", "testing", "blocked"]);

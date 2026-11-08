@@ -15,7 +15,7 @@ test("cards show their tags and complexity", async () => {
     const window = taskWindowContext({"task board": BOARD, "task tags": page([{word: "linux", count: 2}])});
     const element = await mounted(TaskGroups, window);
     expect([...element.querySelectorAll("[data-task-tag]")].map((tag) => tag.textContent)).toEqual(["networking", "linux"]);
-    expect(element.querySelector("[data-task-complexity]").textContent).toBe("Complexity 3");
+    expect(element.querySelector("[data-task-complexity] [role='tooltip'] b").textContent).toBe("Complexity 3 of 5");
 });
 
 test("a tag filter reaches the server and stays on later pages", async () => {

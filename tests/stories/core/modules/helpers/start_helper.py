@@ -248,3 +248,15 @@ def test_a_profile_that_uses_its_program_if_possible_keeps_it_when_it_can_start(
     save_profile(story, "--program-if-possible")
     helper_id, _ = started(story, f'{START} --name "Marie"')
     story.expect_success(f"agent show {helper_id}", "program: claude")
+
+
+def test_a_profile_that_says_nothing_falls_back_to_another_program(new_story, monkeypatch):
+    story = new_story(fixture=LauncherRuns)
+    save_profile(story, "--codex-model gpt-6.1-sol")
+    refuse_claude(monkeypatch)
+    launcher = fake_launcher(story)
+    answer = json.loads(story.run(f"{PLAIN_START} --json", actor=story.agent).output_text.splitlines()[0])
+    story.run_listeners()
+    launcher.wait_for_requests()
+    launcher.server.close()
+    story.expect_rows(answer["program"] == "codex")

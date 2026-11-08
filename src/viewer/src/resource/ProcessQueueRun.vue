@@ -11,7 +11,7 @@ const output = ref();
 const pages = useOutputPages((words) => props.read([...words, "--limit", "50"]), () => props.run.id);
 const lines = pages.lines;
 const now = useSharedNow();
-const type = computed(() => ({test: "Test run", build: "Build", check: "Check", install: "Install"})[props.run.category] || props.run.category.charAt(0).toUpperCase() + props.run.category.slice(1));
+const type = computed(() => props.run.plugin ? `Plugin ${props.run.plugin}` : ({test: "Test run", build: "Build", check: "Check", install: "Install"})[props.run.category] || props.run.category.charAt(0).toUpperCase() + props.run.category.slice(1));
 const duration = computed(() => {
     const start = props.run.section === "waiting" ? props.run.created_at : props.run.started_at;
     if (!start) return "";

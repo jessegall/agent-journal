@@ -3473,6 +3473,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3507,6 +3508,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3541,6 +3543,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3575,6 +3578,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3609,6 +3613,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3643,6 +3648,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3677,6 +3683,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3711,6 +3718,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3943,11 +3951,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.processes.watch.deleted": {
@@ -3957,11 +3968,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.processes.watch.end": {
@@ -3971,11 +3985,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.processes.watch.updated": {
@@ -3985,11 +4002,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.project-rules.rule.approve": {

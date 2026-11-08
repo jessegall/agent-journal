@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, toRef} from "vue";
 import AgentSkillsMenu from "./AgentSkillsMenu.vue";
+import AllowanceBar from "./AllowanceBar.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
@@ -8,8 +9,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import {useAgentControls} from "../composables/agentControls.js";
 import {compactionLine} from "../domain/compaction.js";
 
-// the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, how
-// long it has run, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
+// the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
 const props = defineProps({
     agent: {type: Object, default: null},
     card: Boolean,
@@ -20,7 +20,6 @@ const props = defineProps({
     jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     branch: {type: String, default: ""},
-    now: {type: Number, default: () => Date.now()},
     fitness: {type: Object, default: null},
     run: {type: Function, default: null},
 });
@@ -53,27 +52,15 @@ const effort = computed(() => controls.chosen.value.effort ?? status.value?.effo
 const LOW_FITNESS = 75;
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
-const allowance = computed(() => props.usage.windows?.[0] ?? null);
-const used = computed(() => (allowance.value ? Math.max(0, Math.min(100, Math.round(allowance.value.used_percent))) : null));
 const context = computed(() => (status.value?.context_percent == null ? null : Math.round(status.value.context_percent)));
 const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_dollars.toFixed(2)}` : ""));
-const uptime = computed(() => {
-    const started = props.agent?.process_started_at ? new Date(props.agent.process_started_at).getTime() : 0;
-    if (!started) return "";
-    const minutes = Math.max(0, Math.floor((props.now - started) / 60000));
-    return minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`;
-});
 </script>
 
 <template>
     <div :class="['information', {card}]" data-information-bar>
         <template v-if="agent">
             <button type="button" class="fact lead" :disabled="card" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ agentPrograms.find((program) => program.name === agent.program)?.title || agent.program }}</button>
-            <template v-if="used !== null">
-                <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
-                    <Icon name="allowance" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
-                </button>
-            </template>
+            <AllowanceBar :windows="usage.windows" @open="(anchor) => emit('open', 'usage', anchor)" />
             <template v-if="context !== null">
                 <button type="button" class="fact" :disabled="card" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context', $event.currentTarget)">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
@@ -87,9 +74,6 @@ const uptime = computed(() => {
             </template>
             <template v-if="cost">
                 <button type="button" class="fact" :disabled="card" data-fact="cost" title="The predicted API price of this session: open its breakdown" @click="emit('open', 'cost', $event.currentTarget)">{{ cost }}</button>
-            </template>
-            <template v-if="uptime">
-                <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>
             </template>
             <template v-if="branch">
                 <span class="fact" data-fact="branch" title="Current branch"><Icon name="branch" :size="12" /> {{ branch }}</span>
@@ -263,10 +247,6 @@ button.fact:not(:disabled):hover {
     height: 100%;
     border-radius: inherit;
     background: var(--text-3);
-}
-
-.gauge.usage > span {
-    background: var(--accent-text);
 }
 
 .space {

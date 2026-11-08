@@ -3,7 +3,7 @@ PROCESS_ROWS_SELECT = "SELECT id, environment_id, session_agent_id, line, state 
 PROCESS_QUEUE_ROWS_SELECT = """
 SELECT processes.id, processes.environment_id, processes.session_agent_id, processes.line, processes.category,
        processes.state, processes.exit_code, processes.created_at, processes.started_at, processes.ended_at,
-       processes.queued_at, processes.is_queue_run, processes.slot_assigned,
+       processes.queued_at, processes.is_queue_run, processes.slot_assigned, processes.plugin,
        agents.role = 'main' AS is_main,
        coalesce(processes.owner_agent_id, CASE WHEN agents.role != 'main' THEN agents.id END) AS owner_agent_id,
        coalesce(processes.task_id, (SELECT tasks.id FROM tasks WHERE (tasks.holder_id = processes.session_agent_id
