@@ -84,6 +84,7 @@ try {
     await page.emulateMedia({reducedMotion: "no-preference"});
     await page.setViewportSize({width: 1000, height: 550});
     await page.locator(".agents-view").evaluate((element) => { element.scrollTop = 200; });
+    await page.locator(`[data-agent-open="${agent}"]`).focus();
     const scrolled = await page.locator(`[data-agent-open="${agent}"] [data-agent-title]`).boundingBox();
     await page.locator(`[data-agent-open="${agent}"]`).press("Enter");
     await page.locator(`[data-agent-open="${agent}"][aria-expanded="true"]`).waitFor();
