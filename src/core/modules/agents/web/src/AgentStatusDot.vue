@@ -1,19 +1,20 @@
 <script setup>
 import {computed} from "vue";
+import AgentTip from "./AgentTip.vue";
 
 // the dot in the top-right corner of an agent's header and of each list row: it pulses while the agent works or thinks, stays still
 // when it waits, is blocked or idle, and is a ring once retired; on hover or focus it says what the agent does and since when
 const PULSING = new Set(["running", "working", "thinking"]);
-const props = defineProps({state: {type: String, required: true}, doing: {type: String, required: true}, since: {type: String, default: ""}});
+const props = defineProps({state: {type: String, default: ""}, doing: {type: String, required: true}, since: {type: String, default: ""}});
 const pulses = computed(() => PULSING.has(props.state));
 const label = computed(() => (props.since ? `${props.doing}. ${props.since}` : props.doing));
 </script>
 
 <template>
-    <button type="button" :class="['agent-dot', {pulse: pulses}]" :data-state="state" :aria-label="label" data-agent-status @click.stop>
+    <AgentTip as="button" place="corner" :class="['agent-dot', {pulse: pulses}]" :data-state="state" :aria-label="label" data-agent-status @click.stop>
         <i />
-        <span class="tip" role="tooltip" data-agent-status-tip><b>{{ doing }}</b><span v-if="since">{{ since }}</span></span>
-    </button>
+        <template #tip><b>{{ doing }}</b><span v-if="since">{{ since }}</span></template>
+    </AgentTip>
 </template>
 
 <style scoped>
@@ -65,28 +66,4 @@ const label = computed(() => (props.since ? `${props.doing}. ${props.since}` : p
 @media (pointer: coarse) {
     .agent-dot { top: 4px; right: 4px; width: 40px; height: 40px; }
 }
-
-.tip {
-    position: absolute;
-    top: 26px;
-    right: -2px;
-    display: none;
-    width: max-content;
-    max-width: 260px;
-    padding: 7px 10px;
-    border: 1px solid var(--border-3);
-    border-radius: 8px;
-    background: var(--raised);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, .35);
-    color: var(--text);
-    font-size: 12px;
-    line-height: 1.45;
-    text-align: left;
-    white-space: normal;
-    pointer-events: none;
-}
-
-.tip b { display: block; font-weight: 500; }
-.tip span { display: block; color: var(--text-3); }
-.agent-dot:hover .tip, .agent-dot:focus-visible .tip { display: block; }
 </style>

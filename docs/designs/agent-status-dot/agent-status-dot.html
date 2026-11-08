@@ -24,7 +24,7 @@ a{color:#4a50b5}a:hover{color:#1a1b1f}
 .opt-label{font-size:12.5px;color:#474a52}
 .pane{position:relative;display:flex;flex-direction:column;width:640px;overflow:visible;border:1px solid rgba(0,0,0,.2);border-radius:10px;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-ligatures:none}
 .pane.phone{width:390px}
-:where(.pane) button{font:inherit;color:inherit;cursor:pointer}
+:where(.pane,.legend) button{font:inherit;color:inherit;cursor:pointer}
 .ico{flex:none;width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
 .tabs{display:flex;gap:16px;align-items:center;height:34px;padding:0 14px;border-bottom:1px solid var(--border);color:var(--text-3);font-size:12.5px;white-space:nowrap;overflow:hidden;border-radius:10px 10px 0 0}
 .tabs .on{align-self:stretch;display:flex;align-items:center;border-bottom:1px solid var(--accent);color:var(--text)}
@@ -37,7 +37,6 @@ a{color:#4a50b5}a:hover{color:#1a1b1f}
 .phone .search{flex:1 1 100%;height:40px;line-height:38px}
 /* the status dot: in the top-right corner, pulsing while the agent works, still otherwise, its tooltip on hover or focus */
 .status{position:absolute;top:6px;right:6px;z-index:2;display:grid;place-items:center;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:none;--c:var(--text-3)}
-.status:focus-visible{outline:2px solid var(--accent);outline-offset:0}
 .status i{position:relative;z-index:1;width:8px;height:8px;border-radius:50%;background:var(--c)}
 .status[data-state="working"],.status[data-state="thinking"]{--c:var(--accent)}
 .status[data-state="waiting"]{--c:var(--paused)}
@@ -48,28 +47,42 @@ a{color:#4a50b5}a:hover{color:#1a1b1f}
 @keyframes ping{0%{transform:scale(1);opacity:.55}75%,100%{transform:scale(2.7);opacity:0}}
 @media (prefers-reduced-motion:reduce){.status.pulse::before{animation:none;opacity:.25;transform:scale(1.9)}}
 .phone .status{top:4px;right:4px;width:40px;height:40px}
-.tip{position:absolute;top:26px;right:-2px;display:none;width:max-content;max-width:260px;padding:7px 10px;border:1px solid var(--tip-edge);border-radius:8px;background:var(--tip-bg);box-shadow:var(--tip-shadow);color:var(--text);font-size:12px;line-height:1.45;text-align:left;white-space:normal;pointer-events:none}
+/* one tooltip look, for the dot, the task and the count */
+.tipped{position:relative}
+.status.tipped{position:absolute}
+.tip{position:absolute;z-index:5;display:none;width:max-content;max-width:280px;padding:7px 10px;border:1px solid var(--tip-edge);border-radius:8px;background:var(--tip-bg);box-shadow:var(--tip-shadow);color:var(--text);font-size:12px;font-weight:400;line-height:1.45;text-align:left;white-space:normal;pointer-events:none}
 .tip b{display:block;font-weight:500}
 .tip span{display:block;color:var(--text-3)}
-.status:hover .tip,.status:focus-visible .tip,.status.show .tip{display:block}
+.status .tip{top:26px;right:-2px}
 .phone .status .tip{top:38px}
-/* a row of the agents and helpers lists */
-.row{position:relative;display:flex;flex-direction:column;gap:2px;padding:9px 36px 9px 14px;border-bottom:1px solid var(--border-inner);cursor:pointer}
+.task .tip{top:22px;left:0}
+.count .tip{top:22px;right:0}
+.tipped:hover .tip,.tipped:focus-visible .tip,.tipped.show .tip{display:block}
+.tipped:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:4px}
+/* a row of the agents and helpers lists: title, subtitle, and the task line with its bar */
+.row{position:relative;display:flex;flex-direction:column;gap:2px;padding:9px 36px 10px 14px;border-bottom:1px solid var(--border-inner);cursor:pointer}
 .row:hover{background:var(--hover)}
 .line{display:flex;gap:8px;align-items:baseline;min-width:0}
 .type{flex:none;font-weight:500}
 .name{min-width:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
 .ident{flex:1;min-width:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
 .sandbox{flex:none;color:var(--paused);font-size:12px}
-.pace{flex:none;color:var(--text-4);font-size:11.5px}
-.job{flex:1;min-width:0;overflow:hidden;color:var(--text-2);font-size:12.5px;text-overflow:ellipsis;white-space:nowrap}
-.plan{flex:none;color:var(--accent-text);font-size:11.5px}
-.words{flex:none;color:var(--text);font-size:12px}
+.task-line{display:flex;gap:12px;align-items:baseline;margin-top:3px}
+.task{flex:none;padding:0;border:0;background:none;color:var(--text-2);font-size:12.5px;text-decoration:underline dotted var(--text-4);text-underline-offset:3px}
+.task:hover{color:var(--text)}
+.count{flex:none;margin-left:auto;color:var(--text-3);font-size:12px;font-variant-numeric:tabular-nums;cursor:default}
+/* the task bar: one segment per task, filled for each one done, the one in hand filled as far as it has come */
+.bar{display:flex;gap:2px;height:3px;margin-top:5px}
+.bar i{flex:1;border-radius:2px;background:var(--border-2);overflow:hidden}
+.bar i.done{background:var(--text-3)}
+.bar i.now{background:linear-gradient(90deg,var(--c) var(--fill),var(--border-2) var(--fill))}
+.bar[data-state="working"],.bar[data-state="thinking"]{--c:var(--accent)}
+.bar[data-state="waiting"]{--c:var(--paused)}
+.bar[data-state="blocked"]{--c:var(--blocking)}
 .row.retired .type{color:var(--text-2);font-weight:400}
-.row.retired .job{color:var(--text-3)}
-.phone .row{padding:11px 44px 11px 14px}
-.phone .line.third{flex-wrap:wrap}
-.phone .job{flex:1 1 100%}
+.row.retired .task{color:var(--text-3)}
+.phone .row{padding:11px 44px 12px 14px}
+.phone .task{min-height:32px}
 /* the agent's header and its information bar */
 .header{position:relative;padding:8px 36px 8px 8px;background:var(--side);border-bottom:1px solid var(--border-inner)}
 .h-top{display:flex;gap:9px;align-items:center}
@@ -100,26 +113,25 @@ a{color:#4a50b5}a:hover{color:#1a1b1f}
 
 <div class="doc">
   <h1>The agent status dot</h1>
-  <p>Three changes to the agent's header, its information bar and the rows of the agents and helpers lists. The bar under an agent's header is the <b>information bar</b>: that is its name in the code (<code>src/viewer/src/shell/InformationBar.vue</code>, marked <code>data-information-bar</code>).</p>
-  <p>1. The information bar no longer shows the run time or its clock icon. 2. The header says "Started 6 hours ago" and "Last heard just now" as plain text, with no clock icon. 3. The status dot leaves the left of the row and sits in its top-right corner: it pulses while the agent works, stays still otherwise, and on hover or focus says what the agent is doing and since when. A row no longer shows its age.</p>
-  <p>Hover a dot in any frame to see its tooltip. All data is invented.</p>
+  <p>The agent's header, its information bar and the rows of the agents and helpers lists. The bar under an agent's header is the <b>information bar</b>: that is its name in the code (<code>src/viewer/src/shell/InformationBar.vue</code>, marked <code>data-information-bar</code>).</p>
+  <p>A row has three lines and nothing more: the title, the subtitle with program, model, effort and role, and the task line. The task line says only "Task" and its number, with how many of its tasks the agent has done at the far right, and a thin bar under it. The rest is in tooltips: the dot says what the agent is doing and since when, the task says its title, and the count says what is left. Hover the dot, the task or the count in any frame. All data is invented.</p>
 </div>
-
-<section class="turn" data-screen-label="Header">
-  <h2>The agent's header and the information bar</h2>
-  <p>The header keeps the session's run time, 7m, beside the dot. The line under it says when the agent was first started and when it was last heard from, in words. The information bar keeps the program, context, model, effort, cost and branch, without the run time.</p>
-  <div class="opts">
-    <div class="opt"><div class="opt-label">Dark, the dot's tooltip shown</div><div data-frame='{"theme":"t-dark","view":"header","show":0}'></div></div>
-    <div class="opt"><div class="opt-label">Light</div><div data-frame='{"theme":"t-light","view":"header"}'></div></div>
-  </div>
-</section>
 
 <section class="turn" data-screen-label="List rows">
   <h2>The rows of the agents and helpers lists</h2>
-  <p>The left edge is free, so the type and name line up with the job. The corner holds the dot and nothing else: no dispatch time, no age. The words that matter for a stuck agent, such as "Waiting: tests" and "Blocked", stay on the row.</p>
+  <p>The bar has one short segment per task. A done task is filled, a task still to come is empty, and the task in hand fills as it comes along: a third when it starts, two thirds when it is being tested. It takes the colour of the dot, so a blocked task shows in amber and one waiting for its tests in teal. A helper has a job, not tasks, so its line says "Job" and its tooltip holds the question, with no count and no bar.</p>
   <div class="opts">
-    <div class="opt"><div class="opt-label">Dark, the tooltip of a working worker</div><div data-frame='{"theme":"t-dark","view":"list","show":0}'></div></div>
-    <div class="opt"><div class="opt-label">Light, the tooltip of a worker waiting for its tests</div><div data-frame='{"theme":"t-light","view":"list","show":2}'></div></div>
+    <div class="opt"><div class="opt-label">Dark, the task's tooltip</div><div data-frame='{"theme":"t-dark","view":"list","show":"task:0"}'></div></div>
+    <div class="opt"><div class="opt-label">Light, the count's tooltip</div><div data-frame='{"theme":"t-light","view":"list","show":"count:2"}'></div></div>
+  </div>
+</section>
+
+<section class="turn" data-screen-label="Header">
+  <h2>The agent's header and the information bar</h2>
+  <p>As before. The header keeps the session's run time beside the dot, and says "Started 6 hours ago" and "Last heard just now" in words. The information bar has no run time.</p>
+  <div class="opts">
+    <div class="opt"><div class="opt-label">Dark, the dot's tooltip</div><div data-frame='{"theme":"t-dark","view":"header","show":"dot:0"}'></div></div>
+    <div class="opt"><div class="opt-label">Light</div><div data-frame='{"theme":"t-light","view":"header"}'></div></div>
   </div>
 </section>
 
@@ -134,9 +146,9 @@ a{color:#4a50b5}a:hover{color:#1a1b1f}
 
 <section class="turn" data-screen-label="Phone">
   <h2>Phone width</h2>
-  <p>The dot's touch area grows to 40 points, and a tap opens its tooltip.</p>
+  <p>The dot's touch area grows to 40 points, and a tap opens any tooltip.</p>
   <div class="opts">
-    <div class="opt"><div class="opt-label">The list, dark</div><div data-frame='{"theme":"t-dark","view":"list","phone":true,"show":1}'></div></div>
+    <div class="opt"><div class="opt-label">The list, dark</div><div data-frame='{"theme":"t-dark","view":"list","phone":true,"show":"dot:1"}'></div></div>
     <div class="opt"><div class="opt-label">The header, light</div><div data-frame='{"theme":"t-light","view":"header","phone":true}'></div></div>
   </div>
 </section>
@@ -155,30 +167,46 @@ const ICON = {
 const icon = (name) => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICON[name]}</svg>`;
 const esc = (text) => String(text).replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const PULSING = ["working", "thinking"];
+/* how far the task in hand has come, by its state */
+const STAGE = {started: ["33%", "started"], testing: ["66%", "being tested"], blocked: ["33%", "blocked"]};
 
 const ROWS = [
-  {state: "working", type: "Worker", name: "Lillian Gilbreth", ident: "claude · sonnet · high · worker 699", sandbox: true, pace: "7 per hour", job: "A blocked task shows what waits on what", plan: "plan 1098", doing: "Running a command: npm test", since: "Since 13:42, 2 minutes ago"},
+  {state: "working", type: "Worker", name: "Lillian Gilbreth", ident: "claude · sonnet · high · worker 699", sandbox: true, task: 7347, title: "A blocked task shows what waits on what", done: 10, total: 20, stage: "started", pace: "About 7 an hour.", doing: "Running a command: npm test", since: "Since 13:42, 2 minutes ago"},
   {state: "thinking", type: "Researcher", name: "Rosalind Franklin", ident: "claude · haiku · helper 702", job: "How does the phone app read the chat when it was away?", doing: "Thinking", since: "Since 13:44, just now"},
-  {state: "waiting", type: "Worker", name: "Isambard Brunel", ident: "claude · sonnet · high · worker 696", job: "Move the sidebar's page list into one component", words: "Waiting: tests", doing: "Waiting for its tests, 2 runs ahead in the queue", since: "Since 13:31, 13 minutes ago"},
-  {state: "blocked", type: "Worker", name: "Thomas Bewick", ident: "codex · gpt-5 · high · worker 694", job: "The trigger form names the skill it makes the agent read", plan: "plan 1101", words: "Blocked", doing: "Blocked: it waits on task 7340", since: "Since 12:50, 54 minutes ago"},
+  {state: "waiting", type: "Worker", name: "Isambard Brunel", ident: "codex · gpt-5 · high · worker 696", task: 7351, title: "Move the sidebar's page list into one component", done: 4, total: 6, stage: "testing", pace: "About 3 an hour.", doing: "Waiting for its tests, 2 runs ahead in the queue", since: "Since 13:31, 13 minutes ago"},
+  {state: "blocked", type: "Worker", name: "Thomas Bewick", ident: "codex · gpt-5 · high · worker 694", task: 7360, title: "The trigger form names the skill it makes the agent read", done: 0, total: 3, stage: "blocked", pace: "", doing: "Blocked: it waits on task 7340", since: "Since 12:50, 54 minutes ago"},
   {state: "idle", type: "Planner", name: "Gerardus Mercator", ident: "claude · opus · helper 690", job: "Plan the Memories page", doing: "Idle: its job is done", since: "Since 12:04, 1 hour ago"},
-  {state: "retired", type: "Worker", name: "Ibn al-Haytham", ident: "claude · sonnet · worker 641", job: "The search window remembers its last words", doing: "Retired: its work is merged", since: "Since Nov 6, 2 days ago"}
+  {state: "retired", type: "Worker", name: "Ibn al-Haytham", ident: "claude · sonnet · worker 641", task: 7210, title: "The search window remembers its last words", done: 2, total: 2, stage: "", pace: "", doing: "Retired: its work is merged", since: "Since Nov 6, 2 days ago"}
 ];
 
-const dot = (row, shown) => `<button type="button" class="status ${PULSING.includes(row.state) ? "pulse" : ""} ${shown ? "show" : ""}" data-state="${row.state}" aria-label="${esc(`${row.doing}. ${row.since}`)}"><i></i><span class="tip" role="tooltip"><b>${esc(row.doing)}</b><span>${esc(row.since)}</span></span></button>`;
+const shownAt = (show, kind, place) => show === `${kind}:${place}`;
+const dot = (row, shown) => `<button type="button" class="status tipped ${PULSING.includes(row.state) ? "pulse" : ""} ${shown ? "show" : ""}" data-state="${row.state}" aria-label="${esc(`${row.doing}. ${row.since}`)}"><i></i><span class="tip" role="tooltip"><b>${esc(row.doing)}</b><span>${esc(row.since)}</span></span></button>`;
 
-function rowHtml(row, shown) {
-  const third = row.job || row.words ? `<span class="line third"><span class="job">${esc(row.job)}</span>${row.plan ? `<span class="plan">${row.plan}</span>` : ""}${row.words ? `<span class="words">${esc(row.words)}</span>` : ""}</span>` : "";
-  return `<div class="row ${row.state === "retired" ? "retired" : ""}" role="button" tabindex="0"><span class="line"><span class="type">${esc(row.type)}</span><span class="name">${esc(row.name)}</span></span><span class="line"><span class="ident">${esc(row.ident)}</span>${row.sandbox ? '<span class="sandbox">sandbox off</span>' : ""}${row.pace ? `<span class="pace">${row.pace}</span>` : ""}</span>${third}${dot(row, shown)}</div>`;
+function taskLine(row, show, place) {
+  if (row.job) return `<span class="task-line"><button type="button" class="task tipped ${shownAt(show, "task", place) ? "show" : ""}">Job<span class="tip" role="tooltip"><b>${esc(row.job)}</b></span></button></span>`;
+  const inHand = row.done < row.total;
+  const left = row.total - row.done - (inHand ? 1 : 0);
+  const taskTip = `<b>${esc(row.title)}</b><span>${row.done} of its ${row.total} tasks done${inHand && STAGE[row.stage] ? `. This one is ${STAGE[row.stage][1]}.` : "."}</span>`;
+  const countTip = inHand ? `<b>${row.done} done, 1 in hand, ${left} to go</b>${row.pace ? `<span>${row.pace}</span>` : ""}` : `<b>All ${row.total} tasks done</b>`;
+  const segments = Array.from({length: row.total}, (unused, index) => {
+    if (index < row.done) return '<i class="done"></i>';
+    if (index === row.done && STAGE[row.stage]) return `<i class="now" style="--fill:${STAGE[row.stage][0]}"></i>`;
+    return "<i></i>";
+  }).join("");
+  return `<span class="task-line"><button type="button" class="task tipped ${shownAt(show, "task", place) ? "show" : ""}" aria-label="${esc(`Task ${row.task}: ${row.title}`)}">Task ${row.task}<span class="tip" role="tooltip">${taskTip}</span></button><span class="count tipped ${shownAt(show, "count", place) ? "show" : ""}" tabindex="0">${row.done} of ${row.total}<span class="tip" role="tooltip">${countTip}</span></span></span><span class="bar" data-state="${row.state}" aria-hidden="true">${segments}</span>`;
+}
+
+function rowHtml(row, show, place) {
+  return `<div class="row ${row.state === "retired" ? "retired" : ""}" role="button" tabindex="0"><span class="line"><span class="type">${esc(row.type)}</span><span class="name">${esc(row.name)}</span></span><span class="line"><span class="ident">${esc(row.ident)}</span>${row.sandbox ? '<span class="sandbox">sandbox off</span>' : ""}</span>${taskLine(row, show, place)}${dot(row, shownAt(show, "dot", place))}</div>`;
 }
 
 function listHtml(c) {
-  return `<div class="tabs"><span>Tasks</span><span>Plans</span>${c.phone ? "" : "<span>Questions</span>"}<span class="on">Agents</span></div><div class="toolbar"><span class="search">Search agents</span><span class="seg"><span class="on">All</span><span>Working</span><span>Idle</span><span>Retired</span></span></div>${ROWS.map((row, place) => rowHtml(row, c.show === place)).join("")}`;
+  return `<div class="tabs"><span>Tasks</span><span>Plans</span>${c.phone ? "" : "<span>Questions</span>"}<span class="on">Agents</span></div><div class="toolbar"><span class="search">Search agents</span><span class="seg"><span class="on">All</span><span>Working</span><span>Idle</span><span>Retired</span></span></div>${ROWS.map((row, place) => rowHtml(row, c.show || "", place)).join("")}`;
 }
 
 function headerHtml(c) {
   const row = ROWS[0];
-  const header = `<div class="header"><div class="h-top"><button type="button" class="back" aria-label="Back to the list" title="Back to the list">${icon("left")}</button><span class="h-title">Worker</span><span class="name">Lillian Gilbreth</span><span class="h-run" title="How long this session has run">7m</span></div><div class="h-line"><span class="ident">${esc(row.ident)}</span><span class="sandbox">sandbox off</span><span class="h-times"><span>Started 6 hours ago</span><span>Last heard just now</span></span></div>${dot(row, c.show === 0)}</div>`;
+  const header = `<div class="header"><div class="h-top"><button type="button" class="back" aria-label="Back to the list" title="Back to the list">${icon("left")}</button><span class="h-title">Worker</span><span class="name">Lillian Gilbreth</span><span class="h-run" title="How long this session has run">7m</span></div><div class="h-line"><span class="ident">${esc(row.ident)}</span><span class="sandbox">sandbox off</span><span class="h-times"><span>Started 6 hours ago</span><span>Last heard just now</span></span></div>${dot(row, c.show === "dot:0")}</div>`;
   const info = `<div class="info" data-information-bar><span class="fact lead">${icon("agents")}Claude Code</span><span class="fact">${icon("gauge")}<span class="gauge"><i style="width:37%"></i></span>37%</span><span class="fact">${icon("model")}sonnet</span><span class="fact">${icon("bolt")}high</span><span class="fact">$61.46</span><span class="fact">${icon("branch")}journal/development/worker-699-cut-292</span></div>`;
   return `<div class="tabs"><span>Tasks</span><span>Plans</span>${c.phone ? "" : "<span>Questions</span>"}<span class="on">Agents</span></div>${header}${info}<div class="under"><b>Doing now</b><i style="width:62%"></i><i style="width:40%"></i><b>Tasks</b><i style="width:75%"></i><i style="width:55%"></i></div>`;
 }

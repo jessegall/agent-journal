@@ -17,7 +17,10 @@ test("an older idle agent keeps the details returned on its page", async () => {
     const card = cardOf(element, helper.id);
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Lady Lovelace");
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
-    expect(card.querySelector("[data-agent-job]").textContent).toBe("Read the cart");
+    expect([...card.querySelector("[data-agent-job]").childNodes].filter((node) => node.nodeType === 3).map((node) => node.textContent).join("").trim()).toBe("Job");
+    expect(card.querySelector("[data-agent-job] [role='tooltip']").textContent).toBe("Read the cart");
+    expect(card.querySelector("[data-agent-count]")).toBeNull();
+    expect(card.querySelector("[data-agent-bar]")).toBeNull();
     expect(card.querySelector("[data-agent-report]")).toBeNull();
     card.click();
     await settle();
@@ -30,7 +33,7 @@ test("retired agents show their reason and the upgrade count", async () => {
     const retired = {...AGENTS[2], retirement_reason: "Its question is answered"};
     const element = await mounted(Agents, context({"agent cards --options": {ok: true, value: {...agentFilterOptions.value, upgrade_retired: 12}}, "agent cards": page([retired]), "usage agents --closed": page([])}));
     await pickButton(element, "Retired");
-    expect(cardOf(element, retired.id).querySelector(".agent-time").textContent).toContain("Retired,");
+    expect(cardOf(element, retired.id).querySelector(".agent-dot [role='tooltip'] b").textContent).toBe("Retired");
     cardOf(element, retired.id).click();
     await settle();
     expect(element.querySelector("[data-agent-retirement-reason]").textContent).toContain("Its question is answered");

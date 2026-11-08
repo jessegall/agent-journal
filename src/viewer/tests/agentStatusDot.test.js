@@ -10,8 +10,8 @@ const STARTED = new Date(Date.now() - 7 * 60000).toISOString();
 const worker = (overrides) => ({id: 6, role: "worker", access: "writing", session: "s-6", program: "claude", state: "running", created_at: CREATED, process_started_at: STARTED, ended_at: null, ...overrides});
 const card = async (row, facts = {tasks: []}, open = false) => (await mounted({render: () => h(AgentCard, {row, facts, open})}, context({"usage tool --agent 6": {ok: true, value: {tool: "", note: ""}}}))).querySelector("[data-agent-open]");
 const dotOf = (element) => element.querySelector("[data-agent-status]");
-const words = (element) => element.querySelector("[data-agent-status-tip] b").textContent;
-const since = (element) => element.querySelector("[data-agent-status-tip] span").textContent;
+const words = (element) => element.querySelector("[data-agent-status] [role='tooltip'] b").textContent;
+const since = (element) => element.querySelector("[data-agent-status] [role='tooltip'] span").textContent;
 
 test("a working agent has a pulsing dot whose tooltip says it works and since when", async () => {
     const element = await card(worker());
