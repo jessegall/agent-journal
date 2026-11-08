@@ -5,6 +5,7 @@ import subprocess
 from datetime import timedelta
 
 from server.booting_work import BootingWork
+from core.base.leftover_process import LeftoverProcess
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.process_table import ProcessTable
@@ -153,7 +154,7 @@ def test_s78_a_running_script_has_a_pid_file_and_a_finished_one_has_none(new_sto
 
 
 def test_s78_the_next_boot_stops_a_leftover_and_removes_its_pid_file(new_story):
-    story = event_plugin_story(new_story)
+    story = event_plugin_story(new_story, scripts={"see.sh": "sleep 60"})
     folder = story.container.get(PluginSocketPaths).folder
     program = str(story.home.folder / "plugins" / "events" / "see.sh")
     leftover = subprocess.Popen([program], stdin=subprocess.PIPE, start_new_session=True)
@@ -162,7 +163,8 @@ def test_s78_the_next_boot_stops_a_leftover_and_removes_its_pid_file(new_story):
     pid_file.write_text(f"{leftover.pid}\n{program}")
     try:
         BootingWork().run(story.container)
-        story.expect_rows(leftover.wait(timeout=WAIT_SECONDS) != 0, not pid_file.exists())
+        leftover.wait(timeout=WAIT_SECONDS)
+        story.expect_rows(not LeftoverProcess.is_running(leftover.pid), not pid_file.exists())
     finally:
         leftover.kill()
         leftover.communicate()

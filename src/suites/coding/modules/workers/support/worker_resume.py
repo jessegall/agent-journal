@@ -121,7 +121,7 @@ class WorkerResume:
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
 
     def lost_job(self, worker: Agent) -> AgentLine | None:
-        activity = self.queries.query(AgentActivity).find(worker.id)
+        activity = self.rows.required(AgentActivity, worker.id)
         last_hook = activity.last_hook_at if activity.last_hook_at is not None else activity.created_at
         entered = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", last_hook.text)).newest().all_rows()
         return next((line for line in entered if line.source in RESUMING_SOURCES), None)

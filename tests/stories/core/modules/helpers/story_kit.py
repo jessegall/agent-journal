@@ -1,3 +1,5 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.helper_started import HELPER_LAUNCH_NAME, HelperStarted
@@ -20,6 +22,7 @@ def test_a_helper_sends_hooks_as_itself(new_story):
 def test_the_fake_launcher_keeps_what_it_was_handed(new_story):
     story = new_story(fixture=HelperStarted)
     launcher = FakeLauncher(story.home.socket("launcher"))
-    story.expect_text("agent launch claude --environment main", "started agent", actor=story.agent)
+    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_text("agent launch claude --environment main", "started agent", actor=person)
     launcher.wait_for_requests()
     story.expect_rows(launcher.requests[0]["environment"] == "main")

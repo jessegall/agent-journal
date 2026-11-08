@@ -57,7 +57,7 @@ class WorkerSessions(AgentLaunchGuard):
             return AgentSessionState.READY
         with self.bus.scopes.read_scope((), None, current.environment_id):
             span = self.settings.minutes(SILENT_AGENT_MINUTES)
-        activity = self.queries.query(AgentActivity).find(current.id)
+        activity = self.rows.required(AgentActivity, current.id)
         if not activity.is_inactive(self.clock.timestamp(), span.count) or self.processes.agent(current.id).running().exists():
             return AgentSessionState.RUNNING
         if self.program.stop_tree(current.pid, program):
