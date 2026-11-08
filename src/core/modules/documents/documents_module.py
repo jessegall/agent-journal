@@ -12,6 +12,7 @@ from core.modules.documents.commands.open_doc.open_doc_subcommand import OpenDoc
 from core.modules.documents.models.open_document import OpenDocument
 from core.modules.documents.migrations.m006_revision_authors import RevisionAuthorsMigration
 from core.modules.documents.rules.open_document_rule import OpenDocumentRule
+from core.modules.documents.rules.open_document_stop_rule import OpenDocumentStopRule
 from core.modules.documents.support.document_closed import DocumentClosed
 from core.modules.documents.listeners.close_ended_document_listener import CloseEndedDocumentListener
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
@@ -22,7 +23,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.doc_searcher import DocSearcher
-from core.modules.documents.support.document_nudges import DOCUMENT_OPEN
+from core.modules.documents.support.document_nudges import DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
@@ -105,11 +106,11 @@ class DocumentsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking", "journal.core.agents", "journal.core.drivers", "journal.core.processes", "journal.core.chat"]
     skills = [SkillDeclaration("journal-documents", "Write lasting information as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
-    nudges = [DOCUMENT_OPEN]
+    nudges = [DOCUMENT_OPEN, DOCUMENT_STOP_REFUSAL]
     models = [ModelDeclaration(OpenDocument, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Doc, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Report, excluded_subcommands=ALL_SUBCOMMANDS),
               ModelDeclaration(DocRevision, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(Link, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(CommentSelection, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(LinkCorrection, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration, CommentSelectionsMigration, ProjectDocumentsMigration, RevisionAuthorsMigration, LinkCorrectionsMigration, MessageLinkPathsMigration]
-    driver_rules = [OpenDocumentRule]
+    driver_rules = [OpenDocumentRule, OpenDocumentStopRule]
     block_conditions = [DocumentClosed]
     tick_handlers = [TickHandler(TickInterval(seconds=5), CloseEndedDocumentsTick(), "close ended documents", starts_immediately=True)]
     library_shares = [DocLibraryShare]
