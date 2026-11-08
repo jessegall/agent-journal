@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -62,26 +63,43 @@ func (buffer *cappedBuffer) String() string {
 	return buffer.buffer.String()
 }
 
-func runManaged(hooks []ManagedHook, body []byte) []ForeignRun {
+// projectDirectoryVariables names the variable each program gives its hooks for the folder of the project it runs
+// in, which a project's hooks read to find their files.
+var projectDirectoryVariables = map[string]string{"claude": "CLAUDE_PROJECT_DIR"}
+
+// managedVariables are the variables the program would give a project hook run for the checkout at root.
+func managedVariables(program, root string) []string {
+	name, known := projectDirectoryVariables[program]
+	if !known {
+		return nil
+	}
+	return []string{name + "=" + root}
+}
+
+func runManaged(hooks []ManagedHook, body []byte, program, root string) []ForeignRun {
+	variables := managedVariables(program, root)
 	runs := make([]ForeignRun, len(hooks))
 	var group sync.WaitGroup
 	for index, hook := range hooks {
 		group.Add(1)
 		go func() {
 			defer group.Done()
-			runs[index] = runOne(hook, body)
+			runs[index] = runOne(hook, body, variables...)
 		}()
 	}
 	group.Wait()
 	return runs
 }
 
-func runOne(hook ManagedHook, body []byte) ForeignRun {
+func runOne(hook ManagedHook, body []byte, variables ...string) ForeignRun {
 	started := time.Now()
 	deadline, cancel := context.WithTimeout(context.Background(), time.Duration(hook.Timeout)*time.Second)
 	defer cancel()
 	command := exec.CommandContext(deadline, "sh", "-c", hook.Command)
 	prepareManaged(command)
+	if len(variables) > 0 {
+		command.Env = append(os.Environ(), variables...)
+	}
 	command.Stdin = bytes.NewReader(body)
 	var stdout, stderr cappedBuffer
 	command.Stdout, command.Stderr = &stdout, &stderr

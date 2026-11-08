@@ -39,7 +39,7 @@ class PluginManifest:
     folder of its skills, the services it keeps running, and what its install requires, sets up and
     reads back, how its services answer a health check, which helpers besides the main agent each
     event reaches, the aliases it ships, the dashboard it writes, what it says it is for, the folders of
-    the project a limited agent's shell line may read for it, and the scripts it runs for event keys."""
+    the project a limited agent's shell line may read for it, and the scripts it runs for event keys, and the stamp its own project hooks carry."""
 
     name: str
     title: str
@@ -66,6 +66,7 @@ class PluginManifest:
     protocol: int = LINE_VERSION
     listed_files: tuple[str, ...] = ()
     config: ManifestConfig | None = None
+    hook_stamp: str = ""
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -89,7 +90,7 @@ class PluginManifest:
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
                    tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
-                   cls.read_config(fields["config"] if "config" in fields else None))
+                   cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "")
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
