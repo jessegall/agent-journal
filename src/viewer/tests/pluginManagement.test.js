@@ -28,6 +28,7 @@ async function drawn(refuse = false) {
         if (line === "plugin list" || line === "plugin events") return page([PLUGIN]);
         line = line.split(" ");
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
+        if (line[1] === "service-log") return {ok: true, value: {text: "watcher started\nwatching 3 folders"}};
         if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0", is_newer: true}};
         if (line[1] === "dashboard") return {ok: true, value: {missing: "sins has written nothing on its dashboard yet."}};
         return {ok: true, value: {settings: [
@@ -236,6 +237,21 @@ test("a card says what the plugin is for and which of its services run", async (
     expect(element.querySelector("[data-plugin-description]").textContent).toBe("Judges the code");
     expect(element.querySelector('[data-plugin-service="sins a"]').textContent).toContain("running, process 12");
     expect(element.querySelector('[data-plugin-service="sins b"]').textContent).toContain("stopped");
+});
+
+test("a running service opens its terminal on a click and closes it on the next, and a stopped one does not", async () => {
+    const {element} = await drawn();
+    await settle();
+    const running = element.querySelector('[data-plugin-service="sins a"]');
+    expect(running.querySelector(".service-name").textContent).toBe("a");
+    expect(element.querySelector('[data-plugin-service="sins b"]').disabled).toBe(true);
+    expect(element.querySelector("[data-plugin-service-terminal]")).toBeNull();
+    running.click();
+    await settle();
+    expect(element.querySelector("[data-plugin-service-terminal]").textContent).toContain("watching 3 folders");
+    running.click();
+    await settle();
+    expect(element.querySelector("[data-plugin-service-terminal]")).toBeNull();
 });
 
 test("a page with no plugin says so and still offers to make one", async () => {
