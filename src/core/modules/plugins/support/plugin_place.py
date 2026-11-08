@@ -1,10 +1,6 @@
-from typing import Protocol
+from core.modules.plugins.support.plugin_place_rows import PluginPlaceRows
 
 
-class PluginPlaceRows(Protocol):
-    def wait(self, process_id: int, limit_seconds: float) -> bool: ...
-
-    def leave(self, process_id: int, exit_code: int) -> None: ...
 
 
 class PluginPlace:

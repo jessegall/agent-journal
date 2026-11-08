@@ -1,13 +1,5 @@
 from collections.abc import Sequence
-from typing import Any, Protocol
-
-
-class SandboxedAgent(Protocol):
-    """What the sandbox choice reads of an agent row."""
-
-    id: int
-    role: str
-    metadata: Any
+from core.base.sandboxed_agent import SandboxedAgent
 
 
 class AgentSandboxChoice:

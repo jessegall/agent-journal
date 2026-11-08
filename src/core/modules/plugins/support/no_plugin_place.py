@@ -1,4 +1,5 @@
-from core.modules.plugins.support.plugin_place import PluginPlace, PluginPlaceRows
+from core.modules.plugins.support.plugin_place import PluginPlace
+from core.modules.plugins.support.plugin_place_rows import PluginPlaceRows
 
 
 class NoPluginPlace(PluginPlace):
