@@ -30,4 +30,5 @@ TASK_INSPECTOR = InspectorDeclaration(
     ),
     components=(InspectorComponent("tasks.task-details"), InspectorComponent("tasks.task-chain"), InspectorComponent("tasks.task-log", tab="Log")),
     links=InspectorLinks(),
+    draws_text=True,
 )

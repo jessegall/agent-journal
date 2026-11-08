@@ -33,4 +33,5 @@ PLAN_INSPECTOR = InspectorDeclaration(
     ),
     components=(InspectorComponent("plans.plan-details"), InspectorComponent("plans.plan-phases"), InspectorComponent("plans.plan-timeline", tab="Timeline")),
     links=InspectorLinks(outside_plan=True),
+    draws_text=True,
 )
