@@ -13,7 +13,7 @@ LINUX_KERNEL = "Linux"
 SYSTEMD_FOLDER = Path("/run/systemd/system")
 CGROUP_CONTROLLERS = Path("/sys/fs/cgroup/cgroup.controllers")
 ROOT_ID = 0
-WRITE_BITS = 0o022
+GROUP_WORLD_EDIT_MASK = 0o022
 SOCKET_MODE = 0o660
 
 
@@ -39,7 +39,7 @@ class HostedStartCheck:
     def check_hosted_file(self) -> None:
         if self.probe.owner_id(self.hosted_file) != ROOT_ID:
             raise WritableHostedFileRefusal.wrong_owner(self.hosted_file, self.probe.owner_id(self.hosted_file))
-        if self.probe.mode_bits(self.hosted_file) & WRITE_BITS:
+        if self.probe.mode_bits(self.hosted_file) & GROUP_WORLD_EDIT_MASK:
             raise WritableHostedFileRefusal.wrong_mode(self.hosted_file, self.probe.mode_bits(self.hosted_file))
 
     def check_socket(self, socket: Path) -> None:

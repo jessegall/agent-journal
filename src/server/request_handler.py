@@ -30,7 +30,7 @@ from core.base.provider.unknown_program_error import UnknownProgramError
 from server.server_instance import server_instance
 from server.journal_server import JournalServer
 from server.listener_wake import ListenerWake
-from server.peer_pid import peer_pid
+from server.socket_peer import socket_peer
 from server.successor_start import SuccessorStart
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
@@ -56,8 +56,12 @@ class RequestHandler(BaseHTTPRequestHandler):
     def setup(self) -> None:
         super().setup()
         self.timing = Timing.started("server_accepted", PerformanceState(self.journal_server().context.home))
-        self.sender_pid = peer_pid(self.connection)
+        self.peer = socket_peer(self.connection)
         self.journal_server().connection_idle(self.connection)
+
+    @property
+    def sender_pid(self) -> int:
+        return self.peer.pid
 
     def parse_request(self) -> bool:
         self.journal_server().connection_busy()
