@@ -17,6 +17,7 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_settings import PROGRAM_WINDOW_PERCENT
 from core.modules.helpers.support.program_state import ProgramState
 from core.modules.helpers.support.program_readiness import ProgramReadiness
+from core.modules.helpers.support.usage_limits import UsageLimits
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.usage.support.status_files import StatusFiles
 from core.modules.usage.support.plan_window import PlanWindow
@@ -29,7 +30,8 @@ class ProgramStates:
     """Reads program readiness; account windows apply across its open sessions in every environment."""
 
     def __init__(self, providers: Providers, programs: HelperPrograms, queries: Queries,
-                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes, kept_rows: KeptRows) -> None:
+                 settings: SettingValues, statuses: StatusFiles, clock: Clock, agents: AgentQuery, scopes: Scopes, kept_rows: KeptRows, limits: UsageLimits) -> None:
+        self.limits = limits
         self.providers, self.programs, self.queries = providers, programs, queries
         self.settings, self.statuses, self.clock = settings, statuses, clock
         self.agents, self.scopes = agents, scopes
@@ -54,13 +56,20 @@ class ProgramStates:
             return outage
         window = self.window_at(program, self.settings.number(PROGRAM_WINDOW_PERCENT) or AT_LIMIT_PERCENT)
         if window is None:
-            return ProgramState.ready()
+            own_limit = self.own_limit_resets_at(program)
+            return ProgramState.ready() if own_limit is None else ProgramState.unavailable(f"a usage limit set for {program} is reached", own_limit)
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
 
     def limit_resets_at(self, program: str) -> Timestamp | None:
         """When the program's plan allowance starts again while a window of it is used up in full, else nothing."""
         window = self.window_at(program, AT_LIMIT_PERCENT)
-        return None if window is None else Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc))
+        plan_end = None if window is None else Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc))
+        ends = [end for end in (plan_end, self.own_limit_resets_at(program)) if end is not None]
+        return max(ends, key=lambda end: end.value) if ends else None
+
+    def own_limit_resets_at(self, program: str) -> Timestamp | None:
+        """When the last limit a person set on the program that its windows have reached ends, else nothing."""
+        return self.limits.reached_until(program, self.windows(program), self.clock.timestamp())
 
     def window_at(self, program: str, percent: float) -> PlanWindow | None:
         checked_at = self.clock.timestamp().value.timestamp()

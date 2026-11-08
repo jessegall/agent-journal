@@ -1,0 +1,91 @@
+import json
+from datetime import timedelta
+
+from core.base.file_access import FileAccess
+from core.modules.agents.models.agent import Agent
+from core.modules.helpers.support.program_states import ProgramStates
+from core.modules.helpers.ticks.usage_limit_marks import UsageLimitMarks
+from core.testing.story import Story
+from tests.stories.core.support.coding_fixtures import BuilderWithUser
+
+WINDOW_SECONDS = 5 * 3600
+WEEK_SECONDS = 7 * 24 * 3600
+
+
+def report(story: Story, five_hours: float, seven_days: float = 0) -> None:
+    """What the program's status line says of the plan: both windows, each starting again later."""
+    now = story.clock.timestamp().value.timestamp()
+    limits = {"five_hour": {"used_percentage": five_hours, "resets_at": now + WINDOW_SECONDS}, "seven_day": {"used_percentage": seven_days, "resets_at": now + WEEK_SECONDS}}
+    story.home.status_folder.mkdir(parents=True, exist_ok=True)
+    FileAccess.shared().write(story.home.status_folder / "s-1.json", json.dumps({"session_id": "s-1", "model": {"display_name": "Opus"}, "context_window": {"used_percentage": 10}, "rate_limits": limits}))
+
+
+def limited_story(new_story) -> Story:
+    story = new_story(fixture=BuilderWithUser)
+    story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
+    return story
+
+
+def halted(story: Story) -> bool:
+    UsageLimitMarks()(story.container)
+    return story.row(Agent, story.agent.id).limited_until is not None
+
+
+def test_a_fixed_limit_on_the_5_hour_window_halts_the_agents_at_its_point_and_a_raised_limit_lets_them_go_on(new_story):
+    story = limited_story(new_story)
+    story.expect_success("usage-limit set claude '5 hours' fixed 50", actor=story.user)
+    report(story, 40)
+    story.expect_rows(not halted(story))
+    report(story, 55)
+    story.expect_rows(halted(story))
+    story.expect_success("usage-limit set claude '5 hours' fixed 70", actor=story.user)
+    story.expect_rows(not halted(story))
+
+
+def test_a_fixed_limit_on_the_7_day_window_halts_the_agents_when_that_window_reaches_it(new_story):
+    story = limited_story(new_story)
+    story.expect_success("usage-limit set claude '7 days' fixed 20", actor=story.user)
+    report(story, 90, seven_days=10)
+    story.expect_rows(not halted(story))
+    report(story, 90, seven_days=25)
+    story.expect_rows(halted(story))
+
+
+def test_a_budget_counts_from_what_the_window_held_when_it_was_set(new_story):
+    story = limited_story(new_story)
+    report(story, 30)
+    story.expect_success("usage-limit set claude '5 hours' budget 20", actor=story.user)
+    report(story, 45)
+    story.expect_rows(not halted(story))
+    report(story, 50)
+    story.expect_rows(halted(story))
+
+
+def test_an_hourly_budget_counts_from_the_start_of_the_clock_hour_and_starts_again_with_the_next(new_story):
+    story = limited_story(new_story)
+    report(story, 30)
+    story.expect_success("usage-limit set claude hour budget 20", actor=story.user)
+    report(story, 55)
+    story.expect_rows(halted(story))
+    story.advance(timedelta(hours=1))
+    report(story, 55)
+    story.expect_rows(not halted(story))
+    report(story, 80)
+    story.expect_rows(halted(story))
+
+
+def test_a_removed_limit_lets_the_agents_go_on(new_story):
+    story = limited_story(new_story)
+    story.expect_success("usage-limit set claude '5 hours' fixed 50", actor=story.user)
+    report(story, 55)
+    story.expect_rows(halted(story))
+    story.expect_success("usage-limit delete 1", actor=story.user)
+    story.expect_rows(not halted(story))
+
+
+def test_a_program_with_a_limit_reached_takes_no_new_agent_and_an_agent_cannot_set_a_limit(new_story):
+    story = limited_story(new_story)
+    story.expect_refusal("usage-limit set claude '5 hours' fixed 50", "an agent cannot", actor=story.agent)
+    story.expect_success("usage-limit set claude '5 hours' fixed 50", actor=story.user)
+    report(story, 55)
+    story.expect_rows(not story.container.get(ProgramStates).allowance_state("claude").is_ready)
