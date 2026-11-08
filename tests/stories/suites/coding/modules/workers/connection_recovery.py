@@ -24,7 +24,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 
 RECOVERY_SOURCE = "workers.silent-agent"
@@ -355,7 +355,7 @@ def test_a_paused_worker_is_not_reported_as_stopped(recovery):
 
 def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story, worker = recovery.story, recovery.worker
-    GitRepository(repository_folder(story)).changed(worker.id, "cart.py", "TOTAL = 3\n")
+    story_repository(story).changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success("worker deliver --wait --differences none", actor=worker)

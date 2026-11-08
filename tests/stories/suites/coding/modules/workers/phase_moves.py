@@ -11,7 +11,7 @@ from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
 from tests.stories.server.support.server_client import server_story
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, asking_main, dispatched_story_worker, planned_story, worker_on_plan
 
@@ -60,7 +60,7 @@ def previous_test_ended(previous_test_running):
 @pytest.fixture
 def conflict_waiting(new_story, monkeypatch):
     story = planned_story(new_story)
-    base = GitRepository(repository_folder(story))
+    base = story_repository(story)
     base.checkout(ENVIRONMENT_BRANCH)
     base.committed("tax.py", "TAX = 1\n", "The first tax")
     worker = dispatched_story_worker(story, PLAN_DISPATCH, monkeypatch)
