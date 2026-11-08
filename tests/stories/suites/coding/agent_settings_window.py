@@ -1,6 +1,11 @@
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, person_viewer
 from tests.stories.support.story_checks import expect_value
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
+from core.base.viewer.window_place import WindowPlace
+from suites.coding.coding_suite import CodingSuite
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_TOKENS
 
 AUTO_MODE = "journal.suites.coding.auto-mode"
 
@@ -119,3 +124,12 @@ def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_noth
         viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", shown["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
         after = work_reading(viewer)
         expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (before, True))
+
+
+def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(new_story):
+    story = new_story(fixture=MainControlsActors)
+    with person_viewer(story) as viewer:
+        advanced = field_values(work_reading(viewer), "advanced")
+    declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
+    story.expect_rows({CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_TOKENS] == 0, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
+
