@@ -2,5 +2,4 @@ form, .action-field { display: flex; flex-direction: column; gap: 6px; }
 form { padding: 10px; border: 1px solid var(--border); border-radius: 7px; }
 .action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
 p { margin: 0; color: var(--text-2); }
-select { padding: 6px 9px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); font: inherit; }
 :deep(.text-area) { min-height: 84px; }

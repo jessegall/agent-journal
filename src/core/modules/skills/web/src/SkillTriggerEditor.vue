@@ -73,7 +73,8 @@ async function end() {
 .skill-trigger-editor { display:flex; flex-direction:column; gap:16px; padding:20px; border:1px solid var(--border-2); border-radius:10px; background:var(--bg); font-size:12px; }
 h3 { margin:0; font-size:14px; font-weight:600; overflow-wrap:anywhere; }
 .field { display:flex; flex-direction:column; gap:7px; color:var(--text-2); font-size:12px; }
-input,select { min-width:0; border:1px solid var(--border-2); border-radius:6px; background:var(--bg); color:var(--text); padding:8px; font:inherit; }
+input { min-width:0; border:1px solid var(--border-2); border-radius:6px; background:var(--bg); color:var(--text); padding:8px; font:inherit; }
+select { min-width:0; }
 .summary { padding:12px; border-radius:8px; background:var(--bg-2); line-height:1.6; }
 .summary small,.help { color:var(--text-3); }
 p { margin:0; }
