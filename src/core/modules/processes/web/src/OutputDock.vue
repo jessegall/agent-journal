@@ -109,6 +109,18 @@ async function load() {
 }
 
 watch(opened, (open) => open && load());
+
+// the agent that ran the run is asked, in a message, to draw a reader that gives its progress
+function askForReader() {
+  const id = item.value?.target_id;
+  view.run([
+    "message",
+    "send",
+    `Output ${id} has no reader that gives its progress, and its box is empty: draw a reader for it with journal reader add.`,
+    "--target-agent",
+    String(run.value.agent_id),
+  ]);
+}
 // a run that ends between two reads is read once more, so the card shows its end and not the last percent it drew
 watch(ended, (done) => done && load());
 
@@ -190,7 +202,12 @@ usePoll(load, isRunning, () =>
             class="output-dock-terminal"
             data-output-terminal
             @scroll="pages.loadEarlier($event.target)"
-            >{{ lines.join("\n") }}</pre>
+            >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
+          <template v-if="!lines.length && !run?.reads_progress && !ended"
+            ><button type="button" class="output-dock-reader" data-output-reader-ask @click="askForReader">
+              Ask the agent to draw a reader
+            </button></template
+          >
         </template>
       </div>
     </div>
@@ -312,6 +329,20 @@ usePoll(load, isRunning, () =>
 .output-dock-fill {
   height: 100%;
   transition: width 0.4s ease;
+}
+.output-dock-reader {
+  margin: 6px 14px 6px 36px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-2);
+  border-radius: 6px;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.output-dock-reader:hover {
+  background: var(--hover);
 }
 .output-dock-loading {
   padding: 8px 14px 8px 36px;

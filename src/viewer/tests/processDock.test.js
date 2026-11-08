@@ -264,3 +264,32 @@ test("a run that ends between two reads in failure shows the failure and no perc
     expect(time.querySelector("[data-output-percent]")).toBeNull();
     expect(head.querySelector("[data-state='bad']")).not.toBeNull();
 });
+
+// an unfolded card whose output box is still empty
+async function emptyBox(run, runs) {
+    const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", created_at: "2026-11-02T10:00:00Z", agent_id: 21, reads_progress: false, ...run}}, "output peek 3": {ok: true, value: {lines: []}}});
+    window.run = async (line) => (runs.push(line), {ok: true, value: null});
+    const head = document.createElement("span");
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(head, foot, time);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(false), collapsed: ref(false), row: ref({id: 7, target_id: 3})})[key];
+    const element = await mounted(OutputDock, window);
+    await vi.waitFor(() => expect(element.querySelector("[data-output-terminal]")).not.toBeNull());
+    return element;
+}
+
+test("an empty output box says No output yet, and a run with no reader offers a button that sends the agent its message", async () => {
+    const runs = [];
+    const element = await emptyBox({}, runs);
+    expect(element.querySelector("[data-output-terminal]").textContent).toBe("No output yet");
+    const ask = element.querySelector("[data-output-reader-ask]");
+    expect(ask.textContent.trim()).toBe("Ask the agent to draw a reader");
+    ask.click();
+    expect(runs).toEqual([["message", "send", "Output 3 has no reader that gives its progress, and its box is empty: draw a reader for it with journal reader add.", "--target-agent", "21"]]);
+});
+
+test("a run whose reader gives progress, or one that ended, offers no reader button", async () => {
+    expect((await emptyBox({reads_progress: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
+    expect((await emptyBox({state: "finished", ended_at: "2026-11-02T10:00:05Z"}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
+});
