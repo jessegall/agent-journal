@@ -36,7 +36,7 @@ def counts(story, arguments=""):
 def test_the_counts_show_what_stands_now_and_the_tasks_completed_in_the_last_day(new_story):
     story = new_story(fixture=TasksInFourStates)
     answer = counts(story)
-    story.expect_rows((answer["started"], answer["blocked"], answer["delegated"], answer["completed"]) == (1, 1, 2, 1), detail=str(answer))
+    story.expect_rows((answer["started"], answer["blocked"], answer["open"], answer["completed"]) == (1, 1, 2, 1), detail=str(answer))
 
 
 def test_the_completed_count_follows_the_last_hours_a_time_and_a_reset(new_story):

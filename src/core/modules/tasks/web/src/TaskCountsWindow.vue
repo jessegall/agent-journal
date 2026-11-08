@@ -2,13 +2,13 @@
 import {computed, watch} from "vue";
 import {WindowRoom, useWindow} from "@journal/window-kit";
 
-// four counts: the tasks started, blocked and delegated now, and the tasks completed in the period chosen in the window's menu: the last hours,
+// four counts: the tasks started, blocked and open now (delegated ones among the open), and the tasks completed in the period chosen in the window's menu: the last hours,
 // or after the moment the reader chose "From now"; the menu also chooses how many columns the counts take, or Auto to follow the window's width
 const NOW = "now";
 const TODAY = "today";
 const AUTO = "auto";
 const PERIOD_WORDS = {"1": "in the last hour", "6": "in the last 6 hours", "24": "in the last 24 hours", [TODAY]: "today", "168": "in the last 7 days"};
-const COUNTS = [["started", "Started"], ["blocked", "Blocked"], ["delegated", "Delegated"], ["completed", "Completed"]];
+const COUNTS = [["started", "Started"], ["blocked", "Blocked"], ["open", "Open"], ["completed", "Completed"]];
 const view = useWindow();
 const columns = view.option("columns");
 const period = view.option("completed");
