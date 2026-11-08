@@ -10,7 +10,6 @@ import Icon from "../kit/Icon.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
 import {coalesced} from "../composables/coalesced.js";
-import {useSharedNow} from "../composables/now.js";
 import {useWindowData} from "../../kit/useWindowData.js";
 import {SHELL_WINDOW} from "./shellWindow.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
@@ -143,8 +142,6 @@ function toggleActivity() {
     activityOpen.value = !activityOpen.value;
 }
 const facts = propData("bars", NO_FACTS);
-const clock = useSharedNow();
-const now = computed(() => clock.value * 1000);
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title, planId: facts.value.task_plan_id} : null));
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {workers: "workers.workers", skills: "skills.skills", jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
@@ -347,7 +344,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
             </AgentBar>
-            <InformationBar :control-groups="controlData.groups" :agent-programs="programData.rows" :skills="skillData.rows" @skills="context.reload('skills')" :agent="agentRow" :loading="!agentKnown" :branch="branch" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
+            <InformationBar :control-groups="controlData.groups" :agent-programs="programData.rows" :skills="skillData.rows" @skills="context.reload('skills')" :agent="agentRow" :loading="!agentKnown" :branch="branch" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :run="shellRead" @open="openCount" @changed="readFacts">
                     <span class="bar-buttons">
                         <template v-if="presets">
                             <LayoutPicker :list="presets" />

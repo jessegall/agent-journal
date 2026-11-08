@@ -29,10 +29,11 @@ class StartProcess(Command[Process]):
     owner_agent_id: int | None = None
     task_id: int | None = None
     timeout_durations: tuple[str, ...] = ()
+    plugin: str = ""
 
     @classmethod
-    def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int) -> "StartProcess":
-        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)])
+    def single_part(cls, agent_id: int, line: str, folder: str, category: CommandCategory, limit_seconds: int, plugin: str = "") -> "StartProcess":
+        return cls(agent_id, None, line, folder, "", category, limit_seconds, [PartSpec(line, line.split()[0], False, category)], plugin=plugin)
 
     @classmethod
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":

@@ -1,8 +1,9 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Icon, PriorityIcon, SearchBar, Skeleton, TaskStatusIcon, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
+import {Icon, SearchBar, Skeleton, TaskStatusIcon, peekRef, useWindow} from "@journal/window-kit";
 import MarkIcon from "../../../../../viewer/src/kit/MarkIcon.vue";
 import {readPlanPlaces} from "./planPlaces.js";
+import TaskRowIcons from "./TaskRowIcons.vue";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
 // from the task closed last, and each group pages on its own
@@ -118,6 +119,7 @@ watch(() => props.display.grouping, async (grouping) => {
     if (grouping === "plan") places.value = await readPlanPlaces(view);
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
+const setPriority = (row, priority) => view.run(["task", "edit", String(row.id), "--priority", String(priority)]);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
 watch(pageRows, () => {
     extended.value = new Set();
@@ -178,16 +180,16 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                             <template v-if="display.number">
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
-                            <span class="task-title">{{ row.title }}</span>
-                            <template v-for="word in row.tags" :key="word"><span class="task-tag" data-task-tag>{{ word }}</span></template>
-                            <template v-if="row.complexity"><span class="task-score" data-task-complexity>Complexity {{ row.complexity }}</span></template>
-                            <template v-if="row.delegated_name">
-                                <span class="task-agent" :title="`Delegated to ${row.delegated_name}, in state ${row.state}`" data-task-agent>{{ row.delegated_name }}</span>
-                            </template>
+                            <span class="task-what">
+                                <span class="task-title">{{ row.title }}</span>
+                                <template v-if="row.tags?.length">
+                                    <span class="task-tags"><template v-for="word in row.tags" :key="word"><span class="task-tag" data-task-tag>{{ word }}</span></template></span>
+                                </template>
+                            </span>
                             <template v-if="display.reason && row.reason">
                                 <span class="task-reason" data-task-reason>{{ row.reason }}</span>
                             </template>
-                            <span :title="`Priority: ${priorityLabel(row.priority)}`" data-task-priority><PriorityIcon :value="row.priority" /></span>
+                            <TaskRowIcons :row="row" @priority="setPriority(row, $event)" />
                         </div>
                     </template>
                     <template v-if="!folded.has(group.state) && group.rows.length < group.total">
@@ -200,25 +202,10 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
 </template>
 
 <style scoped>
-.task-tag {
-    padding: 2px 6px;
-    border-radius: 8px;
-    background: var(--hover);
-    color: var(--text-2);
-    font-size: 11px;
-}
-
-.task-score {
-    color: var(--text-3);
-    font-size: 12px;
-}
+.task-what { display: flex; flex: 1; flex-wrap: wrap; gap: 3px 8px; align-items: baseline; min-width: 0; }
+.task-tags { display: flex; flex: none; gap: 4px; }
+.task-tag { padding: 0 6px; border: 1px solid var(--border-2); border-radius: 99px; color: var(--text-3); font-size: 11px; line-height: 16px; }
 .task-warning { color: var(--danger); flex: none; }
-
-.task-agent {
-    flex: none;
-    color: var(--text-3);
-    font-size: 12px;
-}
 
 .task-reason {
     overflow: hidden;
@@ -322,8 +309,11 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
 }
 
 .task-title {
-    flex: 1;
-    min-width: 0;
+    flex: 0 1 auto;
+    min-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tasks-note {

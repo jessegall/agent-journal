@@ -21,7 +21,7 @@ test("tasks delegated to a worker are listed in a section of their own, with the
     const delegated = element.querySelector('[data-state="delegated"]');
     expect(delegated.querySelector("[data-group-head]").textContent).toContain("Delegated");
     expect([...delegated.querySelectorAll("[data-row]")].map((row) => row.dataset.row)).toEqual(["1", "2"]);
-    expect([...delegated.querySelectorAll("[data-task-agent]")].map((agent) => agent.textContent)).toEqual(["Lady Lovelace", "Lady Lovelace"]);
+    expect([...delegated.querySelectorAll("[data-task-agent] [role='tooltip'] b")].map((tip) => tip.textContent)).toEqual(["Lady Lovelace works on it", "Waiting for Lady Lovelace"]);
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
     expect(element.querySelector('[data-state="started"] [data-row="1"]')).toBeNull();
     expect(element.querySelector('[data-state="open"]')).toBeNull();
@@ -55,7 +55,7 @@ test("the Testing section uses the shared half-filled icon and the testing colou
 test("a task queued for an agent shows the agent's name in its own group, and a task nobody holds shows none", async () => {
     const board = {groups: [{state: "open", total: 2, rows: [task(5, "Queued job", "open", 12), task(6, "Free job", "open")]}]};
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: board}}));
-    expect(element.querySelector('[data-row="5"] [data-task-agent]').textContent).toBe("Lady Lovelace");
+    expect(element.querySelector('[data-row="5"] [data-task-agent] [role=\'tooltip\'] b').textContent).toBe("Waiting for Lady Lovelace");
     expect(element.querySelector('[data-row="6"] [data-task-agent]')).toBeNull();
 });
 

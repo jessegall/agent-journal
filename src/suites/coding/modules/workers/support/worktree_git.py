@@ -132,6 +132,13 @@ class WorktreeGit:
     def built_folders(self, files: list[str]) -> tuple[str, ...]:
         return tuple(sorted({path.split(BUILT_FOLDER, 1)[0] + "/web/dist" for path in files if BUILT_FOLDER in path}))
 
+    def refuse_deleted_built_files(self, worktree: Worktree) -> None:
+        deleted = [change.relative for change in self.comparison(worktree).changes if change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative]
+        kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip()]
+        if kept:
+            raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
+                          "build them again with npm --prefix src/viewer run build, then hand in again")
+
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
         folders = self.built_folders(changed)

@@ -53,6 +53,12 @@ test("the opened agent card places its actions in the information bar and pads t
     expect(transcript).toMatch(/\.transcript :deep\(\.row-list-row\)\s*\{\s*padding:\s*8px 14px/);
 });
 
+test("the opened agent card shows the plan allowance its facts carry in the information bar", async () => {
+    const windows = [{title: "5 hours", used_percent: 30, reset_epoch_seconds: 1793545200}];
+    const element = await mounted({render: () => h(AgentCard, {row: AGENTS[2], facts: {tasks: [], windows}, open: true})}, {...context({}), tabs: TABS});
+    expect(element.querySelector("[data-information-bar] [data-fact='usage']").textContent).toContain("30%");
+});
+
 test("every card is listed and there is no band while none is open", async () => {
     const element = await drawn();
     await vi.waitFor(() => expect(cards(element)).toEqual([2, 3, 4, 5]));
