@@ -13,7 +13,10 @@ from core.modules.tools.commands.set_tool.set_tool_handler import SetToolHandler
 from core.modules.tools.commands.set_tool.set_tool_off_subcommand import SetToolOffSubcommand
 from core.modules.tools.commands.set_tool.set_tool_on_subcommand import SetToolOnSubcommand
 from core.modules.tools.commands.tool_list.tool_list_subcommand import ToolListSubcommand
+from core.modules.tools.rules.graphify_search_rule import GraphifySearchRule
 from core.modules.tools.support.skeletons import TOOLS_TOOLS_SKELETON
+from core.modules.tools.support.tool_catalogue import ToolCatalogue
+from core.modules.tools.support.tool_nudges import TOOL_NUDGES
 from core.modules.tools.support.tool_setting import TOOL_SETTINGS
 
 
@@ -26,8 +29,10 @@ class ToolsModule(Module):
     seed_reason = "a demo installs no tool"
     requires_core = ">=5,<6"
     file_events = ["tool.changed"]
-    dependencies = ["journal.core.actors", "journal.core.settings"]
-    settings = TOOL_SETTINGS
+    dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.drivers"]
+    settings = [*TOOL_SETTINGS, *(tool.settings for tool in ToolCatalogue().all() if tool.settings is not None)]
+    nudges = TOOL_NUDGES
+    driver_rules = [GraphifySearchRule]
     handlers = [SetToolHandler, InstallToolHandler, RefreshToolHandler]
     subcommands = [ToolListSubcommand, SetToolOnSubcommand, SetToolOffSubcommand, InstallToolSubcommand, RefreshToolSubcommand, ToolTickSubcommand]
     windows = [WindowDeclaration("tools.tools", "Tools", "tools.js", WindowLoading.COMPONENT, skeleton=TOOLS_TOOLS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,

@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_declaration import ANY_KEY, REFERENCE_TYPE
+from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
@@ -35,6 +35,8 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[TreeLine]:
         lines: list[TreeLine] = []
         for entry in self.declared.all():
+            if self.is_hidden(entry):
+                continue
             depth = len(list(self.declared.enclosing_groups(entry)))
             if entry.type == REFERENCE_TYPE:
                 lines.extend(self.placed(entry.target, depth))
@@ -44,6 +46,11 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
                 lines.append(self.line(entry, depth))
         kept = [self.undeclared.current(self.declared.all(), key) for key in dict.fromkeys(report.key for report in self.undeclared.found(self.declared.all()))]
         return (*lines, *(TreeLine(setting, 0) for setting in kept if setting is not None))
+
+    def is_hidden(self, entry: SettingEntry) -> bool:
+        """A setting that depends on a group switch is left out while that group is switched off; one that depends
+        on a flag stays, shown as it is."""
+        return any(self.declared.entry(key).type == GROUP_TYPE and self.values.current(key).value is False for key in entry.depends_on)
 
     def line(self, entry: SettingEntry, depth: int) -> TreeLine:
         return TreeLine(self.values.current(entry.key), depth)

@@ -16,6 +16,7 @@ from core.base.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.search_kind import CODE, GRAPHIFY
 
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
@@ -66,6 +67,15 @@ class HookCallQuery(Query[HookCall]):
     def next_turn_event(self, agent_id: int, cutoff_at: Timestamp) -> HookCall | None:
         events = (HookEventName.PROMPT, HookEventName.STOP, *TOOL_HOOKS)
         return self.agent(agent_id).matching(Among("hook", events)).matching(Greater("created_at", cutoff_at.text)).oldest().first()
+
+    def code_searches_since_graphify(self, agent_id: int, tool_uses: int) -> int:
+        """The searches of the project's code that did not use Graphify among the agent's last tool uses, back to its latest Graphify use."""
+        count = 0
+        for call in self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).newest().limited(tool_uses):
+            if call.search_kind == GRAPHIFY:
+                break
+            count += call.search_kind == CODE
+        return count
 
     def has_tool_hook_after(self, agent_id: int, cutoff_at: Timestamp) -> bool:
         return self.agent(agent_id).matching(Among("hook", TOOL_HOOKS)).matching(Greater("created_at", cutoff_at.text)).exists()

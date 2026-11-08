@@ -3076,21 +3076,21 @@
    },
    "subcommands": {
     "query": {
-     "kind": "read",
+     "kind": "search",
      "effects": [
       "reads_files"
      ],
      "label": "reading the graph"
     },
     "path": {
-     "kind": "read",
+     "kind": "search",
      "effects": [
       "reads_files"
      ],
      "label": "reading the graph"
     },
     "explain": {
-     "kind": "read",
+     "kind": "search",
      "effects": [
       "reads_files"
      ],

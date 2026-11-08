@@ -1,7 +1,9 @@
 from core.base.refusal import Refusal
 from core.modules.tools.support.tool_definition import ToolDefinition
+from core.modules.tools.support.tool_setting import GRAPHIFY_SETTINGS
 
-GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project's code in graphify-out, refreshed after each new commit without an LLM, so agents read it warm.")
+GRAPHIFY = ToolDefinition("graphify", "Graphify", "Keeps a graph of the project's code in graphify-out, refreshed after each new commit without an LLM, so agents read it warm.",
+                          GRAPHIFY_SETTINGS)
 
 
 class ToolCatalogue:
