@@ -11,8 +11,9 @@ SLICE_FILES = 40
 
 
 class PrivateDataPass:
-    """One slice of the scan: of the files git tracks, has staged or would track, the first few that are new or changed since this
-    pass last saw them are read and judged, and then remembered, so once all are done only what changes is looked at."""
+    """One slice of the scan: of the files git tracks, has staged or would track, the first few that are new
+    or changed since this pass last saw them are read and judged, and then remembered, so once all are done
+    only what changes is looked at."""
 
     def __init__(self, files: ProjectFiles, changes: FileFingerprints, scan: PrivateDataScan) -> None:
         self.files, self.changes, self.scan = files, changes, scan
@@ -21,12 +22,11 @@ class PrivateDataPass:
         folder = self.files.folder
         slice_ = self.changes.changed(PASS_NAME, self.files.listed())[:SLICE_FILES]
         findings = [finding for file in slice_ if self.is_text(file) for finding in self.scan.scan(file.relative_to(folder), self.text(file))]
-        self.changes.done(PASS_NAME, slice_)
+        self.changes.record_finished(PASS_NAME, slice_)
         return findings
 
     @staticmethod
     def is_text(file: Path) -> bool:
-        """A file with a null byte is a database or a picture, not text a person wrote."""
         return b"\0" not in FileAccess.shared().binary(file)
 
     @staticmethod

@@ -38,18 +38,18 @@ def filled(story) -> None:
 def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_tasks(busy_hook_points, elapsed_seconds):
     story, database = busy_hook_points
     story.advance(timedelta(seconds=elapsed_seconds))
-    start = database.tally.points()
+    start = database.repeated_work.points()
     story.hook("s-1", SAMPLES["post_tool_use"])
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_total_cost_less(cost, HOOK_LIMIT_POINTS)
 
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):
     story, database, over = filled_hook_points
     for name, sample in SAMPLES.items():
-        start = database.tally.points()
+        start = database.repeated_work.points()
         story.hook("s-1", sample)
-        cost = database.tally.points().minus(start)
+        cost = database.repeated_work.points().minus(start)
         if cost.total >= HOOK_LIMIT_POINTS:
             over[name] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
     expect_absent_value(over)
@@ -60,9 +60,9 @@ def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_
     measured = 0
     for read in sorted({read for window in story.container.get(Registry).windows for read in window.reads}):
         for line in (read, f"{read} 1", f"{read} --agent {story.agent.id}"):
-            start = database.tally.points()
+            start = database.repeated_work.points()
             outcome = story.run(line, actor=story.user)
-            cost = database.tally.points().minus(start)
+            cost = database.repeated_work.points().minus(start)
             if outcome.code != 0:
                 continue
             measured += 1

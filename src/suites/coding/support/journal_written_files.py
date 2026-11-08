@@ -5,7 +5,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.profiles.support.profile_settings import WORKER_INSTRUCTION_FILES_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_instruction_files import ORIGINAL_SUFFIX
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 
 ORIGINAL_FILES = tuple(f"{Path(name).stem}{ORIGINAL_SUFFIX}{Path(name).suffix}" for name in INSTRUCTION_FILES)
 
@@ -17,4 +17,4 @@ class JournalWrittenFiles:
         self.settings = settings
 
     def has(self, agent: Agent, path: str) -> bool:
-        return agent.role == CodingHelperKind.WORKER and path in (*INSTRUCTION_FILES, *ORIGINAL_FILES) and self.settings.flag(WORKER_INSTRUCTION_FILES_SETTING)
+        return agent.role == CodingHelperRole.WORKER and path in (*INSTRUCTION_FILES, *ORIGINAL_FILES) and self.settings.flag(WORKER_INSTRUCTION_FILES_SETTING)

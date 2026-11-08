@@ -23,6 +23,6 @@ class StoryLineRun(LineRun):
         if request is None:
             request = RepeatedWork(container.get(Database))
         request.database = container.get(Database)
-        request.add(request.database.tally.points())
-        request.database.tally = request
+        request.add(request.database.repeated_work.points())
+        request.database.repeated_work = request
         return container

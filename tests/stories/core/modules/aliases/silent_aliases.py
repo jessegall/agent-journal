@@ -14,6 +14,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from tests.stories.core.modules.aliases.saved_commands import BuildSaved, hook_of
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run, parts_started
+from tests.stories.support.story_checks import expect_value
 
 NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 SILENT_LINE = "alias build-npm printed nothing for 30 seconds: make it print each step; this run stays silent, the next shows its steps"
@@ -49,10 +50,10 @@ def test_an_alias_is_marked_silent_only_once_its_run_has_printed_nothing_for_30_
     moved_run(story, RUN, category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=10))
     SilentAliasMarking()(story.container)
-    assert alias_of(story).silent_at is None
+    expect_value(alias_of(story).silent_at is None, True)
     story.advance(timedelta(seconds=21))
     SilentAliasMarking()(story.container)
-    assert alias_of(story).is_held
+    expect_value(bool(alias_of(story).is_claimed), True)
 
 
 def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new_story):
@@ -67,12 +68,12 @@ def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new
 def test_an_edited_alias_whose_run_prints_clears_its_mark(new_story):
     story = silent_run(new_story)
     edited_alias(story)
-    assert alias_of(story).fixed_at is not None and not alias_of(story).is_held
+    expect_value(bool(alias_of(story).fixed_at is not None and not alias_of(story).is_claimed), True)
     process = moved_run(story, RUN, category=CommandCategory.BUILD)
     story.container.get(OutputFolder).write_output(process.id, 1, "step 1\n")
     SilentAliasMarking()(story.container)
     cleared = alias_of(story)
-    assert cleared.silent_at is None and cleared.fixed_at is None
+    expect_value(bool(cleared.silent_at is None and cleared.fixed_at is None), True)
 
 
 def test_an_edited_alias_whose_run_stays_silent_is_held_again(new_story):
@@ -81,13 +82,13 @@ def test_an_edited_alias_whose_run_stays_silent_is_held_again(new_story):
     moved_run(story, RUN, category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=31))
     SilentAliasMarking()(story.container)
-    assert alias_of(story).is_held
+    expect_value(bool(alias_of(story).is_claimed), True)
 
 
 def test_an_edit_that_leaves_the_line_alone_does_not_free_a_silent_alias(new_story):
     story = silent_run(new_story)
     story.expect_success('alias edit build-npm --about "builds the web files"', actor=story.agent)
-    assert alias_of(story).is_held
+    expect_value(bool(alias_of(story).is_claimed), True)
 
 
 def test_a_silent_go_test_over_several_packages_is_told_why_and_how_to_fix_it(new_story):
@@ -95,7 +96,7 @@ def test_a_silent_go_test_over_several_packages_is_told_why_and_how_to_fix_it(ne
     story.expect_success('alias add gotest "go test ./..." --category "test run"', actor=story.agent)
     line = "journal gotest --tail 5"
     part = PartSpec(line, "journal", False, CommandCategory.TEST_RUN, "go test ./...")
-    process = story.container.get(Bus).run(StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.TEST_RUN, 30, (part,)), story.agent, environment_id=1)
+    process = story.container.get(Bus).run(StartProcess(story.agent.id, None, line, "/work/main", "zsh", CommandCategory.TEST_RUN, 30, tuple([part])), story.agent, environment_id=1)
     parts_started(story, process)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.advance(timedelta(seconds=31))

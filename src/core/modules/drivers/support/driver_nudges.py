@@ -10,12 +10,12 @@ from core.base.driver.rule_outcome import RULE_FAILED
 
 REPEATED_STOP = NudgeDeclaration("drivers.repeated_stop", NudgeType.STEERING, 'your stop was refused five times in a row: report what held it')
 OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, '{text}', turn_limited=False)
-MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, "{words}", turn_limited=False)
+MANAGED_HOOK_LINE = NudgeDeclaration("drivers.managed_hook_line", NudgeType.NOTICE, "{line}", turn_limited=False)
 MANAGED_HOOK_REFUSAL = NudgeDeclaration("drivers.managed_hook_refusal", NudgeType.REFUSAL, "project hooks refused for agent:{agent}", turn_limited=False)
 HOOKS_UNCHECKED = NudgeDeclaration("drivers.hooks_unchecked", NudgeType.STEERING, "while the journal did not answer, {count} of your hooks went through unchecked: check what you ran then")
 
-HOOKS_TIMED_OUT = NudgeDeclaration("drivers.hooks_timed_out", NudgeType.STEERING, "agent {agent} had {count} hook timeouts in ten minutes: its chat mark names the slowest rule", turn_limited=False, wakes_agent=True)
-PERMISSION_ASKED = NudgeDeclaration("drivers.permission_asked", NudgeType.STEERING, "agent {agent} asks leave to do one thing, request {request}: allow it once or decline it", turn_limited=False, wakes_agent=True)
+HOOK_TIMEOUTS = NudgeDeclaration("drivers.hooks_timed_out", NudgeType.STEERING, "agent {agent} had {count} hook timeouts in ten minutes: its chat mark names the slowest rule", turn_limited=False, wakes_agent=True)
+PERMISSION_REQUESTED = NudgeDeclaration("drivers.permission_asked", NudgeType.STEERING, "agent {agent} asks leave to do one thing, request {request}: allow it once or decline it", turn_limited=False, wakes_agent=True)
 AGENT_COMPACTED = NudgeDeclaration("drivers.compacted", NudgeType.STEERING, "your context was compacted: read the overview and go on with your work", turn_limited=False, wakes_agent=True)
 CACHE_KEEPALIVE = NudgeDeclaration("drivers.cache_keepalive", NudgeType.STEERING, "this line only keeps your prompt cache warm: it asks for no work, so stop again at once", turn_limited=False, wakes_agent=True)
 AGENT_INTERRUPTED = NudgeDeclaration("drivers.interrupted", NudgeType.STEERING, "you were interrupted: go on with your work", turn_limited=False, wakes_agent=True)
@@ -33,5 +33,5 @@ REQUIRED_COMMAND_TOOL_USES = 5
 REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", ToolUseSpan(REQUIRED_COMMAND_TOOL_USES))
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or skip block {block} with a reason')
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "the journal started: go on with your work", turn_limited=False, wakes_agent=True)
-FILE_IN_CONTEXT = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is still in your context and has not changed since it was read: use what you have", path_fields=("path",))
-DRIVER_NUDGES = [HOOKS_TIMED_OUT, PERMISSION_ASKED, AGENT_INTERRUPTED, AGENT_COMPACTED, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_IN_CONTEXT]
+FILE_LOADED = NudgeDeclaration("drivers.file-in-context", NudgeType.NOTICE, "{path} is still in your context and has not changed since it was read: use what you have", path_fields=tuple(["path"]))
+DRIVER_NUDGES = [HOOK_TIMEOUTS, PERMISSION_REQUESTED, AGENT_INTERRUPTED, AGENT_COMPACTED, CACHE_KEEPALIVE, CONTINUED_SESSION, AGENT_LINE_AVAILABLE, JOURNAL_STARTED, *ACCESS_NUDGES, MANAGED_HOOK_LINE, MANAGED_HOOK_REFUSAL, AGENT_RESUMED, HOOKS_UNCHECKED, REQUIRED_COMMAND_COUNTDOWN.declaration, REQUIRED_COMMAND_REFUSAL, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT, FILE_LOADED]

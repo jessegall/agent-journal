@@ -10,7 +10,7 @@ MOVED_KEYS = [("journal.core.helpers.helper-run-limit", "journal.core.helpers.re
               ("journal.suites.coding.workers.workers-start-helpers", "journal.suites.coding.workers.workers-start-read-only-helpers")]
 
 
-class ReadOnlyHelperKeysMigration(Migration):
+class HelperKeysMigration(Migration):
     """Requests for the settings renamed for read-only helpers keep their setting."""
 
     number = 2

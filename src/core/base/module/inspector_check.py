@@ -21,10 +21,10 @@ class InspectorCheck:
         problems: list[str] = []
         for module in modules:
             for declaration in module.inspectors:
-                noun = declaration.model.cli_name
-                if noun in owners:
-                    problems.append(f"the model {noun} has two inspectors, one in {owners[noun]} and one in {module.name}")
-                owners.setdefault(noun, module.name)
+                model_name = declaration.model.cli_name
+                if model_name in owners:
+                    problems.append(f"the model {model_name} has two inspectors, one in {owners[model_name]} and one in {module.name}")
+                owners.setdefault(model_name, module.name)
                 problems += self.component_problems(module, declaration, windows)
                 problems += self.read_problems(declaration, provided)
                 problems += self.action_problems(declaration)
@@ -34,7 +34,7 @@ class InspectorCheck:
     def component_problems(module: type[Module], declaration: InspectorDeclaration, windows: dict[str, tuple[type[Module], WindowDeclaration]]) -> list[str]:
         problems: list[str] = []
         for component in declaration.components:
-            name = f"the inspector of {declaration.noun}"
+            name = f"the inspector of {declaration.model_name}"
             if component.window not in windows:
                 problems.append(f"{name} draws the window {component.window}, which no module declares")
                 continue
@@ -47,10 +47,10 @@ class InspectorCheck:
 
     @staticmethod
     def read_problems(declaration: InspectorDeclaration, provided: RegistryLines) -> list[str]:
-        name = f"the inspector of {declaration.noun}"
+        name = f"the inspector of {declaration.model_name}"
         line = declaration.read_line()
         problems = [] if line in provided.reads else [f"{name} reads {line}, which is no read subcommand"]
-        read_model = declaration.read_noun()
+        read_model = declaration.read_model_name()
         for pattern in declaration.events:
             if not provided.matches(pattern):
                 problems.append(f"{name} follows {pattern}, which no model's events match")
@@ -60,9 +60,9 @@ class InspectorCheck:
 
     @staticmethod
     def action_problems(declaration: InspectorDeclaration) -> list[str]:
-        own_slot = f"row.{declaration.noun}"
+        row_slot = f"row.{declaration.model_name}"
         problems: list[str] = []
         for action in declaration.actions:
-            name = f"the inspector of {declaration.noun}, action {action.label},"
-            problems += [f"{name} is on {slot}, which is another model's row" for slot in action.slots if slot.startswith("row.") and slot != own_slot]
+            name = f"the inspector of {declaration.model_name}, action {action.label},"
+            problems += [f"{name} is on {slot}, which is another model's row" for slot in action.slots if slot.startswith("row.") and slot != row_slot]
         return problems

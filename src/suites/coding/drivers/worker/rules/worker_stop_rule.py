@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.clock import Clock
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
@@ -19,8 +19,8 @@ from suites.coding.modules.workers.support.worker_next_task import WorkerNextTas
 
 class WorkerStopRule(DriverRule):
     """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues,
-    while a reader is needed, or between tasks to be compacted. Its run, tests or helper's report restart it; otherwise it delivers or says
-    it is stuck."""
+    while a reader is needed, or between tasks to be compacted. Its run, tests or helper's report restart
+    it; otherwise it delivers or says it is stuck."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
@@ -32,7 +32,7 @@ class WorkerStopRule(DriverRule):
         self.requests, self.clock, self.agents = requests, clock, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.compaction.is_between_tasks(hook.agent_id):
+        if self.compaction.is_after_task(hook.agent_id):
             return RuleAnswer.allowed()
         started = self.tasks.holder(hook.agent_id).started().first()
         task = started if started is not None else self.next_task.following(hook.agent_id)
@@ -49,4 +49,4 @@ class WorkerStopRule(DriverRule):
         return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))
 
     def has_running_helper(self, agent_id: int) -> bool:
-        return bool(self.agents.running(CodingHelperKind.READ_ONLY, agent_id))
+        return bool(self.agents.running(CodingHelperRole.HELPER, agent_id))

@@ -3,7 +3,7 @@ from core.base.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_value_with
+from tests.stories.support.story_checks import expect_value, expect_value_with
 
 
 def window_story(new_story) -> WindowStory:
@@ -96,11 +96,11 @@ def test_the_window_menu_of_the_coding_suite_lists_only_the_kept_windows(new_sto
     registry = new_story(fixture=CodingEnvironment).container.get(Registry)
     offered = SuiteWindows(registry).windows("coding")
     menu = {window.name: window for window in offered if window.place not in ("bar", "page", "section")}
-    assert not [name for name in MENU_REMOVED if name in menu], sorted(menu)
-    assert all(name in menu for name in MENU_KEPT), sorted(menu)
-    assert menu["workers.points"].title == "Brief points"
+    expect_value(bool([name for name in MENU_REMOVED if name in menu]), False)
+    expect_value(bool(all(name in menu for name in MENU_KEPT)), True)
+    expect_value(menu["workers.points"].title, "Brief points")
     pages = {window.name for window in offered if window.place == "page"}
-    assert {"processes.output", "templates.templates", "updates.updates", "tunnel.tunnel"} <= pages
-    assert "workers.models" not in {window.name for window in offered}
-    assert {window.name: window.title for window in offered}["settings.project-hooks"] == "Hooks"
-    assert {window.name: window.group for window in offered}["updates.updates"] == "footer"
+    expect_value({"processes.output", "templates.templates", "updates.updates", "tunnel.tunnel"} <= pages, True)
+    expect_value("workers.models" not in {window.name for window in offered}, True)
+    expect_value({window.name: window.title for window in offered}["settings.project-hooks"], "Hooks")
+    expect_value({window.name: window.group for window in offered}["updates.updates"], "footer")

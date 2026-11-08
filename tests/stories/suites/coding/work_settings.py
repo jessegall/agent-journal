@@ -1,6 +1,7 @@
 import json
 
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"
 KEEP_GOING = "journal.suites.coding.continue-while-delegatable"
@@ -61,13 +62,13 @@ def test_the_work_settings_badge_the_context_size_as_the_capped_amount(new_story
     story = new_story(fixture=BuilderWithUser)
     shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
     badges = {row["key"]: row["badge"] for row in shown["fields"]}
-    assert badges["journal.core.helpers.context-limit-tokens"] == "Capped amount", badges
-    assert badges["journal.core.helpers.context-limit-on"] == "", badges
+    expect_value(badges["journal.core.helpers.context-limit-tokens"], "Capped amount")
+    expect_value(badges["journal.core.helpers.context-limit-on"], "")
 
 
 def test_the_work_settings_name_the_settings_each_control_depends_on(new_story):
     story = new_story(fixture=BuilderWithUser)
     shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
-    assert shown["depends"][KEEP_GOING] == ["journal.suites.coding.main-writes-code"], shown["depends"]
-    assert shown["depends"][MERGER] == ["journal.suites.coding.workers.main-dispatches-workers"], shown["depends"]
-    assert "journal.suites.coding.auto-mode" not in shown["depends"]
+    expect_value(shown["depends"][KEEP_GOING], ["journal.suites.coding.main-writes-code"])
+    expect_value(shown["depends"][MERGER], ["journal.suites.coding.workers.main-dispatches-workers"])
+    expect_value("journal.suites.coding.auto-mode" not in shown["depends"], True)

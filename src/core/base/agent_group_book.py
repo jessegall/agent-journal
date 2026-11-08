@@ -11,9 +11,9 @@ class AgentGroupBook:
         self.entries = tuple(entries)
 
     def group(self, agent_type: str, profile: str) -> AgentGroupEntry | None:
-        of_type = [entry for entry in self.entries if entry.agent_type == agent_type]
-        named = next((entry for entry in of_type if profile in entry.profiles), None)
-        return named or next((entry for entry in of_type if not entry.profiles), None)
+        type_entries = [entry for entry in self.entries if entry.agent_type == agent_type]
+        profile_entry = next((entry for entry in type_entries if profile in entry.profiles), None)
+        return profile_entry or next((entry for entry in type_entries if not entry.profiles), None)
 
     def members(self, key: str) -> tuple[str, ...]:
         return next((entry.profiles for entry in self.entries if entry.key == key), ())
@@ -26,9 +26,9 @@ class AgentGroupBook:
             if entry.agent_type not in agent_types:
                 yield f"the agent group {entry.key} groups {entry.agent_type}, which is no registered agent type"
         for agent_type in sorted({entry.agent_type for entry in self.entries}):
-            of_type = [entry for entry in self.entries if entry.agent_type == agent_type]
-            named = [profile for entry in of_type for profile in entry.profiles]
-            for profile in sorted({profile for profile in named if named.count(profile) > 1}):
+            type_entries = [entry for entry in self.entries if entry.agent_type == agent_type]
+            grouped_profiles = [profile for entry in type_entries for profile in entry.profiles]
+            for profile in sorted({profile for profile in grouped_profiles if grouped_profiles.count(profile) > 1}):
                 yield f"the profile {profile} is in two groups of {agent_type}"
-            if sum(not entry.profiles for entry in of_type) > 1:
+            if sum(not entry.profiles for entry in type_entries) > 1:
                 yield f"{agent_type} has more than one group that takes the profiles no group names"

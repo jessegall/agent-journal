@@ -5,7 +5,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 from suites.coding.modules.workers.support.worker_nudges import PROTECTED_FOLDER
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
 class ProtectedFolderRule(DriverRule):
@@ -14,7 +14,7 @@ class ProtectedFolderRule(DriverRule):
     name = "workers.protected-folder"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperKind.WORKER]
+    roles = [CodingHelperRole.WORKER]
 
     def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders) -> None:
         self.worktrees, self.protected = worktrees, protected

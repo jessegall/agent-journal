@@ -1,4 +1,5 @@
 from core.base.actor_type import ActorType
+from core.base.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -36,6 +37,8 @@ class DelegatedTaskCommentListener(SaveListener[Created[Link]]):
             return
         worker_id = self.queries.query(Task).find(link.target_id).delegated_to
         if worker_id is None or self.queries.query(ActorRecord).find(context.actor.id).type is not ActorType.USER:
+            return
+        if self.queries.query(Agent).find(worker_id).role == AgentRole.MAIN:
             return
         message = self.queries.query(Message).find(link.source_id)
         self.nudger.send(worker_id, WORKER_TASK_COMMENT, WORKER_JOB_SOURCE, context, task=link.target_id)

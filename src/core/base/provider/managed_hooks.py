@@ -58,7 +58,7 @@ class ManagedHooks:
             self._write(list(hooks.values()))
             return changed
 
-    def removed_by_stamp(self, stamp: str) -> list[ManagedHook]:
+    def drop_stamped(self, stamp: str) -> list[ManagedHook]:
         if not stamp.strip() or not self.path.is_file():
             return []
         with self._locked():

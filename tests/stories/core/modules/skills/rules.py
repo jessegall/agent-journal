@@ -8,6 +8,7 @@ from tests.stories.core.modules.skills.agent_skills import read_of
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, expect_countdown, start, use_up_countdown
+from tests.stories.support.story_checks import expect_value
 
 EDIT = HookSamples.edit("src/cart.py")
 JOURNAL_AGENT_LIST = HookSamples.shell("journal agent list", ShellPart("journal", CommandCategory.JOURNAL, ["agent", "list"]))
@@ -39,7 +40,7 @@ def test_reading_the_due_skill_during_the_countdown_ends_it(due_notes):
     read_of(story, ".claude/skills/journal-notes/SKILL.md")
     for _ in range(4):
         story.expect_hook_allowed("s-1", EDIT)
-    assert "load skill" not in story.hook("s-1", EDIT).lines
+    expect_value("load skill" not in story.hook("s-1", EDIT).lines, True)
 
 
 def test_a_journal_command_passes_while_a_skill_is_due(due_notes):

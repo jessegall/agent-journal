@@ -7,5 +7,5 @@ class AgentActivity(StrEnum):
 
     WORKING = "working"
     PAUSED = "paused"
-    AT_USAGE_LIMIT = "at usage limit"
+    USAGE_LIMITED = "at usage limit"
     ENDED = "ended"

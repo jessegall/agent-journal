@@ -1,8 +1,12 @@
+import pytest
 import subprocess
 
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.support.project_file_expectations import expect_project_files
+
+
+pytestmark = pytest.mark.real_git
 
 
 def files_story(new_story):

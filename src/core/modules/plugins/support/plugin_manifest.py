@@ -12,7 +12,7 @@ from core.base.refusal import Refusal
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
-from core.modules.plugins.support.plugin_declared_event import PluginDeclaredEvent
+from core.modules.plugins.support.plugin_event_entry import PluginEventEntry
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_config import ManifestConfig
@@ -34,13 +34,14 @@ LINE_VERSION = 1
 
 @dataclass(frozen=True)
 class PluginManifest:
-    """What a plugin folder says about itself in the manifest this journal version reads: its name,
-    title and version, the program run for each event, the events it takes and the ones it answers
-    inside a window, the settings its settings file lists, the tone of each type of card it shows, the
-    folder of its skills, the services it keeps running, and what its install requires, sets up and
-    reads back, how its services answer a health check, which helpers besides the main agent each
-    event reaches, the aliases it ships, the dashboard it writes, what it says it is for, the folders of
-    the project a limited agent's shell line may read for it, and the scripts it runs for event keys, and the stamp its own project hooks carry."""
+    """What a plugin folder says about itself in the manifest this journal version reads: its name, title and
+    version, the program run for each event, the events it takes and the ones it answers inside a window,
+    the settings its settings file lists, the tone of each type of card it shows, the folder of its skills,
+    the services it keeps running, and what its install requires, sets up and reads back, how its services
+    answer a health check, which helpers besides the main agent each event reaches, the aliases it ships,
+    the dashboard it writes, what it says it is for, the folders of the project a limited agent's shell
+    line may read for it, and the scripts it runs for event keys, and the stamp its own project hooks
+    carry."""
 
     name: str
     title: str
@@ -63,7 +64,7 @@ class PluginManifest:
     description: str = ""
     project_reads: tuple[str, ...] = ()
     listeners: tuple[ManifestListener, ...] = ()
-    declared_events: tuple[PluginDeclaredEvent, ...] = ()
+    declared_events: tuple[PluginEventEntry, ...] = ()
     protocol: int = LINE_VERSION
     listed_files: tuple[str, ...] = ()
     config: ManifestConfig | None = None
@@ -252,7 +253,7 @@ class PluginManifest:
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
 
     def with_declared_events(self, keys: Mapping[str, str]) -> "PluginManifest":
-        declared_events = tuple(PluginDeclaredEvent(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
+        declared_events = tuple(PluginEventEntry(keys[listener.event], listener.event, form, listener.allowed_script(form)) for listener in self.listeners if listener.event in keys
                         for form in (EventForm.GUARD, EventForm.COMMIT) if listener.allowed_script(form))
         if not declared_events:
             return self
@@ -260,7 +261,7 @@ class PluginManifest:
         windows = tuple(EventWindow(declared_event.event, 0) for declared_event in declared_events if declared_event.form is EventForm.GUARD and declared_event.event not in self.window_names())
         return replace(self, event_names=names, event_windows=(*self.event_windows, *windows), declared_events=declared_events)
 
-    def declared_event(self, event: str, form: EventForm) -> PluginDeclaredEvent | None:
+    def declared_event(self, event: str, form: EventForm) -> PluginEventEntry | None:
         return next((declared_event for declared_event in self.declared_events if declared_event.event == event and declared_event.form is form), None)
 
     def script(self, key: str, form: EventForm) -> str:

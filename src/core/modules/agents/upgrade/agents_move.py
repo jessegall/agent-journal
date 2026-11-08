@@ -5,7 +5,7 @@ from core.base.actor import CORE_ACTOR_ID
 from core.base.actor_type import ActorType
 from core.base.access import Access
 from core.base.agent_role import AgentRole
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from core.base.upgrade.creator_resolver import AGENT, CreatorResolver
@@ -41,7 +41,7 @@ class AgentsMove(VersionFourMove):
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = list(context.role_names)
         all_rows = list(source.rows(TABLE))
-        newest_mains = self.newest_main_ids(all_rows)
+        latest_ids = self.newest_main_ids(all_rows)
         for row in all_rows:
             role = self.moved_role(row["role"] or AgentRole.MAIN.value)
             if not row["session"]:
@@ -50,7 +50,7 @@ class AgentsMove(VersionFourMove):
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
             else:
                 created = row["created_at"] or context.timestamp
-                ended = self.ended_at(row, role, created, newest_mains)
+                ended = self.end_timestamp(row, role, created, latest_ids)
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row["session"], row["environment_id"], row["provider"], role,
                                                                                          creators.actor_id(row["creator"]), created, row["updated_at"] or created, ended)))
         self.move_missing_sessions(source, rows, map, report, roles)
@@ -81,10 +81,10 @@ class AgentsMove(VersionFourMove):
             report.note(f"{moved} sessions that made rows but had no version 4 agent row moved as ended agents")
 
     @staticmethod
-    def ended_at(row: sqlite3.Row, role: str, created_at: str, newest_mains: set[int]) -> str | None:
-        if row["id"] in newest_mains:
+    def end_timestamp(row: sqlite3.Row, role: str, created_at: str, latest_ids: set[int]) -> str | None:
+        if row["id"] in latest_ids:
             return None
-        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == HelperKind.READ_ONLY:
+        if role == AgentRole.MAIN.value or row["state"] == ENDED or role == HelperRole.HELPER:
             return row["updated_at"] or created_at
         return None
 
@@ -101,7 +101,7 @@ class AgentsMove(VersionFourMove):
 
     @staticmethod
     def moved_role(role: str) -> str:
-        return HelperKind.READ_ONLY.value if role == VERSION_FOUR_CHILD_ROLE else role
+        return HelperRole.HELPER.value if role == VERSION_FOUR_CHILD_ROLE else role
 
     @staticmethod
     def is_subagent_session(session: str) -> bool:
@@ -114,4 +114,4 @@ class AgentsMove(VersionFourMove):
     def insert(self, rows: RowInsert, session: str, environment_id: int, program: str, role: str, creator_id: int, created: str, updated: str, ended: str | None) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": session, "created_at": created, "updated_at": created})
         return rows.insert(TABLE, {"id": actor_id, "environment_id": environment_id, "creator_id": creator_id, "session": session, "program": program,
-                                   "role": role, "access": Access.READ.value if role == HelperKind.READ_ONLY else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated})
+                                   "role": role, "access": Access.READ.value if role == HelperRole.HELPER else Access.WRITING.value, "ended_at": ended, "created_at": created, "updated_at": updated})

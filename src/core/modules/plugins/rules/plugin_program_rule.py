@@ -11,8 +11,8 @@ PLUGIN_PROGRAM = re.compile(r"(?:^|/)\.journal/plugins/([^/]+)/")
 
 
 class PluginProgramRule(DriverRule):
-    """Refuses a shell line that runs a program from the folder of a plugin that is switched off or no longer installed,
-    as its aliases are refused; reading the plugin's files goes on."""
+    """Refuses a shell line that runs a program from the folder of a plugin that is switched off or no longer
+    installed, as its aliases are refused; reading the plugin's files goes on."""
 
     name = "plugins.plugin-program"
     hook = HookEventName.PRE_TOOL_USE
@@ -27,7 +27,7 @@ class PluginProgramRule(DriverRule):
             return RuleAnswer.allowed()
         enabled = {plugin.name for plugin in self.plugins.enabled_plugins()}
         for part in shell.parts:
-            found = PLUGIN_PROGRAM.search(part.program)
-            if found is not None and found.group(1) not in enabled:
-                return RuleAnswer.refused(PLUGIN_PROGRAM_OFF.nudge(plugin=found.group(1)))
+            matched = PLUGIN_PROGRAM.search(part.program)
+            if matched is not None and matched.group(1) not in enabled:
+                return RuleAnswer.refused(PLUGIN_PROGRAM_OFF.nudge(plugin=matched.group(1)))
         return RuleAnswer.allowed()

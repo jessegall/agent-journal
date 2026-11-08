@@ -5,38 +5,39 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AgentAdmission:
-    """Whether an agent type and profile may start, resume or use a provider and model. Every restriction has to
-    allow it: the agent options of the type and profile, then the allowed models of the environment. A list that is
-    set and empty allows nothing, one that is not set allows everything, and a preference never widens a restriction."""
+    """Whether an agent type and profile may start, resume or use a provider and model. Every restriction has
+    to allow it: the agent options of the type and profile, then the allowed models of the environment. A
+    list that is set and empty allows nothing, one that is not set allows everything, and a preference
+    never widens a restriction."""
 
     def __init__(self, options: AgentOptions, settings: SettingValues) -> None:
         self.options, self.settings = options, settings
 
     def new_reasons(self, agent_type: str, profile: str = "") -> list[str]:
-        reading = self.options.reading(agent_type, profile)
-        reasons = list(reading.problems)
-        if not reading.options.allow_new:
+        resolved = self.options.resolved(agent_type, profile)
+        reasons = list(resolved.problems)
+        if not resolved.options.allow_new:
             reasons.append(f"new {agent_type} sessions are switched off")
-        if reading.options.allowed_profiles is not None and profile not in reading.options.allowed_profiles:
+        if resolved.options.allowed_profiles is not None and profile not in resolved.options.allowed_profiles:
             reasons.append(f"{agent_type} may not use the profile {profile}")
         return reasons
 
     def resume_reasons(self, agent_type: str, profile: str = "") -> list[str]:
-        reading = self.options.reading(agent_type, profile)
-        reasons = list(reading.problems)
-        if not reading.options.allow_resume:
+        resolved = self.options.resolved(agent_type, profile)
+        reasons = list(resolved.problems)
+        if not resolved.options.allow_resume:
             reasons.append(f"stopped {agent_type} sessions may not resume")
         return reasons
 
     def provider_reasons(self, agent_type: str, profile: str, provider: str) -> list[str]:
-        allowed = self.options.reading(agent_type, profile).options.allowed_providers
+        allowed = self.options.resolved(agent_type, profile).options.allowed_providers
         return [] if allowed is None or provider in allowed else [f"{agent_type} may not use {provider}"]
 
     def checked_provider(self, agent_type: str, profile: str, provider: str) -> None:
         self.refuse(self.provider_reasons(agent_type, profile, provider), "choose a program the agent options allow")
 
     def model_reasons(self, agent_type: str, profile: str, provider: str, model: str) -> list[str]:
-        options = self.options.reading(agent_type, profile).options
+        options = self.options.resolved(agent_type, profile).options
         reasons = self.provider_reasons(agent_type, profile, provider)
         if options.allowed_models is not None and f"{provider}:{model}" not in options.allowed_models:
             reasons.append(f"{agent_type} may not use {provider} {model}")

@@ -49,4 +49,4 @@ def test_tests_builds_and_python_are_watched_for_silence(category, program, is_w
     ("npm test", False),
 ])
 def test_go_test_over_several_packages_holds_back_the_output_of_each(command, is_held_back):
-    assert StreamingHints.holds_back_packages(command) is is_held_back
+    assert StreamingHints.runs_packages_serially(command) is is_held_back

@@ -1,12 +1,14 @@
+import pytest
 import os
 
 from core.base.module.module_finder import ModuleFinder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, written
+from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, worktree_file_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
+from tests.stories.support.story_checks import expect_value
 
 CHANGED = "Work through the notes in this new way."
-AGAIN = "Work through the notes in yet another way."
+SECOND_CHANGE = "Work through the notes in yet another way."
 CHANGE_PROFILE = f'profile save journal-worker --description "Works on one task" --body "{CHANGED}"'
 OLD_TIME = 1_700_000_000
 
@@ -17,21 +19,22 @@ def instruction_tick(story):
     handlers[0].handler(story.container)
 
 
+@pytest.mark.real_git
 def test_a_profile_change_reaches_the_instruction_files_at_the_next_task_start_and_at_the_next_tick(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)
     worker = dispatched_worker(story)
-    assert CHANGED not in written(repository, worker, "AGENTS.md")
+    expect_value(CHANGED not in worktree_file_text(repository, worker, "AGENTS.md"), True)
     story.expect_success(CHANGE_PROFILE, actor=story.user)
-    assert CHANGED not in written(repository, worker, "AGENTS.md")
+    expect_value(CHANGED not in worktree_file_text(repository, worker, "AGENTS.md"), True)
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
     story.expect_success("task unblock 1", actor=worker)
     story.expect_success("task start 1", actor=worker)
-    assert CHANGED in written(repository, worker, "AGENTS.md")
-    story.expect_success(CHANGE_PROFILE.replace(CHANGED, AGAIN), actor=story.user)
-    assert AGAIN not in written(repository, worker, "AGENTS.md")
+    expect_value(CHANGED in worktree_file_text(repository, worker, "AGENTS.md"), True)
+    story.expect_success(CHANGE_PROFILE.replace(CHANGED, SECOND_CHANGE), actor=story.user)
+    expect_value(SECOND_CHANGE not in worktree_file_text(repository, worker, "AGENTS.md"), True)
     instruction_tick(story)
-    assert AGAIN in written(repository, worker, "AGENTS.md") and AGAIN in written(repository, worker, "CLAUDE.md")
+    expect_value(bool(SECOND_CHANGE in worktree_file_text(repository, worker, "AGENTS.md") and SECOND_CHANGE in worktree_file_text(repository, worker, "CLAUDE.md")), True)
     repository.expect_clean(worker.id)
 
 
@@ -53,4 +56,4 @@ def test_with_the_setting_off_the_tick_leaves_the_project_s_instruction_files_al
     worker = dispatched_worker(story)
     story.expect_success(CHANGE_PROFILE, actor=story.user)
     instruction_tick(story)
-    assert written(repository, worker, "AGENTS.md") == PROJECT_TEXT
+    expect_value(worktree_file_text(repository, worker, "AGENTS.md"), PROJECT_TEXT)

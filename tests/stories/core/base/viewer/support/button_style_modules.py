@@ -17,4 +17,4 @@ class BareCardButtonModule(PlainCardButtonModule):
 
 
 class PanelWordButtonModule(PlainCardButtonModule):
-    buttons = [ButtonDeclaration("styled.start", ("row.plan",), "Close the plan", "task start {row_id}")]
+    buttons = [ButtonDeclaration("styled.start", tuple(["row.plan"]), "Close the plan", "task start {row_id}")]

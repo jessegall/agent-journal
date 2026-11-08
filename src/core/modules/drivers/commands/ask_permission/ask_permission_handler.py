@@ -13,14 +13,15 @@ from core.modules.drivers.commands.ask_permission.ask_permission import AskPermi
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import RecordAgentNudge
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
-from core.modules.drivers.support.driver_nudges import PERMISSION_ASKED
+from core.modules.drivers.support.driver_nudges import PERMISSION_REQUESTED
 
 SOURCE = "drivers.permission"
 
 
 class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
-    """Saves an agent's request for leave to do one thing and tells the main agent, or puts a card in the dock where the action
-    needs a person; the same action asked again while its request is open gives that request."""
+    """Saves an agent's request for leave to do one thing and tells the main agent, or puts a card in the dock
+    where the action needs a person; the same action asked again while its request is open gives that
+    request."""
 
     command = AskPermission
 
@@ -39,5 +40,5 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:
-            self.bus.dispatch(RecordAgentNudge(main.id, PERMISSION_ASKED.nudge(agent=context.actor.id, request=request.id), SOURCE), context)
+            self.bus.dispatch(RecordAgentNudge(main.id, PERMISSION_REQUESTED.nudge(agent=context.actor.id, request=request.id), SOURCE), context)
         return request

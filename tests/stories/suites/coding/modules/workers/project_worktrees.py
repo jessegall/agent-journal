@@ -1,3 +1,4 @@
+import pytest
 import shutil
 
 from core.base.actor import Actor
@@ -7,6 +8,9 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
+
+
+pytestmark = pytest.mark.real_git
 
 UNFINISHED_BRANCH = "left-over"
 

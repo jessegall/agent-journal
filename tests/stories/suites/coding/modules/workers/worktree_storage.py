@@ -1,3 +1,4 @@
+import pytest
 from datetime import timedelta
 from pathlib import Path
 
@@ -9,6 +10,9 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+
+
+pytestmark = pytest.mark.real_git
 
 COPY = "vendor"
 LIBRARY_FILE = "lib.txt"

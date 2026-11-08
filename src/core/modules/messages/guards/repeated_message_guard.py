@@ -10,9 +10,9 @@ from core.modules.messages.support.repeated_messages import RepeatedMessages
 
 
 class RepeatedMessageGuard(Guard[Created[Message]]):
-    """An agent's message that says much the same as one of its last five is held until it confirms that it means
-    to send it again; text the journal records from the agent's transcript is never held, since it was already said,
-    nor a helper's report that ends its job, since holding it would leave the job open."""
+    """An agent's message that says much the same as one of its last five is held until it confirms that it
+    means to send it again; text the journal records from the agent's transcript is never held, since it
+    was already said, nor a helper's report that ends its job, since holding it would leave the job open."""
 
     name = "messages.repeated-message"
     short_flag = "confirm"

@@ -1,3 +1,4 @@
+import pytest
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.support.nudger import Nudger
 from core.base.command.context import Context
@@ -12,7 +13,7 @@ from unittest.mock import patch
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.commands.end_idle_worker.end_idle_worker import EndIdleWorker
+from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
@@ -30,7 +31,7 @@ REASON = '--reason "Its work is finished"'
 
 
 def stopped(story, worker) -> None:
-    story.container.get(Bus).run(EndIdleWorker(worker.id), story.agent)
+    story.container.get(Bus).run(EndInactiveWorker(worker.id), story.agent)
 
 
 def test_a_worker_with_unmerged_work_is_not_retired(new_story):
@@ -65,6 +66,7 @@ def test_retire_settles_what_a_worker_holds(new_story):
     story.expect_rows(retired.code == 5, "retired" in retired.output_text)
 
 
+@pytest.mark.real_git
 def test_retire_refused_with_a_preserved_branch(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
@@ -74,6 +76,7 @@ def test_retire_refused_with_a_preserved_branch(new_story):
     story.expect_refusal(f"agent retire {worker.id} {REASON}", "unmerged work", actor=story.agent)
 
 
+@pytest.mark.real_git
 def test_a_failed_git_status_holds_the_retirement(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
@@ -84,6 +87,7 @@ def test_a_failed_git_status_holds_the_retirement(new_story):
     story.expect_refusal(f"agent retire {worker.id} {REASON}", "git status failed", actor=story.agent)
 
 
+@pytest.mark.real_git
 def test_a_retire_runs_git_outside_the_transaction(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
@@ -235,6 +239,7 @@ def test_a_send_with_an_open_dependency_assigns_the_task_to_wait_and_cuts_no_wor
     story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None, story.row(Task, second).delegated_to == worker.id)
 
 
+@pytest.mark.real_git
 def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     worker = merged_kept_worker(story, repository_environment(story))

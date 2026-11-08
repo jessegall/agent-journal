@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.base.viewer.window_place import WindowPlace
 from suites.coding.coding_suite import CodingSuite
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 
 AUTO_MODE = "journal.suites.coding.auto-mode"
 
@@ -139,7 +139,7 @@ def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(perso
     story, viewer = person_in_viewer
     advanced = field_values(work_reading(viewer), "advanced")
     declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
-    story.expect_rows({CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ON] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
+    story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
 
 
 def test_the_context_limit_action_is_a_choice_of_compact_or_clear(person_in_viewer):

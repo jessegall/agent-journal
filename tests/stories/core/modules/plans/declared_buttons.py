@@ -29,6 +29,6 @@ def test_the_critique_and_end_review_buttons_sit_on_the_plan_inspector_for_their
     story = new_story(fixture=ReadyApprovalPlan)
     buttons = {entry.declaration.name: entry.declaration for entry in story.container.get(Registry).buttons}
     critique, end_review = buttons["plan_reviews.critique"], buttons["plan_reviews.end-review"]
-    story.expect_rows(critique.slots == ("row.plan",), tuple(critique.condition.values) == ("ready",),
-                      end_review.slots == ("row.plan",), tuple(end_review.condition.values) == ("reviewing",))
+    story.expect_rows(critique.slots == tuple(["row.plan"]), tuple(critique.condition.values) == tuple(["ready"]),
+                      end_review.slots == tuple(["row.plan"]), tuple(end_review.condition.values) == tuple(["reviewing"]))
     story.expect_text("plan show 1", "state: ready")

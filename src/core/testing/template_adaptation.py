@@ -13,14 +13,15 @@ STATE_FILE = "story-state.pickle"
 
 
 class TemplateAdaptation:
-    """Makes a template built in one checkout usable in another: a template holds the paths of the checkout that built
-    it (the files of its skills, for one), so a copy for another checkout has that checkout's path put in place of the
-    builder's, in its databases and its lists; it is made once for each checkout and kept beside the template."""
+    """Makes a template built in one checkout usable in another: a template holds the paths of the checkout
+    that built it (the files of its skills, for one), so a copy for another checkout has that checkout's
+    path put in place of the builder's, in its databases and its lists; it is made once for each checkout
+    and kept beside the template."""
 
     def __init__(self, checkout: Path) -> None:
         self.checkout = str(checkout)
 
-    def built_in(self, folder: Path) -> str:
+    def builder_name(self, folder: Path) -> str:
         file = folder / CHECKOUT_FILE
         return FileAccess.shared().read(file) if file.is_file() else self.checkout
 
@@ -28,8 +29,7 @@ class TemplateAdaptation:
         FileAccess.shared().write(folder / CHECKOUT_FILE, self.checkout)
 
     def adapted(self, template: Path, adapted: Path) -> None:
-        """Copies the template into the adapted folder with its builder's checkout path replaced by this checkout's."""
-        builder = self.built_in(template)
+        builder = self.builder_name(template)
         shutil.rmtree(adapted, ignore_errors=True)
         shutil.copytree(template, adapted)
         for database in adapted.rglob("*.db"):
@@ -42,7 +42,6 @@ class TemplateAdaptation:
         self.mark(adapted)
 
     def rewritten(self, value: object, builder: str) -> object:
-        """The value with the builder's checkout path replaced in every text it holds, whatever it is made of."""
         if type(value) is str:
             return value.replace(builder, self.checkout)
         if type(value) in (list, tuple, set, frozenset):
@@ -67,9 +66,9 @@ class TemplateAdaptation:
     @staticmethod
     def text_columns(connection: sqlite3.Connection) -> list[tuple[str, list[str]]]:
         tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND sql NOT LIKE 'CREATE VIRTUAL%' AND name NOT LIKE 'sqlite_%'")]
-        found = []
+        tables = []
         for table in tables:
             columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{table}")') if re.search("CHAR|TEXT|CLOB|JSON", row[2].upper() or "TEXT")]
             if columns:
-                found.append((table, columns))
-        return found
+                tables.append((table, columns))
+        return tables

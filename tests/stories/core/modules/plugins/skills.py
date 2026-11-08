@@ -1,3 +1,4 @@
+import pytest
 import json
 import socket
 import sys
@@ -26,10 +27,11 @@ from tests.stories.core.modules.plugins.support.plugin_samples import SKILL
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
+from tests.stories.support.story_checks import expect_value
 
 GIT_REMOTE_SAMPLE = HookSamples.shell("git fetch", ShellPart("git", CommandCategory.VERSION_CONTROL, ["fetch"]))
 UPLOAD_SAMPLE = HookSamples.shell("git push", ShellPart("git", CommandCategory.VERSION_CONTROL, ["push"]))
-ASKS_FOR_THE_RULES = f"""'{sys.executable}' -c '
+RULES_REQUEST = f"""'{sys.executable}' -c '
 import json, sys
 answer = {{"v": 1}}
 if "sample-rules" not in json.loads(sys.argv[1])["skills"]:
@@ -90,8 +92,7 @@ def test_s41_a_compaction_resets_the_skills_and_the_next_event_lists_none(new_st
     expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
-def plugin_with_the_rules(new_story, **manifest):
-    """A plugin that publishes the skill sample-rules, the only plugin of the story."""
+def rules_plugin(new_story, **manifest):
     story = install_runner(new_story(fixture=EventPluginStarted))
     folder = event_folder(story, skills="skills", **manifest)
     (folder / "skills" / "sample-rules").mkdir(parents=True)
@@ -105,7 +106,7 @@ def rules_state(story):
 
 
 def test_s41_the_skills_reach_a_hears_delivery(new_story):
-    story = plugin_with_the_rules(new_story, program="see.sh", hears=["file_edited"])
+    story = rules_plugin(new_story, program="see.sh", hears=["file_edited"])
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
     scanned_edit(story, "s-1", "a.py")
     story.run_listeners()
@@ -136,7 +137,7 @@ def start_service_socket(path: Path, lines: list[str]) -> socket.socket:
 
 
 def test_s41_the_skills_reach_an_answering_service(new_story):
-    story = plugin_with_the_rules(new_story, program="see.sh", hears=["command_starting"], holds=[{"event": "command_starting", "window_ms": 5000}], services=[{"name": "answers", "command": ["see.sh"], "answers": True}])
+    story = rules_plugin(new_story, program="see.sh", hears=["command_starting"], holds=[{"event": "command_starting", "window_ms": 5000}], services=[{"name": "answers", "command": ["see.sh"], "answers": True}])
     story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
     mark_rules_loaded(story, skill_digest(story, "sample-rules"))
     lines: list[str] = []
@@ -159,7 +160,7 @@ def test_s43_a_change_made_by_a_person_gives_no_agent_and_no_skills(new_story):
 
 
 def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_nor_skill(new_story):
-    story = plugin_with_the_rules(new_story, scripts={"judge.sh": ASKS_FOR_THE_RULES}, program="judge.sh", hears=["file_edited"])
+    story = rules_plugin(new_story, scripts={"judge.sh": RULES_REQUEST}, program="judge.sh", hears=["file_edited"])
     scanned_edit(story, "s-1", "cart.py")
     story.run_listeners()
     story.expect_rows(rules_state(story) == AgentSkillState.DUE)
@@ -170,10 +171,10 @@ def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_
     calls = script_calls(story, "judge.sh")
     story.expect_rows(len(calls) == 2)
     story.expect_rows("sample-rules" not in calls[0]["skills"], "sample-rules" in calls[1]["skills"])
-    lines_before = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
+    first_lines = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
     story.hook("s-1", LISTING_SAMPLE)
-    lines_after = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
-    assert lines_after == lines_before
+    last_lines = {row.id for row in story.container.get(Queries).query(AgentLine).all_rows()}
+    expect_value(last_lines, first_lines)
     story.expect_rows(rules_state(story) == AgentSkillState.LOADED)
 
 
@@ -200,6 +201,7 @@ def test_a_plugin_skill_published_only_for_codex_is_known(new_story):
     story.expect_text("skill list", "codex-rules", actor=story.user)
 
 
+@pytest.mark.real_git
 def test_disabling_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(new_story, tmp_path):
     story = installed_story(new_story)
     repository_environment(story)

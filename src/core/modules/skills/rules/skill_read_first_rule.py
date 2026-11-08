@@ -15,9 +15,9 @@ from core.modules.skills.support.block_conditions.skill_loaded import SkillLoade
 
 
 class SkillReadFirstRule(DriverRule):
-    """Names a due skill and the tool uses left before it is held, three from the moment it became due; a tool is
-    refused once they have run out, until the skill has been read. A skill the program put back after a compaction
-    counts as read."""
+    """Names a due skill and the tool uses left before it is held, three from the moment it became due; a tool
+    is refused once they have run out, until the skill has been read. A skill the program put back after a
+    compaction counts as read."""
 
     name = "skills.read-first"
     hook = HookEventName.PRE_TOOL_USE
@@ -32,13 +32,13 @@ class SkillReadFirstRule(DriverRule):
         if not names:
             return RuleAnswer.allowed()
         loads = self.kept.loads(hook, names)
-        kept_names = {load.skill for load in loads}
-        still_due = [name for name in names if name not in kept_names]
-        if not still_due or not self.requirement.is_required:
+        kept_names = {entry.skill for entry in loads}
+        missing = [name for name in names if name not in kept_names]
+        if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed().running(*loads)
-        due = self.rows.find(hook.agent_id, still_due[0])
+        due = self.rows.find(hook.agent_id, missing[0])
         remaining = self.countdown.remaining(hook, due) if due is not None else SKILL_TOOL_USES
         if remaining > 0:
-            return RuleAnswer.with_nudges(SKILL_COUNTDOWN.nudge(remaining, skill=still_due[0])).running(*loads)
-        instruction = self.files.instruction(still_due[0], hook)
-        return RuleAnswer.blocked(hook, READ_SKILL_FIRST.nudge(instruction=instruction), SkillLoaded(still_due[0])).running(*loads)
+            return RuleAnswer.with_nudges(SKILL_COUNTDOWN.nudge(remaining, skill=missing[0])).running(*loads)
+        instruction = self.files.instruction(missing[0], hook)
+        return RuleAnswer.blocked(hook, READ_SKILL_FIRST.nudge(instruction=instruction), SkillLoaded(missing[0])).running(*loads)

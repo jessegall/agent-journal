@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, replace
 
 from core.base.actor import Actor
 from core.base.command.command import Command
-from core.base.command.outside_runs import OutsideRuns
+from core.base.command.external_runs import OutsideRuns
 from core.base.explanation import Explanation
 from core.base.timestamp import Timestamp
 
@@ -20,7 +20,7 @@ class Context:
     cause_id: int | None = None
     environment_id: int | None = None
     explanation: Explanation | None = None
-    outside_runs: OutsideRuns = field(default_factory=OutsideRuns, compare=False)
+    external_runs: OutsideRuns = field(default_factory=OutsideRuns, compare=False)
     approval_id: int | None = None
 
     def nested(self, command: Command[object]) -> "Context":

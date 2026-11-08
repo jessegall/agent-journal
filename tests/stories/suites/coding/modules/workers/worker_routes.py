@@ -11,7 +11,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from core.base.driver.command_category import CommandCategory
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_folder
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository, ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.kept_workers import stopped
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -32,7 +32,7 @@ class DeliveredWorkerStory(NamedTuple):
 
 @pytest.fixture
 def delivered_worker_story(split_story):
-    repository = GitRepository(repository_folder(split_story))
+    repository = story_repository(split_story)
     worker = checked_worker(split_story, repository)
     return DeliveredWorkerStory(split_story, repository, worker)
 

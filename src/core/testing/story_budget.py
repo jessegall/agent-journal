@@ -18,10 +18,10 @@ class StoryBudget:
     def overrun(self, points: int, cpu_seconds: float) -> str:
         parts = [f"{points} database points, over its budget of {self.points}" if points > self.points else "",
                  f"{cpu_seconds:.2f} processor seconds, over its budget of {self.cpu_seconds}" if cpu_seconds > self.cpu_seconds else ""]
-        found = [part for part in parts if part]
-        if not found:
+        costs = [part for part in parts if part]
+        if not costs:
             return ""
-        return (f"the story cost {' and '.join(found)}: find what it repeats (a registry, a template, a wait) or declare a larger budget "
+        return (f"the story cost {' and '.join(costs)}: find what it repeats (a registry, a template, a wait) or declare a larger budget "
                 f"with @pytest.mark.{BUDGET_MARKER}(points=..., cpu_seconds=..., reason=...)")
 
     @staticmethod

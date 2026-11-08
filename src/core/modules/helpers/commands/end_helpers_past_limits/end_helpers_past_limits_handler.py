@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -34,24 +34,24 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
         self.bus, self.options = bus, options
 
     def handle(self, command: EndHelpersPastLimits, context: Context) -> None:
-        for helper in self.agents.running(HelperKind.READ_ONLY):
+        for helper in self.agents.running(HelperRole.HELPER):
             job = self.jobs.open_job(helper.id)
             if job is not None and helper.parent_id is not None:
                 self.check(helper, job, context)
 
     def check(self, helper: Agent, job: HelperJob, context: Context) -> None:
         with self.scopes.opened(None, helper.environment_id):
-            chosen = self.options.reading(helper.role, helper.profile).options
-            max_minutes = chosen.max_minutes if chosen.max_minutes is not None else self.settings.number(HELPER_MAX_MINUTES)
-            max_cost = chosen.max_cost if chosen.max_cost is not None else self.settings.decimal(HELPER_MAX_COST)
+            limits = self.options.resolved(helper.role, helper.profile).options
+            max_minutes = limits.max_minutes if limits.max_minutes is not None else self.settings.number(HELPER_MAX_MINUTES)
+            max_cost = limits.max_cost if limits.max_cost is not None else self.settings.decimal(HELPER_MAX_COST)
             spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars, job.cost_baseline,
                                 max_minutes, max_cost)
         if spend.share >= 1:
             self.stop(helper, job, spend)
-        elif spend.share >= WARNING_SHARE and not self.was_warned(helper, job):
+        elif spend.share >= WARNING_SHARE and not self.is_warned(helper, job):
             self.bus.run(SendHelperLimitWarning(helper.id, helper.parent_id, job.id, spend.limit_name), Actor.core(), environment_id=helper.environment_id)
 
-    def was_warned(self, helper: Agent, job: HelperJob) -> bool:
+    def is_warned(self, helper: Agent, job: HelperJob) -> bool:
         return self.queries.query(AgentLine).filter(session_agent_id=helper.parent_id, source=SendHelperLimitWarning.source(job.id)).exists()
 
     def stop(self, helper: Agent, job: HelperJob, spend: HelperSpend) -> None:

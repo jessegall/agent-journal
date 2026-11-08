@@ -19,7 +19,7 @@ class ClaudeInbox:
     def __init__(self, registry: Path) -> None:
         self.registry = registry
 
-    def line_sent(self, line: SessionLine) -> bool:
+    def delivered_line(self, line: SessionLine) -> bool:
         entry = self.entry(line.session)
         if entry is None or not entry.socket_path:
             return False

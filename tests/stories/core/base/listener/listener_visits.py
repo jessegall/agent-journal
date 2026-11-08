@@ -22,9 +22,9 @@ def test_one_write_visits_only_the_listeners_that_hear_it(new_story, monkeypatch
     monkeypatch.setattr(CommitListenerRunner, "run_listener", counted)
     story.run('reminder make "Look at the cart" --environment main', actor=story.user)
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     story.run_listeners()
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_visited_limit(visited, VISITS_LIMIT)
     expect_total_cost_limit(cost, READ_POINTS_LIMIT)
 

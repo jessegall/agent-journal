@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
 from core.base.driver.suite import Suite
 from core.base.viewer.layout_preset import LayoutPreset
@@ -31,8 +31,8 @@ class CodingSuite(Suite):
         saved_command_roles=("main", "worker", "helper", "reviewer", "verifier"),
         queue_limit_settings=tuple([WORKER_TEST_LIMIT]),
     )
-    defaults = {AgentRole.MAIN: "coding.main", CodingHelperKind.WORKER: "coding.worker", CodingHelperKind.READ_ONLY: "coding.helper", CodingHelperKind.REVIEWER: "coding.reviewer",
-                CodingHelperKind.VERIFIER: "coding.verifier"}
+    defaults = {AgentRole.MAIN: "coding.main", CodingHelperRole.WORKER: "coding.worker", CodingHelperRole.HELPER: "coding.helper", CodingHelperRole.REVIEWER: "coding.reviewer",
+                CodingHelperRole.VERIFIER: "coding.verifier"}
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "tasks.task-counts", "plans.plans", "agents.agents", "agents.helpers", "schedules.jobs", "memories.memories", "project-rules.rules", "workers.workers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "messages.attachments", "coding.terminal", "processes.outputs", "processes.output", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "library.teams", "tunnel.tunnel", "updates.updates", "developer.numbers", "developer.hook-requests", "developer.system-logs", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "sequences.sequences", "templates.templates", "plugins.plugins", "settings.settings", "settings.project-hooks", "tools.tools", "triggers.triggers", "checks.checks", "usage.load", "usage.usage", "usage.cost", "usage.context", "coding.work-mode"]
     layouts = {

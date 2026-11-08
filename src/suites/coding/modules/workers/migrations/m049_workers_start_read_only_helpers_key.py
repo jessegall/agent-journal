@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class WorkersStartReadOnlyHelpersKeyMigration(Migration):
+class WorkersStartHelpersKeyMigration(Migration):
     """The setting that lets a worker start helpers covers read-only helpers alone, so its key now says so."""
 
     number = 49

@@ -27,9 +27,9 @@ OLD_SUFFIX = ".old"
 
 
 class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
-    """Fetches a plugin's source and, once confirmed, sets the new code up next to the old and
-    replaces the old code with it before the transaction opens, so a failing step leaves the old one in
-    place; the preview also shows the diff of the files, and a running service is started again with the new code by
+    """Fetches a plugin's source and, once confirmed, sets the new code up next to the old and replaces the
+    old code with it before the transaction opens, so a failing step leaves the old one in place; the
+    preview also shows the diff of the files, and a running service is started again with the new code by
     PluginServicesUpgradeListener, once the upgrade is committed."""
 
     command = UpgradePlugin

@@ -13,9 +13,9 @@ BASE = "base"
 
 
 class PluginChangesSubcommand(ReadSubcommand[tuple[CheckoutFile, ...]]):
-    """`journal plugin changes [--agent <n>] [--since <commit or base>]`: each name that differs in the checkout of an
-    agent from a commit, by default and with `base` the commit its checkout was cut from, with files not yet committed
-    and new ones."""
+    """`journal plugin changes [--agent <n>] [--since <commit or base>]`: each name that differs in the
+    checkout of an agent from a commit, by default and with `base` the commit its checkout was cut from,
+    with files not yet committed and new ones."""
 
     cli_name = "plugin"
     name = "changes"

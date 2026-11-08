@@ -10,9 +10,10 @@ from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, OPEN_TASKS_WA
 
 
 class MainStopRule(DriverRule):
-    """A main agent that stops is handed the next task when it may work on it, and is held back while a task can still be
-    sent to a worker and its work controls ask it to keep going; with nothing it can do it may stop. While a task can go to a worker and a place is free, a stop is held once for
-    each state of the tasks and places, so the agent sends them or says why not."""
+    """A main agent that stops is handed the next task when it may work on it, and is held back while a task
+    can still be sent to a worker and its work controls ask it to keep going; with nothing it can do it may
+    stop. While a task can go to a worker and a place is free, a stop is held once for each state of the
+    tasks and places, so the agent sends them or says why not."""
 
     name = "coding.main-stop"
     hook = HookEventName.STOP
@@ -28,6 +29,6 @@ class MainStopRule(DriverRule):
             return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=", ".join(str(task_id) for task_id in available.delegatable)))
         if available.delegatable:
             notice = FREE_WORKER_PLACE.nudge(count=available.free_places, tasks=", ".join(str(task_id) for task_id in available.delegatable))
-            if not self.notices.is_told(hook.agent_id, notice.text):
+            if not self.notices.has_notice(hook.agent_id, notice.text):
                 return RuleAnswer.refused(notice)
         return RuleAnswer.allowed("no task can be handed to the main agent or sent to a worker")

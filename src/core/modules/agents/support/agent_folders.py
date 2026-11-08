@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.journal_home import JournalHome
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
@@ -31,7 +31,7 @@ class AgentFolders:
         return project.parent / f".{project.name}{START_FOLDERS_SUFFIX}" / str(agent.id)
 
     def folder(self, agent: Agent) -> Path:
-        if agent.role == HelperKind.READ_ONLY and self.start_folder(agent).is_dir():
+        if agent.role == HelperRole.HELPER and self.start_folder(agent).is_dir():
             return self.start_folder(agent)
         return self.checkout_folder(agent)
 

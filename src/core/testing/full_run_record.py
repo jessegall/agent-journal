@@ -18,9 +18,10 @@ ALLOWED_GROWTH = 0.3
 
 @dataclass(frozen=True)
 class FullRunRecord:
-    """One run of the whole suite: how many tests it ran, how many failed, how long it took on the clock and how many
-    processor seconds the test runners spent together, kept as a line in the checkout's journal folder so a check can
-    warn when the time per test grows. A line from before the processor seconds were kept reads with none."""
+    """One run of the whole suite: how many tests it ran, how many failed, how long it took on the clock and
+    how many processor seconds the test runners spent together, kept as a line in the checkout's journal
+    folder so a check can warn when the time per test grows. A line from before the processor seconds were
+    kept reads with none."""
 
     tests: int
     failed: int
@@ -29,7 +30,7 @@ class FullRunRecord:
     finished_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     @property
-    def seconds_per_test(self) -> float:
+    def average_test_seconds(self) -> float:
         return self.seconds / max(self.tests, 1)
 
     def summary_line(self) -> str:
@@ -44,8 +45,8 @@ class FullRunRecord:
 
 @dataclass(frozen=True)
 class FullRunRecords:
-    """The recorded runs of the whole suite, oldest first, and whether the newest took longer per test than the runs
-    before it."""
+    """The recorded runs of the whole suite, oldest first, and whether the newest took longer per test than
+    the runs before it."""
 
     records: list[FullRunRecord]
 
@@ -60,18 +61,18 @@ class FullRunRecords:
         if len(self.records) < 2:
             return ""
         newest = self.records[-1]
-        usual = median(record.seconds_per_test for record in self.records[-COMPARED_RUNS - 1:-1])
-        if newest.seconds_per_test <= usual * (1 + ALLOWED_GROWTH):
+        usual = median(record.average_test_seconds for record in self.records[-COMPARED_RUNS - 1:-1])
+        if newest.average_test_seconds <= usual * (1 + ALLOWED_GROWTH):
             return ""
-        return (f"the last full run took {newest.seconds_per_test:.3f} seconds per test over {newest.tests} tests, against "
+        return (f"the last full run took {newest.average_test_seconds:.3f} seconds per test over {newest.tests} tests, against "
                 f"{usual:.3f} in the runs before it: find what made each test slower")
 
 
 def main() -> int:
-    found = FullRunRecords.read().growth()
-    if not found:
+    growth = FullRunRecords.read().growth()
+    if not growth:
         return 0
-    print(found)
+    print(growth)
     return 1
 
 

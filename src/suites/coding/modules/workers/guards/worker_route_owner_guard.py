@@ -26,4 +26,4 @@ class WorkerRouteOwnerGuard(Guard[Updated[WorkerRoute] | Deleted[WorkerRoute]]):
             return
         owner = self.rows.required(ActorRecord, event.row.creator_id)
         if owner.type is ActorType.USER:
-            raise UserApprovalRefusal(f"Change task route {event.row.id}?")
+            raise UserApprovalRefusal(f"Change task route {event.row.id}?", command=context.command)

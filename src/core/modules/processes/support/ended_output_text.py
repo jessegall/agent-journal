@@ -33,7 +33,7 @@ class EndedOutputText:
             return ()
         ids = tuple(process.id for process in processes)
         outputs = {output.process_id: output for output in self.outputs.process_outputs(ids)}
-        parts = self.visibility.parts_of(ids)
+        parts = self.visibility.processes_parts(ids)
         return tuple(nudge for process in processes for nudge in self.process_nudges(process, outputs.get(process.id), parts[process.id]))
 
     def process_nudges(self, process: Process, output: Output | None, parts: tuple[ProcessPart, ...]) -> tuple[Nudge, ...]:

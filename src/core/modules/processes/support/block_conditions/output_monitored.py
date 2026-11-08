@@ -16,18 +16,17 @@ from core.modules.processes.models.process import Process
 
 
 class OutputMonitored(BlockCondition):
-    """The agent watches this output the way its program does, or the output has ended: it starts a Monitor naming
-    the output, or, when its program has no Monitor tool, runs journal output monitor on it in its shell."""
+    """The agent watches this output the way its program does, or the output has ended: it starts a Monitor
+    naming the output, or, when its program has no Monitor tool, runs journal output monitor on it in its
+    shell."""
 
     name = "output-monitored"
 
     def is_true(self, check: BlockCheck) -> bool:
         process = check.container.get(Queries).query(Process).find(int(self.text))
-        return self.is_watched(check) or process.state not in RUNNING_STATES or self.has_live_monitor(check, process)
+        return self.is_watched(check) or process.state not in RUNNING_STATES or self.has_active_monitor(check, process)
 
-    def has_live_monitor(self, check: BlockCheck, process: Process) -> bool:
-        """A Monitor naming this output, allowed since the output began, that its life has not yet ended: one set while the run still
-        waited in the queue counts, though the block came later."""
+    def has_active_monitor(self, check: BlockCheck, process: Process) -> bool:
         calls = check.container.get(Queries).query(HookCall).filter(session_agent_id=check.hook.agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL,
                                                                   answer=HookAnswer.ALLOWED).matching(Minimum("created_at", process.creation_timestamp().text)).matching(ContainsSome(["summary"], [self.text])).all_rows()
         return any(re.search(rf"\b{self.text}\b", call.summary) is not None and call.creation_timestamp().elapsed_seconds(check.hook.timestamp) < MONITOR_LIFE_SECONDS for call in calls)

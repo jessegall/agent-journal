@@ -1,5 +1,5 @@
 from suites.coding.migrations.m006_main_starts_helpers_key import MainStartsHelpersKeyMigration
-from suites.coding.migrations.m007_read_only_helpers_key import ReadOnlyHelpersKeyMigration
+from suites.coding.migrations.m007_read_only_helpers_key import HelpersKeyMigration
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
 from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsMigration
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
@@ -55,6 +55,7 @@ from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
+from suites.coding.drivers.main.guards.main_reservation_guard import MainReservationGuard
 from suites.coding.drivers.main.guards.main_task_start_guard import MainTaskStartGuard
 from suites.coding.drivers.main.rules.main_file_write_rule import MainFileWriteRule
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
@@ -71,8 +72,8 @@ class CodingModule(Module):
     name = "journal.suites.coding"
     profiles = HELPER_PROFILES
     helper_types = [HelperType("verifier", "Verifier")]
-    agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", ("journal-merger",)),
-                    AgentGroup("designer", "Designer", "helper", ("journal-designer",)), AgentGroup("helpers", "Helpers", "helper")]
+    agent_groups = [AgentGroup("workers", "Workers", "worker"), AgentGroup("merger", "Merger", "helper", tuple(["journal-merger"])),
+                    AgentGroup("designer", "Designer", "helper", tuple(["journal-designer"])), AgentGroup("helpers", "Helpers", "helper")]
     templates = CODING_TEMPLATES
     nudges = [*CODING_NUDGES, TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN]
     seeders = [CodingSeeder]
@@ -87,14 +88,14 @@ class CodingModule(Module):
     settings = CODING_SETTINGS
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.viewer", "journal.core.plugins"]
-    guards = [MainTaskStartGuard]
+    guards = [MainTaskStartGuard, MainReservationGuard]
     suites = [CodingSuite]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-plan-dispatch", "How the main agent gets a plan made: it dispatches a functional designer and then a planner; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
               SkillDeclaration("journal-functional-design", "How a functional designer writes a design document: user stories, code examples and the phases in order; read it before you write one"),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [ReadOnlyHelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
+    migrations = [HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]

@@ -1,7 +1,11 @@
+import pytest
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+
+
+pytestmark = pytest.mark.real_git
 
 
 def test_the_git_window_reads_its_keys_together_then_pages_only_commits(new_story):

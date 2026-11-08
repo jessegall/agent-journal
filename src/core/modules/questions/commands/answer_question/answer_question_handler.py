@@ -13,9 +13,10 @@ from core.modules.questions.models.question import Question
 
 
 class AnswerQuestionHandler(Handler[AnswerQuestion, Question]):
-    """Moves a question to answered. A person's answer is no message of theirs: the chat shows it as one answered mark of the
-    question, and the agent hears of it once, through the answered question. A message the person already wrote may be named
-    as the answer's source, if it is theirs and addressed to the agent that asked."""
+    """Moves a question to answered. A person's answer is no message of theirs: the chat shows it as one
+    answered mark of the question, and the agent hears of it once, through the answered question. A message
+    the person already wrote may be named as the answer's source, if it is theirs and addressed to the
+    agent that asked."""
 
     command = AnswerQuestion
 

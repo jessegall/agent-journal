@@ -17,8 +17,8 @@ PROFILES = {"merger": "journal-merger", "designer": "journal-designer"}
 
 
 class MainControlsActors(StoryFixture):
-    """Ada, a person, beside the started main agent, with a worker, an ordinary helper, a merger and a designer under it:
-    story.user and story.agent, and agent_actors for the others."""
+    """Ada, a person, beside the started main agent, with a worker, an ordinary helper, a merger and a
+    designer under it: story.user and story.agent, and agent_actors for the others."""
 
     parent = BuilderWithUser
 
@@ -34,7 +34,6 @@ class MainControlsActors(StoryFixture):
 
 
 def agent_actors(story: Story) -> dict[str, Actor]:
-    """The main agent and the agents the fixture started, by name, found by their sessions."""
     actors = {"main": story.agent}
     for row_id in range(story.user.id + 1, story.user.id + 1 + len(AGENT_ROLES)):
         session = re.search(r"^session: (\w+)-session$", story.run(f"agent show {row_id}", actor=story.user).output_text, re.MULTILINE)
@@ -44,7 +43,8 @@ def agent_actors(story: Story) -> dict[str, Actor]:
 
 @dataclass(frozen=True)
 class PersonViewer:
-    """Ada signed in to the viewer of a story's server, writing and reading settings through the viewer's line route."""
+    """Ada signed in to the viewer of a story's server, writing and reading settings through the viewer's line
+    route."""
 
     server: object
     cookie: str
@@ -61,8 +61,7 @@ def person_viewer(story: Story) -> Iterator[PersonViewer]:
 
 
 @contextmanager
-def in_environment(story: Story, environment_id: int = 1) -> Iterator[None]:
-    """Reads the story's settings for an environment, as a request that names it would."""
+def scope_line(story: Story, environment_id: int = 1) -> Iterator[None]:
     database = story.container.get(Database)
     previous = database.row_owner
     database.row_owner = RowOwner(None, environment_id)

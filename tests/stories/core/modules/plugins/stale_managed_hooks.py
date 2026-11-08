@@ -6,6 +6,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value
 
 STAMP = "# @code-commandments-managed"
 STAMPED_COMMAND = f"commandments-hook {STAMP}"
@@ -35,16 +36,15 @@ class PersonPresent(StoryFixture):
 
 
 def stamped_and_project_hooks(story: Story) -> None:
-    """The managed file holds a hook stamped by a plugin that is not installed yet and one of the project's own."""
     story.container.get(ManagedHooks).added([managed_hook(STAMPED_COMMAND), managed_hook(PROJECT_COMMAND)])
 
 
 def test_installing_a_plugin_removes_the_managed_hooks_with_its_stamp_and_keeps_the_others(new_story):
     story = new_story(fixture=PersonPresent)
     stamped_and_project_hooks(story)
-    assert commands(story) == [STAMPED_COMMAND, PROJECT_COMMAND]
+    expect_value(commands(story), [STAMPED_COMMAND, PROJECT_COMMAND])
     install_stamped_plugin(story)
-    assert commands(story) == [PROJECT_COMMAND]
+    expect_value(commands(story), [PROJECT_COMMAND])
 
 
 def test_switching_a_plugin_on_removes_a_stamped_hook_that_came_back(new_story):
@@ -53,14 +53,14 @@ def test_switching_a_plugin_on_removes_a_stamped_hook_that_came_back(new_story):
     install_stamped_plugin(story)
     story.expect_success("plugin disable commandments", actor=story.user)
     story.container.get(ManagedHooks).added([managed_hook(STAMPED_COMMAND)])
-    assert STAMPED_COMMAND in commands(story)
+    expect_value(STAMPED_COMMAND in commands(story), True)
     story.expect_success("plugin enable commandments", actor=story.user)
-    assert commands(story) == [PROJECT_COMMAND]
+    expect_value(commands(story), [PROJECT_COMMAND])
 
 
 def test_a_person_removes_managed_hooks_by_stamp(new_story):
     story = new_story(fixture=PersonPresent)
     stamped_and_project_hooks(story)
     story.expect_text(f'managed-hook remove --stamp "{STAMP}"', "removed 1 managed hooks", actor=story.user)
-    assert commands(story) == [PROJECT_COMMAND]
+    expect_value(commands(story), [PROJECT_COMMAND])
     story.expect_text(f'managed-hook remove --stamp "{STAMP}"', "removed 0 managed hooks", actor=story.user)

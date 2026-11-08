@@ -30,7 +30,7 @@ def entries(*groups: AgentGroup) -> tuple[AgentGroupEntry, ...]:
 
 
 def test_s49_a_profile_in_two_groups_or_two_catch_all_groups_is_a_problem():
-    book = AgentGroupBook(entries(AgentGroup("a", "A", "helper", ("p",)), AgentGroup("b", "B", "helper", ("p",)), AgentGroup("c", "C", "helper"), AgentGroup("d", "D", "helper")))
+    book = AgentGroupBook(entries(AgentGroup("a", "A", "helper", tuple(["p"])), AgentGroup("b", "B", "helper", tuple(["p"])), AgentGroup("c", "C", "helper"), AgentGroup("d", "D", "helper")))
     problems = list(book.problems(frozenset({"helper"})))
     expect_value(len(problems), 2)
 

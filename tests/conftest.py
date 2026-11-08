@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from functools import cache
 import os
 import subprocess
@@ -7,6 +8,7 @@ import pytest
 
 from core.testing.story import Story
 from tests.stories.support.program_states import bind_ready_programs
+from tests.stories.suites.coding.modules.workers.support.memory_git.git_choice import REAL_GIT
 
 pytest_plugins = ["core.testing.pytest_plugin"]
 STORY_SUPPORT_FOLDER = "support"
@@ -14,6 +16,7 @@ REAL_PROGRAM_FLAG = "--real-program"
 REAL_PROGRAM_MARK = "real_program"
 REAL_PROGRAMS = ("claude", "codex")
 TYPE_CHECK_MARK = "type_check"
+REAL_GIT_MARK = "real_git"
 INSTALL_MARK = "install_job"
 INSTALL_FOLDER = "install"
 BROWSER_MARK = "browser_job"
@@ -34,6 +37,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", f"{REAL_PROGRAM_MARK}: the story starts a real agent program and runs only with {REAL_PROGRAM_FLAG}")
+    config.addinivalue_line("markers", f"{REAL_GIT_MARK}: the story is about git and builds its repository with real git; every other story keeps its repository in memory")
     config.addinivalue_line("markers", f"{TYPE_CHECK_MARK}: the strict type check, a gate of its own: python3 -m pytest -m {TYPE_CHECK_MARK}")
     config.addinivalue_line("markers", f"{BROWSER_MARK}: drives a real browser, a gate of its own: python3 -m pytest -m {BROWSER_MARK} tests")
     config.addinivalue_line("markers", f"{INSTALL_MARK}: runs the real install or upgrade, a gate of its own: python3 -m pytest -m {INSTALL_MARK} tests")
@@ -117,3 +121,10 @@ def story_program_readiness(monkeypatch):
         return story
 
     monkeypatch.setattr(Story, 'opened', classmethod(ready_story))
+
+
+@pytest.fixture(autouse=True)
+def story_git_choice(request: pytest.FixtureRequest) -> Generator[None]:
+    token = REAL_GIT.set(request.node.get_closest_marker(REAL_GIT_MARK) is not None)
+    yield
+    REAL_GIT.reset(token)

@@ -2,7 +2,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from suites.coding.support.available_work import AvailableWork
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
-from tests.stories.suites.coding.support.main_controls_fixture import in_environment
+from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"
@@ -11,7 +11,7 @@ WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 
 
 def available(story):
-    with in_environment(story):
+    with scope_line(story):
         return story.container.get(AvailableWork).answer(story.agent.id)
 
 
@@ -25,7 +25,7 @@ def test_s04_auto_off_hands_nothing_to_the_main_agent_but_the_task_can_be_delega
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_success(f"setting set {AUTO} off --environment main")
     answer = available(story)
-    expect_value((answer.own_task, answer.delegatable, answer.may_stop), (None, (1,), False))
+    expect_value((answer.own_task, answer.delegatable, answer.may_stop), (None, tuple([1]), False))
 
 
 def test_s47_no_worker_permission_or_no_place_leaves_nothing_to_do_and_the_main_agent_may_stop(new_story):

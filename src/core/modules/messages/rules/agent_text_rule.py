@@ -10,7 +10,7 @@ from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.timestamp import Timestamp
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
-from core.modules.messages.support.message_nudges import ONE_LINE_CLOSING, REPEATED_CLOSING
+from core.modules.messages.support.message_nudges import CLOSING_LINE_HIDDEN, REPEATED_CLOSING
 from core.modules.messages.support.repeated_messages import RepeatedMessages
 
 
@@ -34,7 +34,7 @@ class AgentTextRule(DriverRule):
         if (after_reply and self.texts.repeats_reply(hook.agent_id, text, hook.timestamp)) or self.texts.is_acknowledgement(hook.agent_id, text, hook.timestamp):
             return RuleAnswer.allowed()
         if after_reply and self.texts.is_single_line(text):
-            return RuleAnswer.with_nudges(ONE_LINE_CLOSING.nudge())
+            return RuleAnswer.with_nudges(CLOSING_LINE_HIDDEN.nudge())
         repeated =self.repeats.repeated(hook.agent_id, text)
         if repeated is not None:
             return RuleAnswer.with_nudges(REPEATED_CLOSING.nudge(message=repeated.id))

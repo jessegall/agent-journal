@@ -19,10 +19,11 @@ from core.modules.actors.models.actor_record import ActorRecord
 
 
 class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
-    """Explains what Accept would run, as the person who would accept, and refuses the request when that would fail, so a
-    card that cannot work is never shown. Where no person has joined there is none to run it as, and a command whose
-    handler does work before its transaction cannot be tried without doing that work, so it is not tried. A command that reaches
-    a change outside the database has passed everything before it, and the dry run stops there."""
+    """Explains what Accept would run, as the person who would accept, and refuses the request when that would
+    fail, so a card that cannot work is never shown. Where no person has joined there is none to run it as,
+    and a command whose handler does work before its transaction cannot be tried without doing that work,
+    so it is not tried. A command that reaches a change outside the database has passed everything before
+    it, and the dry run stops there."""
 
     command = CheckApprovalWorks
 
@@ -44,20 +45,20 @@ class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
 
     def person(self, person_id: int | None) -> Actor | None:
         people = self.queries.query(ActorRecord).filter(type=ActorType.USER)
-        found = people.filter(id=person_id).first() if person_id is not None else people.first()
-        return Actor(found.id, ActorType.USER) if found is not None else None
+        person = people.filter(id=person_id).first() if person_id is not None else people.first()
+        return Actor(person.id, ActorType.USER) if person is not None else None
 
     def explain_line(self, arguments: tuple[str, ...], caller: Caller, context: Context) -> None:
         line = list(arguments)
         subcommand, parser = self.console.line_parser.parser(line)
         if not isinstance(subcommand, Subcommand):
             return None
-        printed = io.StringIO()
+        captured_text = io.StringIO()
         try:
-            with redirect_stdout(printed), redirect_stderr(printed):
+            with redirect_stdout(captured_text), redirect_stderr(captured_text):
                 parsed = parser.parse_args(line[2:])
         except SystemExit:
-            raise Refusal(printed.getvalue().strip()) from None
+            raise Refusal(captured_text.getvalue().strip()) from None
         self.explain(subcommand.command(parsed, caller), caller.actor, context)
 
     def explain(self, command: Command[object], person: Actor, context: Context) -> None:

@@ -22,7 +22,7 @@ class PointTally:
         self.statements: Counter[str] = Counter()
         self.update_statements: Counter[str] = Counter()
 
-    def take_read_mark(self) -> None:
+    def mark_read(self) -> None:
         return
 
     def loaded(self, rows: Sequence[sqlite3.Row], statement: Statement) -> None:

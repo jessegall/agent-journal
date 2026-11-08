@@ -12,13 +12,13 @@ QUEUE_INSPECTOR = InspectorDeclaration(
     label="Process queue",
     title="Process queue",
     width=InspectorWidth.MEDIUM,
-    events=("process.*",),
+    events=tuple(["process.*"]),
     actions=(
-        ButtonDeclaration("processes.halt-queue", (), "Halt the queue", "queue halt --reason={reason}", icon="stop", condition=ButtonCondition("halt_state", ("running",)),
-                          fields=(TextField("reason", "Why is it halted?"),)),
-        ButtonDeclaration("processes.resume-queue", (), "Resume the queue", "queue resume", icon="resume", primary=True, condition=ButtonCondition("halt_state", ("halted",))),
+        ButtonDeclaration("processes.halt-queue", (), "Halt the queue", "queue halt --reason={reason}", icon="stop", condition=ButtonCondition("halt_state", tuple(["running"])),
+                          fields=tuple([TextField("reason", "Why is it halted?")])),
+        ButtonDeclaration("processes.resume-queue", (), "Resume the queue", "queue resume", icon="resume", primary=True, condition=ButtonCondition("halt_state", tuple(["halted"]))),
     ),
-    components=(InspectorComponent("processes.queue-body"),),
+    components=tuple([InspectorComponent("processes.queue-body")]),
     links=None,
     named="test-queue",
 )

@@ -21,7 +21,7 @@ class KeptRows:
         self.write_rollback_count = database.write_rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters)))
+        return self.kept_value(self.key(table, condition, parameters, name), loader, self.signature_read(table, condition, parameters))
 
     def read_newest(self, table: str, loader: Callable[[], T], condition: str, parameters: Sequence[object], *, name: str) -> T:
         return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT id, version, updated_at FROM {table} WHERE {condition} ORDER BY id DESC LIMIT 1", list(parameters)))
@@ -67,6 +67,10 @@ class KeptRows:
         if self.write_rollback_count != self.database.write_rollback_count:
             self.kept = {key: replace(value, change_mark=(-1, -1)) for key, value in self.kept.items()}
             self.write_rollback_count = self.database.write_rollback_count
+
+    @staticmethod
+    def signature_read(table: str, condition: str, parameters: Sequence[object]) -> Statement:
+        return Statement(f"SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters))
 
     @staticmethod
     def key(table: str, condition: str, parameters: Sequence[object], name: str) -> str:

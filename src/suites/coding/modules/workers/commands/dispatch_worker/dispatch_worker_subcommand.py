@@ -16,10 +16,10 @@ from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
 class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
-    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>])
-    [--model <model> | --tier <tier>]
-    [--profile <profile>] [--name <name>] [--no-sandbox] [--library-link <folder>] [--library-copy <folder>]`: a worker for
-    the tasks, or for the open tasks of a plan or of one of its phases, which it takes one by one."""
+    """`journal worker dispatch (<task> [<task> ...] | --plan <plan> [--phase <phase>]) [--model <model> |
+    --tier <tier>] [--profile <profile>] [--name <name>] [--no-sandbox] [--library-link <folder>]
+    [--library-copy <folder>]`: a worker for the tasks, or for the open tasks of a plan or of one of its
+    phases, which it takes one by one."""
 
     cli_name = "worker"
     name = "dispatch"

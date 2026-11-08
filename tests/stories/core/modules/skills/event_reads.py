@@ -17,7 +17,7 @@ def test_an_event_no_skill_names_reads_no_skill_file_and_no_table(new_story):
     plugin_skill.write_text("---\nplugin: sample\ndescription: Sample plugin skill\n---\nRead the sample.\n")
     story.expect_success('message send "A note" --environment main', actor=story.user)
     log = story.container.get(EventLog)
-    logged = next(event for event in log.events_past(0) if event.event == "message.create")
+    logged = next(event for event in log.events_after(0) if event.event == "message.create")
     database = story.container.get(Database)
     listener = story.container.get(SkillEventListener)
     statements = []

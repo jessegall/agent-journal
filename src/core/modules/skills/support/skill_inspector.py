@@ -9,7 +9,7 @@ SKILL_INSPECTOR = InspectorDeclaration(
     label="Skill",
     title="{skill}",
     width=InspectorWidth.MEDIUM,
-    events=("agent_skill.*",),
-    components=(InspectorComponent("skills.skill-body"),),
+    events=tuple(["agent_skill.*"]),
+    components=tuple([InspectorComponent("skills.skill-body")]),
     links=None,
 )

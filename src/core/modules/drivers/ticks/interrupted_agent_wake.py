@@ -5,7 +5,8 @@ from core.modules.drivers.support.interrupted_agents import InterruptedAgents
 
 
 class InterruptedAgentWake:
-    """Every few seconds, looks at each open main agent whose turn was interrupted and wakes the ones nobody typed to."""
+    """Every few seconds, looks at each open main agent whose turn was interrupted and wakes the ones nobody
+    typed to."""
 
     def __call__(self, container: Container) -> None:
         interrupted, timestamp = container.get(InterruptedAgents), container.get(Clock).timestamp()

@@ -18,5 +18,5 @@ class TerminalTyping:
     def type_line(self, agent_id: int, line: str) -> None:
         if not self.home.socket(LAUNCHER_SOCKET).exists():
             raise Refusal(LAUNCHER_MISSING, "start the agent with journal launch")
-        if self.link.sent({"agent_id": agent_id, "typed": line}, len(TERMINAL_ANSWER)) != TERMINAL_ANSWER:
+        if self.link.request_launcher({"agent_id": agent_id, "typed": line}, len(TERMINAL_ANSWER)) != TERMINAL_ANSWER:
             raise Refusal(TYPING_FAILED, TYPING_SUGGESTION)

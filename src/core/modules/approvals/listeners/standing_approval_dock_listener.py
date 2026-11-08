@@ -14,7 +14,8 @@ from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockIte
 
 
 class StandingApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
-    """Docks a passing notice that says which request a standing yes has let through, with a button to withdraw that yes."""
+    """Docks a passing notice that says which request a standing yes has let through, with a button to
+    withdraw that yes."""
 
     name = "approvals.standing-dock"
     disabled_scopes = [ActorScope, EnvironmentScope]

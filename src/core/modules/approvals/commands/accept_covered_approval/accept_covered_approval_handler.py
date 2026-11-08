@@ -14,8 +14,9 @@ from core.modules.approvals.models.standing_approval import StandingApproval
 
 
 class AcceptCoveredApprovalHandler(Handler[AcceptCoveredApproval, str | None]):
-    """Accepts the caller's newest open request a standing yes covers, as the person who gave that yes, and gives what
-    the accepted command printed; a command that fails is refused with its reason, and the request waits in the dock."""
+    """Accepts the caller's newest open request a standing yes covers, as the person who gave that yes, and
+    gives what the accepted command printed; a command that fails is refused with its reason, and the
+    request waits in the dock."""
 
     command = AcceptCoveredApproval
 
@@ -27,5 +28,5 @@ class AcceptCoveredApprovalHandler(Handler[AcceptCoveredApproval, str | None]):
         if request is None or request.standing_id is None:
             return None
         standing = self.queries.query(StandingApproval).find(request.standing_id)
-        result = self.bus.run(AnswerApproval(request.id, ApprovalDecision.ACCEPT), Actor(standing.creator_id, ActorType.USER), environment_id=request.environment_id)
-        return f"standing yes {standing.id} accepted approval {request.id}\n{result.output}".rstrip()
+        outcome = self.bus.run(AnswerApproval(request.id, ApprovalDecision.ACCEPT), Actor(standing.creator_id, ActorType.USER), environment_id=request.environment_id)
+        return f"standing yes {standing.id} accepted approval {request.id}\n{outcome.output}".rstrip()

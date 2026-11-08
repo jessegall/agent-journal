@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class CommandKindsMigration(Migration):
+class CommandWordsMigration(Migration):
     """Creates the table of the kinds agents gave commands the journal could not classify."""
 
     number = 4

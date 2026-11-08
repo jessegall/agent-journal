@@ -41,6 +41,12 @@ test("a task queued for an agent names it as queued and not as held", () => {
     expect(element.querySelector("[data-task-held-by]").textContent).toContain("takes it after the task it is on");
 });
 
+test("a blocked task reserved for an agent that never started it says nothing about holding it", () => {
+    const element = mountedFor({state: "blocked", delegated_to: 12, helper_id: 12, helper_name: "Lady Lovelace"});
+    expect(element.querySelector("[data-task-agent]").textContent).toBe("Lady Lovelace");
+    expect(element.querySelector("[data-task-held-by]")).toBeNull();
+});
+
 test("a task nobody holds shows no agent and no note", () => {
     const element = mountedFor({state: "open"});
     expect(element.querySelector("[data-task-agent]")).toBeNull();

@@ -17,4 +17,4 @@ class LibraryAddressGuard(Guard[Changed[Setting]]):
     def check(self, event: Changed[Setting], context: Context) -> None:
         setting = event.row
         if setting.key == ADDRESS_SETTING and context.actor.type is not ActorType.USER:
-            raise UserApprovalRefusal("Change the shared server address?")
+            raise UserApprovalRefusal("Change the shared server address?", command=context.command)

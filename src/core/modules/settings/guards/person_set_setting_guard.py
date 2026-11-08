@@ -13,9 +13,9 @@ from core.modules.settings.support.setting_revision import SettingRevision
 
 
 class PersonSetSettingGuard(Guard[Changed[Setting]]):
-    """An agent never writes a setting that drives what an agent may do; every way to write one ends in this row.
-    The change waits for a person with the revision of the setting as the agent saw it, so an approval that comes
-    after the setting changed is refused."""
+    """An agent never writes a setting that drives what an agent may do; every way to write one ends in this
+    row. The change waits for a person with the revision of the setting as the agent saw it, so an approval
+    that comes after the setting changed is refused."""
 
     name = "settings.person-set"
     is_safety = True
@@ -34,5 +34,5 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
     def arguments(self, row: Setting) -> tuple[str, ...]:
         value = json.loads(row.value)
         text = value if isinstance(value, str) else json.dumps(value)
-        project = ("--project",) if row.environment_id is None else ()
+        project = tuple(["--project"]) if row.environment_id is None else ()
         return ("setting", "set", row.key, text, *project, "--expected-revision", self.revision.current(row.key))

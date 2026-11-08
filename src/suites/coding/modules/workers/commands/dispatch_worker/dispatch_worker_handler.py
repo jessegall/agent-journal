@@ -15,7 +15,7 @@ from core.base.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -42,6 +42,7 @@ from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
+from suites.coding.modules.workers.support.main_reserved_tasks import MainReservedTasks
 from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
@@ -51,8 +52,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease) -> None:
-        self.release = release
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: HelperTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease, reservations: MainReservedTasks) -> None:
+        self.release, self.reservations = release, reservations
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
@@ -60,11 +61,12 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.sources, self.routing = sources, routing
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
+        self.reservations.check([command.task_id, *command.delegated_ids])
         read = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
         tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
         if not AssignableTasks.has_open(tasks):
             raise Refusal("every task here is blocked, and a new worker starts on an open one",
-                          "assign blocked tasks to a kept worker with journal worker send <n> --task, or dispatch once one opens")
+                          "assign blocked tasks to an existing worker with journal worker send <n> --task, or dispatch once one opens")
         with self.scopes.row_scope(tasks[0]):
             return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
 
@@ -81,7 +83,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_model(program, model, profile.name)
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
-        start = StartAgent(command.session or str(uuid4()), program, CodingHelperKind.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
+        start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program), context)
@@ -118,7 +120,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')
 
     def worker_profile(self, name: str) -> AgentProfile:
-        worker_type = self.types.find(CodingHelperKind.WORKER)
+        worker_type = self.types.find(CodingHelperRole.WORKER)
         profile = self.profiles.effective(name or worker_type.default_profile)
         if profile.agent_type != worker_type.key:
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")

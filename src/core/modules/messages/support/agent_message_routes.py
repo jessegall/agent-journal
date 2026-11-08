@@ -7,9 +7,9 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 
 
 class AgentMessageRoutes:
-    """Who may message whom: a main agent and its own helpers, in both directions, and an agent that
-    takes messages from its siblings (the merger) with the helpers under the same main agent. A
-    sender that is not an agent is not limited. An agent of another environment is not found at all, so it is never
+    """Who may message whom: a main agent and its own helpers, in both directions, and an agent that takes
+    messages from its siblings (the merger) with the helpers under the same main agent. A sender that is
+    not an agent is not limited. An agent of another environment is not found at all, so it is never
     reached."""
 
     def __init__(self, agents: AgentRows, profiles: ProfileFiles) -> None:
@@ -24,10 +24,10 @@ class AgentMessageRoutes:
         if not self.is_related(agent, receiver):
             raise Refusal(f"agent {receiver.id} is not yours to message", "a main agent messages its own helpers, and they message it and the merger")
 
-    def is_related(self, agent: Agent, other: Agent) -> bool:
-        if agent.parent_id == other.id or other.parent_id == agent.id:
+    def is_related(self, agent: Agent, peer: Agent) -> bool:
+        if agent.parent_id == peer.id or peer.parent_id == agent.id:
             return True
-        return agent.parent_id is not None and agent.parent_id == other.parent_id and (self.takes_siblings(agent) or self.takes_siblings(other))
+        return agent.parent_id is not None and agent.parent_id == peer.parent_id and (self.takes_siblings(agent) or self.takes_siblings(peer))
 
     def takes_siblings(self, agent: Agent) -> bool:
         profile = self.profiles.registered(agent.profile)

@@ -59,9 +59,9 @@ class WindowCheck:
 
     @staticmethod
     def slotless_section_problems(modules: Sequence[type[Module]]) -> list[str]:
-        named = {component.window for module in modules for inspector in module.inspectors for component in inspector.components}
+        component_windows = {component.window for module in modules for inspector in module.inspectors for component in inspector.components}
         return [f"{window.name} is a section and names no slot" for module in modules for window in module.windows
-                if window.place is WindowPlace.SECTION and not window.slots and window.name not in named]
+                if window.place is WindowPlace.SECTION and not window.slots and window.name not in component_windows]
 
     @staticmethod
     def suite_section_problems(modules: Sequence[type[Module]]) -> list[str]:

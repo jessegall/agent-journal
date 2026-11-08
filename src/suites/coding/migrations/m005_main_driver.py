@@ -6,10 +6,11 @@ OLD_DRIVER_LIST = "'\"coding.builder\"', '\"coding.orchestrator\"'"
 
 
 class MainDriverMigration(Migration):
-    """Moves every environment to the one coding.main driver. An environment that worked under the orchestrator keeps
-    its way of working by taking Keep going on, as Auto was set off before. Saved refusal skips and stop-check records
-    take the name of the main stop rule, and a saved orchestrator layout is copied for coding.main when none exists; the
-    old layout rows stay. A second run changes nothing."""
+    """Moves every environment to the one coding.main driver. An environment that worked under the
+    orchestrator keeps its way of working by taking Keep going on, as Auto was set off before. Saved
+    refusal skips and stop-check records take the name of the main stop rule, and a saved orchestrator
+    layout is copied for coding.main when none exists; the old layout rows stay. A second run changes
+    nothing."""
 
     number = 5
     statements = (

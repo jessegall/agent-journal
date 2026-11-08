@@ -1,4 +1,5 @@
 from pathlib import Path
+from tests.stories.support.story_checks import expect_value
 
 COMBINED_RUN = (
     "tests/stories/suites/coding/main_controls.py", "tests/stories/suites/coding/settings_access.py", "tests/stories/suites/coding/agent_settings_window.py",
@@ -15,4 +16,4 @@ ROOT = Path(__file__).resolve().parents[4]
 
 def test_every_file_of_the_combined_run_exists():
     missing = [name for name in COMBINED_RUN if not (ROOT / name).is_file()]
-    assert not missing, missing
+    expect_value(bool(missing), False)

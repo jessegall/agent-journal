@@ -21,9 +21,9 @@ def test_a_run_slower_per_test_than_the_ones_before_it_names_both_times():
 
 
 def test_only_a_run_of_the_whole_suite_counts_as_full():
-    assert RunSize([], 1000).is_whole_suite()
-    assert RunSize(["tests/"], 1000).is_whole_suite()
-    assert not RunSize(["tests/unit"], 1000).is_whole_suite()
+    assert RunSize([], 1000).is_full_suite()
+    assert RunSize(["tests/"], 1000).is_full_suite()
+    assert not RunSize(["tests/unit"], 1000).is_full_suite()
 
 
 def test_a_full_run_record_keeps_wall_and_cpu_seconds(tmp_path):

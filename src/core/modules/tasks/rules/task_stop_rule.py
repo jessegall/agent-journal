@@ -29,7 +29,7 @@ class TaskStopRule(DriverRule):
         if self.runs.is_watching(hook.agent_id):
             return RuleAnswer.allowed("the agent is watching a running command")
         assigner = self.assigners.assigner()
-        if assigner is not None and assigner.may_stop_holding_tasks(hook.agent_id):
+        if assigner is not None and assigner.allows_stop_with_tasks(hook.agent_id):
             return RuleAnswer.allowed("the suite lets the agent stop with its tasks in hand")
         started_tasks = self.current_tasks.started_tasks(hook.agent_id)
         if len(started_tasks) > 1:

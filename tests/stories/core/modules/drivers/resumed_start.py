@@ -3,7 +3,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.support.story_checks import expect_output_2
+from tests.stories.support.story_checks import expect_output_2, expect_value
 
 RESUME = HookSamples.session_start().with_raw({"source": "resume"})
 COMPACTION = HookSamples.session_start().with_raw({"source": "compact"})
@@ -32,9 +32,9 @@ def test_a_main_agent_that_was_working_is_idle_when_started_again_and_told_once_
     story = new_story(fixture=BuilderStarted)
     story.expect_hook_allowed("s-1", WORKING)
     hook_calls = story.container.get(HookCallQuery)
-    assert not hook_calls.is_idle(story.agent.id, story.clock.timestamp())
+    expect_value(bool(hook_calls.is_idle(story.agent.id, story.clock.timestamp())), False)
     expect_lines_hook(story, "s-1", RESUME, [continued_line(story)])
-    assert hook_calls.is_idle(story.agent.id, story.clock.timestamp())
+    expect_value(bool(hook_calls.is_idle(story.agent.id, story.clock.timestamp())), True)
     expect_lines_hook(story, "s-1", WORKING, [])
 
 

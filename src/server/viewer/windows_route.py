@@ -57,4 +57,4 @@ class WindowsRoute:
         with self.read(environment) as (container, registry):
             active = container.get(ActiveModules)
             entries = [entry for entry in (*registry.inspectors, *InspectorDefaults(registry).entries()) if active.is_active(entry.module)]
-        return [entry.listing(registry.module_fingerprints[entry.module], bool(registry.sharing_windows(entry.declaration.noun))) for entry in entries]
+        return [entry.listing(registry.module_fingerprints[entry.module], bool(registry.sharing_windows(entry.declaration.model_name))) for entry in entries]

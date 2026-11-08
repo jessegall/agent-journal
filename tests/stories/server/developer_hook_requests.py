@@ -64,7 +64,7 @@ def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
     record_hook = HookRequestLog.record_hook
 
     def record_counted(log, *args):
-        points_counter = log.queries.database.tally
+        points_counter = log.queries.database.repeated_work
         first_points = points_counter.points()
         recorded = record_hook(log, *args)
         costs.append(points_counter.points().minus(first_points))
@@ -192,7 +192,7 @@ def test_a_hook_shows_the_time_it_waited_for_another(recording_server):
             answer = pool.submit(server.expect_hook_answer, "/hook", dict(sample.body), 200, '"refusal":')
             queue = server.context.hook_database.queue
             with queue.changed:
-                assert queue.changed.wait_for(lambda: bool(queue.waiting_hooks), timeout=1)
+                expect_value(bool(queue.changed.wait_for(lambda: bool(queue.waiting_hooks), timeout=1)), True)
         answer.result()
     cookie = server.expect_viewer_login(server.viewer_key("Ada"))
     value = server.viewer_line_value(cookie, {"line": ["developer", "hook-requests"], "environment": "main", "window": "developer.hook-requests"})

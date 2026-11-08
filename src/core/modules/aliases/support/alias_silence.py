@@ -18,19 +18,19 @@ class AliasSilence:
 
     def watch(self, process: Process, timestamp: Timestamp) -> None:
         saved_parts = [part for part in self.parts.process(process.id).all_rows() if part.saved_command]
-        quiet = self.silent_runs.quiet_part(process, timestamp) if saved_parts else None
+        silent_match = self.silent_runs.silent_part(process, timestamp) if saved_parts else None
         for part in saved_parts:
             alias = self.aliases.saved(part.saved_command)
-            if alias is None or alias.is_held or not self.is_run_of_current_line(alias, process):
+            if alias is None or alias.is_claimed or not self.matches_current_line(alias, process):
                 continue
-            if not self.silent_runs.printed_nothing(part):
+            if not self.silent_runs.is_empty_output(part):
                 if alias.silent_at is not None:
                     self.set_silence(alias, False, process)
-            elif quiet is not None and quiet.position == part.position:
+            elif silent_match is not None and silent_match.position == part.position:
                 self.set_silence(alias, True, process)
 
     @staticmethod
-    def is_run_of_current_line(alias: Alias, process: Process) -> bool:
+    def matches_current_line(alias: Alias, process: Process) -> bool:
         return alias.fixed_at is None or process.creation_timestamp().value >= alias.fixed_at.value
 
     def set_silence(self, alias: Alias, silent: bool, process: Process) -> None:

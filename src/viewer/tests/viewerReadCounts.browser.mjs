@@ -30,12 +30,13 @@ function chromiumPath() {
 async function fixtureCode() {
     const bundled = await build({
         stdin: {contents: `
-            import {createApp, h} from "vue";
+            import {createApp, h, ref} from "vue";
             import {windowContext, lineResult} from "./src/windows/windowContext.js";
             import {WindowSubscriptions} from "./src/windows/windowSubscriptions.js";
             import {transport} from "./src/api/transport.js";
             import {usePoll} from "./kit/usePoll.js";
-            globalThis.readFixture = {createApp, h, windowContext, lineResult, WindowSubscriptions, transport, usePoll};
+            import {WINDOW_CONTEXT} from "./kit/windowContextKey.js";
+            globalThis.readFixture = {createApp, h, ref, WINDOW_CONTEXT, windowContext, lineResult, WindowSubscriptions, transport, usePoll};
         `, resolveDir: viewerFolder},
         bundle: true, write: false, format: "esm", external: ["vue", "@journal/window-kit"],
     });
@@ -58,13 +59,13 @@ async function controlledPage(context, address, code, initiallyHidden) {
     await page.evaluate(({hidden, pollMilliseconds}) => {
         const fixture = globalThis.readFixture;
         fixture.hidden = hidden;
-        fixture.visible = true;
+        fixture.visible = fixture.ref(true);
         fixture.results = [];
         fixture.eventCalls = 0;
         Object.defineProperty(document, "hidden", {configurable: true, get: () => fixture.hidden});
         fixture.subscriptions = new fixture.WindowSubscriptions();
         fixture.window = fixture.windowContext({window: "messages.chat", environment: "main", agent: 1,
-            visible: () => fixture.visible, permissions: {}, events: ["message.*"], subscriptions: fixture.subscriptions});
+            visible: () => fixture.visible.value, permissions: {}, events: ["message.*"], subscriptions: fixture.subscriptions});
         fixture.load = async () => {
             const answer = await fixture.window.read("message feed --limit 5", {unbatched: true});
             fixture.results.push(answer);
@@ -75,6 +76,7 @@ async function controlledPage(context, address, code, initiallyHidden) {
             fixture.usePoll(fixture.load, () => true, pollMilliseconds);
             return () => fixture.h("div", "Controlled viewer reads");
         }});
+        fixture.app.provide(fixture.WINDOW_CONTEXT, {visible: fixture.visible});
         fixture.app.mount("#fixture");
     }, {hidden: initiallyHidden, pollMilliseconds: POLL_MS});
     await page.clock.runFor(100);
@@ -85,7 +87,7 @@ async function controlledPage(context, address, code, initiallyHidden) {
 async function advancePoll(page) {
     const previous = await page.evaluate(() => readFixture.results.length);
     await page.clock.fastForward(POLL_MS);
-    const hidden = await page.evaluate(() => readFixture.hidden);
+    const hidden = await page.evaluate(() => readFixture.hidden || !readFixture.visible.value);
     if (!hidden) await until(page, (before) => readFixture.results.length > before, previous);
 }
 
@@ -105,7 +107,7 @@ async function funnelEvidence(page, baseline = null) {
 async function visibilityCase(context, address, code, caseName, workload) {
     const page = await controlledPage(context, address, code, caseName === "initially-hidden");
     const before = await page.evaluate(() => readFixture.transport.sentCounts("messages.chat"));
-    if (caseName === "hidden-pane") await page.evaluate(() => { readFixture.visible = false; });
+    if (caseName === "hidden-pane") await page.evaluate(() => { readFixture.visible.value = false; });
     if (caseName === "hidden-tab") await page.evaluate(() => {
         readFixture.hidden = true;
         document.dispatchEvent(new Event("visibilitychange"));
@@ -121,11 +123,11 @@ async function visibilityCase(context, address, code, caseName, workload) {
     await page.evaluate(() => readFixture.subscriptions.dispatch({event: "message.changed", environment: "main"}));
     const held = await page.evaluate(() => readFixture.subscriptions.held.size);
     if (caseName === "hidden-pane") assert.equal(held, 1);
-    if (["hidden-tab", "initially-hidden"].includes(caseName)) {
+    if (["hidden-pane", "hidden-tab", "initially-hidden"].includes(caseName)) {
         assert.deepEqual(during, before);
     }
     await page.evaluate(() => {
-        readFixture.visible = true;
+        readFixture.visible.value = true;
         readFixture.hidden = false;
         readFixture.subscriptions.shown("messages.chat");
         document.dispatchEvent(new Event("visibilitychange"));

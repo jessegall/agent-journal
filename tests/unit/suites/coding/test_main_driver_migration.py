@@ -31,7 +31,7 @@ def add_driver(connection: sqlite3.Connection, environment_id: int, name: str) -
 
 
 def drivers(connection: sqlite3.Connection) -> dict[int, str]:
-    return {environment: json.loads(value) for environment, value in connection.execute("SELECT environment_id, value FROM settings WHERE key = ?", (DRIVER,))}
+    return {environment: json.loads(value) for environment, value in connection.execute("SELECT environment_id, value FROM settings WHERE key = ?", tuple([DRIVER]))}
 
 
 def test_builder_and_orchestrator_environments_move_to_the_main_driver_and_the_orchestrator_keeps_going():
@@ -40,14 +40,14 @@ def test_builder_and_orchestrator_environments_move_to_the_main_driver_and_the_o
     add_driver(connection, 2, "coding.orchestrator")
     run(connection)
     assert drivers(connection) == {1: "coding.main", 2: "coding.main"}
-    assert connection.execute("SELECT environment_id FROM settings WHERE key = ?", (KEEP_GOING,)).fetchall() == [(2,)]
+    assert connection.execute("SELECT environment_id FROM settings WHERE key = ?", tuple([KEEP_GOING])).fetchall() == [tuple([2])]
 
 
 def test_saved_skips_and_stop_check_records_take_the_name_of_the_main_stop_rule():
     connection = database()
-    connection.executemany("INSERT INTO refusal_skips (name) VALUES (?)", [("coding.builder-next-task-at-stop",), ("coding.orchestrator-open-tasks-at-stop",),
-                                                                         ("coding.orchestrator-starts-no-task",), ("workers.dispatch-allowed",)])
-    connection.execute("INSERT INTO hook_calls (metadata) VALUES (?)", (json.dumps({"stop_checks": [{"rule": "coding.builder-next-task-at-stop", "applied": False}]}),))
+    connection.executemany("INSERT INTO refusal_skips (name) VALUES (?)", [tuple(["coding.builder-next-task-at-stop"]), tuple(["coding.orchestrator-open-tasks-at-stop"]),
+                                                                         tuple(["coding.orchestrator-starts-no-task"]), tuple(["workers.dispatch-allowed"])])
+    connection.execute("INSERT INTO hook_calls (metadata) VALUES (?)", tuple([json.dumps({"stop_checks": [{"rule": "coding.builder-next-task-at-stop", "applied": False}]})]))
     run(connection)
     assert [name for [name] in connection.execute("SELECT name FROM refusal_skips ORDER BY id")] == ["coding.main-stop"] * 3 + ["workers.dispatch-allowed"]
     [metadata] = connection.execute("SELECT metadata FROM hook_calls").fetchone()

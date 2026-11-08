@@ -47,7 +47,8 @@ class BuilderWithOpenTask(StoryFixture):
 
 
 class OrchestratorWithOpenTask(StoryFixture):
-    """The main agent in main has Auto off and Keep going on, so it sends tasks to workers, and task 1, Fix the cart, is open."""
+    """The main agent in main has Auto off and Keep going on, so it sends tasks to workers, and task 1, Fix
+    the cart, is open."""
 
     parent = BuilderWithOpenTask
 

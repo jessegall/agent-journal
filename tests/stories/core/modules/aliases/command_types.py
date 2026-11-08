@@ -3,8 +3,9 @@ import json
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value
 
-UNKNOWN_RUN = HookSamples.shell("scripts/dev go test ./cli/judge/", ShellPart("scripts/dev", "unknown", ["go", "test", "./cli/judge/"]), saved_commands_known=True)
+UNKNOWN_RUN = HookSamples.shell("scripts/dev go test ./cli/judge/", ShellPart("scripts/dev", "unknown", ["go", "test", "./cli/judge/"]), has_saved_commands=True)
 
 
 def test_a_command_of_unknown_type_is_refused_until_the_agent_classifies_it(new_story):
@@ -12,7 +13,7 @@ def test_a_command_of_unknown_type_is_refused_until_the_agent_classifies_it(new_
     story.expect_hook_refusal("s-1", UNKNOWN_RUN, "scripts/dev is a command of unknown type: classify its leading words first")
     story.expect_success('command-type make "scripts/dev go test" "test run"', "category: test run", actor=story.agent)
     story.run_listeners()
-    assert json.loads(story.home.command_type_file.read_text()) == {"scripts/dev go test": "test run"}
+    expect_value(json.loads(story.home.command_type_file.read_text()), {"scripts/dev go test": "test run"})
 
 
 def test_a_command_is_never_classified_as_unknown_or_as_a_journal_command(new_story):
@@ -23,4 +24,4 @@ def test_a_command_is_never_classified_as_unknown_or_as_a_journal_command(new_st
 
 def test_a_bare_variable_assignment_is_no_command_of_unknown_type(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_allowed("s-1", HookSamples.shell("S=/tmp/sample", ShellPart("", "unknown", []), saved_commands_known=True))
+    story.expect_hook_allowed("s-1", HookSamples.shell("S=/tmp/sample", ShellPart("", "unknown", []), has_saved_commands=True))

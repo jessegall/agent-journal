@@ -1,4 +1,4 @@
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.change.logged_event import LoggedEvent
 from core.base.actor import Actor
 from core.base.command.bus import Bus
@@ -33,7 +33,7 @@ class HelperEndedListener(CommitListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         helper = event.row
-        if helper.role != HelperKind.READ_ONLY:
+        if helper.role != HelperRole.HELPER:
             return
         job = self.jobs.open_job(helper.id)
         if job is None:

@@ -30,7 +30,7 @@ def readiness():
     statuses.newest_status.return_value = SimpleNamespace(windows=())
     clock.timestamp.return_value = now
     kept_rows, limits = Mock(), Mock()
-    limits.reached_until.return_value = None
+    limits.reached_limit_ends.return_value = None
     kept_rows.scoped_read.side_effect = lambda table, loader, *args, **kwargs: loader()
     kept_rows.read.side_effect = kept_rows.scoped_read.side_effect
     states = ProgramStates(providers, programs, queries, settings, statuses, clock, agents, scopes, kept_rows, limits)

@@ -45,8 +45,9 @@ RECOVERY_ATTEMPTS = 3
 
 
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
-    """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs. The main agent has work to go on with when an open
-    task has no worker and does not belong to a plan that is not approved or started: such a plan cannot start before the person approves it."""
+    """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs.
+    The main agent has work to go on with when an open task has no worker and does not belong to a plan
+    that is not approved or started: such a plan cannot start before the person approves it."""
 
     command = SendSilentAgentLines
     disabled_scopes = [ActorScope]
@@ -62,9 +63,9 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
         tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED]))
-        held = tasks.matching(Among("holder_id", agent_ids)).all_rows()
+        assigned_tasks = tasks.matching(Among("holder_id", agent_ids)).all_rows()
         delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
-        working = {agent_id for task in (*held, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
+        working = {agent_id for task in (*assigned_tasks, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
         tasks_remain = self.task_query.open_tasks().matching(IsNull("delegated_to")).matching(self.task_query.unapproved_plan_exclusion()).exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}

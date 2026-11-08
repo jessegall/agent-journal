@@ -3,6 +3,7 @@ from core.testing.story_fixture import StoryFixture
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.fixtures import MainEnvironment, UserJoined
+from tests.stories.support.story_checks import expect_value
 
 PLUGIN_TEXT = "Run the commandments before you hand in."
 PROJECT_TEXT = "# Our project\n"
@@ -36,16 +37,16 @@ def test_injected_instructions_are_written_on_enable(new_story):
     ran(story, "plugin disable enabled")
     ran(story, "plugin enable enabled")
     text = journal_text(story)
-    assert LAW in text and PLUGIN_TEXT in text, text
+    expect_value(bool(LAW in text and PLUGIN_TEXT in text), True)
 
 
 def test_injected_instructions_are_removed_on_disable(new_story):
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "disabled")
-    assert PLUGIN_TEXT in journal_text(story)
+    expect_value(PLUGIN_TEXT in journal_text(story), True)
     ran(story, "plugin disable disabled")
     text = journal_text(story)
-    assert LAW in text and PLUGIN_TEXT not in text, text
+    expect_value(bool(LAW in text and PLUGIN_TEXT not in text), True)
 
 
 def test_injected_instructions_are_removed_when_deleted(new_story):
@@ -53,15 +54,15 @@ def test_injected_instructions_are_removed_when_deleted(new_story):
     plugin_with_text(story, "deleted")
     ran(story, "plugin disable deleted")
     ran(story, "plugin remove deleted")
-    assert PLUGIN_TEXT not in journal_text(story)
+    expect_value(PLUGIN_TEXT not in journal_text(story), True)
 
 
 def test_injected_instructions_are_removed_when_deleted_without_disabling_first(new_story):
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "direct")
-    assert PLUGIN_TEXT in journal_text(story)
+    expect_value(PLUGIN_TEXT in journal_text(story), True)
     ran(story, "plugin remove direct")
-    assert PLUGIN_TEXT not in journal_text(story)
+    expect_value(PLUGIN_TEXT not in journal_text(story), True)
 
 
 def test_a_file_outside_the_plugin_is_not_taken_as_its_text(new_story):
@@ -71,7 +72,7 @@ def test_a_file_outside_the_plugin_is_not_taken_as_its_text(new_story):
     folder = event_plugin_folder(story.home.folder.parent, [], {}, injected_instructions=["../outside.md"])
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.run_listeners()
-    assert "Text from outside" not in journal_text(story)
+    expect_value("Text from outside" not in journal_text(story), True)
 
 
 def booted(story):
@@ -94,8 +95,8 @@ def test_each_official_file_gets_the_single_import_line_and_no_text(new_story):
     booted(story)
     booted(story)
     for name in ("AGENTS.md", "CLAUDE.md"):
-        assert (project / name).read_text() == f"{PROJECT_TEXT}\n@JOURNAL.md\n"
-    assert LAW in journal_text(story)
+        expect_value((project / name).read_text(), f"{PROJECT_TEXT}\n@JOURNAL.md\n")
+    expect_value(LAW in journal_text(story), True)
 
 
 def test_a_file_that_imports_the_other_official_file_gets_no_second_import(new_story):
@@ -104,8 +105,8 @@ def test_a_file_that_imports_the_other_official_file_gets_no_second_import(new_s
     (project / "AGENTS.md").write_text(PROJECT_TEXT)
     (project / "CLAUDE.md").write_text("@AGENTS.md\n")
     booted(story)
-    assert (project / "CLAUDE.md").read_text() == "@AGENTS.md\n"
-    assert (project / "AGENTS.md").read_text() == f"{PROJECT_TEXT}\n@JOURNAL.md\n"
+    expect_value((project / "CLAUDE.md").read_text(), "@AGENTS.md\n")
+    expect_value((project / "AGENTS.md").read_text(), f"{PROJECT_TEXT}\n@JOURNAL.md\n")
 
 
 def test_the_block_an_older_journal_wrote_into_an_official_file_goes(new_story):
@@ -113,7 +114,7 @@ def test_the_block_an_older_journal_wrote_into_an_official_file_goes(new_story):
     project = project_of(story)
     (project / "AGENTS.md").write_text(f"{PROJECT_TEXT}\n{OLD_BLOCK}\nOur own ending.\n")
     booted(story)
-    assert (project / "AGENTS.md").read_text() == f"{PROJECT_TEXT}\nOur own ending.\n\n@JOURNAL.md\n"
+    expect_value((project / "AGENTS.md").read_text(), f"{PROJECT_TEXT}\nOur own ending.\n\n@JOURNAL.md\n")
 
 
 def test_a_codex_agent_receives_the_text_through_its_launch_setting(new_story):
@@ -128,4 +129,4 @@ def test_a_codex_agent_in_a_folder_without_the_file_has_no_launch_setting(new_st
     story = new_story(fixture=MainEnvironment)
     folder = story.home.folder.parent / "project"
     folder.mkdir()
-    assert "developer_instructions" not in story.run(f"program command codex {folder} --launch launch-1").output_text
+    expect_value("developer_instructions" not in story.run(f"program command codex {folder} --launch launch-1").output_text, True)

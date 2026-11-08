@@ -35,7 +35,7 @@ class AgentLauncher:
             return self.start(agent, environment, command)
 
     def start(self, agent: Agent, environment: Environment, command: LaunchCommand) -> LaunchAnswer:
-        answer = self.link.sent({"agent_id": agent.id, "session": agent.session, "environment": environment.name, "folder": str(command.folder),
+        answer = self.link.request_launcher({"agent_id": agent.id, "session": agent.session, "environment": environment.name, "folder": str(command.folder),
                                  "command": list(command.arguments), "variables": {**command.variables, LAUNCH_VARIABLE: agent.session, ROLE_VARIABLE: agent.role}}, ANSWER_BYTES)
         if answer == RUNNING_ANSWER:
             return LaunchAnswer.RUNNING

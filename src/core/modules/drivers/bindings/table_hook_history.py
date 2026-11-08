@@ -8,7 +8,8 @@ from core.modules.drivers.support.hook_rule_histories import HookRuleHistories
 
 class TableHookHistory(HookHistory):
     """Reads the rule history table: whether a rule with history was silenced for a layer the last time it was
-    due, and when it last answered; an agent's rows are read once, and kept until the hook's histories are written."""
+    due, and when it last answered; an agent's rows are read once, and kept until the hook's histories are
+    written."""
 
     def __init__(self, histories: HookRuleHistories) -> None:
         self.histories = histories
@@ -28,4 +29,4 @@ class TableHookHistory(HookHistory):
         return self.history(key)
 
     def history(self, key: RuleHistoryKey) -> RuleHistory | None:
-        return self.histories.of(key.agent_id).get((key.rule, key.layer))
+        return self.histories.rows(key.agent_id).get((key.rule, key.layer))

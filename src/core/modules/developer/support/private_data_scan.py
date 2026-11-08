@@ -3,7 +3,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from core.modules.developer.support.private_data_finding import PrivateDataFinding
-from core.modules.developer.support.private_data_kind import PrivateDataKind
+from core.modules.developer.support.private_data_category import PrivateDataCategory
 
 PLACEHOLDER_NAMES = frozenset({"user", "username", "you", "name", "me", "example", "someone", "person", "runner", "yourname", "your-name", "shared", "home", "a", "ada", "alice", "bob", "carol", "ci", "test",
                                "processes", "coding.builder", "marketing.lead"})
@@ -24,28 +24,28 @@ TRANSCRIPT = re.compile(r"^\s*\{.*\"sessionId\".*\"(?:message|content)\"")
 
 
 class PrivateDataScan:
-    """Looks through one file for private data and says where, by line and kind: an email address, the home folder of a real
-    user, a session id, a token or key shape, the journal's own message or transcript text, a recording not marked sanitised.
-    Built files and the anonymised hook recordings are left out."""
+    """Looks through one file for private data and says where, by line and kind: an email address, the home
+    folder of a real user, a session id, a token or key shape, the journal's own message or transcript
+    text, a recording not marked sanitised. Built files and the anonymised hook recordings are left out."""
 
     def scan(self, file: Path, text: str) -> list[PrivateDataFinding]:
         shown = str(file)
         if any(part in f"/{shown}" for part in SKIPPED_PATHS):
             return []
         if file.suffix in RECORDING_SUFFIXES and not any(mark in text.lower() for mark in SANITISED_MARKS):
-            return [PrivateDataFinding(shown, 1, PrivateDataKind.RECORDING)]
-        return [PrivateDataFinding(shown, number, kind) for number, line in enumerate(text.splitlines(), 1) for kind in self.kinds(line)]
+            return [PrivateDataFinding(shown, 1, PrivateDataCategory.RECORDING)]
+        return [PrivateDataFinding(shown, number, category) for number, line in enumerate(text.splitlines(), 1) for category in self.categories(line)]
 
     @staticmethod
     def is_real_email_domain(domain: str) -> bool:
         ending = domain.rsplit(".", 1)[-1]
         return not domain.endswith(FAKE_DOMAINS) and ending not in FILE_ENDINGS and (ending in EMAIL_ENDINGS or len(ending) == 2)
 
-    def kinds(self, line: str) -> Iterator[PrivateDataKind]:
+    def categories(self, line: str) -> Iterator[PrivateDataCategory]:
         if any(self.is_real_email_domain(match.group(1).lower()) for match in EMAIL.finditer(line)):
-            yield PrivateDataKind.EMAIL
+            yield PrivateDataCategory.EMAIL
         if any(match.group(1).lower() not in PLACEHOLDER_NAMES for match in HOME_PATH.finditer(line)):
-            yield PrivateDataKind.HOME_PATH
-        for kind, pattern in ((PrivateDataKind.SESSION_ID, SESSION_ID), (PrivateDataKind.TOKEN, TOKEN), (PrivateDataKind.KEY, KEY), (PrivateDataKind.TRANSCRIPT, TRANSCRIPT)):
+            yield PrivateDataCategory.HOME_PATH
+        for category, pattern in ((PrivateDataCategory.SESSION_ID, SESSION_ID), (PrivateDataCategory.TOKEN, TOKEN), (PrivateDataCategory.KEY, KEY), (PrivateDataCategory.TRANSCRIPT, TRANSCRIPT)):
             if pattern.search(line):
-                yield kind
+                yield category

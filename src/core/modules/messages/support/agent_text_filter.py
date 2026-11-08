@@ -31,7 +31,7 @@ class AgentTextFilter:
         if prompt is None:
             return False
         reply = self.messages.latest_turn_message(agent_id, prompt.creation_timestamp(), created_at)
-        return reply is not None and not self.messages.has_person_message_past(reply.id)
+        return reply is not None and not self.messages.has_person_message_after(reply.id)
 
     def is_duplicate_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         return self.is_after_reply(agent_id, text, created_at) and self.repeats_reply(agent_id, text, created_at)
@@ -40,10 +40,9 @@ class AgentTextFilter:
         return "?" not in text and self.has_recent_reply(agent_id, created_at)
 
     def is_single_line(self, text: str) -> bool:
-        """A single line after a reply is an acknowledgement or a last line, whatever its words."""
         return "\n" not in text.strip()
 
-    def is_held_after_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
+    def is_blocked_after_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         return self.is_after_reply(agent_id, text, created_at) and (self.is_single_line(text) or self.repeats_reply(agent_id, text, created_at))
 
     def repeats_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
@@ -77,7 +76,7 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         if prompt is None or len(text) > SHORT_CHARACTERS or "?" in text or not prompt.summary.startswith(JOURNAL_LINE) or self.is_user_action(prompt.summary) or self.is_reaction_prompt(prompt.summary):
             return False
-        file_call = self.hook_calls.latest_write_call(agent_id)
+        file_call = self.hook_calls.latest_file_edit_call(agent_id)
         return file_call is None or file_call.id < prompt.id
 
     def is_reaction_prompt(self, prompt_text: str) -> bool:

@@ -1237,7 +1237,20 @@
         "Use",
         "Wait",
         "Watch",
-        "Weigh"
+        "Weigh",
+        "Apply",
+        "Check",
+        "Confirm",
+        "Decline",
+        "Judge",
+        "Post",
+        "Recover",
+        "Refresh",
+        "Relay",
+        "Replace",
+        "Return",
+        "Wake",
+        "Warn"
     ],
     "mark_types": [
         "messages.thought",

@@ -40,7 +40,7 @@ class LinkPinCheck:
         self.queries, self.clock, self.kept = queries, clock, kept
 
     @staticmethod
-    def is_file_or_read(tool: Tool) -> bool:
+    def is_file_read_tool(tool: Tool) -> bool:
         return tool.category in FILE_TOOLS or (tool.shell is not None and tool.shell.is_readonly)
 
     def nudges(self, agent_text: str, tool_output: str = "") -> list[Nudge]:
@@ -60,7 +60,7 @@ class LinkPinCheck:
         pins = self.queries.query(Pin).matching(IsNull("closed_at"))
         return next((command for command in commands if not pins.filter(link=command).exists()), None)
 
-    def pull_request_pins(self, text: str) -> list[MakePin]:
+    def change_request_pins(self, text: str) -> list[MakePin]:
         pins = self.queries.query(Pin)
         links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/")))
         return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
@@ -72,7 +72,7 @@ class LinkPinCheck:
         made = []
         for url in links:
             project, filename = self.design_key(url)
-            if self.is_bare_project(project, filename) or (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):
+            if self.is_project_root(project, filename) or (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):
                 continue
             made.append(MakePin(self.design_title(url), url, OPEN_LABEL))
             existing.add((project, filename))
@@ -86,7 +86,7 @@ class LinkPinCheck:
         return f"Design: {name}"[:80]
 
     @staticmethod
-    def is_bare_project(path: str, filename: str) -> bool:
+    def is_project_root(path: str, filename: str) -> bool:
         return path.startswith(PROJECT_PATH) and not filename
 
     @staticmethod

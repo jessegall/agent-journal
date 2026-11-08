@@ -45,12 +45,12 @@ class HookSamples:
         return HookSamples.tool_use("Edit", ToolType.EDIT, [path], diff)
 
     @staticmethod
-    def shell(line: str, *parts: ShellPart, redirects: Sequence[str] = (), saved_commands_known: bool = False) -> HookSample:
+    def shell(line: str, *parts: ShellPart, redirects: Sequence[str] = (), has_saved_commands: bool = False) -> HookSample:
         texts = [text.strip() for text in line.split("&&")]
         prepared = [part.prepared(text) for part, text in zip(parts, texts, strict=True)]
         joined = [{**part, "joined_by": "&&"} if index < len(prepared) - 1 else part for index, part in enumerate(prepared)]
         shell = {"line": line, "parts": joined, "redirects": list(redirects), "is_journal_only": all(part.program == "journal" for part in parts),
-                 "parse_error": "", "saved_commands_known": saved_commands_known}
+                 "parse_error": "", "saved_commands_known": has_saved_commands}
         return HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell)
 
     @staticmethod

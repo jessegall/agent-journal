@@ -12,6 +12,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 
+
+pytestmark = pytest.mark.real_git
+
 MAIN_TAX = "TAX = 21\n"
 WORKER_TAX = "TAX = 5\n"
 MERGED_TAX = "TAX = 22\n"

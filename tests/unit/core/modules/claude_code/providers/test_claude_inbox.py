@@ -37,7 +37,7 @@ def test_a_line_goes_to_the_running_session_after_its_key_in_the_envelope_naming
     (tmp_path / "700.k1.key").write_text(json.dumps({"peerToken": "token-1"}))
     rows: list[object] = []
     reader = reader_thread(server, rows)
-    answer = ClaudeInbox(tmp_path).line_sent(SessionLine("s-1", "the journal", "log your task"))
+    answer = ClaudeInbox(tmp_path).delivered_line(SessionLine("s-1", "the journal", "log your task"))
     reader.join(5)
     server.close()
     content = '<cross-session-message from-name="the journal" from-mode="bypass">\nlog your task\n</cross-session-message>'
@@ -46,17 +46,17 @@ def test_a_line_goes_to_the_running_session_after_its_key_in_the_envelope_naming
 
 def test_a_session_no_registry_entry_names_takes_no_line(tmp_path):
     registry_file(tmp_path, 700, "s-1", "/nowhere/s")
-    assert ClaudeInbox(tmp_path).line_sent(SessionLine("s-2", "the journal", "log your task")) is False
+    assert ClaudeInbox(tmp_path).delivered_line(SessionLine("s-2", "the journal", "log your task")) is False
 
 
 def test_a_session_without_an_inbox_socket_takes_no_line(tmp_path):
     registry_file(tmp_path, 700, "s-1", None)
-    assert ClaudeInbox(tmp_path).line_sent(SessionLine("s-1", "the journal", "log your task")) is False
+    assert ClaudeInbox(tmp_path).delivered_line(SessionLine("s-1", "the journal", "log your task")) is False
 
 
 def test_a_socket_that_takes_no_connection_leaves_the_line_unsent(tmp_path):
     registry_file(tmp_path, 700, "s-1", str(tmp_path / "gone.sock"))
-    assert ClaudeInbox(tmp_path).line_sent(SessionLine("s-1", "the journal", "log your task")) is False
+    assert ClaudeInbox(tmp_path).delivered_line(SessionLine("s-1", "the journal", "log your task")) is False
 
 
 def test_a_sender_or_line_cannot_close_the_envelope_early():

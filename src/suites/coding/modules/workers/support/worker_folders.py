@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.models.agent import Agent
 from core.base.journal_home import JournalHome
 from core.base.query.conditions.among import Among
@@ -28,7 +28,7 @@ class WorkerFolders(AgentFolders):
         locations = {}
         for agent in agents:
             parent = parents.get(agent.parent_id)
-            available = parent is None or parent.role != CodingHelperKind.WORKER or parent.id in active
+            available = parent is None or parent.role != CodingHelperRole.WORKER or parent.id in active
             worktree = latest.get(agent.id)
             if self.start_folder(agent).is_dir():
                 folder = self.start_folder(agent)
@@ -43,7 +43,7 @@ class WorkerFolders(AgentFolders):
 
     def has_folder(self, agent: Agent) -> bool:
         parent = self.agents.find(agent.parent_id) if agent.parent_id is not None else None
-        return parent is None or parent.role != CodingHelperKind.WORKER or self.worktrees.worker_worktree(parent.id) is not None
+        return parent is None or parent.role != CodingHelperRole.WORKER or self.worktrees.worker_worktree(parent.id) is not None
 
     def folder(self, agent: Agent) -> Path:
         worktree = self.worktrees.worker_worktree(agent.id)

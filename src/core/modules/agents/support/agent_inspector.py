@@ -17,7 +17,7 @@ AGENT_INSPECTOR = InspectorDeclaration(
         ButtonDeclaration("agents.pause", (), "Pause the agent", "agent pause {row_id}", icon="pause", condition=ButtonCondition("activity", tuple([AgentActivity.WORKING.value]))),
         ButtonDeclaration("agents.resume", (), "Resume the agent", "agent resume {row_id}", icon="resume", primary=True, condition=ButtonCondition("activity", tuple([AgentActivity.PAUSED.value]))),
         ButtonDeclaration("agents.stop", (), "Stop the agent", "agent stop {row_id}", icon="stop", danger=True, confirm="Stop the agent? It stops what it is doing.",
-                          condition=ButtonCondition("activity", (AgentActivity.WORKING.value, AgentActivity.PAUSED.value, AgentActivity.AT_USAGE_LIMIT.value))),
+                          condition=ButtonCondition("activity", (AgentActivity.WORKING.value, AgentActivity.PAUSED.value, AgentActivity.USAGE_LIMITED.value))),
     ),
     components=tuple([InspectorComponent("agents.agent-detail")]),
     links=None,

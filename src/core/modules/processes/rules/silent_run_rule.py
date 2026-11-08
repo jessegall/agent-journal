@@ -34,13 +34,13 @@ class SilentRunRule(DriverRule):
         return RuleAnswer.with_nudges(*(nudge for process in running if (nudge := self.silent_run_nudge(process, hook.timestamp))))
 
     def silent_run_nudge(self, process: Process, timestamp: Timestamp) -> Nudge | None:
-        part = self.silent_runs.quiet_part(process, timestamp)
+        part = self.silent_runs.silent_part(process, timestamp)
         if part is None:
             return None
         command = part.command or part.text
-        if self.silent_runs.printed_nothing(part):
+        if self.silent_runs.is_empty_output(part):
             if part.saved_command:
-                declaration = SILENT_SAVED_PACKAGES if StreamingHints.holds_back_packages(command) else SILENT_SAVED_RUN
+                declaration = SILENT_SAVED_PACKAGES if StreamingHints.runs_packages_serially(command) else SILENT_SAVED_RUN
                 return declaration.nudge(name=part.saved_command, seconds=SILENT_SECONDS)
             return SILENT_RUN.nudge(output=process.id, seconds=SILENT_SECONDS, hint=StreamingHints.hint(command))
         if self.folder.silent_seconds(process.id, part.position, timestamp) >= STALLED_SECONDS:

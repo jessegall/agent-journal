@@ -11,7 +11,8 @@ from core.modules.processes.support.process_nudges import HUNG_RUN
 
 
 class StopHungProcessHandler(Handler[StopHungProcess, Process]):
-    """Stops a hung run, which keeps its output, and tells its agent, waking it, which run it was and how long it was idle."""
+    """Stops a hung run, which keeps its output, and tells its agent, waking it, which run it was and how long
+    it was idle."""
 
     command = StopHungProcess
 

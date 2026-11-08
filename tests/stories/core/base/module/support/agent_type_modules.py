@@ -123,7 +123,7 @@ class ReadOnlyHelperRule(DriverRule):
     name = "sample.read-only-helper"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    role_group = RoleGroup.READ_ONLY_HELPERS
+    role_group = RoleGroup.HELPERS
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer(refusal="sample rule holds for read-only helpers")

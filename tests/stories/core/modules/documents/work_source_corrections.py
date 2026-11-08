@@ -146,7 +146,7 @@ def test_correction_survives_the_deferred_subject_writer(new_story):
     scenario = Scenario(new_story(fixture=CorrectedTask))
     scenario.story.container.get(Bus).run(RecordSubjectLink(2, "task", 2), scenario.story.agent, environment_id=1)
     scenario.expect_no_link("message:2", "task:2")
-    events = [event for event in scenario.story.container.get(EventLog).events_past(0) if event.event == "link.delete"]
+    events = [event for event in scenario.story.container.get(EventLog).events_after(0) if event.event == "link.delete"]
     scenario.story.expect_rows(sum(event.event == "link.delete" for event in events) == 1)
 
 

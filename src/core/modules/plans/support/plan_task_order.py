@@ -4,6 +4,8 @@ from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.plans.conditions.shared_plan_tasks import SharedPlanTasks
+from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
@@ -16,7 +18,8 @@ class PlanTaskOrder:
     """Picks which of an agent's ready tasks goes first. A plan's task is offered only while its phase is the
     earliest phase of the plan that still has a task open, started or blocked, the agent's own started tasks
     not counted, and the plan's order comes before task numbers. So a plan given to one agent runs phase by
-    phase, and the tests at a phase's end hold the next phase back."""
+    phase, and the tests at a phase's end hold the next phase back. A reserved task can wait for its plan
+    to start."""
 
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept
@@ -24,8 +27,21 @@ class PlanTaskOrder:
     def first(self, tasks: Sequence[Task], started_task_ids: Sequence[int] = ()) -> Task | None:
         if not tasks:
             return None
-        task_ids = tuple(sorted(task.id for task in tasks))
-        rows = self.plan_rows(task_ids)
+        return self.earliest(tasks, self.task_rows(tasks), started_task_ids)
+
+    def first_started_plan_task(self, tasks: Sequence[Task]) -> Task | None:
+        if not tasks:
+            return None
+        rows = self.task_rows(tasks)
+        started_plan_ids = {plan.id for plan in self.queries.query(Plan).filter(state=PlanState.STARTED).all_rows()}
+        waiting_task_ids = {row.task_id for row in rows if row.plan_id not in started_plan_ids}
+        return self.earliest([task for task in tasks if task.id not in waiting_task_ids], rows, ())
+
+    def task_rows(self, tasks: Sequence[Task]) -> tuple[PlanTask, ...]:
+        return self.plan_rows(tuple(sorted(task.id for task in tasks)))
+
+    def earliest(self, tasks: Sequence[Task], rows: tuple[PlanTask, ...], started_task_ids: Sequence[int]) -> Task | None:
+        task_ids = tuple(task.id for task in tasks)
         positions = {row.task_id: row for row in rows if row.task_id in task_ids}
         plan_ids = {row.plan_id for row in positions.values()}
         working_rows = [row for row in rows if row.state in WORKING_STATES and row.task_id not in started_task_ids]

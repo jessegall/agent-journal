@@ -1,6 +1,6 @@
 from core.base.timestamp import Timestamp
 
-TIMEOUTS_TO_TELL = 3
+NOTICE_TIMEOUT_COUNT = 3
 SPAN_SECONDS = 600
 
 
@@ -9,18 +9,18 @@ class HookTimeouts:
     they count in, and when each agent's timeouts were last told; it lives as long as the server."""
 
     def __init__(self) -> None:
-        self.timed_out_at: dict[int, list[Timestamp]] = {}
-        self.told_at: dict[int, Timestamp] = {}
+        self.timeout_stamps: dict[int, list[Timestamp]] = {}
+        self.notice_stamps: dict[int, Timestamp] = {}
 
-    def record(self, agent_id: int, at: Timestamp) -> int:
-        recent = [moment for moment in self.timed_out_at.get(agent_id, []) if moment.elapsed_seconds(at) < SPAN_SECONDS]
-        recent.append(at)
-        self.timed_out_at[agent_id] = recent
+    def record(self, agent_id: int, timestamp: Timestamp) -> int:
+        recent = [timeout for timeout in self.timeout_stamps.get(agent_id, []) if timeout.elapsed_seconds(timestamp) < SPAN_SECONDS]
+        recent.append(timestamp)
+        self.timeout_stamps[agent_id] = recent
         return len(recent)
 
-    def is_due(self, agent_id: int, count: int, at: Timestamp) -> bool:
-        told = self.told_at.get(agent_id)
-        return count >= TIMEOUTS_TO_TELL and (told is None or told.elapsed_seconds(at) >= SPAN_SECONDS)
+    def needs_notice(self, agent_id: int, count: int, timestamp: Timestamp) -> bool:
+        last_notice = self.notice_stamps.get(agent_id)
+        return count >= NOTICE_TIMEOUT_COUNT and (last_notice is None or last_notice.elapsed_seconds(timestamp) >= SPAN_SECONDS)
 
-    def tell(self, agent_id: int, at: Timestamp) -> None:
-        self.told_at[agent_id] = at
+    def notify(self, agent_id: int, timestamp: Timestamp) -> None:
+        self.notice_stamps[agent_id] = timestamp

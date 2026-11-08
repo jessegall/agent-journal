@@ -1,4 +1,5 @@
 from core.base.actor_type import ActorType
+from core.base.agent_role import AgentRole
 from core.base.change.moved import Moved
 from core.base.change.updated import Updated
 from core.base.command.context import Context
@@ -13,7 +14,7 @@ from suites.coding.modules.workers.support.worker_route_request import WorkerRou
 
 
 class WorkerRouteGuard(Guard[Updated[Task] | Moved[Task]]):
-    """Holds direct assignments to their ready program, with a person's exception."""
+    """Holds direct assignments to a worker to their ready program, with a person's exception."""
 
     name = ROUTE_GUARD
     moves = tuple([TaskLifecycle.release])
@@ -28,4 +29,6 @@ class WorkerRouteGuard(Guard[Updated[Task] | Moved[Task]]):
         if isinstance(context.command, RecordWorktreeCut):
             return
         worker = self.rows.required(Agent, task.delegated_to)
+        if worker.role == AgentRole.MAIN:
+            return
         self.policy.check_task(task, WorkerRouteRequest(worker.program, context.actor.type, context.skipped_guards))

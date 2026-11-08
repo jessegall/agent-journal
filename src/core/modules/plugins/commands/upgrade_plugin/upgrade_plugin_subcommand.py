@@ -8,8 +8,9 @@ from core.modules.plugins.support.plugin_upgrade import PluginUpgrade
 
 
 class UpgradePluginSubcommand(Subcommand[UpgradePlugin, PluginUpgrade]):
-    """`journal plugin upgrade <name> [--yes] [--from <folder>]`: shows what changes in what the plugin runs, and
-    applies it with --yes; --from takes the code once from a local folder and leaves the plugin's source as it is."""
+    """`journal plugin upgrade <name> [--yes] [--from <folder>]`: shows what changes in what the plugin runs,
+    and applies it with --yes; --from takes the code once from a local folder and leaves the plugin's
+    source as it is."""
 
     cli_name = "plugin"
     name = "upgrade"

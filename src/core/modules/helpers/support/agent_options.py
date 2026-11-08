@@ -10,17 +10,18 @@ DENY_ALL = AgentFieldOptions(allow_new=False, allow_resume=False, allowed_profil
 
 
 class AgentOptions:
-    """Reads the agent options setting once for an environment and answers the options of an agent type and profile.
-    Stored lines that do not follow the declared shape are reported, and deny everything until they are repaired."""
+    """Reads the agent options setting once for an environment and answers the options of an agent type and
+    profile. Stored lines that do not follow the declared shape are reported, and deny everything until
+    they are repaired."""
 
     def __init__(self, reader: SettingReader, registry: Registry) -> None:
         self.reader, self.registry = reader, registry
 
-    def reading(self, agent_type: str, profile: str = "") -> AgentOptionsReading:
+    def resolved(self, agent_type: str, profile: str = "") -> AgentOptionsReading:
         current = self.reader.current(AGENT_OPTIONS)
         stored = list(current.value) if is_tuple(current.value) else current.value
         if not is_text_list(stored):
-            return AgentOptionsReading(DENY_ALL, current.source, (f"{AGENT_OPTIONS} holds {current.value!r}, not a list of text lines",))
+            return AgentOptionsReading(DENY_ALL, current.source, tuple([f"{AGENT_OPTIONS} holds {current.value!r}, not a list of text lines"]))
         problems = AgentOptionsValue.problems(stored, self.registry.role_names)
         if problems:
             return AgentOptionsReading(DENY_ALL, current.source, tuple(problems))

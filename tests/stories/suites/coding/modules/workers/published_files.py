@@ -1,7 +1,11 @@
+import pytest
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+
+
+pytestmark = pytest.mark.real_git
 
 PROFILE_MODULE = "tests.stories.core.modules.profiles.support.profile_modules:ProfileModule"
 

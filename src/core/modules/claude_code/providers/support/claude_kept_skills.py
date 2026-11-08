@@ -20,7 +20,7 @@ class ClaudeKeptSkills:
         self.transcript = transcript
 
     def digests(self) -> Mapping[str, str]:
-        for line in reversed(TranscriptTail(self.transcript).lines_within(RECORD_WINDOW_BYTES)):
+        for line in reversed(TranscriptTail(self.transcript).tail_lines(RECORD_WINDOW_BYTES)):
             record = self.record(line)
             if record.get("subtype") == COMPACT_BOUNDARY:
                 return {}

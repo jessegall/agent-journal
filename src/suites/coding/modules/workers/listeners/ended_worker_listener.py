@@ -1,5 +1,5 @@
 from core.modules.agents.events.agent_ended import AgentEnded
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -24,11 +24,12 @@ SOURCE = "workers.ended-worker"
 
 class EndedWorkerListener(SaveListener[AgentEnded]):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
-    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
-    ended while a run of its own goes is started again when the run ends. A worker that stops while a run of its own goes
-    leaves its main agent no line, however often it has stopped, unless a person or another agent stopped it. A worker a
-    person or another agent stopped holds no delegated task or was ended by them; that one, one that reported being stuck
-    and one that keeps ending with no run going leave its main agent one line naming all its tasks."""
+    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one
+    that ended while a run of its own goes is started again when the run ends. A worker that stops while a
+    run of its own goes leaves its main agent no line, however often it has stopped, unless a person or
+    another agent stopped it. A worker a person or another agent stopped holds no delegated task or was
+    ended by them; that one, one that reported being stuck and one that keeps ending with no run going
+    leave its main agent one line naming all its tasks."""
 
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
@@ -39,7 +40,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         new = event.row
-        if new.role != CodingHelperKind.WORKER or new.parent_id is None or self.resume.compaction.is_running(new.id):
+        if new.role != CodingHelperRole.WORKER or new.parent_id is None or self.resume.compaction.is_running(new.id):
             return
         unfinished = self.unfinished.rows(new.id)
         if not unfinished:

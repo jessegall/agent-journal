@@ -16,7 +16,8 @@ __all__ = ["no_program_on_the_machine", "running_worker", "worker_story"]
 
 
 class StartedLauncherService:
-    """Stands in for starting the launcher service: starting it opens a launcher on the socket that answers with a pid."""
+    """Stands in for starting the launcher service: starting it opens a launcher on the socket that answers
+    with a pid."""
 
     def __init__(self, story, monkeypatch) -> None:
         self.story, self.launcher = story, None
@@ -28,7 +29,6 @@ class StartedLauncherService:
 
 
 def stale_socket(story) -> None:
-    """The socket a killed launcher left behind: a file nobody answers on."""
     start_launcher(story, b"").server.close()
     assert story.home.socket(LAUNCHER_SOCKET).exists()
 

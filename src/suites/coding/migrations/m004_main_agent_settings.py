@@ -2,9 +2,9 @@ from core.base.database.migration import Migration
 
 
 class MainAgentSettingsMigration(Migration):
-    """Turns Auto off in each environment that already works under the orchestrator driver and has no Auto value of
-    its own, because the orchestrator never wrote project files. Every value already set, the keys and the helper
-    limits stay as they are, and a second run changes nothing."""
+    """Turns Auto off in each environment that already works under the orchestrator driver and has no Auto
+    value of its own, because the orchestrator never wrote project files. Every value already set, the keys
+    and the helper limits stay as they are, and a second run changes nothing."""
 
     number = 4
     statements = (

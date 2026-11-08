@@ -126,7 +126,7 @@ def deliveries(story: Story) -> list[PluginDelivery]:
 
 
 def logged_events(story: Story, name: str) -> list[LoggedEvent]:
-    return [event for event in story.container.get(EventLog).events_past(0, LOG_LIMIT_EVENTS) if event.event == name]
+    return [event for event in story.container.get(EventLog).events_after(0, LOG_LIMIT_EVENTS) if event.event == name]
 
 
 def event_data(call: Mapping[str, object]) -> dict[str, object]:

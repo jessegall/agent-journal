@@ -71,10 +71,10 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         return SaveProfile(profile)
 
     def registered(self, programs: tuple[str, ...]) -> tuple[str, ...]:
-        known = [provider.name for provider in self.providers.all()]
-        unknown = [program for program in programs if program not in known]
+        available = [provider.name for provider in self.providers.all()]
+        unknown = [program for program in programs if program not in available]
         if unknown:
-            raise Refusal(f"no program named {', '.join(unknown)}", f"name programs from: {', '.join(known)}")
+            raise Refusal(f"no program named {', '.join(unknown)}", f"name programs from: {', '.join(available)}")
         return programs
 
     def write_output(self, value: object, output: Output) -> None:

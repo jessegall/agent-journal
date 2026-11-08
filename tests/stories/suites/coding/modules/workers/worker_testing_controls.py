@@ -1,3 +1,4 @@
+import pytest
 import json
 import subprocess
 from pathlib import Path
@@ -158,6 +159,7 @@ def test_after_merge_failure_keeps_task_open(new_story):
     story.expect_text("task show 1", "state: testing", actor=story.agent)
 
 
+@pytest.mark.real_git
 def test_after_merge_resume_does_not_merge_twice(new_story):
     story, worker, repository = merge_story(new_story, ["test -f marker.txt"])
     story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)

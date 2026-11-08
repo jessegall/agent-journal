@@ -16,9 +16,10 @@ SKILL_TEXT_COMMAND = ["journal", "skill", "show"]
 
 
 class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
-    """When a part of a shell line names the SKILL.md of a skill in the catalogue, or runs journal skill show on
-    it, the agent has that skill loaded in the same write, so the very next command finds it read. Each part
-    counts by itself, however many others the line has, and a skill named by several parts of one line loads once."""
+    """When a part of a shell line names the SKILL.md of a skill in the catalogue, or runs journal skill show
+    on it, the agent has that skill loaded in the same write, so the very next command finds it read. Each
+    part counts by itself, however many others the line has, and a skill named by several parts of one line
+    loads once."""
 
     name = "skills.part-read"
 
@@ -29,7 +30,7 @@ class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
 
     def handle(self, event: Created[ProcessPart], context: Context) -> None:
         part = event.row
-        folders = self.not_yet_loaded(part.process_id, self.skill_folders(part.text))
+        folders = self.unloaded_folders(part.process_id, self.skill_folders(part.text))
         if not folders:
             return
         agent_id = self.queries.query(Process).find(part.process_id).session_agent_id
@@ -37,7 +38,7 @@ class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
             if skill.folder in folders:
                 self.bus.dispatch(LoadSkill(agent_id, skill.folder, skill.digest), context)
 
-    def not_yet_loaded(self, process_id: int, folders: set[str]) -> set[str]:
+    def unloaded_folders(self, process_id: int, folders: set[str]) -> set[str]:
         if process_id != self.process_id:
             self.process_id, self.loaded_folders = process_id, set()
         new_folders = folders - self.loaded_folders

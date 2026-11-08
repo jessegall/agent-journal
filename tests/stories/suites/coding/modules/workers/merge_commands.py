@@ -1,3 +1,4 @@
+import pytest
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
@@ -12,6 +13,7 @@ def merge_commands(story, *commands: str) -> None:
     story.expect_success(f"""setting set {MERGE_COMMANDS} '[{listed}]' --environment main""")
 
 
+@pytest.mark.real_git
 def test_a_merge_runs_its_commands_on_the_merged_branch_and_closes_the_task(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
@@ -23,6 +25,7 @@ def test_a_merge_runs_its_commands_on_the_merged_branch_and_closes_the_task(new_
     story.expect_text(lines.TASK_DETAILS, "state: completed")
 
 
+@pytest.mark.real_git
 def test_a_failed_merge_command_leaves_the_task_in_testing_and_a_second_merge_finishes_it(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

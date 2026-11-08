@@ -13,7 +13,7 @@ class ProcessChain:
     def __init__(self, table: ProcessTable) -> None:
         self.table = table
 
-    def started_at(self, pid: int | None) -> Timestamp | None:
+    def start_timestamp(self, pid: int | None) -> Timestamp | None:
         steps = self.steps(pid) if pid else []
         return steps[0].started_at if steps else None
 

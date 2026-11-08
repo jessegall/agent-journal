@@ -1,5 +1,4 @@
 import subprocess
-import sys
 
 import pytest
 
@@ -18,7 +17,7 @@ WAIT_SECONDS = 10
 
 @pytest.fixture
 def waiting_process():
-    process = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"], stdin=subprocess.PIPE, text=True, start_new_session=True)
+    process = subprocess.Popen(["cat"], stdin=subprocess.PIPE, text=True, start_new_session=True)
     yield process
     process.kill()
     process.communicate()

@@ -38,7 +38,7 @@ def test_buttons_are_offered_only_where_their_module_is_active(buttons_server):
     expect_row(json.loads(body), missing={})
     offered = {item["name"] for item in json.loads(body)["buttons"]}
     expect_value(sorted(name for name in offered if name.startswith(("workers.", "review."))), [])
-    expect_value({"plans.approve", "plans.assign-worker", "plans.assign-main", "plan_reviews.critique", "plan_reviews.end-review", "tasks.block", "agents.pause"} <= offered, True)
+    expect_value({"plans.approve", "plans.assign-agent", "plans.assign-main", "plan_reviews.critique", "plan_reviews.end-review", "tasks.block", "agents.pause"} <= offered, True)
 
 
 def test_missing_lines_include_main_and_menu_labels_until_this_person_allows_them(buttons_server):

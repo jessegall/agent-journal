@@ -26,10 +26,10 @@ ORIGINAL_SUFFIX = ".original"
 
 
 class WorkerInstructionFiles:
-    """Writes the instruction files of a worker's worktree for its profile, in place of the project's copies: the
-    profile's text and each injection the profile has on, the journal's own briefing and each plugin's block. The
-    project's originals stay beside them when the profile says so, and the written files stay out of the worker's
-    commits. A person can turn it off with the setting."""
+    """Writes the instruction files of a worker's worktree for its profile, in place of the project's copies:
+    the profile's text and each injection the profile has on, the journal's own briefing and each plugin's
+    block. The project's originals stay beside them when the profile says so, and the written files stay
+    out of the worker's commits. A person can turn it off with the setting."""
 
     def __init__(self, settings: SettingValues, profiles: ProfileFiles, registry: Registry, plugins: PluginQuery, folders: PluginFolders, git: WorktreeGit, libraries: LibraryFolders,
                  agents: AgentRows) -> None:
@@ -40,7 +40,7 @@ class WorkerInstructionFiles:
     def injections(self, profile: AgentProfile) -> tuple[InstructionInjection, ...]:
         driver = self.registry.driver(WORKER_DRIVER)
         journal_text = "\n".join(driver.opening_lines) if driver is not None else ""
-        found = [InstructionInjection(JOURNAL_KEY, JOURNAL_TITLE, journal_text, profile.injections.get(JOURNAL_KEY, True))]
+        injections = [InstructionInjection(JOURNAL_KEY, JOURNAL_TITLE, journal_text, profile.injections.get(JOURNAL_KEY, True))]
         for plugin in self.plugins.enabled_plugins():
             if self.folders.is_upgrading(plugin.name):
                 continue
@@ -49,8 +49,8 @@ class WorkerInstructionFiles:
                 key = f"{plugin.name}.{block.key}"
                 path = folder / block.file
                 text = self.block_text(folder, block.file, path)
-                found.append(InstructionInjection(key, block.title, text, profile.injections.get(key, block.default)))
-        return tuple(found)
+                injections.append(InstructionInjection(key, block.title, text, profile.injections.get(key, block.default)))
+        return tuple(injections)
 
     def block_text(self, folder: Path, file: str, path: Path) -> str:
         if not ManifestListener.is_contained_path(file, folder) or not path.is_file():
@@ -77,25 +77,25 @@ class WorkerInstructionFiles:
         if profile.keeps_project_instructions:
             parts.append("The project's own instruction files are kept beside these, named with .original before .md.")
         text = "\n\n".join(part for part in parts if part) + "\n"
-        held = {name: self.text_of(Path(folder) / name) for name in INSTRUCTION_FILES}
-        if all(held[name] == text for name in INSTRUCTION_FILES):
+        original_texts = {name: self.file_text(Path(folder) / name) for name in INSTRUCTION_FILES}
+        if all(original_texts[name] == text for name in INSTRUCTION_FILES):
             return
-        untracked_after = self.git.hold_back(folder, INSTRUCTION_FILES)
-        written: list[str] = []
+        untracked_after = self.git.untrack_files(folder, INSTRUCTION_FILES)
+        restored: list[str] = []
         for name in INSTRUCTION_FILES:
             path = Path(folder) / name
-            if originals and profile.keeps_project_instructions and held[name] is not None:
+            if originals and profile.keeps_project_instructions and original_texts[name] is not None:
                 original = path.with_name(f"{path.stem}{ORIGINAL_SUFFIX}{path.suffix}")
-                FileAccess.shared().write(original, held[name])
-                written.append(original.name)
-            if held[name] != text:
+                FileAccess.shared().write(original, original_texts[name])
+                restored.append(original.name)
+            if original_texts[name] != text:
                 FileAccess.shared().write(path, text)
             if name in untracked_after:
-                written.append(name)
-        self.libraries.exclude(folder, written)
+                restored.append(name)
+        self.libraries.exclude(folder, restored)
 
     def refresh(self, worktree: Worktree) -> None:
         self.write(worktree.folder, self.agents.find(worktree.session_agent_id).profile, originals=False)
 
-    def text_of(self, path: Path) -> str | None:
+    def file_text(self, path: Path) -> str | None:
         return self.kept_text(path) if path.is_file() else None

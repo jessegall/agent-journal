@@ -31,35 +31,35 @@ RUN_CPU = pytest.StashKey[RunCpu]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
-TESTS_PER_WORKER_OPTION = "tests_per_worker"
+WORKER_TEST_COUNT_OPTION = "tests_per_worker"
 MOST_WORKERS_OPTION = "most_workers"
 RUNNER_NICENESS = 10
-HELD_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
+GATE_LOCK_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini(TESTS_PER_WORKER_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
+    parser.addini(WORKER_TEST_COUNT_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
     parser.addini(MOST_WORKERS_OPTION, "the most test runners a run with -n starts", default="4")
 
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_cmdline_main(config: pytest.Config) -> None:
-    if HELD_VARIABLE not in os.environ and RunSize(config.args, 1).is_heavy():
+    if GATE_LOCK_VARIABLE not in os.environ and RunSize(config.args, 1).is_heavy():
         HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
-        os.environ[HELD_VARIABLE] = "1"
+        os.environ[GATE_LOCK_VARIABLE] = "1"
     if not config.getoption("numprocesses", None):
         return
     os.nice(RUNNER_NICENESS)
-    per_worker, most = int(config.getini(TESTS_PER_WORKER_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
-    workers = RunSize(config.args, per_worker * most).workers(per_worker, most)
+    worker_test_count, most = int(config.getini(WORKER_TEST_COUNT_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
+    workers = RunSize(config.args, worker_test_count * most).workers(worker_test_count, most)
     config.option.numprocesses = 0 if workers == 1 else workers
     if workers > 1:
-        LazyLoading.always_prevented = True
+        LazyLoading.disabled = True
         TemplatePrebuild(TemplateDatabases(TemplateCache().folder()), Path(config.rootpath) / "tests").run()
 
 
 def pytest_configure(config: pytest.Config) -> None:
-    LazyLoading.always_prevented = True
+    LazyLoading.disabled = True
     config.stash[RUN_START] = time.monotonic()
     config.stash[RUN_CPU] = RunCpu()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, cpu_seconds, reason): a story that may cost more than the default budget, and why")
@@ -151,7 +151,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         process_output[STORY_STEPS_KEY] = overlap.stories
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
-    if RunSize(session.config.args, 1).is_whole_suite() and not session.config.option.collectonly:
+    if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:
         record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
         session.config.stash[FULL_RUN] = record
         record.write()

@@ -5,6 +5,7 @@ from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.support.message_nudges import MESSAGE_REACTION
+from tests.stories.support.story_checks import expect_value
 
 
 def chat(story) -> str:
@@ -12,7 +13,6 @@ def chat(story) -> str:
 
 
 def two_lines(text: str) -> str:
-    """The text as two lines: a one-line closing text after a reply never reaches the chat, whatever its words."""
     first, _, last = text.rpartition(" ")
     return f"{first}\n{last}"
 
@@ -182,7 +182,7 @@ def test_a_one_line_closing_text_after_a_reply_stays_out_of_chat_in_any_words_an
     story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
     text = "Nearly done with the languages run."
     shown = story.hook("s-1", HookSamples.message_display(text))
-    assert "your reply is sent, so your one closing line was not shown" in shown.lines, shown.lines
+    expect_value("your reply is sent, so your one closing line was not shown" in shown.lines, True)
     expect_absent_chat(story, text)
 
 

@@ -121,7 +121,7 @@ def test_a_folder_a_running_process_holds_is_never_removed_by_age_or_size(tmp_pa
     (held / f".in-use-{os.getpid()}").touch()
     expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
     os.utime(held, (expired_at, expired_at))
-    cache.remove_old()
+    cache.drop_expired()
     assert held.is_dir()
 
 
@@ -133,5 +133,5 @@ def test_a_lease_of_a_process_that_is_gone_holds_nothing(tmp_path):
     (left / ".in-use-999999").touch()
     expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
     os.utime(left, (expired_at, expired_at))
-    cache.remove_old()
+    cache.drop_expired()
     assert not left.exists()

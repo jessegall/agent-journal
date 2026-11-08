@@ -15,7 +15,7 @@ class RemoveManagedHooksHandler(Handler[RemoveManagedHooks, list[ManagedHook]]):
         self.managed, self.events = managed, events
 
     def handle(self, command: RemoveManagedHooks, context: Context) -> list[ManagedHook]:
-        removed = self.managed.removed_by_stamp(command.stamp)
+        removed = self.managed.drop_stamped(command.stamp)
         if removed:
             self.events.write_file_change("managed-hook.changed", self.managed.path, context)
         return removed

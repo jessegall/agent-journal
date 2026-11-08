@@ -8,6 +8,7 @@ from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool import Tool
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from tests.stories.support.story_checks import expect_value
 
 LISTING = ShellPart("cat", CommandCategory.READ, ["notes"])
 SEARCHING = ShellPart("grep", CommandCategory.SEARCH, ["cart"])
@@ -138,4 +139,4 @@ def test_a_line_naming_the_same_task_twice_names_it_once():
     block = ShellPart("journal", CommandCategory.JOURNAL, ["task", "block", "12", "--reason", "waits"])
     other = ShellPart("journal", CommandCategory.JOURNAL, ["task", "close", "9"])
     line = line_of("journal task block 12 --reason waits && journal task block 12 --reason waits && journal task close 9", block, block, other)
-    assert line.journal_command_numbers("task block", "task close") == (12, 9)
+    expect_value(line.journal_command_numbers("task block", "task close"), (12, 9))

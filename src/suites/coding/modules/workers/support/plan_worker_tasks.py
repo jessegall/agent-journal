@@ -19,11 +19,7 @@ class PlanWorkerTasks:
         plan = self.queries.query(Plan).find(plan_id)
         if plan.state not in HANDED_STATES:
             raise Refusal(f"plan {plan.id} is {plan.state.value}", "only an approved or started plan goes to a worker")
-        phases = self.outlines.outline(plan.id).phases
-        if phase_id is not None:
-            phases = tuple(phase for phase in phases if phase.id == phase_id)
-            if not phases:
-                raise Refusal(f"phase {phase_id} is not in plan {plan.id}", f"journal plan outline {plan.id} lists its phases")
+        phases = self.outlines.outline(plan.id).chosen(phase_id)
         tasks = tuple(task for phase in phases for task in phase.tasks if task.helper_id is None and task.state in (TaskState.OPEN.value, TaskState.BLOCKED.value))
         first = next((task for task in tasks if task.state == TaskState.OPEN.value), None)
         task_ids = tuple(task.id for task in tasks)

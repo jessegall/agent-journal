@@ -3,7 +3,7 @@ import shlex
 from suites.coding.support.coding_main_options import CodingMainOptions
 from suites.coding.support.main_options import BUILDER, ORCHESTRATOR
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
-from tests.stories.suites.coding.support.main_controls_fixture import in_environment
+from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"
@@ -13,7 +13,7 @@ WORKER_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 
 
 def main_options(story):
-    with in_environment(story):
+    with scope_line(story):
         return story.container.get(CodingMainOptions).options()
 
 

@@ -1,3 +1,5 @@
+from core.modules.tasks.models.support.views import TASK_HELPER_MATCH
+
 PLAN_TASKS_SELECT = (
     "SELECT phase_tasks.task_id, phases.plan_id, phase_tasks.phase_id, phases.position AS phase_position, phases.checkpoint,"
     " phase_tasks.position, tasks.state, tasks.priority, tasks.closed_at"
@@ -22,7 +24,7 @@ PLAN_CARDS_SELECT = (
     " (SELECT json_group_array(json_object('id', helper.id, 'name', coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id), 'task_id', tasks.id, 'task_title', tasks.title))"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
-    " JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
+    f" JOIN agents AS helper ON {TASK_HELPER_MATCH}"
     " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL) AS agents,"
     " (SELECT json_group_array(json_object('id', tasks.id, 'title', tasks.title))"
     " FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
@@ -46,5 +48,5 @@ PLAN_OUTLINE_TASKS_SELECT = (
     " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
-    " LEFT JOIN agents AS helper ON helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND helper.role != 'main'"
+    f" LEFT JOIN agents AS helper ON {TASK_HELPER_MATCH}"
 )

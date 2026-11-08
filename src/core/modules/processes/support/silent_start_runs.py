@@ -19,25 +19,25 @@ class SilentStartRuns:
 
     @staticmethod
     def name(text: str, program: str, category: CommandCategory) -> str:
-        words = text.split()
-        return f"{JOURNAL_PROGRAM} {words[1]}" if program == JOURNAL_PROGRAM and category.is_watched and len(words) > 1 else text
+        tokens = text.split()
+        return f"{JOURNAL_PROGRAM} {tokens[1]}" if program == JOURNAL_PROGRAM and category.is_watched and len(tokens) > 1 else text
 
     def runs(self, name: str) -> tuple[SilentRun, ...]:
         ended = self.processes.ended().with_part(Prefix("text", name)).newest().limited(RUNS_READ)
-        found = []
+        silent_runs = []
         for process in ended:
             part = next((part for part in self.parts.process(process.id).all_rows() if self.name(part.text, part.program, part.category) == name), None)
             if part is not None and process.ended_at is not None:
                 output = self.outputs.process_output(process.id)
                 started_at = process.started_at or process.created_at
-                found.append(SilentRun(process, part, int(started_at.elapsed_seconds(process.ended_at)), output is not None and output.progress > 0))
-        return tuple(found)
+                silent_runs.append(SilentRun(process, part, int(started_at.elapsed_seconds(process.ended_at)), output is not None and output.progress > 0))
+        return tuple(silent_runs)
 
     @staticmethod
-    def silent_streak(runs: tuple[SilentRun, ...]) -> int:
-        streak = 0
+    def silent_run_count(runs: tuple[SilentRun, ...]) -> int:
+        count = 0
         for run in runs:
             if not run.is_silent:
                 break
-            streak += 1
-        return streak
+            count += 1
+        return count

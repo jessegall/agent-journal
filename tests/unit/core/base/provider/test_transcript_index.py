@@ -55,7 +55,7 @@ def test_the_page_before_a_row_is_the_rows_just_above_it_and_its_total_is_how_ma
     transcript = tmp_path / "s-1.jsonl"
     transcript.write_text(transcript_lines(*range(1, 21)))
     index = TranscriptIndex()
-    page = index.before(provider, transcript, 11, 4)
+    page = index.older_rows(provider, transcript, 11, 4)
     assert ([row.id for row in page.rows], page.total) == ([7, 8, 9, 10], 10)
-    page = index.before(provider, transcript, 3, 4)
+    page = index.older_rows(provider, transcript, 3, 4)
     assert ([row.id for row in page.rows], page.total) == ([1, 2], 2)

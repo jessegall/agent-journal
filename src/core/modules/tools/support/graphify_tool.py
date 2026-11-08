@@ -13,7 +13,7 @@ from core.modules.tools.support.graph_status import GraphStatus
 from core.modules.tools.support.tool_setting import ToolSetting
 
 INSTALL_LIMIT_SECONDS = 600
-AGENT_INSTALLS = (("install",), ("claude", "install"), ("codex", "install"))
+AGENT_INSTALLS = (tuple(["install"]), ("claude", "install"), ("codex", "install"))
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the
 # claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
@@ -26,8 +26,8 @@ REFRESH_SCRIPT = (
 
 
 class GraphifyTool:
-    """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph in
-    the background with its incremental update, never two at once for the folder."""
+    """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
+    in the background with its incremental update, never two at once for the folder."""
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
@@ -44,25 +44,25 @@ class GraphifyTool:
         if not line:
             raise Refusal("the Graphify install command is empty", "set journal.core.tools.graphify-install-command")
         self.run_install(line, folder)
-        for words in AGENT_INSTALLS:
-            self.run_install([*self.command(), *words], folder)
+        for arguments in AGENT_INSTALLS:
+            self.run_install([*self.command(), *arguments], folder)
 
     @staticmethod
     def run_install(line: list[str], folder: Path) -> None:
         try:
-            result = subprocess.run(line, cwd=folder, capture_output=True, text=True, timeout=INSTALL_LIMIT_SECONDS, check=False)
+            outcome = subprocess.run(line, cwd=folder, capture_output=True, text=True, timeout=INSTALL_LIMIT_SECONDS, check=False)
         except (OSError, subprocess.TimeoutExpired) as error:
             raise Refusal(f"installing Graphify failed: {error}") from error
-        if result.returncode != 0:
-            detail = (result.stderr or result.stdout).strip().splitlines()
-            raise Refusal(f"installing Graphify failed: {detail[-1] if detail else f'exit code {result.returncode}'}")
+        if outcome.returncode != 0:
+            detail = (outcome.stderr or outcome.stdout).strip().splitlines()
+            raise Refusal(f"installing Graphify failed: {detail[-1] if detail else f'exit code {outcome.returncode}'}")
 
     def head(self, folder: Path) -> str:
         try:
-            result = subprocess.run(["git", "-C", str(folder), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=GIT_LIMIT_SECONDS, check=False)
+            outcome = subprocess.run(["git", "-C", str(folder), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=GIT_LIMIT_SECONDS, check=False)
         except (OSError, subprocess.TimeoutExpired):
             return ""
-        return result.stdout.strip() if result.returncode == 0 else ""
+        return outcome.stdout.strip() if outcome.returncode == 0 else ""
 
     def status(self, folder: Path, is_started: bool = False) -> GraphStatus:
         files = GraphFiles(folder)
@@ -74,7 +74,6 @@ class GraphifyTool:
         return bool(commit) and GraphFiles(folder).failed_commit() == commit
 
     def refresh(self, folder: Path) -> GraphStatus:
-        """Starts a refresh for the folder's commit unless one runs."""
         self.checked_folder(folder)
         if not self.is_installed():
             raise Refusal("Graphify is not installed", "install it on the Tools page or with journal tool install graphify")
@@ -84,7 +83,6 @@ class GraphifyTool:
         return status if status.is_running else self.after_start(folder, status)
 
     def tick(self, folder: Path) -> GraphStatus:
-        """Starts a refresh only when a commit has landed since the last one and none failed for it or runs."""
         self.checked_folder(folder)
         status = self.status(folder)
         if not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder):
@@ -104,7 +102,7 @@ class GraphifyTool:
         except OSError:
             files.release()
             return False
-        files.hold(process.pid)
+        files.record_owner(process.pid)
         return True
 
     @staticmethod

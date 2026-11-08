@@ -8,8 +8,9 @@ from core.modules.plugins.support.service_processes import ServiceProcesses
 
 
 class PluginServicesUpgradeListener(CommitListener[Changed[Plugin]]):
-    """Once an upgrade has changed the files of a plugin, starts its services again with the new code before the command that
-    upgraded it reports done, in the set of services the server keeps, so the first judging after an upgrade finds them running."""
+    """Once an upgrade has changed the files of a plugin, starts its services again with the new code before
+    the command that upgraded it reports done, in the set of services the server keeps, so the first
+    judging after an upgrade finds them running."""
 
     name = "plugins.services-upgrade"
 

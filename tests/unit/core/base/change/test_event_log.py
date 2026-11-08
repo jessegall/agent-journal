@@ -55,8 +55,8 @@ def test_row_values_are_the_row_as_the_log_keeps_it_with_no_bookkeeping():
 def test_events_are_read_past_an_id_in_id_order(log):
     first = log.write(Change(None, Item(id=5, version=1, title="Dune"), CONTEXT), frozenset())
     second = log.write(Change(None, Item(id=6, version=1, title="Emma"), replace(CONTEXT, cause_id=None)), frozenset())
-    assert [event.id for event in log.events_past(0)] == [first, second]
-    assert [event.id for event in log.events_past(first)] == [second]
+    assert [event.id for event in log.events_after(0)] == [first, second]
+    assert [event.id for event in log.events_after(first)] == [second]
     assert log.newest_id() == second
 
 

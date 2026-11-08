@@ -9,9 +9,20 @@
             },
             {
                 "any": [
-                    {"nameMatches": "^(core\\.modules|suites)(\\.|$)"},
-                    {"descendant": {"nameMatches": "^(core\\.modules|suites)(\\.|$)"}}
+                    {
+                        "nameMatches": "^(core\\.modules|suites)(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^(core\\.modules|suites)(\\.|$)"
+                        }
+                    }
                 ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
             }
         ]
     },

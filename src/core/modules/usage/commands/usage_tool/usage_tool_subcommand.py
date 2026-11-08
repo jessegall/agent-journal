@@ -77,14 +77,12 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         return f"+{call.lines_added} -{call.lines_removed}" if call.lines_added or call.lines_removed else ""
 
     def monitor_descriptions(self, agent_id: int) -> tuple[str, ...]:
-        """What the Monitors the agent started, and that may still be alive, are for, newest first, as the Monitor described them.
-        A notice from a Monitor woke the agent after those before it began, so they no longer count."""
         calls = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL, answer=HookAnswer.ALLOWED)
         notice = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PROMPT).matching(ContainsSome(["summary"], list(MONITOR_OPENINGS))).newest().first()
         if notice is not None:
             calls = calls.matching(Minimum("created_at", notice.creation_timestamp().text))
-        now = self.clock.timestamp()
-        return tuple(text for call in calls.newest().page(1, SHOWN_RUNS).rows if call.creation_timestamp().elapsed_seconds(now) < MONITOR_LIFE_SECONDS
+        current = self.clock.timestamp()
+        return tuple(text for call in calls.newest().page(1, SHOWN_RUNS).rows if call.creation_timestamp().elapsed_seconds(current) < MONITOR_LIFE_SECONDS
                      for text in [str(call.metadata.module_part(DRIVERS_MODULE).get(MONITOR_DESCRIPTION, ""))] if text)
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:

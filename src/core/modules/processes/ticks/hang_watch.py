@@ -24,17 +24,17 @@ class HangWatch:
         return bool(stopped)
 
     def stopped(self, container: Container, process: Process) -> bool:
-        folder, now = container.get(OutputFolder), container.get(Clock).timestamp()
+        folder, current = container.get(OutputFolder), container.get(Clock).timestamp()
         group = process.pid or folder.pid(process.id)
         cpu = container.get(GroupCpuTime).seconds(group) if group is not None else None
         if cpu is None:
             return False
         recorded = folder.text(process.id, CPU_FILE).split()
         if len(recorded) != 2 or float(recorded[0]) != cpu:
-            folder.write(process.id, CPU_FILE, f"{cpu} {now.value.timestamp()}")
+            folder.write(process.id, CPU_FILE, f"{cpu} {current.value.timestamp()}")
             return False
-        idle = int(now.value.timestamp() - float(recorded[1]))
-        silent = folder.run_silent_seconds(process.id, now) if folder.total_bytes(process.id) else int(process.creation_timestamp().elapsed_seconds(now))
+        idle = int(current.value.timestamp() - float(recorded[1]))
+        silent = folder.run_silent_seconds(process.id, current) if folder.total_bytes(process.id) else int(process.creation_timestamp().elapsed_seconds(current))
         seconds = min(idle, silent)
         with container.get(Scopes).read_scope((), None, process.environment_id):
             limit = container.get(ProcessSettings).integer(ProcessSetting.HANG_SECONDS)

@@ -70,7 +70,7 @@ def closed_pipe(*_arguments: object) -> None:
 def test_a_command_whose_reader_went_away_records_no_exception(new_story, monkeypatch):
     story = new_story(fixture=UserJoined)
     with monkeypatch.context() as patched:
-        patched.setattr(Console, "chosen_run", closed_pipe)
+        patched.setattr(Console, "run_parsed", closed_pipe)
         story.run("task list", environment_id=1)
     story.expect_no_text("journal-exception list", "BrokenPipeError")
 

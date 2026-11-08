@@ -7,7 +7,8 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 
 
 class TasksInFourStates(StoryFixture):
-    """Counted task 1 is started, 2 blocked, 3 delegated to a worker, 4 completed and 5 open; the fixture's own task is started and delegated to the worker."""
+    """Counted task 1 is started, 2 blocked, 3 delegated to a worker, 4 completed and 5 open; the fixture's
+    own task is started and delegated to the worker."""
 
     parent = OrchestratorWithOpenTask
 

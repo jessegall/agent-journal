@@ -8,16 +8,17 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.answer_refusal_skip.answer_refusal_skip import AnswerRefusalSkip
 from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP_SOURCE
 from core.modules.drivers.models.refusal_skip import RefusalSkip
-from core.modules.drivers.support.access_nudges import SKIP_WAITS_FOR_APPROVAL
+from core.modules.drivers.support.access_nudges import SKIP_NEEDS_APPROVAL
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.helpers.support.helper_settings import SKIPS_NEED_APPROVAL
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
-    """Confirms or withdraws an agent's own held skip, once: a confirmed skip passes the refusal's next attempt and
-    keeps what the agent tried beside its reason; a withdrawn one leaves the refusal in force. Neither can be changed
-    afterwards. A helper's confirmed skip passes only once its parent approves it, while that setting is on."""
+    """Confirms or withdraws an agent's own held skip, once: a confirmed skip passes the refusal's next
+    attempt and keeps what the agent tried beside its reason; a withdrawn one leaves the refusal in force.
+    Neither can be changed afterwards. A helper's confirmed skip passes only once its parent approves it,
+    while that setting is on."""
 
     command = AnswerRefusalSkip
 
@@ -39,5 +40,5 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         waits = agent.role != AgentRole.MAIN and agent.parent_id is not None and self.settings.flag(SKIPS_NEED_APPROVAL)
         confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, waits_for_approval=waits)
         if waits:
-            self.nudger.send(agent.parent_id, SKIP_WAITS_FOR_APPROVAL, SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
+            self.nudger.send(agent.parent_id, SKIP_NEEDS_APPROVAL, SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
         return confirmed

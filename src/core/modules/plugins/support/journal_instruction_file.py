@@ -24,9 +24,9 @@ class JournalInstructionFile:
     def write(self) -> None:
         project = self.home.project_folder
         journal_file = project / JOURNAL_FILE
-        self.save(journal_file, self.held(journal_file), self.text())
+        self.save(journal_file, self.current_text(journal_file), self.text())
         for name in INSTRUCTION_FILES:
-            self.add_import(project / name)
+            self.append_import(project / name)
 
     def text(self) -> str:
         parts = [FileAccess.shared().read(JOURNAL_TEXT).strip()]
@@ -41,9 +41,9 @@ class JournalInstructionFile:
         files = [name for name in manifest.injected_instructions if ManifestListener.is_contained_path(name, folder) and (folder / name).is_file()]
         return [FileAccess.shared().read(folder / name).strip() for name in files]
 
-    def add_import(self, file: Path) -> None:
-        held = self.held(file)
-        self.save(file, held, self.with_import(OLD_BLOCK.sub("", held if held is not None else "")))
+    def append_import(self, file: Path) -> None:
+        current_text = self.current_text(file)
+        self.save(file, current_text, self.with_import(OLD_BLOCK.sub("", current_text if current_text is not None else "")))
 
     @staticmethod
     def with_import(text: str) -> str:
@@ -53,10 +53,10 @@ class JournalInstructionFile:
         return f"{text.rstrip()}\n\n{JOURNAL_IMPORT}\n".lstrip()
 
     @staticmethod
-    def held(file: Path) -> str | None:
+    def current_text(file: Path) -> str | None:
         return FileAccess.shared().read(file) if file.is_file() else None
 
     @staticmethod
-    def save(file: Path, held: str | None, text: str) -> None:
-        if held != text:
+    def save(file: Path, current_text: str | None, text: str) -> None:
+        if current_text != text:
             FileAccess.shared().write(file, text)

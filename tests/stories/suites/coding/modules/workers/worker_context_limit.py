@@ -6,7 +6,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.usage.support.status_files import save_status_file
@@ -18,7 +18,7 @@ JOB = "Add the tax as well"
 
 
 def limit_on(story):
-    story.expect_success(f"setting set {CONTEXT_LIMIT_ON} true --project", actor=story.user)
+    story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT} --project", actor=story.user)
 
 
@@ -89,7 +89,7 @@ def test_a_worker_under_the_limit_resumes_on_its_job(ended_worker):
     story.expect_rows("/compact" not in command, JOB in command, detail=command)
 
 
-def between_tasks(new_story):
+def finished_task_ids(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
@@ -101,7 +101,7 @@ def between_tasks(new_story):
 
 
 def test_a_worker_past_the_limit_at_worker_next_is_told_to_stop_and_may_stop_with_its_next_task_started(new_story):
-    story, worker = between_tasks(new_story)
+    story, worker = finished_task_ids(new_story)
     limit_on(story)
     has_context(story, worker, LIMIT)
     story.expect_success("worker next --wait --differences none", actor=worker)
@@ -113,7 +113,7 @@ def test_a_worker_past_the_limit_at_worker_next_is_told_to_stop_and_may_stop_wit
 
 
 def test_a_worker_under_the_limit_at_worker_next_goes_on_and_may_not_stop(new_story):
-    story, worker = between_tasks(new_story)
+    story, worker = finished_task_ids(new_story)
     limit_on(story)
     has_context(story, worker, LIMIT - 1)
     story.expect_success("worker next --wait --differences none", actor=worker)

@@ -28,15 +28,15 @@ class ReportingRequestWatch(RequestWatch):
         if not self.settings.project.flag(REPEATED_WORK_SETTING):
             yield
             return
-        original, work = self.database.tally, CollectingRepeatedWork(self.database)
+        original, work = self.database.repeated_work, CollectingRepeatedWork(self.database)
         start_points = original.points()
         work.add(start_points)
-        self.database.tally = work
+        self.database.repeated_work = work
         try:
             with work.request():
                 yield
         finally:
-            self.database.tally = original
+            self.database.repeated_work = original
             original.add(work.points().minus(start_points))
             self.report(argv, work.findings)
 

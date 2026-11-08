@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class ReadOnlyHelpersKeyMigration(Migration):
+class HelpersKeyMigration(Migration):
     """The setting that lets the main agent start helpers covers read-only helpers alone, so its key now says so."""
 
     number = 7

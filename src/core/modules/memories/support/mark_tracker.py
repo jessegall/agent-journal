@@ -8,7 +8,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.models.enums.mark_state import MarkState
 from core.modules.memories.models.memory_mark import MemoryMark
-from core.modules.settings.support.context_share import WHOLE
+from core.modules.settings.support.context_share import PERCENT_FULL
 
 
 
@@ -24,10 +24,10 @@ class MarkTracker:
                                    "session_agent_id = ? AND state = ?", [agent_id, MarkState.OPEN], name="memories.open_marks"))
 
     @staticmethod
-    def spaced(marks: Sequence[int], maximum_tokens: int, gap_tokens: int) -> tuple[int, ...]:
+    def spaced(marks: Sequence[int], maximum_tokens: int, spacing_tokens: int) -> tuple[int, ...]:
         kept: list[int] = []
         for mark in sorted(marks, reverse=True):
-            if not kept or (kept[-1] - mark) * maximum_tokens / WHOLE >= gap_tokens:
+            if not kept or (kept[-1] - mark) * maximum_tokens / PERCENT_FULL >= spacing_tokens:
                 kept.append(mark)
         return tuple(reversed(kept))
 

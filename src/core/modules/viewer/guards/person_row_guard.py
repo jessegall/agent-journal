@@ -25,6 +25,6 @@ class PersonRowGuard(Guard[E]):
             return
         actor = context.actor
         if actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal(self.question, required_person_id=event.row.person_id)
+            raise UserApprovalRefusal(self.question, required_person_id=event.row.person_id, command=context.command)
         if actor.type is not ActorType.USER or actor.id != event.row.person_id:
             raise self.refusal

@@ -15,28 +15,28 @@ class WriteFlags:
         parser.add_argument("--skip-guard", action="append", default=[], dest="skip_guard")
         parser.add_argument("--skip-reason", default="", dest="skip_reason")
         parser.add_argument("--explain", action="store_true")
-        self.add_reason(parser)
+        self.declare_reason_flag(parser)
         for short_flag in dict.fromkeys(guard.short_flag for guard in self.registry.guards if guard.short_flag):
             parser.add_argument(f"--{short_flag}", action="store_true", dest=self.destination(short_flag))
 
     @staticmethod
-    def add_reason(parser: ArgumentParser) -> None:
+    def declare_reason_flag(parser: ArgumentParser) -> None:
         try:
             parser.add_argument("--reason", default="", help="why this is asked, shown to the person when the line needs their approval")
         except ArgumentError:
             return None
-        parser.set_defaults(reason_is_ours=True)
+        parser.set_defaults(reason_flag_added=True)
 
     @staticmethod
     def without_reason(argv: list[str]) -> tuple[str, ...]:
         kept: list[str] = []
-        words = iter(argv)
-        for word in words:
+        remaining = iter(argv)
+        for word in remaining:
             if word == "--":
                 kept.append(word)
-                kept.extend(words)
+                kept.extend(remaining)
             elif word == "--reason":
-                next(words, None)
+                next(remaining, None)
             elif not word.startswith("--reason="):
                 kept.append(word)
         return tuple(kept)

@@ -10,6 +10,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 @pytest.mark.parametrize("command,notice", [("worker merge --wait {worker}", "clashed on cart.py"),
                                            ('worker send --wait {worker} "Finish the total"', "takes the job")])
+@pytest.mark.real_git
 def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new_story, command, notice):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
@@ -29,6 +30,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 
 
+@pytest.mark.real_git
 def test_worker_send_runs_git_outside_its_transaction(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

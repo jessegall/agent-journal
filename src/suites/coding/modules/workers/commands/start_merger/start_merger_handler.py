@@ -38,22 +38,22 @@ class StartMergerHandler(Handler[StartMerger, None]):
         try:
             if main_agent is None:
                 raise Refusal("no main agent runs")
-            self.give_job(Actor(main_agent.id, ActorType.AGENT), context)
+            self.assign_job(Actor(main_agent.id, ActorType.AGENT), context)
         except Exception as failure:
             fallback = command.fallback_line.text if isinstance(command.fallback_line, Nudge) else command.fallback_line
             reason = failure.reason if isinstance(failure, Refusal) else f"an unexpected fault, {type(failure).__name__}: {failure}"
             text = f"{fallback} (the merger did not start: {reason})"
             existing = self.queries.query(AgentLine).filter(source=MERGER_SOURCE, state=AgentLineState.WAITING, text=text).first()
-            if existing is not None or self.is_told_since(command, text):
+            if existing is not None or self.is_repeat(command, text):
                 return
             self.main_line.send(text, MERGER_SOURCE, context)
 
-    def is_told_since(self, command: StartMerger, text: str) -> bool:
+    def is_repeat(self, command: StartMerger, text: str) -> bool:
         if command.since is None:
             return False
         return self.queries.query(AgentLine).filter(source=MERGER_SOURCE, text=text).matching(Minimum("created_at", command.since.text)).first() is not None
 
-    def give_job(self, actor: Actor, context: Context) -> None:
+    def assign_job(self, actor: Actor, context: Context) -> None:
         kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
         if kept is not None and kept.ended_at is not None and not self.fits_profile(kept):
             raise Refusal(f"the kept merger agent:{kept.id} runs {kept.program} {kept.program_model}, which its profile no longer names",

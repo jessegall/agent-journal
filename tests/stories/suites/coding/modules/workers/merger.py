@@ -260,6 +260,7 @@ def expect_merger_lines(notices, expected):
     assert [notice.text for notice in notices] == expected
 
 
+@pytest.mark.real_git
 def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkeypatch):
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda _provider, _folder, _session: True)
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)

@@ -19,9 +19,9 @@ LEADER_MISSING_SECONDS = 10
 class RunEndRecovery:
     """Ends each run whose shell is gone and whose end the server never heard of, any agent that ran it, so a
     run that ended during a restart, or one no runner ever started, releases its queue slot while its agent
-    sends no ticks. A run whose folder holds its end is ended from it at once, with no waiting, and the tick runs as the server takes
-    over, so a command that ended while the server restarted shows as ended. A run the runner reported first is skipped; one run's
-    refusal leaves the others to go on."""
+    sends no ticks. A run whose folder holds its end is ended from it at once, with no waiting, and the
+    tick runs as the server takes over, so a command that ended while the server restarted shows as ended.
+    A run the runner reported first is skipped; one run's refusal leaves the others to go on."""
 
     def __call__(self, container: Container) -> bool:
         results = [self.end_run(container, process) for process in tuple(container.get(ProcessQuery).running().oldest().all_rows())]

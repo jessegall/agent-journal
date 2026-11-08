@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.modules.helpers.migrations.m007_read_only_helper_setting_keys import ReadOnlyHelperSettingKeysMigration
+from core.modules.helpers.migrations.m007_read_only_helper_setting_keys import HelperSettingKeysMigration
 
 STAMP = "2026-01-01T00:00:00"
 
@@ -10,7 +10,7 @@ def migrated(rows: list[tuple[int | None, str, str]]) -> list[tuple[int | None, 
     connection.execute("CREATE TABLE settings (id INTEGER PRIMARY KEY, environment_id INTEGER, creator_id INTEGER NOT NULL, key TEXT NOT NULL, value TEXT NOT NULL,"
                        " created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (environment_id, key))")
     connection.executemany("INSERT INTO settings (environment_id, creator_id, key, value, created_at, updated_at) VALUES (?, 7, ?, ?, ?, ?)", [(*row, STAMP, STAMP) for row in rows])
-    for statement in ReadOnlyHelperSettingKeysMigration.statements:
+    for statement in HelperSettingKeysMigration.statements:
         connection.execute(statement)
     return connection.execute("SELECT environment_id, key, value FROM settings ORDER BY id").fetchall()
 

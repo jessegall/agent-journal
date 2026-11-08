@@ -16,11 +16,11 @@ VARIABLE_SEPARATOR = "="
 @dataclass(frozen=True, kw_only=True)
 class Alias(Model):
     """A word of the project's own for a shell line: `journal <name> [args]` runs the line with the arguments
-    in place of {args}, or after it, with its variables set; its reader reads the output, and a background one
-    moves to the background at once, and one with a category is held to the turn of that type of command, such
-    as the test run. A saved command whose run printed nothing for 30 seconds is silent_at that moment and held:
-    its next run is refused until its line is edited (fixed_at), and the mark clears when a run of the edited
-    line prints."""
+    in place of {args}, or after it, with its variables set; its reader reads the output, and a background
+    one moves to the background at once, and one with a category is held to the turn of that type of
+    command, such as the test run. A saved command whose run printed nothing for 30 seconds is silent_at
+    that moment and held: its next run is refused until its line is edited (fixed_at), and the mark clears
+    when a run of the edited line prints."""
 
     model_name = "alias"
     cli_name = "alias"
@@ -40,7 +40,7 @@ class Alias(Model):
     fixed_at: Timestamp | None = None
 
     @property
-    def is_held(self) -> bool:
+    def is_claimed(self) -> bool:
         return self.silent_at is not None and self.fixed_at is None
 
     def __post_init__(self) -> None:

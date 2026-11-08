@@ -5,36 +5,34 @@ from pathlib import Path
 
 TEST_NAME_SEPARATOR = "::"
 HEAVY_TESTS = 50
-WHOLE_SUITE = "tests"
+FULL_SUITE = "tests"
 TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
 
 class RunSize:
-    """Counts the tests a run names from its files, without importing them, and stops counting at the limit, to
-    choose how many test runners it starts: one for every started block of tests, up to the most, since starting
-    a runner costs more time than it saves on a few tests."""
+    """Counts the tests a run names from its files, without importing them, and stops counting at the limit,
+    to choose how many test runners it starts: one for every started block of tests, up to the most, since
+    starting a runner costs more time than it saves on a few tests."""
 
     def __init__(self, targets: Iterable[str], limit: int) -> None:
         self.targets, self.limit = tuple(targets), limit
 
-    def is_whole_suite(self) -> bool:
-        return all(target.rstrip("/") == WHOLE_SUITE for target in self.targets)
+    def is_full_suite(self) -> bool:
+        return all(target.rstrip("/") == FULL_SUITE for target in self.targets)
 
     def is_heavy(self) -> bool:
-        """Whether the run needs the machine to itself: the whole suite, or more than a handful of tests; one named file or test
-        never does."""
-        if not self.targets or self.is_whole_suite():
+        if not self.targets or self.is_full_suite():
             return True
-        named = len(self.targets) == 1 and (TEST_NAME_SEPARATOR in self.targets[0] or Path(self.targets[0]).is_file())
-        return not named and self.counted_to(HEAVY_TESTS) >= HEAVY_TESTS
+        is_single_test = len(self.targets) == 1 and (TEST_NAME_SEPARATOR in self.targets[0] or Path(self.targets[0]).is_file())
+        return not is_single_test and self.limited_count(HEAVY_TESTS) >= HEAVY_TESTS
 
-    def counted_to(self, limit: int) -> int:
+    def limited_count(self, limit: int) -> int:
         return RunSize(self.targets, limit).counted()
 
-    def workers(self, tests_per_worker: int, most_workers: int) -> int:
+    def workers(self, worker_test_count: int, most_workers: int) -> int:
         if not self.targets:
             return most_workers
-        return max(1, min(most_workers, -(-self.counted() // tests_per_worker)))
+        return max(1, min(most_workers, -(-self.counted() // worker_test_count)))
 
     def counted(self) -> int:
         count = 0

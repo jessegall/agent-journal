@@ -14,6 +14,7 @@ from core.modules.messages.support.work_sources import WorkSources
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
+from suites.coding.modules.workers.support.main_reserved_tasks import MainReservedTasks
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -26,25 +27,26 @@ from suites.coding.modules.workers.support.worker_assignments import WorkerAssig
 
 
 class KeptWorkerTasks:
-    """Hands new tasks to a kept worker. An open worktree takes them as its next tasks; a delivered one keeps its
-    delivery mergeable, the tasks wait and start once it is merged; a merged worker gets a new cut in its old folder on the same session; an unmerged branch is never
-    overwritten."""
+    """Hands new tasks to a kept worker. An open worktree takes them as its next tasks; a delivered one keeps
+    its delivery mergeable, the tasks wait and start once it is merged; a merged worker gets a new cut in
+    its old folder on the same session; an unmerged branch is never overwritten."""
 
     def __init__(self, queries: Queries, repository: Repository, worktrees: WorktreeQuery, git: WorktreeGit, nudger: Nudger,
                  environments: EnvironmentRows, sources: WorkSources, copies: WorkerTaskCopies,
-                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments) -> None:
+                 proof_queue: WorkerProofQueue, scopes: Scopes, kept: KeptRows, dependency_waits: DependencyWaits, assignments: WorkerAssignments, reservations: MainReservedTasks) -> None:
         self.queries, self.repository, self.worktrees, self.git, self.nudger = queries, repository, worktrees, git, nudger
         self.environments, self.sources, self.copies, self.proof_queue = environments, sources, copies, proof_queue
         self.scopes = scopes
         self.kept = kept
         self.dependency_waits = dependency_waits
-        self.assignments = assignments
+        self.assignments, self.reservations = assignments, reservations
 
     def read_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
                                         name=f"workers.sent_tasks:{task_ids}")
 
     def check_tasks(self, task_ids: tuple[int, ...], sender_id: int | None = None) -> list[Task]:
+        self.reservations.check(task_ids)
         return AssignableTasks.checked(self.read_tasks(task_ids), sender_id)
 
     def checked_cut(self, worker: Agent, task_ids: tuple[int, ...], read: list[Task] | None = None) -> list[Task]:
@@ -69,7 +71,7 @@ class KeptWorkerTasks:
     def handed(self, worker: Agent, worktree: Worktree, task_ids: tuple[int, ...], job: str, context: Context) -> AgentLine:
         tasks = AssignableTasks.open_first(self.read_tasks(task_ids))
         if worktree.state is WorktreeState.DELIVERED:
-            return self.queued_behind_delivery(worker, tasks, job, context)
+            return self.queued_after_delivery(worker, tasks, job, context)
         self.record_sources(worktree, tasks, replace(context, environment_id=worktree.environment_id))
         self.delegate(worker, tasks, context)
         if AssignableTasks.all_blocked(tasks):
@@ -78,7 +80,7 @@ class KeptWorkerTasks:
         first = tasks[0].id
         return self.nudger.send_text(worker.id, job or f"Task:{first} is yours next: journal task overview {first}", WORKER_JOB_SOURCE, context)
 
-    def queued_behind_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> AgentLine:
+    def queued_after_delivery(self, worker: Agent, tasks: list[Task], job: str, context: Context) -> AgentLine:
         self.delegate(worker, tasks, context)
         queued = ", ".join(f"task:{task.id}" for task in tasks)
         return self.nudger.send_text(worker.id, job or f"{queued} are yours once your delivered work is merged: stay as you are until then", WAITING_TASKS_SOURCE, context)

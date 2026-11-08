@@ -21,12 +21,12 @@ class GraphStatus:
 
     @property
     def line(self) -> str:
-        held = f"graphify-out holds the graph of commit {self.graph_commit[:SHORT_COMMIT]}" if self.graph_commit else "graphify-out has no graph yet"
+        stored_graph_text = f"graphify-out holds the graph of commit {self.graph_commit[:SHORT_COMMIT]}" if self.graph_commit else "graphify-out has no graph yet"
         if self.is_running:
-            return f"Graphify is refreshing the graph for commit {self.commit[:SHORT_COMMIT]}: {held}."
+            return f"Graphify is refreshing the graph for commit {self.commit[:SHORT_COMMIT]}: {stored_graph_text}."
         if self.is_current:
             return f"Graphify graph in graphify-out is current as of commit {self.commit[:SHORT_COMMIT]}."
-        return f"Graphify graph is not current for commit {self.commit[:SHORT_COMMIT]}: {held}."
+        return f"Graphify graph is not current for commit {self.commit[:SHORT_COMMIT]}: {stored_graph_text}."
 
     def lines(self) -> Sequence[str]:
         return [self.line]

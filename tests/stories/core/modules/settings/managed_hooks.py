@@ -51,5 +51,5 @@ def expect_bytes_managed_hooks(story, expected) -> None:
 
 
 def expect_recent_events(text, events, start) -> None:
-    actual = any((event.event == text for event in events.events_past(start)))
+    actual = any((event.event == text for event in events.events_after(start)))
     assert actual, actual
