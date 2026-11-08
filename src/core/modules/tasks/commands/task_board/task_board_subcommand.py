@@ -25,8 +25,8 @@ def board_group(text: str) -> TaskState | str:
 
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
-    """Reads task board groups with state counts and delegated tasks. The tasks in progress, in testing and blocked come
-    whole on the first read, so a page holds only open and finished tasks past them."""
+    """Reads task board groups with state counts and delegated tasks. The tasks in progress, in testing
+    and blocked come whole on the first read, so a page holds only open and finished tasks past them."""
 
     cli_name = "task"
     name = "board"
@@ -69,7 +69,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
 
     @staticmethod
     def delegated_rows(cards: Query[TaskCard], previous_id: int | None, limit: int) -> tuple[TaskCard, ...]:
-        """The delegated tasks in progress, in testing and blocked on the first read, then the open ones a page at a time."""
+        # the delegated tasks in progress, in testing and blocked on the first read, then the open ones a page at a time
         waiting = cards.filter(state=TaskState.OPEN)
         if previous_id is not None:
             return tuple(waiting.matching(Less("id", previous_id)).newest().limited(limit))
