@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from core.base.registry.lazy_loading import LazyLoading
+from core.testing.run_cpu import RunCpu
 from core.testing.run_size import RunSize
 from core.testing.full_run_record import FullRunRecord
 from core.testing.story import Story
@@ -22,6 +23,9 @@ STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 RUN_FOLDER = pytest.StashKey[Path]()
 CALL_PASSED = pytest.StashKey[bool]()
 RUN_START = pytest.StashKey[float]()
+RUN_CPU = pytest.StashKey[RunCpu]()
+FULL_RUN = pytest.StashKey[FullRunRecord]()
+CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
 TESTS_PER_WORKER_OPTION = "tests_per_worker"
 MOST_WORKERS_OPTION = "most_workers"
@@ -44,6 +48,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 def pytest_configure(config: pytest.Config) -> None:
     LazyLoading.always_prevented = True
     config.stash[RUN_START] = time.monotonic()
+    config.stash[RUN_CPU] = RunCpu()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, cpu_seconds, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
@@ -87,6 +92,15 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]) ->
     return report
 
 
+@pytest.hookimpl(wrapper=True)
+def pytest_runtest_protocol(item: pytest.Item, nextitem: pytest.Item | None) -> Generator[None, object, object]:
+    started = StoryBudget.clock()
+    try:
+        return (yield)
+    finally:
+        item.config.stash[RUN_CPU].add(StoryBudget.clock() - started)
+
+
 @pytest.hookimpl(wrapper=True, tryfirst=True)
 def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
     for steps in item.stash[STORY_RUNS]:
@@ -114,6 +128,7 @@ def story_budget(item: pytest.Item) -> StoryBudget:
 def pytest_testnodedown(node: pytest.Session, error: object) -> None:
     output: dict[str, dict[str, list[str]]] = getattr(node, "workeroutput", {})
     node.config.stash[STORY_OVERLAP].stories.update(output.get(STORY_STEPS_KEY, {}))
+    node.config.stash[RUN_CPU].add(float(getattr(node, "workeroutput", {}).get(CPU_SECONDS_KEY, 0.0)))
 
 
 def pytest_sessionfinish(session: pytest.Session) -> None:
@@ -121,9 +136,12 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     process_output: dict[str, object] | None = getattr(session.config, "workeroutput", None)
     if process_output is not None:
         process_output[STORY_STEPS_KEY] = overlap.stories
+        process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
     if RunSize(session.config.args, 1).is_whole_suite() and not session.config.option.collectonly:
-        FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START]).write()
+        record = FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START], session.config.stash[RUN_CPU].seconds)
+        session.config.stash[FULL_RUN] = record
+        record.write()
     lines = overlap.report_lines()
     if not lines:
         return
@@ -134,7 +152,10 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
 
 
-def pytest_terminal_summary(config: pytest.Config, exitstatus: int) -> None:
+def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: pytest.Config, exitstatus: int) -> None:
+    full_run = config.stash.get(FULL_RUN, None)
+    if full_run is not None:
+        terminalreporter.write_line(full_run.summary_line())
     run_folder = config.stash.get(RUN_FOLDER, None)
     if run_folder is not None:
         TempFolders().finish(run_folder, exitstatus == pytest.ExitCode.OK)

@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -8,7 +9,8 @@ from statistics import median
 from core.base.file_access import FileAccess
 from core.base.module.code_fingerprint import CORE_FOLDER
 
-RECORD_FILE = CORE_FOLDER.parent.parent / ".journal" / "runtime" / "full-test-runs.jsonl"
+RECORD_FILE_VARIABLE = "JOURNAL_FULL_RUN_RECORD"
+RECORD_FILE = Path(os.environ[RECORD_FILE_VARIABLE]) if RECORD_FILE_VARIABLE in os.environ else CORE_FOLDER.parent.parent / ".journal" / "runtime" / "full-test-runs.jsonl"
 KEPT_RUNS = 50
 COMPARED_RUNS = 5
 ALLOWED_GROWTH = 0.3
@@ -16,17 +18,22 @@ ALLOWED_GROWTH = 0.3
 
 @dataclass(frozen=True)
 class FullRunRecord:
-    """One run of the whole suite: how many tests it ran, how many failed and how long it took, kept as a line in the
-    checkout's journal folder so a check can warn when the time per test grows."""
+    """One run of the whole suite: how many tests it ran, how many failed, how long it took on the clock and how many
+    processor seconds the test runners spent together, kept as a line in the checkout's journal folder so a check can
+    warn when the time per test grows. A line from before the processor seconds were kept reads with none."""
 
     tests: int
     failed: int
     seconds: float
+    cpu_seconds: float = 0.0
     finished_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     @property
     def seconds_per_test(self) -> float:
         return self.seconds / max(self.tests, 1)
+
+    def summary_line(self) -> str:
+        return f"full run: {self.seconds:.1f} wall seconds, {self.cpu_seconds:.1f} cpu seconds in the test runners"
 
     def write(self, file: Path = RECORD_FILE) -> None:
         if not file.parent.is_dir():
