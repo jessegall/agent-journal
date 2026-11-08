@@ -11,6 +11,7 @@ from core.base.command.handler import Handler
 from core.base.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
+from core.modules.approvals.commands.make_standing_approval.make_standing_approval import MakeStandingApproval
 from core.modules.approvals.commands.move_approval.move_approval import MoveApproval
 from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
 from core.modules.approvals.support.approval_result import ApprovalResult
@@ -43,6 +44,8 @@ class AnswerApprovalHandler(Handler[AnswerApproval, ApprovalResult]):
                     code = self.run_action(continued, caller, output)
             move = command.decision.choose(ApprovalLifecycle.accept, ApprovalLifecycle.refuse) if code == SUCCESS_CODE else ApprovalLifecycle.retry
             ended = self.bus.run(MoveApproval(request.id, move), context.actor, environment_id=context.environment_id)
+            if code == SUCCESS_CODE and command.standing is not None and command.decision.choose(True, False):
+                self.bus.run(MakeStandingApproval(request.id, command.standing), context.actor, environment_id=context.environment_id)
         except Exception:
             self.bus.run(MoveApproval(request.id, ApprovalLifecycle.retry), context.actor, environment_id=context.environment_id)
             raise

@@ -24,6 +24,11 @@ from core.modules.approvals.support.approval_nudges import APPROVAL_PENDING, APP
 from core.modules.approvals.migrations.m001_approval_requests import ApprovalRequestsMigration
 from core.modules.approvals.migrations.m002_approval_recipients import ApprovalRecipientsMigration
 from core.modules.approvals.migrations.m003_approval_commands import ApprovalCommandsMigration
+from core.modules.approvals.migrations.m004_standing_approvals import StandingApprovalsMigration
+from core.modules.approvals.models.standing_approval import StandingApproval
+from core.modules.approvals.guards.standing_approval_guard import StandingApprovalGuard
+from core.modules.approvals.commands.make_standing_approval.make_standing_approval_handler import MakeStandingApprovalHandler
+from core.base.viewer.button_menu_item import ButtonMenuItem
 from core.modules.approvals.commands.relay_approval.relay_approval_handler import RelayApprovalHandler
 from core.modules.approvals.commands.relay_approval.relay_approval_subcommand import RelayApprovalSubcommand
 from core.modules.approvals.models.approval_request import ApprovalRequest
@@ -41,15 +46,17 @@ class ApprovalsModule(Module):
     move_reason = "approval requests are new in version 5"
     seed_reason = "the demo has no pending approval requests"
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer"]
-    models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"])]
-    migrations = [ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration]
-    handlers = [RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
+    models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"]), ModelDeclaration(StandingApproval, excluded_subcommands=["make", "edit"])]
+    migrations = [ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration]
+    handlers = [MakeStandingApprovalHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
     listeners = [ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
-    guards = [ApprovalDecisionGuard]
+    guards = [ApprovalDecisionGuard, StandingApprovalGuard]
     nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW]
     docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False)]
     button_slots = list(APPROVAL_SLOT)
-    buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST),
+    buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST,
+                              menu=(ButtonMenuItem("Accept and always for the same request", "approval accept {row_id} --always same", description="Keeps a standing yes: the same kind of approval with the same command line, in this environment, is accepted with no card."),
+                                    ButtonMenuItem("Accept and always for any request like it", "approval accept {row_id} --always like", description="Keeps a standing yes: the same kind of approval for the same program or target, whatever follows it, is accepted with no card."))),
                ButtonDeclaration("approvals.refuse", APPROVAL_SLOT, "Refuse", "approval refuse {row_id}", icon="cross", condition=OPEN_REQUEST)]
