@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from core.base.driver.tool_type import ToolType
@@ -75,7 +76,7 @@ def test_a_worker_reads_the_temporary_folder(new_story):
 
 def test_a_worker_reads_its_program_s_own_home(new_story):
     story, worker = started(new_story)
-    expect_read(story, worker, Path.home() / ".claude" / "projects" / "tool-results" / "output.txt")
+    expect_read(story, worker, Path(os.environ["CLAUDE_CONFIG_DIR"]) / "projects" / "tool-results" / "output.txt")
 
 
 def test_the_main_agent_reads_any_file(new_story):
