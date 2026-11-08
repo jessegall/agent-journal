@@ -15,6 +15,7 @@ from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree im
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS, WORKTREE_COMMANDS_NAME
+from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
@@ -27,7 +28,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
     command = PrepareWorktree
 
     def __init__(self, environment_names: EnvironmentNames, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders, commands: WorktreeCommands,
-                 skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers) -> None:
+                 skills: SkillFiles, home: JournalHome, managed: ManagedHooks, providers: Providers, instruction_files: WorkerInstructionFiles) -> None:
+        self.instruction_files = instruction_files
         self.environment_names, self.settings, self.git, self.libraries, self.commands = environment_names, settings, git, libraries, commands
         self.skills = skills
         self.home, self.managed, self.providers = home, managed, providers
@@ -56,4 +58,5 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         for provider in self.providers.all():
             manager.import_hooks(type(provider), Path(command.folder))
         self.libraries.exclude(command.folder, list(self.skills.place(Path(command.folder))))
+        self.instruction_files.write(command.folder, command.profile)
         self.commands.run(command.folder, self.git.head(command.folder), self.settings.texts(WORKTREE_COMMANDS), (*links, *copies), WORKTREE_COMMANDS_NAME)
