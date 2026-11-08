@@ -22,4 +22,4 @@ class RuleApprovalGuard(Guard[Changed[ProjectRule]]):
         if isinstance(event, Moved) and event.old_row.state is RuleState.PROPOSED:
             raise Refusal("a person was asked to decide this rule in the dock")
         if event.row.state is RuleState.ACTIVE or event.old_row.state is RuleState.ACTIVE:
-            raise UserApprovalRefusal(f"Change this project rule?\n{event.row.text}")
+            raise UserApprovalRefusal(f"Change this project rule?\n{event.row.text}", command=context.command)
