@@ -19,8 +19,8 @@ class TaskBoardCards:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def every(self, state: TaskState) -> Query[TaskCard]:
-        return self.queries.query(TaskCard).filter(state=state)
+    def every(self, *states: TaskState) -> Query[TaskCard]:
+        return self.queries.query(TaskCard).matching(Among("state", [state.value for state in states]))
 
     def cards(self, state: TaskState | str, tags: list[str]) -> Query[TaskCard]:
         cards = self.queries.query(TaskCard)
