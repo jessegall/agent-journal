@@ -36,8 +36,8 @@ class InactiveWorkerSend:
         if not self.is_idle(worker):
             return
         operation_line = shlex.join(["worker", "send", str(worker.id), "--task", str(task.id), "--wait"])
-        send_command = SendWorker(worker.id, task_ids=tuple([task.id]))
-        self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, send_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
+        worker_job_command = SendWorker(worker.id, task_ids=tuple([task.id]))
+        self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, worker_job_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
 
     def is_idle(self, worker: Agent) -> bool:
         if worker.role != CodingHelperRole.WORKER or worker.retired_at is not None or worker.parent_id is None:

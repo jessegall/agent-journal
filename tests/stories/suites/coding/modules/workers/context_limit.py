@@ -147,12 +147,16 @@ def test_with_clear_chosen_the_limit_clears_the_context_and_a_cleared_agent_is_w
     agent.expect_rows(len(agent.typing.typed) == 2, detail=str(agent.typing.typed))
 
 
+def expect_compaction_line(agent):
+    agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
+
+
 def test_a_typed_compaction_wakes_the_agent_as_soon_as_it_ends_and_only_once(limited):
     agent = limited
     agent.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
     agent.hook(SESSION, COMPACTION_START)
     agent.run_listeners()
-    agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
+    expect_compaction_line(agent)
     agent.hook(SESSION, HookSamples.prompt("[journal] your context was compacted"))
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
@@ -252,7 +256,7 @@ def test_an_agent_left_at_its_prompt_by_a_compaction_is_woken(agent):
     agent.hook(SESSION, COMPACTION_START)
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
-    agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
+    expect_compaction_line(agent)
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
     agent.expect_rows(len(agent.typing.typed) == 1, detail="woken once")
@@ -270,7 +274,7 @@ def held_for_its_overview(agent):
 def test_an_agent_held_for_its_overview_after_a_compaction_is_woken(held_for_its_overview):
     agent = held_for_its_overview
     agent.tick(SESSION)
-    agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
+    expect_compaction_line(agent)
 
 
 def test_a_paused_agent_held_for_its_overview_is_not_woken(held_for_its_overview):

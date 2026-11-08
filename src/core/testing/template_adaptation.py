@@ -1,10 +1,9 @@
 import dataclasses
 import pickle
-import re
 import shutil
-import sqlite3
 from pathlib import Path
 
+from core.base.database.text_replacement import DatabaseTextReplacement
 from core.base.file_access import FileAccess
 
 CHECKOUT_FILE = "checkout"
@@ -33,42 +32,21 @@ class TemplateAdaptation:
         shutil.rmtree(adapted, ignore_errors=True)
         shutil.copytree(template, adapted)
         for database in adapted.rglob("*.db"):
-            self.rewrite_database(database, builder)
+            DatabaseTextReplacement(database).replace(builder, self.checkout)
         for name in REWRITTEN_FILES:
             for file in adapted.rglob(name):
                 FileAccess.shared().write(file, FileAccess.shared().read(file).replace(builder, self.checkout))
         for state in adapted.rglob(STATE_FILE):
-            FileAccess.shared().write_binary(state, pickle.dumps(self.rewritten(pickle.loads(FileAccess.shared().binary(state)), builder)))
+            FileAccess.shared().write_binary(state, pickle.dumps(self.adapted_value(pickle.loads(FileAccess.shared().binary(state)), builder)))
         self.mark(adapted)
 
-    def rewritten(self, value: object, builder: str) -> object:
+    def adapted_value(self, value: object, builder: str) -> object:
         if type(value) is str:
             return value.replace(builder, self.checkout)
         if type(value) in (list, tuple, set, frozenset):
-            return type(value)(self.rewritten(item, builder) for item in value)
+            return type(value)(self.adapted_value(item, builder) for item in value)
         if type(value) is dict:
-            return {self.rewritten(key, builder): self.rewritten(item, builder) for key, item in value.items()}
+            return {self.adapted_value(key, builder): self.adapted_value(item, builder) for key, item in value.items()}
         if dataclasses.is_dataclass(value) and not isinstance(value, type):
-            return dataclasses.replace(value, **{field.name: self.rewritten(getattr(value, field.name), builder) for field in dataclasses.fields(value) if field.init})
+            return dataclasses.replace(value, **{field.name: self.adapted_value(getattr(value, field.name), builder) for field in dataclasses.fields(value) if field.init})
         return value
-
-    def rewrite_database(self, database: Path, builder: str) -> None:
-        connection = sqlite3.connect(database, autocommit=True)
-        try:
-            connection.execute("PRAGMA secure_delete = ON")
-            for table, columns in self.text_columns(connection):
-                for column in columns:
-                    connection.execute(f'UPDATE "{table}" SET "{column}" = replace("{column}", ?, ?) WHERE instr("{column}", ?) > 0', (builder, self.checkout, builder))
-            connection.execute("VACUUM")
-        finally:
-            connection.close()
-
-    @staticmethod
-    def text_columns(connection: sqlite3.Connection) -> list[tuple[str, list[str]]]:
-        tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND sql NOT LIKE 'CREATE VIRTUAL%' AND name NOT LIKE 'sqlite_%'")]
-        columns_by_table = []
-        for table in tables:
-            columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{table}")') if re.search("CHAR|TEXT|CLOB|JSON", row[2].upper() or "TEXT")]
-            if columns:
-                columns_by_table.append((table, columns))
-        return columns_by_table

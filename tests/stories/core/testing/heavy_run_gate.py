@@ -5,16 +5,16 @@ from pathlib import Path
 from tests.stories.support.story_checks import expect_value
 
 CHECKOUT = Path(__file__).resolve().parents[4]
-HOLDING = "holding the gate"
+GATE_LINE = "holding the gate"
 WAITING = "waits in place 1"
-HOLD_TEST = f"""
+GATE_TEST = f"""
 import os
 import time
 from pathlib import Path
 
 
 def test_hold():
-    print("{HOLDING}", flush=True)
+    print("{GATE_LINE}", flush=True)
     while not Path(os.environ["HOLD_RELEASE"]).exists():
         time.sleep(0.05)
 """
@@ -51,7 +51,7 @@ def started(tmp_path: Path, folder: Path, *arguments: str, extra: dict[str, str]
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 
-def read_until(stream, text: str) -> None:
+def read_line_containing(stream, text: str) -> None:
     for line in stream:
         if text in line:
             return
@@ -59,8 +59,8 @@ def read_until(stream, text: str) -> None:
 
 
 def holder(tmp_path: Path) -> subprocess.Popen[str]:
-    running = started(tmp_path, project(tmp_path, "holder", "test_hold.py", HOLD_TEST), "tests")
-    read_until(running.stdout, HOLDING)
+    running = started(tmp_path, project(tmp_path, "holder", "test_hold.py", GATE_TEST), "tests")
+    read_line_containing(running.stdout, GATE_LINE)
     return running
 
 
@@ -72,7 +72,7 @@ def release(tmp_path: Path, running: subprocess.Popen[str]) -> None:
 def test_a_second_full_run_waits_for_the_first(tmp_path):
     first = holder(tmp_path)
     second = started(tmp_path, project(tmp_path, "quick", "test_quick.py", QUICK_TEST), "tests")
-    read_until(second.stderr, WAITING)
+    read_line_containing(second.stderr, WAITING)
     expect_value(second.poll() is None, True)
     release(tmp_path, first)
     second_output, _ = second.communicate(timeout=120)

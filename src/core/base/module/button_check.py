@@ -18,6 +18,8 @@ from core.base.viewer.panel_labels import PanelLabels
 from core.base.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"
+CARD_SLOT_PREFIX = "dock."
+MODEL_SLOT_PREFIXES = ("row.", CARD_SLOT_PREFIX)
 
 
 class ButtonCheck:
@@ -70,8 +72,9 @@ class ButtonCheck:
     def style_problems(self, module: type[Module], button: ButtonDeclaration) -> list[str]:
         owner = f"the button {button.name} of module {module.name}"
         inspector_actions = {action.name for inspector in module.inspectors for action in inspector.actions}
-        problems = [f"{owner} shows no icon, and a button on a card or in an inspector has one"] if button.lacks_card_icon(button.name in inspector_actions) else []
-        if button.on_model_slot():
+        card_button = button.name in inspector_actions or button.has_slot_with(CARD_SLOT_PREFIX)
+        problems = [f"{owner} shows no icon, and a button on a card or in an inspector has one"] if card_button and not button.icon else []
+        if button.has_slot_with(MODEL_SLOT_PREFIXES):
             problems += self.label_problems(owner, button.label)
         return problems
 

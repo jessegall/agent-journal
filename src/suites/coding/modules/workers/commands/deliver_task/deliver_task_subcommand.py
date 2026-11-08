@@ -34,7 +34,7 @@ class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
         differences = required_differences(arguments)
         worktree = self.worktrees.worker_worktree(caller.actor.id)
         if worktree is not None:
-            self.step_check.check(worktree, DELIVERY_EVENTS, "put it right in your worktree, then journal worker deliver again")
+            self.step_check.check(worktree, DELIVERY_EVENTS, "fix each of these in your worktree, then run journal worker deliver again")
         return self.requests.command(DeliverTask(differences), caller.actor.id,
                                      ["worker", "deliver", "--differences", differences], arguments, caller)
 

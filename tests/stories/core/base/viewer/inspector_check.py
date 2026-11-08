@@ -5,10 +5,14 @@ from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
 
 
-def test_two_declarations_for_one_model_are_refused(new_story):
+def expect_refusal_with_synced_module(new_story, synced_module, refused_module, text):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:FirstModule")
-    story.expect_sync_refusal(f"{PATH}:SecondModule", "the model reminder has two inspectors, one in first and one in second")
+    story.expect_sync_success(f"{PATH}:{synced_module}")
+    story.expect_sync_refusal(f"{PATH}:{refused_module}", text)
+
+
+def test_two_declarations_for_one_model_are_refused(new_story):
+    expect_refusal_with_synced_module(new_story, "FirstModule", "SecondModule", "the model reminder has two inspectors, one in first and one in second")
 
 
 def test_a_component_that_is_not_a_section_is_refused(new_story):
@@ -16,9 +20,7 @@ def test_a_component_that_is_not_a_section_is_refused(new_story):
 
 
 def test_a_component_of_an_unrelated_module_is_refused(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.expect_sync_success(f"{PATH}:UnrelatedWindowModule")
-    story.expect_sync_refusal(f"{PATH}:ForeignComponentModule", "the inspector of reminder draws the window stranger.chain of stranger, which it depends on only when listed in dependencies")
+    expect_refusal_with_synced_module(new_story, "UnrelatedWindowModule", "ForeignComponentModule", "the inspector of reminder draws the window stranger.chain of stranger, which it depends on only when listed in dependencies")
 
 
 def test_an_unknown_read_is_refused(new_story):
@@ -34,7 +36,7 @@ def test_an_action_on_another_models_row_slot_is_refused(new_story):
 
 
 def test_an_action_without_an_icon_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_shipped_sync_refusal(NoIconModule, "shows no icon, and a button on a card or in an inspector has one")
+    new_story(fixture=MainEnvironment).expect_default_module_sync_refusal(NoIconModule, "shows no icon, and a button on a card or in an inspector has one")
 
 
 def test_an_action_with_an_icon_outside_the_set_is_refused(new_story):
@@ -42,7 +44,7 @@ def test_an_action_with_an_icon_outside_the_set_is_refused(new_story):
 
 
 def test_an_action_starting_with_a_panel_word_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_shipped_sync_refusal(PanelWordModule, "has the label Close the reminder, which starts with a panel word")
+    new_story(fixture=MainEnvironment).expect_default_module_sync_refusal(PanelWordModule, "has the label Close the reminder, which starts with a panel word")
 
 
 def test_inspector_actions_become_buttons_on_the_row_slot(new_story):

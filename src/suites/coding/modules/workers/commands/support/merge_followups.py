@@ -29,11 +29,11 @@ class MergeFollowups:
                    if followup.worktree_id != worktree.id and not followup.finished)
         return next(pending, None)
 
-    def record_followup(self, worktree: Worktree, folder: str, commit_before: str, commit_after: str, context: Context) -> MergeFollowup | None:
+    def record_followup(self, worktree: Worktree, folder: str, starting_commit: str, commit_after: str, context: Context) -> MergeFollowup | None:
         commands = tuple(self.settings.texts(MERGE_COMMANDS))
         if not commands:
             return None
-        return self.bus.run_with_context(RecordMergeFollowup(worktree.id, folder, commit_before, commit_after, self.revision.current(MERGE_COMMANDS), commands), context)
+        return self.bus.run_with_context(RecordMergeFollowup(worktree.id, folder, starting_commit, commit_after, self.revision.current(MERGE_COMMANDS), commands), context)
 
     def run(self, followup: MergeFollowup, reconciled: str, context: Context) -> MergeFollowup:
         for index, line in enumerate(followup.commands):

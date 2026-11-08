@@ -24,7 +24,7 @@ class KeptRows:
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
         return self.kept_value(self.key(table, condition, parameters, name), lambda _signature: loader(), self.signature_read(table, condition, parameters))
 
-    def read_by_signature(self, table: str, loader: Callable[[Signature], T], *, name: str) -> T:
+    def read_matching_signature(self, table: str, loader: Callable[[Signature], T], *, name: str) -> T:
         return self.kept_value(self.key(table, "1 = 1", (), name), loader, self.signature_read(table, "1 = 1", ()))
 
     def read_newest(self, table: str, loader: Callable[[], T], condition: str, parameters: Sequence[object], *, name: str) -> T:
