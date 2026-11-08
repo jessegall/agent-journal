@@ -1,63 +1,40 @@
 <script setup>
 import {computed, watch} from "vue";
-import {Btn, Segmented, WindowRoom, useWindow} from "@journal/window-kit";
+import {WindowRoom, useWindow} from "@journal/window-kit";
 
-// four counts: the tasks started, blocked and delegated now, and the tasks completed over a range the window keeps: the last hours, after a fixed time,
-// or after the moment the reader chose "From now" or reset it
-const DEFAULT_HOURS = 24;
-const HOURS = "hours";
-const TIME = "time";
+// four counts: the tasks started, blocked and delegated now, and the tasks completed in the period chosen in the window's menu: the last hours,
+// or after the moment the reader chose "From now"; the menu also chooses how many columns the counts take
 const NOW = "now";
-const KINDS = [{key: HOURS, label: "Last hours"}, {key: TIME, label: "From a time"}, {key: NOW, label: "From now"}];
 const COUNTS = [["started", "Started"], ["blocked", "Blocked"], ["delegated", "Delegated"], ["completed", "Completed"]];
 const view = useWindow();
-const kept = view.option("range");
-const range = computed(() => kept.value ?? {kind: HOURS, hours: DEFAULT_HOURS});
+const columns = view.option("columns");
+const period = view.option("completed");
+const since = view.option("since");
 const {data, failure} = view.props.counts;
 
-const nowText = () => new Date().toISOString();
 const clockOf = (text) => new Date(text).toLocaleString([], {dateStyle: "medium", timeStyle: "short"});
-const localInput = (text) => (text ? new Date(new Date(text).getTime() - new Date(text).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "");
-
-// with no time chosen yet, "From a time" counts the default last hours
-const hoursOf = ({kind, hours, since}) => (kind === HOURS ? hours : (since ? null : DEFAULT_HOURS));
 const rangeText = computed(() => {
-    const hours = hoursOf(range.value);
-    return hours === null ? `since ${clockOf(range.value.since)}` : `in the last ${hours} ${Number(hours) === 1 ? "hour" : "hours"}`;
+    if (period.value === NOW) return since.value ? `since ${clockOf(since.value)}` : "";
+    return `in the last ${period.value} ${Number(period.value) === 1 ? "hour" : "hours"}`;
 });
 
-function keep(next) {
-    view.setOption("range", next);
-}
-
-function pick(kind) {
-    if (kind === HOURS) keep({kind, hours: range.value.hours ?? DEFAULT_HOURS});
-    else keep({kind, since: kind === NOW ? nowText() : range.value.since ?? ""});
-}
-
-function setHours(event) {
-    const hours = Number(event.target.value);
-    if (hours > 0) keep({kind: HOURS, hours});
-}
-
-function setTime(event) {
-    keep({kind: TIME, since: event.target.value ? new Date(event.target.value).toISOString() : ""});
-}
-
-// the key reads the range through its own arguments: set before the window's first read, and read again when the range changes
+// the key reads the period through its own arguments: set before the window's first read, and read again when the period changes;
+// choosing "From now" keeps that moment on the pane
 function askFor(chosen) {
-    const hours = hoursOf(chosen);
-    if (hours === null) {
-        view.state["counts.since"] = chosen.since;
+    if (chosen === NOW) {
+        const moment = since.value ?? new Date().toISOString();
+        view.setOption("since", moment);
+        view.state["counts.since"] = moment;
         delete view.state["counts.hours"];
-    } else {
-        view.state["counts.hours"] = String(hours);
-        delete view.state["counts.since"];
+        return;
     }
+    if (since.value) view.setOption("since", null);
+    view.state["counts.hours"] = chosen;
+    delete view.state["counts.since"];
 }
 
-askFor(range.value);
-watch(range, (chosen) => {
+askFor(period.value);
+watch(period, (chosen) => {
     askFor(chosen);
     view.reload("counts");
 });
@@ -69,7 +46,7 @@ watch(range, (chosen) => {
             <template v-if="failure">
                 <p class="task-counts-failure" role="alert">{{ failure }}</p>
             </template>
-            <div class="task-counts-grid">
+            <div class="task-counts-grid" :style="{'--task-count-columns': columns}">
                 <template v-for="[name, label] in COUNTS" :key="name">
                     <div class="task-count" :data-task-count="name">
                         <span class="task-count-number" data-task-count-number>{{ data?.[name] ?? "" }}</span>
@@ -78,18 +55,6 @@ watch(range, (chosen) => {
                             <span class="task-count-note" data-task-count-range>{{ rangeText }}</span>
                         </template>
                     </div>
-                </template>
-            </div>
-            <div class="task-counts-range" data-task-counts-range>
-                <Segmented :options="KINDS" :value="range.kind" @pick="pick" />
-                <template v-if="range.kind === 'hours'">
-                    <label class="task-counts-field">Hours <input type="number" min="1" :value="range.hours" data-task-counts-hours @change="setHours"></label>
-                </template>
-                <template v-else-if="range.kind === 'time'">
-                    <label class="task-counts-field">Completed after <input type="datetime-local" :value="localInput(range.since)" data-task-counts-time @change="setTime"></label>
-                </template>
-                <template v-else>
-                    <Btn small data-task-counts-reset @click="pick('now')">Reset to now</Btn>
                 </template>
             </div>
         </div>
@@ -105,7 +70,7 @@ watch(range, (chosen) => {
 
 .task-counts-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--task-count-columns), minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -132,30 +97,6 @@ watch(range, (chosen) => {
 .task-count-note {
     color: var(--text-3);
     font-size: 11.5px;
-}
-
-.task-counts-range {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-.task-counts-field {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    color: var(--text-2);
-    font-size: 12.5px;
-}
-
-.task-counts-field input {
-    padding: 4px 6px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    color: var(--text);
-    font: inherit;
 }
 
 .task-counts-failure {

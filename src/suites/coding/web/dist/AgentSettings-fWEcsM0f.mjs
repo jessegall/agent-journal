@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { reactive as O, ref as S, computed as v, watch as P, openBlock as s, createElementBlock as r, Fragment as B, renderList as N, createElementVNode as g, toDisplayString as l, createBlock as w, unref as h, withDirectives as K, vModelText as L, createCommentVNode as b, createVNode as A, withCtx as x, createTextVNode as f } from "vue";
 import { useWindow as I, Switch as D, Btn as W, WindowRoom as q, Segmented as F } from "@journal/window-kit";
-import { _ as M } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as M } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const H = ["data-agent-settings-group"], z = ["data-control"], J = { class: "group-text" }, Q = { class: "group-label" }, X = { class: "group-line" }, Y = { class: "group-source" }, Z = ["onUpdate:modelValue", "data-field"], ee = {
   key: 0,
   class: "group-hint",
@@ -97,7 +97,7 @@ const H = ["data-agent-settings-group"], z = ["data-control"], J = { class: "gro
       ])
     ], 8, H));
   }
-}, R = /* @__PURE__ */ M(ne, [["__scopeId", "data-v-182593af"]]), oe = {
+}, R = /* @__PURE__ */ M(ne, [["__scopeId", "data-v-9082d05c"]]), oe = {
   __name: "AgentSettingsAdvanced",
   setup($) {
     return (_, k) => (s(), w(R, {
@@ -143,7 +143,7 @@ const H = ["data-agent-settings-group"], z = ["data-control"], J = { class: "gro
       }), 128))
     ]));
   }
-}, _e = /* @__PURE__ */ M(pe, [["__scopeId", "data-v-249c0f13"]]), ve = {
+}, _e = /* @__PURE__ */ M(pe, [["__scopeId", "data-v-b044d246"]]), ve = {
   __name: "AgentSettingsTests",
   setup($) {
     return (_, k) => (s(), w(R, {
@@ -265,7 +265,7 @@ const H = ["data-agent-settings-group"], z = ["data-control"], J = { class: "gro
       ])
     ]));
   }
-}, Be = /* @__PURE__ */ M(We, [["__scopeId", "data-v-d9a63641"]]), Ne = {
+}, Be = /* @__PURE__ */ M(We, [["__scopeId", "data-v-73d2b468"]]), Ne = {
   class: "settings",
   "data-agent-settings": ""
 }, Ve = {
@@ -289,7 +289,7 @@ const H = ["data-agent-settings-group"], z = ["data-control"], J = { class: "gro
       _: 1
     }));
   }
-}, Ue = /* @__PURE__ */ M(Ve, [["__scopeId", "data-v-1f00b7cf"]]);
+}, Ue = /* @__PURE__ */ M(Ve, [["__scopeId", "data-v-b066268a"]]);
 export {
   Ue as A
 };
