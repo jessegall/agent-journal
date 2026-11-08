@@ -29,6 +29,7 @@ from core.modules.usage.support.status_files import StatusFiles
 CLOSED_AGENTS_SHOWN = 50
 BLOCKED_STATE = "blocked"
 WAITING_STATE = "waiting"
+USAGE_LIMIT_STATE = "at usage limit"
 
 
 class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
@@ -65,7 +66,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         status = self.files.status(card.session)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not self.sandbox.sandboxed(card.id))
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not self.sandbox.sandboxed(card.id), card.limited_until.text if card.limited_until is not None else None)
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:
@@ -89,6 +90,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     def waiting_state(card: AgentCard, blocked_reason: str) -> str:
         if blocked_reason:
             return BLOCKED_STATE
+        if card.limited_until is not None:
+            return USAGE_LIMIT_STATE
         return WAITING_STATE if card.paused_at is not None else ""
 
     def write_output(self, value: object, output: Output) -> None:

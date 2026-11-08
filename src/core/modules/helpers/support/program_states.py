@@ -22,6 +22,9 @@ from core.modules.usage.support.status_files import StatusFiles
 from core.modules.usage.support.plan_window import PlanWindow
 
 
+AT_LIMIT_PERCENT = 100
+
+
 class ProgramStates:
     """Reads program readiness; account windows apply across its open sessions in every environment."""
 
@@ -49,16 +52,20 @@ class ProgramStates:
         outage = self.outage_state(program)
         if not outage.is_ready:
             return outage
-        checked_at = self.clock.timestamp()
-        threshold = self.settings.number(PROGRAM_WINDOW_PERCENT)
-        if threshold == 0:
+        window = self.window_at(program, self.settings.number(PROGRAM_WINDOW_PERCENT) or AT_LIMIT_PERCENT)
+        if window is None:
             return ProgramState.ready()
-        blocked = [window for window in self.windows(program)
-                   if window.used_percent >= threshold and window.reset_epoch_seconds > checked_at.value.timestamp()]
-        if not blocked:
-            return ProgramState.ready()
-        window = max(blocked, key=lambda row: row.reset_epoch_seconds)
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
+
+    def limit_resets_at(self, program: str) -> Timestamp | None:
+        """When the program's plan allowance starts again while a window of it is used up in full, else nothing."""
+        window = self.window_at(program, AT_LIMIT_PERCENT)
+        return None if window is None else Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc))
+
+    def window_at(self, program: str, percent: float) -> PlanWindow | None:
+        checked_at = self.clock.timestamp().value.timestamp()
+        blocked = [window for window in self.windows(program) if window.used_percent >= percent and window.reset_epoch_seconds > checked_at]
+        return max(blocked, key=lambda row: row.reset_epoch_seconds) if blocked else None
 
     def windows(self, program: str) -> tuple[PlanWindow, ...]:
         with self.scopes.opened(None, disabled=[EnvironmentScope]):

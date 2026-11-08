@@ -6,7 +6,7 @@ const HIGH_CONTEXT_PERCENT = 80;
 const MILLISECONDS_PER_SECOND = 1000;
 const WORKER_ROLE = "worker";
 const MAIN_ROLE = "main";
-const WAITING_STATES = new Set(["waiting", "blocked"]);
+const WAITING_STATES = new Set(["waiting", "blocked", "at usage limit"]);
 
 // the rows a list read gave, and how many rows the list holds in all; a read that failed gave none
 export const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
