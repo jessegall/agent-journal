@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-aed3b6890d27")) { const style = document.createElement("style"); style.id = "window-styles-aed3b6890d27"; style.textContent = ".reminders[data-v-f60e4569]{display:flex;flex-direction:column;gap:8px}.form[data-v-f60e4569]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.form>input[data-v-f60e4569]{flex:1;min-width:200px}input[data-v-f60e4569]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.row[data-v-f60e4569]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px}.text[data-v-f60e4569]{flex:1;min-width:0}.note[data-v-f60e4569]{color:var(--text-3);font-size:12px}.failure[data-v-f60e4569]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-8f49c4bf3791")) { const style = document.createElement("style"); style.id = "window-styles-8f49c4bf3791"; style.textContent = ".reminders[data-v-da2ca82e]{display:flex;flex-direction:column;gap:8px}.form[data-v-da2ca82e]{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.form>input[data-v-da2ca82e]{flex:1;min-width:200px}input[data-v-da2ca82e]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface, none);color:inherit;font:inherit}.row[data-v-da2ca82e]{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px}.text[data-v-da2ca82e]{flex:1;min-width:0}.note[data-v-da2ca82e]{color:var(--text-3);font-size:12px}.failure[data-v-da2ca82e]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
 import { reactive as R, computed as S, openBlock as x, createBlock as N, unref as a, withCtx as r, createElementVNode as i, withModifiers as V, withDirectives as u, vModelText as _, createTextVNode as o, vModelCheckbox as $, createVNode as f, createElementBlock as D, toDisplayString as v, createCommentVNode as E } from "vue";
 import { useWindow as O, WindowRoom as C, Btn as k, RowList as I, removed as M, added as w } from "@journal/window-kit";
 const A = (m, c) => {
@@ -118,7 +118,7 @@ const A = (m, c) => {
       _: 1
     }));
   }
-}, K = /* @__PURE__ */ A(z, [["__scopeId", "data-v-f60e4569"]]);
+}, K = /* @__PURE__ */ A(z, [["__scopeId", "data-v-da2ca82e"]]);
 export {
   K as default
 };
