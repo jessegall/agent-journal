@@ -14,6 +14,14 @@ const SESSION = {type: "share", person_id: 2, share: {row_model: "plan", row_id:
 const PLANS_WINDOW = {render: () => h("div", {class: "plans-body"}, "Plan page")};
 const PHASES = {rows: [{id: 1, position: 1, title: "Values"}, {id: 2, position: 2, title: "Models"}, {id: 3, position: 3, title: "Queries"}], total: 3};
 
+const SHARED_PLAN = {code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""};
+// the window keys answered as the server answers them: the one shared plan under the key the window names
+const planKeys = (asked = []) => perLine(async (url, init) => {
+    const names = init.headers["x-journal-data-only"]?.split(",") ?? [];
+    asked.push(...names);
+    return {ok: true, json: async () => ({declared: {"plan.*": {tab: null, events: [], reload_seconds: 0, loading: "requested", page_size: 0}}, keys: Object.fromEntries(names.map((name) => [name, SHARED_PLAN]))})};
+});
+
 let mounted = [];
 
 function reads({unreachable = false, refused = false} = {}) {
@@ -110,7 +118,7 @@ test("a share page shows no visitor comments", async () => {
 });
 
 test("the plans window mounted as a share has no control that can be used", async () => {
-    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})})));
+    vi.stubGlobal("fetch", planKeys());
     const controls = {render: () => h("div", [h(Btn, null, () => "Start"), h(plans)])};
     const element = document.createElement("div");
     document.body.append(element);
@@ -125,16 +133,13 @@ test("the plans window mounted as a share has no control that can be used", asyn
 
 test("the plans window mounted as a share reads the shared plan alone, never the plan list", async () => {
     const asked = [];
-    vi.stubGlobal("fetch", perLine(async (url, init) => {
-        asked.push(JSON.parse(init.body).line);
-        return {json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})};
-    }));
+    vi.stubGlobal("fetch", planKeys(asked));
     const element = document.createElement("div");
     document.body.append(element);
     createApp(() => h(ShareFace, {session: SESSION, read: reads(), entry: ENTRY, subscriptions: new WindowSubscriptions(), load: async () => ({default: plans})})).mount(element);
     mounted.push(element);
     await settled();
-    expect(asked).toEqual([["plan", "show", "1"]]);
+    expect(asked).toEqual(["plan.1"]);
     expect(element.querySelector(".window").textContent).toContain("Version 5 core");
 });
 

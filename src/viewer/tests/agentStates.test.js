@@ -48,7 +48,7 @@ test("a reloaded agent key updates the facts in its card", async () => {
     cardOf(element, helper.id).click();
     await settle();
     answer.value.rows = [{...helper, facts: {...helper.facts, given_name: "Latest name"}}];
-    await held.reload("agents");
+    await held.reload(["agents", `card.${helper.id}`]);
     await settle();
     expect(cardOf(element, helper.id).querySelector("[data-agent-name]").textContent).toContain("Latest name");
     expect(held.reads.some((line) => line.startsWith("usage agents"))).toBe(false);

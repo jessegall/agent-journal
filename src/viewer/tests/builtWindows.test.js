@@ -16,8 +16,12 @@ const ANSWERS = {
 
 afterEach(() => vi.unstubAllGlobals());
 
-async function drawn(component, events) {
+const KEY_LINES = {board: "task board", messages: "message feed", marks: "chat-mark main"};
+const DECLARED = (names) => Object.fromEntries(names.map((name) => [name, {tab: null, events: [], reload_seconds: 0, loading: "first", page_size: 0}]));
+
+async function drawn(component, events, names) {
     vi.stubGlobal("fetch", perLine(async (url, request) => {
+        if (String(url).startsWith("/api/window?")) return {ok: true, json: async () => ({declared: DECLARED(names), keys: Object.fromEntries(names.map((name) => [name, ANSWERS[KEY_LINES[name]]]))})};
         const line = JSON.parse(request.body).line.slice(0, 2).join(" ");
         return {json: async () => ANSWERS[line] ?? {code: 1, error: `no answer for ${line}`}};
     }));
@@ -30,14 +34,14 @@ async function drawn(component, events) {
 }
 
 test("a built tasks window shows the rows its read answers with, through the shell's own window context", async () => {
-    const text = await drawn(Tasks, ["task.*"]);
+    const text = await drawn(Tasks, ["task.*"], ["board"]);
     expect(text).toContain("Fix the cart");
     expect(text).toContain("Ship the cart");
     expect(text).not.toContain("No tasks yet");
 });
 
 test("a built chat window shows the messages its read answers with", async () => {
-    const text = await drawn(Chat, ["message.*", "chat_mark.*", "dock_item.*"]);
+    const text = await drawn(Chat, ["message.*", "chat_mark.*", "dock_item.*"], ["messages", "marks"]);
     expect(text).toContain("Ship the cart today");
 });
 

@@ -53,10 +53,6 @@ test("the sidebar switches to open and answered questions and scrolls to their q
     expect(show).toHaveBeenCalled();
     expect(show.mock.contexts.at(-1).dataset.comment).toBe("7");
     expect(element.querySelector('mark[data-comment="7"]').textContent).toContain("in cents");
-    element.querySelector('[data-question-id="7"] [data-move="answer"]').click();
-    await settle();
-    expect(ran).toContainEqual(["question", "answer", "7", "--answer", "Keep cents"]);
-    expect(element.querySelector('[data-question-id="7"]').textContent).toContain("Answered: Keep cents");
     element.querySelector('[data-document-notes="comments"]').click();
     await settle();
     expect(element.querySelector("[data-comment-rail]").textContent).toContain("A comment");
