@@ -12,8 +12,12 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal/socket"
 )
 
+// StandaloneArgument makes the launcher service serve when no launcher answers, as the server asks after one was killed;
+// without it the service only replaces a launcher that answers.
+const StandaloneArgument = "--standalone"
+
 // RunLauncherService serves new programs while earlier launches finish with their existing terminals.
-func RunLauncherService(home string, stderr io.Writer) int {
+func RunLauncherService(home string, standalone bool, stderr io.Writer) int {
 	binary := filepath.Join(home, "bin", "journal")
 	version, err := launch.ReadBinaryVersion(binary)
 	if err != nil {
@@ -23,7 +27,7 @@ func RunLauncherService(home string, stderr io.Writer) int {
 	inputs := launch.NewTerminalInputs()
 	journal := launchJournal()
 	starter := launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}
-	listener, err := replacementListener(home, version.Digest, starter, inputs)
+	listener, err := replacementListener(home, version.Digest, standalone, starter, inputs)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ErrorCode
@@ -64,7 +68,7 @@ func ReplaceLauncher(home string, stderr io.Writer) int {
 	return SuccessCode
 }
 
-func replacementListener(home, version string, starter launch.Starter, inputs *launch.TerminalInputs) (*launch.Listener, error) {
+func replacementListener(home, version string, standalone bool, starter launch.Starter, inputs *launch.TerminalInputs) (*launch.Listener, error) {
 	unlock, err := lockLauncherReplacement(filepath.Join(home, "launcher-replace.lock"))
 	if err != nil {
 		return nil, err
@@ -72,7 +76,7 @@ func replacementListener(home, version string, starter launch.Starter, inputs *l
 	defer unlock()
 	path := socket.NamedPath(home, "launcher")
 	served, err := launch.LauncherVersion(path)
-	if err != nil || served == version {
+	if (err != nil && !standalone) || served == version {
 		return nil, nil
 	}
 	return launch.ListenVersioned(path, starter, inputs, version)

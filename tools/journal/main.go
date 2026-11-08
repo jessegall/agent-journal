@@ -54,7 +54,10 @@ func main() {
 func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) int {
 	home := JournalHome()
 	if len(argv) == 1 && argv[0] == "launcher-service" {
-		return RunLauncherService(home, stderr)
+		return RunLauncherService(home, false, stderr)
+	}
+	if len(argv) == 2 && argv[0] == "launcher-service" && argv[1] == StandaloneArgument {
+		return RunLauncherService(home, true, stderr)
 	}
 	if len(argv) == 1 && argv[0] == "launcher-replace" {
 		return ReplaceLauncher(home, stderr)
