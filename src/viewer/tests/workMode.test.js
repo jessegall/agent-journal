@@ -16,9 +16,11 @@ const WRITES = "journal.suites.coding.main-writes-code";
 const SENDS = "journal.suites.coding.workers.main-dispatches-workers";
 const LIMIT_ON = "journal.core.helpers.context-limit-on";
 const LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens";
+const LIMIT_ACTION = "journal.core.helpers.context-limit-action";
 const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true])),
     fields: [{key: LIMIT_ON, group: "advanced", title: "Compact agents", description: "", type: "flag", value: false, source: "default"},
-        {key: LIMIT_TOKENS, group: "advanced", title: "Size", description: "", type: "number", value: 400000, source: "default", badge: "Capped amount", choices: Array.from({length: 10}, (_, place) => (place + 1) * 100000)}],
+        {key: LIMIT_TOKENS, group: "advanced", title: "Size", description: "", type: "number", value: 400000, source: "default", badge: "Capped amount", choices: Array.from({length: 10}, (_, place) => (place + 1) * 100000)},
+        {key: LIMIT_ACTION, group: "advanced", title: "At the context size", description: "", type: "choice", value: "compact", source: "default", choices: ["compact", "clear"]}],
     depends: {[KEEP_GOING]: [WRITES], [LIMIT_TOKENS]: [LIMIT_ON], "journal.suites.coding.workers.merger-on": [SENDS], "journal.suites.coding.workers.main-agent-may-merge": [SENDS]}};
 
 const mounted = [];
@@ -126,5 +128,26 @@ test("the context size is a dropdown in steps of 100k that shows only while its 
     expect(options[0]).toBe("100k");
     expect(options[9]).toBe("1000k");
     expect(document.querySelector(`[data-field-badge="${LIMIT_TOKENS}"]`).textContent).toBe("Capped amount");
+});
+
+test("the context limit action is a choice of Compact or Clear, not a number", async () => {
+    const {element} = await mount();
+    element.querySelector("[data-open-agent-settings]").click();
+    await settled();
+    [...document.querySelectorAll("[data-agent-settings] button")].find((button) => button.textContent.trim().startsWith("Advanced")).click();
+    await settled();
+    const select = document.querySelector(`select[data-field="${LIMIT_ACTION}"]`);
+    expect([...select.options].map((option) => option.textContent)).toEqual(["Compact", "Clear"]);
+    expect([...select.options].map((option) => option.value)).toEqual(["compact", "clear"]);
+    expect(document.querySelector(`.step[data-field="${LIMIT_ACTION}"]`)).toBeNull();
+});
+
+test("the agent settings dialog is flush, so its tabs and footer reach its edges and only its settings scroll", async () => {
+    const {element} = await mount();
+    element.querySelector("[data-open-agent-settings]").click();
+    await settled();
+    const body = document.querySelector("[data-agent-settings]").closest(".dialog-body");
+    expect(body.classList.contains("flush")).toBe(true);
+    expect(body.querySelector(".settings-bar")).not.toBeNull();
 });
 

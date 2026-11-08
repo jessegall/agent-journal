@@ -4,6 +4,7 @@ from core.base.command.context import Context
 from core.base.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_scope import SettingScope
+from core.base.setting.setting_type import SettingType
 from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.checked_setting_value import CheckedSettingValue
@@ -16,9 +17,9 @@ from suites.coding.support.work_settings import WorkField, WorkSettings
 
 
 class WorkControls:
-    """Reads the seven workflow controls and changes them together: every change is checked before any is written,
-    and a change made from a reading that has since changed is refused, so a person never overwrites what they
-    did not see."""
+    """Reads the seven workflow controls and changes them together: every change is checked before
+    any is written, and a change made from a reading that has since changed is refused, so a person
+    never overwrites what they did not see."""
 
     def __init__(self, options: CodingMainOptions, declared: SettingCatalogue, store: SettingStore, reader: SettingReader) -> None:
         self.options, self.declared, self.store, self.reader = options, declared, store, reader
@@ -33,7 +34,8 @@ class WorkControls:
 
     def field(self, group: str, key: str) -> WorkField:
         current = self.reader.current(key)
-        return WorkField(key, group, current.entry.title, current.entry.description, current.entry.type, current.value, current.source, FIELD_CHOICES.get(key, ()), FIELD_BADGES.get(key, ""))
+        choices = tuple(current.entry.choices) if current.entry.type == SettingType.CHOICE.value else FIELD_CHOICES.get(key, ())
+        return WorkField(key, group, current.entry.title, current.entry.description, current.entry.type, current.value, current.source, choices, FIELD_BADGES.get(key, ""))
 
     def preset(self, name: str, revision: str, context: Context) -> WorkSettings:
         if name not in PRESETS:
