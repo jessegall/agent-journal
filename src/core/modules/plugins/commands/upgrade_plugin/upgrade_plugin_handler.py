@@ -40,12 +40,13 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     def prepare(self, command: UpgradePlugin, actor: Actor) -> None:
         if actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal(f"Upgrade the plugin {command.name}?", command=UpgradePlugin(command.name, True))
+            raise UserApprovalRefusal(f"Upgrade the plugin {command.name}{f' from {command.folder}' if command.folder else ''}?", command=UpgradePlugin(command.name, True, command.folder))
         plugin = self.plugins.find_name(command.name)
-        source = self.staging.fetched(plugin.source)
+        origin = self.origin(plugin.source, command)
+        source = self.staging.fetched(origin)
         manifest = PluginManifest.read(source)
         if manifest.name != plugin.name:
-            self.staging.cleared(plugin.source)
+            self.staging.cleared(origin)
             raise Refusal(f"the source of {plugin.name} now contains a plugin called {manifest.name}", "install that one under its own name")
         if not command.confirmed:
             return
@@ -58,6 +59,12 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         except Exception:
             mark.unlink(missing_ok=True)
             raise
+
+    @staticmethod
+    def origin(source: str, command: UpgradePlugin) -> str:
+        if command.folder and not Path(command.folder).is_dir():
+            raise Refusal(f"{command.folder} is not a folder", "name the folder that holds the plugin")
+        return command.folder or source
 
     def replaced(self, manifest: PluginManifest, source: Path, code: Path) -> None:
         new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
@@ -76,13 +83,14 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     def handle(self, command: UpgradePlugin, context: Context) -> PluginUpgrade:
         plugin = self.plugins.find_name(command.name)
         code = self.folders.code(plugin.name)
+        origin = self.origin(plugin.source, command)
         if not command.confirmed:
-            offered_folder = self.staging.folder(plugin.source)
+            offered_folder = self.staging.folder(origin)
             old, offered = PluginManifest.read(code), PluginManifest.read(offered_folder)
             diff = self.code_diff.lines(code, offered_folder)
-            self.staging.cleared(plugin.source)
+            self.staging.cleared(origin)
             return PluginUpgrade(plugin.name, plugin.release, offered.version, self.changes(old, offered), False, diff)
-        self.staging.cleared(plugin.source)
+        self.staging.cleared(origin)
         manifest = PluginManifest.read(code)
         self.skill_files.publish(code, manifest)
         self.readers.publish(code, manifest.name, context)
