@@ -81,6 +81,9 @@ from core.modules.agents.migrations.m011_helper_rows import HelperRowsMigration
 from core.modules.agents.migrations.m012_open_agent_index import OpenAgentIndexMigration
 from core.modules.agents.migrations.m013_agent_launch_name import AgentLaunchNameMigration
 from core.modules.agents.support.report_nudges import REPORT_NUDGES
+from core.modules.agents.support.instruction_imports import INSTRUCTION_NUDGES
+from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports_handler import WarnInstructionImportsHandler
+from core.modules.agents.listeners.instruction_imports_listener import InstructionImportsListener
 from core.base.viewer.window_key import WindowKey
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
@@ -113,9 +116,9 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
     migrations = [KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
-    nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES]
+    nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES, *INSTRUCTION_NUDGES]
     guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard]
-    handlers = [RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
+    handlers = [WarnInstructionImportsHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
     subcommands = [RetireAgentSubcommand, RunningMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "agent retire"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
@@ -126,6 +129,6 @@ class AgentsModule(Module):
                WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
                                  reads=["agent show", "agent list", "usage agents", "usage agent", "usage tool", "agent-skill list"], events=["agent.*"])]
     inspectors = [AGENT_INSPECTOR]
-    listeners = [MenuAnswerMarkListener, EndedAgentProgramListener]
+    listeners = [MenuAnswerMarkListener, EndedAgentProgramListener, InstructionImportsListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]
