@@ -34,7 +34,7 @@ from core.modules.drivers.commands.support.rule_history_writer import RuleHistor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, KEPT_SKILLS, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.module.driver_entries import DRIVERS_MODULE
@@ -80,8 +80,6 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             percent = provider.context_percent(self.home, command.event.session)
             if percent is not None:
                 metadata["context_percent"] = percent
-            if command.event.is_compaction_start:
-                metadata[KEPT_SKILLS] = dict(provider.skills_kept_after_compaction(command.event))
         if command.event.displayed_text:
             metadata[DISPLAYED_TEXT] = command.event.displayed_text
         if tool is not None and tool.category is ToolType.MONITOR:
