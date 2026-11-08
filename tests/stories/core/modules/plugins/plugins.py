@@ -87,11 +87,11 @@ def test_a_standing_yes_installs_a_plugin_again_though_the_install_has_a_prepare
     # the code-commandments project on 8 November: a plugin upgrade a standing yes covered failed every time, since the yes ran it
     # inside the transaction that asked for it
     story = plugin_story(new_story)
-    story.expect_refusal(f"plugin install {story.plugin_folder} --yes", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"plugin install {story.plugin_folder} --yes --reason 'to judge the code'", "A person was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id), "--always", "same"])
     story.expect_success("plugin remove sample", actor=story.user)
-    story.run(f"plugin install {story.plugin_folder} --yes", actor=story.agent)
+    story.run(f"plugin install {story.plugin_folder} --yes --reason 'to judge the code'", actor=story.agent)
     story.run_listeners()
     story.expect_text("plugin list", "sample", "on", "1.0.0", actor=story.user)
