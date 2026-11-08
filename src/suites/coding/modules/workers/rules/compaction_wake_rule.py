@@ -23,6 +23,7 @@ class CompactionWakeRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
     disabled_scopes = [ActorScope]
+    wakes_agent = True
 
     def __init__(self, history: HookHistory, hook_calls: HookCallQuery) -> None:
         self.history, self.hook_calls = history, hook_calls

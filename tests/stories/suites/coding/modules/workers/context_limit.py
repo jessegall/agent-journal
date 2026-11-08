@@ -4,6 +4,7 @@ import pytest
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
+from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.testing.shell_part import ShellPart
 from core.base.driver.command_category import CommandCategory
@@ -16,6 +17,7 @@ LIMIT = 400_000
 HARD = 600_000
 SESSION = "s-1"
 COMPACTION_START = HookSamples.session_start().with_raw({"source": "compact"})
+PRE_COMPACT = HookSamples.sample("compact").with_fields(accepts_lines=False)
 CLEAR_START = HookSamples.session_start().with_raw({"source": "clear"})
 
 
@@ -232,6 +234,30 @@ def test_an_agent_left_at_its_prompt_by_a_compaction_is_woken(agent):
     agent.advance(timedelta(seconds=40))
     agent.tick(SESSION)
     agent.expect_rows(len(agent.typing.typed) == 1, detail="woken once")
+
+
+@pytest.fixture
+def held_for_its_overview(agent):
+    agent.container.bind(OverviewFirst, OverviewFirst())
+    agent.hook(SESSION, PRE_COMPACT)
+    agent.hook(SESSION, COMPACTION_START)
+    agent.advance(timedelta(seconds=40))
+    return agent
+
+
+def test_an_agent_held_for_its_overview_after_a_compaction_is_woken(held_for_its_overview):
+    agent = held_for_its_overview
+    agent.tick(SESSION)
+    agent.expect_rows(len(agent.typing.typed) == 1 and "compacted" in agent.typing.typed[0], detail=str(agent.typing.typed))
+
+
+def test_a_paused_agent_held_for_its_overview_is_not_woken(held_for_its_overview):
+    agent = held_for_its_overview
+    agent.expect_success(f"agent pause {agent.agent.id}", actor=agent.user)
+    agent.typing.typed.clear()
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_rows(not any("compacted" in line for line in agent.typing.typed), detail=str(agent.typing.typed))
 
 
 def test_an_agent_working_again_after_a_compaction_is_not_woken(agent):
