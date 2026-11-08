@@ -2064,6 +2064,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
     tall: Boolean,
     large: Boolean,
     bare: Boolean,
+    flush: Boolean,
     open: { type: Boolean, default: null },
     closable: { type: Boolean, default: !0 },
     modal: Boolean,
@@ -2121,7 +2122,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
               m("div", {
                 ref_key: "body",
                 ref: r,
-                class: V(["dialog-body", { bare: e.bare }])
+                class: V(["dialog-body", { bare: e.bare, flush: e.flush }])
               }, [
                 fe(B.$slots, "default", {}, void 0, !0)
               ], 2),
@@ -2135,7 +2136,7 @@ const Gd = ["aria-modal", "aria-label", "aria-labelledby"], Vd = {
       }, 8, ["onAfterLeave"])
     ]));
   }
-}, pa = /* @__PURE__ */ U(Jd, [["__scopeId", "data-v-6d1ecd98"]]), Zd = {
+}, pa = /* @__PURE__ */ U(Jd, [["__scopeId", "data-v-5cf443e0"]]), Zd = {
   class: "action-output",
   "data-action-output": ""
 }, ef = {
@@ -14107,7 +14108,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = au(() => import("./VoiceFigure-CeDlYwD4.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = au(() => import("./VoiceFigure-vNjz4dZB.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Of as $,
   Ae as A,
