@@ -1,3 +1,5 @@
+import pytest
+
 import json
 import os
 import subprocess
@@ -43,18 +45,21 @@ def test_a_command_the_plugin_allows_goes_through(new_story):
     story.expect_hook_allowed("s-1", LISTING_SAMPLE)
 
 
-def test_a_file_edit_reaches_the_plugin_after_the_reply_and_its_line_reaches_the_agent_at_the_next_hook(new_story):
-    story = installed_story(new_story)
-    scanned_edit(story, "s-1", "a.py")
-    story.run_listeners()
-    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] a.py was judged")
+@pytest.fixture
+def prepared_install(new_story):
+    return installed_story(new_story)
 
 
-def test_a_file_edit_reaches_the_plugin_with_the_lines_the_edit_wrote(new_story):
-    story = installed_story(new_story)
-    scanned_edit(story, "s-1", "b.py", rows=[{"line_type": "add", "line": 1, "text": "total = 0"}])
+
+@pytest.mark.parametrize("name, rows, notice", [
+    ("a.py", None, "[plugin sample] a.py was judged"),
+    ("b.py", [{"line_type": "add", "line": 1, "text": "total = 0"}], "[plugin sample] b.py wrote total = 0"),
+], ids=["after-the-reply", "with-the-lines-it-wrote"])
+def test_a_file_edit_reaches_the_plugin_and_its_line_reaches_the_agent_at_the_next_hook(prepared_install, name, rows, notice):
+    story = prepared_install
+    scanned_edit(story, "s-1", name, **({} if rows is None else {"rows": rows}))
     story.run_listeners()
-    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] b.py wrote total = 0")
+    expect_plugin_notice(story, LISTING_SAMPLE, notice)
 
 
 def test_a_line_in_the_plugins_queue_reaches_the_agent_once(new_story):

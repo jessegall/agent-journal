@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.query.queries import Queries
@@ -21,10 +23,15 @@ class MainAgentMerges(StoryFixture):
         story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
 
 
-def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_again_every_interval(new_story):
+@pytest.fixture
+def delivered_work(new_story):
     story = new_story(fixture=MainAgentMerges)
     repository = repository_environment(story)
-    worker = delivered_worker(story, repository)
+    return story, repository, delivered_worker(story, repository)
+
+
+def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_again_every_interval(delivered_work):
+    story, repository, worker = delivered_work
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
@@ -35,10 +42,10 @@ def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 2)
 
 
-def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(new_story):
-    story = new_story(fixture=MainAgentMerges)
-    repository = repository_environment(story)
-    worker = checked_worker(story, repository)
+def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(delivered_work):
+    story, repository, worker = delivered_work
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     reminder = f"worker:{worker.id} delivered task:1, unmerged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)

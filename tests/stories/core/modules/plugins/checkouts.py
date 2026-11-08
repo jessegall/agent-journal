@@ -1,3 +1,5 @@
+import pytest
+
 import json
 import sys
 
@@ -285,16 +287,22 @@ def test_s60_the_full_line_of_a_file_edited_for_a_worker_does_not_move(new_story
     story.expect_rows(data["file"] == {"relative": ORDER, "path": f"{worktree}/{ORDER}", "project_path": f"{project}/{ORDER}", "status": "changed", "renamed_from": "", "in_base": True, "linked": False})
 
 
-def test_s62_changes_since_a_commit_names_what_differs_with_files_not_yet_committed_and_new_ones(new_story):
-    story = checkout_story(new_story)
+@pytest.fixture
+def prepared_checkout(new_story):
+    return checkout_story(new_story)
+
+
+
+def test_s62_changes_since_a_commit_names_what_differs_with_files_not_yet_committed_and_new_ones(prepared_checkout):
+    story = prepared_checkout
     base = story.repository.tip(ENVIRONMENT_BRANCH)
     story.repository.changed(story.worker.id, ORDER, CHANGED_ORDER_TEXT)
     story.repository.changed(story.worker.id, NEW_FILE, "NEW = 1\n")
     story.expect_text(f"plugin changes --agent {story.worker.id} --since {base} --json", f'"relative": "{ORDER}"', f'"relative": "{NEW_FILE}"', actor=story.user)
 
 
-def test_s62_changes_since_a_commit_git_does_not_know_says_so(new_story):
-    story = checkout_story(new_story)
+def test_s62_changes_since_a_commit_git_does_not_know_says_so(prepared_checkout):
+    story = prepared_checkout
     story.expect_refusal(f"plugin changes --agent {story.worker.id} --since {UNKNOWN_COMMIT}", "does not know", actor=story.user)
 
 

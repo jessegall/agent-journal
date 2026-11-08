@@ -1,3 +1,5 @@
+import pytest
+
 import io
 import json
 import shlex
@@ -35,16 +37,22 @@ def test_s53_a_worker_cannot_name_another_agent(new_story):
     story.expect_refusal(f"plugin file {ORDER} --agent {story.agent.id}", "only itself", actor=story.worker)
 
 
-def test_s53_a_worker_cannot_leave_its_checkout_with_dots(new_story):
-    story = checkout_story(new_story)
+@pytest.fixture
+def prepared_checkout(new_story):
+    return checkout_story(new_story)
+
+
+
+def test_s53_a_worker_cannot_leave_its_checkout_with_dots(prepared_checkout):
+    story = prepared_checkout
     story.repository.uncommitted(SECRET_NAME, "the secret\n")
     for line in (f"plugin file ../../../../{SECRET_NAME}", f"plugin file ../../../../{SECRET_NAME} --from project", f"plugin file {story.repository.folder / SECRET_NAME}"):
         story.expect_refusal(line, "leaves the checkout", actor=story.worker)
         story.expect_no_text(line, "the secret", actor=story.worker)
 
 
-def test_s53_a_worker_cannot_leave_its_checkout_through_a_link(new_story):
-    story = checkout_story(new_story)
+def test_s53_a_worker_cannot_leave_its_checkout_through_a_link(prepared_checkout):
+    story = prepared_checkout
     story.repository.uncommitted(SECRET_NAME, "the secret\n")
     (story.worktree / "escape.txt").symlink_to(story.repository.folder / SECRET_NAME)
     story.expect_refusal("plugin file escape.txt", "through a link", actor=story.worker)

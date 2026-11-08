@@ -41,10 +41,16 @@ def test_a_window_the_program_left_out_of_its_report_is_left_out(new_story):
     story.expect_text("usage show --environment main", "plan: 7 days 17% used, starts again 2026-11-05 11:00 UTC", actor=story.user)
 
 
-def test_an_agent_that_reported_nothing_says_so_the_plan_comes_from_the_newest_report_and_the_cost_adds_up(new_story):
+@pytest.fixture
+def joined_with_helper(new_story):
     story = new_story(fixture=UserJoined)
+    return story, story.new_row_id(HELPER_START.format(parent=story.agent.id))
+
+
+
+def test_an_agent_that_reported_nothing_says_so_the_plan_comes_from_the_newest_report_and_the_cost_adds_up(joined_with_helper):
+    story, helper = joined_with_helper
     full_status(story, "s-1", 42, 1.234)
-    helper = story.new_row_id(HELPER_START.format(parent=story.agent.id))
     story.expect_text("usage show --environment main", f"agent {helper}  s-2  claude  nothing reported yet", "plan: 5 hours 30% used",
                       "cost of the open sessions: $1.23", actor=story.user)
     save_status_file(story, "s-2", {"cost": {"total_cost_usd": 0.5}})
@@ -65,10 +71,9 @@ def test_each_agents_facts_carry_the_plan_windows_its_own_session_reported(new_s
     story.expect_rows([(window["title"], window["used_percent"]) for window in rows[0]["windows"]] == [("5 hours", 30), ("7 days", 65)])
 
 
-def test_an_agent_that_reported_no_windows_carries_the_account_windows_of_the_newest_report(new_story):
-    story = new_story(fixture=UserJoined)
+def test_an_agent_that_reported_no_windows_carries_the_account_windows_of_the_newest_report(joined_with_helper):
+    story, helper = joined_with_helper
     save_status_file(story, "s-1", {"context_window": {"used_percentage": 20}, "rate_limits": {"five_hour": {"used_percentage": 30, "resets_at": FIVE_HOURS_RESET}, "seven_day": {"used_percentage": 65, "resets_at": SEVEN_DAYS_RESET}}})
-    helper = story.new_row_id(HELPER_START.format(parent=story.agent.id))
     story.expect_text("usage show --environment main", "plan: 5 hours 30% used", actor=story.user)
     rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
     helper_row = next(row for row in rows if row["id"] == helper)

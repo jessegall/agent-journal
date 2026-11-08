@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, person_viewer
 from tests.stories.support.story_checks import expect_value
@@ -10,12 +12,19 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TA
 AUTO_MODE = "journal.suites.coding.auto-mode"
 
 
-def test_s49_fixture_person_changes_a_control_through_the_viewer_line_route_and_reads_it_back(new_story):
+@pytest.fixture
+def person_in_viewer(new_story):
     story = new_story(fixture=MainControlsActors)
     with person_viewer(story) as viewer:
-        viewer.set_setting(AUTO_MODE, "false")
-        status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
-        expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, False))
+        yield story, viewer
+
+
+
+def test_s49_fixture_person_changes_a_control_through_the_viewer_line_route_and_reads_it_back(person_in_viewer):
+    _, viewer = person_in_viewer
+    viewer.set_setting(AUTO_MODE, "false")
+    status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
+    expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, False))
 
 
 def test_s45_fixture_a_refused_agent_write_leaves_the_value_the_person_sees(new_story):
@@ -126,10 +135,9 @@ def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_noth
         expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (before, True))
 
 
-def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(new_story):
-    story = new_story(fixture=MainControlsActors)
-    with person_viewer(story) as viewer:
-        advanced = field_values(work_reading(viewer), "advanced")
+def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(person_in_viewer):
+    story, viewer = person_in_viewer
+    advanced = field_values(work_reading(viewer), "advanced")
     declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
     story.expect_rows({CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ON] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
 

@@ -88,14 +88,27 @@ def test_outside_a_plan_a_test_run_goes_on_as_today(outside_plan):
     expect_reply_allowed(outside_plan.run_test())
 
 
-def test_outside_a_plan_worker_next_queues_the_tests_of_that_task(outside_plan):
+@pytest.fixture
+def proved_with_test(outside_plan):
     outside_plan.change_and_prove(TEST_LINE)
+    return outside_plan
+
+
+@pytest.fixture
+def proved_without_test(outside_plan):
+    outside_plan.change_and_prove()
+    return outside_plan
+
+
+
+def test_outside_a_plan_worker_next_queues_the_tests_of_that_task(proved_with_test):
+    outside_plan = proved_with_test
     outside_plan.story.expect_text("worker next --wait --differences none", "the tests of task 1 are queued", actor=outside_plan.worker)
     outside_plan.story.expect_rows(len(outside_plan.started) == 1)
 
 
-def test_outside_a_plan_a_proof_with_no_test_waits_on_the_main_agent(outside_plan):
-    outside_plan.change_and_prove()
+def test_outside_a_plan_a_proof_with_no_test_waits_on_the_main_agent(proved_without_test):
+    outside_plan = proved_without_test
     outside_plan.story.run("worker next --wait --differences none", actor=outside_plan.worker)
     outside_plan.story.expect_text("proof show 1", "state: shown", actor=outside_plan.story.agent)
 

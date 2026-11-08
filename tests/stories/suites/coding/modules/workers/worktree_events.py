@@ -137,8 +137,14 @@ def removal_story(new_story):
     return story
 
 
-def test_a_removal_event_fires_when_a_merge_removes_the_worktree(new_story):
-    story = removal_story(new_story)
+@pytest.fixture
+def removable(new_story):
+    return removal_story(new_story)
+
+
+
+def test_a_removal_event_fires_when_a_merge_removes_the_worktree(removable):
+    story = removable
     hand_in(story)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
@@ -146,8 +152,8 @@ def test_a_removal_event_fires_when_a_merge_removes_the_worktree(new_story):
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 
 
-def test_a_removal_event_fires_when_a_worker_is_released(new_story):
-    story = removal_story(new_story)
+def test_a_removal_event_fires_when_a_worker_is_released(removable):
+    story = removable
     story.expect_success(f'worker release {story.worker.id} "not needed"', actor=story.agent)
     story.run_listeners()
     calls = script_calls(story, "see.sh")

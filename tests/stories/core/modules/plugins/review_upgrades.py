@@ -46,9 +46,15 @@ def test_s81_the_snapshot_a_test_holds_names_what_journal_event_keys_lists(new_s
     story.expect_rows(TASK_CREATED in contract_file, TASK_CREATED in rows, contract_file[TASK_CREATED]["fields"] != [])
 
 
+@pytest.fixture
+def protocol_plugin(new_story, protocol):
+    return event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"}, **({} if protocol is None else {"protocol": protocol}))
+
+
+
 @pytest.mark.parametrize("protocol", [None, 1])
-def test_s82_a_manifest_with_protocol_one_or_none_works(new_story, protocol):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"}, **({} if protocol is None else {"protocol": protocol}))
+def test_s82_a_manifest_with_protocol_one_or_none_works(protocol_plugin):
+    story = protocol_plugin
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 

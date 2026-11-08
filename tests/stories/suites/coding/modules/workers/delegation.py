@@ -171,8 +171,14 @@ def test_a_workers_last_task_can_be_taken_back_after_other_work_is_finished(new_
     story.expect_text("task show 1", "state: testing", actor=story.agent)
 
 
-def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(new_story):
-    story, _, worker = delegated_story(new_story)
+@pytest.fixture
+def delegated(new_story):
+    return delegated_story(new_story)
+
+
+
+def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(delegated):
+    story, _, worker = delegated
     story.expect_refusal(f"task assign 1 --to {worker.id}", "nothing to move", actor=story.agent)
     story.run('task cancel 2 --reason "no"', actor=story.agent)
     story.expect_refusal(f"task assign 2 --to {story.agent.id}", "only an open or started task moves", actor=story.agent)

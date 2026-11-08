@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.actor import Actor
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_row import ProcessRow
@@ -70,10 +72,16 @@ def test_a_worktree_with_a_proof_not_checked_is_refused_its_merge_naming_the_poi
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
-def test_a_base_branch_that_moved_without_a_clash_is_merged_in_and_merged(new_story):
+@pytest.fixture
+def checked_work(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
-    worker = checked_worker(story, repository)
+    return story, repository, checked_worker(story, repository)
+
+
+
+def test_a_base_branch_that_moved_without_a_clash_is_merged_in_and_merged(checked_work):
+    story, repository, worker = checked_work
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("tax.py", "TAX = 21\n", "The tax")
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
@@ -82,17 +90,15 @@ def test_a_base_branch_that_moved_without_a_clash_is_merged_in_and_merged(new_st
     repository.expect_file(ENVIRONMENT_BRANCH, "tax.py", "TAX = 21\n")
 
 
-def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker_with_the_files_and_conflict_markers(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    repository = repository_environment(story)
-    worker = checked_worker(story, repository)
+def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker_with_the_files_and_conflict_markers(checked_work):
+    story, repository, worker = checked_work
     worker_tip = repository.tip(repository.worker_branch(worker.id))
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_text(f"worker merge --wait {worker.id}", "clashed on cart.py", actor=story.agent)
-    story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_success("worker-worktree show 1", "state: cut")
+    story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_text(f"agent-line list --agent {worker.id}", f"{ENVIRONMENT_BRANCH} is merged into your worktree and clashes on cart.py: settle the markers there, then deliver")
     expect_worktree_folder_repository_with(repository, worker, "cart.py", "<<<<<<<")
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)

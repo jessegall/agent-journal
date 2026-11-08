@@ -1,3 +1,5 @@
+import pytest
+
 import json
 
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -18,17 +20,27 @@ def step_plugin_story(new_story, event_name: str, services: list[dict[str, objec
     return story
 
 
-def test_a_plugin_holding_a_workers_delivery_refuses_it_with_its_reason(new_story):
-    story = step_plugin_story(new_story, "worker_delivering")
-    worker = dispatched_worker(story)
+@pytest.fixture
+def delivering_plugin(new_story):
+    return step_plugin_story(new_story, "worker_delivering")
+
+
+
+@pytest.fixture
+def worker_under_plugin(delivering_plugin):
+    return delivering_plugin, dispatched_worker(delivering_plugin)
+
+
+def test_a_plugin_holding_a_workers_delivery_refuses_it_with_its_reason(worker_under_plugin):
+    story, worker = worker_under_plugin
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
     story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
     story.expect_text("worker-worktree list", "cut", actor=story.agent)
 
 
-def test_a_plugin_holding_a_workers_delivery_also_refuses_its_move_to_the_next_task(new_story):
-    story = step_plugin_story(new_story, "worker_delivering")
+def test_a_plugin_holding_a_workers_delivery_also_refuses_its_move_to_the_next_task(delivering_plugin):
+    story = delivering_plugin
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
@@ -91,8 +103,8 @@ def test_a_hook_during_an_upgrade_leaves_the_plugin_switched_on(new_story):
     story.expect_text("plugin list", "steps", " on ")
 
 
-def test_a_plugin_whose_files_changed_is_switched_off_and_the_chat_says_so(new_story):
-    story = step_plugin_story(new_story, "worker_delivering")
+def test_a_plugin_whose_files_changed_is_switched_off_and_the_chat_says_so(delivering_plugin):
+    story = delivering_plugin
     manifest = story.container.get(PluginFolders).code("steps") / "journal-plugin.json"
     manifest.write_text(manifest.read_text() + "\n")
     story.hook("s-1", HookSamples.prompt("go on"))
@@ -112,8 +124,8 @@ def test_a_failed_upgrade_leaves_no_upgrade_mark_and_the_next_delivery_reaches_t
     story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)
 
 
-def test_a_plugin_whose_files_changed_judges_no_worker_step(new_story):
-    story = step_plugin_story(new_story, "worker_delivering")
+def test_a_plugin_whose_files_changed_judges_no_worker_step(delivering_plugin):
+    story = delivering_plugin
     manifest = story.container.get(PluginFolders).code("steps") / "journal-plugin.json"
     manifest.write_text(manifest.read_text() + "\n")
     worker = dispatched_worker(story)
