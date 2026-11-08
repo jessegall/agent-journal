@@ -1,9 +1,9 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-a44236e89623")) { const style = document.createElement("style"); style.id = "window-styles-a44236e89623"; style.textContent = ".current[data-v-2e50afc3]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-2e50afc3]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-2e50afc3]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-2e50afc3]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-2e50afc3]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-2e50afc3]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-2e50afc3]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-52b7a0da]{margin:0;padding:2px 0 4px;color:var(--text);font-size:12px}.note[data-v-52b7a0da]{margin:0 0 8px;color:var(--text-3);font-size:11px;line-height:1.4}.line[data-v-52b7a0da]{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-2);font-size:11.5px}.line strong[data-v-52b7a0da]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.total[data-v-52b7a0da]{border-bottom:1px solid var(--border);padding-bottom:6px}.group[data-v-52b7a0da]{margin:8px 0 2px;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.none[data-v-52b7a0da]{margin:0;color:var(--text-3);font-size:12px}.fitness[data-v-1cfbcbe7]{display:flex;flex-direction:column;gap:6px;min-width:300px}.fitness-head[data-v-1cfbcbe7]{margin:0;font-weight:600}.fitness-measure[data-v-1cfbcbe7]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.fitness-note[data-v-1cfbcbe7]{margin:0;color:var(--text-3);font-size:12px}.load[data-v-bf25ffc4]{display:flex;flex-direction:column;gap:6px;min-width:300px}.load-head[data-v-bf25ffc4]{margin:0;font-weight:600}.load-row[data-v-bf25ffc4]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.load-note[data-v-bf25ffc4]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-4106dcdf]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-4106dcdf]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-4106dcdf]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-4106dcdf]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-4106dcdf]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-4106dcdf]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.limit-form[data-v-4106dcdf]{display:grid;grid-template-columns:1fr 1fr 5em auto;gap:6px;padding:8px 0}.limit-form .current[data-v-4106dcdf]{grid-column:1 / -1;padding:0}.none[data-v-4106dcdf]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as f, ref as d, openBlock as n, createBlock as D, unref as r, withCtx as w, createElementVNode as a, createElementBlock as s, toDisplayString as i, createCommentVNode as g, Fragment as h, renderList as b, normalizeStyle as M, withDirectives as k, vModelSelect as S, vModelText as W, createVNode as $, createTextVNode as V } from "vue";
-import { useWindow as E, WindowRoom as F, Btn as N } from "@journal/window-kit";
-import { _ as R } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const T = {
+if (!document.getElementById("window-styles-39ecb6bf45d8")) { const style = document.createElement("style"); style.id = "window-styles-39ecb6bf45d8"; style.textContent = ".current[data-v-2e50afc3]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-2e50afc3]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-2e50afc3]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-2e50afc3]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-2e50afc3]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-2e50afc3]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-2e50afc3]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-52b7a0da]{margin:0;padding:2px 0 4px;color:var(--text);font-size:12px}.note[data-v-52b7a0da]{margin:0 0 8px;color:var(--text-3);font-size:11px;line-height:1.4}.line[data-v-52b7a0da]{display:flex;justify-content:space-between;gap:12px;padding:3px 0;color:var(--text-2);font-size:11.5px}.line strong[data-v-52b7a0da]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.total[data-v-52b7a0da]{border-bottom:1px solid var(--border);padding-bottom:6px}.group[data-v-52b7a0da]{margin:8px 0 2px;color:var(--text-3);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase}.none[data-v-52b7a0da]{margin:0;color:var(--text-3);font-size:12px}.fitness[data-v-1cfbcbe7]{display:flex;flex-direction:column;gap:6px;min-width:300px}.fitness-head[data-v-1cfbcbe7]{margin:0;font-weight:600}.fitness-measure[data-v-1cfbcbe7]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.fitness-note[data-v-1cfbcbe7]{margin:0;color:var(--text-3);font-size:12px}.load[data-v-bf25ffc4]{display:flex;flex-direction:column;gap:6px;min-width:300px}.load-head[data-v-bf25ffc4]{margin:0;font-weight:600}.load-row[data-v-bf25ffc4]{display:flex;gap:12px;justify-content:space-between;margin:0;font-size:13px}.load-note[data-v-bf25ffc4]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-e5e128cf]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-e5e128cf]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-e5e128cf]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-e5e128cf]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-e5e128cf]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-e5e128cf]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.limit-form[data-v-e5e128cf]{display:grid;grid-template-columns:1fr 1fr 5em auto;gap:6px;padding:8px 0}.limit-form .current[data-v-e5e128cf]{grid-column:1 / -1;padding:0}.none[data-v-e5e128cf]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as f, ref as d, openBlock as n, createBlock as D, unref as r, withCtx as w, createElementVNode as a, createElementBlock as s, toDisplayString as i, createCommentVNode as g, Fragment as h, renderList as b, normalizeStyle as M, withDirectives as k, vModelSelect as S, vModelText as T, createVNode as $, createTextVNode as V } from "vue";
+import { useWindow as W, WindowRoom as E, Btn as N } from "@journal/window-kit";
+import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const R = {
   key: 0,
   class: "none"
 }, z = { class: "track" }, A = {
@@ -13,13 +13,13 @@ const T = {
   key: 0,
   class: "none",
   "data-usage-limit-failure": ""
-}, K = {
+}, O = {
   key: 1,
   class: "none"
-}, O = {
+}, j = {
   __name: "UsagePanel",
-  setup(j) {
-    const l = E(), { data: m, failure: _ } = l.props.usage, y = f(() => {
+  setup(q) {
+    const l = W(), { data: m, failure: y } = l.props.usage, _ = f(() => {
       var t;
       return ((t = m.value) == null ? void 0 : t.windows) ?? [];
     }), U = f(() => {
@@ -43,11 +43,11 @@ const T = {
       u.value = e.ok ? "" : e.error, e.ok && await l.reload("limits");
     }
     const P = (t) => `${t.window}: ${t.mode === "fixed" ? "halt at" : "halt after"} ${t.percent}%${t.mode === "fixed" ? "" : " more than when it was set"}`, x = (t) => `Starts again ${new Date(t * 1e3).toLocaleString()}`;
-    return (t, e) => (n(), D(r(F), { padding: "14px 16px" }, {
+    return (t, e) => (n(), D(r(E), { padding: "14px 16px" }, {
       default: w(() => [
         e[8] || (e[8] = a("p", { class: "current" }, "Plan allowance used", -1)),
-        r(_) ? (n(), s("p", T, i(r(_)), 1)) : g("", !0),
-        (n(!0), s(h, null, b(y.value, (o) => (n(), s("div", {
+        r(y) ? (n(), s("p", R, i(r(y)), 1)) : g("", !0),
+        (n(!0), s(h, null, b(_.value, (o) => (n(), s("div", {
           key: o.title,
           class: "meter",
           "data-usage-meter": ""
@@ -75,7 +75,7 @@ const T = {
           ]),
           k(a("select", {
             "onUpdate:modelValue": e[1] || (e[1] = (o) => c.value = o),
-            "aria-label": "Kind of limit"
+            "aria-label": "Type of limit"
           }, [...e[4] || (e[4] = [
             a("option", { value: "fixed" }, "halt at", -1),
             a("option", { value: "budget" }, "halt after more than", -1)
@@ -89,7 +89,7 @@ const T = {
             max: "100",
             "aria-label": "Percent of the window"
           }, null, 512), [
-            [W, v.value]
+            [T, v.value]
           ]),
           $(r(N), {
             small: "",
@@ -110,7 +110,7 @@ const T = {
           a("span", null, i(P(o)), 1),
           $(r(N), {
             small: "",
-            onClick: (q) => L(o)
+            onClick: (G) => L(o)
           }, {
             default: w(() => [...e[7] || (e[7] = [
               V("Remove", -1)
@@ -118,12 +118,12 @@ const T = {
             _: 1
           }, 8, ["onClick"])
         ]))), 128)),
-        r(m) && !y.value.length ? (n(), s("p", K, "No current plan window has been reported here.")) : g("", !0)
+        r(m) && !_.value.length ? (n(), s("p", O, "No current plan window has been reported here.")) : g("", !0)
       ]),
       _: 1
     }));
   }
-}, Q = /* @__PURE__ */ R(O, [["__scopeId", "data-v-4106dcdf"]]);
+}, Q = /* @__PURE__ */ F(j, [["__scopeId", "data-v-e5e128cf"]]);
 export {
   Q as default
 };
