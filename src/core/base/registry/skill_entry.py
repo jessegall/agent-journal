@@ -10,7 +10,7 @@ from core.base.change.event_pattern import EventPattern
 class SkillEntry:
     """A registered skill: its folder and the module that declares it, its description, keywords, command
     nouns and event patterns, the digest of its text, the file the text is in, and whether the journal ships
-    its module, and the agent types it is for, none meaning every type."""
+    its module, the agent types it is for, none meaning every type, and the agent groups that have it when a listing asked."""
 
     folder: str
     module: str
@@ -23,6 +23,7 @@ class SkillEntry:
     shipped: bool
     modified_at: int | None = None
     types: Sequence[str] = ()
+    groups: Sequence[str] = ()
 
     @cached_property
     def event_patterns(self) -> tuple[EventPattern, ...]:

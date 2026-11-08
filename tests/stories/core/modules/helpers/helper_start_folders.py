@@ -58,6 +58,25 @@ def test_preparing_again_writes_the_profile_text_anew_and_keeps_the_links(starte
     started_folder.expect_rows("stale text" not in (folder / "CLAUDE.md").read_text(), (folder / "src").is_symlink())
 
 
+def test_a_start_folder_holds_only_the_skills_of_the_helpers_profile(started_folder):
+    skills = started_folder.checkout / ".claude" / "skills"
+    for name in ("journal-helpers", "journal-planning"):
+        (skills / name).mkdir(parents=True, exist_ok=True)
+        (skills / name / "SKILL.md").write_text(f"# {name}\n")
+    held = prepared(started_folder) / ".claude" / "skills"
+    started_folder.expect_rows((held / "journal-helpers" / "SKILL.md").is_file(), not (held / "journal-planning").exists(), not held.is_symlink(), (held / "journal-helpers").is_symlink())
+
+
+def test_a_start_folder_made_with_the_whole_skills_folder_is_narrowed(started_folder):
+    skills = started_folder.checkout / ".claude" / "skills"
+    (skills / "journal-planning").mkdir(parents=True, exist_ok=True)
+    folder = prepared(started_folder)
+    shutil.rmtree(folder / ".claude" / "skills", ignore_errors=True)
+    (folder / ".claude" / "skills").symlink_to(skills)
+    prepared(started_folder)
+    started_folder.expect_rows(not (folder / ".claude" / "skills").is_symlink(), not (folder / ".claude" / "skills" / "journal-planning").exists())
+
+
 def test_with_the_setting_off_no_start_folder_is_made(started_folder):
     started_folder.expect_success(f"setting set {HELPER_INSTRUCTION_FILES} false --project", actor=started_folder.user)
     folder = prepared(started_folder)

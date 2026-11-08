@@ -2,14 +2,16 @@ from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
+from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class UnreadSkills:
-    """The skills an agent must still read, oldest first, leaving out any the catalogue no longer holds."""
+    """The skills an agent must still read, oldest first, leaving out any the catalogue no longer holds and any its
+    profile does not give it, which it could not read."""
 
-    def __init__(self, queries: Queries, catalogue: SkillCatalogue, kept: KeptRows) -> None:
-        self.queries, self.catalogue, self.kept = queries, catalogue, kept
+    def __init__(self, queries: Queries, catalogue: SkillCatalogue, kept: KeptRows, profile_skills: AgentProfileSkills) -> None:
+        self.queries, self.catalogue, self.kept, self.profile_skills = queries, catalogue, kept, profile_skills
 
     def names(self, agent_id: int) -> list[str]:
         rows = self.kept.read("agent_skills", lambda: tuple(self.queries.query(AgentSkill).filter(session_agent_id=agent_id, state=AgentSkillState.DUE).oldest().all_rows()),
@@ -17,7 +19,7 @@ class UnreadSkills:
         if not rows:
             return []
         declared = {skill.folder for skill in self.catalogue.skills()}
-        return [row.skill for row in rows if row.skill in declared]
+        return [row.skill for row in rows if row.skill in declared and not self.profile_skills.refuses(agent_id, row.skill)]
 
     def unread(self, agent_id: int) -> list[str]:
         current = {skill.folder: skill.digest for skill in self.catalogue.skills()}

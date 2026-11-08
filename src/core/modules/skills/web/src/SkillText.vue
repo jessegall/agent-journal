@@ -1,4 +1,5 @@
 <script setup>
+import {TextDisplay} from "@journal/window-kit";
 defineProps({skill: {type: Object, default: null}, failure: {type: String, default: ""}, back: {type: Boolean, default: true}});
 const emit = defineEmits(["back"]);
 </script>
@@ -7,7 +8,7 @@ const emit = defineEmits(["back"]);
     <div class="skills">
         <template v-if="back"><button type="button" class="skills-back" @click="emit('back')">Back to skills</button></template>
         <h3 class="skills-title">{{ skill ? skill.folder : "" }}</h3>
-        <pre class="skills-text" data-skill-text>{{ skill ? skill.text : failure }}</pre>
+        <div class="skills-text" data-skill-text><TextDisplay :text="skill ? skill.text : failure" :row-names="false" /></div>
     </div>
 </template>
 
@@ -20,7 +21,6 @@ const emit = defineEmits(["back"]);
 
 .skills-text {
     margin: 0;
-    white-space: pre-wrap;
     font-size: 12px;
 }
 </style>

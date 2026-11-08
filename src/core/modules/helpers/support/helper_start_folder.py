@@ -10,6 +10,7 @@ from core.modules.helpers.support.helper_settings import HELPER_INSTRUCTION_FILE
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 
 PROGRAM_FOLDERS = (".claude", ".agents")
 ROLE = "helper"
@@ -17,11 +18,11 @@ ROLE = "helper"
 
 class HelperStartFolder:
     """Makes a helper's start folder: outside the project, every top-level entry of its parent's checkout a link to the real one, and CLAUDE.md
-    and AGENTS.md written for its profile, so the helper reads its parent's checkout as it is but only the instructions it
-    needs."""
+    and AGENTS.md written for its profile, so the helper reads its parent's checkout as it is but only the instructions and
+    skills it needs."""
 
-    def __init__(self, home: JournalHome, folders: AgentFolders, settings: SettingValues, suites: SuiteChoice, profiles: ProfileFiles) -> None:
-        self.home, self.folders, self.settings, self.suites, self.profiles = home, folders, settings, suites, profiles
+    def __init__(self, home: JournalHome, folders: AgentFolders, settings: SettingValues, suites: SuiteChoice, profiles: ProfileFiles, skills: AgentProfileSkills) -> None:
+        self.home, self.folders, self.settings, self.suites, self.profiles, self.skills = home, folders, settings, suites, profiles, skills
 
     def text(self, profile_name: str) -> str | None:
         profile = self.profiles.row(profile_name) if profile_name else None
@@ -42,7 +43,7 @@ class HelperStartFolder:
             if entry.name not in (*INSTRUCTION_FILES, *PROGRAM_FOLDERS):
                 self.link(folder / entry.name, entry)
         for name in PROGRAM_FOLDERS:
-            self.link_skills(folder / name, project / name)
+            self.link_skills(folder / name, project / name, helper)
         for name in INSTRUCTION_FILES:
             FileAccess.shared().write(folder / name, text)
 
@@ -56,7 +57,16 @@ class HelperStartFolder:
         path.unlink(missing_ok=True)
         path.symlink_to(target)
 
-    def link_skills(self, folder: Path, project_folder: Path) -> None:
+    def link_skills(self, folder: Path, project_folder: Path, helper: Agent) -> None:
         folder.mkdir(exist_ok=True)
-        if (project_folder / "skills").exists():
-            self.link(folder / "skills", project_folder / "skills")
+        skills, source = folder / "skills", project_folder / "skills"
+        if skills.is_symlink():
+            skills.unlink()
+        if not source.is_dir():
+            return
+        skills.mkdir(exist_ok=True)
+        for entry in source.iterdir():
+            if self.skills.refuses(helper.id, entry.name):
+                (skills / entry.name).unlink(missing_ok=True)
+                continue
+            self.link(skills / entry.name, entry)

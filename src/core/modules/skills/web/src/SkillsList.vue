@@ -34,7 +34,7 @@ const empty = computed(() => {
 </template>
 
 <style scoped>
-.skills-list { display:flex; flex-direction:column; width:440px; min-width:310px; flex:none; border-right:1px solid var(--border); min-height:0; }
+.skills-list { display:flex; flex-direction:column; width:540px; min-width:310px; flex:none; border-right:1px solid var(--border); min-height:0; }
 .filters { display:flex; flex-wrap:wrap; gap:3px; padding:10px 12px; border-bottom:1px solid var(--border); }
 .filters button { padding:5px 7px; border:0; border-radius:6px; font:inherit; font-size:11px; background:none; color:var(--text-3); cursor:pointer; }
 .filters button[aria-pressed=true] { background:var(--hover); color:var(--text); }

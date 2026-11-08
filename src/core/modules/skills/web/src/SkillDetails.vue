@@ -1,5 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
+import {TextDisplay} from "@journal/window-kit";
 import SkillRequirements from "./SkillRequirements.vue";
 import SkillTriggerCard from "./SkillTriggerCard.vue";
 import SkillTriggerEditor from "./SkillTriggerEditor.vue";
@@ -37,12 +38,12 @@ watch(() => props.text, (text, previous, cleanup) => {
             <template v-if="skill.commands?.length"><li>Before it runs a command about <code>{{ skill.commands.join(', ') }}</code></li></template>
             <template v-if="skill.events?.length"><li>When these changes happen: <code>{{ skill.events.join(', ') }}</code></li></template>
         </ul></section></template>
-        <section class="block"><div class="block-head"><h3>What the skill says</h3><template v-if="file"><a :href="file" target="_blank" rel="noopener">Open SKILL.md</a></template></div><template v-if="text"><pre data-skill-text>{{ text.text }}</pre></template><template v-else><p class="help">Reading the skill…</p></template></section>
+        <section class="block"><div class="block-head"><h3>What the skill says</h3><template v-if="file"><a :href="file" target="_blank" rel="noopener">Open SKILL.md</a></template></div><template v-if="text"><div data-skill-text><TextDisplay :text="text.text" :row-names="false" /></div></template><template v-else><p class="help">Reading the skill…</p></template></section>
     </div>
 </template>
 
 <style scoped>
-.skill-details { display:flex; flex-direction:column; gap:24px; max-width:720px; padding:18px 24px 40px; margin:0 auto; font-size:12px; }
+.skill-details { display:flex; flex-direction:column; gap:24px; padding:18px 24px 40px; font-size:12px; }
 h2 { display:flex; align-items:center; flex-wrap:wrap; gap:10px; font-size:15px; margin:0; font-weight:600; overflow-wrap:anywhere; }
 h2 small { border:1px solid var(--border-2); border-radius:5px; padding:3px 6px; font-size:10px; color:var(--text-3); font-weight:400; }
 header p,.help { color:var(--text-3); line-height:1.7; margin:7px 0 0; }
@@ -52,7 +53,6 @@ h3 { font-size:13px; margin:0; font-weight:600; }
 .block { display:flex; flex-direction:column; gap:12px; padding-top:22px; border-top:1px solid var(--border); }
 .block-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
 button,a { flex:none; padding:6px 9px; border:1px solid var(--border-2); border-radius:6px; background:var(--bg); color:var(--text-2); font:inherit; cursor:pointer; text-decoration:none; font-size:11px; }
-pre { margin:0; font:12px/1.8 var(--mono, monospace); white-space:pre-wrap; overflow-wrap:anywhere; }
 ul { padding-left:20px; line-height:1.9; margin:0; color:var(--text-2); }
 @media(max-width:700px) { .skill-details { padding:20px 16px 35px; } .block-head { flex-wrap:wrap; } }
 </style>

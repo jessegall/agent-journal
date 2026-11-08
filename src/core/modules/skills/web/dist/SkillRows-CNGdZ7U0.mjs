@@ -1,34 +1,34 @@
 /* @code-commandments-generated */
-import { computed as x, ref as j, watch as X, onUnmounted as ee, openBlock as l, createElementBlock as n, normalizeClass as Y, createElementVNode as t, createVNode as W, unref as u, createTextVNode as T, toDisplayString as v, createCommentVNode as S, Fragment as O, renderList as V, createBlock as F, useModel as G, mergeProps as ue, mergeModels as J, withDirectives as K, withKeys as ce, withModifiers as te, vModelText as z, withCtx as le, reactive as ge, vModelSelect as ke } from "vue";
-import { useWindow as se, coalesced as me, READ_RATES as he, Icon as ne, useListTools as ve, ListTools as ye, DropList as ae, Btn as pe, WindowRoom as fe } from "@journal/window-kit";
-function be() {
-  const e = se(), { rows: g } = e.props.catalogue, { rows: i } = e.props.loaded, { rows: h } = e.props.triggers, a = x(() => e.props.requirements.data.value ?? { session_start: [], after_compaction: [], main_agent: [], environment_overrides: !1 }), s = x(() => {
+import { computed as x, ref as j, watch as X, onUnmounted as ee, openBlock as l, createElementBlock as n, normalizeClass as Y, createElementVNode as t, createVNode as I, unref as u, createTextVNode as T, toDisplayString as v, createCommentVNode as S, Fragment as R, renderList as V, createBlock as F, useModel as G, mergeProps as ce, mergeModels as J, withDirectives as K, withKeys as ge, withModifiers as te, vModelText as z, withCtx as le, reactive as ke, vModelSelect as me } from "vue";
+import { useWindow as se, coalesced as he, READ_RATES as ve, Icon as ne, useListTools as ye, ListTools as pe, DropList as ae, Btn as fe, TextDisplay as ie, WindowRoom as be } from "@journal/window-kit";
+function $e() {
+  const e = se(), { rows: g } = e.props.catalogue, { rows: a } = e.props.loaded, { rows: h } = e.props.triggers, i = x(() => e.props.requirements.data.value ?? { session_start: [], after_compaction: [], main_agent: [], environment_overrides: !1 }), s = x(() => {
     var c;
     return ((c = e.props["main-agent"].data.value) == null ? void 0 : c.id) ?? null;
-  }), r = x(() => e.props.catalogue.loaded.value && e.props.requirements.loaded.value && e.props.triggers.loaded.value), d = j(""), o = x(() => d.value || ["catalogue", "requirements", "triggers", "loaded"].map((c) => e.props[c].failure.value).find(Boolean) || ""), w = j([]), p = j(""), b = j(null), k = j("");
+  }), r = x(() => e.props.catalogue.loaded.value && e.props.requirements.loaded.value && e.props.triggers.loaded.value), o = j(""), d = x(() => o.value || ["catalogue", "requirements", "triggers", "loaded"].map((c) => e.props[c].failure.value).find(Boolean) || ""), w = j([]), p = j(""), b = j(null), k = j("");
   e.state.tab = "skills";
-  const y = x({ get: () => e.state.tab, set: (c) => e.state.tab = c }), f = j(null), R = e.option("row");
+  const y = x({ get: () => e.state.tab, set: (c) => e.state.tab = c }), f = j(null), A = e.option("row");
   let N = 0;
-  const A = x(() => g.value.map((c) => {
-    const m = i.value.find((D) => D.skill === c.folder);
+  const O = x(() => g.value.map((c) => {
+    const m = a.value.find((D) => D.skill === c.folder);
     return {
       ...c,
-      required: a.value.session_start.includes(c.folder) || a.value.main_agent.includes(c.folder),
-      agents: a.value.main_agent.includes(c.folder) ? "main" : "all",
-      again: a.value.after_compaction.includes(c.folder),
+      required: i.value.session_start.includes(c.folder) || i.value.main_agent.includes(c.folder),
+      agents: i.value.main_agent.includes(c.folder) ? "main" : "all",
+      again: i.value.after_compaction.includes(c.folder),
       held: m,
       read: (m == null ? void 0 : m.state) === "loaded",
       changed: (m == null ? void 0 : m.state) === "loaded" && m.digest !== c.digest
     };
-  })), I = x(() => A.value.find((c) => c.folder === p.value)), M = x(() => h.value.filter((c) => c.skill === p.value));
+  })), E = x(() => O.value.find((c) => c.folder === p.value)), M = x(() => h.value.filter((c) => c.skill === p.value));
   async function B() {
     await e.reload({ only: ["main-agent", "catalogue", "requirements", "triggers", ...s.value ? ["loaded"] : []] });
   }
   X(s, async (c) => {
-    i.value = [], c && (e.state["loaded.agent"] = String(c), await e.reload("loaded"));
+    a.value = [], c && (e.state["loaded.agent"] = String(c), await e.reload("loaded"));
   });
   async function U(c, m = !0) {
-    if (p.value = c, b.value = null, k.value = "", f.value = null, m && !R.value) {
+    if (p.value = c, b.value = null, k.value = "", f.value = null, m && !A.value) {
       const H = new URL(location.href);
       c ? H.searchParams.set("skill", c) : H.searchParams.delete("skill"), history.pushState(null, "", H);
     }
@@ -40,55 +40,61 @@ function be() {
   }
   async function P(c) {
     const m = await e.run(c);
-    return d.value = m.ok ? "" : m.error, m.ok && await B(), m.ok;
+    return o.value = m.ok ? "" : m.error, m.ok && await B(), m.ok;
   }
-  async function E(c, m, D = !0) {
+  async function W(c, m, D = !0) {
     w.value.includes(c) || (w.value = [...w.value, c], await P(["skill", "set-required", c, "--agents", m, ...D ? [] : ["--no-after-compaction"]]), w.value = w.value.filter((C) => C !== c));
   }
   async function $() {
-    if (!s.value || !I.value) return;
-    const c = I.value.held;
+    if (!s.value || !E.value) return;
+    const c = E.value.held;
     await P((c == null ? void 0 : c.state) === "loaded" ? ["agent-skill", "reset", String(c.id)] : ["skill", "require", String(s.value), p.value]);
   }
   const q = () => U(new URLSearchParams(location.search).get("skill") || "", !1);
-  return window.addEventListener("popstate", q), ee(() => window.removeEventListener("popstate", q)), e.follow(["agent_skill.*"], me(() => {
+  return window.addEventListener("popstate", q), ee(() => window.removeEventListener("popstate", q)), e.follow(["agent_skill.*"], he(() => {
     s.value && e.reload("loaded");
-  }, he.openPanel)), R.value ? e.readKey(`agent-skill.${R.value.skillId ?? R.value.id}`).then((c) => c.ok ? U(c.value.skill, !1) : k.value = c.error) : q(), { skills: A, selected: I, selectedTriggers: M, triggers: h, requirements: a, mainAgent: s, answered: r, failure: o, busy: w, opened: p, text: b, openFailure: k, tab: y, draft: f, marked: R, load: B, open: U, run: P, requireSkill: E, readNow: $ };
+  }, ve.openPanel)), A.value ? e.readKey(`agent-skill.${A.value.skillId ?? A.value.id}`).then((c) => c.ok ? U(c.value.skill, !1) : k.value = c.error) : q(), { skills: O, selected: E, selectedTriggers: M, triggers: h, requirements: i, mainAgent: s, answered: r, failure: d, busy: w, opened: p, text: b, openFailure: k, tab: y, draft: f, marked: A, load: B, open: U, run: P, requireSkill: W, readNow: $ };
 }
 const L = (e, g) => {
-  const i = e.__vccOpts || e;
-  for (const [h, a] of g)
-    i[h] = a;
-  return i;
-}, $e = ["aria-checked", "aria-label", "disabled"], we = {
+  const a = e.__vccOpts || e;
+  for (const [h, i] of g)
+    a[h] = i;
+  return a;
+}, we = ["aria-checked", "aria-label", "disabled"], qe = {
   __name: "RequiredSkillSwitch",
   props: { folder: { type: String, required: !0 }, required: Boolean, busy: Boolean },
   emits: ["change"],
   setup(e, { emit: g }) {
-    const i = g;
-    return (h, a) => (l(), n("button", {
+    const a = g;
+    return (h, i) => (l(), n("button", {
       type: "button",
       role: "switch",
       "aria-checked": e.required,
       "aria-label": `${e.required ? "Stop requiring" : "Require"} ${e.folder} at the start`,
       disabled: e.busy,
       class: Y(["required-switch", { on: e.required }]),
-      onClick: a[0] || (a[0] = (s) => i("change", !e.required))
-    }, [...a[1] || (a[1] = [
+      onClick: i[0] || (i[0] = (s) => a("change", !e.required))
+    }, [...i[1] || (i[1] = [
       t("span", null, null, -1)
-    ])], 10, $e));
+    ])], 10, we));
   }
-}, ie = /* @__PURE__ */ L(we, [["__scopeId", "data-v-ee9d0e40"]]), qe = ["data-skill"], Se = ["aria-label"], xe = { class: "name-line" }, Ce = {
+}, re = /* @__PURE__ */ L(qe, [["__scopeId", "data-v-37017fe1"]]), Se = ["data-skill"], xe = ["aria-label"], Ce = { class: "name-line" }, Te = {
   key: 0,
   class: "read-dot",
   title: "Read by the main agent"
-}, Te = { class: "description" }, Re = {
+}, Re = { class: "description" }, Ae = {
+  class: "groups",
+  "data-skill-groups": ""
+}, Oe = {
   __name: "SkillListItem",
   props: { skill: { type: Object, required: !0 }, selected: Boolean, busy: Boolean },
   emits: ["open", "require"],
   setup(e, { emit: g }) {
-    const i = g;
-    return (h, a) => (l(), n("div", {
+    const a = e, h = x(() => {
+      var s;
+      return (s = a.skill.groups) != null && s.length ? a.skill.groups : ["Main agent"];
+    }), i = g;
+    return (s, r) => (l(), n("div", {
       class: Y(["skill-list-item", { selected: e.selected }]),
       "data-skill": e.skill.folder
     }, [
@@ -96,50 +102,56 @@ const L = (e, g) => {
         type: "button",
         class: "skill-name",
         "aria-label": e.skill.folder,
-        onClick: a[0] || (a[0] = (s) => i("open", e.skill.folder))
+        onClick: r[0] || (r[0] = (o) => i("open", e.skill.folder))
       }, [
-        t("span", xe, [
-          W(u(ne), {
+        t("span", Ce, [
+          I(u(ne), {
             name: "book",
             size: 13
           }),
           T(v(e.skill.folder), 1),
-          e.skill.read ? (l(), n("span", Ce)) : S("", !0)
+          e.skill.read ? (l(), n("span", Te)) : S("", !0)
         ]),
-        t("span", Te, v(e.skill.description), 1)
-      ], 8, Se),
-      W(ie, {
+        t("span", Re, v(e.skill.description), 1),
+        t("span", Ae, [
+          (l(!0), n(R, null, V(h.value, (o) => (l(), n("span", {
+            key: o,
+            class: "group"
+          }, v(o), 1))), 128))
+        ])
+      ], 8, xe),
+      I(re, {
         folder: e.skill.folder,
         required: e.skill.required,
         busy: e.busy,
-        onChange: a[1] || (a[1] = (s) => i("require", e.skill.folder, s))
+        onChange: r[1] || (r[1] = (o) => i("require", e.skill.folder, o))
       }, null, 8, ["folder", "required", "busy"])
-    ], 10, qe));
+    ], 10, Se));
   }
-}, Z = /* @__PURE__ */ L(Re, [["__scopeId", "data-v-6699d870"]]), Ae = { class: "skill-group" }, Oe = ["aria-expanded"], je = ["aria-expanded", "onClick"], Ie = {
+}, Z = /* @__PURE__ */ L(Oe, [["__scopeId", "data-v-33ddf837"]]), je = { class: "skill-group" }, Ie = ["aria-expanded"], Ee = ["aria-expanded", "onClick"], We = {
   __name: "SkillListGroup",
   props: { title: { type: String, required: !0 }, skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] }, searching: Boolean },
   emits: ["open", "require"],
   setup(e, { emit: g }) {
-    const i = e, h = g, a = j(!1), s = j(/* @__PURE__ */ new Set()), r = (p) => {
+    const a = e, h = g, i = j(!1), s = j(/* @__PURE__ */ new Set()), r = (p) => {
       var b;
       return ((b = p.folder.match(/^commandments-([^-]+)-/)) == null ? void 0 : b[0].slice(0, -1)) || "";
-    }, d = x(() => i.skills.filter((p) => !r(p))), o = x(() => [...new Set(i.skills.map(r).filter(Boolean))].map((p) => ({ name: p, skills: i.skills.filter((b) => r(b) === p) }))), w = (p) => {
+    }, o = x(() => a.skills.filter((p) => !r(p))), d = x(() => [...new Set(a.skills.map(r).filter(Boolean))].map((p) => ({ name: p, skills: a.skills.filter((b) => r(b) === p) }))), w = (p) => {
       const b = new Set(s.value);
       b.has(p) ? b.delete(p) : b.add(p), s.value = b;
     };
-    return (p, b) => (l(), n("section", Ae, [
+    return (p, b) => (l(), n("section", je, [
       t("button", {
         type: "button",
         class: "group-head",
-        "aria-expanded": !a.value || e.searching,
-        onClick: b[0] || (b[0] = (k) => a.value = !a.value)
+        "aria-expanded": !i.value || e.searching,
+        onClick: b[0] || (b[0] = (k) => i.value = !i.value)
       }, [
-        T(v(a.value && !e.searching ? "›" : "⌄") + " " + v(e.title) + " ", 1),
+        T(v(i.value && !e.searching ? "›" : "⌄") + " " + v(e.title) + " ", 1),
         t("small", null, v(e.skills.length) + ", " + v(e.skills.filter((k) => k.required).length) + " required", 1)
-      ], 8, Oe),
-      !a.value || e.searching ? (l(), n(O, { key: 0 }, [
-        (l(!0), n(O, null, V(d.value, (k) => (l(), F(Z, {
+      ], 8, Ie),
+      !i.value || e.searching ? (l(), n(R, { key: 0 }, [
+        (l(!0), n(R, null, V(o.value, (k) => (l(), F(Z, {
           key: k.folder,
           skill: k,
           selected: e.opened === k.folder,
@@ -147,7 +159,7 @@ const L = (e, g) => {
           onOpen: b[1] || (b[1] = (y) => h("open", y)),
           onRequire: b[2] || (b[2] = (y, f) => h("require", y, f))
         }, null, 8, ["skill", "selected", "busy"]))), 128)),
-        (l(!0), n(O, null, V(o.value, (k) => (l(), n(O, {
+        (l(!0), n(R, null, V(d.value, (k) => (l(), n(R, {
           key: k.name
         }, [
           t("button", {
@@ -158,69 +170,69 @@ const L = (e, g) => {
           }, [
             T(v(s.value.has(k.name) || e.searching ? "⌄" : "›") + " " + v(k.name) + " ", 1),
             t("small", null, v(k.skills.length), 1)
-          ], 8, je),
-          s.value.has(k.name) || e.searching ? (l(!0), n(O, { key: 0 }, V(k.skills, (y) => (l(), F(Z, {
+          ], 8, Ee),
+          s.value.has(k.name) || e.searching ? (l(!0), n(R, { key: 0 }, V(k.skills, (y) => (l(), F(Z, {
             key: y.folder,
             skill: y,
             selected: e.opened === y.folder,
             busy: e.busy.includes(y.folder),
             onOpen: b[3] || (b[3] = (f) => h("open", f)),
-            onRequire: b[4] || (b[4] = (f, R) => h("require", f, R))
+            onRequire: b[4] || (b[4] = (f, A) => h("require", f, A))
           }, null, 8, ["skill", "selected", "busy"]))), 128)) : S("", !0)
         ], 64))), 128))
       ], 64)) : S("", !0)
     ]));
   }
-}, Ee = /* @__PURE__ */ L(Ie, [["__scopeId", "data-v-383c3904"]]), We = {
+}, Le = /* @__PURE__ */ L(We, [["__scopeId", "data-v-f48d4dac"]]), Ne = {
   class: "skills-list",
   "data-skills-catalogue": ""
-}, Le = { class: "filters" }, Ne = ["aria-pressed", "onClick"], Ve = { class: "skill-list-scroll" }, Be = {
+}, Ve = { class: "filters" }, Be = ["aria-pressed", "onClick"], Fe = { class: "skill-list-scroll" }, Me = {
   key: 1,
   class: "skills-empty"
-}, Fe = {
+}, Pe = {
   __name: "SkillsList",
   props: { skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] } },
   emits: ["open", "require"],
   setup(e, { emit: g }) {
-    const i = e, h = g, a = j("all"), s = x(() => [...i.skills].sort((k, y) => (y.modified_at || 0) - (k.modified_at || 0))), r = ve(s, { title: (k) => k.folder });
+    const a = e, h = g, i = j("all"), s = x(() => [...a.skills].sort((k, y) => (y.modified_at || 0) - (k.modified_at || 0))), r = ye(s, { title: (k) => k.folder });
     r.order.value = "title";
-    const d = x(() => [{ key: "all", label: "All", count: i.skills.length }, { key: "required", label: "Required", count: i.skills.filter((k) => k.required).length }, { key: "read", label: "Read by the main agent", count: i.skills.filter((k) => k.read).length }]), o = x(() => r.shown.value.filter((k) => ({ all: !0, required: k.required, read: k.read })[a.value])), w = (k) => {
+    const o = x(() => [{ key: "all", label: "All", count: a.skills.length }, { key: "required", label: "Required", count: a.skills.filter((k) => k.required).length }, { key: "read", label: "Read by the main agent", count: a.skills.filter((k) => k.read).length }]), d = x(() => r.shown.value.filter((k) => ({ all: !0, required: k.required, read: k.read })[i.value])), w = (k) => {
       var y;
       return (y = k.module) != null && y.startsWith("plugin:") ? "plugin" : k.shipped ? "journal" : "project";
-    }, p = x(() => [{ key: "journal", title: "From the journal" }, { key: "plugin", title: "From a plugin" }, { key: "project", title: "From this project" }].map((k) => ({ ...k, skills: o.value.filter((y) => w(y) === k.key) })).filter((k) => k.skills.length)), b = x(() => i.skills.length ? r.words.value.trim() ? ["No skill matches", "Try other words."] : a.value === "required" ? ["No skill is required", "Switch on Required beside a skill to make the agent read it at the start."] : ["No skill is read in this conversation", "Skills appear here after the main agent reads them."] : ["No skills are installed", "Add a folder with a SKILL.md file under .agents/skills in this project."]);
-    return (k, y) => (l(), n("aside", We, [
-      W(u(ye), {
+    }, p = x(() => [{ key: "journal", title: "From the journal" }, { key: "plugin", title: "From a plugin" }, { key: "project", title: "From this project" }].map((k) => ({ ...k, skills: d.value.filter((y) => w(y) === k.key) })).filter((k) => k.skills.length)), b = x(() => a.skills.length ? r.words.value.trim() ? ["No skill matches", "Try other words."] : i.value === "required" ? ["No skill is required", "Switch on Required beside a skill to make the agent read it at the start."] : ["No skill is read in this conversation", "Skills appear here after the main agent reads them."] : ["No skills are installed", "Add a folder with a SKILL.md file under .agents/skills in this project."]);
+    return (k, y) => (l(), n("aside", Ne, [
+      I(u(pe), {
         tools: u(r),
         placeholder: "Find a skill"
       }, null, 8, ["tools"]),
-      t("div", Le, [
-        (l(!0), n(O, null, V(d.value, (f) => (l(), n("button", {
+      t("div", Ve, [
+        (l(!0), n(R, null, V(o.value, (f) => (l(), n("button", {
           key: f.key,
           type: "button",
-          "aria-pressed": a.value === f.key,
-          onClick: (R) => a.value = f.key
+          "aria-pressed": i.value === f.key,
+          onClick: (A) => i.value = f.key
         }, [
           T(v(f.label) + " ", 1),
           t("small", null, v(f.count), 1)
-        ], 8, Ne))), 128))
+        ], 8, Be))), 128))
       ]),
-      t("div", Ve, [
-        o.value.length ? (l(), n(O, { key: 0 }, [
+      t("div", Fe, [
+        d.value.length ? (l(), n(R, { key: 0 }, [
           y[3] || (y[3] = t("div", { class: "column-head" }, [
             t("span", null, "Skill"),
             t("span", null, "Required")
           ], -1)),
-          (l(!0), n(O, null, V(p.value, (f) => (l(), F(Ee, {
+          (l(!0), n(R, null, V(p.value, (f) => (l(), F(Le, {
             key: f.key,
             title: f.title,
             skills: f.skills,
             opened: e.opened,
             busy: e.busy,
-            searching: u(r).filtering.value || a.value !== "all",
-            onOpen: y[0] || (y[0] = (R) => h("open", R)),
-            onRequire: y[1] || (y[1] = (R, N) => h("require", R, N))
+            searching: u(r).filtering.value || i.value !== "all",
+            onOpen: y[0] || (y[0] = (A) => h("open", A)),
+            onRequire: y[1] || (y[1] = (A, N) => h("require", A, N))
           }, null, 8, ["title", "skills", "opened", "busy", "searching"]))), 128))
-        ], 64)) : (l(), n("div", Be, [
+        ], 64)) : (l(), n("div", Me, [
           t("strong", null, v(b.value[0]), 1),
           t("p", null, v(b.value[1]), 1),
           u(r).words.value ? (l(), n("button", {
@@ -232,27 +244,27 @@ const L = (e, g) => {
       ])
     ]));
   }
-}, Me = /* @__PURE__ */ L(Fe, [["__scopeId", "data-v-60b72429"]]), Pe = { class: "requirements" }, Ue = { class: "block-head" }, De = { class: "switch-label" }, Ge = {
+}, Ue = /* @__PURE__ */ L(Pe, [["__scopeId", "data-v-bcdb5e6a"]]), De = { class: "requirements" }, Ge = { class: "block-head" }, He = { class: "switch-label" }, Ke = {
   key: 0,
   class: "choices"
-}, He = ["value", "disabled"], Ke = { key: 0 }, ze = {
+}, ze = ["value", "disabled"], Ye = { key: 0 }, Je = {
   key: 1,
   class: "again"
-}, Ye = ["checked", "disabled"], Je = {
+}, Qe = ["checked", "disabled"], Xe = {
   __name: "SkillRequirements",
   props: { skill: { type: Object, required: !0 }, busy: Boolean },
   emits: ["change"],
   setup(e, { emit: g }) {
-    const i = g, h = (a) => i("change", a ? "all" : "none", !0);
-    return (a, s) => (l(), n("section", Pe, [
-      t("div", Ue, [
+    const a = g, h = (i) => a("change", i ? "all" : "none", !0);
+    return (i, s) => (l(), n("section", De, [
+      t("div", Ge, [
         s[3] || (s[3] = t("div", null, [
           t("h3", null, "Must the agent read it at the start?"),
           t("p", null, "When a conversation starts, the agent must read this skill before it may do anything else.")
         ], -1)),
-        t("span", De, [
+        t("span", He, [
           s[2] || (s[2] = T("Required ", -1)),
-          W(ie, {
+          I(re, {
             folder: e.skill.folder,
             required: e.skill.required,
             busy: e.busy,
@@ -260,20 +272,20 @@ const L = (e, g) => {
           }, null, 8, ["folder", "required", "busy"])
         ])
       ]),
-      e.skill.required ? (l(), n("div", Ge, [
+      e.skill.required ? (l(), n("div", Ke, [
         t("label", null, [
           s[5] || (s[5] = T("Which agents must read it", -1)),
           t("select", {
             value: e.skill.agents,
             "aria-label": "Which agents must read it",
             disabled: e.busy,
-            onChange: s[0] || (s[0] = (r) => i("change", r.target.value, e.skill.again))
+            onChange: s[0] || (s[0] = (r) => a("change", r.target.value, e.skill.again))
           }, [...s[4] || (s[4] = [
             t("option", { value: "all" }, "Every agent", -1),
             t("option", { value: "main" }, "Only the main agent", -1)
-          ])], 40, He)
+          ])], 40, ze)
         ]),
-        e.skill.agents === "main" ? (l(), n("p", Ke, "The main agent reads it at the start and again after every compaction.")) : (l(), n("label", ze, [
+        e.skill.agents === "main" ? (l(), n("p", Ye, "The main agent reads it at the start and again after every compaction.")) : (l(), n("label", Je, [
           s[6] || (s[6] = t("span", null, [
             T("Read it again after the conversation is compacted"),
             t("small", null, "Compacting empties what the agent has read.")
@@ -283,93 +295,93 @@ const L = (e, g) => {
             checked: e.skill.again,
             disabled: e.busy,
             "aria-label": "Read it again after the conversation is compacted",
-            onChange: s[1] || (s[1] = (r) => i("change", e.skill.agents, r.target.checked))
-          }, null, 40, Ye)
+            onChange: s[1] || (s[1] = (r) => a("change", e.skill.agents, r.target.checked))
+          }, null, 40, Qe)
         ]))
       ])) : S("", !0)
     ]));
   }
-}, Qe = /* @__PURE__ */ L(Je, [["__scopeId", "data-v-7c679e99"]]), Xe = [
+}, Ze = /* @__PURE__ */ L(Xe, [["__scopeId", "data-v-87c0e195"]]), _e = [
   { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
   { key: "skill", value: "skill", label: "Make the agent read a skill", hint: "The agent must read the skill before it continues.", ask: "Which skill the agent must read", example: "journal-plans" }
 ];
-Xe.filter((e) => !["deny", "skill"].includes(e.value));
-const Ze = [
+_e.filter((e) => !["deny", "skill"].includes(e.value));
+const et = [
   { key: "messages", label: "What you write to the agent" },
   { key: "commands", label: "Commands the agent runs" },
   { key: "files", label: "Files the agent changes" }
-], _e = [
+], tt = [
   { key: "part", label: "Part of the text", hint: "Capitals ignored" },
   { key: "word", label: "Whole word", hint: "Not part of another word" },
   { key: "pattern", label: "Pattern", hint: "A regular expression" }
-], et = [
+], lt = [
   { key: "main", value: "main", label: "The main agent" },
   { key: "helper", value: "helper", label: "An agent or helper" }
 ], _ = [
-  { key: "agent", value: "agent", label: "Agent", note: "The main agent or a helper", choices: et },
+  { key: "agent", value: "agent", label: "Agent", note: "The main agent or a helper", choices: lt },
   { key: "environment", value: "environment", label: "Environment", note: "Only in one environment", example: "main" },
   { key: "fired", value: "fired", label: "How often it has fired", note: "Only the first few times", example: "3" },
   { key: "hours", value: "hours", label: "Hours of the day", note: "From one hour until another", example: "9-17" }
 ], Q = (e) => `“${e}”`;
-function tt(e) {
-  const g = e.slice(0, 3).map(Q), i = e.length - 3;
-  return i > 0 ? `${g.join(", ")} or ${i} other ${i === 1 ? "phrase" : "phrases"}` : g.length > 1 ? `${g.slice(0, -1).join(", ")} or ${g.at(-1)}` : g[0];
+function st(e) {
+  const g = e.slice(0, 3).map(Q), a = e.length - 3;
+  return a > 0 ? `${g.join(", ")} or ${a} other ${a === 1 ? "phrase" : "phrases"}` : g.length > 1 ? `${g.slice(0, -1).join(", ")} or ${g.at(-1)}` : g[0];
 }
-const lt = {
+const nt = {
   skill: (e) => `make the agent read ${e}`,
   nudge: (e) => `remind the agent ${e}`,
   instruct: (e) => `tell the agent to do this now: ${e}`,
   deny: (e) => `block it and tell the agent ${e}`
-}, st = {
+}, at = {
   every: (e) => `Every ${e.every || "few"} minutes`,
   once: () => "At the time you choose",
   cron: () => "At the scheduled times"
 };
-function re(e) {
-  const g = lt[e.action](e.action === "skill" ? Q(e.skill || "the skill") : e.text ? Q(e.text) : "(no text yet)");
-  return e.type === "time" ? `${st[e.time](e)}, ${g}.` : e.phrases.length ? `When ${tt(e.phrases)} appears, ${g}.` : "Add the words to watch for and choose what happens.";
+function oe(e) {
+  const g = nt[e.action](e.action === "skill" ? Q(e.skill || "the skill") : e.text ? Q(e.text) : "(no text yet)");
+  return e.type === "time" ? `${at[e.time](e)}, ${g}.` : e.phrases.length ? `When ${st(e.phrases)} appears, ${g}.` : "Add the words to watch for and choose what happens.";
 }
-const nt = {
+const it = {
   key: 0,
   class: "waiting"
-}, at = { key: 0 }, it = ["disabled"], rt = ["disabled"], ot = ["disabled", "aria-label"], dt = {
+}, rt = { key: 0 }, ot = ["disabled"], dt = ["disabled"], ut = ["disabled", "aria-label"], ct = {
   __name: "SkillTriggerCard",
   props: { trigger: { type: Object, required: !0 }, busy: Boolean },
   emits: ["edit", "run"],
   setup(e, { emit: g }) {
-    const i = e, h = g, a = x(() => re(i.trigger));
+    const a = e, h = g, i = x(() => oe(a.trigger));
     return (s, r) => (l(), n("article", {
       class: Y(["skill-trigger-card", { paused: e.trigger.paused_at }])
     }, [
-      t("p", null, v(a.value), 1),
-      e.trigger.needs_enabling ? (l(), n("p", nt, "An agent made this trigger. It does nothing until you turn it on.")) : S("", !0),
+      t("p", null, v(i.value), 1),
+      e.trigger.needs_enabling ? (l(), n("p", it, "An agent made this trigger. It does nothing until you turn it on.")) : S("", !0),
       t("footer", null, [
         t("span", null, v(e.trigger.fired_count ? `Fired ${e.trigger.fired_count} times` : "Not fired yet"), 1),
-        e.trigger.paused_at ? (l(), n("span", at, "Paused")) : S("", !0),
+        e.trigger.paused_at ? (l(), n("span", rt, "Paused")) : S("", !0),
         r[3] || (r[3] = t("span", { class: "push" }, null, -1)),
         t("button", {
           type: "button",
           disabled: e.busy,
-          onClick: r[0] || (r[0] = (d) => h("edit", e.trigger))
-        }, "Edit", 8, it),
+          onClick: r[0] || (r[0] = (o) => h("edit", e.trigger))
+        }, "Edit", 8, ot),
         e.trigger.needs_enabling ? (l(), n("button", {
           key: 1,
           type: "button",
           disabled: e.busy,
-          onClick: r[1] || (r[1] = (d) => h("run", ["trigger", "enable", String(e.trigger.id)]))
-        }, "Turn it on", 8, rt)) : (l(), n("button", {
+          onClick: r[1] || (r[1] = (o) => h("run", ["trigger", "enable", String(e.trigger.id)]))
+        }, "Turn it on", 8, dt)) : (l(), n("button", {
           key: 2,
           type: "button",
           disabled: e.busy,
           "aria-label": e.trigger.paused_at ? "Resume this trigger" : "Pause this trigger",
-          onClick: r[2] || (r[2] = (d) => h("run", ["trigger", "pause", String(e.trigger.id), ...e.trigger.paused_at ? ["--off"] : []]))
-        }, v(e.trigger.paused_at ? "Resume" : "Pause"), 9, ot))
+          onClick: r[2] || (r[2] = (o) => h("run", ["trigger", "pause", String(e.trigger.id), ...e.trigger.paused_at ? ["--off"] : []]))
+        }, v(e.trigger.paused_at ? "Resume" : "Pause"), 9, ut))
       ])
     ], 2));
   }
-}, oe = /* @__PURE__ */ L(dt, [["__scopeId", "data-v-8f3251db"]]), ut = { class: "tiles" }, ct = ["onClick"], gt = {
+}, de = /* @__PURE__ */ L(ct, [["__scopeId", "data-v-a8b11e7d"]]), gt = { class: "tiles" }, kt = ["onClick"], mt = {
   __name: "TriggerTiles",
   props: /* @__PURE__ */ J({ options: { type: Array, required: !0 }, mark: { type: String, required: !0 } }, {
     modelValue: { type: String, required: !0 },
@@ -378,32 +390,32 @@ const nt = {
   emits: ["update:modelValue"],
   setup(e) {
     const g = G(e, "modelValue");
-    return (i, h) => (l(), n("div", ut, [
-      (l(!0), n(O, null, V(e.options, (a) => (l(), n("button", ue({
-        key: a.key,
+    return (a, h) => (l(), n("div", gt, [
+      (l(!0), n(R, null, V(e.options, (i) => (l(), n("button", ce({
+        key: i.key,
         type: "button",
-        class: ["tile", { picked: g.value === a.key }]
-      }, { ref_for: !0 }, { [`data-${e.mark}`]: a.key }, {
-        onClick: (s) => g.value = a.key
+        class: ["tile", { picked: g.value === i.key }]
+      }, { ref_for: !0 }, { [`data-${e.mark}`]: i.key }, {
+        onClick: (s) => g.value = i.key
       }), [
-        t("b", null, v(a.label), 1),
-        t("span", null, v(a.hint), 1)
-      ], 16, ct))), 128))
+        t("b", null, v(i.label), 1),
+        t("span", null, v(i.hint), 1)
+      ], 16, kt))), 128))
     ]));
   }
-}, kt = /* @__PURE__ */ L(gt, [["__scopeId", "data-v-eb4da38d"]]), mt = { class: "words" }, ht = ["aria-label", "onClick"], vt = ["onKeydown"], yt = {
+}, ht = /* @__PURE__ */ L(mt, [["__scopeId", "data-v-e5657c19"]]), vt = { class: "words" }, yt = ["aria-label", "onClick"], pt = ["onKeydown"], ft = {
   __name: "WatchedWords",
   props: { words: { type: Array, required: !0 } },
   emits: ["words"],
   setup(e, { emit: g }) {
-    const i = e, h = g, a = j("");
+    const a = e, h = g, i = j("");
     function s() {
-      const d = a.value.trim();
-      a.value = "", d && !i.words.includes(d) && h("words", [...i.words, d]);
+      const o = i.value.trim();
+      i.value = "", o && !a.words.includes(o) && h("words", [...a.words, o]);
     }
-    const r = (d) => h("words", i.words.filter((o) => o !== d));
-    return (d, o) => (l(), n("div", mt, [
-      (l(!0), n(O, null, V(e.words, (w) => (l(), n("span", {
+    const r = (o) => h("words", a.words.filter((d) => d !== o));
+    return (o, d) => (l(), n("div", vt, [
+      (l(!0), n(R, null, V(e.words, (w) => (l(), n("span", {
         key: w,
         class: "word"
       }, [
@@ -414,30 +426,30 @@ const nt = {
           "aria-label": `Remove ${w}`,
           onClick: (p) => r(w)
         }, [
-          W(u(ne), {
+          I(u(ne), {
             name: "close",
             size: 11
           })
-        ], 8, ht)
+        ], 8, yt)
       ]))), 128)),
       K(t("input", {
-        "onUpdate:modelValue": o[0] || (o[0] = (w) => a.value = w),
+        "onUpdate:modelValue": d[0] || (d[0] = (w) => i.value = w),
         class: "word-input",
         placeholder: "Add a word, then Enter",
         "aria-label": "Add a word",
         "data-trigger-word": "",
-        onKeydown: ce(te(s, ["prevent"]), ["enter"]),
+        onKeydown: ge(te(s, ["prevent"]), ["enter"]),
         onBlur: s
-      }, null, 40, vt), [
-        [z, a.value]
+      }, null, 40, pt), [
+        [z, i.value]
       ])
     ]));
   }
-}, pt = /* @__PURE__ */ L(yt, [["__scopeId", "data-v-7a597156"]]), ft = { class: "field" }, bt = { class: "field" }, $t = ["checked", "data-trigger-place", "onChange"], wt = { class: "field" }, qt = {
+}, bt = /* @__PURE__ */ L(ft, [["__scopeId", "data-v-740e8b19"]]), $t = { class: "field" }, wt = { class: "field" }, qt = ["checked", "data-trigger-place", "onChange"], St = { class: "field" }, xt = {
   key: 0,
   class: "pattern-limit",
   "data-trigger-pattern-limit": ""
-}, St = {
+}, Ct = {
   __name: "TriggerWordFields",
   props: {
     phrases: { type: Array, required: !0 },
@@ -449,49 +461,49 @@ const nt = {
   },
   emits: ["update:phrases", "update:places", "update:match"],
   setup(e) {
-    const g = G(e, "phrases"), i = G(e, "places"), h = G(e, "match"), a = (s) => i.value = i.value.includes(s) ? i.value.filter((r) => r !== s) : [...i.value, s];
-    return (s, r) => (l(), n(O, null, [
-      t("div", ft, [
+    const g = G(e, "phrases"), a = G(e, "places"), h = G(e, "match"), i = (s) => a.value = a.value.includes(s) ? a.value.filter((r) => r !== s) : [...a.value, s];
+    return (s, r) => (l(), n(R, null, [
+      t("div", $t, [
         r[2] || (r[2] = t("span", { class: "label" }, "When these words appear", -1)),
-        W(pt, {
+        I(bt, {
           words: g.value,
-          onWords: r[0] || (r[0] = (d) => g.value = d)
+          onWords: r[0] || (r[0] = (o) => g.value = o)
         }, null, 8, ["words"])
       ]),
-      t("div", bt, [
+      t("div", wt, [
         r[3] || (r[3] = t("span", { class: "label" }, "Where to look", -1)),
-        (l(!0), n(O, null, V(u(Ze), (d) => (l(), n("label", {
-          key: d.key,
+        (l(!0), n(R, null, V(u(et), (o) => (l(), n("label", {
+          key: o.key,
           class: "check"
         }, [
           t("input", {
             type: "checkbox",
-            checked: i.value.includes(d.key),
-            "data-trigger-place": d.key,
-            onChange: (o) => a(d.key)
-          }, null, 40, $t),
-          T(v(d.label), 1)
+            checked: a.value.includes(o.key),
+            "data-trigger-place": o.key,
+            onChange: (d) => i(o.key)
+          }, null, 40, qt),
+          T(v(o.label), 1)
         ]))), 128))
       ]),
-      t("div", wt, [
+      t("div", St, [
         r[4] || (r[4] = t("span", { class: "label" }, "How words match", -1)),
-        W(kt, {
+        I(ht, {
           modelValue: h.value,
-          "onUpdate:modelValue": r[1] || (r[1] = (d) => h.value = d),
-          options: u(_e),
+          "onUpdate:modelValue": r[1] || (r[1] = (o) => h.value = o),
+          options: u(tt),
           mark: "trigger-match"
         }, null, 8, ["modelValue", "options"]),
-        h.value === "pattern" ? (l(), n("p", qt, "Patterns have no time limit. A slow pattern can delay every command or file change. Patterns are limited to 200 characters and check only the first 2,000 characters; repeating a repeated group is refused.")) : S("", !0)
+        h.value === "pattern" ? (l(), n("p", xt, "Patterns have no time limit. A slow pattern can delay every command or file change. Patterns are limited to 200 characters and check only the first 2,000 characters; repeating a repeated group is refused.")) : S("", !0)
       ])
     ], 64));
   }
-}, xt = /* @__PURE__ */ L(St, [["__scopeId", "data-v-2e25b9b9"]]), Ct = { class: "block" }, Tt = {
+}, Tt = /* @__PURE__ */ L(Ct, [["__scopeId", "data-v-3eabab54"]]), Rt = { class: "block" }, At = {
   key: 0,
   class: "field"
-}, Rt = { class: "label" }, At = {
+}, Ot = { class: "label" }, jt = {
   key: 1,
   class: "field"
-}, Ot = { class: "label" }, jt = ["placeholder"], It = {
+}, It = { class: "label" }, Et = ["placeholder"], Wt = {
   __name: "TriggerListedField",
   props: /* @__PURE__ */ J({
     label: { type: String, required: !0 },
@@ -503,43 +515,43 @@ const nt = {
   }),
   emits: /* @__PURE__ */ J(["remove"], ["update:modelValue"]),
   setup(e, { emit: g }) {
-    const i = e, h = g, a = G(e, "modelValue"), s = x(() => {
-      var r, d;
-      return ((d = (r = i.choices) == null ? void 0 : r.find((o) => o.value === a.value)) == null ? void 0 : d.label) ?? "Choose one";
+    const a = e, h = g, i = G(e, "modelValue"), s = x(() => {
+      var r, o;
+      return ((o = (r = a.choices) == null ? void 0 : r.find((d) => d.value === i.value)) == null ? void 0 : o.label) ?? "Choose one";
     });
-    return (r, d) => (l(), n("div", Ct, [
-      e.choices ? (l(), n("div", Tt, [
-        t("span", Rt, v(e.label), 1),
-        W(u(ae), {
+    return (r, o) => (l(), n("div", Rt, [
+      e.choices ? (l(), n("div", At, [
+        t("span", Ot, v(e.label), 1),
+        I(u(ae), {
           label: s.value,
           items: e.choices,
-          picked: a.value,
+          picked: i.value,
           "data-trigger-choice": "",
-          onPick: d[0] || (d[0] = (o) => a.value = o.value)
+          onPick: o[0] || (o[0] = (d) => i.value = d.value)
         }, null, 8, ["label", "items", "picked"])
-      ])) : (l(), n("label", At, [
-        t("span", Ot, v(e.label), 1),
+      ])) : (l(), n("label", jt, [
+        t("span", It, v(e.label), 1),
         K(t("input", {
-          "onUpdate:modelValue": d[1] || (d[1] = (o) => a.value = o),
+          "onUpdate:modelValue": o[1] || (o[1] = (d) => i.value = d),
           placeholder: e.example,
           "data-trigger-listed": ""
-        }, null, 8, jt), [
-          [z, a.value]
+        }, null, 8, Et), [
+          [z, i.value]
         ])
       ])),
-      W(u(pe), {
+      I(u(fe), {
         class: "remove",
         small: "",
-        onClick: d[2] || (d[2] = (o) => h("remove"))
+        onClick: o[2] || (o[2] = (d) => h("remove"))
       }, {
-        default: le(() => [...d[3] || (d[3] = [
+        default: le(() => [...o[3] || (o[3] = [
           T("Remove", -1)
         ])]),
         _: 1
       })
     ]));
   }
-}, Et = /* @__PURE__ */ L(It, [["__scopeId", "data-v-1a787719"]]), Wt = {
+}, Lt = /* @__PURE__ */ L(Wt, [["__scopeId", "data-v-cec179d6"]]), Nt = {
   __name: "TriggerConditionFields",
   props: {
     modelValue: { type: Array, required: !0 },
@@ -547,18 +559,18 @@ const nt = {
   },
   emits: ["update:modelValue"],
   setup(e) {
-    const g = G(e, "modelValue"), i = (r) => _.find((d) => d.value === r.type), h = (r, d) => g.value = g.value.map((o, w) => w === r ? { ...o, value: d } : o), a = (r) => g.value = g.value.filter((d, o) => o !== r), s = (r) => g.value = [...g.value, { type: r.value, value: "" }];
-    return (r, d) => (l(), n(O, null, [
-      (l(!0), n(O, null, V(g.value, (o, w) => (l(), F(Et, {
+    const g = G(e, "modelValue"), a = (r) => _.find((o) => o.value === r.type), h = (r, o) => g.value = g.value.map((d, w) => w === r ? { ...d, value: o } : d), i = (r) => g.value = g.value.filter((o, d) => d !== r), s = (r) => g.value = [...g.value, { type: r.value, value: "" }];
+    return (r, o) => (l(), n(R, null, [
+      (l(!0), n(R, null, V(g.value, (d, w) => (l(), F(Lt, {
         key: w,
-        "model-value": o.value,
-        label: i(o).label,
-        example: i(o).example,
-        choices: i(o).choices,
+        "model-value": d.value,
+        label: a(d).label,
+        example: a(d).example,
+        choices: a(d).choices,
         "onUpdate:modelValue": (p) => h(w, p),
-        onRemove: (p) => a(w)
+        onRemove: (p) => i(w)
       }, null, 8, ["model-value", "label", "example", "choices", "onUpdate:modelValue", "onRemove"]))), 128)),
-      W(u(ae), {
+      I(u(ae), {
         label: "Add a condition",
         icon: "plus",
         items: u(_),
@@ -567,69 +579,69 @@ const nt = {
       }, null, 8, ["items"])
     ], 64));
   }
-}, Lt = {
+}, Vt = {
   key: 0,
   class: "field"
-}, Nt = ["value"], Vt = { class: "summary" }, Bt = { class: "field" }, Ft = {
+}, Bt = ["value"], Ft = { class: "summary" }, Mt = { class: "field" }, Pt = {
   key: 1,
   class: "trial",
   role: "status"
-}, Mt = ["open"], Pt = { class: "more" }, Ut = { class: "field" }, Dt = ["placeholder"], Gt = {
+}, Ut = ["open"], Dt = { class: "more" }, Gt = { class: "field" }, Ht = ["placeholder"], Kt = {
   class: "help",
   role: "status"
-}, Ht = { class: "actions" }, Kt = ["disabled"], zt = {
+}, zt = { class: "actions" }, Yt = ["disabled"], Jt = {
   __name: "SkillTriggerEditor",
   props: { skill: { type: String, default: "" }, trigger: { type: Object, default: null }, skills: { type: Array, required: !0 } },
   emits: ["saved", "cancel"],
   setup(e, { emit: g }) {
-    var A, I, M, B, U, P;
-    const i = e, h = g, a = se(), s = ge({ skill: ((A = i.trigger) == null ? void 0 : A.skill) || i.skill, name: ((I = i.trigger) == null ? void 0 : I.name) || "", phrases: [...((M = i.trigger) == null ? void 0 : M.phrases) || []], places: [...((B = i.trigger) == null ? void 0 : B.watch_places) || ["messages", "commands", "files"]], match: ((U = i.trigger) == null ? void 0 : U.match_mode) || "word", conditions: JSON.parse(((P = i.trigger) == null ? void 0 : P.conditions) || "[]") }), r = j(""), d = j(null), o = j(""), w = j(!1), p = j(!1), b = x(() => s.skill ? s.phrases.length ? s.places.length ? "" : "Choose where to look." : "Add at least one word." : "Choose a skill."), k = x(() => re({ ...s, action: "skill" }));
+    var O, E, M, B, U, P;
+    const a = e, h = g, i = se(), s = ke({ skill: ((O = a.trigger) == null ? void 0 : O.skill) || a.skill, name: ((E = a.trigger) == null ? void 0 : E.name) || "", phrases: [...((M = a.trigger) == null ? void 0 : M.phrases) || []], places: [...((B = a.trigger) == null ? void 0 : B.watch_places) || ["messages", "commands", "files"]], match: ((U = a.trigger) == null ? void 0 : U.match_mode) || "word", conditions: JSON.parse(((P = a.trigger) == null ? void 0 : P.conditions) || "[]") }), r = j(""), o = j(null), d = j(""), w = j(!1), p = j(!1), b = x(() => s.skill ? s.phrases.length ? s.places.length ? "" : "Choose where to look." : "Add at least one word." : "Choose a skill."), k = x(() => oe({ ...s, action: "skill" }));
     let y, f = 0;
     X(() => [r.value, s.phrases.join(","), s.match], () => {
       clearTimeout(y);
-      const E = ++f;
-      d.value = null, !(!r.value.trim() || !s.phrases.length) && (y = setTimeout(async () => {
-        a.state["trial.phrases"] = s.phrases.join(","), a.state["trial.sentence"] = r.value, a.state["trial.match-mode"] = s.match, await a.reload("trial"), E === f && (d.value = a.props.trial.failure.value ? { error: a.props.trial.failure.value } : a.props.trial.data.value);
+      const W = ++f;
+      o.value = null, !(!r.value.trim() || !s.phrases.length) && (y = setTimeout(async () => {
+        i.state["trial.phrases"] = s.phrases.join(","), i.state["trial.sentence"] = r.value, i.state["trial.match-mode"] = s.match, await i.reload("trial"), W === f && (o.value = i.props.trial.failure.value ? { error: i.props.trial.failure.value } : i.props.trial.data.value);
       }, 150));
     }), ee(() => {
       clearTimeout(y), f++;
     });
-    async function R() {
+    async function A() {
       if (w.value || b.value) return;
       w.value = !0;
-      const E = ["--name", s.name.trim() || `Read ${s.skill}`, "--skill", s.skill, "--watch-places", ...s.places, "--match-mode", s.match, "--conditions", JSON.stringify(s.conditions)], $ = i.trigger ? ["trigger", "edit", String(i.trigger.id), ...E, ...s.phrases.map((c) => `--phrases=${c}`)] : ["trigger", "make", "--do", "skill", ...E, "--", s.phrases.join(", ")], q = await a.run($);
-      o.value = q.ok ? "" : q.error, w.value = !1, q.ok && h("saved");
+      const W = ["--name", s.name.trim() || `Read ${s.skill}`, "--skill", s.skill, "--watch-places", ...s.places, "--match-mode", s.match, "--conditions", JSON.stringify(s.conditions)], $ = a.trigger ? ["trigger", "edit", String(a.trigger.id), ...W, ...s.phrases.map((c) => `--phrases=${c}`)] : ["trigger", "make", "--do", "skill", ...W, "--", s.phrases.join(", ")], q = await i.run($);
+      d.value = q.ok ? "" : q.error, w.value = !1, q.ok && h("saved");
     }
     async function N() {
-      const E = await a.run(["trigger", "strike", String(i.trigger.id)]);
-      o.value = E.ok ? "" : E.error, E.ok && h("saved");
+      const W = await i.run(["trigger", "strike", String(a.trigger.id)]);
+      d.value = W.ok ? "" : W.error, W.ok && h("saved");
     }
-    return (E, $) => (l(), n("form", {
+    return (W, $) => (l(), n("form", {
       class: "skill-trigger-editor",
-      onSubmit: te(R, ["prevent"])
+      onSubmit: te(A, ["prevent"])
     }, [
       t("h3", null, [
         T(v(e.trigger ? "Edit this trigger" : "New trigger"), 1),
-        s.skill ? (l(), n(O, { key: 0 }, [
+        s.skill ? (l(), n(R, { key: 0 }, [
           T(" for " + v(s.skill), 1)
         ], 64)) : S("", !0)
       ]),
-      e.skill ? S("", !0) : (l(), n("label", Lt, [
+      e.skill ? S("", !0) : (l(), n("label", Vt, [
         $[10] || ($[10] = T("Which skill the agent must read", -1)),
         K(t("select", {
           "onUpdate:modelValue": $[0] || ($[0] = (q) => s.skill = q),
           "aria-label": "Which skill the agent must read"
         }, [
           $[9] || ($[9] = t("option", { value: "" }, "Choose a skill", -1)),
-          (l(!0), n(O, null, V(e.skills, (q) => (l(), n("option", {
+          (l(!0), n(R, null, V(e.skills, (q) => (l(), n("option", {
             key: q.folder,
             value: q.folder
-          }, v(q.folder), 9, Nt))), 128))
+          }, v(q.folder), 9, Bt))), 128))
         ], 512), [
-          [ke, s.skill]
+          [me, s.skill]
         ])
       ])),
-      W(xt, {
+      I(Tt, {
         phrases: s.phrases,
         "onUpdate:phrases": $[1] || ($[1] = (q) => s.phrases = q),
         places: s.places,
@@ -637,11 +649,11 @@ const nt = {
         match: s.match,
         "onUpdate:match": $[3] || ($[3] = (q) => s.match = q)
       }, null, 8, ["phrases", "places", "match"]),
-      t("div", Vt, [
+      t("div", Ft, [
         $[11] || ($[11] = t("small", null, "What this trigger does", -1)),
         t("p", null, v(k.value), 1)
       ]),
-      t("label", Bt, [
+      t("label", Mt, [
         $[12] || ($[12] = T("Try a sentence", -1)),
         K(t("input", {
           "onUpdate:modelValue": $[4] || ($[4] = (q) => r.value = q),
@@ -651,30 +663,30 @@ const nt = {
           [z, r.value]
         ])
       ]),
-      d.value ? (l(), n("p", Ft, v(d.value.error || (d.value.matches ? "This would fire." : "This would not fire.")), 1)) : S("", !0),
+      o.value ? (l(), n("p", Pt, v(o.value.error || (o.value.matches ? "This would fire." : "This would not fire.")), 1)) : S("", !0),
       t("details", {
         open: !!e.trigger
       }, [
         $[14] || ($[14] = t("summary", null, "More choices: its name and when it applies", -1)),
-        t("div", Pt, [
-          t("label", Ut, [
+        t("div", Dt, [
+          t("label", Gt, [
             $[13] || ($[13] = T("Name", -1)),
             K(t("input", {
               "onUpdate:modelValue": $[5] || ($[5] = (q) => s.name = q),
               "aria-label": "Name",
               placeholder: `Read ${s.skill || "the skill"}`
-            }, null, 8, Dt), [
+            }, null, 8, Ht), [
               [z, s.name]
             ])
           ]),
-          W(Wt, {
+          I(Nt, {
             modelValue: s.conditions,
             "onUpdate:modelValue": $[6] || ($[6] = (q) => s.conditions = q)
           }, null, 8, ["modelValue"])
         ])
-      ], 8, Mt),
-      t("p", Gt, v(o.value || b.value), 1),
-      t("div", Ht, [
+      ], 8, Ut),
+      t("p", Kt, v(d.value || b.value), 1),
+      t("div", zt, [
         e.trigger ? (l(), n("button", {
           key: 0,
           type: "button",
@@ -689,194 +701,204 @@ const nt = {
           type: "submit",
           class: "primary",
           disabled: w.value || !!b.value
-        }, v(e.trigger ? "Save" : "Create trigger"), 9, Kt)
+        }, v(e.trigger ? "Save" : "Create trigger"), 9, Yt)
       ])
     ], 32));
   }
-}, de = /* @__PURE__ */ L(zt, [["__scopeId", "data-v-272d3d66"]]), Yt = { class: "skill-details" }, Jt = { class: "status" }, Qt = { class: "block" }, Xt = { class: "block-head" }, Zt = {
+}, ue = /* @__PURE__ */ L(Jt, [["__scopeId", "data-v-f829b85c"]]), Qt = { class: "skill-details" }, Xt = { class: "status" }, Zt = { class: "block" }, _t = { class: "block-head" }, el = {
   key: 0,
   class: "help"
-}, _t = {
+}, tl = {
   key: 0,
   class: "block"
-}, el = { key: 0 }, tl = { key: 1 }, ll = { key: 2 }, sl = { class: "block" }, nl = { class: "block-head" }, al = ["href"], il = {
+}, ll = { key: 0 }, sl = { key: 1 }, nl = { key: 2 }, al = { class: "block" }, il = { class: "block-head" }, rl = ["href"], ol = {
   key: 0,
   "data-skill-text": ""
-}, rl = {
+}, dl = {
   key: 1,
   class: "help"
-}, ol = {
+}, ul = {
   __name: "SkillDetails",
   props: { skill: { type: Object, required: !0 }, text: { type: Object, default: null }, triggers: { type: Array, required: !0 }, skills: { type: Array, required: !0 }, agent: { type: Number, default: null }, draft: { type: Object, default: null }, busy: Boolean },
   emits: ["require", "read", "add", "edit", "run", "saved", "cancel"],
   setup(e, { emit: g }) {
-    const i = e, h = g, a = x(() => {
-      var d;
-      return (d = i.skill.module) != null && d.startsWith("plugin:") ? "From a plugin" : i.skill.shipped ? "From the journal" : "From this project";
+    const a = e, h = g, i = x(() => {
+      var o;
+      return (o = a.skill.module) != null && o.startsWith("plugin:") ? "From a plugin" : a.skill.shipped ? "From the journal" : "From this project";
     }), s = x(() => {
-      var d;
-      return i.agent ? i.skill.changed ? "This skill changed after the main agent read it." : ((d = i.skill.held) == null ? void 0 : d.state) === "due" ? "The main agent still has to read this skill. It cannot do anything else first." : i.skill.read ? `The main agent read this skill at ${new Date(i.skill.held.loaded_at).toLocaleString()}.` : "The main agent has not read this skill in this conversation." : "No main agent is running in this environment.";
+      var o;
+      return a.agent ? a.skill.changed ? "This skill changed after the main agent read it." : ((o = a.skill.held) == null ? void 0 : o.state) === "due" ? "The main agent still has to read this skill. It cannot do anything else first." : a.skill.read ? `The main agent read this skill at ${new Date(a.skill.held.loaded_at).toLocaleString()}.` : "The main agent has not read this skill in this conversation." : "No main agent is running in this environment.";
     }), r = j("");
-    return X(() => i.text, (d, o, w) => {
-      if (!d) return;
-      const p = URL.createObjectURL(new Blob([d.text], { type: "text/plain;charset=utf-8" }));
+    return X(() => a.text, (o, d, w) => {
+      if (!o) return;
+      const p = URL.createObjectURL(new Blob([o.text], { type: "text/plain;charset=utf-8" }));
       r.value = p, w(() => URL.revokeObjectURL(p));
-    }, { immediate: !0 }), (d, o) => {
-      var w, p, b, k, y, f, R, N;
-      return l(), n("div", Yt, [
+    }, { immediate: !0 }), (o, d) => {
+      var w, p, b, k, y, f, A, N;
+      return l(), n("div", Qt, [
         t("header", null, [
           t("h2", null, [
             T(v(e.skill.folder) + " ", 1),
-            t("small", null, v(a.value), 1)
+            t("small", null, v(i.value), 1)
           ]),
           t("p", null, v(e.skill.description), 1)
         ]),
-        t("div", Jt, [
+        t("div", Xt, [
           t("span", null, v(s.value), 1),
           e.agent && ((w = e.skill.held) == null ? void 0 : w.state) !== "due" ? (l(), n("button", {
             key: 0,
             type: "button",
-            onClick: o[0] || (o[0] = (A) => h("read"))
+            onClick: d[0] || (d[0] = (O) => h("read"))
           }, v(e.skill.read ? "Make the agent read it again" : "Make the agent read it now"), 1)) : S("", !0)
         ]),
-        W(Qe, {
+        I(Ze, {
           skill: e.skill,
           busy: e.busy,
-          onChange: o[1] || (o[1] = (A, I) => h("require", A, I))
+          onChange: d[1] || (d[1] = (O, E) => h("require", O, E))
         }, null, 8, ["skill", "busy"]),
-        t("section", Qt, [
-          t("div", Xt, [
-            o[7] || (o[7] = t("h3", null, "Make the agent read it when your words appear", -1)),
+        t("section", Zt, [
+          t("div", _t, [
+            d[7] || (d[7] = t("h3", null, "Make the agent read it when your words appear", -1)),
             e.draft ? S("", !0) : (l(), n("button", {
               key: 0,
               type: "button",
-              onClick: o[2] || (o[2] = (A) => h("add"))
+              onClick: d[2] || (d[2] = (O) => h("add"))
             }, "Add a trigger"))
           ]),
-          !e.triggers.length && !e.draft ? (l(), n("p", Zt, "No triggers yet. Add one, and the agent must read this skill as soon as your words appear.")) : S("", !0),
-          (l(!0), n(O, null, V(e.triggers, (A) => {
-            var I, M;
-            return l(), n(O, {
-              key: A.id
+          !e.triggers.length && !e.draft ? (l(), n("p", el, "No triggers yet. Add one, and the agent must read this skill as soon as your words appear.")) : S("", !0),
+          (l(!0), n(R, null, V(e.triggers, (O) => {
+            var E, M;
+            return l(), n(R, {
+              key: O.id
             }, [
-              ((M = (I = e.draft) == null ? void 0 : I.trigger) == null ? void 0 : M.id) !== A.id ? (l(), F(oe, {
+              ((M = (E = e.draft) == null ? void 0 : E.trigger) == null ? void 0 : M.id) !== O.id ? (l(), F(de, {
                 key: 0,
-                trigger: A,
-                onEdit: o[3] || (o[3] = (B) => h("edit", B)),
-                onRun: o[4] || (o[4] = (B) => h("run", B))
+                trigger: O,
+                onEdit: d[3] || (d[3] = (B) => h("edit", B)),
+                onRun: d[4] || (d[4] = (B) => h("run", B))
               }, null, 8, ["trigger"])) : S("", !0)
             ], 64);
           }), 128)),
-          e.draft ? (l(), F(de, {
+          e.draft ? (l(), F(ue, {
             key: ((p = e.draft.trigger) == null ? void 0 : p.id) || e.skill.folder,
             skill: e.skill.folder,
             trigger: e.draft.trigger,
             skills: e.skills,
-            onSaved: o[5] || (o[5] = (A) => h("saved")),
-            onCancel: o[6] || (o[6] = (A) => h("cancel"))
+            onSaved: d[5] || (d[5] = (O) => h("saved")),
+            onCancel: d[6] || (d[6] = (O) => h("cancel"))
           }, null, 8, ["skill", "trigger", "skills"])) : S("", !0)
         ]),
-        (b = e.skill.keywords) != null && b.length || (k = e.skill.commands) != null && k.length || (y = e.skill.events) != null && y.length ? (l(), n("section", _t, [
-          o[11] || (o[11] = t("h3", null, "When the skill itself asks to be read", -1)),
-          o[12] || (o[12] = t("p", { class: "help" }, "These come with the skill and cannot be changed here.", -1)),
+        (b = e.skill.keywords) != null && b.length || (k = e.skill.commands) != null && k.length || (y = e.skill.events) != null && y.length ? (l(), n("section", tl, [
+          d[11] || (d[11] = t("h3", null, "When the skill itself asks to be read", -1)),
+          d[12] || (d[12] = t("p", { class: "help" }, "These come with the skill and cannot be changed here.", -1)),
           t("ul", null, [
-            (f = e.skill.keywords) != null && f.length ? (l(), n("li", el, [
-              o[8] || (o[8] = T("When you write ", -1)),
+            (f = e.skill.keywords) != null && f.length ? (l(), n("li", ll, [
+              d[8] || (d[8] = T("When you write ", -1)),
               t("code", null, v(e.skill.keywords.join(", ")), 1)
             ])) : S("", !0),
-            (R = e.skill.commands) != null && R.length ? (l(), n("li", tl, [
-              o[9] || (o[9] = T("Before it runs a command about ", -1)),
+            (A = e.skill.commands) != null && A.length ? (l(), n("li", sl, [
+              d[9] || (d[9] = T("Before it runs a command about ", -1)),
               t("code", null, v(e.skill.commands.join(", ")), 1)
             ])) : S("", !0),
-            (N = e.skill.events) != null && N.length ? (l(), n("li", ll, [
-              o[10] || (o[10] = T("When these changes happen: ", -1)),
+            (N = e.skill.events) != null && N.length ? (l(), n("li", nl, [
+              d[10] || (d[10] = T("When these changes happen: ", -1)),
               t("code", null, v(e.skill.events.join(", ")), 1)
             ])) : S("", !0)
           ])
         ])) : S("", !0),
-        t("section", sl, [
-          t("div", nl, [
-            o[13] || (o[13] = t("h3", null, "What the skill says", -1)),
+        t("section", al, [
+          t("div", il, [
+            d[13] || (d[13] = t("h3", null, "What the skill says", -1)),
             r.value ? (l(), n("a", {
               key: 0,
               href: r.value,
               target: "_blank",
               rel: "noopener"
-            }, "Open SKILL.md", 8, al)) : S("", !0)
+            }, "Open SKILL.md", 8, rl)) : S("", !0)
           ]),
-          e.text ? (l(), n("pre", il, v(e.text.text), 1)) : (l(), n("p", rl, "Reading the skill…"))
+          e.text ? (l(), n("div", ol, [
+            I(u(ie), {
+              text: e.text.text,
+              "row-names": !1
+            }, null, 8, ["text"])
+          ])) : (l(), n("p", dl, "Reading the skill…"))
         ])
       ]);
     };
   }
-}, dl = /* @__PURE__ */ L(ol, [["__scopeId", "data-v-4ab35e28"]]), ul = { class: "skills" }, cl = { class: "skills-title" }, gl = {
+}, cl = /* @__PURE__ */ L(ul, [["__scopeId", "data-v-ef12011b"]]), gl = { class: "skills" }, kl = { class: "skills-title" }, ml = {
   class: "skills-text",
   "data-skill-text": ""
-}, kl = {
+}, hl = {
   __name: "SkillText",
   props: { skill: { type: Object, default: null }, failure: { type: String, default: "" }, back: { type: Boolean, default: !0 } },
   emits: ["back"],
   setup(e, { emit: g }) {
-    const i = g;
-    return (h, a) => (l(), n("div", ul, [
+    const a = g;
+    return (h, i) => (l(), n("div", gl, [
       e.back ? (l(), n("button", {
         key: 0,
         type: "button",
         class: "skills-back",
-        onClick: a[0] || (a[0] = (s) => i("back"))
+        onClick: i[0] || (i[0] = (s) => a("back"))
       }, "Back to skills")) : S("", !0),
-      t("h3", cl, v(e.skill ? e.skill.folder : ""), 1),
-      t("pre", gl, v(e.skill ? e.skill.text : e.failure), 1)
+      t("h3", kl, v(e.skill ? e.skill.folder : ""), 1),
+      t("div", ml, [
+        I(u(ie), {
+          text: e.skill ? e.skill.text : e.failure,
+          "row-names": !1
+        }, null, 8, ["text"])
+      ])
     ]));
   }
-}, ml = /* @__PURE__ */ L(kl, [["__scopeId", "data-v-47961cf4"]]), hl = { class: "page-head" }, vl = { "aria-label": "Skills views" }, yl = ["aria-pressed"], pl = ["aria-pressed"], fl = {
+}, vl = /* @__PURE__ */ L(hl, [["__scopeId", "data-v-7145e806"]]), yl = { class: "page-head" }, pl = { "aria-label": "Skills views" }, fl = ["aria-pressed"], bl = ["aria-pressed"], $l = {
   key: 0,
   class: "warning",
   role: "status"
-}, bl = {
+}, wl = {
   key: 1,
   class: "warning",
   role: "alert"
-}, $l = {
+}, ql = {
   key: 2,
   class: "empty"
-}, wl = {
+}, Sl = {
   key: 3,
   class: "panes"
-}, ql = { class: "skill-pane" }, Sl = {
+}, xl = { class: "skill-pane" }, Cl = {
   key: 0,
   class: "empty"
-}, xl = {
+}, Tl = {
   key: 2,
   class: "empty centre"
-}, Cl = {
+}, Rl = {
   key: 4,
   class: "panes"
-}, Tl = { class: "triggers-list" }, Rl = {
+}, Al = { class: "triggers-list" }, Ol = {
   key: 0,
   class: "trigger-cards"
-}, Al = {
+}, jl = {
   key: 1,
   class: "empty"
-}, Ol = { class: "skill-pane trigger-pane" }, jl = {
+}, Il = { class: "skill-pane trigger-pane" }, El = {
   key: 0,
   class: "trigger-form"
-}, Il = {
+}, Wl = {
   key: 1,
   class: "empty centre"
-}, El = {
+}, Ll = {
   __name: "SkillRows",
   setup(e) {
-    const { skills: g, selected: i, selectedTriggers: h, triggers: a, requirements: s, mainAgent: r, answered: d, failure: o, busy: w, opened: p, text: b, openFailure: k, tab: y, draft: f, marked: R, load: N, open: A, run: I, requireSkill: M, readNow: B } = be(), U = (c, m) => M(c, m ? "all" : "none"), P = () => f.value = { trigger: null }, E = (c) => f.value = { trigger: c }, $ = async () => {
+    const { skills: g, selected: a, selectedTriggers: h, triggers: i, requirements: s, mainAgent: r, answered: o, failure: d, busy: w, opened: p, text: b, openFailure: k, tab: y, draft: f, marked: A, load: N, open: O, run: E, requireSkill: M, readNow: B } = $e(), U = (c, m) => M(c, m ? "all" : "none"), P = () => f.value = { trigger: null }, W = (c) => f.value = { trigger: c }, $ = async () => {
       f.value = null, await N();
     }, q = (c) => {
       y.value = c, f.value = null;
     };
-    return (c, m) => (l(), F(u(fe), { padding: "0" }, {
+    return (c, m) => (l(), F(u(be), { padding: "0" }, {
       default: le(() => {
         var D;
         return [
-          u(R) ? (l(), F(ml, {
+          u(A) ? (l(), F(vl, {
             key: 0,
             skill: u(b),
             failure: u(k),
@@ -885,56 +907,56 @@ const nt = {
             key: 1,
             class: Y(["skills-page", { "skill-open": u(y) === "skills" && !!u(p), "trigger-open": u(y) === "triggers" && !!u(f) }])
           }, [
-            t("header", hl, [
+            t("header", yl, [
               m[8] || (m[8] = t("div", null, [
                 t("h1", null, "Skills"),
                 t("p", null, "Instructions the agent reads before starting work. Choose which skills the agent must read, and when. These settings apply to the whole project.")
               ], -1)),
-              t("nav", vl, [
+              t("nav", pl, [
                 t("button", {
                   type: "button",
                   "aria-pressed": u(y) === "skills",
                   onClick: m[0] || (m[0] = (C) => q("skills"))
-                }, "Skills", 8, yl),
+                }, "Skills", 8, fl),
                 t("button", {
                   type: "button",
                   "aria-pressed": u(y) === "triggers",
                   onClick: m[1] || (m[1] = (C) => q("triggers"))
-                }, "Triggers", 8, pl)
+                }, "Triggers", 8, bl)
               ])
             ]),
-            u(s).environment_overrides ? (l(), n("p", fl, "This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.")) : S("", !0),
-            u(o) ? (l(), n("div", bl, [
-              T(v(u(o)) + " ", 1),
+            u(s).environment_overrides ? (l(), n("p", $l, "This environment uses separate skill lists. Changes here apply to the whole project. The environment lists still take priority.")) : S("", !0),
+            u(d) ? (l(), n("div", wl, [
+              T(v(u(d)) + " ", 1),
               t("button", {
                 type: "button",
                 onClick: m[2] || (m[2] = (...C) => u(N) && u(N)(...C))
               }, "Try again")
             ])) : S("", !0),
-            u(d) ? u(y) === "skills" ? (l(), n("div", wl, [
-              W(Me, {
+            u(o) ? u(y) === "skills" ? (l(), n("div", Sl, [
+              I(Ue, {
                 skills: u(g),
                 opened: u(p),
                 busy: u(w),
-                onOpen: u(A),
+                onOpen: u(O),
                 onRequire: U
               }, null, 8, ["skills", "opened", "busy", "onOpen"]),
-              t("article", ql, [
+              t("article", xl, [
                 t("button", {
                   type: "button",
                   class: "phone-back",
-                  onClick: m[3] || (m[3] = (C) => u(A)(""))
+                  onClick: m[3] || (m[3] = (C) => u(O)(""))
                 }, "Back to skills"),
-                u(k) ? (l(), n("div", Sl, [
+                u(k) ? (l(), n("div", Cl, [
                   m[9] || (m[9] = t("strong", null, "Could not read this skill", -1)),
                   t("p", null, v(u(k)), 1),
                   t("button", {
                     type: "button",
-                    onClick: m[4] || (m[4] = (C) => u(A)(u(p), !1))
+                    onClick: m[4] || (m[4] = (C) => u(O)(u(p), !1))
                   }, "Try again")
-                ])) : u(i) ? (l(), F(dl, {
+                ])) : u(a) ? (l(), F(cl, {
                   key: 1,
-                  skill: u(i),
+                  skill: u(a),
                   text: u(b),
                   triggers: u(h),
                   skills: u(g),
@@ -944,17 +966,17 @@ const nt = {
                   onRequire: m[5] || (m[5] = (C, H) => u(M)(u(p), C, H)),
                   onRead: u(B),
                   onAdd: P,
-                  onEdit: E,
-                  onRun: u(I),
+                  onEdit: W,
+                  onRun: u(E),
                   onSaved: $,
                   onCancel: m[6] || (m[6] = (C) => f.value = null)
-                }, null, 8, ["skill", "text", "triggers", "skills", "agent", "draft", "busy", "onRead", "onRun"])) : (l(), n("div", xl, [...m[10] || (m[10] = [
+                }, null, 8, ["skill", "text", "triggers", "skills", "agent", "draft", "busy", "onRead", "onRun"])) : (l(), n("div", Tl, [...m[10] || (m[10] = [
                   t("strong", null, "Choose a skill to read what it says", -1),
                   t("p", null, "Switch on Required to make the agent read a skill at the start. Open a skill to add words that make the agent read it later.", -1)
                 ])]))
               ])
-            ])) : (l(), n("div", Cl, [
-              t("aside", Tl, [
+            ])) : (l(), n("div", Rl, [
+              t("aside", Al, [
                 t("div", { class: "trigger-head" }, [
                   m[11] || (m[11] = t("p", null, "Triggers that make an agent read a skill. Other triggers stay under Triggers.", -1)),
                   t("button", {
@@ -962,14 +984,14 @@ const nt = {
                     onClick: P
                   }, "Add a trigger")
                 ]),
-                u(a).length ? (l(), n("div", Rl, [
-                  (l(!0), n(O, null, V(u(a), (C) => (l(), F(oe, {
+                u(i).length ? (l(), n("div", Ol, [
+                  (l(!0), n(R, null, V(u(i), (C) => (l(), F(de, {
                     key: C.id,
                     trigger: C,
-                    onEdit: E,
-                    onRun: u(I)
+                    onEdit: W,
+                    onRun: u(E)
                   }, null, 8, ["trigger", "onRun"]))), 128))
-                ])) : (l(), n("div", Al, [
+                ])) : (l(), n("div", jl, [
                   m[12] || (m[12] = t("strong", null, "You have no triggers yet", -1)),
                   m[13] || (m[13] = t("p", null, "A trigger makes the agent read a skill as soon as your words appear.", -1)),
                   t("button", {
@@ -978,28 +1000,28 @@ const nt = {
                   }, "Add a trigger")
                 ]))
               ]),
-              t("article", Ol, [
-                u(f) ? (l(), n("div", jl, [
-                  (l(), F(de, {
+              t("article", Il, [
+                u(f) ? (l(), n("div", El, [
+                  (l(), F(ue, {
                     key: ((D = u(f).trigger) == null ? void 0 : D.id) || "new",
                     trigger: u(f).trigger,
                     skills: u(g),
                     onSaved: $,
                     onCancel: m[7] || (m[7] = (C) => f.value = null)
                   }, null, 8, ["trigger", "skills"]))
-                ])) : (l(), n("div", Il, [...m[14] || (m[14] = [
+                ])) : (l(), n("div", Wl, [...m[14] || (m[14] = [
                   t("strong", null, "Choose Edit on a trigger to change it", -1),
                   t("p", null, "Or add a new one. Each trigger makes the agent read one skill.", -1)
                 ])]))
               ])
-            ])) : (l(), n("p", $l, "Reading the skills…"))
+            ])) : (l(), n("p", ql, "Reading the skills…"))
           ], 2))
         ];
       }),
       _: 1
     }));
   }
-}, Nl = /* @__PURE__ */ L(El, [["__scopeId", "data-v-d59c26e6"]]);
+}, Bl = /* @__PURE__ */ L(Ll, [["__scopeId", "data-v-292001d8"]]);
 export {
-  Nl as S
+  Bl as S
 };

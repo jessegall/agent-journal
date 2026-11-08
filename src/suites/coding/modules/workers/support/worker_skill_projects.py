@@ -2,10 +2,7 @@ from pathlib import Path
 
 from core.base.journal_home import JournalHome
 from core.modules.environments.support.environment_rows import EnvironmentRows
-from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.profiles.support.profile_files import ProfileFiles
-from core.modules.profiles.support.profile_problem import ProfileProblem
-from core.modules.skills.support.profile_skills import ProfileSkills
+from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.skill_projects import SkillProjects
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -15,10 +12,9 @@ class WorkerSkillProjects(SkillProjects):
     """Include Git worktrees when publishing skills, hold a worker's worktree to the skills of its profile, and
     select a worker's own folder for reminders."""
 
-    def __init__(self, home: JournalHome, environments: EnvironmentRows, worktrees: WorktreeQuery, git: WorktreeGit, agents: AgentRows, profiles: ProfileFiles,
-                 listed: ProfileSkills) -> None:
+    def __init__(self, home: JournalHome, environments: EnvironmentRows, worktrees: WorktreeQuery, git: WorktreeGit, skills: AgentProfileSkills) -> None:
         super().__init__(home, environments)
-        self.worktrees, self.git, self.agents, self.profiles, self.listed = worktrees, git, agents, profiles, listed
+        self.worktrees, self.git, self.skills = worktrees, git, skills
         self.kept_folders: dict[Path, tuple[int, tuple[Path, ...]]] = {}
 
     def projects(self) -> tuple[Path, ...]:
@@ -35,11 +31,7 @@ class WorkerSkillProjects(SkillProjects):
 
     def permits(self, project: Path, folder: str) -> bool:
         worktree = next((row for row in self.worktrees.open_worktrees() if Path(row.folder).resolve() == project), None)
-        if worktree is None:
-            return True
-        name = self.agents.find(worktree.session_agent_id).profile
-        profile = self.profiles.row(name) if self.profiles.has(name) else None
-        return profile is None or isinstance(profile, ProfileProblem) or not self.listed.refuses(profile, folder)
+        return worktree is None or not self.skills.refuses(worktree.session_agent_id, folder)
 
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:
         worktree = self.worktrees.worker_worktree(agent_id)
