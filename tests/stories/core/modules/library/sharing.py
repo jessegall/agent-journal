@@ -89,7 +89,7 @@ def test_an_agent_cannot_share_and_nothing_reaches_the_server(new_story, shared_
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     row_id = new_doc(story, "Granite agent")
-    story.expect_refusal(f"library share doc {row_id}", "an agent cannot share with the team: ask the user to share it", actor=story.agent)
+    story.expect_refusal(f"library share doc {row_id}", "an agent cannot share with the team: A person was asked in the dock", actor=story.agent)
     story.expect_rows(copy_of(story, row_id) is None, server.send(tokens.editor, "GET", "/items?kind=doc&search=granite")[1]["total"] == 0)
 
 
@@ -157,7 +157,7 @@ def test_only_an_admin_removes_and_only_a_person(new_story, shared_server):
     story = connected(new_story, server, tokens.editor)
     _, item_id = shared(story, server, tokens.editor, "Flint kept")
     story.expect_refusal(f"library remove doc {item_id}", "your role cannot do this", actor=story.user)
-    story.expect_refusal(f"library remove doc {item_id}", "an agent cannot remove an item from the library: ask the user to remove it", actor=story.agent)
+    story.expect_refusal(f"library remove doc {item_id}", "an agent cannot remove an item from the library: A person was asked in the dock", actor=story.agent)
     story.expect_rows("removed_at" not in server_item(server, tokens.editor, item_id))
 
 
@@ -204,7 +204,7 @@ def test_a_version_the_server_does_not_have_and_an_agent_are_both_refused(new_st
     story = connected(new_story, server, tokens.editor)
     _, item_id = shared(story, server, tokens.editor, "Jade versions")
     story.expect_refusal(f"library restore doc {item_id} --version 9", "there is no such item", actor=story.user)
-    story.expect_refusal(f"library restore doc {item_id} --version 1", "an agent cannot restore an item of the library: ask the user to restore it", actor=story.agent)
+    story.expect_refusal(f"library restore doc {item_id} --version 1", "an agent cannot restore an item of the library: A person was asked in the dock", actor=story.agent)
 
 
 def test_no_command_leaves_the_token_in_a_row(new_story, shared_server):

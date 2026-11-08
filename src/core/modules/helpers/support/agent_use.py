@@ -6,14 +6,13 @@ from core.base.clock import Clock
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.agent import MAIN_ROLE, Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.helper_settings import AGENT_USE_DAYS
 from core.modules.helpers.support.model_use import ModelUse
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 
-MAIN_ROLE = "main"
 DAY_SECONDS = 86400
 MAX_IDLE_AGENTS = 4
 

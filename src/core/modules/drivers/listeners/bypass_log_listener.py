@@ -16,9 +16,9 @@ from core.modules.drivers.commands.record_bypass_line.record_bypass_line import 
 from core.modules.drivers.models.enums.bypass_mark_type import BypassMarkType
 from core.modules.drivers.models.enums.bypass_mark_variant import BypassMarkVariant
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.drivers.support.driver_settings import MODULE_KEY
 from core.base.change.changed import Changed
 
-MODULE_NAME = "journal.core.drivers"
 
 
 class BypassLogListener(CommitListener[Changed[HookCall]]):
@@ -44,7 +44,7 @@ class BypassLogListener(CommitListener[Changed[HookCall]]):
             return
         self.system_log.write(LogLevel.WARNING, "\n".join(lines), LogSource.BYPASS)
         count = len(lines)
-        actor = self.actors.actor(MODULE_NAME)
+        actor = self.actors.actor(MODULE_KEY)
         text = f"{count} hook{'s' if count != 1 else ''} went through unchecked while the journal did not answer"
         key = f"bypass:{logged.id}"
         self.bus.run(ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.UNCHECKED, key, text, agent_id=agent.id, outcome=MarkOutcome.FAILED, ended=True),

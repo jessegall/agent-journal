@@ -6,6 +6,7 @@ from core.base.caller.caller import Caller
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.alias_options import AliasOptions
 from core.base.cli.shell_aliases import ShellAliases
+from core.base.checkout import Checkout
 from core.base.checkout_type import CheckoutType
 from core.base.cli.shell_run import ShellRun
 from core.base.journal_home import JournalHome
@@ -18,8 +19,9 @@ JOURNAL_FOLDER_PREFIX = ".journal/"
 
 
 class AliasShellAliases(ShellAliases):
-    """Expands aliases with quoted arguments, declared access and paths from the journal folder, and runs an
-    agent that works in its own worktree in that worktree."""
+    """Expands aliases with quoted arguments, declared access and paths from the journal folder, runs an agent that
+    works in its own worktree in that worktree, and tells the command which checkout it runs in, so it needs no git
+    call to learn its root, branch or base."""
 
     def __init__(self, aliases: AliasQuery, access: AliasAccess, names: AliasNames, home: JournalHome, checkouts: AgentCheckouts) -> None:
         self.aliases, self.access, self.names, self.home, self.checkouts = aliases, access, names, home, checkouts
@@ -29,13 +31,14 @@ class AliasShellAliases(ShellAliases):
         if alias is None:
             return None
         self.access.check(alias, caller)
-        return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **alias.variable_values()}, self.run_folder(caller, request))
+        checkout = self.caller_checkout(caller)
+        folder = str(checkout.root) if checkout.checkout_type is CheckoutType.WORKTREE and checkout.exists else request.folder
+        return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **checkout.variables(), **alias.variable_values()}, folder)
 
-    def run_folder(self, caller: Caller, request: CallerRequest) -> str:
-        if caller.actor.type is not ActorType.AGENT:
-            return request.folder
-        checkout = self.checkouts.checkout(caller.actor.id)
-        return str(checkout.root) if checkout.checkout_type is CheckoutType.WORKTREE and checkout.exists else request.folder
+    def caller_checkout(self, caller: Caller) -> Checkout:
+        if caller.actor.type is ActorType.AGENT:
+            return self.checkouts.checkout(caller.actor.id)
+        return Checkout.project_checkout(self.home.project_folder, "")
 
     def resolved_line(self, line: str) -> str:
         return f"{shlex.quote(str(self.home.folder.resolve()))}/{line.removeprefix(JOURNAL_FOLDER_PREFIX)}" if line.startswith(JOURNAL_FOLDER_PREFIX) else line

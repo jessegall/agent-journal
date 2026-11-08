@@ -154,7 +154,7 @@ def test_a_missing_type_keeps_the_file_and_does_not_stop_sync(profile_story):
 
 @pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader"], ["profile", "remove", "critic"]])
 def test_agents_cannot_change_profiles(profile_story, line):
-    profile_story.expect_refusal(shlex.join(line), "only a person", actor=profile_story.agent)
+    profile_story.expect_refusal(shlex.join(line), "A person was asked in the dock", actor=profile_story.agent)
 
 
 @pytest.mark.parametrize("fields,reason", [(["--access", "writing"], "only reads"), (["--type", "main"], "main")])
