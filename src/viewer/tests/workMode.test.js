@@ -14,8 +14,12 @@ const CONTROL_KEYS = ["auto-mode", "main-writes-code", "workers.main-dispatches-
 const KEEP_GOING = "journal.suites.coding.continue-while-delegatable";
 const WRITES = "journal.suites.coding.main-writes-code";
 const SENDS = "journal.suites.coding.workers.main-dispatches-workers";
+const LIMIT_ON = "journal.core.helpers.context-limit-on";
+const LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens";
 const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true])),
-    depends: {[KEEP_GOING]: [WRITES], "journal.suites.coding.workers.merger-on": [SENDS], "journal.suites.coding.workers.main-agent-may-merge": [SENDS]}};
+    fields: [{key: LIMIT_ON, group: "advanced", title: "Compact agents", description: "", type: "flag", value: false, source: "default"},
+        {key: LIMIT_TOKENS, group: "advanced", title: "Size", description: "", type: "number", value: 400000, source: "default", choices: Array.from({length: 10}, (_, place) => (place + 1) * 100000)}],
+    depends: {[KEEP_GOING]: [WRITES], [LIMIT_TOKENS]: [LIMIT_ON], "journal.suites.coding.workers.merger-on": [SENDS], "journal.suites.coding.workers.main-agent-may-merge": [SENDS]}};
 
 const mounted = [];
 afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
@@ -107,3 +111,19 @@ test("a setting shows only while the settings it depends on are on, and shows ag
     await settled();
     expect(control("journal.suites.coding.workers.merger-on")).not.toBeNull();
 });
+
+test("the context size is a dropdown in steps of 100k that shows only while its switch is on", async () => {
+    const {element} = await mount();
+    element.querySelector("[data-open-agent-settings]").click();
+    await settled();
+    [...document.querySelectorAll("[data-agent-settings] button")].find((button) => button.textContent.trim().startsWith("Advanced")).click();
+    await settled();
+    expect(document.querySelector(`select[data-field="${LIMIT_TOKENS}"]`)).toBeNull();
+    document.querySelector(`[data-control="${LIMIT_ON}"] [role="switch"], [data-control="${LIMIT_ON}"] button`).click();
+    await settled();
+    const options = [...document.querySelector(`select[data-field="${LIMIT_TOKENS}"]`).options].map((option) => option.textContent);
+    expect(options).toHaveLength(10);
+    expect(options[0]).toBe("100k");
+    expect(options[9]).toBe("1000k");
+});
+

@@ -13,6 +13,7 @@ class WorkField:
     type: str
     value: object
     source: str
+    choices: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)

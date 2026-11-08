@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.commands.renew_agent_session.renew_agent_session import RenewAgentSession
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_activity import AgentActivity
-from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 SECONDS_PER_MINUTE = 60
@@ -29,7 +29,7 @@ class ColdSessions:
 
     def is_past_context_limit(self, agent: Agent) -> bool:
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
-        return limit > 0 and (self.providers.provider(agent.program).context_tokens(self.home, agent.session) or 0) >= limit
+        return self.settings.flag(CONTEXT_LIMIT_ON) and (self.providers.provider(agent.program).context_tokens(self.home, agent.session) or 0) >= limit
 
     def is_cold(self, agent: Agent) -> bool:
         minutes, percent = self.settings.number(COLD_SESSION_MINUTES), self.settings.number(COLD_SESSION_CONTEXT_PERCENT)
