@@ -47,6 +47,7 @@ class PanicWatch:
         if announced.is_file() and not home.panic_file.is_file():
             began = FileAccess.shared().read(announced)
             announced.unlink()
+            home.panic_count.unlink(missing_ok=True)
             log.write(LogLevel.WARNING, "panic file removed", LogSource.BYPASS)
             self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_ENDED, f"panic-ended:{home.folder.stat().st_mtime_ns}", f"The panic ended: the journal answers again. It began because: {began}",
                              outcome=MarkOutcome.PASSED, ended=True))

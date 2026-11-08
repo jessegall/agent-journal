@@ -51,7 +51,10 @@ func main() {
 	context, skip := hookContext(os.Getenv, root, folder, os.Getpid(), started)
 	if Panicking(root, context.Role) {
 		NotePanicBypass(root, program)
-		os.Exit(0)
+		os.Exit(panicAnswered(os.Stdin, os.Stdout, os.Stderr, context.Programs.Programs[program], root))
+	}
+	if PanicReason(root) == "" {
+		ClearPanicCount(root)
 	}
 	if skip {
 		os.Exit(projectHooksOnly(program, root, os.Stdin, os.Stdout, os.Stderr))
