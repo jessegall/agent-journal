@@ -22,6 +22,7 @@ from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 PYTEST_COUNT_PATTERN = next(reader.count for reader in STOCK_READERS if reader.name == "pytest")
 SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
 JOURNAL = HookSamples.shell("journal task show 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task"))
+OUTPUT_READ = HookSamples.shell("journal output read 7 --lines 1-30", ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", "7", "--lines", "1-30"], subcommand="output"))
 TESTS = HookSamples.shell("pytest -q", ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], effects=[CommandEffect.READS_FILES]))
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
 
@@ -44,9 +45,10 @@ def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story.expect_rows(page["lines"] == ["server started"])
 
 
-def test_a_journal_only_line_has_the_same_foreground_limit(new_story):
+@pytest.mark.parametrize("sample, line", [(JOURNAL, "journal task show 1"), (OUTPUT_READ, "journal output read 7 --lines 1-30")], ids=["task show", "output read"])
+def test_a_journal_only_line_runs_with_no_limit_so_its_text_is_never_moved_to_another_output(new_story, sample, line):
     story = install_runner(new_story(fixture=BuilderStarted))
-    expect_updated_input_hook(story, "s-1", JOURNAL, {"command": runner_line(story, 1, "journal task show 1")})
+    expect_updated_input_hook(story, "s-1", sample, {"command": runner_line(story, 1, line, limit=0)})
 
 
 @pytest.mark.parametrize("program,category", [("cat", CommandCategory.READ), ("touch", CommandCategory.EDIT), ("custom", CommandCategory.UNKNOWN)])

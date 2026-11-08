@@ -37,6 +37,8 @@ class AgentProfile:
     reports_to_parent: bool = True
     messages_siblings: bool = False
     program_models: Mapping[str, str] = field(default_factory=dict)
+    keeps_project_instructions: bool = False
+    injections: Mapping[str, bool] = field(default_factory=dict)
 
     @property
     def display_title(self) -> str:

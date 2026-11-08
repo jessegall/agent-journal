@@ -32,7 +32,7 @@ def test_s01_fixture_a_story_starts_from_the_declared_default_of_auto_mode(new_s
 
 
 def limit_rows(viewer):
-    status, answer = window_data(viewer.server, viewer.cookie, keys="limits", window="agents.agents")
+    status, answer = window_data(viewer.server, viewer.cookie, keys="limits", window="coding.agent-settings", query="environment=main&tab=agents")
     expect_value((status, answer["keys"]["limits"]["code"]), (200, 0))
     return answer["keys"]["limits"]["value"]["rows"]
 
@@ -52,7 +52,7 @@ def test_s51_agent_details_are_paged(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_success("agent cards --show all --kept --environment main", actor=story.agent)
     with person_viewer(story) as viewer:
-        status, answer = window_data(viewer.server, viewer.cookie, keys="count-agents", window="agents.agents",
+        status, answer = window_data(viewer.server, viewer.cookie, keys="count-agents", window="coding.agent-settings",
                                      query="environment=main&count-agents.role=helper&count-agents.page=1")
         cards = answer["keys"]["count-agents"]
         expect_value((status, cards["code"], cards["value"]["total"] >= 3, len(cards["value"]["rows"]) <= 25), (200, 0, True, True))

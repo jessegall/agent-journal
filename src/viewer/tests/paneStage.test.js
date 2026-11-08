@@ -251,14 +251,14 @@ test("the pane menu splits a pane with several tabs and moves its tab to another
     const own = holder(store, "a.tasks");
     element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
     await settled();
-    element.querySelector(`[data-menu="split-right"]`).click();
+    document.body.querySelector(`[data-menu="split-right"]`).click();
     await settled();
     expect(leaves(store.layout.value.tree)).toHaveLength(3);
     expect(holder(store, "a.tasks")).not.toBe(holder(store, "a.notes"));
     const from = holder(store, "a.notes");
     element.querySelector(`[data-tabs-of="${from}"] .pane-menu-button`).click();
     await settled();
-    element.querySelector(`[data-menu="move-${holder(store, "a.chat")}"]`).click();
+    document.body.querySelector(`[data-menu="move-${holder(store, "a.chat")}"]`).click();
     await settled();
     expect(tabsIn(store, holder(store, "a.chat"))).toEqual(["a.chat", "a.notes"]);
 });
@@ -269,20 +269,20 @@ test("an agent window's pane menu picks which agent it follows, and any other wi
     const own = holder(store, "a.tasks");
     element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
     await settled();
-    const choices = element.querySelector('[data-option="agent"]');
+    const choices = document.body.querySelector('[data-option="agent"]');
     expect(choices.querySelector('[data-choice="main"]').getAttribute("aria-pressed")).toBe("true");
     expect(choices.querySelector('[data-choice="11"]')).toBeNull();
     choices.querySelector('[data-choice="9"]').click();
     await settled();
     expect(store.layout.value.panes[own].options.agent).toBe(9);
-    expect(element.querySelector('[data-option="agent"] [data-choice="9"]').getAttribute("aria-pressed")).toBe("true");
-    element.querySelector('[data-option="agent"] [data-choice="main"]').click();
+    expect(document.body.querySelector('[data-option="agent"] [data-choice="9"]').getAttribute("aria-pressed")).toBe("true");
+    document.body.querySelector('[data-option="agent"] [data-choice="main"]').click();
     await settled();
     expect(store.layout.value.panes[own].options.agent).toBeNull();
     const other = holder(store, "a.chat");
     element.querySelector(`[data-tabs-of="${other}"] .pane-menu-button`).click();
     await settled();
-    expect(element.querySelector('[data-option="agent"]')).toBeNull();
+    expect(document.body.querySelector('[data-option="agent"]')).toBeNull();
 });
 
 test("a bar button whose window this suite does not offer opens nothing and leaves the layout alone", async () => {
@@ -301,18 +301,18 @@ test("the pane menu fills or contains a pane and closes it, keeping the last pan
     const own = holder(store, "a.tasks");
     element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
     await settled();
-    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Limit width");
-    element.querySelector('[data-menu="width"]').click();
+    expect(document.body.querySelector('[data-menu="width"]').textContent).toContain("Limit width");
+    document.body.querySelector('[data-menu="width"]').click();
     await settled();
     expect(store.layout.value.panes[own].options.width).toBe("contained");
-    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Use full width");
-    element.querySelector('[data-menu="close"]').click();
+    expect(document.body.querySelector('[data-menu="width"]').textContent).toContain("Use full width");
+    document.body.querySelector('[data-menu="close"]').click();
     await settled();
     expect(leaves(store.layout.value.tree)).toHaveLength(1);
     const last = leaves(store.layout.value.tree)[0];
     element.querySelector(`[data-tabs-of="${last}"] .pane-menu-button`).click();
     await settled();
-    expect(element.querySelector('[data-menu="close"]').disabled).toBe(true);
+    expect(document.body.querySelector('[data-menu="close"]').disabled).toBe(true);
 });
 
 test("f makes the focused pane full screen and Escape returns it", async () => {
@@ -415,9 +415,9 @@ test("a declared toggle and choice appear in the pane menu, and a changed value 
     const id = holder(store, "a.chat");
     menuOf(element, id).click();
     await settled();
-    element.querySelector(`[data-option="hide"]`).click();
+    document.body.querySelector(`[data-option="hide"]`).click();
     await settled();
-    element.querySelector(`[data-option="density"] [data-choice="compact"]`).click();
+    document.body.querySelector(`[data-option="density"] [data-choice="compact"]`).click();
     await settled();
     expect(store.layout.value.panes[id].options).toEqual({hide: true, density: "compact"});
 });
@@ -436,7 +436,7 @@ test("Detach opens a float at the window's float size and takes the tab out of i
     const id = holder(store, "a.notes");
     menuOf(element, id).click();
     await settled();
-    element.querySelector(`[data-menu="detach"]`).click();
+    document.body.querySelector(`[data-menu="detach"]`).click();
     await settled();
     expect(store.layout.value.floats).toEqual([expect.objectContaining({view: "a.tasks", w: 640, h: 420})]);
     expect(holder(store, "a.tasks")).toBeUndefined();
@@ -446,7 +446,7 @@ test("Dock returns a float to a pane", async () => {
     const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
     menuOf(element, holder(store, "a.notes")).click();
     await settled();
-    element.querySelector(`[data-menu="detach"]`).click();
+    document.body.querySelector(`[data-menu="detach"]`).click();
     await settled();
     element.querySelector(`.float-window [aria-label="Dock"]`).click();
     await settled();
@@ -460,7 +460,7 @@ test("Close window opens the window in a view window, and the dock message bring
     const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
     menuOf(element, holder(store, "a.notes")).click();
     await settled();
-    element.querySelector(`[data-menu="detach"]`).click();
+    document.body.querySelector(`[data-menu="detach"]`).click();
     await settled();
     const floatId = store.layout.value.floats[0].id;
     element.querySelector(".float-menu-btn").click();
@@ -481,7 +481,7 @@ test("a window sent away returns to a pane when its browser window closes", asyn
     const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
     menuOf(element, holder(store, "a.notes")).click();
     await settled();
-    element.querySelector(`[data-menu="detach"]`).click();
+    document.body.querySelector(`[data-menu="detach"]`).click();
     await settled();
     const floatId = store.layout.value.floats[0].id;
     element.querySelector(".float-menu-btn").click();
@@ -501,7 +501,7 @@ test("a blocked browser window leaves the float docked where it was", async () =
     const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
     menuOf(element, holder(store, "a.notes")).click();
     await settled();
-    element.querySelector(`[data-menu="detach"]`).click();
+    document.body.querySelector(`[data-menu="detach"]`).click();
     await settled();
     element.querySelector(".float-menu-btn").click();
     await settled();

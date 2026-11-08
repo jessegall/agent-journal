@@ -164,7 +164,7 @@ class TasksModule(Module):
                WindowDeclaration("tasks.task-chain", "What waits on what", "task-chain.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
                                  reads=["task graph"], events=["task.*"], keys=[WindowKey("graph", "task graph", events=["task.*"])]),
                WindowDeclaration("tasks.task-counts", "Task counts", "task-counts.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
-                                 options=[ChoiceOption("columns", "Columns", [("1", "1"), ("2", "2"), ("4", "4")], "4"),
+                                 options=[ChoiceOption("columns", "Columns", [("auto", "Auto"), ("1", "1"), ("2", "2"), ("4", "4")], "auto"),
                                           ChoiceOption("completed", "Completed in", TASK_COUNT_PERIODS, "24")],
                                  reads=["task counts"], events=["task.*"], keys=[WindowKey("counts", "task counts", arguments=["hours", "since"], events=["task.*"])]),
                WindowDeclaration("tasks.task-log", "Log", "task-log.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],

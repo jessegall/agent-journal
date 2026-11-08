@@ -2,7 +2,6 @@
 import {computed, nextTick, onUnmounted, ref, watch} from "vue";
 import {Btn, EmptyState, MenuItem, MenuLabel, RowList, SearchBar, Segmented, toggleFilter, useNow, useWindow} from "@journal/window-kit";
 import AgentCard from "./AgentCard.vue";
-import AgentLimits from "./AgentLimits.vue";
 
 // `texts` is what the window says when it is empty on each tab, {running, closed, all}, each {title, hint}: what is empty in its own terms and what brings rows
 const props = defineProps({empty: {type: String, required: true}, texts: {type: Object, default: () => ({})}});
@@ -160,7 +159,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                     <template v-if="filterCount"><MenuItem data-filter-clear @click="clearFilters">Clear filters</MenuItem></template>
                 </template>
                 <Segmented :options="filterOptions.states" :value="show" @pick="show = $event" />
-                <AgentLimits @open-agent="inspectAgent" />
         </SearchBar>
         <template v-if="show === 'retired' && filterOptions.upgrade_retired"><p class="agents-upgrade" data-agents-upgrade>Retired during the upgrade: {{ filterOptions.upgrade_retired }}</p></template>
         <div ref="list" :class="['agents-view', {'agents-view-open': openRow}]">

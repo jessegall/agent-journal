@@ -163,13 +163,13 @@ test("the tour shows its five steps in order, pointing at each target, with the 
         expect(element.querySelector(".pane-tour-title").textContent).toContain(title);
         expect(element.querySelector(".pane-tour-text").textContent).toEqual(text);
         expect(element.querySelector(".pane-tour-step").textContent).toBe(`${at + 1} of 5`);
-        expect([at, element.querySelector(target)?.className]).toEqual([at, expect.stringContaining("tour-target")]);
-        expect(element.querySelector(".pane-menu") !== null).toBe(at === 2 || at === 3);
+        expect([at, document.body.querySelector(target)?.className]).toEqual([at, expect.stringContaining("tour-target")]);
+        expect(document.body.querySelector(".pane-menu") !== null).toBe(at === 2 || at === 3);
         element.querySelector(`[data-tour="next"]`).click();
         await settle();
     }
     expect(element.querySelector(".pane-tour")).toBeNull();
-    expect(element.querySelector(".pane-menu")).toBeNull();
+    expect(document.body.querySelector(".pane-menu")).toBeNull();
 });
 
 test("the tour can be skipped, and is followed by the pane menu hint, each shown once", async () => {

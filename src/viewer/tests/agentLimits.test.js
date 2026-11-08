@@ -1,6 +1,6 @@
 import {h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
-import AgentLimits from "../../core/modules/agents/web/src/AgentLimits.vue";
+import AgentSettingsAgents from "../../suites/coding/web/src/AgentSettingsAgents.vue";
 import {context, mounted, page, settle, typeInto} from "./support/agentWindowContext.js";
 
 const worker = {key: "worker", label: "Worker", running: 1, kept: 3, run_limit: 1, kept_limit: 3, run_setting: "sample.run", kept_setting: "sample.kept", run_source: "environment main", kept_source: "environment main", per_profile: false, profiles: []};
@@ -14,26 +14,22 @@ async function counts({readOnly = false} = {}) {
         if (command[0] === "setting") row.run_limit = Number(command[3]);
         return {ok: true};
     });
-    const element = await mounted({render: () => h(AgentLimits)}, held);
+    const element = await mounted({render: () => h(AgentSettingsAgents)}, held);
     return {element, held};
 }
-async function open(element) { element.querySelector("[data-agent-counts]").click(); await settle(); }
 
-test("the badge counts full rows and the modal shows counts without status words", async () => {
+test("the agents tab of agent settings shows the counts without status words", async () => {
     const {element, held} = await counts();
-    expect(element.querySelector("[data-agent-count-badge]").textContent).toBe("1");
-    await open(element);
     expect(held.reads.some((line) => line.startsWith("agent cards --show all"))).toBe(false);
-    expect(document.body.querySelector("[data-agent-limit-type='worker']").textContent).toContain("1 of 13 of 3");
-    expect(document.body.textContent).not.toContain("At limit");
+    expect(element.querySelector("[data-agent-limit-type='worker']").textContent).toContain("1 of 13 of 3");
+    expect(element.textContent).not.toContain("At limit");
 });
 
 test("maximum controls save a change and read-only viewers cannot edit", async () => {
     const {element, held} = await counts();
-    await open(element);
-    [...document.body.querySelectorAll("button")].find((button) => button.textContent === "Change the maximums").click();
+    [...element.querySelectorAll("button")].find((button) => button.textContent === "Change the maximums").click();
     await settle();
-    const input = document.body.querySelector("[data-agent-limit-input='run']");
+    const input = element.querySelector("[data-agent-limit-input='run']");
     input.nextElementSibling.click();
     await settle();
     expect(held.run).toHaveBeenCalledWith(["setting", "set", "sample.run", "2", "--environment", "main"]);
@@ -41,10 +37,9 @@ test("maximum controls save a change and read-only viewers cannot edit", async (
 
 test("an opened row lists its idle agent and retires it with a reason", async () => {
     const {element, held} = await counts();
-    await open(element);
-    document.body.querySelector("[data-agent-limit-type='worker']").click();
+    element.querySelector("[data-agent-limit-type='worker']").click();
     await settle();
-    const agent = document.body.querySelector("[data-count-agent='42']");
+    const agent = element.querySelector("[data-count-agent='42']");
     expect(agent.textContent).toContain("Ada");
     [...agent.querySelectorAll("button")].find((button) => button.textContent === "Retire").click();
     await settle();

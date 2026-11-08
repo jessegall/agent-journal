@@ -6,9 +6,9 @@ const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH
 try {
     const page = await browser.newPage({viewport: {width: 1440, height: 1100}, reducedMotion: "reduce"});
     page.on("pageerror", (error) => console.error(error));
-    await page.goto(`${address}&page=agents.agents`);
-    await page.locator('[data-window="agents.agents"] [data-agent-counts]').click();
-    const limits = page.locator('[role="dialog"]');
+    await page.goto(`${address}&page=coding.agent-settings`);
+    await page.locator('[data-agent-settings]').getByRole('radio', {name: 'Agents', exact: true}).click();
+    const limits = page.locator('[data-agent-settings-agents]');
     await limits.locator('[data-agent-limit-type="worker"]').waitFor({timeout: 10000});
     assert.match(await limits.locator('[data-agent-limit-type="worker"]').textContent(), /0 of 1.*1/);
     assert.match(await limits.locator('[data-agent-limit-profile="journal-researcher"]').textContent(), /0 of 2.*1 of 3/);
