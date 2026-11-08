@@ -31,6 +31,8 @@ class ForegroundLimit:
         alias_runs = self.background.alias_runs(shell)
         part_commands = tuple(self.background.part_command(part, shell) for part in shell.parts)
         declared = self.background.declared_category(shell)
+        if shell.is_journal_line and all(command.category is CommandCategory.JOURNAL for command in part_commands):
+            return ForegroundRun(0, False, part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES))
         seconds = self.seconds_allowed(agent_id)
         is_long = self.processes.has_moved_run(tuple(dict.fromkeys(part.text for part in shell.pipeline_heads)), seconds)
         reader_ids = {options.reader_id for options in alias_runs if options.reader_id is not None}
