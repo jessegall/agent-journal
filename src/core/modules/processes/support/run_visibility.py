@@ -16,6 +16,8 @@ class RunVisibility:
 
     @staticmethod
     def select_visible_part(process: Process, parts: tuple[ProcessPart, ...]) -> ProcessPart | None:
+        if process.plugin:
+            return None
         categorized = next((part for part in parts if part.is_visible), None)
         return categorized or (parts[0] if parts and process.creator_id != process.session_agent_id else None)
 
