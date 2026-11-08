@@ -10,6 +10,8 @@ stays kept on the same agent number and session until retired.
 
 ## As the one who sends
 
+- Read each task to delegate with `journal task info <n>`, not its whole brief: open the brief only when the title and facts are not enough.
+  Choose the model from its complexity: 1 to 3 on the fast tier, 4 and 5 on the strongest.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
   and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,
   retire a finished worker and start one on the simpler model.

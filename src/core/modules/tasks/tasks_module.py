@@ -66,6 +66,7 @@ from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
 from core.modules.tasks.commands.task_counts.task_counts_subcommand import TaskCountsSubcommand
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
+from core.modules.tasks.commands.task_info.task_info_subcommand import TaskInfoSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
 from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks_handler import ClearDelegatedTasksHandler
 from core.modules.tasks.commands.release_task.release_task import ReleaseTask
@@ -140,7 +141,7 @@ class TasksModule(Module):
     models = [ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskTag, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(TaskBlockRenewal, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(TaskRead, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [BlockWaitingTasksMigration, TaskLogImportantMigration, TaskReadSessionMigration, PendingWaitsIndexMigration, OpenTaskEdgeIndexMigration, ClosedTaskIndexMigration, TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration, DelegatedTaskIndexMigration, TaskReadsTableMigration, TaskBlockRenewalsMigration, TaskClosedCursorIndexMigration, AllEnvironmentsTaskStateIndexMigration, TaskComplexityMigration, TaskTagsMigration]
-    subcommands = [TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
+    subcommands = [TagTaskSubcommand, RemoveTaskTagSubcommand, TaskTagsSubcommand, TaskListSubcommand, EditTaskSubcommand, AssignTaskSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskCountsSubcommand, TaskInspectSubcommand, TaskInfoSubcommand, MakeTaskLogSubcommand, ReadTaskBriefSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand]
     handlers = [TagTaskHandler, RemoveTaskTagHandler, RecordTaskReadHandler, AssignTaskHandler, ClearDelegatedTasksHandler, ReadTaskBriefHandler, RemoveTaskDependencyHandler, ResetTaskReadsHandler, WaitTaskHandler]
     moves = [TasksMove]

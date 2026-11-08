@@ -68,6 +68,12 @@ class ManagedHooks:
                 self._write([hook for hook in hooks if stamp not in hook.command])
             return removed
 
+    def removed_with_source(self) -> list[ManagedHook]:
+        with self._locked():
+            hooks = self._read()
+            self._write([hook for hook in hooks if not hook.source])
+            return [hook for hook in hooks if hook.source]
+
     def emptied(self) -> list[ManagedHook]:
         with self._locked():
             hooks = self._read()

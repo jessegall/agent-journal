@@ -48,7 +48,7 @@ class HookManager:
         return detected_hooks
 
     def restore(self) -> list[ManagedHook]:
-        hooks = self.managed.all()
+        hooks = [hook for hook in self.managed.all() if hook.source]
         for hook in hooks:
             for source in hook.all_sources():
                 path = self.root / source.path
@@ -62,7 +62,7 @@ class HookManager:
                 ProgramHooks.store(path, {**settings, "hooks": events})
                 if source.tracked:
                     HookFilesGit(path.parent).clear_skip_worktree(path.name)
-        self.managed.emptied()
+        self.managed.removed_with_source()
         return hooks
 
     def _detected(self, provider: type[Provider], folder: Path, name: Path,
