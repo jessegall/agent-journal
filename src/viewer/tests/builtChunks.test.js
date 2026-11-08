@@ -4,7 +4,7 @@ import {expect, test} from "vitest";
 
 const MODULE_FOLDERS = ["core", "suites", "tunnels"].map((folder) => resolve(__dirname, "../..", folder));
 const SKIPPED = new Set(["node_modules", "__pycache__", "src"]);
-const HASHED_CHUNK = /-[A-Za-z0-9_-]{8}\.m?js$/;
+const HASHED_CHUNK = /-(?=[A-Za-z0-9_-]*[A-Z0-9_-])[A-Za-z0-9_-]{8}\.m?js$/;
 const IMPORTED_FILE = /["'`]\.\/([^"'`]+\.m?js)["'`]/g;
 
 function moduleDists(folder) {
