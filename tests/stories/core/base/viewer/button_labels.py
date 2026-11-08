@@ -6,11 +6,11 @@ PANEL_WORD = "which starts with a panel word, and the panel owns those words"
 
 
 def test_close_the_plan_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(CloseModule, f"the button labelled.act of module labelled has the label Close the plan, {PANEL_WORD}")
+    new_story(fixture=MainEnvironment).expect_default_module_sync_refusal(CloseModule, f"the button labelled.act of module labelled has the label Close the plan, {PANEL_WORD}")
 
 
 def test_open_the_plan_for_review_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(OpenModule, f"has the label Open the plan for review, {PANEL_WORD}")
+    new_story(fixture=MainEnvironment).expect_default_module_sync_refusal(OpenModule, f"has the label Open the plan for review, {PANEL_WORD}")
 
 
 def test_complete_the_plan_passes(new_story):

@@ -56,6 +56,7 @@ class TemplateDatabases:
     def linked_home(self, template: Template, journal: WorkingJournal, folder: Path) -> JournalHome:
         home = JournalHome(folder)
         home.folder.mkdir(parents=True, exist_ok=True)
+        home.database.unlink(missing_ok=True)
         home.database.symlink_to(journal.file)
         self.copy_lists(template, home)
         return home

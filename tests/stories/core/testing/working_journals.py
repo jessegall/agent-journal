@@ -59,6 +59,19 @@ def test_a_checkpoint_that_reaches_the_file_is_undone_for_the_next_story(templat
     next_story.close()
 
 
+def test_a_connection_left_open_does_not_reach_the_next_story(templates, tmp_path):
+    story = templates.story(tmp_path / "one", (), UserJoined)
+    story.run(NOTE, actor=story.user)
+    database = synced_container(story.home).get(Database)
+    used_file = journal_file(story)
+    story.close()
+    next_story = templates.story(tmp_path / "two", (), UserJoined)
+    next_story.expect_absent("message list --environment main", "only in this story", actor=next_story.user)
+    expect_value(journal_file(next_story), used_file)
+    next_story.close()
+    database.close()
+
+
 def test_the_template_itself_stays_as_it_was(templates, tmp_path):
     template = templates.template((), UserJoined)
     template_bytes = template.home.database.read_bytes()

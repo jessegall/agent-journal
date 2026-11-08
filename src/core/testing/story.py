@@ -265,7 +265,7 @@ class Story:
         code, output_text = self.synced_with(module)
         assert code == 0, f"module sync with {module} gave {code}: {output_text}"
 
-    def expect_sync_refusal(self, module: type[Module], text: str) -> None:
+    def expect_default_module_sync_refusal(self, module: type[Module], text: str) -> None:
         with patch("core.modules.DEFAULT_MODULES", (*DEFAULT_MODULES, module)):
             code, output_text = self.synced()
         assert code != 0 and text in output_text, f"module sync with the shipped {module.name} gave {code}: {output_text}"
