@@ -6,6 +6,8 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_FILE, BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_absent_exists_folder_repository
 
+HASHED_FILE = "app/web/dist/Chat-CD-8c9Cq.mjs"
+
 
 def test_a_rename_clash_in_built_files_is_deleted_and_rebuilt(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
@@ -41,6 +43,34 @@ def test_a_hand_in_that_deletes_built_files_whose_sources_stay_is_refused_with_t
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
     story.expect_refusal("worker deliver --wait --differences none", f"it deletes 1 built files under web/dist while their sources stay, such as {BUILT_FILE}", actor=worker)
     story.expect_refusal("worker deliver --wait --differences none", "npm --prefix src/viewer run build", actor=worker)
+
+
+def hashed_build_handed_in(story):
+    repository = build_repository(story)
+    repository.committed(HASHED_FILE, "const first = 1;\n", "A built file with a hash in its name")
+    (repository.folder / "app/web/src").mkdir()
+    repository.committed("app/web/src/chat.vue", "<template />\n", "The source of the built file")
+    worker = dispatched_worker(story)
+    expect_returncode_git_repository_2(repository, "rm", HASHED_FILE, repository.worktree_folder(worker.id), 0)
+    return repository, worker
+
+
+def test_a_built_file_that_came_back_under_a_new_hash_is_a_rebuild(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository, worker = hashed_build_handed_in(story)
+    repository.changed(worker.id, "app/web/dist/Chat-Xy-1b2c3.js", "export const other = 2;\n" * 40)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
+    story.expect_success("worker deliver --wait --differences none", actor=worker)
+
+
+def test_a_built_file_with_a_hash_that_did_not_come_back_is_refused(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository, worker = hashed_build_handed_in(story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.run_listeners()
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
+    story.expect_refusal("worker deliver --wait --differences none", f"such as {HASHED_FILE}", actor=worker)
 
 
 @pytest.mark.parametrize("length", [7, 8])

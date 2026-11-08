@@ -1,5 +1,6 @@
 from core.base.file_access import FileAccess
 import fcntl
+import re
 import subprocess
 from collections.abc import Generator
 from contextlib import contextmanager
@@ -24,6 +25,7 @@ WORKTREE_EXCLUDE_FILE = "journal-exclude"
 WORKTREE_CONFIG_FILE = "config.worktree"
 GIT_FOLDER_PREFIX = "gitdir:"
 BUILT_FOLDER = "/web/dist/"
+HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 # git quotes a name with a space, a quote or another letter it finds odd, unless it separates names with NUL
 NAME_SEPARATOR = "\0"
 # With -M -z a rename is three fields: status, old name, new name.
@@ -136,9 +138,21 @@ class WorktreeGit:
     def built_folders(self, files: list[str]) -> tuple[str, ...]:
         return tuple(sorted({path.split(BUILT_FOLDER, 1)[0] + "/web/dist" for path in files if BUILT_FOLDER in path}))
 
+    def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
+        name = self.built_name(path)
+        if name is None:
+            return False
+        siblings = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
+        return name in {self.built_name(sibling) for sibling in siblings}
+
+    @staticmethod
+    def built_name(path: str) -> str | None:
+        found = HASHED_BUILT_FILE.fullmatch(Path(path).name)
+        return found.group(1) if found is not None else None
+
     def refuse_deleted_built_files(self, worktree: Worktree) -> None:
         deleted = [change.relative for change in self.comparison(worktree).changes if change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative]
-        kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip()]
+        kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
                           "build them again with npm --prefix src/viewer run build, then hand in again")
