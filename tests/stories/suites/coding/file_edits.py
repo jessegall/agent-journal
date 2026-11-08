@@ -5,9 +5,9 @@ from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithOpenTask
 from tests.stories.core.support.scanned_edits import scanned_edit
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_value
 
 CART_EDIT = HookSamples.edit("src/cart.py", 3, 1).with_fields(event="post_tool_use")
@@ -18,6 +18,17 @@ def test_an_agent_that_edits_a_file_leaves_a_file_edit_with_its_path_and_counts(
     story = new_story(fixture=BuilderStarted)
     scanned_edit(story, "s-1", "src/cart.py", 3, 1)
     story.expect_success("file-edit show 1", "path: src/cart.py", "added: 3", "removed: 1", f"session_agent_id: {story.agent.id}")
+
+
+def test_the_instruction_files_the_journal_writes_for_a_worker_are_not_its_edits_and_its_own_edit_is(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    session = worker_session(story, dispatched_worker(story))
+    for path in ("AGENTS.md", "CLAUDE.md", "AGENTS.original.md"):
+        scanned_edit(story, session, path, 6, 24)
+    story.expect_refusal("file-edit show 1", "no")
+    scanned_edit(story, session, "src/cart.py", 3, 1)
+    story.expect_success("file-edit show 1", "path: src/cart.py")
 
 
 def edit_rows(story) -> list[dict[str, object]]:
