@@ -98,6 +98,11 @@ class HookCall(EnvironmentScoped, Model):
         return percent if isinstance(percent, int) else None
 
     @property
+    def search_kind(self) -> str:
+        kind = self.metadata.module_part(DRIVERS_MODULE).get("search")
+        return kind if isinstance(kind, str) else ""
+
+    @property
     def is_compaction_start(self) -> bool:
         return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
 

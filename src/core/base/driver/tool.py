@@ -1,12 +1,15 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.diff_count import DiffCount
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, mappings, text, texts
 from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
 from core.base.skill.skill_declaration import SKILL_FILE
+
+GRAPHIFY_PROGRAM = "graphify"
 
 
 @dataclass(frozen=True)
@@ -48,6 +51,23 @@ class Tool:
         if self.category.reads_files:
             return True
         return self.shell is not None and self.shell.is_readonly
+
+    @property
+    def uses_graphify(self) -> bool:
+        return self.shell is not None and any(part.program == GRAPHIFY_PROGRAM and part.classification.category is CommandCategory.SEARCH for part in self.shell.parts)
+
+    @property
+    def is_search(self) -> bool:
+        if self.category is ToolType.SEARCH:
+            return True
+        return self.shell is not None and any(part.classification.category is CommandCategory.SEARCH for part in self.shell.parts)
+
+    @property
+    def searched_paths(self) -> tuple[str, ...]:
+        if self.category is ToolType.SEARCH:
+            return self.files
+        parts = self.shell.parts if self.shell is not None else ()
+        return tuple(path for part in parts if part.classification.category is CommandCategory.SEARCH for path in part.input_paths)
 
     @property
     def is_skill_read(self) -> bool:
