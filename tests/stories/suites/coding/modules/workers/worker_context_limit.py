@@ -11,7 +11,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment, worker_session
 
 LIMIT = 400_000
 JOB = "Add the tax as well"
@@ -118,3 +118,10 @@ def test_a_worker_under_the_limit_at_worker_next_goes_on_and_may_not_stop(new_st
     has_context(story, worker, LIMIT - 1)
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")
+
+
+def test_the_inspector_of_a_worker_reads_its_agent_row_once(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.expect_success(f"usage inspector {worker.id} --environment main", actor=story.user)

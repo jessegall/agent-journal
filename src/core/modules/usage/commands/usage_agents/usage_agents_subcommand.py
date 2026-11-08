@@ -56,24 +56,29 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         parser.add_argument("--agent", type=int, dest="agent_id", help="show only this agent")
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentFactsList:
+        return self.listing(arguments.closed, arguments.agent_id, ())
+
+    def listing(self, closed: bool, agent_id: int | None, read_rows: Sequence[Agent]) -> AgentFactsList:
         cards = self.queries.query(AgentCard)
-        if arguments.agent_id is not None:
-            cards = cards.filter(id=arguments.agent_id)
+        if agent_id is not None:
+            cards = cards.filter(id=agent_id)
         activity = self.activity.current()
         running = tuple(cards.matching(activity).oldest().all_rows())
-        ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if arguments.closed else ()
+        ended = tuple(cards.matching(Greater("ended_at", "")).matching(Excluding(activity)).newest().page(1, CLOSED_AGENTS_SHOWN).rows) if closed else ()
         pending = activity.pending
         policy = self.suites.agent_policy()
         titles = {profile.name: profile.display_title for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         cards_read = (*running, *ended)
         statuses = self.statuses(cards_read)
         account = self.files.plan_windows(statuses)
-        sandboxes = self.sandboxes(cards_read)
+        sandboxes = self.sandboxes(cards_read, read_rows)
         return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True)) for card in cards_read))
 
-    def sandboxes(self, cards: Sequence[AgentCard]) -> dict[int, bool]:
-        own_folder = [card.id for card in cards if self.types.find(card.role).separate_folder]
-        return self.sandbox.sandboxed_among(self.queries.query(Agent).find_many(own_folder)) if own_folder else {}
+    def sandboxes(self, cards: Sequence[AgentCard], read_rows: Sequence[Agent]) -> dict[int, bool]:
+        own_folder = {card.id for card in cards if self.types.find(card.role).separate_folder}
+        rows = [row for row in read_rows if row.id in own_folder]
+        unread = sorted(own_folder - {row.id for row in rows})
+        return self.sandbox.sandboxed_among([*rows, *(self.queries.query(Agent).find_many(unread) if unread else ())])
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
         return {card.session: self.files.status(card.session) for card in cards}
