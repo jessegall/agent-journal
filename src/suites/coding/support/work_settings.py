@@ -4,7 +4,7 @@ from dataclasses import asdict, dataclass, field
 
 @dataclass(frozen=True)
 class WorkField:
-    """One setting of the Tests or Advanced tab: its group, title, description and type, the value it holds and where it comes from."""
+    """One setting of the Tests or Advanced tab: its group, title, description and type, the value it holds, where it comes from and the badge it carries."""
 
     key: str
     group: str
@@ -14,6 +14,7 @@ class WorkField:
     value: object
     source: str
     choices: tuple[int, ...] = ()
+    badge: str = ""
 
 
 @dataclass(frozen=True)

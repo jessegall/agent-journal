@@ -24,13 +24,6 @@ SkeletonPart.stack([
 ], spacing=4, padding="14px 16px"),
 ]
 
-WORKERS_MODELS_SKELETON = [
-    SkeletonPart.stack([
-        SkeletonPart.line(SkeletonSize.SMALL, "95%", count=2),
-        SkeletonPart.row([SkeletonPart.line(SkeletonSize.SMALL, "110px"), SkeletonPart.block(14, "14px"), SkeletonPart.line(SkeletonSize.MEDIUM, "100px")], spacing=14, padding="12px 8px", count=6),
-    ], spacing=6, padding="8px 12px"),
-]
-
 WORKERS_WORKTREES_SKELETON = [
     SkeletonPart.stack([
         SkeletonPart.row([

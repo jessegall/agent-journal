@@ -427,7 +427,7 @@ def test_profile_tier_alone_beats_default_models_bad_file_is_a_problem(split_sto
 @pytest.mark.parametrize('program,model', [('claude', 'fable'), ('codex', 'gpt-6-astra')])
 def test_rare_model_is_never_automatic(split_story, split_viewer, program, model):
     story = split_story
-    split_viewer.value('workers.models', ['setting', 'set', 'journal.core.helpers.allowed-models', f'{program} {model}', '--project'])
+    split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', f'{program} {model}', '--project'])
     story.expect_refusal(f'worker dispatch 1 --program {program} --tier strongest', 'name', actor=story.agent)
     expect_program(story, dispatch(story, flags=f'--program {program} --model {model}'), program, model)
 

@@ -427,6 +427,7 @@ function pick(face) {
 
 .message-card :deep(p) {
     margin: 0;
+    overflow-x: auto;
     white-space: pre-wrap;
 }
 

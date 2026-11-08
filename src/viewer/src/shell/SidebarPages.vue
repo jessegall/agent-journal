@@ -23,6 +23,8 @@ const props = defineProps({
     navigate: {type: Function, default: null},
     mini: Boolean,
 });
+// the change log is a page of its own that the sidebar's name and version open, not an item of the list
+const UPDATES_PAGE = "updates.updates";
 const drafting = ref(false);
 const openEnvironment = (name) => (window.location.search = `?environment=${encodeURIComponent(name)}`);
 const foldedNames = rememberedRef("sidebar-folded", []);
@@ -108,7 +110,7 @@ function fold(key) {
                 </template>
             </template>
         </div>
-        <p class="sidebar-foot"><span>Agent journal</span><span>{{ journalVersion }}</span></p>
+        <a class="sidebar-foot" :href="pageOf(UPDATES_PAGE)" title="Change log" data-sidebar-footer @click="go($event, {name: UPDATES_PAGE})"><span>Agent journal</span><span>{{ journalVersion }}</span></a>
         <template v-if="drafting">
             <NewEnvironment :run="run" @close="drafting = false" @made="openEnvironment" />
         </template>
@@ -217,6 +219,11 @@ function fold(key) {
     border-top: 1px solid var(--border);
     color: var(--text-3);
     font-size: 12px;
+    text-decoration: none;
+}
+
+.sidebar-foot:hover {
+    color: var(--text-1);
 }
 
 .item {

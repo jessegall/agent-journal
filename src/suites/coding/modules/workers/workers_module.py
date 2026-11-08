@@ -317,7 +317,7 @@ from suites.coding.modules.workers.commands.project_worktree_list.project_worktr
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
 from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT
-from suites.coding.modules.workers.support.skeletons import WORKERS_POINTS_SKELETON, WORKERS_TODOS_SKELETON, WORKERS_WORKERS_SKELETON, WORKERS_MODELS_SKELETON, WORKERS_WORKTREES_SKELETON
+from suites.coding.modules.workers.support.skeletons import WORKERS_POINTS_SKELETON, WORKERS_TODOS_SKELETON, WORKERS_WORKERS_SKELETON, WORKERS_WORKTREES_SKELETON
 
 
 from core.modules.skills.support.skill_projects import SkillProjects
@@ -393,7 +393,5 @@ class WorkersModule(Module):
                                        WindowKey("routes", "worker-route list", tab="split", events=["worker_route.*"]),
                                        WindowKey("tags", "task tags", tab="split", events=["task_tag.*"]),
                                        WindowKey("split-limits", "agent limits", tab="split", events=["setting.*", "agent.*"])]),
-               WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, skeleton=WORKERS_MODELS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.MENU, reads=["worker models", "setting show"],
-                                 runs=["setting set"], events=["setting.*"], keys=[WindowKey("models", "worker models", events=["setting.*"])]),
                WindowDeclaration("workers.worktrees", "Worktrees", "worktrees.js", WindowLoading.COMPONENT, skeleton=WORKERS_WORKTREES_SKELETON, group="project", icon=WindowIcon.BRANCH, reads=["project-worktree list"],
                                  runs=["project-worktree remove"], keys=[WindowKey("worktrees", "project-worktree list")])]

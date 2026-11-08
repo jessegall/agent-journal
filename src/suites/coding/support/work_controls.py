@@ -11,7 +11,7 @@ from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from suites.coding.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
 from suites.coding.support.main_options import PRESETS
-from suites.coding.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_CHOICES
+from suites.coding.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_BADGES, FIELD_CHOICES
 from suites.coding.support.work_settings import WorkField, WorkSettings
 
 
@@ -33,7 +33,7 @@ class WorkControls:
 
     def field(self, group: str, key: str) -> WorkField:
         current = self.reader.current(key)
-        return WorkField(key, group, current.entry.title, current.entry.description, current.entry.type, current.value, current.source, FIELD_CHOICES.get(key, ()))
+        return WorkField(key, group, current.entry.title, current.entry.description, current.entry.type, current.value, current.source, FIELD_CHOICES.get(key, ()), FIELD_BADGES.get(key, ""))
 
     def preset(self, name: str, revision: str, context: Context) -> WorkSettings:
         if name not in PRESETS:

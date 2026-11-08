@@ -35,15 +35,14 @@ def test_listing_models_allows_only_those_listed_on_every_program(new_story):
     story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-6.1-terra: not allowed")
 
 
-def test_the_models_window_saves_the_models_left_with_the_line_it_sends(new_story):
+def test_the_settings_window_saves_the_models_left_with_the_line_it_sends(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     story.run('actor make user "Ada"')
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
-        server.viewer_line_value(cookie, {"window": "workers.models", "environment": "main", "line": ["setting", "set", ALLOWED_MODELS, "claude sonnet,claude opus,codex gpt-6.1-terra", "--project"]})
-        rows = server.viewer_line_value(cookie, {"window": "workers.models", "environment": "main", "line": ["worker", "models"]})["rows"]
-    story.expect_rows({row["id"]: row["allowed"] for row in rows} == {"claude haiku": False, "claude sonnet": True, "claude opus": True, "claude fable": False,
-                                                                       "codex gpt-6-luna": False, "codex gpt-6.1-terra": True, "codex gpt-6.1-sol": False, "codex gpt-6-astra": False})
+        server.viewer_line_value(cookie, {"window": "settings.settings", "environment": "main", "line": ["setting", "set", ALLOWED_MODELS, "claude sonnet,claude opus,codex gpt-6.1-terra", "--project"]})
+    story.expect_text("worker models", "claude haiku: not allowed\nclaude sonnet: allowed\nclaude opus: allowed\nclaude fable: not allowed",
+                      "codex gpt-6-luna: not allowed\ncodex gpt-6.1-terra: allowed\ncodex gpt-6.1-sol: not allowed\ncodex gpt-6-astra: not allowed")
 
 
 def test_a_worker_for_a_program_that_is_not_installed_is_refused_before_any_worktree_is_cut(new_story, monkeypatch):

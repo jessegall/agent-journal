@@ -1,4 +1,7 @@
+from core.base.database.database import Database
+from core.base.database.statement import Statement
 from core.base.provider.managed_hook import ManagedHook
+from core.modules.drivers.conditions.foreign_hook import ForeignHook
 from core.base.driver.foreign_outcome import ForeignOutcome
 from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery
 from core.testing.hook_samples import HookSamples
@@ -43,6 +46,19 @@ def test_history_reads_the_last_hundred_runs_of_this_hook(new_story):
     expect_row(history, runs=100)
     expect_row(history, failed=0)
     expect_row(history.last, milliseconds=101)
+
+
+def test_the_read_of_a_hooks_history_walks_only_the_calls_that_ran_a_project_hook(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    hook = ManagedHook.found("claude", "PreToolUse", "Bash", {"command": "indexed"}, "settings.json", False)
+    for index in range(40):
+        story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing=f"quiet-{index}", foreign=[]))
+    run = {"id": hook.id, "exit_code": 0, "stdout": "{}", "stderr": "", "milliseconds": 1, "timed_out": False, "answer": {}}
+    story.hook("s-1", HookSamples.edit("cart.py").with_fields(firing="ran", foreign=[run]))
+    condition = ForeignHook(hook.id).statement()
+    plan = " ".join(str(row[3]) for row in story.container.get(Database).rows(Statement(f"EXPLAIN QUERY PLAN SELECT * FROM hook_calls WHERE {condition.sql} ORDER BY id DESC LIMIT 100", condition.parameters)))
+    assert "hook_calls_foreign_runs" in plan, plan
+    expect_row(story.container.get(ManagedHookHistoryQuery).read(hook), runs=1)
 
 
 def expect_last_outcome(story, hook, expected) -> None:
