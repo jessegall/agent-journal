@@ -21,7 +21,7 @@ CLAUDE_FOLDER, CODEX_FOLDER = ".claude/agents", ".codex/agents"
 CODEX_HOME = ".codex"
 PROFILE_FOLDER = ".agents/profiles"
 SHIPPED_PREFIX = "journal-"
-OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "program_if_possible", "model", "codex_model", "program_models", "tier", "mcp_tools", "writable_folders", "independent")
+OVERLAID_FIELDS = ("title", "description", "body", "access", "program", "program_if_possible", "model", "codex_model", "program_models", "keeps_project_instructions", "injections", "tier", "mcp_tools", "writable_folders", "independent")
 
 
 class ProfileFiles:

@@ -17,6 +17,7 @@ from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_config import ManifestConfig
 from core.modules.plugins.support.manifest_dashboard import ManifestDashboard
+from core.modules.plugins.support.manifest_instruction_block import ManifestInstructionBlock
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_setting import ManifestSetting
 from core.modules.plugins.support.plugin_health import PluginHealth
@@ -67,6 +68,7 @@ class PluginManifest:
     listed_files: tuple[str, ...] = ()
     config: ManifestConfig | None = None
     hook_stamp: str = ""
+    instruction_blocks: tuple[ManifestInstructionBlock, ...] = ()
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -90,7 +92,8 @@ class PluginManifest:
                    cls.read_aliases(fields["aliases"] if "aliases" in fields else None), cls.read_dashboard(fields["dashboard"] if "dashboard" in fields else None),
                    str(fields["description"]) if "description" in fields else "",
                    tuple(str(entry) for entry in project_reads) if is_list(project_reads) else (), listeners, (), cls.read_protocol(fields["protocol"] if "protocol" in fields else None), cls.read_listed_files(listed),
-                   cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "")
+                   cls.read_config(fields["config"] if "config" in fields else None), str(fields["hook_stamp"]) if "hook_stamp" in fields else "",
+                   cls.read_instruction_blocks(fields["instruction_blocks"] if "instruction_blocks" in fields else None))
 
     @classmethod
     def loaded_fields(cls, path: Path, version: FileVersion) -> Mapping[str, object]:
@@ -109,6 +112,11 @@ class PluginManifest:
         if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
             return Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
         return fields
+
+    @staticmethod
+    def read_instruction_blocks(blocks: object) -> tuple[ManifestInstructionBlock, ...]:
+        entries = [entry for entry in blocks if is_mapping(entry) and all(name in entry for name in ("key", "title", "file"))] if is_list(blocks) else []
+        return tuple(ManifestInstructionBlock(str(entry["key"]), str(entry["title"]), str(entry["file"]), entry.get("default", True) is not False) for entry in entries)
 
     @staticmethod
     def read_config(config: object) -> ManifestConfig | None:

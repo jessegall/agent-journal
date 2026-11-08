@@ -234,6 +234,14 @@ class WorktreeGit:
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
 
+    def hold_back(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
+        """Keeps the changes to the tracked files among the names out of the worktree's commits and gives back the
+        names git does not track."""
+        tracked = set(self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "--", *names).stdout.split())
+        if tracked:
+            self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", *sorted(tracked))
+        return tuple(name for name in names if name not in tracked)
+
     def exclude_file(self, folder: str) -> Path:
         git_folder = self.git_folder(folder)
         exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
