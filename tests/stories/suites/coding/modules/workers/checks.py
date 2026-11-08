@@ -75,3 +75,14 @@ def test_a_short_proof_is_replaced_with_the_command_its_refusal_names(new_story)
     story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
     story.expect_refusal('proof short 1 "again"', "journal proof revise 1", actor=story.agent)
     story.expect_success('proof revise 1 "cart.py:1, the right task" --test "pytest tests/cart.py"', 'state: shown', 'text: cart.py:1, the right task', 'test_command: pytest tests/cart.py', actor=worker)
+
+
+def test_a_proof_is_returned_and_a_job_sent_while_the_delivered_workers_task_is_started_again(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = delivered_worker(story, repository)
+    story.expect_success("task retest 1", "state: started", actor=story.agent)
+    story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
+    story.expect_success(lines.TASK_DETAILS, 'state: started')
+    story.expect_success(f'worker send --wait {worker.id} "Go on with it"', actor=story.agent)
+    story.expect_success(lines.TASK_DETAILS, 'state: started')

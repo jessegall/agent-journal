@@ -48,5 +48,6 @@ class WorkerTaskAdvance:
             self.repository.save_change(task, task.reopen(context.timestamp, context.actor), context)
             self.bus.dispatch(StartTask(task.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
             return
-        self.repository.save_change(task, task.moved(TaskLifecycle.retest, holder_id=worktree.session_agent_id), context)
+        if task.state is not TaskState.STARTED:
+            self.repository.save_change(task, task.moved(TaskLifecycle.retest, holder_id=worktree.session_agent_id), context)
         self.blocks.block_unread(worktree.session_agent_id, task, worker_context)

@@ -7,6 +7,7 @@ from core.base.repository.repository import Repository
 from core.base.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.support.nudger import Nudger
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
@@ -41,6 +42,8 @@ class ShortProofHandler(Handler[ShortProof, Proof]):
         worktree = self.queries.query(Worktree).find(proof.worktree_id)
         if worktree.state is WorktreeState.DELIVERED:
             self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
-            self.repository.save(self.queries.query(Task).find(proof.task_id).moved(TaskLifecycle.retest), context)
+            task = self.queries.query(Task).find(proof.task_id)
+            if task.state is not TaskState.STARTED:
+                self.repository.save(task.moved(TaskLifecycle.retest), context)
         self.nudger.send(worktree.session_agent_id, WORKER_PROOF_SHORT, SHORT_PROOF_SOURCE, context, proof=proof.id, task=proof.task_id)
         return proof
