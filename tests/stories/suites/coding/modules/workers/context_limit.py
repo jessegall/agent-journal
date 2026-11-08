@@ -5,6 +5,8 @@ import pytest
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.testing.shell_part import ShellPart
+from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
@@ -164,6 +166,14 @@ def test_past_the_second_limit_a_tool_is_refused_and_the_compaction_is_typed_at_
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
     agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
     agent.expect_rows(agent.typing.typed == [COMPACT], detail="typed once while the last one runs")
+
+
+def test_past_the_second_limit_a_memory_command_still_runs_so_a_stop_waiting_on_the_weighing_can_end(hard_limited_with_a_task):
+    agent = hard_limited_with_a_task
+    has_context(agent, HARD)
+    weigh = HookSamples.shell("journal memory weigh 1 5", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "weigh", "1", "5"]))
+    agent.expect_hook_allowed(SESSION, weigh)
+    agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
 
 def test_between_the_limits_a_tool_with_a_task_in_hand_is_not_refused(hard_limited_with_a_task):

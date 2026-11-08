@@ -15,7 +15,8 @@ RETRY_SECONDS = Seconds(600)
 
 class ContextLimitHardStopRule(DriverRule):
     """An agent whose context has passed the second limit may run no more tools, so it stops, whatever task it holds,
-    and its context is compacted at once: the compaction is typed the first time and again after the retry time."""
+    and its context is compacted at once: the compaction is typed the first time and again after the retry time. A
+    journal memory command still runs, because a stop waits for the memories to be weighed."""
 
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE
@@ -27,7 +28,9 @@ class ContextLimitHardStopRule(DriverRule):
         self.history, self.over_limit = history, over_limit
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not self.over_limit.is_past_second_limit(hook.agent_id):
+        tool = hook.event.tool
+        is_memory_command = tool is not None and tool.shell is not None and bool(tool.shell.parts_running_journal_command("memory"))
+        if is_memory_command or not self.over_limit.is_past_second_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
         return refusal if self.history.has_recent_answer(self.name, hook, RETRY_SECONDS) else refusal.running(ChooseAgentControl(hook.agent_id, "context", "compact"))
