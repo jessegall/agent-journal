@@ -4,7 +4,8 @@ from dataclasses import asdict, dataclass, field
 
 @dataclass(frozen=True)
 class WorkField:
-    """One setting of the Tests or Advanced tab: its group, title, description and type, the value it holds, where it comes from and the badge it carries."""
+    """One setting of the Tests or Advanced tab: its group, title, description and type, the value it holds,
+    where it comes from and the badge it carries."""
 
     key: str
     group: str
@@ -19,8 +20,9 @@ class WorkField:
 
 @dataclass(frozen=True)
 class WorkSettings:
-    """The workflow controls of the main agent as a person sees them: the preset they match or custom, the revision a
-    change must name, each control's key and value, and the settings of the Tests and Advanced tabs."""
+    """The workflow controls of the main agent as a person sees them: the preset they match or custom,
+    the revision a change must name, each control's key and value, and the settings of the Tests and
+    Advanced tabs."""
 
     workflow: str
     revision: str
