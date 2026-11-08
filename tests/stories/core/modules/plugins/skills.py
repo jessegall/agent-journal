@@ -19,6 +19,7 @@ from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
+from tests.stories.core.modules.skills.due import expect_countdown
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.modules.plugins.support.event_stories import SECOND_JOB, TASK_CREATED, EventPluginStarted, event_folder, event_plugin_story, plugin_row, script_calls
 from tests.stories.core.modules.plugins.support.plugin_samples import SKILL
@@ -45,11 +46,13 @@ def test_an_installed_plugin_publishes_its_skills_marked_with_its_name(new_story
     story.expect_rows(skill.is_file() and "plugin: sample" in skill.read_text())
 
 
-def test_a_skill_a_plugins_answer_requires_holds_the_agents_next_tool_after_the_reply_until_it_is_read(new_story):
+def test_the_skills_due_when_a_plugins_answer_requires_a_skill_count_down_from_the_session_start_and_then_hold_the_next_tool(new_story):
     story = installed_story(new_story)
     story.container.bind(SkillRequirement, SkillRequirement())
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
+    for remaining in (2, 1):
+        expect_countdown(story, HookSamples.edit("src/cart.py"), "journal", remaining)
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first")
 
 

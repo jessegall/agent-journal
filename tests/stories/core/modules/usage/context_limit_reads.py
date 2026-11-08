@@ -1,8 +1,10 @@
 import json
+import os
 
 import pytest
 
-from core.modules.settings.support.context_share import CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.base.journal_home import JournalHome
+from core.modules.settings.support.context_share import CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS, ContextShare
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -41,3 +43,26 @@ def test_a_status_file_in_the_shape_the_launcher_writes_for_a_headless_agent_giv
     save_status_file(story, "s-1", {"session_id": "s-1", "context_window": {"used_percentage": 20, "total_input_tokens": 200100}, "cost": {"total_cost_usd": 1.5}})
     row = agent_row(story)
     assert (row["context_tokens"], row["context_limit_tokens"], row["cost_dollars"]) == (200100, 400000, 1.5), row
+
+
+def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_numbers_from_that_read(new_story, monkeypatch):
+    story = new_story(fixture=UserJoined)
+    save_status_file(story, "s-1", {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})
+    path = story.home.status_file("s-1")
+    modified = path.stat().st_mtime_ns
+    original = JournalHome.status_file
+    asked = []
+
+    def status_file_changing_after_it_is_asked_for(home, session):
+        asked.append(session)
+        found = original(home, session)
+        if len(asked) > 1:
+            found.write_text(json.dumps({"context_window": {"used_percentage": 90, "total_input_tokens": 1_000_000_000}}))
+            os.utime(found, ns=(modified, modified))
+        return found
+
+    monkeypatch.setattr(JournalHome, "status_file", status_file_changing_after_it_is_asked_for)
+    with story.repeated_work.request():
+        reading = story.container.get(ContextShare).reading("claude", "s-1")
+    assert (reading.percent, reading.used_tokens) == (WINDOW_PERCENT, USED_TOKENS), reading
+    assert len(asked) == 1, asked

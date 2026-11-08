@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 
 from core.base.command.bus import Bus
@@ -15,6 +17,7 @@ from tests.stories.support.story_checks import expect_value_with, expect_value_w
 
 DUE = f"{PATH}:DueSkillsModule"
 JOURNAL_TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
+MEMORY_LIST = HookSamples.shell("journal memory list", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "list"], subcommand="memory"))
 DEFAULTS = ("journal", "journal-etiquette")
 
 
@@ -44,6 +47,19 @@ def expect_skills_absent(story, *folders: str) -> None:
     assert not any(f"  {folder}  due" in text for folder in folders), text
 
 
+def expect_countdown(story, sample, skill: str, remaining: int) -> None:
+    story.advance(timedelta(seconds=1))
+    reply = story.hook("s-1", sample)
+    line = f"load skill {skill} due: {remaining} tool uses"
+    assert line in reply.lines and not reply.refusal, f"{line!r} not in {reply.lines!r}, refusal {reply.refusal!r}"
+
+
+def use_up_countdown(story, sample, skill: str) -> None:
+    """Three tool uses pass with the skill named and the count going down; the fourth is the one that is held."""
+    for remaining in (3, 2, 1):
+        expect_countdown(story, sample, skill, remaining)
+
+
 def digest_of(story, skill: str) -> str:
     return next(entry.digest for entry in Registry.read(story.container.get(Database)).skills if entry.folder == skill)
 
@@ -63,14 +79,18 @@ def test_the_session_start_setting_names_the_skills_instead(skill_environment):
     expect_skills_absent(story, *DEFAULTS)
 
 
-def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(skill_environment):
-    story = skill_environment
-    story.run("setting make journal.core.skills.after-compaction '[\"journal-chores\"]'")
-    start(story)
-    story.hook("s-1", HookSamples.sample("compact"))
-    story.hook("s-1", HookSamples.session_start())
-    story.run_listeners()
+def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(compacted_environment):
+    story = compacted_environment
     expect_due(story, "journal-chores")
+
+
+def test_after_a_compaction_the_due_skill_is_named_for_three_tool_uses_and_then_held_until_it_is_loaded(compacted_environment):
+    story = compacted_environment
+    use_up_countdown(story, HookSamples.edit("src/cart.py"), "journal")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal")
+    for skill in (*DEFAULTS, "journal-chores"):
+        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
 def test_a_prompt_of_the_user_holding_a_keyword_makes_the_skill_due(prompt_skill_due):
@@ -87,28 +107,35 @@ def test_a_journal_line_a_plugins_notice_or_a_helpers_notice_makes_nothing_due(s
     expect_skills_absent(story, "journal-notes")
 
 
-def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_is_read(started_skill_environment):
+def test_a_journal_command_of_a_noun_a_skill_covers_names_the_skill_for_three_tool_uses_and_is_then_refused_until_the_skill_is_read(started_skill_environment):
     story = started_skill_environment
+    use_up_countdown(story, JOURNAL_TASK_LIST, "journal-tasks")
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
 
 
-def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(started_skill_environment):
-    story = started_skill_environment
-    for skill in DEFAULTS:
-        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
+def test_loading_the_skill_during_the_countdown_ends_it(defaults_loaded):
+    story = defaults_loaded
+    expect_countdown(story, MEMORY_LIST, "journal-memory", 3)
+    expect_countdown(story, MEMORY_LIST, "journal-memory", 2)
+    story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", digest_of(story, "journal-memory")), story.agent)
+    for _ in range(4):
+        story.expect_hook_allowed("s-1", MEMORY_LIST)
+    assert "load skill" not in story.hook("s-1", MEMORY_LIST).lines
+
+
+def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(tasks_held):
+    story = tasks_held
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
-    memory_list = HookSamples.shell("journal memory list", ShellPart("journal", CommandCategory.JOURNAL, ["memory", "list"], subcommand="memory"))
-    story.expect_hook_refusal("s-1", memory_list, "load this first with the Skill tool: journal-memory")
+    use_up_countdown(story, MEMORY_LIST, "journal-memory")
+    story.expect_hook_refusal("s-1", MEMORY_LIST, "load this first with the Skill tool: journal-memory")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", digest_of(story, "journal-tasks")), story.agent)
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-memory")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", digest_of(story, "journal-memory")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
-def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(started_skill_environment):
-    story = started_skill_environment
-    for skill in DEFAULTS:
-        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
+def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(tasks_held):
+    story = tasks_held
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-tasks")
     story.expect_hook_allowed("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
@@ -143,6 +170,31 @@ def started_skill_environment(skill_environment):
     story = skill_environment
     start(story)
     return story
+
+
+@pytest.fixture
+def compacted_environment(skill_environment):
+    story = skill_environment
+    story.run("setting make journal.core.skills.after-compaction '[\"journal-chores\"]'")
+    start(story)
+    story.hook("s-1", HookSamples.sample("compact"))
+    story.hook("s-1", HookSamples.session_start())
+    story.run_listeners()
+    return story
+
+
+@pytest.fixture
+def defaults_loaded(started_skill_environment):
+    story = started_skill_environment
+    for skill in DEFAULTS:
+        story.container.get(Bus).run(LoadSkill(story.agent.id, skill, digest_of(story, skill)), story.agent)
+    return story
+
+
+@pytest.fixture
+def tasks_held(defaults_loaded):
+    use_up_countdown(defaults_loaded, JOURNAL_TASK_LIST, "journal-tasks")
+    return defaults_loaded
 
 
 @pytest.fixture

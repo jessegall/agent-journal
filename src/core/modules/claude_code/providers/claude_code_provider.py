@@ -203,16 +203,19 @@ class ClaudeCodeProvider(Provider):
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
-        return self.context_number(home, session, "used_percentage")
+        return self.context_window(home, session)[0]
 
     def context_tokens(self, home: JournalHome, session: str) -> int | None:
-        return self.context_number(home, session, "total_input_tokens")
+        return self.context_window(home, session)[1]
 
-    @staticmethod
-    def context_number(home: JournalHome, session: str, name: str) -> int | None:
+    def context_window(self, home: JournalHome, session: str) -> tuple[int | None, int | None]:
         path = home.status_file(session)
         fields = StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {}
         window = fields.get("context_window") if is_mapping(fields) else None
+        return self.window_number(window, "used_percentage"), self.window_number(window, "total_input_tokens")
+
+    @staticmethod
+    def window_number(window: object, name: str) -> int | None:
         value = window.get(name) if is_mapping(window) else None
         return int(value) if isinstance(value, int | float) and not isinstance(value, bool) else None
 

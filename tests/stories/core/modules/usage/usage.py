@@ -12,6 +12,7 @@ from core.modules.processes.commands.start_process_part.start_process_part impor
 from core.modules.usage.support.status_files import StatusFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.modules.usage.support.status_files import FIVE_HOURS_RESET, SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
@@ -197,12 +198,32 @@ def test_a_session_says_when_it_was_last_compacted(new_story):
     story.expect_text("usage show --environment main --json", '"last_compacted_at": "2026', actor=story.user)
 
 
+class CompactedFromNinetyTwoPercent(StoryFixture):
+    """The real order: the session start hook of a compaction runs while the status file still holds the old percent."""
+
+    parent = UserJoined
+
+    def steps(self, story):
+        story.report_context_percent("s-1", 92)
+        story.hook("s-1", HookSamples.sample("compact"))
+        story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
+
+
 def test_a_compaction_says_how_full_the_context_was_before_and_after(new_story):
-    story = new_story(fixture=UserJoined)
-    story.report_context_percent("s-1", 92)
-    story.hook("s-1", HookSamples.sample("compact"))
+    story = new_story(fixture=CompactedFromNinetyTwoPercent)
     story.report_context_percent("s-1", 18)
-    story.hook("s-1", HookSamples.session_start().with_raw({"source": "compact"}))
+    story.hook("s-1", HookSamples.prompt("go on"))
+    compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
+    expect_row(compaction, start_percent=92, end_percent=18)
+
+
+def test_a_tick_after_a_compaction_start_reads_the_percent_the_status_file_gets_later(new_story):
+    story = new_story(fixture=CompactedFromNinetyTwoPercent)
+    story.tick("s-1")
+    compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
+    expect_row(compaction, start_percent=92, end_percent=None)
+    story.report_context_percent("s-1", 18)
+    story.tick("s-1")
     compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
     expect_row(compaction, start_percent=92, end_percent=18)
 

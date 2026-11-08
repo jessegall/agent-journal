@@ -11,13 +11,20 @@ def chat(story) -> str:
     return story.run("message list --environment main", actor=story.user).output_text
 
 
+def two_lines(text: str) -> str:
+    """The text as two lines: a one-line closing text after a reply never reaches the chat, whatever its words."""
+    first, _, last = text.rpartition(" ")
+    return f"{first}\n{last}"
+
+
 def test_words_after_a_reply_by_command_reach_the_chat_once(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run('message send "are you there" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.run('message reply 1 "yes"', actor=story.agent)
-    story.hook("s-1", HookSamples.message_display("I told you where it stands."))
-    expect_chat(story, "I told you where it stands.")
+    text = two_lines("I told you where it stands now.")
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_chat(story, "I told you where it stands")
 
 
 def test_words_after_a_person_wrote_again_since_the_reply_reach_the_chat(new_story):
@@ -86,7 +93,7 @@ def reply_ready(new_story):
 def test_a_closing_text_repeating_the_reply_stays_out_of_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Yes, that is task 7246, with worker 672: those lines become one line with all the ids. It is not merged yet."', actor=story.agent)
-    text = "I have confirmed that to you: task 7246 is with worker 672 and has not been merged yet."
+    text = two_lines("I have confirmed that to you: task 7246 is with worker 672 and has not been merged yet.")
     story.hook("s-1", HookSamples.message_display(text))
     story.hook("s-1", HookSamples.edit("src/cart.py"))
     expect_absent_chat(story, text)
@@ -96,14 +103,14 @@ def test_a_closing_text_repeating_a_sent_message_stays_out_of_chat(reply_ready):
     story = reply_ready
     story.run('message send "Task 7246 is with worker 672 and its tests passed." --environment main', actor=story.agent)
     text = "Task 7246 is with worker 672 and its tests passed."
-    story.hook("s-1", HookSamples.message_display(text))
-    story.expect_rows(chat(story).count(text) == 1)
+    story.hook("s-1", HookSamples.message_display(two_lines(text)))
+    story.expect_rows(chat(story).count(text) == 1, two_lines(text) not in chat(story))
 
 
 def test_new_facts_after_a_sent_message_reach_chat(reply_ready):
     story = reply_ready
     story.run('message send "Task 7246 is with worker 672." --environment main', actor=story.agent)
-    text = "Task 7246 is with worker 672; task 7344 is next."
+    text = two_lines("Task 7246 is with worker 672; task 7344 is next.")
     story.hook("s-1", HookSamples.message_display(text))
     expect_chat(story, text)
 
@@ -111,7 +118,7 @@ def test_new_facts_after_a_sent_message_reach_chat(reply_ready):
 def test_new_worker_and_task_numbers_after_a_reply_reach_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Yes. Looking at it."', actor=story.agent)
-    text = "Delegated to Codex worker 672: tasks 6923 and 6931. I kept back task 7049."
+    text = two_lines("Delegated to Codex worker 672: tasks 6923 and 6931. I kept back task 7049.")
     story.hook("s-1", HookSamples.message_display(text))
     expect_chat(story, text)
 
@@ -119,7 +126,7 @@ def test_new_worker_and_task_numbers_after_a_reply_reach_chat(reply_ready):
 def test_new_row_numbers_or_questions_after_a_reply_reach_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "The worker has task 7246 and its tests passed."', actor=story.agent)
-    text = "The worker has task 7247 and its tests passed."
+    text = two_lines("The worker has task 7247 and its tests passed.")
     question = "The worker has task 7246 and its tests passed?"
     story.hook("s-1", HookSamples.message_display(text))
     story.hook("s-1", HookSamples.message_display(question))
@@ -130,8 +137,8 @@ def test_new_row_numbers_or_questions_after_a_reply_reach_chat(reply_ready):
 def test_sixty_percent_overlap_is_held_and_less_reaches_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "apple berry cherry"', actor=story.agent)
-    repeated = "apple berry cherry melon grape"
-    news = "melon grape lemon apple berry cherry"
+    repeated = two_lines("apple berry cherry melon grape")
+    news = two_lines("melon grape lemon apple berry cherry")
     story.hook("s-1", HookSamples.message_display(repeated))
     story.hook("s-1", HookSamples.message_display(news))
     expect_absent_chat(story, repeated)
@@ -141,7 +148,7 @@ def test_sixty_percent_overlap_is_held_and_less_reaches_chat(reply_ready):
 def test_a_closing_text_naming_only_rows_the_reply_named_stays_out_of_chat_in_other_words(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
-    text = "The reminder change is already filed as task 7413, with everything you described."
+    text = two_lines("The reminder change is already filed as task 7413, with everything you described.")
     story.hook("s-1", HookSamples.message_display(text))
     expect_absent_chat(story, text)
 
@@ -149,7 +156,7 @@ def test_a_closing_text_naming_only_rows_the_reply_named_stays_out_of_chat_in_ot
 def test_a_closing_text_naming_a_new_task_in_other_words_reaches_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
-    text = "The reminder change is already filed as task 7413, and the follow up is task 7414."
+    text = two_lines("The reminder change is already filed as task 7413, and the follow up is task 7414.")
     story.hook("s-1", HookSamples.message_display(text))
     expect_chat(story, text)
 
@@ -165,8 +172,27 @@ def test_a_closing_text_with_a_question_in_other_words_reaches_chat(reply_ready)
 def test_a_closing_text_naming_a_new_file_in_other_words_reaches_chat(reply_ready):
     story = reply_ready
     story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
-    text = "Everything described there lives in src/reminder.py, per task 7413."
+    text = two_lines("Everything described there lives in src/reminder.py, per task 7413.")
     story.hook("s-1", HookSamples.message_display(text))
+    expect_chat(story, text)
+
+
+def test_a_one_line_closing_text_after_a_reply_stays_out_of_chat_in_any_words_and_the_agent_is_told(reply_ready):
+    story = reply_ready
+    story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
+    text = "Nearly done with the languages run."
+    shown = story.hook("s-1", HookSamples.message_display(text))
+    assert "your reply is sent, so your one closing line was not shown" in shown.lines, shown.lines
+    expect_absent_chat(story, text)
+
+
+def test_a_one_line_text_after_a_reply_that_a_tool_follows_reaches_chat(reply_ready):
+    story = reply_ready
+    story.run('message reply 1 "Task 7413 is filed with all its parts: the reminder text, the timing and the tests."', actor=story.agent)
+    text = "Now I am reading the reminder code."
+    story.hook("s-1", HookSamples.message_display(text))
+    expect_absent_chat(story, text)
+    story.hook("s-1", HookSamples.edit("src/cart.py"))
     expect_chat(story, text)
 
 

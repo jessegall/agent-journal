@@ -28,6 +28,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
+from core.modules.drivers.commands.support.compaction_end_percent import CompactionEndPercent
 from core.modules.drivers.commands.support.required_commands import RequiredCommands
 from core.modules.drivers.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
@@ -50,8 +51,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare) -> None:
-        self.home, self.share = home, share
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent) -> None:
+        self.home, self.share, self.compaction_end = home, share, compaction_end
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
@@ -68,6 +69,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         answers = command.answers
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
+        self.compaction_end.settle(command.event, agent.id, context)
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()

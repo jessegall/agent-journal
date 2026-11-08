@@ -183,26 +183,29 @@ def test_an_idle_agents_lost_text_reaches_the_chat_at_a_tick(builder, tmp_path, 
     expect_chat_count(builder, AGENT_TEXT, 1)
 
 
-def test_text_after_a_reply_shows_at_once_and_a_following_tool_does_not_repeat_it(reply_story):
+def test_a_line_after_a_reply_shows_when_a_tool_follows_it_and_is_not_repeated(reply_story):
     reply_story.hook("s-1", HookSamples.message_display(AGENT_TEXT))
-    expect_chat_count(reply_story, AGENT_TEXT, 1)
+    expect_chat_count(reply_story, AGENT_TEXT, 0)
     reply_story.hook("s-1", TOOL_FINISHED)
     reply_story.hook("s-1", TOOL_FINISHED)
     expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_second_text_after_a_reply_shows_at_once_too(reply_story):
-    reply_story.hook("s-1", HookSamples.message_display("First part."))
+def test_a_text_of_two_lines_after_a_reply_shows_at_once_and_a_closing_line_after_a_tool_stays_out(reply_story):
+    text = "First part.\nSecond line."
+    reply_story.hook("s-1", HookSamples.message_display(text))
+    expect_chat_count(reply_story, text, 1)
     reply_story.hook("s-1", TOOL_FINISHED)
     reply_story.hook("s-1", HookSamples.message_display("All of it is in."))
-    expect_chat_count(reply_story, "First part.", 1)
-    expect_chat_count(reply_story, "All of it is in.", 1)
+    reply_story.hook("s-1", HookSamples.stop())
+    expect_chat_count(reply_story, text, 1)
+    expect_chat_count(reply_story, "All of it is in.", 0)
 
 
-def test_a_closing_line_after_a_reply_reaches_the_chat(reply_story):
+def test_a_closing_line_after_a_reply_stays_out_of_the_chat(reply_story):
     reply_story.hook("s-1", HookSamples.message_display("I told you where it stands."))
     reply_story.hook("s-1", HookSamples.stop())
-    expect_chat_count(reply_story, "I told you where it stands.", 1)
+    expect_chat_count(reply_story, "I told you where it stands.", 0)
 
 
 def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(reply_story, tmp_path):
@@ -210,9 +213,9 @@ def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(reply_story, tm
     expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_lost_closing_line_after_a_reply_reaches_the_chat(reply_story, tmp_path):
+def test_a_lost_closing_line_after_a_reply_stays_out_of_the_chat(reply_story, tmp_path):
     run_hook(reply_story, transcript(tmp_path, agent_row(reply_story, "I told you where it stands.")))
-    expect_chat_count(reply_story, "I told you where it stands.", 1)
+    expect_chat_count(reply_story, "I told you where it stands.", 0)
 
 
 def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchecked(server):
