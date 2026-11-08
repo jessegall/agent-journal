@@ -6,12 +6,15 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 
+from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from suites.coding.modules.workers.rules.unstarted_worker_rule import START_SECONDS
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
@@ -32,6 +35,26 @@ def inactive_line(role: str, agent_id: int, count: int = GRACE_MINUTES) -> str:
 
 def line_count(story, line: str) -> int:
     return story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line)
+
+
+def becomes_the_merger(story, agent_id: int) -> None:
+    database = story.container.get(Database)
+    with database.transaction():
+        database.connection.execute("UPDATE agents SET profile = ? WHERE id = ?", (MERGER_PROFILE, agent_id))
+
+
+class MergerUnderBuilder(StoryFixture):
+    parent = HelperUnderBuilder
+
+    def steps(self, story):
+        becomes_the_merger(story, story.helper.id)
+
+
+class StartedMerger(StoryFixture):
+    parent = StartedHelper
+
+    def steps(self, story):
+        becomes_the_merger(story, helper_agent(story).id)
 
 
 def idle_worker(new_story):
@@ -122,6 +145,14 @@ def test_a_helper_that_used_a_tool_within_the_limit_is_not_named(new_story):
     story.expect_rows(line_count(story, line) == 0)
 
 
+def test_an_idle_merger_is_not_named(new_story):
+    story = new_story(fixture=MergerUnderBuilder)
+    story.tick(MAIN_SESSION)
+    story.advance(minutes(GRACE_MINUTES))
+    story.tick(MAIN_SESSION)
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", inactive_line("helper", story.helper.id))
+
+
 def test_a_helper_that_ended_is_not_named(new_story):
     story = new_story(fixture=HelperUnderBuilder)
     story.expect_success(f"agent end {story.helper.id}")
@@ -194,8 +225,7 @@ def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_sto
     story.expect_rows(line_count(story, "has had work waiting") == 0)
 
 
-def test_an_ended_helper_whose_job_has_not_started_is_named(new_story, monkeypatch):
-    story = new_story(fixture=StartedHelper)
+def expect_named_for_its_waiting_job(story, monkeypatch) -> None:
     helper = helper_agent(story)
     story.expect_success(f"agent end {helper.id}", actor=Actor(helper.id, ActorType.AGENT))
     resumable_session(story, helper, monkeypatch)
@@ -204,3 +234,13 @@ def test_an_ended_helper_whose_job_has_not_started_is_named(new_story, monkeypat
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
     story.expect_rows(line_count(story, f"helper:{helper.id} has had work waiting") == 1)
+
+
+def test_an_ended_helper_whose_job_has_not_started_is_named(new_story, monkeypatch):
+    expect_named_for_its_waiting_job(new_story(fixture=StartedHelper), monkeypatch)
+
+
+def test_an_ended_merger_whose_job_has_not_started_is_named_too(new_story, monkeypatch):
+    story = new_story(fixture=StartedMerger)
+    story.advance(minutes(1))
+    expect_named_for_its_waiting_job(story, monkeypatch)

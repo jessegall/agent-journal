@@ -3,6 +3,7 @@ from core.base.agent_type_book import AgentTypeBook
 
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, UNSTARTED_JOB
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
@@ -38,7 +39,8 @@ WAITING_WORK_SOURCES = (*RESUMING_SOURCES, HELPER_JOB_SOURCE)
 
 class InactiveHelperRule(DriverRule):
     """A tick names each inactive helper to its parent once its grace has passed and again after the configured
-    number of minutes, and in the same way each ended helper whose waiting work has not started."""
+    number of minutes, and in the same way each ended helper whose waiting work has not started. The merger waits
+    between workers by design, so it is not named for being inactive."""
 
     name = "workers.inactive-helper"
     hook = HookEventName.TICK
@@ -99,7 +101,7 @@ class InactiveHelperRule(DriverRule):
 
     def helpers(self, main_id: int) -> list[Agent]:
         roles = self.types.derived_types("helper")
-        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles]
+        helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles and agent.profile != MERGER_PROFILE]
         return sorted(helpers, key=lambda helper: roles.index(helper.role))
 
     def is_inactive(self, helper: Agent, activity: AgentActivity, hook: AgentHook, span: Seconds) -> bool:
