@@ -26,3 +26,17 @@ func TestSavedCommandsShareTheirProgramAndWorkingFolder(t *testing.T) {
 		})
 	}
 }
+
+// a saved command run by its own name with no arguments is still that saved command, though another saved command has the same line
+func TestASavedCommandWithNoArgumentsKeepsItsName(t *testing.T) {
+	for _, definition := range []string{"python3 -m pytest {args}", "python3 -m pytest -q {args}", "python3 -m pytest"} {
+		classifier := NewClassifier(LoadTable(""))
+		classifier.aliasLines = map[string]string{"pytest-run": definition, "python-run": definition}
+		classifier.savedCommands = []string{"pytest-run", "python-run"}
+		classifier.savedCommandsKnown = true
+		prepared := classifier.Line("journal pytest-run")
+		if prepared.ParseError != "" || len(prepared.Parts) != 1 || prepared.Parts[0].SavedCommand != "pytest-run" {
+			t.Fatalf("%q: prepared line %+v", definition, prepared)
+		}
+	}
+}
