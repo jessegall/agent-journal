@@ -12,9 +12,13 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core.base.container import Container
+from core.base.hosting.host_probe import HostProbe
+from core.base.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
+from core.base.hosting.hosted_start_check import HostedStartCheck
 from core.base.journal_container import opened_container, synced_database_container
 from core.base.journal_home import JournalHome
 from core.base.log_level import LogLevel
+from core.base.refusal import Refusal
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler
@@ -58,6 +62,7 @@ FILE_LIMIT = 10240
 
 ANSWER_LIMIT_SECONDS = 2
 SECOND_SERVER_CODE = 0
+UNSAFE_HOST_CODE = 1
 
 TUNNEL_CHECK_SECONDS = 30.0
 SERVICES_CHECK_SECONDS = 30.0
@@ -99,6 +104,12 @@ def main(argv: list[str]) -> int:
     code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
     code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)
     files = ServerFiles(home)
+    try:
+        HostedStartCheck(HostedFile.shared_hosting(home), HostProbe(), HOSTED_FILE_PATH).check_host()
+    except Refusal as refusal:
+        files.log_line(refusal.text, LogLevel.ERROR)
+        print(refusal.text, file=sys.stderr)
+        return UNSAFE_HOST_CODE
     waiting_server = WaitingServer(home, HandoverDescriptors.parsed(arguments.take_over)) if arguments.take_over else None
     if waiting_server is not None:
         files.keep_lock_descriptor(waiting_server.descriptors.lock)
