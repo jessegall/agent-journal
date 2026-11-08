@@ -79,13 +79,13 @@ output and only shapes what you get back. A redirect to a file still hides the o
 without one. An ended sample can be read with `journal output read <output> --reader <name>` after saving its
 reader.
 
-## Commands of unknown kind
+## Commands of unknown type
 
-A command whose program the journal does not know is refused until you say what kind it is, by its leading words:
-`journal command-kind make "scripts/dev go test" "test run"`. Every later command starting with those words
-is of that kind, and that kind's rules hold at once, the same command included: a test run or build then goes through a
-saved alias with its reader and takes no pipe. Name the words that make it that kind, the program and its first
-arguments, not a whole line. `journal command-kind list` shows them.
+A command whose program the journal does not know is refused until you say what type it is, by its leading words:
+`journal command-type make "scripts/dev go test" "test run"`. Every later command starting with those words
+is of that type, and that type's rules hold at once, the same command included: a test run or build then goes through a
+saved alias with its reader and takes no pipe. Name the words that make it that type, the program and its first
+arguments, not a whole line. `journal command-type list` shows them.
 
 ## Aliases
 

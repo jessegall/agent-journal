@@ -243,7 +243,7 @@
       "variables"
     ]
   },
-  "core.aliases.command_kind.created": {
+  "core.aliases.command_type.created": {
     "forms": [
       "commit",
       "guard",
@@ -255,7 +255,7 @@
       "words"
     ]
   },
-  "core.aliases.command_kind.deleted": {
+  "core.aliases.command_type.deleted": {
     "forms": [
       "commit",
       "guard",
@@ -267,7 +267,7 @@
       "words"
     ]
   },
-  "core.aliases.command_kind.updated": {
+  "core.aliases.command_type.updated": {
     "forms": [
       "commit",
       "guard",

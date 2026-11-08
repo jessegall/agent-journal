@@ -60,7 +60,7 @@ func TestAnUnknownCommandFromAnAliasTakesTheAliasCategory(t *testing.T) {
 	}
 }
 
-func TestAnUnknownCommandTakesTheKindAnAgentGaveItsLeadingWords(t *testing.T) {
+func TestAnUnknownCommandTakesTheTypeAnAgentGaveItsLeadingWords(t *testing.T) {
 	for _, sample := range []struct{ line, category string }{
 		{"scripts/dev go test ./cli/judge/ -count=1", "test run"},
 		{"scripts/dev go build ./...", "build"},
@@ -69,7 +69,7 @@ func TestAnUnknownCommandTakesTheKindAnAgentGaveItsLeadingWords(t *testing.T) {
 	} {
 		classifier := NewClassifier(LoadTable(""))
 		classifier.aliasLines = map[string]string{}
-		classifier.commandKinds = map[string]string{"scripts/dev go test": "test run", "scripts/dev go build": "build", "ls": "test run"}
+		classifier.commandTypes = map[string]string{"scripts/dev go test": "test run", "scripts/dev go build": "build", "ls": "test run"}
 		prepared := classifier.Line(sample.line)
 		if len(prepared.Parts) != 1 || prepared.Parts[0].Classification.Category != sample.category {
 			t.Errorf("%q was classified %+v, want %q", sample.line, prepared.Parts, sample.category)
