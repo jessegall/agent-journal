@@ -22,14 +22,14 @@ class MainTaskHandoff:
         saved.write_text(patch)
         return saved
 
-    def taken(self, worktree_folder: str, patch: Path) -> None:
+    def collect_patch(self, worktree_folder: str, patch: Path) -> None:
         if patch.stat().st_size == 0:
             return
         finished = self.git.git(worktree_folder, GIT_LIMIT_SECONDS, "apply", "--index", str(patch))
         if finished.returncode != 0:
             raise Refusal(f"the progress in {patch.name} does not fit the worker's worktree", (finished.stderr or finished.stdout).strip())
 
-    def removed_from_main(self, folder: str, patch: Path) -> None:
+    def clear_main_patch(self, folder: str, patch: Path) -> None:
         if patch.stat().st_size == 0:
             return
         self.git.checked(folder, GIT_LIMIT_SECONDS, "apply", "-R", str(patch))

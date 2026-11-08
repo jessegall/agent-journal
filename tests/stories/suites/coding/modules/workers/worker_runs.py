@@ -103,9 +103,9 @@ def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
     event = HookEvent.parsed(HookSamples.tick().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
     hook = AgentHook(event=event, agent_id=story.agent.id, environment_id=1, role=AgentRole.MAIN, driver="coding.main", timestamp=story.clock.timestamp())
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     story.container.get(StoppedWorkerRunRule).answer(hook)
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_total_cost_less(cost, RULE_LIMIT_POINTS)
 
 

@@ -88,5 +88,5 @@ def expect_file_skill(story, text) -> None:
 
 
 def expect_recent_event(story, newest_event_id, expected) -> None:
-    actual = [event.event for event in story.container.get(EventLog).events_past(newest_event_id)]
+    actual = [event.event for event in story.container.get(EventLog).events_after(newest_event_id)]
     assert expected in actual, actual

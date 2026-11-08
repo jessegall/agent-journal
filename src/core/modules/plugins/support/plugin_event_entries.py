@@ -4,7 +4,7 @@ from core.base.registry.registry import Registry
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 
-class PluginDeclaredEvents:
+class PluginEventEntries:
     """Adds subscriptions for named events from the registry to a plugin manifest."""
 
     def __init__(self, registry: Registry) -> None:

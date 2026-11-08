@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.support.gone_agents import GoneAgents
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
 from core.modules.agents.support.agent_rows import AgentRows
 
@@ -17,7 +17,7 @@ class MissingProcessRule(DriverRule):
     name = "drivers.missing-process"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
 
     def __init__(self, agents: AgentRows, missing_agents: GoneAgents, types: HelperTypeBook) -> None:
         self.agents, self.missing_agents, self.types = agents, missing_agents, types

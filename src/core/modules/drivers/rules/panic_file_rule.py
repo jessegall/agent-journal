@@ -24,7 +24,7 @@ class PanicFileRule(DriverRule):
         self.home = home
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not self.names_panic_file(hook) or self.server_failed_to_answer():
+        if not self.names_panic_file(hook) or self.server_unreachable():
             return RuleAnswer.allowed()
         return RuleAnswer.refused(PANIC_FILE.nudge())
 
@@ -37,6 +37,6 @@ class PanicFileRule(DriverRule):
             return any(PANIC_PATH.search(redirect) for redirect in tool.shell.redirects) or any(PANIC_PATH.search(part.text) for part in tool.shell.parts)
         return any(PANIC_PATH.search(str(value)) for value in hook.event.tool_input().values())
 
-    def server_failed_to_answer(self) -> bool:
+    def server_unreachable(self) -> bool:
         log = self.home.bypass_log
         return log.is_file() and bool(FileAccess.shared().read(log, errors="replace").strip())

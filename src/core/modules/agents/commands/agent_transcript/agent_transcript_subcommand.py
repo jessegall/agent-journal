@@ -38,7 +38,7 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
         if path is None:
             return Page((), arguments.page, arguments.limit, 0)
         if arguments.before_id is not None:
-            page = self.index.before(provider, path, arguments.before_id, arguments.limit)
+            page = self.index.older_rows(provider, path, arguments.before_id, arguments.limit)
         else:
             page = self.index.page(provider, path, arguments.page, arguments.limit)
         return replace(page, rows=self.authors.tagged(agent, page.rows))

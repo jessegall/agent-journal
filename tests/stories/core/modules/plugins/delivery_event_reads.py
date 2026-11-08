@@ -21,9 +21,9 @@ def test_a_delivery_on_a_row_with_100_events_reads_one_event_row_and_names_the_n
     for number in range(EVENT_COUNT):
         story.expect_success(f'task edit {task.id} --brief "Do it, version {number}"', actor=story.agent)
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     story.expect_success(f'task edit {task.id} --brief "The last version"', actor=story.agent)
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     rows_read = sum(rows for statement, rows in cost.statements.items() if ROW_EVENT_READ in statement)
     newest = story.container.get(EventLog).latest_row(story.container.get(Queries).query(Task).table.name, task.id, ["task.update"])
     delivery = deliveries(story)[-1]

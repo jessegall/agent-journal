@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -32,6 +32,6 @@ class StoppedWorkerRunRule(DriverRule):
 
     def is_running_after_stop(self, worker: Agent, hook: AgentHook) -> bool:
         ended_at = worker.ended_at
-        if worker.environment_id != hook.environment_id or worker.role != CodingHelperKind.WORKER or ended_at is None:
+        if worker.environment_id != hook.environment_id or worker.role != CodingHelperRole.WORKER or ended_at is None:
             return False
         return ended_at.elapsed_seconds(hook.timestamp) > STOPPED_LIMIT_SECONDS and bool(self.unfinished.rows(worker.id))

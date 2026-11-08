@@ -26,9 +26,9 @@ class RuleHistoryWriter:
         self.repository, self.history, self.queries, self.histories = repository, history, queries, histories
 
     def record(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        written = [record for record in answers.rules if record.history or record.outcome in ANSWERED_OUTCOMES]
-        stored = self.histories.of(agent_id) if written else {}
-        for record in written:
+        answered = [record for record in answers.rules if record.history or record.outcome in ANSWERED_OUTCOMES]
+        stored = self.histories.rows(agent_id) if answered else {}
+        for record in answered:
             self.write(agent_id, record, stored.get((record.name, record.layer)), context)
         self.history.clear()
 

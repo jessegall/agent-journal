@@ -58,10 +58,10 @@ class TemplateDatabases:
             return Template(JournalHome(usable), pickle.loads(FileAccess.shared().binary(usable / STATE_FILE)))
 
     def usable_folder(self, folder: Path, name: str) -> Path:
-        if self.adaptation.built_in(folder) == self.adaptation.checkout:
+        if self.adaptation.builder_name(folder) == self.adaptation.checkout:
             return folder
         adapted = self.folder / f"{name}-{hashlib.sha1(self.adaptation.checkout.encode()).hexdigest()[:16]}"
-        if not (adapted / STATE_FILE).is_file() or self.adaptation.built_in(adapted) != self.adaptation.checkout:
+        if not (adapted / STATE_FILE).is_file() or self.adaptation.builder_name(adapted) != self.adaptation.checkout:
             self.adaptation.adapted(folder, adapted)
         return adapted
 

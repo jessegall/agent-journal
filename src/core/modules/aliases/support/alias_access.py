@@ -19,11 +19,11 @@ class AliasAccess:
         if refusal := self.refusal(alias, caller):
             raise refusal
 
-    def is_plugin_off(self, alias: Alias) -> bool:
+    def is_plugin_disabled(self, alias: Alias) -> bool:
         return alias.plugin_id is not None and not self.queries.query(Plugin).find(alias.plugin_id).enabled
 
     def refusal(self, alias: Alias, caller: Caller) -> Refusal | None:
-        if self.is_plugin_off(alias):
+        if self.is_plugin_disabled(alias):
             return Refusal(f"{alias.name} belongs to a plugin that is switched off", "a person switches the plugin on in its window")
         if alias.agent_access or caller.actor.type is not ActorType.AGENT or (alias.category and alias.category.is_long_running):
             return None

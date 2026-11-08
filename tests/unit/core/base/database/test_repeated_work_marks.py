@@ -24,7 +24,7 @@ class MarkedDatabase:
 
 
 def read(work: RepeatedWork, database: MarkedDatabase, commit_during_read: bool) -> None:
-    work.take_read_mark()
+    work.mark_read()
     if commit_during_read:
         database.mark = (database.mark[0] + 1, 0, 0)
     work.loaded([], VERSION_CHECK)

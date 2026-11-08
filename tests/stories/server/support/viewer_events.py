@@ -15,7 +15,7 @@ class LoggedViewer:
         return self.server.viewer_stream(self.cookie, self.cursor_id, patterns)
 
     def hook_event_count(self) -> int:
-        return len(self.server.story.container.get(EventLog).events_past(self.cursor_id))
+        return len(self.server.story.container.get(EventLog).events_after(self.cursor_id))
 
 
 def expect_event(response, name):

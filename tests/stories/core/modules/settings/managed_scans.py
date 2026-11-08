@@ -39,7 +39,7 @@ def test_give_back_restores_disabled_hooks_and_records_both_actions(project_stor
         entries = ProgramHooks.partitioned(ProgramHooks.read(story.home.project_folder / name)["hooks"]).commands
         expect_answers(entries, 1)
         expect_command_entries(entries, "project-check")
-    names = {event.event for event in events.events_past(start)}
+    names = {event.event for event in events.events_after(start)}
     expect_version_four_map_limit("managed-hook.scanned", "managed-hook.restored", names)
 
 

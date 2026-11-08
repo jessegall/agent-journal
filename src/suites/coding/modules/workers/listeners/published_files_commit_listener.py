@@ -21,7 +21,7 @@ class PublishedFilesCommitListener(CommitListener[FilePublishing]):
     def handle(self, event: FilePublishing, logged: LoggedEvent) -> None:
         checkouts = {(environment.folder, environment.branch) for environment in self.environments.all() if not environment.test}
         for folder, branch in sorted(checkouts):
-            if self.git.is_on_branch(folder, branch):
+            if self.git.is_current_branch(folder, branch):
                 self.commit(folder)
 
     def commit(self, folder: str) -> None:

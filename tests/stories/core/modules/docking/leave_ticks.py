@@ -41,12 +41,12 @@ def test_an_items_row_ending_schedules_its_departure(running_docked_task):
 def test_an_event_for_another_row_loads_no_dock_item(running_docked_task):
     story, _, item = running_docked_task
     story.expect_success('message send "Unrelated" --environment main', actor=story.user)
-    logged = next(event for event in story.container.get(EventLog).events_past(0) if event.event == "message.create")
+    logged = next(event for event in story.container.get(EventLog).events_after(0) if event.event == "message.create")
     listener = story.container.get(DockItemLeaveListener)
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     listener.handle(Touched(), logged)
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_value(cost.tables["dock_items"], 0)
     expect_docked_state(story, item, "docked")
 

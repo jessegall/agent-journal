@@ -7,9 +7,9 @@ from core.base.driver.seconds import Seconds
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
-from suites.coding.support.context_over_limit import ContextOverLimit
+from suites.coding.support.context_limit_check import ContextLimitCheck
 
 RETRY_SECONDS = Seconds(600)
 
@@ -21,13 +21,13 @@ class ContextLimitRule(DriverRule):
     name = "workers.context-limit"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, history: HookHistory, over_limit: ContextOverLimit) -> None:
-        self.history, self.over_limit = history, over_limit
+    def __init__(self, history: HookHistory, limit_check: ContextLimitCheck) -> None:
+        self.history, self.limit_check = history, limit_check
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not self.over_limit.compacts_at_stop(hook.agent_id) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
+        if not self.limit_check.needs_compaction(hook.agent_id) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(CONTEXT_COMPACTED.nudge()).running(ChooseAgentControl(hook.agent_id, "context", self.over_limit.action()))
+        return RuleAnswer.with_nudges(CONTEXT_COMPACTED.nudge()).running(ChooseAgentControl(hook.agent_id, "context", self.limit_check.action()))

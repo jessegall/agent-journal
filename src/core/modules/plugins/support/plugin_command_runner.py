@@ -48,7 +48,7 @@ class PluginCommandRunner:
         self.scripts.start(running, plugin, RUN_KEY, EventForm.COMMIT, context.timestamp)
         try:
             output, _ = running.communicate()
-            stopped = self.scripts.stop_reason(running) is not ScriptStop.NOT_STOPPED
+            stopped = self.scripts.stop_reason(running) is not ScriptStop.STOP_FAILED
         finally:
             self.scripts.finish(running)
         if stopped and self.queries.query(Process).find(process.id).ended_at is None:

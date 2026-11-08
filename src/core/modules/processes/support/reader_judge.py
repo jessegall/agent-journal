@@ -25,7 +25,7 @@ CHECK_ABSENCE_PATTERN = re.compile(r"^Nothing to judge\s*$", re.IGNORECASE)
 REJECTED_COMMAND_PATTERN = re.compile(r"^usage:|^(?:error: )?(?:unknown option|unrecognized arguments|no such option|invalid choice)|has no subcommand", re.MULTILINE | re.IGNORECASE)
 CRASHED_START_PATTERN = re.compile(r"^Traceback \(most recent call last\)|^\w*Error: |^error: could not find .*Cargo\.toml|^error: fatalError$|: command not found$|^\S+ command not found$", re.MULTILINE)
 KILLED_EXIT_CODES = (129, 130, 134, 137, 139, 143)
-TIMED_OUT_PATTERN = re.compile(r"^\+{3,} Timeout \+{3,}$|^Timeout \([0-9:.]+\)!", re.MULTILINE)
+TIMEOUT_PATTERN = re.compile(r"^\+{3,} Timeout \+{3,}$|^Timeout \([0-9:.]+\)!", re.MULTILINE)
 CRASHING_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
 FEW_LINES = 5
 SAMPLE_OUTPUTS = 5
@@ -82,7 +82,7 @@ class ReaderJudge:
 
     @staticmethod
     def is_killed(exit_code: int | None, text: str) -> bool:
-        return exit_code in KILLED_EXIT_CODES or (exit_code is not None and exit_code < 0) or bool(TIMED_OUT_PATTERN.search(text))
+        return exit_code in KILLED_EXIT_CODES or (exit_code is not None and exit_code < 0) or bool(TIMEOUT_PATTERN.search(text))
 
     @staticmethod
     def is_rejected(exit_code: int | None, text: str) -> bool:

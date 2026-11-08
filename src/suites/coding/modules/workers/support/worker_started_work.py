@@ -12,7 +12,7 @@ from suites.coding.modules.workers.support import worker_job
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
 class WorkerStartedWork:
@@ -25,20 +25,20 @@ class WorkerStartedWork:
 
     def workers(self) -> list[Agent]:
         holders = sorted({task.holder_id for task in self.queries.query(Task).filter(state=TaskState.STARTED).all_rows() if task.holder_id is not None})
-        return [worker for worker in self.queries.query(Agent).find_many(holders) if self.is_stranded(worker)]
+        return [worker for worker in self.queries.query(Agent).find_many(holders) if self.is_abandoned(worker)]
 
-    def is_stranded(self, worker: Agent) -> bool:
-        if worker.role != CodingHelperKind.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
+    def is_abandoned(self, worker: Agent) -> bool:
+        if worker.role != CodingHelperRole.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
             return False
         if not self.unfinished.rows(worker.id):
             return False
-        return not self.was_told_to_go_on(worker) and not self.stop.was_stopped(worker) and self.told_count(worker) < worker_job.RESUME_LIMIT_COUNT
+        return not self.has_resume_nudge(worker) and not self.stop.was_stopped(worker) and self.resume_count(worker) < worker_job.RESUME_LIMIT_COUNT
 
-    def was_told_to_go_on(self, worker: Agent) -> bool:
+    def has_resume_nudge(self, worker: Agent) -> bool:
         lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id).matching(Among("source", tuple(RESUMING_SOURCES))).all_rows()
         return any(line.state is AgentLineState.WAITING or line.update_timestamp().value > worker.ended_at.value for line in lines)
 
-    def told_count(self, worker: Agent) -> int:
+    def resume_count(self, worker: Agent) -> int:
         lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, source=UNFINISHED_TASKS_SOURCE).all_rows()
         progress = self.unfinished.last_progress_text(worker.id)
         return sum(line.creation_timestamp().text >= progress for line in lines)

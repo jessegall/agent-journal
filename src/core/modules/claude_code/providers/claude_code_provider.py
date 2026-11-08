@@ -88,7 +88,7 @@ class ClaudeCodeProvider(Provider):
     hook_files = (Path(".claude/settings.json"), Path(".claude/settings.local.json"))
     session_variable = "CLAUDE_CODE_SESSION_ID"
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
-    compacts_in_print_mode = True
+    compacts_headless = True
     controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
                 ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
                 ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", COMPACT_LINE), ControlChoice("clear", "Clear context", "/clear"))))
@@ -229,8 +229,8 @@ class ClaudeCodeProvider(Provider):
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
         return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
 
-    def line_sent(self, line: SessionLine) -> bool:
-        return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)
+    def delivered_line(self, line: SessionLine) -> bool:
+        return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").delivered_line(line)
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:
         return ClaudePeerNotes.note(line)

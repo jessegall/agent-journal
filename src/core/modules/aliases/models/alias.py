@@ -40,7 +40,7 @@ class Alias(Model):
     fixed_at: Timestamp | None = None
 
     @property
-    def is_held(self) -> bool:
+    def is_claimed(self) -> bool:
         return self.silent_at is not None and self.fixed_at is None
 
     def __post_init__(self) -> None:

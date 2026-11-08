@@ -61,7 +61,7 @@ ALLOWED_READ_REPEATS = {
     ("core/base/database/listener_cursor_table.py", "has_unhandled_events"): "Each listener round checks whether earlier listeners created more events.",
     ("core/base/database/listener_cursor_table.py", "has_pending_events"): "Startup completion must be checked as listener cursors advance.",
     ("core/base/change/event_log.py", "newest_id"): "Urgent listeners must notice events written by the previous listener.",
-    ("core/base/change/event_log.py", "events_past"): "Listener rounds read new events written by earlier listeners.",
+    ("core/base/change/event_log.py", "events_after"): "Listener rounds read new events written by earlier listeners.",
     ("core/base/listener/event_rows.py", "prepare"): "Cached rows are checked by version only after a write, from a listener or another process, changed the database mark.",
 }
 BULK_SEEDS = "core/base/seed/demo.py"
@@ -132,11 +132,11 @@ class RepeatedWork(PointTally):
             self.read_origins[statement] = self.caller_frames()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
             first_read = self.shown_calls(self.read_origins[statement])
-            self.reject(self.found("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {first_read}\nrepeated read:"))
+            self.reject(self.build_finding("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {first_read}\nrepeated read:"))
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
-            self.reject(self.found("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
+            self.reject(self.build_finding("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
 
-    def take_read_mark(self) -> None:
+    def mark_read(self) -> None:
         if OPEN_REQUEST.get() is self and self.database is not None:
             self.started_mark = self.database.content_mark()
 
@@ -192,7 +192,7 @@ class RepeatedWork(PointTally):
             if statement.scan_reason is not None:
                 self.allowed_scans[statement] = statement.scan_reason
                 continue
-            self.findings.append(self.found("scan", f"{match.group(1)}|{self.sql_without_parameters(statement)}", f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}"))
+            self.findings.append(self.build_finding("scan", f"{match.group(1)}|{self.sql_without_parameters(statement)}", f"one request scanned {match.group(1)}: {plan}\n{statement.sql} {statement.parameters}"))
 
     @staticmethod
     def has_page_bounds(page: re.Match[str], statement: Statement) -> bool:
@@ -225,14 +225,14 @@ class RepeatedWork(PointTally):
         return "\n".join(f"  {call}" for call in cls.stack_calls(frames)[-SHOWN_CALLS:])
 
     @classmethod
-    def found(cls, category: str, subject: str, text: str) -> RepeatedFinding:
+    def build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding:
         frames = cls.caller_frames()
         return RepeatedFinding("|".join([category, subject, *cls.stack_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
 
     def note_command(self, command: str) -> None:
         self.commands[command] += 1
         if self.commands[command] == COMMAND_LIMIT_REPEATS + 1:
-            self.reject(self.found("command", command, f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}"))
+            self.reject(self.build_finding("command", command, f"one request started this more than {COMMAND_LIMIT_REPEATS} times: {command}"))
 
     def note_file_read(self, path: str) -> None:
         if self.is_allowed_file_read():
@@ -243,7 +243,7 @@ class RepeatedWork(PointTally):
         self.file_versions[path] = version
         self.file_reads[path] += 1
         if self.file_reads[path] == 2:
-            self.findings.append(self.found("file", path, f"one request read file twice: {path}"))
+            self.findings.append(self.build_finding("file", path, f"one request read file twice: {path}"))
 
     @staticmethod
     def file_version(path: str) -> int:

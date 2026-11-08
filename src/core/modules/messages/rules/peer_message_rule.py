@@ -40,11 +40,11 @@ class PeerMessageRule(DriverRule):
         commands = [RecordPeerMessage(hook.agent_id, note.sender, note.text, note.key) for note in self.new_notes(hook.agent_id, notes)]
         if self.is_agent_message(hook):
             tool_input = hook.event.tool_input()
-            commands.append(RecordPeerMessage(hook.agent_id, self.named(f"{tool_input.get('to', '')}", notes), f"{tool_input.get('message', '')}", f"{hook.event.firing}", True))
+            commands.append(RecordPeerMessage(hook.agent_id, self.recipient_name(f"{tool_input.get('to', '')}", notes), f"{tool_input.get('message', '')}", f"{hook.event.firing}", True))
         return RuleAnswer.allowed().running(*commands)
 
     @staticmethod
-    def named(recipient: str, notes: Sequence[PeerNote]) -> str:
+    def recipient_name(recipient: str, notes: Sequence[PeerNote]) -> str:
         return next((note.sender for note in reversed(notes) if recipient and note.address == recipient), recipient)
 
     def is_agent_message(self, hook: AgentHook) -> bool:

@@ -37,19 +37,19 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
         config = self.config(plugin)
         file = self.home.project_folder / config.file
         schema = self.schema(config)
-        handed_in = self.handed_in(command, file)
-        if handed_in is not None:
-            problems = self.problems(schema, handed_in)
+        given_text = self.given_text(command, file)
+        if given_text is not None:
+            problems = self.problems(schema, given_text)
             if problems:
                 raise Refusal(f"the {plugin.name} config does not fit its schema: {'; '.join(problems)}", "change the values at those places")
-            self.write(file, handed_in)
-        if handed_in is None and not file.is_file():
+            self.write(file, given_text)
+        if given_text is None and not file.is_file():
             return plugin
-        text = handed_in if handed_in is not None else self.read(file)
+        text = given_text if given_text is not None else self.read(file)
         digest = SkillDigest.digest(text)
         if digest == plugin.config_digest:
             return plugin
-        problems = [] if handed_in is not None else self.problems(schema, text)
+        problems = [] if given_text is not None else self.problems(schema, text)
         if problems:
             fault = f"its config {config.file} does not fit its schema, so the last good copy stays: {'; '.join(problems)}"
             faulted = self.bus.dispatch(RecordPluginFault(plugin.id, fault, False), context)
@@ -64,7 +64,7 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
         return FileAccess.shared().read(file) if file.is_file() else "null"
 
     @staticmethod
-    def handed_in(command: RefreshPluginConfig, file: Path) -> str | None:
+    def given_text(command: RefreshPluginConfig, file: Path) -> str | None:
         if not command.changes:
             return command.document_text
         document: object = json.loads(FileAccess.shared().read(file)) if file.is_file() else {}
@@ -94,6 +94,6 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
 
     @staticmethod
     def write(file: Path, text: str) -> None:
-        written = file.with_name(f".{file.name}.writing")
-        FileAccess.shared().write(written, text)
-        os.replace(written, file)
+        staging_file = file.with_name(f".{file.name}.writing")
+        FileAccess.shared().write(staging_file, text)
+        os.replace(staging_file, file)

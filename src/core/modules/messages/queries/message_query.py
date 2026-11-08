@@ -62,7 +62,7 @@ class MessageQuery(Query[Message]):
     def addressed(self, agent_id: int) -> Self:
         return self.matching(MessageTarget(agent_id))
 
-    def has_person_message_past(self, message_id: int) -> bool:
+    def has_person_message_after(self, message_id: int) -> bool:
         return self.kept.read_newest(self.table.name, self.matching(Among("type", PERSON_MESSAGE_TYPES)).matching(Greater("id", message_id)).exists,
                                      f"type IN ({', '.join('?' for _ in PERSON_MESSAGE_TYPES)}) AND id > ?", [*PERSON_MESSAGE_TYPES, message_id], name="messages.person_message_past")
 

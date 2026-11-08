@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.modules.agents.support.agent_rows import AgentRows
@@ -21,5 +21,5 @@ class PausedOverlay(Overlay):
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
         agent = self.agents.find(agent_id)
-        holder = self.agents.find(agent.parent_id) if agent.role == HelperKind.READ_ONLY and agent.parent_id is not None else agent
+        holder = self.agents.find(agent.parent_id) if agent.role == HelperRole.HELPER and agent.parent_id is not None else agent
         return [OpenRow("agent", holder.id, holder.paused_at)] if holder.paused_at is not None else []

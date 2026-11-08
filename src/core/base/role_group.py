@@ -15,7 +15,7 @@ class RoleGroup(StrEnum):
     MARK = "mark"
     PLUGIN = "plugin"
     DISPATCH = "dispatch"
-    READ_ONLY_HELPERS = "read-only-helpers"
+    HELPERS = "read-only-helpers"
 
     def roles(self, policy: AgentPolicy) -> tuple[str, ...]:
         match self:
@@ -29,10 +29,10 @@ class RoleGroup(StrEnum):
                 return policy.plugin_roles
             case RoleGroup.DISPATCH:
                 return policy.dispatch_roles
-            case RoleGroup.ANY | RoleGroup.READ_ONLY_HELPERS:
+            case RoleGroup.ANY | RoleGroup.HELPERS:
                 return ()
 
     def has_role(self, role: str, policy: AgentPolicy, helper_types: HelperTypeBook) -> bool:
-        if self is RoleGroup.READ_ONLY_HELPERS:
-            return role in helper_types.read_only_keys()
+        if self is RoleGroup.HELPERS:
+            return role in helper_types.helper_keys()
         return self is RoleGroup.ANY or role in self.roles(policy)

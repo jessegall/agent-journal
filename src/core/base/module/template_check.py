@@ -9,7 +9,7 @@ class TemplateCheck:
     """Checks that template titles are unique and their targets are registered models or commands."""
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        targets = self.known_targets(modules)
+        targets = self.target_names(modules)
         owners: defaultdict[str, list[str]] = defaultdict(list[str])
         problems: list[str] = []
         for module in modules:
@@ -23,6 +23,6 @@ class TemplateCheck:
         return tuple(problems)
 
     @staticmethod
-    def known_targets(modules: Sequence[type[Module]]) -> frozenset[str]:
+    def target_names(modules: Sequence[type[Module]]) -> frozenset[str]:
         return frozenset([*(declaration.model.cli_name for module in modules for declaration in module.models),
                           *(subcommand_line(command).split()[0] for module in modules for command in module.subcommands)])

@@ -38,7 +38,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
 from core.modules.drivers.support.nudger import Nudger
-from core.modules.drivers.support.search_kind import SearchKind
+from core.modules.drivers.support.search_category import SearchCategory
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.module.driver_entries import DRIVERS_MODULE
 
@@ -70,7 +70,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         answers = command.answers
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
-        self.compaction_end.settle(command.event, agent, context)
+        self.compaction_end.finish_compaction(command.event, agent, context)
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
@@ -78,7 +78,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         lines = handed_lines.with_answers(answers)
         moves = OneMovePerRow.split(answers.commands)
         tool = command.event.tool
-        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start or command.event.is_clear_start, "search": SearchKind.of(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
+        metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start or command.event.is_clear_start, "search": SearchCategory.classify(tool, str(command.event.raw.get("cwd", "")), self.home.project_folder), "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
             percent = self.share.percent(command.event.program, command.event.session)
             if percent is not None:

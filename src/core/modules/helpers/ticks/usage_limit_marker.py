@@ -11,7 +11,7 @@ from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.usage_limits import UsageLimits
 
 
-class UsageLimitMarks:
+class UsageLimitMarker:
     """Every few seconds, marks the open agents of each program whose plan allowance is used up in full as at
     the usage limit until it starts again, or until the limit a person set is lifted, and, once it has
     started again, clears the mark and types the lines that waited."""
@@ -21,7 +21,7 @@ class UsageLimitMarks:
         for program in container.get(Providers).all():
             if container.get(UsageLimits).stale_hourly(program.name, states.windows(program.name), container.get(Clock).timestamp()):
                 bus.run(RefreshHourlyLimits(program.name), Actor.core())
-            resets_at = states.limit_resets_at(program.name)
+            resets_at = states.limit_reset_timestamp(program.name)
             for agent in (agent for agent in agents if agent.program == program.name and agent.limited_until != resets_at):
                 bus.run(SetAgentUsageLimit(agent.id, resets_at), Actor.core(), environment_id=agent.environment_id)
                 if resets_at is None:

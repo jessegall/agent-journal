@@ -40,7 +40,7 @@ class ModuleRemoveLine:
         parser = ArgumentParser(prog="journal module remove")
         parser.add_argument("name")
         parser.add_argument("--json", action="store_true")
-        WriteFlags.add_reason(parser)
+        WriteFlags.declare_reason_flag(parser)
         try:
             arguments = parser.parse_args(argv[2:])
         except SystemExit as error:

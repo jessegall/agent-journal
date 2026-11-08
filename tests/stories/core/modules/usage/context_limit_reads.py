@@ -4,7 +4,7 @@ import os
 import pytest
 
 from core.base.journal_home import JournalHome
-from core.modules.settings.support.context_share import CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS, ContextShare
+from core.modules.settings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, ContextShare
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_value
@@ -19,7 +19,7 @@ def agent_row(story):
 
 
 def reported(story, limit_on, limit_tokens):
-    story.expect_success(f"setting set {CONTEXT_LIMIT_ON} {limit_on} --project", actor=story.user)
+    story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} {limit_on} --project", actor=story.user)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {limit_tokens} --project", actor=story.user)
     save_status_file(story, "s-1", {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})
     return agent_row(story)
@@ -40,7 +40,7 @@ def test_with_no_limit_on_or_a_smaller_window_the_usage_read_gives_no_limit(new_
 def test_a_status_file_in_the_shape_the_launcher_writes_for_a_headless_agent_gives_its_tokens_to_the_usage_read(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=story.user)
-    story.expect_success(f"setting set {CONTEXT_LIMIT_ON} true --project", actor=story.user)
+    story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
     save_status_file(story, "s-1", {"session_id": "s-1", "context_window": {"used_percentage": 20, "total_input_tokens": 200100}, "cost": {"total_cost_usd": 1.5}})
     row = agent_row(story)
     expect_value((row["context_tokens"], row["context_limit_tokens"], row["cost_dollars"]), (200100, 400000, 1.5))
@@ -64,6 +64,6 @@ def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_nu
 
     monkeypatch.setattr(JournalHome, "status_file", status_file_changing_after_it_is_asked_for)
     with story.repeated_work.request():
-        reading = story.container.get(ContextShare).reading("claude", "s-1")
-    expect_value((reading.percent, reading.used_tokens), (WINDOW_PERCENT, USED_TOKENS))
+        usage = story.container.get(ContextShare).usage("claude", "s-1")
+    expect_value((usage.percent, usage.used_tokens), (WINDOW_PERCENT, USED_TOKENS))
     expect_value(len(asked), 1)

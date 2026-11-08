@@ -4,7 +4,7 @@ from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_declared_events import PluginDeclaredEvents
+from core.modules.plugins.support.plugin_event_entries import PluginEventEntries
 from core.modules.plugins.support.plugin_run_check import PluginRunCheck
 from core.modules.plugins.support.runnable_plugin import RunnablePlugin
 
@@ -13,7 +13,7 @@ class RunnablePlugins:
     """Answers whether a plugin may run and gives its manifest. A plugin stays switched on while it is upgraded,
     needs a newer journal or its files changed, though it does not run then."""
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, declared_events: PluginDeclaredEvents) -> None:
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, declared_events: PluginEventEntries) -> None:
         self.plugins, self.folders, self.declared_events = plugins, folders, declared_events
 
     def check(self, plugin: Plugin) -> PluginRunCheck:

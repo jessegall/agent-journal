@@ -12,8 +12,8 @@ class OverviewSection:
     text: str
 
     def lines(self) -> str:
-        printed = self.text.splitlines()
-        if len(printed) <= SECTION_LINES:
+        lines = self.text.splitlines()
+        if len(lines) <= SECTION_LINES:
             return f"## {self.command}\n{self.text}"
-        shown = "\n".join(printed[:SECTION_LINES])
-        return f"## {self.command}\n{shown}\n{len(printed) - SECTION_LINES} more lines: journal {self.command}"
+        shown = "\n".join(lines[:SECTION_LINES])
+        return f"## {self.command}\n{shown}\n{len(lines) - SECTION_LINES} more lines: journal {self.command}"

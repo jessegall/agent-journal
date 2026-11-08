@@ -29,13 +29,13 @@ def test_the_registry_names_only_the_events_the_listener_handles(new_story, name
 def test_an_event_no_sequence_names_reads_no_sequence_or_run_rows(open_plan_sequence, listener_type):
     story = open_plan_sequence
     story.expect_success('message send "Unrelated" --environment main', actor=story.user)
-    logged = next(event for event in story.container.get(EventLog).events_past(0) if event.event == "message.create")
+    logged = next(event for event in story.container.get(EventLog).events_after(0) if event.event == "message.create")
     listener = story.container.get(listener_type)
     listener.handle(Touched(), logged)
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     listener.handle(Touched(), logged)
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_value(cost.tables["sequences"], 0)
     expect_value(cost.tables["sequence_runs"], 0)
 

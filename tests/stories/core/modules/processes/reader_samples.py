@@ -31,8 +31,8 @@ def test_a_command_with_no_sample_reads_no_part_row_into_python(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     kept_runs(story)
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     rows = story.container.get(ProcessPartQuery).kept_samples(["cargo test*"]).page(1, 1).rows
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_absent_value(rows)
     expect_total_cost_less(cost, READ_LIMIT_POINTS)

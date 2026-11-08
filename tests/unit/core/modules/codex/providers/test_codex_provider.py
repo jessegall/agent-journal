@@ -92,7 +92,7 @@ def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared
 
 
 def test_codex_takes_no_line_while_it_runs_so_the_line_waits_for_the_next_hook(provider):
-    assert provider.line_sent(SessionLine("t-1", "the journal", "log your task")) is False
+    assert provider.delivered_line(SessionLine("t-1", "the journal", "log your task")) is False
 
 
 def test_the_context_percent_is_the_last_token_count_of_the_sessions_rollout(provider, tmp_path, monkeypatch):

@@ -78,5 +78,5 @@ class TranscriptMessageRule(DriverRule):
         if self.texts.is_acknowledgement(hook.agent_id, text, created_at):
             return True
         if is_closing or not self.texts.is_single_line(text):
-            return self.texts.is_held_after_reply(hook.agent_id, text, created_at)
+            return self.texts.is_blocked_after_reply(hook.agent_id, text, created_at)
         return self.texts.is_duplicate_reply(hook.agent_id, text, created_at)

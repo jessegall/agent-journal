@@ -13,7 +13,7 @@ class ProcessWaitTargets(WaitTargets):
     """Wait targets with the output word for a process, and what an ended output says in the refusal of a wait
     on it: how it ended, with its exit code, and the summary its reader wrote."""
 
-    words = {"output": "processes"}
+    aliases = {"output": "processes"}
 
     def __init__(self, registry: Registry, tables: Tables, queries: Queries, book: StateBook, outputs: OutputQuery) -> None:
         super().__init__(registry, tables, queries, book)

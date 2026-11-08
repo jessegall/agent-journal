@@ -87,8 +87,8 @@ class AccessRule(ReadonlyRule):
 
     def permitted(self, hook: AgentHook, tool: Tool) -> PermissionRequest | None:
         allowed = self.queries.query(PermissionRequest).filter(asker_id=hook.agent_id, state=PermissionState.ALLOWED).oldest().all_rows()
-        named = (tool.shell.display_text if tool.shell is not None else "", *tool.files)
-        return next((request for request in allowed if request.action in named), None)
+        requested = (tool.shell.display_text if tool.shell is not None else "", *tool.files)
+        return next((request for request in allowed if request.action in requested), None)
 
     def is_listed(self, hook: AgentHook, tool: Tool) -> bool:
         if tool.name in self.providers.provider(hook.event.program).safe_tools:

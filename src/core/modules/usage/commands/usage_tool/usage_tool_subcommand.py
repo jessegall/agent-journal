@@ -81,8 +81,8 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         notice = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PROMPT).matching(ContainsSome(["summary"], list(MONITOR_OPENINGS))).newest().first()
         if notice is not None:
             calls = calls.matching(Minimum("created_at", notice.creation_timestamp().text))
-        now = self.clock.timestamp()
-        return tuple(text for call in calls.newest().page(1, SHOWN_RUNS).rows if call.creation_timestamp().elapsed_seconds(now) < MONITOR_LIFE_SECONDS
+        current = self.clock.timestamp()
+        return tuple(text for call in calls.newest().page(1, SHOWN_RUNS).rows if call.creation_timestamp().elapsed_seconds(current) < MONITOR_LIFE_SECONDS
                      for text in [str(call.metadata.module_part(DRIVERS_MODULE).get(MONITOR_DESCRIPTION, ""))] if text)
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:

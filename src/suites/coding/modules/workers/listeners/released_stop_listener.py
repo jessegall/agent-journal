@@ -5,7 +5,7 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -26,7 +26,7 @@ class ReleasedStopListener(SaveListener[StopAllowed]):
 
     def handle(self, event: StopAllowed, context: Context) -> None:
         call = event.row
-        if not self.queries.query(Agent).filter(id=call.session_agent_id, role=CodingHelperKind.WORKER).exists() or not self.tasks.started_tasks(call.session_agent_id):
+        if not self.queries.query(Agent).filter(id=call.session_agent_id, role=CodingHelperRole.WORKER).exists() or not self.tasks.started_tasks(call.session_agent_id):
             return
         previous_stops = [stop for stop in self.calls.agent(call.session_agent_id).filter(hook=HookEventName.STOP).newest().page(1, STOP_REFUSAL_COUNT + 1).rows if stop.id != call.id]
         if len(previous_stops) >= STOP_REFUSAL_COUNT and all(stop.answer is HookAnswer.REFUSED for stop in previous_stops[:STOP_REFUSAL_COUNT]):

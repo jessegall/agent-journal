@@ -8,4 +8,4 @@ class InstructionImport:
     file: str
     imported: str
     count: int
-    imports_back: bool
+    is_circular: bool

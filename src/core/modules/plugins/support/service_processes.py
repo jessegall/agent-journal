@@ -36,7 +36,7 @@ class ServiceProcesses:
         if key not in self.places:
             return
         place = self.places.pop(key)
-        (place if rows is None else place.through(rows)).leave(exit_code)
+        (place if rows is None else place.resolve(rows)).leave(exit_code)
 
     def close(self, rows: PluginPlaceRows | None = None) -> None:
         for key in list(self.running):

@@ -33,7 +33,7 @@ class AliasExpansionRule(DriverRule):
             alias = self.aliases.saved(name)
             if alias is None:
                 return RuleAnswer.refused(ALIAS_MISSING.nudge())
-            if self.access.is_plugin_off(alias):
+            if self.access.is_plugin_disabled(alias):
                 return RuleAnswer.refused(ALIAS_PLUGIN_OFF.nudge(plugin=alias.plugin_id))
             if self.access.refusal(alias, Caller(Actor(hook.agent_id, ActorType.AGENT))):
                 return RuleAnswer.refused(ALIAS_ACCESS_REFUSED.nudge())

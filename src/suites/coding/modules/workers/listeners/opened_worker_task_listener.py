@@ -4,7 +4,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.support.idle_worker_send import IdleWorkerSend
+from suites.coding.modules.workers.support.inactive_worker_send import InactiveWorkerSend
 
 
 class OpenedWorkerTaskListener(SaveListener[Moved[Task]]):
@@ -14,8 +14,8 @@ class OpenedWorkerTaskListener(SaveListener[Moved[Task]]):
     moves = tuple([TaskLifecycle.unblock])
     disabled_scopes = [ActorScope]
 
-    def __init__(self, idle_send: IdleWorkerSend) -> None:
-        self.idle_send = idle_send
+    def __init__(self, inactive_sender: InactiveWorkerSend) -> None:
+        self.inactive_sender = inactive_sender
 
     def handle(self, event: Moved[Task], context: Context) -> None:
-        self.idle_send.send(event.row, context)
+        self.inactive_sender.send(event.row, context)

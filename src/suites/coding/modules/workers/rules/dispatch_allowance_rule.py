@@ -1,4 +1,4 @@
-from suites.coding.modules.workers.support.worker_nudges import MAIN_SENDS_NO_WORKERS
+from suites.coding.modules.workers.support.worker_nudges import MAIN_WORKERS_REFUSED
 from suites.coding.support.auto_advice import AutoAdvice
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
@@ -19,8 +19,8 @@ class DispatchAllowanceRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, settings: SettingValues, advice: AutoAdvice) -> None:
-        self.settings, self.advice = settings, advice
+    def __init__(self, settings: SettingValues, guidance: AutoAdvice) -> None:
+        self.settings, self.guidance = settings, guidance
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -28,4 +28,4 @@ class DispatchAllowanceRule(DriverRule):
                                                for part in shell.parts)
         if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(MAIN_SENDS_NO_WORKERS.nudge(then=self.advice.without_workers()))
+        return RuleAnswer.refused(MAIN_WORKERS_REFUSED.nudge(then=self.guidance.without_workers()))

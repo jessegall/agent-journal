@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.driver.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.testing.hook_samples import HookSamples
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
 
@@ -43,7 +43,7 @@ def test_the_skills_of_a_profile_are_listed_with_the_ones_made_for_its_type_and_
 
 def test_a_helper_in_the_main_checkout_is_refused_reading_a_skill_its_profile_does_not_list(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperKind.READ_ONLY, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
+    story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperRole.HELPER, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
     listed = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/journal/SKILL.md"], None)
     unlisted = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/{MAIN_ONLY}/SKILL.md"], None)
     story.expect_hook_allowed("s-helper", listed)

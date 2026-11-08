@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.viewer.inspector_width import InspectorWidth
-from core.base.viewer.panel_words import PanelWords
+from core.base.viewer.panel_words import PanelLabels
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.modules.reminders.models.reminder import Reminder
@@ -29,13 +29,13 @@ def test_an_inspector_is_drawn_at_one_of_four_widths():
 
 @pytest.mark.parametrize("label", ["Close the plan", "open it", "BACK to work"])
 def test_a_label_starting_with_a_panel_word_is_found_whatever_its_case(label):
-    expect_value(bool(PanelWords.begins(label)), True)
+    expect_value(bool(PanelLabels.begins(label)), True)
 
 
 @pytest.mark.parametrize("label", ["Complete the plan", "Reopen the task", "Plan: close it"])
 def test_a_label_not_starting_with_a_panel_word_is_not_found(label):
-    expect_value(bool(PanelWords.begins(label)), False)
+    expect_value(bool(PanelLabels.begins(label)), False)
 
 
 def test_reopen_does_not_start_with_open():
-    expect_value(bool(PanelWords.begins("Reopen the task")), False)
+    expect_value(bool(PanelLabels.begins("Reopen the task")), False)

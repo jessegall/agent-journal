@@ -64,7 +64,7 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
     if name == "TASK_METADATA_REMINDER":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "tag_command", "score_command"}
         return
-    if name == "TASK_READ_ONLY_METADATA_REMINDER":
+    if name == "TASK_HELPER_METADATA_REMINDER":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "options"}
         return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"

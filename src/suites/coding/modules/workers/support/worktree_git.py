@@ -93,7 +93,7 @@ class WorktreeGit:
         listing = self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--untracked-files=all", "--", *existing).stdout
         return tuple(line[3:] for line in listing.splitlines())
 
-    def is_on_branch(self, folder: str, branch: str) -> bool:
+    def is_current_branch(self, folder: str, branch: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--is-inside-work-tree").returncode == 0 and self.head(folder) == branch
 
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
@@ -125,7 +125,7 @@ class WorktreeGit:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
 
     def sync(self, worktree: Worktree) -> tuple[str, ...]:
-        with self.written_files_set_aside(worktree.folder):
+        with self.without_instruction_files(worktree.folder):
             merged = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-edit", worktree.base_branch).returncode == 0
         if merged:
             return ()
@@ -150,8 +150,8 @@ class WorktreeGit:
 
     @staticmethod
     def built_name(path: str) -> str | None:
-        found = HASHED_BUILT_FILE.fullmatch(Path(path).name)
-        return found.group(1) if found is not None else None
+        injections = HASHED_BUILT_FILE.fullmatch(Path(path).name)
+        return injections.group(1) if injections is not None else None
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
         deleted = [change.relative for change in changes.changes if change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative]
@@ -192,16 +192,16 @@ class WorktreeGit:
         self.commit(worktree, "Rebuild web files from merged sources", f"Journal: worker worker-{worktree.session_agent_id}")
 
     @contextmanager
-    def written_files_set_aside(self, folder: str) -> Generator[None]:
-        held = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
-        texts = {name: FileAccess.shared().read(Path(folder) / name) for name in held}
-        for name in held:
+    def without_instruction_files(self, folder: str) -> Generator[None]:
+        original_texts = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        texts = {name: FileAccess.shared().read(Path(folder) / name) for name in original_texts}
+        for name in original_texts:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
             self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--", name)
         try:
             yield
         finally:
-            for name in held:
+            for name in original_texts:
                 FileAccess.shared().write(Path(folder) / name, texts[name])
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 
@@ -209,7 +209,7 @@ class WorktreeGit:
         stash = self.stash(worktree)
         rebased = False
         try:
-            with self.written_files_set_aside(worktree.folder):
+            with self.without_instruction_files(worktree.folder):
                 rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
             return rebased
         finally:
@@ -270,7 +270,7 @@ class WorktreeGit:
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
 
-    def hold_back(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
+    def untrack_files(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
         tracked = set(self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "--", *names).stdout.split())
         if tracked:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", *sorted(tracked))
@@ -343,12 +343,12 @@ class WorktreeGit:
     def remove_orphan(self, folder: str, path: str, base_branch: str, branch: str | None) -> bool:
         if not self.is_merged(folder, base_branch, branch):
             return False
-        force = tuple(["--force"]) if self.holds_only_published_folders(path) else ()
+        force = tuple(["--force"]) if self.is_published_folder(path) else ()
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", *force, path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         return not Path(path).exists()
 
-    def holds_only_published_folders(self, path: str) -> bool:
+    def is_published_folder(self, path: str) -> bool:
         lines = self.git(path, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.splitlines()
         return bool(lines) and all(line.startswith(UNTRACKED_STATUS) and line[len(UNTRACKED_STATUS):].split("/")[0] in PUBLISHED_FOLDERS for line in lines)
 

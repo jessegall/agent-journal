@@ -8,7 +8,7 @@ class TaskCounts:
     """How many tasks are in progress (started or in testing), blocked and open now, delegated ones included,
     and how many were completed after `since`."""
 
-    in_progress: int
+    started: int
     blocked: int
     open: int
     completed: int

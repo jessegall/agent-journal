@@ -24,7 +24,7 @@ class ReportPinListener(CommitListener[Created[Message]]):
         message = event.row
         if message.type is not MessageType.AGENT or message.is_chat_visible:
             return
-        ends_a_job = self.queries.query(HelperJob).filter(report_message_id=message.id).exists()
-        designs = self.check.design_pins(message.text) if ends_a_job else []
-        for pin in [*designs, *self.check.pull_request_pins(message.text)]:
+        has_job_report = self.queries.query(HelperJob).filter(report_message_id=message.id).exists()
+        designs = self.check.design_pins(message.text) if has_job_report else []
+        for pin in [*designs, *self.check.change_request_pins(message.text)]:
             self.bus.run(pin, Actor(logged.actor_id, ActorType.AGENT), environment_id=message.environment_id, cause_id=logged.id)

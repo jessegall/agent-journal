@@ -9,5 +9,5 @@ class MessageReceipt:
     went to."""
 
     message_id: int
-    named: LinkPage
-    sent: LinkPage
+    subject_links: LinkPage
+    recipient_links: LinkPage

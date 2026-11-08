@@ -36,7 +36,7 @@ class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
         launch = Launch(self.home.folder.parent, Path(environment.folder), provider.session_model(), name, SessionStart(str(uuid4())), {"JOURNAL_LAUNCH": name})
         session_command = provider.session_command(launch)
         agent = self.bus.dispatch(StartAgent(name, command.program, AgentRole.MAIN), context)
-        handed = self.link.sent({"agent_id": agent.id, "session": name, "environment": environment.name, "folder": environment.folder,
+        handed = self.link.request_launcher({"agent_id": agent.id, "session": name, "environment": environment.name, "folder": environment.folder,
                                  "command": list(session_command.arguments), "variables": dict(session_command.variables)})
         if handed is None:
             raise Refusal("no launcher is running here", "start the agent with journal launch in a terminal")

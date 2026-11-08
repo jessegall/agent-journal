@@ -18,7 +18,7 @@ class MakeStandingApprovalHandler(Handler[MakeStandingApproval, StandingApproval
 
     def handle(self, command: MakeStandingApproval, context: Context) -> StandingApproval:
         request = self.queries.query(ApprovalRequest).find(command.request_id)
-        made = self.standing.made_from(request, command.scope, context.actor.id)
+        made = self.standing.build_standing(request, command.scope, context.actor.id)
         existing = self.standing.covering(request)
         if existing is not None and existing.scope is command.scope and existing.creator_id == context.actor.id:
             return existing

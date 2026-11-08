@@ -98,7 +98,7 @@ class EventLog:
     def event(self, event_id: int) -> LoggedEvent:
         return LoggedEvent.parsed(self.table.row(event_id))
 
-    def events_past(self, event_id: int, limit: int = PAGE_SIZE_EVENTS) -> list[LoggedEvent]:
+    def events_after(self, event_id: int, limit: int = PAGE_SIZE_EVENTS) -> list[LoggedEvent]:
         return [LoggedEvent.parsed(row) for row in self.table.rows_past(event_id, limit)]
 
     def latest_event(self, event: str) -> LoggedEvent | None:

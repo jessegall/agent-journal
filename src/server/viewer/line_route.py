@@ -57,7 +57,7 @@ class LineRoute:
             return TimedLineAnswer(LineAnswer(USAGE_CODE, error=str(error)), (perf_counter() - started_at) * 1000)
         try:
             answer = self.run_line(container, window, argv, person_id, environment, shared)
-            return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).tally.points())
+            return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).repeated_work.points())
         finally:
             self.line_run.close(container, argv)
 
@@ -77,19 +77,19 @@ class LineRoute:
             self.line_run.close(container, [])
 
     def timed_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> TimedLineAnswer:
-        initial_values = container.get(Database).tally.points()
+        initial_values = container.get(Database).repeated_work.points()
         started_at = perf_counter()
         try:
             if not container.get(WindowLines).parsed(request.window, request.line).is_read:
                 return self.timed_single_answer(request.window, request.line, person_id, request.environment, shared)
         except UsageError as error:
             return TimedLineAnswer(LineAnswer(USAGE_CODE, error=str(error)), (perf_counter() - started_at) * 1000,
-                                   container.get(Database).tally.points().minus(initial_values))
+                                   container.get(Database).repeated_work.points().minus(initial_values))
         except ShareRefusal as refusal:
             return TimedLineAnswer(LineAnswer(REFUSED_CODE, error=refusal.reason), (perf_counter() - started_at) * 1000,
-                                   container.get(Database).tally.points().minus(initial_values))
+                                   container.get(Database).repeated_work.points().minus(initial_values))
         answer = self.batch_answer(container, request, person_id, shared)
-        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).tally.points().minus(initial_values))
+        return TimedLineAnswer(answer, (perf_counter() - started_at) * 1000, container.get(Database).repeated_work.points().minus(initial_values))
 
     def batch_answer(self, container: Container, request: ViewerLineRequest, person_id: int, shared: SharedRow | None) -> LineAnswer:
         try:

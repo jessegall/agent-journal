@@ -304,7 +304,7 @@ class WorkloadServer:
         assert status == 200, text
         point_counts = PointTally()
         for database in databases:
-            point_counts.add(database.tally.points())
+            point_counts.add(database.repeated_work.points())
         return ReadMeasurement(tuple(json.loads(text)["answers"]), len(databases), len(text.encode()),
                                sum(file_sizes), point_counts.points(), len(statements), tuple(plans), duration_ms, sum(overhead) * 1000)
 

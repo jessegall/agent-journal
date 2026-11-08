@@ -115,7 +115,7 @@ class DocumentsModule(Module):
     library_shares = [DocLibraryShare]
     moves = [DocumentsMove, MessageLinksMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PANE_OR_PAGE, group="project", icon=WindowIcon.DOCUMENT,
+    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, skeleton=DOCUMENTS_DOCUMENTS_SKELETON, search=WindowSearch(DocSearcher, "Search titles and abstracts"), place=WindowPlace.PANE_PAGE, group="project", icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show", "doc inspect", "report inspect", "doc comments", "report comments", "link list"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"],
                                  keys=[WindowKey("library", "document library", arguments=["type", "state", "after"])]),
                WindowDeclaration("documents.document-body", "Text", "document-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.DOCUMENT, skeleton=[SkeletonPart.line()],

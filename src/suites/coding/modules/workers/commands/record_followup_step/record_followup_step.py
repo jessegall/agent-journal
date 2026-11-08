@@ -10,4 +10,4 @@ class RecordFollowupStep(Command[MergeFollowup]):
 
     followup_id: int
     index: int
-    result: str
+    outcome: str

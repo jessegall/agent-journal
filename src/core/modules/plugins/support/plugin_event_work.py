@@ -3,7 +3,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from core.base.cli.caller_stream import CallerStream
-from core.base.command.outside_runs import OutsideRuns
+from core.base.command.external_runs import OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
 from core.base.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter

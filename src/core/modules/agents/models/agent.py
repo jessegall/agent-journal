@@ -64,7 +64,7 @@ class Agent(EnvironmentScoped, Model):
             return AgentActivity.ENDED
         if self.paused_at is not None:
             return AgentActivity.PAUSED
-        return AgentActivity.AT_USAGE_LIMIT if self.limited_until is not None else AgentActivity.WORKING
+        return AgentActivity.USAGE_LIMITED if self.limited_until is not None else AgentActivity.WORKING
 
     @property
     def working_role(self) -> str:

@@ -22,8 +22,8 @@ class InstructionImports:
         self.names: dict[Path, list[str]] = {}
 
     def faults(self) -> list[InstructionImport]:
-        found = [entry for file in self.files() for entry in self.imports(file)]
-        return [entry for entry in found if entry.count > 1 or entry.imports_back]
+        repeated = [entry for file in self.files() for entry in self.imports(file)]
+        return [entry for entry in repeated if entry.count > 1 or entry.is_circular]
 
     def files(self) -> Iterator[Path]:
         for folder, folders, names in self.root.walk():
@@ -31,12 +31,12 @@ class InstructionImports:
             yield from (folder / name for name in names if name in INSTRUCTION_FILES)
 
     def imports(self, file: Path) -> Iterator[InstructionImport]:
-        for name, count in Counter(self.names_of(file)).items():
+        for name, count in Counter(self.import_names(file)).items():
             imported = (file.parent / name).resolve()
-            imports_back = file.resolve() < imported and imported.is_file() and any((imported.parent / back).resolve() == file.resolve() for back in self.names_of(imported))
-            yield InstructionImport(str(file.relative_to(self.root)), name, count, imports_back)
+            is_circular = file.resolve() < imported and imported.is_file() and any((imported.parent / relative).resolve() == file.resolve() for relative in self.import_names(imported))
+            yield InstructionImport(str(file.relative_to(self.root)), name, count, is_circular)
 
-    def names_of(self, file: Path) -> list[str]:
+    def import_names(self, file: Path) -> list[str]:
         resolved = file.resolve()
         if resolved not in self.names:
             self.names[resolved] = self.imported_names(file)

@@ -44,10 +44,10 @@ class JsonPointer:
     def differences(old: object, new: object, pointer: str = "") -> list[str]:
         if is_mapping(old) and is_mapping(new):
             names = list(dict.fromkeys([*old, *new]))
-            return [found for name in names for found in JsonPointer.differences(old.get(name), new.get(name), f"{pointer}/{JsonPointer.escaped(str(name))}")
+            return [difference for name in names for difference in JsonPointer.differences(old.get(name), new.get(name), f"{pointer}/{JsonPointer.escaped(str(name))}")
                     if name not in old or name not in new or old[name] != new[name]]
         if is_list(old) and is_list(new) and len(old) == len(new):
-            return [found for number, (left, right) in enumerate(zip(old, new)) if left != right for found in JsonPointer.differences(left, right, f"{pointer}/{number}")]
+            return [difference for number, (old_item, new_item) in enumerate(zip(old, new)) if old_item != new_item for difference in JsonPointer.differences(old_item, new_item, f"{pointer}/{number}")]
         return [] if old == new else [pointer or "/"]
 
     @staticmethod

@@ -18,8 +18,8 @@ def test_a_reason_after_a_double_dash_belongs_to_the_command_that_runs_and_stays
 def test_a_command_with_a_reason_of_its_own_keeps_it_and_is_not_marked_as_ours():
     own = ArgumentParser()
     own.add_argument("--reason")
-    WriteFlags.add_reason(own)
+    WriteFlags.declare_reason_flag(own)
     assert own.parse_args(["--reason", "x"]).reason == "x" and not hasattr(own.parse_args([]), "reason_is_ours")
     plain = ArgumentParser()
-    WriteFlags.add_reason(plain)
-    assert plain.parse_args([]).reason_is_ours is True
+    WriteFlags.declare_reason_flag(plain)
+    assert plain.parse_args([]).reason_flag_added is True

@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
-class RunningMainAgentsSubcommand(ReadSubcommand[tuple[Agent, ...]]):
+class ShowMainAgentsSubcommand(ReadSubcommand[tuple[Agent, ...]]):
     """`journal agent running-main-agents --environment <name>`: every main agent running in the environment."""
 
     cli_name = "agent"

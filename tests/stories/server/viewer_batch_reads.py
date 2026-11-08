@@ -34,8 +34,8 @@ def test_five_viewer_reads_open_one_database_and_read_one_registry_row(batch_ser
         status, _, text = viewer_answer(port, "/api/lines", cookie, "", {"lines": [
             {"window": "viewer.shell", "line": line, "environment": "main"} for line in lines]})
     answers = json.loads(text)["answers"]
-    registry_reads = sum(count for database in databases for sql, count in database.tally.points().statements.items() if "FROM registry" in sql)
-    points = sum(database.tally.points().total for database in databases)
+    registry_reads = sum(count for database in databases for sql, count in database.repeated_work.points().statements.items() if "FROM registry" in sql)
+    points = sum(database.repeated_work.points().total for database in databases)
     print(f"five viewer reads: {len(databases)} connections, {registry_reads} registry rows, {points} points, {len(statements)} statements")
     expect_value(status, 200)
     expect_value([answer["code"] for answer in answers], [0] * 5)

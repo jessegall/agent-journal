@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 KEYS = ["run-limit", "kept-limit", "profile-limits", "max-minutes", "max-cost", "instruction-files"]
 
 
-class ReadOnlyHelperSettingKeysMigration(Migration):
+class HelperSettingKeysMigration(Migration):
     """These settings hold for read-only helpers alone, so their keys now say so; stored values keep their level."""
 
     number = 7

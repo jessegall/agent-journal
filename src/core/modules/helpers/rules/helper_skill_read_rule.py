@@ -13,7 +13,7 @@ class HelperSkillReadRule(DriverRule):
     name = "helpers.skill-read"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    role_group = RoleGroup.READ_ONLY_HELPERS
+    role_group = RoleGroup.HELPERS
 
     def __init__(self, reads: HelperSkillReads) -> None:
         self.reads = reads

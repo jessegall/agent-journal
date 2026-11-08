@@ -8,19 +8,19 @@ from core.base.viewer.text_field import TextField
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 
-NOT_SETTLED = ButtonCondition("close_reason", tuple([""]))
+CLOSE_REASON_EMPTY = ButtonCondition("close_reason", tuple([""]))
 
 
-def text_inspector(model: type[Doc] | type[Report], noun: str, closing_line: str, label: str) -> InspectorDeclaration:
+def text_inspector(model: type[Doc] | type[Report], model_name: str, closing_line: str, label: str) -> InspectorDeclaration:
     return InspectorDeclaration(
         model,
-        reads=f"{noun} inspect {{row_id}}",
+        reads=f"{model_name} inspect {{row_id}}",
         label=f"{label} {{id}}",
         title="{title}",
         description="{abstract}",
         width=InspectorWidth.WIDE,
-        events=tuple([f"{noun}.*"]),
-        actions=(ButtonDeclaration(f"documents.{noun}-settle", (), f"Mark the {noun_word(noun)} as needing no action", f"{closing_line} {{row_id}} --why={{why}}", icon="tick", condition=NOT_SETTLED,
+        events=tuple([f"{model_name}.*"]),
+        actions=(ButtonDeclaration(f"documents.{model_name}-settle", (), f"Mark the {model_label(model_name)} as needing no action", f"{closing_line} {{row_id}} --why={{why}}", icon="tick", condition=CLOSE_REASON_EMPTY,
                                    fields=tuple([TextField("why", "Why does it need no action?")])),),
         components=tuple([InspectorComponent("documents.document-body")]),
         links=InspectorLinks(),
@@ -28,8 +28,8 @@ def text_inspector(model: type[Doc] | type[Report], noun: str, closing_line: str
     )
 
 
-def noun_word(noun: str) -> str:
-    return "document" if noun == "doc" else noun
+def model_label(model_name: str) -> str:
+    return "document" if model_name == "doc" else model_name
 
 
 DOC_INSPECTOR = text_inspector(Doc, "doc", "doc settle", "Document")

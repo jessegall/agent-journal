@@ -24,9 +24,9 @@ class OutputMonitored(BlockCondition):
 
     def is_true(self, check: BlockCheck) -> bool:
         process = check.container.get(Queries).query(Process).find(int(self.text))
-        return self.is_watched(check) or process.state not in RUNNING_STATES or self.has_live_monitor(check, process)
+        return self.is_watched(check) or process.state not in RUNNING_STATES or self.has_active_monitor(check, process)
 
-    def has_live_monitor(self, check: BlockCheck, process: Process) -> bool:
+    def has_active_monitor(self, check: BlockCheck, process: Process) -> bool:
         calls = check.container.get(Queries).query(HookCall).filter(session_agent_id=check.hook.agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL,
                                                                   answer=HookAnswer.ALLOWED).matching(Minimum("created_at", process.creation_timestamp().text)).matching(ContainsSome(["summary"], [self.text])).all_rows()
         return any(re.search(rf"\b{self.text}\b", call.summary) is not None and call.creation_timestamp().elapsed_seconds(check.hook.timestamp) < MONITOR_LIFE_SECONDS for call in calls)

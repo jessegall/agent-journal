@@ -17,7 +17,7 @@ class AgentOptions:
     def __init__(self, reader: SettingReader, registry: Registry) -> None:
         self.reader, self.registry = reader, registry
 
-    def reading(self, agent_type: str, profile: str = "") -> AgentOptionsReading:
+    def resolved(self, agent_type: str, profile: str = "") -> AgentOptionsReading:
         current = self.reader.current(AGENT_OPTIONS)
         stored = list(current.value) if is_tuple(current.value) else current.value
         if not is_text_list(stored):

@@ -17,9 +17,9 @@ class JournalInstructionFileListener(CommitListener[JournalBooting | Created[Plu
         self.file = file
 
     def handle(self, event: JournalBooting | Created[Plugin] | Updated[Plugin] | Deleted[Plugin], logged: LoggedEvent) -> None:
-        if not self.leaves_the_text_alone(event):
+        if not self.ignores_event(event):
             self.file.write()
 
     @staticmethod
-    def leaves_the_text_alone(event: JournalBooting | Created[Plugin] | Updated[Plugin] | Deleted[Plugin]) -> bool:
+    def ignores_event(event: JournalBooting | Created[Plugin] | Updated[Plugin] | Deleted[Plugin]) -> bool:
         return isinstance(event, Updated) and event.old_row.enabled == event.row.enabled and event.old_row.files_digest == event.row.files_digest

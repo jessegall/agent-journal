@@ -27,7 +27,7 @@ class PluginProgramRule(DriverRule):
             return RuleAnswer.allowed()
         enabled = {plugin.name for plugin in self.plugins.enabled_plugins()}
         for part in shell.parts:
-            found = PLUGIN_PROGRAM.search(part.program)
-            if found is not None and found.group(1) not in enabled:
-                return RuleAnswer.refused(PLUGIN_PROGRAM_OFF.nudge(plugin=found.group(1)))
+            matched = PLUGIN_PROGRAM.search(part.program)
+            if matched is not None and matched.group(1) not in enabled:
+                return RuleAnswer.refused(PLUGIN_PROGRAM_OFF.nudge(plugin=matched.group(1)))
         return RuleAnswer.allowed()

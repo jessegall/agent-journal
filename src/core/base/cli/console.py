@@ -68,10 +68,10 @@ class Console:
                 return self.help_line_count("the journal's commands; journal <name> --help lists one's subcommands", self.line_parser.lookup.cli_names(), stream)
             subcommand_omitted = len(argv) == 1 or (argv[1].startswith("-") and argv[1] not in HELP_FLAGS)
             if subcommand_omitted and f"{argv[0]} {argv[0]}" in self.registry.subcommands:
-                return self.chosen_run([argv[0], *argv], caller, output)
+                return self.run_parsed([argv[0], *argv], caller, output)
             if len(argv) == 1 or argv[1] in HELP_FLAGS:
                 return self.subcommand_help(argv[0], stream)
-            return self.chosen_run(argv, caller, output)
+            return self.run_parsed(argv, caller, output)
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))
             return USAGE_CODE
@@ -120,7 +120,7 @@ class Console:
             return USAGE_CODE
         return self.run(argv, caller, stream, request)
 
-    def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
+    def run_parsed(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand, parser = self.line_parser.parser(argv)
         captured_output = io.StringIO()
         try:
@@ -157,7 +157,7 @@ class Console:
         self.refusal_skips.check_guards(caller.actor, sorted(skipped), arguments.skip_reason)
         newest_event_id = self.events.newest_id()
         value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id, plugin_script=caller.plugin_script)
-        actor_events = [event for event in self.events.events_past(newest_event_id) if event.actor_id == caller.actor.id]
+        actor_events = [event for event in self.events.events_after(newest_event_id) if event.actor_id == caller.actor.id]
         command_timestamps = {event.timestamp for event in actor_events if event.command == command.label()}
         output.confirmation = "\n".join(TouchedRows.built(event for event in actor_events if event.timestamp in command_timestamps).lines())
         with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):

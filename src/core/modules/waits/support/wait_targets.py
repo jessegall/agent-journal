@@ -13,7 +13,7 @@ class WaitTargets:
     other names for a table, which a module that owns the row's model adds in a subclass it binds to this
     one, together with the way to say what a done row ended with."""
 
-    words: Mapping[str, str] = {}
+    aliases: Mapping[str, str] = {}
 
     def __init__(self, registry: Registry, tables: Tables, queries: Queries, book: StateBook) -> None:
         self.registry, self.tables, self.queries, self.book = registry, tables, queries, book
@@ -21,11 +21,11 @@ class WaitTargets:
     def table(self, model: type[Model]) -> str:
         return self.tables.table(model).name
 
-    def taken(self) -> tuple[str, ...]:
+    def registered_names(self) -> tuple[str, ...]:
         models = [cli_name for cli_name, entry in self.registry.models.items() if self.book.lifecycle(entry.model.checked_class(Model)) is not None]
-        return tuple(sorted({*models, *self.words}))
+        return tuple(sorted({*models, *self.aliases}))
 
-    def done_row(self, model: type[Model], row_id: int) -> Model | None:
+    def ended_row(self, model: type[Model], row_id: int) -> Model | None:
         lifecycle = self.book.lifecycle(model)
         row = self.queries.query(model).filter(id=row_id).first()
         if row is None or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
@@ -33,7 +33,7 @@ class WaitTargets:
         return row
 
     def model(self, word: str) -> type[Model] | None:
-        name = self.words.get(word, word)
+        name = self.aliases.get(word, word)
         for cli_name, entry in self.registry.models.items():
             model = entry.model.checked_class(Model)
             if name in (cli_name, model.model_name, self.table(model)):

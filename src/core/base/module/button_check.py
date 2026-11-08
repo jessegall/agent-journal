@@ -14,7 +14,7 @@ from core.base.module.window_check import WindowCheck
 from core.base.registry.button_line import BLANK
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.button_field import ButtonField
-from core.base.viewer.panel_words import PanelWords
+from core.base.viewer.panel_words import PanelLabels
 from core.base.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"
@@ -40,7 +40,7 @@ class ButtonCheck:
     def declared_problems(self, modules: Sequence[type[Module]], shipped: frozenset[str]) -> tuple[str, ...]:
         offered_slots = ButtonSlots(modules)
         slots = offered_slots.owners
-        targets = TemplateCheck.known_targets(modules)
+        targets = TemplateCheck.target_names(modules)
         runs = frozenset(WindowCheck.lines(modules)[1])
         problems = [*offered_slots.problems(), *NameGroups.duplicates([("buttons", [button.name for module in modules for button in module.declared_buttons()])])]
         for module, button in ((module, button) for module in modules for button in module.declared_buttons()):
@@ -72,15 +72,15 @@ class ButtonCheck:
     def style_problems(self, module: type[Module], button: ButtonDeclaration) -> list[str]:
         owner = f"the button {button.name} of module {module.name}"
         inspector_actions = {action.name for inspector in module.inspectors for action in inspector.actions}
-        on_card = button.name in inspector_actions or any(slot.startswith(CARD_SLOT_PREFIX) for slot in button.slots)
-        problems = [f"{owner} shows no icon, and a button on a card or in an inspector has one"] if on_card and not button.icon else []
+        card_button = button.name in inspector_actions or any(slot.startswith(CARD_SLOT_PREFIX) for slot in button.slots)
+        problems = [f"{owner} shows no icon, and a button on a card or in an inspector has one"] if card_button and not button.icon else []
         if any(slot.startswith(MODEL_SLOT_PREFIXES) for slot in button.slots):
             problems += self.label_problems(owner, button.label)
         return problems
 
     @staticmethod
     def label_problems(owner: str, label: str) -> list[str]:
-        return [f"{owner} has the label {label}, which starts with a panel word, and the panel owns those words"] if PanelWords.begins(label) else []
+        return [f"{owner} has the label {label}, which starts with a panel word, and the panel owns those words"] if PanelLabels.begins(label) else []
 
     def action_problems(self, owner: str, text: str, fields: Sequence[ButtonField], runs: frozenset[str], targets: frozenset[str]) -> list[str]:
         try:

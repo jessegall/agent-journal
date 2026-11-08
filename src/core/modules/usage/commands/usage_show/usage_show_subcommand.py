@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
 from dataclasses import replace
 
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.caller.caller import Caller
@@ -48,12 +48,12 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
 
     def with_share(self, agent: Agent) -> SessionStatus:
         status = self.files.status(agent.session)
-        reading = self.share.reading(agent.program, agent.session)
-        return replace(status, context_percent=reading.percent, context_tokens=reading.used_tokens, context_limit_tokens=reading.limit_tokens) if status.context_percent is not None else status
+        usage = self.share.usage(agent.program, agent.session)
+        return replace(status, context_percent=usage.percent, context_tokens=usage.used_tokens, context_limit_tokens=usage.limit_tokens) if status.context_percent is not None else status
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:
-        helpers = agents.filter(role=HelperKind.READ_ONLY).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
+        helpers = agents.filter(role=HelperRole.HELPER).matching(Greater("ended_at", "")).matching(Among("parent_id", tuple(agent.id for agent in opened))).matching(Excluding(Among("id", tuple(agent.id for agent in opened))))
         return tuple(helpers.oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:

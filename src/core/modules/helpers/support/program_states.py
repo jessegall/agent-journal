@@ -23,7 +23,7 @@ from core.modules.usage.support.status_files import StatusFiles
 from core.modules.usage.support.plan_window import PlanWindow
 
 
-AT_LIMIT_PERCENT = 100
+LIMIT_PERCENT = 100
 
 
 class ProgramStates:
@@ -54,22 +54,22 @@ class ProgramStates:
         outage = self.outage_state(program)
         if not outage.is_ready:
             return outage
-        window = self.window_at(program, self.settings.number(PROGRAM_WINDOW_PERCENT) or AT_LIMIT_PERCENT)
+        window = self.window_reaching(program, self.settings.number(PROGRAM_WINDOW_PERCENT) or LIMIT_PERCENT)
         if window is None:
-            own_limit = self.own_limit_resets_at(program)
-            return ProgramState.ready() if own_limit is None else ProgramState.unavailable(f"a usage limit set for {program} is reached", own_limit)
+            custom_limit = self.custom_limit_reset_timestamp(program)
+            return ProgramState.ready() if custom_limit is None else ProgramState.unavailable(f"a usage limit set for {program} is reached", custom_limit)
         return ProgramState.unavailable(window.line, Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc)))
 
-    def limit_resets_at(self, program: str) -> Timestamp | None:
-        window = self.window_at(program, AT_LIMIT_PERCENT)
+    def limit_reset_timestamp(self, program: str) -> Timestamp | None:
+        window = self.window_reaching(program, LIMIT_PERCENT)
         plan_end = None if window is None else Timestamp(datetime.fromtimestamp(window.reset_epoch_seconds, timezone.utc))
-        ends = [end for end in (plan_end, self.own_limit_resets_at(program)) if end is not None]
+        ends = [end for end in (plan_end, self.custom_limit_reset_timestamp(program)) if end is not None]
         return max(ends, key=lambda end: end.value) if ends else None
 
-    def own_limit_resets_at(self, program: str) -> Timestamp | None:
-        return self.limits.reached_until(program, self.windows(program), self.clock.timestamp())
+    def custom_limit_reset_timestamp(self, program: str) -> Timestamp | None:
+        return self.limits.reached_limit_ends(program, self.windows(program), self.clock.timestamp())
 
-    def window_at(self, program: str, percent: float) -> PlanWindow | None:
+    def window_reaching(self, program: str, percent: float) -> PlanWindow | None:
         checked_at = self.clock.timestamp().value.timestamp()
         blocked = [window for window in self.windows(program) if window.used_percent >= percent and window.reset_epoch_seconds > checked_at]
         return max(blocked, key=lambda row: row.reset_epoch_seconds) if blocked else None

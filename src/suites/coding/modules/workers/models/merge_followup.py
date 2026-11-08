@@ -4,7 +4,7 @@ from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 
 PENDING_STEP = "pending"
-DONE_STEP = "done"
+STEP_FINISHED = "done"
 FAILED_STEP = "failed"
 UNCERTAIN_STEP = "uncertain"
 
@@ -32,4 +32,4 @@ class MergeFollowup(EnvironmentScoped, Model):
 
     @property
     def finished(self) -> bool:
-        return all(result == DONE_STEP for result in self.results)
+        return all(outcome == STEP_FINISHED for outcome in self.results)

@@ -147,7 +147,7 @@ def test_missing_endpoints_return_unavailable_metadata(new_story):
 
 def test_receipt_refresh_targets_only_changed_sources(linked_scenario):
     log = linked_scenario.story.container.get(EventLog)
-    events = [event for event in log.events_past(0) if event.event == "link.create"]
+    events = [event for event in log.events_after(0) if event.event == "link.create"]
     linked_scenario.story.expect_rows(events, detail="fixture did not create an actual link event")
     value = json.loads(EventStream.message(events[-1], "main").split("data: ", 1)[1])
     feature("source_model" in value and "source_id" in value, f"receipt cannot identify its event source: {value}")
@@ -155,7 +155,7 @@ def test_receipt_refresh_targets_only_changed_sources(linked_scenario):
     link_event = next(event for event in events if event.data.get("link_type", (None, None))[1] == "about" and event.data.get("source_model", (None, None))[1] == "message")
     cursor = log.newest_id()
     requested_read(linked_scenario, "viewer.shell", ["link", "remove", str(link_event.row_id)])
-    deleted = next(event for event in log.events_past(cursor) if event.event == "link.delete")
+    deleted = next(event for event in log.events_after(cursor) if event.event == "link.delete")
     removed = json.loads(EventStream.message(deleted, "main").split("data: ", 1)[1])
     feature(removed["source_model"] == "message" and removed["source_id"] == link_event.data["source_id"][1], str(removed))
 

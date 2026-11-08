@@ -6,7 +6,7 @@ SETTING_READ_LINE = f"setting show {KEY}"
 
 
 def settings_rows_read(story) -> int:
-    return story.container.get(Database).tally.points().tables["settings"]
+    return story.container.get(Database).repeated_work.points().tables["settings"]
 
 
 def test_the_settings_are_read_once_and_a_change_keeps_them_current(new_story):

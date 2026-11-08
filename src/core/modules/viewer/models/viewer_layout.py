@@ -20,5 +20,5 @@ class ViewerLayout(EnvironmentScoped, Model):
     driver: str = ""
     layout: str
 
-    def has_changed_since(self, version: int | None) -> bool:
+    def has_changed_after(self, version: int | None) -> bool:
         return version is not None and self.version != version

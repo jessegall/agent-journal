@@ -6,7 +6,7 @@ from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
-from suites.coding.support.context_over_limit import ContextOverLimit
+from suites.coding.support.context_limit_check import ContextLimitCheck
 
 
 class NextTask:
@@ -16,7 +16,7 @@ class NextTask:
     high. Auto mode turns it on, and an agent past its context limit is given nothing until its stop has
     compacted it."""
 
-    def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextOverLimit, plan_order: PlanTaskOrder) -> None:
+    def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextLimitCheck, plan_order: PlanTaskOrder) -> None:
         self.tasks, self.plan_tasks, self.queries, self.settings, self.context_limit = tasks, plan_tasks, queries, settings, context_limit
         self.plan_order = plan_order
 
@@ -27,7 +27,7 @@ class NextTask:
         return self.context_limit.tokens(agent_id) is not None
 
     def allows_stop_with_tasks(self, agent_id: int) -> bool:
-        return self.context_limit.compacts_at_stop(agent_id)
+        return self.context_limit.needs_compaction(agent_id)
 
     def urgent(self, excluded_id: int | None = None) -> Task | None:
         most_urgent = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())

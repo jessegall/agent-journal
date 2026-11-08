@@ -30,7 +30,7 @@ class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
 
     def handle(self, event: Created[ProcessPart], context: Context) -> None:
         part = event.row
-        folders = self.not_yet_loaded(part.process_id, self.skill_folders(part.text))
+        folders = self.unloaded_folders(part.process_id, self.skill_folders(part.text))
         if not folders:
             return
         agent_id = self.queries.query(Process).find(part.process_id).session_agent_id
@@ -38,7 +38,7 @@ class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
             if skill.folder in folders:
                 self.bus.dispatch(LoadSkill(agent_id, skill.folder, skill.digest), context)
 
-    def not_yet_loaded(self, process_id: int, folders: set[str]) -> set[str]:
+    def unloaded_folders(self, process_id: int, folders: set[str]) -> set[str]:
         if process_id != self.process_id:
             self.process_id, self.loaded_folders = process_id, set()
         new_folders = folders - self.loaded_folders

@@ -20,12 +20,12 @@ class HelperAllowanceRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, settings: SettingValues, advice: AutoAdvice) -> None:
-        self.settings, self.advice = settings, advice
+    def __init__(self, settings: SettingValues, guidance: AutoAdvice) -> None:
+        self.settings, self.guidance = settings, guidance
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         starts = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == HELPER_START_ARGUMENTS for part in shell.parts)
         if not starts or self.settings.value(STARTS_HELPERS_SETTING) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(MAIN_HELPER_BAN.nudge(then=self.advice.without_helpers()))
+        return RuleAnswer.refused(MAIN_HELPER_BAN.nudge(then=self.guidance.without_helpers()))

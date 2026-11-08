@@ -4,7 +4,7 @@ from datetime import timedelta
 from core.base.file_access import FileAccess
 from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.program_states import ProgramStates
-from core.modules.helpers.ticks.usage_limit_marks import UsageLimitMarks
+from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.testing.story import Story
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
@@ -27,7 +27,7 @@ def limited_story(new_story) -> Story:
 
 
 def halted(story: Story) -> bool:
-    UsageLimitMarks()(story.container)
+    UsageLimitMarker()(story.container)
     return story.row(Agent, story.agent.id).limited_until is not None
 
 

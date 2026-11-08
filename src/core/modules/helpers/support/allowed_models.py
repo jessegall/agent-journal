@@ -20,7 +20,7 @@ class AllowedModels:
             names = [name for name in names if f"{provider.name} {name}" in listed]
         if not agent_type:
             return names
-        options = self.options.reading(agent_type, profile).options
+        options = self.options.resolved(agent_type, profile).options
         if options.allowed_providers is not None and provider.name not in options.allowed_providers:
             return []
         if options.allowed_models is None:

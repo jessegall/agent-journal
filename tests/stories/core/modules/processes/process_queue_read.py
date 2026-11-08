@@ -20,9 +20,9 @@ def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
     for number in range(40):
         end_run(story, start_process(story, f"make old-{number}", category=CommandCategory.BUILD), "built\n")
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     page = queue_page(story)
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     expect_running_2(page, [])
     expect_total_cost_less(cost, QUEUE_READ_POINTS)
 

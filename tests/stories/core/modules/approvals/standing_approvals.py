@@ -74,7 +74,7 @@ def test_accept_once_keeps_no_standing_yes_and_the_next_request_asks_again(new_s
 def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_still_asks_about_another_kind(new_story):
     story = new_story(NOTES, fixture=ResumeAlwaysSame)
     standing = standing_yeses(story)
-    story.expect_rows(len(standing) == 1, standing[0].scope is StandingScope.SAME, standing[0].creator_id == story.user.id, detail=str(standing))
+    story.expect_rows(len(standing) == 1, standing[0].scope is StandingScope.EXACT, standing[0].creator_id == story.user.id, detail=str(standing))
     resume_under_standing_yes(story)
     covered = requests(story)[1]
     story.expect_rows(covered.state is ApprovalState.ACCEPTED, covered.standing_id == standing[0].id, story.row(Agent, story.agent.id).paused_at is None, detail=str(covered))

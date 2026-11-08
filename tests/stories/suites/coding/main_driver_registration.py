@@ -3,7 +3,7 @@ from suites.coding.modules.workers.rules.approved_plan_stop_rule import Approved
 from suites.coding.modules.workers.rules.delivered_work_stop_rule import DeliveredWorkStopRule
 from suites.coding.modules.workers.rules.dispatch_allowance_rule import DispatchAllowanceRule
 from suites.coding.modules.workers.rules.helper_allowance_rule import HelperAllowanceRule
-from suites.coding.modules.workers.rules.idle_worker_stop_rule import IdleWorkerStopRule
+from suites.coding.modules.workers.rules.inactive_worker_stop_rule import InactiveWorkerStopRule
 from suites.coding.modules.workers.rules.merge_checkout_rule import MergeCheckoutRule
 from suites.coding.modules.workers.rules.orphan_worktree_rule import OrphanWorktreeRule
 from suites.coding.modules.workers.rules.small_batch_rule import SmallBatchRule
@@ -17,7 +17,7 @@ from tests.stories.suites.coding.assigner_plans import StartedPlanTasks
 from tests.stories.support.story_checks import expect_absent_value
 
 ELEVEN_RULES = [SmallBatchRule, UnstartedWorkerRule, StoppedWorkerRunRule, ApprovedPlanStopRule, DeliveredWorkStopRule, WorkerFileRule, MergeCheckoutRule,
-                OrphanWorktreeRule, WorkersOutRule, UnmergedWorkerRule, IdleWorkerStopRule]
+                OrphanWorktreeRule, WorkersOutRule, UnmergedWorkerRule, InactiveWorkerStopRule]
 OTHER_MAIN_RULES = [DispatchAllowanceRule, HelperAllowanceRule, MainFileWriteRule]
 
 

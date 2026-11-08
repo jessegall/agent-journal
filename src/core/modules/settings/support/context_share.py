@@ -3,9 +3,9 @@ from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.context_reading import ContextReading
 
-CONTEXT_LIMIT_ON = "journal.core.helpers.context-limit-on"
+CONTEXT_LIMIT_ENABLED = "journal.core.helpers.context-limit-on"
 CONTEXT_LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens"
-WHOLE = 100
+PERCENT_FULL = 100
 
 
 class ContextShare:
@@ -15,17 +15,17 @@ class ContextShare:
     def __init__(self, settings: SettingValues, providers: Providers, home: JournalHome) -> None:
         self.settings, self.providers, self.home = settings, providers, home
 
-    def reading(self, program: str, session: str) -> ContextReading:
+    def usage(self, program: str, session: str) -> ContextReading:
         window_percent, tokens = self.providers.provider(program).context_window(self.home, session)
-        if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ON):
+        if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return ContextReading(window_percent, tokens, None)
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
-        window_tokens = tokens * WHOLE // window_percent if window_percent else None
-        return ContextReading(min(WHOLE, max(tokens * WHOLE // limit, window_percent or 0)), tokens, limit if window_tokens is None or limit < window_tokens else None)
+        window_tokens = tokens * PERCENT_FULL // window_percent if window_percent else None
+        return ContextReading(min(PERCENT_FULL, max(tokens * PERCENT_FULL // limit, window_percent or 0)), tokens, limit if window_tokens is None or limit < window_tokens else None)
 
     def percent(self, program: str, session: str) -> int | None:
-        return self.reading(program, session).percent
+        return self.usage(program, session).percent
 
     def maximum_tokens(self, program: str, session: str) -> int | None:
-        reading = self.reading(program, session)
-        return reading.used_tokens * WHOLE // reading.percent if reading.used_tokens and reading.percent else None
+        usage = self.usage(program, session)
+        return usage.used_tokens * PERCENT_FULL // usage.percent if usage.used_tokens and usage.percent else None

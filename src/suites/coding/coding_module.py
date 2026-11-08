@@ -1,5 +1,5 @@
 from suites.coding.migrations.m006_main_starts_helpers_key import MainStartsHelpersKeyMigration
-from suites.coding.migrations.m007_read_only_helpers_key import ReadOnlyHelpersKeyMigration
+from suites.coding.migrations.m007_read_only_helpers_key import HelpersKeyMigration
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
 from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsMigration
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
@@ -95,7 +95,7 @@ class CodingModule(Module):
               SkillDeclaration("journal-functional-design", "How a functional designer writes a design document: user stories, code examples and the phases in order; read it before you write one"),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [ReadOnlyHelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
+    migrations = [HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]

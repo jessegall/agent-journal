@@ -17,6 +17,6 @@ class HelperResume:
     def resume(self, helper: Agent, job: str) -> None:
         if helper.paused_at is not None or not self.kept.program_state(helper).is_ready:
             return
-        current = self.cold.renewed(helper)
+        current = self.cold.replaced(helper)
         command = self.commands.resumed(helper, job) if current.session == helper.session else self.commands.restarted(current, job)
         self.launcher.hand(current, self.environments.find(helper.environment_id), command)

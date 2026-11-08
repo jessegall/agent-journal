@@ -16,7 +16,7 @@ class OutputChecks:
         timestamp = container.get(Clock).timestamp()
         schedule = container.get(OutputCheckSchedule)
         running = {process.id: process for process in container.get(ProcessQuery).running().all_rows()}
-        due = [watch for watch in container.get(WatchQuery).filter(state=WatchState.OPEN).all_rows() if watch.process_id in running and schedule.is_due(watch, timestamp)]
+        due = [watch for watch in container.get(WatchQuery).filter(state=WatchState.OPEN).all_rows() if watch.process_id in running and schedule.wait_elapsed(watch, timestamp)]
         for watch in due:
             container.get(Bus).run(CheckOutput(watch.id), Actor.core(), environment_id=running[watch.process_id].environment_id)
         return bool(due)

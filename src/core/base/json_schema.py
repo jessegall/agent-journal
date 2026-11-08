@@ -84,7 +84,7 @@ class JsonSchema:
     def const(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         return [] if value == rule else [f"{pointer or '/'}: must be {rule!r}"]
 
-    def any_of(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
+    def matches_alternative(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         choices: Sequence[object] = rule if is_list(rule) else []
         if any(not self.checked(choice, value, pointer) for choice in choices):
             return []
@@ -129,7 +129,7 @@ class JsonSchema:
 KEYWORDS: Mapping[str, Callable[[JsonSchema, object, Mapping[str, object], object, str], list[str]]] = {
     "$ref": JsonSchema.reference, "type": JsonSchema.type_rule, "properties": JsonSchema.properties, "required": JsonSchema.required,
     "additionalProperties": JsonSchema.additional_properties, "items": JsonSchema.items, "enum": JsonSchema.enum, "const": JsonSchema.const,
-    "anyOf": JsonSchema.any_of, "minLength": JsonSchema.min_length, "minimum": JsonSchema.minimum, "pattern": JsonSchema.pattern,
+    "anyOf": JsonSchema.matches_alternative, "minLength": JsonSchema.min_length, "minimum": JsonSchema.minimum, "pattern": JsonSchema.pattern,
     "propertyNames": JsonSchema.property_names, "uniqueItems": JsonSchema.unique_items, "minProperties": JsonSchema.min_properties,
     "maxProperties": JsonSchema.max_properties,
 }

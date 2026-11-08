@@ -36,22 +36,22 @@ class InspectorDeclaration:
     draws_text: bool = False
 
     @classmethod
-    def default_for(cls, model: type[Model] | type[ViewModel]) -> "InspectorDeclaration":
+    def default_declaration(cls, model: type[Model] | type[ViewModel]) -> "InspectorDeclaration":
         names = {field.name for field in fields(model)}
         return cls(model, title="{name}" if "name" in names and "title" not in names else "{title}", lists_fields=True)
 
     @property
-    def noun(self) -> str:
+    def model_name(self) -> str:
         return self.named or self.model.cli_name
 
     def read_line(self) -> str:
-        return " ".join(self.reads.split()[:2]) if self.reads else f"{self.noun} show"
+        return " ".join(self.reads.split()[:2]) if self.reads else f"{self.model_name} show"
 
-    def read_noun(self) -> str:
+    def read_model_name(self) -> str:
         return self.model.cli_name if self.named else self.read_line().split()[0]
 
     def slotted_actions(self) -> tuple[ButtonDeclaration, ...]:
-        slot = f"row.{self.noun}"
+        slot = f"row.{self.model_name}"
         return tuple(action if slot in action.slots else replace(action, slots=(*action.slots, slot)) for action in self.actions)
 
     def stored(self) -> dict[str, Any]:

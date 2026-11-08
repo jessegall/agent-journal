@@ -53,7 +53,7 @@ def test_an_alias_is_marked_silent_only_once_its_run_has_printed_nothing_for_30_
     expect_value(alias_of(story).silent_at is None, True)
     story.advance(timedelta(seconds=21))
     SilentAliasMarking()(story.container)
-    expect_value(bool(alias_of(story).is_held), True)
+    expect_value(bool(alias_of(story).is_claimed), True)
 
 
 def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new_story):
@@ -68,7 +68,7 @@ def test_the_next_run_of_a_silent_alias_is_refused_until_the_alias_is_edited(new
 def test_an_edited_alias_whose_run_prints_clears_its_mark(new_story):
     story = silent_run(new_story)
     edited_alias(story)
-    expect_value(bool(alias_of(story).fixed_at is not None and not alias_of(story).is_held), True)
+    expect_value(bool(alias_of(story).fixed_at is not None and not alias_of(story).is_claimed), True)
     process = moved_run(story, RUN, category=CommandCategory.BUILD)
     story.container.get(OutputFolder).write_output(process.id, 1, "step 1\n")
     SilentAliasMarking()(story.container)
@@ -82,13 +82,13 @@ def test_an_edited_alias_whose_run_stays_silent_is_held_again(new_story):
     moved_run(story, RUN, category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=31))
     SilentAliasMarking()(story.container)
-    expect_value(bool(alias_of(story).is_held), True)
+    expect_value(bool(alias_of(story).is_claimed), True)
 
 
 def test_an_edit_that_leaves_the_line_alone_does_not_free_a_silent_alias(new_story):
     story = silent_run(new_story)
     story.expect_success('alias edit build-npm --about "builds the web files"', actor=story.agent)
-    expect_value(bool(alias_of(story).is_held), True)
+    expect_value(bool(alias_of(story).is_claimed), True)
 
 
 def test_a_silent_go_test_over_several_packages_is_told_why_and_how_to_fix_it(new_story):
