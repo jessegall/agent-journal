@@ -4,6 +4,8 @@ from datetime import timedelta
 import pytest
 
 from core.base.command.bus import Bus
+from core.base.command.context import Context
+from core.base.scope.scopes import Scopes
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
@@ -36,6 +38,23 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(ended
     with story.repeated_work.request():
         added = docked(story, third)
     expect_docked_state_3(story, oldest, newer, added, ("docked", "undocked", "docked"))
+
+
+def test_two_items_added_in_one_request_to_a_full_dock_read_the_items_of_the_chat_once(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    for title in ("First", "Second"):
+        docked(story, running_task(story, title))
+    third, fourth = ended_task(story, "Third"), ended_task(story, "Fourth")
+    bus, database = story.container.get(Bus), story.container.get(Database)
+    refused = []
+    with story.repeated_work.request(), story.container.get(Scopes).command_scope((), story.agent, 1), database.transaction():
+        for task in (third, fourth):
+            command = AddDockItem(SampleDockType.TASK, "task", task)
+            try:
+                bus.dispatch(command, Context(story.agent, story.clock.timestamp(), command, environment_id=1))
+            except Refusal as refusal:
+                refused.append(refusal.reason)
+    story.expect_rows(len(refused) == 2, detail=str(refused))
 
 
 def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(kept_dock):

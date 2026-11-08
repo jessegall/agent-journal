@@ -152,13 +152,13 @@ test("a reload on an event keeps the row, so a typed comment survives", async ()
     expect(element.querySelector(".comment-bar textarea").value).toBe("half a thought");
 });
 
-const QUEUE = {...TASK, noun: "test-queue", reads: "queue list", label: "Test queue", title: "Test queue", description: "", lists_fields: false, links: null, events: []};
+const QUEUE = {...TASK, noun: "test-queue", reads: "queue list", label: "Process queue", title: "Process queue", description: "", lists_fields: false, links: null, events: []};
 const QUEUE_ROW = {page: 1, parallel_limit: 2, recent_total: 4, size: 10, total: 9, used_slots: 1, waiting_count: 2};
 const source = (path) => readFileSync(resolve(import.meta.dirname, path), "utf8");
 
 test("an inspector whose label and title are the same words shows them once", async () => {
     const {element} = await drawn(await catalogueOf([QUEUE]), {"queue list": {ok: true, value: QUEUE_ROW}}, {noun: "test-queue"});
-    expect(element.textContent.split("Test queue").length - 1).toBe(1);
+    expect(element.textContent.split("Process queue").length - 1).toBe(1);
 });
 
 test("an inspector that declares no field list draws none of the row's raw fields", async () => {

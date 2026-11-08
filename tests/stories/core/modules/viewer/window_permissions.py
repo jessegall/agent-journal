@@ -2,7 +2,7 @@ from tests.stories.core.modules.viewer.support.window_samples import GRANTING_NO
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
-ALLOW_READS = "window allow notes.board --type reads --environment main"
+ALLOW_READS = "window allow notes.board --type reads --reason needed --environment main"
 PERMISSIONS = "window permissions notes.board --environment main"
 
 

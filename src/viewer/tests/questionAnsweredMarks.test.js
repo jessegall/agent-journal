@@ -31,3 +31,10 @@ test("the mark of an answer sits on the side of whoever answered", () => {
     expect(drawn({type: "questions.answer", variant: "user"}).querySelector(".user-side")).not.toBeNull();
     expect(drawn({type: "questions.answer", variant: "agent"}).querySelector(".user-side")).toBeNull();
 });
+
+test("the mark of an answer names the question and the answer given, on the user's side, as one mark", () => {
+    const element = drawn({type: "questions.answer", variant: "user", text: "Question 23 answered: Monday"});
+    expect(element.textContent).toContain("Question 23 answered: Monday");
+    expect(element.querySelectorAll("[data-ref^='chat_mark:']")).toHaveLength(1);
+    expect(element.querySelector(".user-side")).not.toBeNull();
+});

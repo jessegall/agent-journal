@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
+from core.base.clock import Clock
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.project_paths import ProjectPaths
 from core.base.query.conditions.among import Among
@@ -9,7 +10,10 @@ from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.drivers.models.hook_call import HookCall
+from core.base.module.driver_entries import DRIVERS_MODULE
+from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from core.modules.drivers.models.hook_call import MONITOR_DESCRIPTION, HookCall
+from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
@@ -35,8 +39,8 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     name = "tool"
     environment_refusal = "the tool is shown for one environment"
 
-    def __init__(self, queries: Queries, processes: ProcessQuery, outputs: OutputQuery, questions: QuestionQuery) -> None:
-        self.queries, self.processes, self.outputs, self.questions = queries, processes, outputs, questions
+    def __init__(self, queries: Queries, processes: ProcessQuery, outputs: OutputQuery, questions: QuestionQuery, clock: Clock) -> None:
+        self.queries, self.processes, self.outputs, self.questions, self.clock = queries, processes, outputs, questions, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--agent", type=int)
@@ -53,7 +57,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         latest_call = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().first()
         if latest_call is not None and latest_call.hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (latest_call.tool, ProjectPaths.short_paths(self.running_part_text(latest_call) or latest_call.summary), self.line_changes(latest_call)) if part))
-        wait_target = " and ".join((*self.running_titles(agent_id), *question_lines))
+        wait_target = " and ".join(dict.fromkeys((*self.monitor_descriptions(agent_id), *self.running_titles(agent_id), *question_lines)))
         has_run_command = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
         return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=latest_call is not None and latest_call.hook == HookEventName.PROMPT, asking=bool(question_lines))
 
@@ -68,6 +72,13 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
 
     def line_changes(self, call: HookCall) -> str:
         return f"+{call.lines_added} -{call.lines_removed}" if call.lines_added or call.lines_removed else ""
+
+    def monitor_descriptions(self, agent_id: int) -> tuple[str, ...]:
+        """What the Monitors the agent started, and that may still be alive, are for, newest first, as the Monitor described them."""
+        calls = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL, answer=HookAnswer.ALLOWED).newest().page(1, SHOWN_RUNS).rows
+        now = self.clock.timestamp()
+        return tuple(text for call in calls if call.creation_timestamp().elapsed_seconds(now) < MONITOR_LIFE_SECONDS
+                     for text in [str(call.metadata.module_part(DRIVERS_MODULE).get(MONITOR_DESCRIPTION, ""))] if text)
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)

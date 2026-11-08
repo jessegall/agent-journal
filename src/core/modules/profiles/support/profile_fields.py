@@ -13,6 +13,7 @@ class ProfileFields(TypedDict, total=False):
     access: Access
     program: str
     program_if_possible: bool
+    fallback_programs: tuple[str, ...]
     model: str
     tier: ModelTier | None
     codex_model: str

@@ -15,7 +15,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 
 def test_a_claim_from_a_stopped_server_is_reopened(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal("phone pair", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("phone pair --reason needed", "A person was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story):
         BootingWork().run(story.container)
@@ -28,6 +28,6 @@ def test_a_claim_from_a_stopped_server_is_reopened(new_story):
         BootingWork().run(story.container)
         assert story.container.get(Bus).run(RecoverApprovals(), Actor.core()) == 1
         story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.OPEN)
-        story.expect_refusal("phone pair", "A person was asked in the dock", actor=story.agent)
+        story.expect_refusal("phone pair --reason needed", "A person was asked in the dock", actor=story.agent)
         viewer.value("messages.chat", ["approval", "accept", str(request.id)])
     story.expect_rows(story.row(ApprovalRequest, request.id).state is ApprovalState.ACCEPTED)

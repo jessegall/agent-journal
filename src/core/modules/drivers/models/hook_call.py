@@ -17,6 +17,7 @@ PROMPT = "prompt"
 SUMMARY_CHARACTERS = 200
 DISPLAYED_TEXT = "displayed"
 KEPT_SKILLS = "kept_skills"
+MONITOR_DESCRIPTION = "monitor_description"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
 HOOK_CHANGE_NAMES = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}

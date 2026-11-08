@@ -2,7 +2,7 @@ from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
-LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-1\"}' --environment main"
+LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-1\"}' --reason needed --environment main"
 SECOND_LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-2\"}' --environment main"
 
 

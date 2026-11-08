@@ -7,3 +7,4 @@ class BypassMarkVariant(StrEnum):
     UNCHECKED = "unchecked"
     PANIC_STARTED = "panic-started"
     PANIC_ENDED = "panic-ended"
+    TIMEOUTS = "timeouts"

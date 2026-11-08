@@ -16,7 +16,7 @@ from tests.stories.core.support.fixtures import UserJoined
 
 CHAT = "messages.chat"
 PRESS = "task edit 1"
-ALLOW = "window allow button:good --type runs --environment main"
+ALLOW = "window allow button:good --type runs --reason needed --environment main"
 REFUSED = "good may run task edit once you allow it"
 ACME_ALLOW = "window allow button:acme.review --type runs --environment main"
 ACME_PRESS = "task edit 1 --priority=high --brief=Reviewed"

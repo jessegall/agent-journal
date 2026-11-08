@@ -14,7 +14,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 SHAPE = '{"tabs":["notes.board"],"active":"notes.board","width":"full"}'
-SAVE_PRESET = f"person-preset save --page home --name Mine --shape '{SHAPE}' --environment main"
+SAVE_PRESET = f"person-preset save --page home --name Mine --shape '{SHAPE}' --reason needed --environment main"
 
 
 class PersonAction(NamedTuple):
@@ -28,11 +28,11 @@ def person_story(new_story):
 
 
 @pytest.fixture(params=[
-    PersonAction("window allow notes.board --type reads --environment main", WindowPermission),
-    PersonAction("window trust notes --environment main", WindowPermission),
-    PersonAction("viewer-layout save --suite notes --page home --layout '{}' --environment main", ViewerLayout),
+    PersonAction("window allow notes.board --type reads --reason needed --environment main", WindowPermission),
+    PersonAction("window trust notes --reason needed --environment main", WindowPermission),
+    PersonAction("viewer-layout save --suite notes --page home --layout '{}' --reason needed --environment main", ViewerLayout),
     PersonAction(SAVE_PRESET, PersonPreset),
-    PersonAction("phone pair", PhoneCode),
+    PersonAction("phone pair --reason needed", PhoneCode),
 ])
 def pending_person_action(person_story, request):
     story = person_story
@@ -63,7 +63,7 @@ def pending_rename(person_story):
     with viewer_client(story) as viewer:
         viewer.value("viewer.shell", ["person-preset", "save", "--page", "home", "--name", "Mine", "--shape", SHAPE])
     preset = story.container.get(Queries).query(PersonPreset).first()
-    story.expect_refusal(f"person-preset rename {preset.id} --name Review", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal(f"person-preset rename {preset.id} --name Review --reason needed", "A person was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(request.required_person_id == story.user.id)
     return story, request, preset

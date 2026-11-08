@@ -105,6 +105,11 @@ defineExpose({card});
     overflow: hidden;
 }
 
+/* the measured box holds the margins of what it contains, so the last line of a card is never below the measured height */
+.chat-dock-grow > div {
+    display: flow-root;
+}
+
 .chat-dock-grow.settled {
     transition: height 320ms var(--ease);
 }

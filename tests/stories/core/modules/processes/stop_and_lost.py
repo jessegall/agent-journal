@@ -118,6 +118,18 @@ def test_a_run_whose_runner_is_alive_is_left_to_report_its_own_end(new_story):
         second.wait()
 
 
+def test_a_run_whose_folder_holds_its_end_is_ended_at_once_with_no_waiting(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "cat notes.txt")
+    ended_program = subprocess.Popen(["true"])
+    ended_program.wait()
+    folder = story.container.get(OutputFolder)
+    folder.write_pid(process.id, ended_program.pid)
+    folder.write_end(process.id, 0)
+    RunEndRecovery()(story.container)
+    story.expect_success("process show 1", "state: finished", "exit_code: 0", actor=story.agent)
+
+
 def test_a_run_whose_runner_died_with_no_end_is_lost_with_no_tick_of_its_agent(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build")

@@ -47,7 +47,7 @@ class RuleDockListener(CommitListener[Changed[ProjectRule] | RegistrySynced]):
         if rule.state is RuleState.PROPOSED:
             if environment_id is None:
                 environment_id = self.queries.query(Agent).find(rule.creator_id).environment_id
-            approval = UserApprovalRefusal(f"Add this project rule?\n{rule.text}", arguments, ("rule", "deny", str(rule.id)), source_version=rule.version)
+            approval = UserApprovalRefusal("Add this project rule?", arguments, ("rule", "deny", str(rule.id)), source_version=rule.version, why=rule.text)
             self.bus.run(RequestUserApproval(approval, arguments, rule.creator_id), actor, cause_id=logged.id, environment_id=environment_id)
             return
         self.bus.run(CloseUserApproval(arguments), actor, cause_id=logged.id, environment_id=environment_id)

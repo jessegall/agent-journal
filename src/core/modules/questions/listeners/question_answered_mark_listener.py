@@ -9,9 +9,13 @@ from core.modules.questions.models.lifecycles.question_lifecycle import Question
 from core.modules.questions.models.question import Question
 
 
+ANSWER_SHOWN_CHARACTERS = 120
+
+
 class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
-    """When a question is answered, its card stays in place and shows the answer, and a new mark says it was answered
-    at this moment; both are on the side of whoever answered."""
+    """When a question is answered, its card stays in place and shows the answer, and a new mark names the question and the
+    answer given, at this moment; both are on the side of whoever answered. It is the only trace of a person answer in the
+    chat."""
 
     name = "questions.answered-mark"
     moves = tuple([QuestionLifecycle.answer])
@@ -21,7 +25,7 @@ class QuestionAnsweredMarkListener(QuestionMarkListener[Moved[Question]]):
         side = self.variant(logged)
         self.show(logged, QuestionMarkType.QUESTION, side, f"Question {question.id} answered",
                   question.session_agent_id, "question", question.id, key=f"question:{question.id}", ended=True)
-        self.show(logged, QuestionMarkType.ANSWER, side, f"Question {question.id} answered", question.session_agent_id, "question", question.id)
+        self.show(logged, QuestionMarkType.ANSWER, side, f"Question {question.id} answered: {question.answer[:ANSWER_SHOWN_CHARACTERS]}", question.session_agent_id, "question", question.id)
 
     def variant(self, logged: LoggedEvent) -> QuestionMarkVariant:
         is_user = self.queries.query(ActorRecord).find(logged.actor_id).type is ActorType.USER

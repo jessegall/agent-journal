@@ -35,7 +35,7 @@ def installed_notes(new_story, source_folder):
 
 def execute_removal(story, variables):
     stream = io.StringIO()
-    code = LineRun(story.home).run(["module", "remove", "folder.notes"], CallerRequest(variables, "/", 0), stream)
+    code = LineRun(story.home).run(["module", "remove", "folder.notes", "--reason", "needed"], CallerRequest(variables, "/", 0), stream)
     return code, stream.getvalue()
 
 

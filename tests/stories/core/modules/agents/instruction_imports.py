@@ -37,7 +37,10 @@ class StartedMain(StoryFixture):
 
 def test_an_agent_cannot_remove_an_import_line_itself(new_story):
     story = new_story(fixture=StartedMain)
-    story.expect_refusal("instruction-import remove CLAUDE.md AGENTS.md --environment main", "A person was asked in the dock", actor=story.agent)
+    project = story.container.get(JournalHome).project_folder
+    (project / "AGENTS.md").write_text("# Rules\n")
+    (project / "CLAUDE.md").write_text("@AGENTS.md\n@AGENTS.md\n")
+    story.expect_refusal("instruction-import remove CLAUDE.md AGENTS.md --environment main --reason needed", "A person was asked in the dock", actor=story.agent)
 
 
 def test_a_journal_start_asks_about_a_doubled_import_too(new_story):

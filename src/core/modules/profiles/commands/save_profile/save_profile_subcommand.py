@@ -27,7 +27,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
-        for name in ("title", "type", "program", "mcp-tools", "writable-folders"):
+        for name in ("title", "type", "program", "fallback-programs", "mcp-tools", "writable-folders"):
             parser.add_argument(f"--{name}")
         for provider in self.providers.all():
             parser.add_argument(provider.model_option, dest=f"program_model_{provider.name}")
@@ -52,6 +52,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
         if arguments.type is not None:
             fields["agent_type"] = arguments.type
+        if arguments.fallback_programs is not None:
+            fields["fallback_programs"] = self.registered(ProfileFormat.tools(arguments.fallback_programs))
         if arguments.injections is not None:
             fields["injections"] = ProfileFormat.injections(arguments.injections)
         if arguments.mcp_tools is not None:
@@ -64,6 +66,13 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             if model is not None:
                 profile = provider.with_profile_model(profile, model)
         return SaveProfile(profile)
+
+    def registered(self, programs: tuple[str, ...]) -> tuple[str, ...]:
+        known = [provider.name for provider in self.providers.all()]
+        unknown = [program for program in programs if program not in known]
+        if unknown:
+            raise Refusal(f"no program named {', '.join(unknown)}", f"name programs from: {', '.join(known)}")
+        return programs
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentProfile):

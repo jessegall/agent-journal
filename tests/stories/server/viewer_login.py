@@ -61,7 +61,7 @@ def test_a_worker_gets_no_viewer_key(person_server):
 @pytest.mark.parametrize("decision", ["accept", "refuse"])
 def test_the_main_agents_viewer_session_cannot_decide_an_approval(person_server, decision):
     story = person_server
-    story.story.expect_refusal("setting set journal.core.project-rules.agents-make-rules true --project",
+    story.story.expect_refusal("setting set journal.core.project-rules.agents-make-rules true --project --reason needed",
                                "A person was asked in the dock", actor=story.story.agent)
     cookie = story.expect_viewer_login(main_agent_key(story))
     story.expect_viewer_line(cookie, {"line": ["approval", decision, "1"], "environment": "main", "window": "messages.chat"}, 200, "only reads")

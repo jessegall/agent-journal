@@ -20,6 +20,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.modules.processes.support.process_samples import start_process
+from tests.stories.core.support import story_lines as lines
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
@@ -301,6 +302,16 @@ def test_a_silent_main_agent_with_open_tasks_is_woken_under_auto_mode(recovery):
     recovery.advance(SILENT_SECONDS + 1)
     recovery.tick()
     story.expect_rows(len(recovery.lines(story.agent.id, SILENT_AGENT_SOURCE)) == 1)
+
+
+def test_a_silent_main_agent_is_not_woken_for_the_open_tasks_of_a_plan_waiting_for_approval(recovery):
+    story = recovery.story
+    story.expect_success(lines.NEW_PLAN, actor=story.agent)
+    phase = story.new_row_id('phase make --plan 1 "First" --goal "The first part is done"', actor=story.agent)
+    story.expect_success(f'task make "Planned work" --brief "Do the work" --phase {phase} --environment main', actor=story.agent)
+    recovery.advance(SILENT_SECONDS + 1)
+    recovery.tick()
+    story.expect_rows(recovery.lines(story.agent.id, SILENT_AGENT_SOURCE) == [])
 
 
 def test_a_silent_main_agent_is_not_woken_for_open_tasks_with_auto_mode_off(recovery):

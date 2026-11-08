@@ -38,7 +38,7 @@ SERVICE_LOG_LIMIT_BYTES = 1_000_000
 class PluginServices:
     """Keeps the services of the plugins switched on running beside the journal: each started where its
     condition passes, a condition past its limit a fault and one that failed checked again after ten minutes;
-    started again by its restart rule once it ended, an answering one counted as started once its socket is
+    started again by its restart rule once it ended, an answering one counted as started once its socket and its health socket are
     up, and each stopped once its plugin is switched off or removed; a service that misses its health check is
     started again and named; a service a crashed server left running is stopped, by the pid kept for it,
     before its new one starts."""
@@ -59,6 +59,7 @@ class PluginServices:
                 wanted.add(key)
                 if key in processes.running and processes.digests.get(key, plugin.files_digest) != plugin.files_digest:
                     processes.stop(key)
+                    self.sockets.pid(*key).unlink(missing_ok=True)
                 if self.is_checkable(processes, key):
                     faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest, plugin.files_digest))
         for key in [key for key in processes.running if key not in wanted]:
@@ -92,6 +93,8 @@ class PluginServices:
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
         if process is None and pid_file.is_file():
             LeftoverProcess.stop(int(FileAccess.shared().read(pid_file)), program)
+        for stale in (self.sockets.answers(*key), self.sockets.health(*key)):
+            stale.unlink(missing_ok=True)
         log = self.folders.service_log(*key)
         log.parent.mkdir(parents=True, exist_ok=True)
         processes.places[key] = self.places.queue_place(key[0], " ".join([program, *service.command[1:]]), CommandCategory.BACKGROUND_JOB, str(folder), None, "")
@@ -103,6 +106,8 @@ class PluginServices:
         processes.digests[key] = digest
         if service.answers:
             self.poll_socket(self.sockets.answers(*key), processes.running[key])
+        if manifest.health:
+            self.poll_socket(self.sockets.health(*key), processes.running[key])
         return []
 
     @staticmethod

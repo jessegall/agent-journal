@@ -91,7 +91,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         except Refusal as refusal:
             if not (profile.program_if_possible and profile.program and not command.program):
                 raise
-            for fallback_program in (provider.name for provider in self.providers.all() if provider.name != preferred):
+            for fallback_program in profile.fallbacks_after(preferred, [provider.name for provider in self.providers.all()]):
                 try:
                     return HelperProgram(fallback_program, self.checked_start(fallback_program, "", profile, parent, command.tier),
                                          f"{profile.program} could not start ({refusal.text}), so it runs on {fallback_program}")
