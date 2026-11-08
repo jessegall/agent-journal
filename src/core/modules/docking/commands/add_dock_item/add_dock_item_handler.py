@@ -10,7 +10,7 @@ from core.modules.docking.support.chat_docked_items import ChatDockedItems
 from core.modules.docking.support.dock_labels import DockLabels
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING, DockLimits
 from core.modules.docking.support.leave_time import LeaveTime
-from core.modules.docking.support.row_end import RowEnd
+from core.modules.docking.support.dock_room import DockRoom
 from core.modules.docking.support.environment_docks import EnvironmentDocks
 
 
@@ -21,9 +21,9 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
 
     command = AddDockItem
 
-    def __init__(self, docks: EnvironmentDocks, repository: Repository, items: ChatDockedItems, limits: DockLimits, row_end: RowEnd,
+    def __init__(self, docks: EnvironmentDocks, repository: Repository, items: ChatDockedItems, limits: DockLimits, room: DockRoom,
                  leave_time: LeaveTime, labels: DockLabels, scopes: Scopes) -> None:
-        self.docks, self.repository, self.items, self.limits, self.row_end, self.leave_time = docks, repository, items, limits, row_end, leave_time
+        self.docks, self.repository, self.items, self.limits, self.room, self.leave_time = docks, repository, items, limits, room, leave_time
         self.labels, self.scopes = labels, scopes
 
     def handle(self, command: AddDockItem, context: Context) -> DockItem:
@@ -49,7 +49,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
     def free_place(self, docked: list[DockItem], capacity: int, limit_text: str, context: Context) -> None:
         if len(docked) < capacity:
             return
-        leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None) or next((item for item in docked if not item.kept and not self.leave_time.is_running(item)), None)
+        leaving = self.room.leaving(docked)
         if leaving is None:
             raise Refusal(limit_text, f"every item is pinned or still running: pin fewer, or raise {MOST_ITEMS_SETTING}")
         self.repository.save_change(leaving, leaving.undock(context.timestamp, context.actor), context)

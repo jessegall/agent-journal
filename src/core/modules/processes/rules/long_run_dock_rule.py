@@ -10,6 +10,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
+from core.modules.docking.support.dock_room import DockRoom
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType
 from core.modules.processes.models.process import Process
@@ -32,9 +33,9 @@ class LongRunDockRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries) -> None:
+    def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries, room: DockRoom) -> None:
         self.processes, self.items, self.outputs, self.folder, self.visibility = processes, items, outputs, folder, visibility
-        self.queries = queries
+        self.queries, self.room = queries, room
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         running = tuple(self.processes.agent(hook.agent_id).running().long_run_candidates(hook.timestamp, DOCK_AFTER_SECONDS).all_rows())
@@ -48,9 +49,10 @@ class LongRunDockRule(DriverRule):
         items = tuple(self.items.type_items(ProcessDockType.OUTPUT.value).filter(target_model="process").matching(Among("target_id", ids)).all_rows())
         existing = {item.target_id for item in items}
         due = [process for process in running if process.id not in existing and self.needs_dock(process, hook, tuple(parts[process.id]))]
+        placed = due[:self.room.places(ProcessDockType.OUTPUT.value)]
         docked = {item.target_id for item in items if item.state is DockItemState.DOCKED}
-        shown = [process for process in running if process.id in docked or process in due]
-        return RuleAnswer.with_nudges(*self.title_nudges(shown, outputs)).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in due))
+        shown = [process for process in running if process.id in docked or process in placed]
+        return RuleAnswer.with_nudges(*self.title_nudges(shown, outputs)).running(*(AddDockItem(ProcessDockType.OUTPUT.value, process.model_name, process.id) for process in placed))
 
     def title_nudges(self, due: list[Process], outputs: dict[int, Output]) -> list[Nudge]:
         return [RUN_NAME.nudge(process=process.id) for process in due if process.id not in outputs or not RunTitle.is_descriptive(outputs[process.id].title, process.line)]
