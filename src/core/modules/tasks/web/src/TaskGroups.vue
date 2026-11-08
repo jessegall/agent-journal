@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Icon, SearchBar, Skeleton, TaskStatusIcon, peekRef, useWindow} from "@journal/window-kit";
+import {Icon, SearchBar, Skeleton, Switch, TaskStatusIcon, peekRef, useWindow} from "@journal/window-kit";
 import MarkIcon from "../../../../../viewer/src/kit/MarkIcon.vue";
 import {readPlanPlaces} from "./planPlaces.js";
 import TaskRowIcons from "./TaskRowIcons.vue";
@@ -27,6 +27,10 @@ const extended = ref(new Set());
 const query = ref("");
 const tag = ref(view.state["board.tag"] || "");
 const tags = computed(() => view.props.tags.rows.value);
+// the Open group can leave out the tasks that belong to a plan, which cannot start before the plan does; kept on the pane
+const hidePlanTasks = ref(view.state["board.hide-plan-tasks"] === "true");
+const plannedIds = computed(() => new Set(places.value.flatMap((place) => place.taskIds)));
+const leavesOutPlanTask = (group, row) => group.state === "open" && hidePlanTasks.value && props.display.grouping !== "plan" && plannedIds.value.has(row.id);
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
 const pageRows = view.option("rows");
 const pageLimit = computed(() => (Number(pageRows.value) > 0 ? String(Number(pageRows.value)) : undefined));
@@ -104,7 +108,7 @@ const stateGroups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
     return board.value
         .filter(shownGroup)
-        .map((group) => ({group, tasks: orderedRows(group).filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}))
+        .map((group) => ({group, tasks: orderedRows(group).filter((row) => !leavesOutPlanTask(group, row) && (!wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted)))}))
         .filter(({tasks}) => !wanted || tasks.length);
 });
 // the tasks held, under the plan and phase each is placed in; the tasks of no plan come last
@@ -119,8 +123,10 @@ const planGroups = computed(() => {
     return ordered.map((label) => ({group: {state: label, label, total: byLabel.get(label).length, rows: byLabel.get(label)}, tasks: byLabel.get(label)}));
 });
 const groups = computed(() => (props.display.grouping === "plan" ? planGroups.value : stateGroups.value));
-watch(() => props.display.grouping, async (grouping) => {
-    if (grouping === "plan") places.value = await readPlanPlaces(view);
+watch([() => props.display.grouping, hidePlanTasks], async ([grouping, hiding]) => {
+    if (grouping === "plan" || hiding) places.value = await readPlanPlaces(view);
+    if (hiding) view.state["board.hide-plan-tasks"] = "true";
+    else delete view.state["board.hide-plan-tasks"];
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const setPriority = (row, priority) => view.run(["task", "edit", String(row.id), "--priority", String(priority)]);
@@ -175,6 +181,9 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                                 <Icon name="caret" :size="12" :class="['tasks-caret', {closed: folded.has(group.state)}]" />
                                 {{ group.label ?? name(group.state) }} <span class="tasks-count">{{ group.total }}</span>
                             </button>
+                            <template v-if="group.state === 'open' && display.grouping !== 'plan'">
+                                <Switch class="tasks-plan-switch" :on="!hidePlanTasks" word="Plan tasks" title="Show the tasks that belong to a plan" data-open-plan-switch @change="hidePlanTasks = !$event" />
+                            </template>
                         </h3>
                     </template>
                     <template v-for="row in folded.has(group.state) ? [] : tasks" :key="row.id">
@@ -282,6 +291,12 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
 
 .tasks-count {
     margin-left: 4px;
+}
+
+.tasks-plan-switch {
+    margin-left: 12px;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 .task {
