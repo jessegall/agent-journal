@@ -142,12 +142,12 @@ def test_a_restarted_server_that_reads_the_file_again_records_nothing_twice(buil
     expect_chat_count(builder, AGENT_TEXT, 1)
 
 
-def test_the_same_words_written_again_later_are_a_new_text(builder, tmp_path):
+def test_the_same_words_written_again_later_are_not_shown_twice(builder, tmp_path):
     path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
     run_hook(builder, path)
     builder.advance(timedelta(minutes=5))
     run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT)), TOOL_FINISHED)
-    expect_chat_count(builder, AGENT_TEXT, 2)
+    expect_chat_count(builder, AGENT_TEXT, 1)
 
 
 def test_text_written_before_the_agent_started_is_not_recorded(builder, tmp_path):
