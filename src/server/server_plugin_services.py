@@ -4,6 +4,7 @@ from core.base.journal_home import JournalHome
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.login_path import LoginPath
+from core.modules.plugins.support.plugin_places import PluginPlaces
 from core.modules.plugins.support.service_processes import ServiceProcesses
 
 
@@ -33,4 +34,8 @@ class ServerPluginServices:
             container.get(Database).close()
 
     def close(self) -> None:
-        self.processes.close()
+        container = synced_container(self.home)
+        try:
+            self.processes.close(container.get(PluginPlaces))
+        finally:
+            container.get(Database).close()
