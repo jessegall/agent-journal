@@ -29,10 +29,11 @@ class OutdatedSettingApprovalListener(CommitListener[Created[Setting] | Updated[
 
     def handle(self, event: Created[Setting] | Updated[Setting], logged: LoggedEvent) -> None:
         key = event.row.key
-        for request in tuple(self.queries.query(ApprovalRequest).filter(state=ApprovalState.OPEN).all_rows()):
-            if self.is_outdated(request, key):
-                self.bus.run(CloseUserApproval(request.arguments, f"outdated: {key} changed since this change was asked for"), self.actors.actor("journal.core.setting-requests"),
-                             cause_id=logged.id, environment_id=request.environment_id)
+        outdated = {(request.arguments, request.environment_id): request for request in self.queries.query(ApprovalRequest).filter(state=ApprovalState.OPEN).all_rows()
+                    if self.is_outdated(request, key)}
+        for request in outdated.values():
+            self.bus.run(CloseUserApproval(request.arguments, f"outdated: {key} changed since this change was asked for"), self.actors.actor("journal.core.setting-requests"),
+                         cause_id=logged.id, environment_id=request.environment_id)
 
     def is_outdated(self, request: ApprovalRequest, key: str) -> bool:
         arguments = request.arguments

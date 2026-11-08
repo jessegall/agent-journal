@@ -29,10 +29,10 @@ def test_each_program_lists_its_models_from_the_cheapest_to_the_one_for_rare_occ
                       "codex gpt-6-luna: allowed\ncodex gpt-6.1-terra: allowed\ncodex gpt-6.1-sol: allowed\ncodex gpt-6-astra: allowed")
 
 
-def test_listing_models_allows_those_of_that_program_and_leaves_the_others_alone(new_story):
+def test_listing_models_allows_only_those_listed_on_every_program(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     allow_opus(story)
-    story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-6.1-terra: allowed")
+    story.expect_text("worker models", "claude sonnet: not allowed", "claude opus: allowed", "codex gpt-6.1-terra: not allowed")
 
 
 def test_the_models_window_saves_the_models_left_with_the_line_it_sends(new_story):

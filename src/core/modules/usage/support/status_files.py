@@ -1,4 +1,6 @@
+from functools import lru_cache
 from core.base.file_access import FileAccess
+from core.base.file_version import FileVersion
 import json
 import shutil
 import time
@@ -72,6 +74,11 @@ class StatusFiles:
     @staticmethod
     def reported(path: Path) -> SessionStatus:
         try:
-            return SessionStatus.reported(json.loads(FileAccess.shared().read(path) or "{}"))
+            return StatusFiles.kept_status(path, FileAccess.shared().version(path))
         except (FileNotFoundError, json.JSONDecodeError):
             return SessionStatus()
+
+    @staticmethod
+    @lru_cache(maxsize=64)
+    def kept_status(path: Path, version: FileVersion) -> SessionStatus:
+        return SessionStatus.reported(json.loads(FileAccess.shared().read(path) or "{}"))

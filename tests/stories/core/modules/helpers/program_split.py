@@ -55,7 +55,7 @@ def test_split_passes_over_a_program_not_trusted(helper_split_story, tmp_path, m
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
 
-def test_split_passes_over_a_program_not_trusted_named_program_keeps_the_refusal(helper_split_story, tmp_path, monkeypatch):
+def test_a_named_program_whose_hooks_are_not_trusted_has_them_written_and_trusted(helper_split_story, tmp_path, monkeypatch):
     story = helper_split_story
     monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'untrusted'))
     monkeypatch.setattr('shutil.which', lambda name: name)
@@ -66,7 +66,7 @@ def test_split_passes_over_a_program_not_trusted_named_program_keeps_the_refusal
     settings['hooks']['PreToolUse'][0]['hooks'][0]['command'] += ' --foreign'
     ProgramHooks.store(hooks.path, settings)
     FakeLauncher(story.home.socket('launcher'))
-    story.expect_refusal(f'{START} --program codex', 'untrusted codex hooks', actor=story.agent)
+    story.expect_success(f'{START} --program codex', actor=story.agent)
 
 
 @pytest.mark.parametrize('shares,reason', [('claude 80,codex 10', '100'), ('claude 80,unknown 20', 'unknown')])
