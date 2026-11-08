@@ -100,6 +100,16 @@ class JsonSchema:
             return []
         return [f"{pointer or '/'}: is below {rule}"]
 
+    def min_properties(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
+        if not is_mapping(value) or not isinstance(rule, int) or len(value) >= rule:
+            return []
+        return [f"{pointer or '/'}: has fewer than {rule} keys"]
+
+    def max_properties(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
+        if not is_mapping(value) or not isinstance(rule, int) or len(value) <= rule:
+            return []
+        return [f"{pointer or '/'}: has more than {rule} keys"]
+
     def pattern(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         if not isinstance(value, str) or re.search(str(rule), value):
             return []
@@ -120,5 +130,6 @@ KEYWORDS: Mapping[str, Callable[[JsonSchema, object, Mapping[str, object], objec
     "$ref": JsonSchema.reference, "type": JsonSchema.type_rule, "properties": JsonSchema.properties, "required": JsonSchema.required,
     "additionalProperties": JsonSchema.additional_properties, "items": JsonSchema.items, "enum": JsonSchema.enum, "const": JsonSchema.const,
     "anyOf": JsonSchema.any_of, "minLength": JsonSchema.min_length, "minimum": JsonSchema.minimum, "pattern": JsonSchema.pattern,
-    "propertyNames": JsonSchema.property_names, "uniqueItems": JsonSchema.unique_items,
+    "propertyNames": JsonSchema.property_names, "uniqueItems": JsonSchema.unique_items, "minProperties": JsonSchema.min_properties,
+    "maxProperties": JsonSchema.max_properties,
 }
