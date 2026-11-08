@@ -9,6 +9,7 @@ from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, SE
 from tests.stories.core.modules.plugins.event_manifest import replace_module
 from tests.stories.core.modules.plugins.support.event_modules import FORMER_NOTE_CREATED, NOTE_CREATED, NOTES, REMOVED_NOTES_MODULE
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
+from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 
 AGENT_REFUSAL = "an agent may not use journal plugin run"
 RUN_LINE = "plugin run -- journal plan approve 1"
@@ -51,6 +52,7 @@ def test_s66_a_skip_names_one_plugin_and_the_other_still_refuses(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh"})
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "refuse.sh"}, name="second")
     story.expect_refusal(SECOND_JOB, REFUSAL, actor=story.agent)
+    confirmed_skip(story, "plugins.event-guard:events", story.agent)
     story.expect_refusal(f"{SECOND_JOB} --skip-guard plugins.event-guard:events {SKIP_REASON}", SECOND_REFUSAL, actor=story.agent)
     story.expect_refusal(f"{SECOND_JOB} --skip-guard plugins.event-guard {SKIP_REASON}", "has no skip", actor=story.agent)
     story.expect_success(f"{SECOND_JOB} --skip-guard plugins.event-guard:events --skip-guard plugins.event-guard:second {SKIP_REASON}", actor=story.user)
@@ -61,6 +63,7 @@ def test_s66_an_entry_with_skip_false_offers_no_skip_and_naming_it_passes_nothin
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh", "skip": False})
     outcome = story.run(SECOND_JOB, actor=story.agent)
     story.expect_rows(REFUSAL in outcome.output_text, "--skip-guard" not in outcome.output_text)
+    confirmed_skip(story, "plugins.event-guard:events", story.agent)
     story.expect_refusal(f"{SECOND_JOB} --skip-guard plugins.event-guard:events {SKIP_REASON}", REFUSAL, actor=story.agent)
 
 

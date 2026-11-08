@@ -1697,13 +1697,16 @@
       "listen"
     ],
     "fields": [
+      "confirmed_at",
       "creator_id",
       "name",
       "reason",
       "restored_at",
       "session_agent_id",
       "streak",
-      "used_at"
+      "tried",
+      "used_at",
+      "withdrawn_at"
     ]
   },
   "core.drivers.refusal_skip.deleted": {
@@ -1713,13 +1716,16 @@
       "listen"
     ],
     "fields": [
+      "confirmed_at",
       "creator_id",
       "name",
       "reason",
       "restored_at",
       "session_agent_id",
       "streak",
-      "used_at"
+      "tried",
+      "used_at",
+      "withdrawn_at"
     ]
   },
   "core.drivers.refusal_skip.updated": {
@@ -1729,13 +1735,16 @@
       "listen"
     ],
     "fields": [
+      "confirmed_at",
       "creator_id",
       "name",
       "reason",
       "restored_at",
       "session_agent_id",
       "streak",
-      "used_at"
+      "tried",
+      "used_at",
+      "withdrawn_at"
     ]
   },
   "core.drivers.reminder_pass.created": {
