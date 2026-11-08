@@ -84,7 +84,7 @@ PROJECT_ID = "5c1d0e9a7b2f4e3d8a6b1c0d9e8f7a6b"
 GITHUB_VALUE = "ghv4-value-0a1b2c3d"
 SERVER_KEY = "ghp_v4key_9z8y7x6w"
 ROWS = (
-    ("users", "(name, email, created_at)", ("Jesse", "jesse@example.org", STAMP)),
+    ("users", "(name, email, created_at)", ("Ada", "ada@example.org", STAMP)),
     ("environments", "(name, branch, key, created_at, creator)", ("main", "development", "key-main", STAMP, "system:")),
     ("environments", "(name, branch, key, created_at, creator)", ("side", "development", "key-side", STAMP, "system:")),
     ("agents", "(environment_id, session, provider, state, role, created_at, creator)", (1, "s-1", "claude", "idle", "main", STAMP, "system:")),
@@ -143,7 +143,7 @@ ROWS = (
     ("links", "(source, target, link_type, created_at, creator)", ("shares:2", "plans:1", "shares", STAMP, USER)),
     ("shares", "(environment_id, token, expires_at, approved, comments, views, created_at, creator)", (1, "expired-token", JANUARY_2026, 1, 0, 0, STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("shares:3", "plans:1", "shares", STAMP, USER)),
-    ("phones", "(environment_id, name, key, expires_at, created_at, creator)", (1, "Jesse's phone", "phone-key", JANUARY_2036, STAMP, USER)),
+    ("phones", "(environment_id, name, key, expires_at, created_at, creator)", (1, "Ada's phone", "phone-key", JANUARY_2036, STAMP, USER)),
     ("sent_agents", "(environment_id, name, brief, provider, model, session, helper_type, state, created_at, creator)", (1, "Ada", "fix the cart", "claude", "sonnet", "s-3", "worker", "merged", STAMP, "agent:s-1")),
     ("worker_todos", "(environment_id, position, text, complete, created_at, creator)", (1, 1, "read the cart", 1, STAMP, "agent:s-3")),
     ("links", "(source, target, link_type, created_at, creator)", ("worker_todos:1", "tasks:1", "todo", STAMP, USER)),
