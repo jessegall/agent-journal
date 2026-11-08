@@ -17,6 +17,8 @@ class AllowedToolsRule(AllowedCommandTypesRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
+        if tool is not None and self.providers.provider(hook.event.program).uses_web_reader(hook.event):
+            return RuleAnswer.allowed()
         if tool is not None and tool.category not in self.allowed_tools:
             return RuleAnswer.refused(self.refusal.nudge(category=tool.category.value))
         if tool is not None and tool.category is ToolType.SHELL and tool.shell is None:

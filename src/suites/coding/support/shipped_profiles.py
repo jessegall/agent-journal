@@ -14,7 +14,7 @@ READER_RULES = ("You only read: change no file and run no tests. "
                      "the agent that started you, with the files and lines that show each point and what you could not check. When your findings are long or "
                      "will be read again, file them yourself so they show in the viewer: journal doc make \"<title>\" --abstract \"<one line>\" --body \"<markdown>\", "
                      "or journal report make with the same options, and name its number in your report.")
-DOCUMENT_RULES = ("You change no file and run no tests, and use Bash only for journal commands. Read narrowly: search for the line, read the range you need, "
+DOCUMENT_RULES = ("You change no file and run no tests. Use Bash for journal commands and for commands that only read, such as grep, cat, ls and git log, and fetch web pages when the job needs them. Read narrowly: search for the line, read the range you need, "
                      "never a whole large file. Answer in a short report written to the agent that started you, with the files and lines that show each point "
                      "and what you could not check. When the job asks for a document, a report or a plan, file it yourself: journal doc make \"<title>\" "
                      "--abstract \"<one line>\" --body \"<markdown>\", journal report make with the same options, or journal plan make and journal phase make.")

@@ -48,6 +48,7 @@ class Provider(ABC):
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
     safe_tools: ClassVar[tuple[str, ...]] = ()
+    web_reader_agents: ClassVar[tuple[str, ...]] = ()
     monitor_tool: ClassVar[ToolType | None] = None
     rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
@@ -168,6 +169,9 @@ class Provider(ABC):
 
     def user_hook_files(self) -> tuple[Path, ...]:
         return ()
+
+    def uses_web_reader(self, event: HookEvent) -> bool:
+        return (event.tool_input().get("subagent_type") or event.raw.get("agent_type")) in self.web_reader_agents
 
     def skills_kept_after_compaction(self, event: HookEvent) -> Mapping[str, str]:
         return {}
