@@ -97,8 +97,8 @@ def test_a_dead_holder_frees_the_gate(tmp_path):
 
 
 def test_runners_start_under_nice(tmp_path):
-    nice_file = tmp_path / "nice"
+    nice_file = tmp_path / "nice-value"
     run = started(tmp_path, project(tmp_path, "nice", "test_nice.py", NICE_TEST), "tests", "-n", "2", "-o", "tests_per_worker=1", "-o", "most_workers=2", extra={"NICE_FILE": str(nice_file)})
-    run.communicate(timeout=300)
-    assert run.returncode == 0
+    output, errors = run.communicate(timeout=300)
+    assert run.returncode == 0, output + errors
     assert int(nice_file.read_text()) > 0
