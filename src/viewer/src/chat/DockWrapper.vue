@@ -44,7 +44,7 @@ watch(
     () => [props.item.type, props.item.target_model, props.item.target_id, declaration.value],
     (_, previous, cleanup) => {
         reloadCard();
-        const stop = view.subscriptions?.follow(`dock ${props.item.id}`, [`${noun.value.replaceAll("-", "_")}.*`], (event) => {
+        const stop = view.followUndeclared?.([`${noun.value.replaceAll("-", "_")}.*`], (event) => {
             if (!event.row_id || event.row_id === props.item.target_id) reloadCard();
         });
         cleanup(() => stop?.());

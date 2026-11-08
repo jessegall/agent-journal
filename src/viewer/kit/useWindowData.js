@@ -118,7 +118,7 @@ export function useWindowData(context) {
         join = setTimeout(() => {
             const only = [...waiting];
             waiting.clear();
-            if (only.length) read(only);
+            if (only.length) reload(only);
         }, RELOAD_JOIN_MS);
     }
 

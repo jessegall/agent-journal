@@ -23,6 +23,10 @@ const QUOTED = /'([^']*)'|"((?:\\[\s\S]|[^"\\])*)"|\\([\s\S])/g;
 // through the host, the search it declares, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings, one of its pane's options written through setOption
 export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], page = null, setOption = () => {}, autoScroll = "", tabs = [], sources = [], links = {}, search = {}, readOnly = false, shared = null}) {
     const recent = new Map();
+    const followShown = (patterns, heard) => subscriptions.follow(window, patterns, (event) => {
+        recent.clear();
+        heard(event);
+    }, visible);
     // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
     const requests = new AbortController();
     // true once the window's first reads have answered and no read followed them, which is when its skeleton gives way; it stays true, so a later read never brings the skeleton back
@@ -94,10 +98,9 @@ export function windowContext({window, environment, agent, visible, permissions,
         cancel: () => requests.abort(),
         signal: requests.signal,
         subscriptions,
-        follow: (patterns, heard) => subscriptions.follow(window, [patterns].flat().filter((pattern) => events.some((declared) => matches(declared, pattern))), (event) => {
-            recent.clear();
-            heard(event);
-        }, visible),
+        follow: (patterns, heard) => followShown([patterns].flat().filter((pattern) => events.some((declared) => matches(declared, pattern))), heard),
+        // for a dock of the chat, whose row's noun the window cannot declare ahead
+        followUndeclared: followShown,
         open,
         face: document.documentElement.classList.contains("phone") ? "phone" : "person",
         option: (key) => computed(() => options.value[key] ?? declared.find((option) => option.key === key)?.default),

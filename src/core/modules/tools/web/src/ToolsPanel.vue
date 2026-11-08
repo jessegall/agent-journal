@@ -1,6 +1,6 @@
 <script setup>
-import {computed, onBeforeUnmount, ref, watch} from "vue";
-import {Btn, WindowRoom, useWindow} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 
 const POLL_MILLISECONDS = 3000;
 
@@ -11,16 +11,7 @@ const busy = ref("");
 const failed = ref({name: "", text: ""});
 const readOnly = computed(() => view.face === "phone" || view.readOnly === true);
 const anyRunning = computed(() => tools.value.some((tool) => tool.is_running));
-let timer = null;
-
-watch(anyRunning, (running) => {
-    if (running && timer === null) timer = setInterval(() => view.reload("tools"), POLL_MILLISECONDS);
-    if (!running && timer !== null) {
-        clearInterval(timer);
-        timer = null;
-    }
-}, {immediate: true});
-onBeforeUnmount(() => clearInterval(timer));
+usePoll(() => anyRunning.value && view.reload("tools"), () => anyRunning.value, POLL_MILLISECONDS);
 
 async function act(tool, words) {
     busy.value = tool.name;

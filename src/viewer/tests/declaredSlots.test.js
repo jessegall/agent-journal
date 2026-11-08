@@ -53,7 +53,7 @@ test("a dock reads its live row through its declaration and updates conditions o
     const {reads, change} = await prepare();
     const subscriptions = new WindowSubscriptions();
     loadDockDeclarations([{type: "plans.waiting", title: "Plan", reads: ["plan show"], buttons: []}]);
-    const element = await draw(DockWrapper, {item: {id: 3, type: "plans.waiting", target_model: "plan", target_id: 12}}, {subscriptions});
+    const element = await draw(DockWrapper, {item: {id: 3, type: "plans.waiting", target_model: "plan", target_id: 12}}, {subscriptions, followUndeclared: (patterns, heard) => subscriptions.follow("chat", patterns, heard)});
     expect(element.querySelector('[data-button="plans.approve"]')).not.toBeNull();
     expect(reads).toContainEqual({window: "plans.waiting", line: ["plan", "show", "12"], environment: "main"});
     change("approved");

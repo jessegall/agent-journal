@@ -10,7 +10,8 @@ const props = defineProps({id: {type: Number, required: true}});
 const emit = defineEmits(["close"]);
 const view = useWindow();
 
-async function closeOnceSettled() {
+async function closeOnceSettled(event) {
+    if (event.row_id && event.row_id !== props.id) return;
     const answer = await view.readKey(`question.${props.id}`);
     if (answer.ok && answer.value.state !== OPEN_STATE) setTimeout(() => emit("close"), ANSWERED_PAUSE_MILLISECONDS);
 }
