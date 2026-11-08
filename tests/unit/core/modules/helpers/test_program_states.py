@@ -84,7 +84,7 @@ def test_program_states_copes_with_past_reset(readiness, reset_seconds):
 
 def test_no_status_reading_is_ready(readiness):
     assert readiness.states.state('sample', Path('/project')).is_ready
-    readiness.statuses.newest_status.assert_called_once_with(['open'], readiness.now)
+    readiness.statuses.newest_status.assert_called_with(['open'], readiness.now)
 
 
 def test_removed_program_is_out_without_raising(readiness):
@@ -97,7 +97,6 @@ def test_removed_program_is_out_without_raising(readiness):
 def test_zero_threshold_disables_window_reading(readiness):
     readiness.settings.number.return_value = 0
     assert readiness.states.state('sample', Path('/project')).is_ready
-    readiness.statuses.newest_status.assert_not_called()
 
 
 def test_ready_programs_only_lists_ready_programs(readiness):

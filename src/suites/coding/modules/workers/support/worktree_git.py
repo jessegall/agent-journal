@@ -35,6 +35,9 @@ STASH_MESSAGE = "journal merge of "
 STASH_LOCK_FILE = "journal-stash.lock"
 SKIP_WORKTREE_MARK = "S "
 
+UNTRACKED_STATUS = "?? "
+PUBLISHED_FOLDERS = (".claude", ".agents")
+
 
 class WorktreeGit:
     """Runs timed Git operations on worker branches and worktrees. Every worktree of a project shares one
@@ -345,9 +348,14 @@ class WorktreeGit:
     def remove_orphan(self, folder: str, path: str, base_branch: str, branch: str | None) -> bool:
         if not self.is_merged(folder, base_branch, branch):
             return False
-        self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", path)
+        force = ("--force",) if self.holds_only_published_folders(path) else ()
+        self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", *force, path)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
         return not Path(path).exists()
+
+    def holds_only_published_folders(self, path: str) -> bool:
+        lines = self.git(path, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.splitlines()
+        return bool(lines) and all(line.startswith(UNTRACKED_STATUS) and line[len(UNTRACKED_STATUS):].split("/")[0] in PUBLISHED_FOLDERS for line in lines)
 
     def folders(self, folder: str) -> list[tuple[str, str | None]]:
         blocks = self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "list", "--porcelain").stdout.strip().split("\n\n")

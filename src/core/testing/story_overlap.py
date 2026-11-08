@@ -19,7 +19,7 @@ class StoryOverlap:
         for _, names in groupby(sorted(self.stories), key=lambda name: name.partition("::")[0]):
             for first, second in combinations(names, 2):
                 shared = self.shared_steps(first, second)
-                if len(shared) >= OVERLAP_LIMIT_STEPS:
+                if first.partition("[")[0] != second.partition("[")[0] and len(shared) >= OVERLAP_LIMIT_STEPS:
                     lines.append(f"stories share their first {len(shared)} steps, move them into a fixture: {first} and {second.split('::')[-1]}")
         return lines
 

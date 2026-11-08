@@ -320,7 +320,7 @@ def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apa
     expect_total_started_groups(groups, 0)
     expect_id_open_groups(groups, [3])
     page = json.loads(story.run("task board --environment main --state delegated --before-id 2 --json", actor=story.user).output_text)["groups"][0]
-    expect_id_cancelled(page, [1])
+    expect_id_cancelled(page, [])
 
 
 

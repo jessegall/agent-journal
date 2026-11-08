@@ -21,7 +21,7 @@ class KeptRows:
         self.write_rollback_count = database.write_rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT count(*), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters)))
+        return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM {table} WHERE {condition}", list(parameters)))
 
     def read_newest(self, table: str, loader: Callable[[], T], condition: str, parameters: Sequence[object], *, name: str) -> T:
         return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT id, version, updated_at FROM {table} WHERE {condition} ORDER BY id DESC LIMIT 1", list(parameters)))

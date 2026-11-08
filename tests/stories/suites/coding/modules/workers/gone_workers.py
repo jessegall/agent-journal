@@ -41,6 +41,7 @@ def no_program_on_the_machine(monkeypatch):
 @pytest.fixture
 def worker_story(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository_environment(story)
     return story
 
@@ -200,9 +201,8 @@ def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_worker):
 
 
 def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_worker):
-    ended_worker.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=ended_worker.user)
     worker = ended_worker.worker
-    stop_launcher = replaced_launcher(ended_worker, b"running\n", b"stopped\n")
+    stop_launcher = replaced_launcher(ended_worker, b"running\n", b"running\n")
     ended_worker.run_listeners()
     stop_launcher.wait_for_requests()
     stop_launcher.server.close()

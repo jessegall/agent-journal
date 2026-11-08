@@ -1,4 +1,4 @@
-from core.testing.story import Story
+from core.testing.story import Story, story_container
 from install.upgrade_journal import UpgradeJournal
 from server.booting_work import BootingWork
 from tests.stories.fixtures.worktree_upgrade import LEGACY_BRANCH, prepare_worktree_upgrade
@@ -20,6 +20,7 @@ def prepare_upgrade_worktree(story: Story) -> tuple[GitRepository, str]:
 def expect_upgrade_started(story: Story) -> None:
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     assert outcome.code == 0, outcome.text
+    story.container = story_container(story.home, story.clock, story.process_table)
     BootingWork().run(story.container)
     story.run_listeners()
 
