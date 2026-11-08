@@ -105,6 +105,18 @@ The rules of this line:
 
 A cut worktree starts from `base_commit` of the branch. Nothing promises that it equals another copy of the project read from a main checkout, whose working files may differ from any commit.
 
+## Reader files
+
+A plugin ships the readers of its commands as files in `.journal-plugin/readers`. A `.pattern` file holds, one to a line, its title line, its pattern line and its settings; a `.sh` script holds its settings in `#` lines and is the reader itself. Every file declares its title with `title: <text>`: the card of a run it reads takes that title. A `.pattern` file opens on it:
+
+    title: each package's result
+    ^(ok|FAIL)\s
+    commands: cart test
+    finished: ^ok
+    failed: ^FAIL
+
+The other settings are `progress:`, `commands:`, `topic:`, `finished:`, `failed:`, `summary:` and `label:`, the name of the run. A script gives each with a `#` in front, as `# title: what a merge did`. A file that opens on a comment and has no `title:` line is rewritten once, when the journal loads it, with that comment as its `title:`.
+
 ## A worktree's life
 
 `suites.coding.workers.worker_worktree.cut` fires once the worktree exists and is prepared. `suites.coding.workers.worker_worktree.remove` fires when a merge or a release removes the worktree of a worker that started. A release of a worktree still opening and a failed start delete the row, so they fire `suites.coding.workers.worker_worktree.deleted` instead. The sweep of leftover folders has no row, so it fires nothing, and a folder removed by hand fires nothing until the worker is released.

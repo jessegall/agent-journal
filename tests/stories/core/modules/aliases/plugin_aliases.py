@@ -70,7 +70,7 @@ def test_a_plugin_s_readers_arrive_on_install_for_its_aliases_and_go_with_the_pl
     story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
     reader = next(row for row in json.loads(story.run("reader list --json", actor=story.user).output_text)["rows"] if row["name"] == "sample-reader")
     expect_row(reader, lines_pattern="^judged")
-    expect_row(reader, title="Judging with the sample")
+    expect_row(reader, title="the judged lines", subject="Judging with the sample")
     expect_row(reader, plugin_name="sample")
     story.expect_text("alias show 1", f"reader_id: {reader['id']}", actor=story.user)
     story.run("plugin remove sample", actor=story.user)
