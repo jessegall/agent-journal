@@ -8504,9 +8504,9 @@ const Pw = (e, t, n) => (t == null ? void 0 : t.draws_head) && (n == null ? void
               }, null, 8, ["name"]),
               m("span", jw, [
                 m("span", {
-                  class: "dock-title",
+                  class: Y(["dock-title", { strip: e.collapsed }]),
                   title: S.value
-                }, y(S.value), 9, Fw)
+                }, y(S.value), 11, Fw)
               ])
             ], 64)),
             m("span", {
@@ -8642,7 +8642,7 @@ const Pw = (e, t, n) => (t == null ? void 0 : t.draws_head) && (n == null ? void
       }, 8, ["label", "type", "folded", "body", "collapsed", "data-figure-closing"]);
     };
   }
-}, el = /* @__PURE__ */ z(Gw, [["__scopeId", "data-v-dadb9f55"]]), Kw = ["title", "aria-label"], Yw = { class: "run-chip-in" }, Qw = {
+}, el = /* @__PURE__ */ z(Gw, [["__scopeId", "data-v-03eeaf95"]]), Kw = ["title", "aria-label"], Yw = { class: "run-chip-in" }, Qw = {
   key: 0,
   class: "run-chip-ring"
 }, Jw = { class: "run-chip-name" }, Xw = { class: "run-chip-bar" }, Zw = {
@@ -13687,7 +13687,7 @@ function GM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const KM = nu(() => import("./VoiceFigure-8p0_YHRM.js").then((e) => e.V)), YM = "1.2.0", QM = "3.5";
+const KM = nu(() => import("./VoiceFigure-Bmqyt3DN.js").then((e) => e.V)), YM = "1.2.0", QM = "3.5";
 export {
   Of as $,
   Oe as A,
