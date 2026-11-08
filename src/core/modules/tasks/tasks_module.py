@@ -165,7 +165,7 @@ class TasksModule(Module):
                                  reads=["task graph"], events=["task.*"], keys=[WindowKey("graph", "task graph", events=["task.*"])]),
                WindowDeclaration("tasks.task-counts", "Task counts", "task-counts.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
                                  options=[ChoiceOption("columns", "Columns", [("auto", "Auto"), ("1", "1"), ("2", "2"), ("4", "4")], "auto"),
-                                          ChoiceOption("completed", "Completed in", TASK_COUNT_PERIODS, "24")],
+                                          ChoiceOption("completed", "Completed in", TASK_COUNT_PERIODS, "today")],
                                  reads=["task counts"], events=["task.*"], keys=[WindowKey("counts", "task counts", arguments=["hours", "since"], events=["task.*"])]),
                WindowDeclaration("tasks.task-log", "Log", "task-log.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TASK, skeleton=[SkeletonPart.line()],
                                  reads=["task-log list"], events=["task_log.*"])]

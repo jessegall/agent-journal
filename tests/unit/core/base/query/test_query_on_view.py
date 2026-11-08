@@ -5,6 +5,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
+from core.base.listener.event_rows import EventRows
 from core.base.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.model.view_model import ViewModel
@@ -48,3 +49,25 @@ def test_a_view_is_filtered_and_read_in_the_order_of_its_columns(queries: Querie
     counts = queries.query(ShelfCount)
     assert [row.shelf_id for row in counts.ordered("book_count").all_rows()] == [2, 1]
     assert counts.filter(book_count=2).count() == 1
+
+
+@dataclass(frozen=True, kw_only=True)
+class ShelfSize(ViewModel):
+    cli_name = "shelf-size"
+    view = "shelf_sizes"
+    key = "id"
+
+    id: int
+    book_count: int
+
+
+def test_shared_event_rows_read_a_view_again_after_an_outside_commit_since_it_has_no_version(queries: Queries, tmp_path):
+    queries.database.update(Statement("CREATE VIEW shelf_sizes AS SELECT shelves.id AS id, count(books.id) AS book_count FROM shelves LEFT JOIN books ON books.shelf_id = shelves.id GROUP BY shelves.id"))
+    rows = EventRows(queries)
+    assert rows.required(ShelfSize, 1).book_count == 2
+    outside = Database.opened(JournalHome(tmp_path))
+    try:
+        outside.update(Statement("INSERT INTO books (shelf_id) VALUES (1)"))
+    finally:
+        outside.close()
+    assert rows.required(ShelfSize, 1).book_count == 3
