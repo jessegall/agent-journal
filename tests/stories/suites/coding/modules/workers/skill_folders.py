@@ -4,7 +4,7 @@ from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
-from tests.stories.core.modules.skills.due import use_up_countdown
+from tests.stories.core.modules.skills.due import use_up_countdown as exhaust_countdown
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
@@ -62,7 +62,7 @@ def test_a_claude_workers_skill_reminder_names_the_skill_to_load_with_the_skill_
     story.container.get(SkillRequirement).is_required = True
     story.hook(session, HookSamples.session_start())
     story.expect_success(f"skill require {worker.id} journal")
-    use_up_countdown(story, HookSamples.edit("cart.py"), "journal", session)
+    exhaust_countdown(story, HookSamples.edit("cart.py"), "journal", session)
     story.expect_hook_refusal(session, HookSamples.edit("cart.py"), "load this first with the Skill tool: journal")
 
 
@@ -75,7 +75,7 @@ def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktre
     story.hook(session, HookSamples.session_start().with_fields(program="codex", launch=session))
     story.expect_success(f"skill require {worker.id} journal")
     expected = repository.worktree_folder(worker.id) / ".agents/skills/journal/SKILL.md"
-    use_up_countdown(story, HookSamples.edit("cart.py").with_fields(program="codex"), "journal", session)
+    exhaust_countdown(story, HookSamples.edit("cart.py").with_fields(program="codex"), "journal", session)
     story.expect_hook_refusal(session, HookSamples.edit("cart.py").with_fields(program="codex"), f"read this first: {expected}")
 
 

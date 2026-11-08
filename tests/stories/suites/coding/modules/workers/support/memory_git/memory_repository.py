@@ -26,27 +26,27 @@ class MemoryRepository(GitRepository):
         (folder / ".gitignore").write_text(IGNORED_FIRST)
         history = MemoryHistory(folder)
         first = history.start(CHECKOUT_BRANCH, {".gitignore": IGNORED_FIRST}, "The first commit")
-        history.branch_from(ENVIRONMENT_BRANCH, CHECKOUT_BRANCH)
-        history.commit_on(ENVIRONMENT_BRANCH, {**first.tree, "cart.py": "TOTAL = 0\n"}, "The cart")
+        history.create_branch(ENVIRONMENT_BRANCH, CHECKOUT_BRANCH)
+        history.add_commit(ENVIRONMENT_BRANCH, {**first.tree, "cart.py": "TOTAL = 0\n"}, "The cart")
         return cls(folder, history)
 
     def files(self, folder: Path | None = None) -> MemoryFolder:
         return MemoryFolder(self.history.root, folder or self.folder)
 
     def uncommitted_names(self, folder: Path) -> tuple[str, ...]:
-        committed = self.history.tip(self.history.branch_of(folder)).tree
-        return TreeChanges(committed, self.files(folder).snapshot()).names()
+        committed = self.history.tip(self.history.folder_branch(folder)).tree
+        return TreeChanges(committed, self.files(folder).file_texts()).names()
 
     def git(self, *arguments: str, folder: Path | None = None) -> subprocess.CompletedProcess[str]:
         raise GitStoryRequired(f"git {' '.join(arguments)} is a check only real git answers: this story builds its repository with real git")
 
     def committed(self, name: str, text: str, message: str) -> None:
         (self.folder / name).write_text(text)
-        branch = self.history.branch_of(self.folder)
-        self.history.commit_on(branch, {**self.history.tip(branch).tree, name: text}, message)
+        branch = self.history.folder_branch(self.folder)
+        self.history.add_commit(branch, {**self.history.tip(branch).tree, name: text}, message)
 
     def checkout(self, branch: str) -> None:
-        old = self.history.tip(self.history.branch_of(self.folder)).tree
+        old = self.history.tip(self.history.folder_branch(self.folder)).tree
         new = self.history.tip(branch).tree
         self.files().write({name: text for name, text in new.items() if old.get(name) != text}, tuple(name for name in old if name not in new))
         self.history.checked_out[self.history.root] = branch
@@ -63,11 +63,11 @@ class MemoryRepository(GitRepository):
         assert len(parents) == 2, f"the last commit of {branch} is no merge: its parents are {parents}"
 
     def expect_merge_commits_after(self, branch: str, commit: str, count: int) -> None:
-        merges = [made for made in self.history.commits_since(commit, self.history.branches[branch]) if len(made.parents) == 2]
+        merges = [made for made in self.history.new_commits(commit, self.history.branches[branch]) if len(made.parents) == 2]
         assert len(merges) == count, f"{branch} holds {len(merges)} merge commits after {commit}, not {count}"
 
     def expect_no_stash(self) -> None:
-        return
+        assert not self.history.stashes, f"a stash was left: {self.history.stashes}"
 
     def expect_commit(self, branch: str, *message_lines: str) -> None:
         message = self.history.tip(branch).message.splitlines()
@@ -79,7 +79,7 @@ class MemoryRepository(GitRepository):
         assert not names, f"the worktree of worker {worker_id} holds uncommitted changes: {names}"
 
     def expect_head(self, branch: str, folder: Path | None = None) -> None:
-        head = self.history.branch_of(folder or self.folder)
+        head = self.history.folder_branch(folder or self.folder)
         assert head == branch, f"{folder or self.folder} has {head!r} checked out, not {branch}"
 
     def expect_no_worktree(self) -> None:
@@ -90,7 +90,7 @@ class MemoryRepository(GitRepository):
 
     def expect_excluded(self, worker_id: int, name: str) -> None:
         files = self.files(self.worktree_folder(worker_id))
-        assert files.hides(name, files.patterns()) and name not in files.snapshot(), f"git sees {name} in {files.folder}"
+        assert files.hides(name, files.patterns()) and name not in files.file_texts(), f"git sees {name} in {files.folder}"
 
     def expect_root_exclude_unchanged(self) -> None:
         exclude_file = self.files().exclude_file()

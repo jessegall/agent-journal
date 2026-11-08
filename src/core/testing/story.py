@@ -76,7 +76,7 @@ class Story:
         self.steps: list[str] = []
         self.agent, self.user, self.helper = state.agent, state.user, state.helper
         self.environment: str | None = None
-        self.stand_ins: dict[type, object] = {}
+        self.replacements: dict[type, object] = {}
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
@@ -90,10 +90,9 @@ class Story:
     def close(self) -> None:
         self.container.get(Database).close()
 
-    def bind(self, class_type: type[S], stand_in: S) -> None:
-        """Stands an object in for a class, for this story's container now and for every container it is rebuilt with."""
-        self.stand_ins[class_type] = stand_in
-        self.container.bind(class_type, stand_in)
+    def bind(self, class_type: type[S], replacement: S) -> None:
+        self.replacements[class_type] = replacement
+        self.container.bind(class_type, replacement)
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
@@ -290,8 +289,8 @@ class Story:
         if code == 0:
             self.container.get(Database).close()
             self.container = story_container(self.home, self.clock, self.process_table)
-            for class_type, stand_in in self.stand_ins.items():
-                self.container.bind(class_type, stand_in)
+            for class_type, replacement in self.replacements.items():
+                self.container.bind(class_type, replacement)
         return code, stream.getvalue()
 
     def expect_rows(self, *checks: object, detail: str = "") -> None:
