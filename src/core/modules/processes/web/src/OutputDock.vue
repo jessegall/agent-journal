@@ -191,7 +191,7 @@ usePoll(load, isRunning, () =>
     >
     <template v-if="unref(time)"
       ><Teleport :to="unref(time)"
-        ><span v-if="percent" class="output-dock-percent" data-output-percent>{{ percent }}</span
+        ><span v-if="percent" class="output-dock-percent" data-output-percent role="img" :title="percent" :aria-label="percent"><i :style="{ width: percent }" /></span
         ><span v-else class="output-dock-figure">{{ ranFor }}</span></Teleport
       ></template
     >
@@ -303,12 +303,22 @@ usePoll(load, isRunning, () =>
   font-variant-numeric: tabular-nums;
 }
 
+/* a folded card's percent as a small bar, centred on the line, with the number in its tooltip */
 .output-dock-percent {
   flex: none;
+  align-self: center;
+  width: 32px;
+  height: 4px;
   margin-right: 6px;
-  color: var(--text-3);
-  font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--hover);
+}
+
+.output-dock-percent i {
+  display: block;
+  height: 100%;
+  background: var(--text-3);
 }
 
 .output-dock-terminal {
