@@ -1,6 +1,6 @@
 // The chat marks' own icons, one per type of mark, drawn for the journal on a 16-unit grid from lines, circles, rectangles and simple
 // arcs, a family's types sharing a base shape: every task move a square with the move inside, every check a circle with its result
-const AGENT_ICON = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>';
+export const AGENT_ICON = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>';
 
 export const MARK_ICONS = {
     words: '<rect x="2.5" y="3" width="11" height="8" rx="2"/><polyline points="5,11 5,13.5 8,11"/>',
