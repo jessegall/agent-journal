@@ -16,7 +16,8 @@ from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 
 class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
-    """Keeps open approval requests in the dock until a person decides them."""
+    """Keeps open approval requests in the dock until a person decides them; one a standing yes covers is docked only
+    after its accepted command failed, for a person to answer."""
 
     name = "approvals.dock"
     disabled_scopes = [ActorScope, EnvironmentScope]
@@ -28,10 +29,16 @@ class ApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
         request = event.row
         items = tuple(self.items.type_items(ApprovalDockType.REQUEST.value).row_items(ApprovalRequest.model_name, request.id).filter(state=DockItemState.DOCKED).all_rows())
         actor = self.actors.actor("journal.core.approvals")
-        if request.state in (ApprovalState.OPEN, ApprovalState.RUNNING) and request.recipient_agent_id is None and not (isinstance(event, Created) and request.standing_id is not None):
+        if self.shows_card(event, request):
             if not items:
                 self.bus.run(AddDockItem(ApprovalDockType.REQUEST.value, ApprovalRequest.model_name, request.id), actor,
                              cause_id=logged.id, environment_id=request.environment_id)
             return
         for item in items:
             self.bus.run(RemoveDockItem(item.id), actor, cause_id=logged.id, environment_id=request.environment_id)
+
+    @staticmethod
+    def shows_card(event: Changed[ApprovalRequest], request: ApprovalRequest) -> bool:
+        if request.recipient_agent_id is not None or request.state not in (ApprovalState.OPEN, ApprovalState.RUNNING):
+            return False
+        return request.standing_id is None or (request.state is ApprovalState.OPEN and not isinstance(event, Created))
