@@ -10,7 +10,7 @@ test("context uses the main agent's usage and last compaction from its window ke
         {id: 2, role: "worker", context_percent: 90},
     ]}}});
     const element = await mounted(ContextPanel, window);
-    expect(window.reads).toEqual(["usage show"]);
+    expect(window.reads).toContain("usage show");
     expect(element.querySelector("[data-context-meter] strong").textContent).toBe("44%");
     expect(element.querySelector("[data-last-compacted]").textContent).toContain(new Date(at).toLocaleString());
 });

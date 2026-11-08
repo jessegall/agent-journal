@@ -7,7 +7,7 @@ const SEGMENT_LIMIT = 30;
 const counted = (tasks) => tasks.filter((task) => task.state !== "cancelled");
 
 // the segments run done, the task in hand whole, then those to come; a long list is one continuous bar in the same order
-export function taskSegments(tasks, inHand) {
+function taskSegments(tasks, inHand) {
     const all = counted(tasks);
     const done = all.filter((task) => task.state === "completed").length;
     const current = STAGES[inHand?.state] && all.some((task) => task.id === inHand.id && task.state !== "completed") ? 1 : 0;

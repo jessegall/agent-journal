@@ -6,6 +6,8 @@ import ShareRows from "../../core/modules/sharing/web/src/ShareRows.vue";
 import {shareAddress} from "../src/route.js";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 
+const SHARE_KEYS = {shares: {line: "share list", events: ["share_link.*", "share_comment.*"]}, tunnel: {line: "tunnel status", loading: "requested"}, opens: {line: "share opens", loading: "requested"}};
+
 afterEach(() => window.history.pushState({}, "", "?"));
 
 test("a row's Share goes to the Shares window with the row filled in", () => {
@@ -18,14 +20,11 @@ test("a row's Share goes to the Shares window with the row filled in", () => {
 
 test("the Shares window takes the row its address names and says what it opens", async () => {
     window.history.pushState({}, "", "?page=sharing.shares&share=docs:5");
-    const held = {...context({"share list": page([])})};
-    const lines = [];
-    const reading = held.read;
-    held.read = async (line) => (lines.push(line), Array.isArray(line) && line[1] === "opens" ? {ok: true, value: {rows: [{id: 0, line: "Doc 5, The cart rules"}]}} : reading(line));
+    const held = context({"share list": page([]), "tunnel status": {ok: true, value: null}, "share opens": {ok: true, value: {rows: [{id: 0, line: "Doc 5, The cart rules"}]}}}, null, SHARE_KEYS);
     const element = await mounted(ShareRows, held);
     await settle();
     expect(element.querySelector(".shares-target").value).toBe("docs:5");
-    expect(lines).toContainEqual(["share", "opens", "docs:5"]);
+    expect(held.reads).toContain("share opens --target docs:5");
     expect(element.querySelector("[data-share-opens]").textContent).toContain("The cart rules");
 });
 

@@ -6,6 +6,6 @@ export const FOLDS = {
     message: {at: 420, keep: 320},
 };
 
-export const foldKind = (message) => (message.worker_id != null ? "report" : "message");
+const foldKind = (message) => (message.worker_id != null ? "report" : "message");
 
 export const foldOf = (message) => FOLDS[foldKind(message)];

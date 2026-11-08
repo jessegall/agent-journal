@@ -10,6 +10,7 @@ import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {agentFilterOptions} from "./support/agentFilterOptions.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import MemoriesPage from "../../core/modules/memories/web/src/MemoriesPage.vue";
+import {context as memoriesContext, mounted as mountedMemories, settle as settleMemories} from "./support/memoriesContext.js";
 import {default as helpers} from "../../core/modules/agents/web/src/helpers.js";
 
 let app;
@@ -115,7 +116,7 @@ test("a window with no texts declared says its one empty line on every tab", asy
 });
 
 test("the memories window says it is empty, and once words are typed that no memory matches", async () => {
-    const element = await mounted(MemoriesPage, context({"environment list": page([]), "memory list": page([]), "memory agents": page([])}));
+    const element = await mountedMemories(MemoriesPage, memoriesContext({"environment list": page([]), "memory list": page([]), "memory agents": page([])}));
     document.body.append(element);
     host = element;
     expect(element.querySelector("[data-memory-empty]").textContent).toContain("No memories yet");
@@ -123,7 +124,7 @@ test("the memories window says it is empty, and once words are typed that no mem
     const box = element.querySelector("[data-search-input]");
     box.value = "cart";
     box.dispatchEvent(new Event("input", {bubbles: true}));
-    await settle();
+    await settleMemories();
     expect(element.querySelector("[data-memory-empty]").textContent).toContain("No memory here matches");
 });
 
