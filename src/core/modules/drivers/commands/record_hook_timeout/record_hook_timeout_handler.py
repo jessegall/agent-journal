@@ -36,7 +36,7 @@ class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
         main = MainAgentFinder.newest(self.queries)
         receiver = main.id if main is not None else command.agent_id
         rule = self.timings.slowest(command.agent_id) or UNTIMED_RULE
-        self.nudger.send(receiver, HOOKS_TIMED_OUT, LINE_SOURCE, context, agent=command.agent_id, count=count, rule=rule)
+        self.nudger.send(receiver, HOOKS_TIMED_OUT, LINE_SOURCE, context, agent=command.agent_id, count=count)
         text = f"Agent {command.agent_id}: {count} hook timeouts in ten minutes, slowest rule {rule}"
         self.bus.run(ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.TIMEOUTS, f"hook-timeouts:{command.agent_id}:{context.timestamp.text}", text, agent_id=receiver,
                               outcome=MarkOutcome.FAILED, ended=True), self.actors.actor(MODULE_KEY), environment_id=context.environment_id)
