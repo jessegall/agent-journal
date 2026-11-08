@@ -17,6 +17,7 @@ from core.testing.story_budget import BUDGET_MARKER, CPU_SECONDS_BUDGET, POINTS_
 from core.testing.template_cache import TemplateCache
 from core.testing.temp_folders import TempFolders
 from core.testing.template_databases import TemplateDatabases
+from core.testing.template_prebuild import TemplatePrebuild
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
@@ -43,6 +44,9 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
     per_worker, most = int(config.getini(TESTS_PER_WORKER_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
     workers = RunSize(config.args, per_worker * most).workers(per_worker, most)
     config.option.numprocesses = 0 if workers == 1 else workers
+    if workers > 1:
+        LazyLoading.always_prevented = True
+        TemplatePrebuild(TemplateDatabases(TemplateCache().folder()), Path(config.rootpath) / "tests").run()
 
 
 def pytest_configure(config: pytest.Config) -> None:

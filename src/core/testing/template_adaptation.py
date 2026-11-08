@@ -1,3 +1,5 @@
+import dataclasses
+import pickle
 import re
 import shutil
 import sqlite3
@@ -7,6 +9,7 @@ from core.base.file_access import FileAccess
 
 CHECKOUT_FILE = "checkout"
 REWRITTEN_FILES = ("module_list", "program_table")
+STATE_FILE = "story-state.pickle"
 
 
 class TemplateAdaptation:
@@ -34,7 +37,21 @@ class TemplateAdaptation:
         for name in REWRITTEN_FILES:
             for file in adapted.rglob(name):
                 FileAccess.shared().write(file, FileAccess.shared().read(file).replace(builder, self.checkout))
+        for state in adapted.rglob(STATE_FILE):
+            FileAccess.shared().write_binary(state, pickle.dumps(self.rewritten(pickle.loads(FileAccess.shared().binary(state)), builder)))
         self.mark(adapted)
+
+    def rewritten(self, value: object, builder: str) -> object:
+        """The value with the builder's checkout path replaced in every text it holds, whatever it is made of."""
+        if type(value) is str:
+            return value.replace(builder, self.checkout)
+        if type(value) in (list, tuple, set, frozenset):
+            return type(value)(self.rewritten(item, builder) for item in value)
+        if type(value) is dict:
+            return {self.rewritten(key, builder): self.rewritten(item, builder) for key, item in value.items()}
+        if dataclasses.is_dataclass(value) and not isinstance(value, type):
+            return dataclasses.replace(value, **{field.name: self.rewritten(getattr(value, field.name), builder) for field in dataclasses.fields(value) if field.init})
+        return value
 
     def rewrite_database(self, database: Path, builder: str) -> None:
         connection = sqlite3.connect(database, autocommit=True)
