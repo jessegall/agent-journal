@@ -5,7 +5,7 @@
         "select": "import",
         "where": [
             {
-                "fileMatches": "(^|/)core/base/driver/"
+                "fileMatches": "(^|/)src/core/base/driver/"
             },
             {
                 "any": [
