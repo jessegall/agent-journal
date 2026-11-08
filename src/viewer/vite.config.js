@@ -1,5 +1,5 @@
 import vue from "@vitejs/plugin-vue";
-import {copyFileSync, mkdirSync, readFileSync, writeFileSync} from "node:fs";
+import {copyFileSync, mkdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {defineConfig} from "vite";
 
@@ -16,6 +16,15 @@ const vendorVue = () => ({
     },
 });
 
+// the shell shares its folder with the kit and the window builds, so a build clears only the shell's own hashed files
+const clearShellAssets = () => ({
+    name: "clear-shell-assets",
+    apply: "build",
+    buildStart() {
+        rmSync(`${OUT_DIR}/assets`, {recursive: true, force: true});
+    },
+});
+
 // the phone's service worker, written in tools/phone-worker and put beside the shell as a built file
 const GENERATED_MARK = "/* @code-commandments-generated */";
 const phoneWorker = () => ({
@@ -28,8 +37,8 @@ const phoneWorker = () => ({
 });
 
 export default defineConfig({
-    plugins: [vue(), vendorVue(), phoneWorker()],
+    plugins: [vue(), clearShellAssets(), vendorVue(), phoneWorker()],
     base: "/viewer/",
     define: {__DEMO__: false, __DEMO_BUILD__: JSON.stringify("")},
-    build: {outDir: OUT_DIR, emptyOutDir: true, rollupOptions: {external: ["vue", "@journal/window-kit"]}},
+    build: {outDir: OUT_DIR, emptyOutDir: false, rollupOptions: {external: ["vue", "@journal/window-kit"]}},
 });

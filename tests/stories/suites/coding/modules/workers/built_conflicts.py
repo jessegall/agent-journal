@@ -30,6 +30,19 @@ def test_a_rename_clash_in_built_files_is_deleted_and_rebuilt(new_story):
     expect_stdout_git_repository(repository, "status", "--porcelain", "")
 
 
+def test_a_hand_in_that_deletes_built_files_whose_sources_stay_is_refused_with_the_build_to_run(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = build_repository(story)
+    (repository.folder / "app/web/src").mkdir()
+    repository.committed("app/web/src/chat.vue", "<template />\n", "The source of the built file")
+    worker = dispatched_worker(story)
+    expect_returncode_git_repository_2(repository, "rm", BUILT_FILE, repository.worktree_folder(worker.id), 0)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
+    story.expect_refusal("worker deliver --wait --differences none", f"it deletes 1 built files under web/dist while their sources stay, such as {BUILT_FILE}", actor=worker)
+    story.expect_refusal("worker deliver --wait --differences none", "npm --prefix src/viewer run build", actor=worker)
+
+
 @pytest.mark.parametrize("length", [7, 8])
 def test_a_merge_refuses_markers_in_a_committed_file(new_story, length):
     story = new_story(fixture=OrchestratorWithOpenTask)
