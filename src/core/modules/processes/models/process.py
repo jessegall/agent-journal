@@ -46,6 +46,7 @@ class Process(EnvironmentScoped, Model):
     slot_assigned: bool = False
     owner_agent_id: int | None = None
     task_id: int | None = None
+    plugin: str = ""
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE

@@ -32,10 +32,15 @@ class ProcessQueueRow(EnvironmentScoped, ViewModel):
     queued_at: Timestamp | None
     is_queue_run: bool
     slot_assigned: bool
+    plugin: str
     is_main: bool
     owner_agent_id: int | None
     task_id: int | None
     section: QueueSection
+
+    @property
+    def queue_label(self) -> str:
+        return f"plugin {self.plugin}" if self.plugin else self.category.value
 
     def inspector_json(self, count_main_runs: bool) -> dict[str, object]:
         return {**self.json(), "output_id": self.id, "uses_slot": self.section is QueueSection.RUNNING and

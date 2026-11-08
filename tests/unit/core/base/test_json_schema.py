@@ -16,6 +16,7 @@ SCHEMA = JsonSchema({
         "paths": {"type": "array", "uniqueItems": True, "items": {"$ref": "#/$defs/path"}},
         "limits": {"type": "object", "propertyNames": {"pattern": "^[a-z]+$"}, "additionalProperties": {"type": "integer"}},
         "either": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+        "step": {"type": "object", "minProperties": 1, "maxProperties": 1},
     },
 })
 
@@ -37,6 +38,8 @@ def test_a_document_that_fits_has_no_problems():
     ({"level": 1, "limits": {"files": "many"}}, "/limits/files: is not of type integer"),
     ({"level": 1, "either": 3}, "/either: matches none of the allowed forms"),
     ({"level": 1, "colour": "red"}, "/colour: nothing is allowed here"),
+    ({"level": 1, "step": {}}, "/step: has fewer than 1 keys"),
+    ({"level": 1, "step": {"judges": ["tests"], "skips": []}}, "/step: has more than 1 keys"),
 ])
 def test_each_keyword_names_the_place_that_breaks_it(document, problem):
     assert any(found.startswith(problem) for found in SCHEMA.problems(document)), SCHEMA.problems(document)

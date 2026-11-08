@@ -145,6 +145,12 @@ test("the process queue reads its counts and ordered lists together", async () =
     expect(rowsOf("recent")[0].querySelector(".dot").title).toBe("Passed");
 });
 
+test("a plugin's run shows under the plugin's name", async () => {
+    const plugin_run = {...RUN, id: 74, category: "unknown", plugin: "judge", owner_agent_id: null, task_id: null, line: "sh ./check.sh"};
+    await panel(async () => ({ok: true, value: {...SNAPSHOT, running: [plugin_run]}}));
+    expect(rowsOf("running")[0].querySelector("[data-queue-type]").textContent).toBe("Plugin judge");
+});
+
 test("Show older commands reads more of the Finished list, and shows only while there are older ones", async () => {
     let total = 30;
     const read = vi.fn(async () => ({ok: true, value: {...SNAPSHOT, recent_total: total}}));

@@ -38,8 +38,8 @@ test.each([
     const row = {id: 8, role: "worker", access: "writing", session: "s-8", program: "codex", state: "running", created_at: "2026-11-01T10:00:00Z", ended_at: "2026-11-01T11:00:00Z"};
     const facts = {id: 8, tasks: [{id: 1, state: "completed"}], work_status: status};
     const element = await mounted({render: () => h(AgentCard, {row, facts, open})}, context({"usage tool --agent 8": {ok: true, value: {tool: "", note: ""}}}));
-    expect(element.querySelector("[data-agent-work-status]").textContent).toBe(`Status: ${status}`);
     expect(element.querySelector(".agent-dot").dataset.state).toBe("waiting");
-    expect(element.querySelector(".agent-time").textContent).toContain("Process ended:");
+    expect(element.querySelector("[data-agent-status] [role='tooltip'] b").textContent).toBe(`Status: ${status}`);
+    expect(element.querySelector("[data-agent-status] [role='tooltip'] span").textContent).toMatch(/^Since \d/);
     expect(element.querySelector("[data-agent-stopped]")).toBeNull();
 });

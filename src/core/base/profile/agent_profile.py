@@ -15,7 +15,7 @@ class AgentProfile:
     agent_type: str = "helper"
     access: Access | None = None
     program: str = ""
-    program_if_possible: bool = False
+    program_if_possible: bool = True
     model: str = ""
     codex_model: str = ""
     tier: ModelTier | None = None

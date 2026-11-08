@@ -56,6 +56,9 @@ def test_output_cleanup_stays_bounded_after_a_group_signal_fails(monkeypatch, fa
     process.stdout.close.assert_called_once()
 
 
+UNQUEUED_PLACES = SimpleNamespace(queue_place=lambda *values: SimpleNamespace(wait=lambda limit_seconds: True, leave=lambda exit_code: None))
+
+
 def program_at(tmp_path: Path, body: str, script: str = "") -> tuple[PluginProgram, PluginCall]:
     home = JournalHome(tmp_path / "journal")
     folders = PluginFolders(home)
@@ -64,7 +67,7 @@ def program_at(tmp_path: Path, body: str, script: str = "") -> tuple[PluginProgr
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "late", "title": "Late", "version": "1", "program": "run.sh"}))
     (folder / "run.sh").write_text(body)
     (folder / "run.sh").chmod(0o755)
-    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), PluginScriptProcesses(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(role="main")))
+    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), PluginScriptProcesses(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(role="main")), SimpleNamespace(), UNQUEUED_PLACES)
     return program, PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {}, script=script)
 
 
