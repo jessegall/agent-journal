@@ -27,6 +27,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from core.modules.agents.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES, UNFINISHED_TASKS_SOURCE
+from suites.coding.modules.workers.support.worker_started_work import WorkerStartedWork
 from suites.coding.modules.workers.support.worker_places import JOB_DELIVERY_SECONDS, WorkerPlaces
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -41,11 +42,12 @@ from suites.coding.modules.workers.commands.report_worker_program_recovery.repor
 
 
 class WorkerResume:
-    """Resumes ended workers on waiting jobs and retries a job that did not start."""
+    """Resumes ended workers on waiting jobs and retries a job that did not start; a worker that holds started work
+    with no job waiting is given the line that tells it to go on."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission) -> None:
-        self.admission = admission
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork) -> None:
+        self.admission, self.started_work = admission, started_work
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.requirement, self.places, self.program = requirement, places, program
         self.rows = rows
@@ -84,6 +86,8 @@ class WorkerResume:
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
                     if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
         job = job or self.lost_job(worker) or next((line for line in lines if line.source == UNFINISHED_TASKS_SOURCE), None)
+        if job is None and self.started_work.is_stranded(worker):
+            job = self.started_work.job(worker)
         if job is None:
             return LaunchAnswer.SKIPPED
         return self.launch_job(worker, worktree, job, actor)

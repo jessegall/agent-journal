@@ -18,6 +18,7 @@ class AgentListingState:
     profile: str
     given_name: str
     paused_at: Timestamp | None
+    limited_until: Timestamp | None
     ended_at: Timestamp | None
     retired_at: Timestamp | None
     retirement_reason: str

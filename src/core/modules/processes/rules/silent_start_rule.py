@@ -9,7 +9,7 @@ from core.modules.processes.support.process_nudges import SILENT_START_FIXED, SI
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
 from core.modules.processes.support.run_shape import RunShapes
-from core.modules.processes.support.silent_runs import SilentRun, SilentRuns
+from core.modules.processes.support.silent_start_runs import SilentRun, SilentStartRuns
 
 NO_SHAPE = "none of the known ones"
 NO_TOTAL = "states no total, so the command must print one first"
@@ -26,14 +26,14 @@ class SilentStartRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, runs: SilentRuns, folder: OutputFolder, readers: ReaderRows) -> None:
+    def __init__(self, runs: SilentStartRuns, folder: OutputFolder, readers: ReaderRows) -> None:
         self.runs, self.folder, self.readers = runs, folder, readers
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None or shell.parse_error:
             return RuleAnswer.allowed()
-        names = tuple(dict.fromkeys(SilentRuns.name(part.text, part.program, part.classification.category) for part in shell.parts if self.is_watched(part)))
+        names = tuple(dict.fromkeys(SilentStartRuns.name(part.text, part.program, part.classification.category) for part in shell.parts if self.is_watched(part)))
         answers = [self.answer_for(name) for name in names]
         refused = next((answer for answer in answers if answer.refusal), None)
         if refused is not None:
@@ -46,7 +46,7 @@ class SilentStartRule(DriverRule):
 
     def answer_for(self, name: str) -> RuleAnswer:
         runs = self.runs.runs(name)
-        streak = SilentRuns.silent_streak(runs)
+        streak = SilentStartRuns.silent_streak(runs)
         if streak >= SILENT_STREAK_REFUSED:
             return self.refusal(name, runs[0])
         if streak:

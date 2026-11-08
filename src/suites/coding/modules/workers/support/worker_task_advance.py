@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.command.context import Context
+from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.commands.start_task.start_task import StartTask
@@ -21,9 +22,9 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK
 class WorkerTaskAdvance:
     """Starts a worker's next task on its worktree and tells the worker which one it is and how to read it."""
 
-    def __init__(self, bus: Bus, repository: Repository, nudger: Nudger, blocks: TaskBriefBlocks) -> None:
+    def __init__(self, bus: Bus, repository: Repository, nudger: Nudger, blocks: TaskBriefBlocks, rows: EventRows) -> None:
         self.bus, self.repository, self.nudger = bus, repository, nudger
-        self.blocks = blocks
+        self.blocks, self.rows = blocks, rows
 
     def next_task(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
@@ -36,7 +37,9 @@ class WorkerTaskAdvance:
 
     def start(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
-        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        current = self.rows.required(Worktree, worktree.id)
+        if current.task_id != following.id:
+            self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=following.id), context)
 
     def restart_task(self, worktree: Worktree, task: Task, context: Context) -> None:
         worker_context = replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT))

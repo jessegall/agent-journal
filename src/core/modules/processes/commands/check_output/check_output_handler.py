@@ -10,10 +10,9 @@ from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import Watch
-from core.modules.processes.support.output_check_schedule import OutputCheckSchedule
+from core.modules.processes.support.output_check_schedule import SECONDS_PER_MINUTE, OutputCheckSchedule
 from core.modules.processes.support.process_nudges import OUTPUT_CHECK
 
-SECONDS_PER_MINUTE = 60
 
 
 class CheckOutputHandler(Handler[CheckOutput, Watch]):

@@ -1,3 +1,4 @@
+from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
@@ -32,6 +33,7 @@ def test_a_reworded_repeat_of_one_of_the_last_five_messages_is_held(new_story):
     story = new_story(fixture=FirstMessageSent, environment="main")
     story.expect_refusal(f'message send "{REWORDED}"', "refused by messages.repeated-message: this says much the same as your message 1",
                          actor=story.agent)
+    confirmed_skip(story, "messages.repeated-message", story.agent, "the card number changed")
     story.advance(timedelta(seconds=1))
     story.expect_success(f'message send "{REWORDED}" --confirm --skip-reason "the card number changed"', "type: agent", actor=story.agent)
 

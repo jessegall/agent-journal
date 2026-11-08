@@ -1,60 +1,33 @@
-from dataclasses import dataclass
+from pathlib import Path
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import JOURNAL_PROGRAM
-from core.base.query.conditions.prefix import Prefix
+from core.base.timestamp import Timestamp
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
-from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
-from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.output_folder import OutputFolder
 
-SILENT_RUN_SECONDS = 60
-RUNS_READ = 6
-
-
-@dataclass(frozen=True)
-class SilentRun:
-    """One ended run of an alias or a command, how long it lasted, and whether it showed a percent in the chat."""
-
-    process: Process
-    part: ProcessPart
-    seconds: int
-    shows_percent: bool
-
-    @property
-    def is_silent(self) -> bool:
-        return self.seconds > SILENT_RUN_SECONDS and not self.shows_percent
+SILENT_SECONDS = 30
+PYTHON_PROGRAM = "python"
 
 
 class SilentRuns:
-    """The ended runs of one alias or command, newest first. An alias is known by its name, so its arguments
-    change nothing; any other command by its text."""
+    """Which part of a running test, build or Python run has printed nothing for 30 seconds."""
 
-    def __init__(self, processes: ProcessQuery, parts: ProcessPartQuery, outputs: OutputQuery) -> None:
-        self.processes, self.parts, self.outputs = processes, parts, outputs
+    def __init__(self, folder: OutputFolder, parts: ProcessPartQuery) -> None:
+        self.folder, self.parts = folder, parts
 
-    @staticmethod
-    def name(text: str, program: str, category: CommandCategory) -> str:
-        words = text.split()
-        return f"{JOURNAL_PROGRAM} {words[1]}" if program == JOURNAL_PROGRAM and category.is_watched and len(words) > 1 else text
+    def quiet_part(self, process: Process, timestamp: Timestamp) -> ProcessPart | None:
+        """The part still running of a watched run, at least 30 seconds old, whose output stopped for 30 seconds or never began."""
+        if process.creation_timestamp().elapsed_seconds(timestamp) < SILENT_SECONDS:
+            return None
+        if self.folder.total_bytes(process.id) and self.folder.run_silent_seconds(process.id, timestamp) < SILENT_SECONDS:
+            return None
+        part = next((part for part in self.parts.process(process.id).all_rows() if part.ended_at is None), None)
+        return part if part is not None and self.is_watched(part) else None
 
-    def runs(self, name: str) -> tuple[SilentRun, ...]:
-        ended = self.processes.ended().with_part(Prefix("text", name)).newest().limited(RUNS_READ)
-        found = []
-        for process in ended:
-            part = next((part for part in self.parts.process(process.id).all_rows() if self.name(part.text, part.program, part.category) == name), None)
-            if part is not None and process.ended_at is not None:
-                output = self.outputs.process_output(process.id)
-                started_at = process.started_at or process.created_at
-                found.append(SilentRun(process, part, int(started_at.elapsed_seconds(process.ended_at)), output is not None and output.progress > 0))
-        return tuple(found)
+    def printed_nothing(self, part: ProcessPart) -> bool:
+        return not self.folder.part_bytes(part.process_id, part.position)
 
     @staticmethod
-    def silent_streak(runs: tuple[SilentRun, ...]) -> int:
-        streak = 0
-        for run in runs:
-            if not run.is_silent:
-                break
-            streak += 1
-        return streak
+    def is_watched(part: ProcessPart) -> bool:
+        return part.category.is_long_running or Path(part.program).name.startswith(PYTHON_PROGRAM)

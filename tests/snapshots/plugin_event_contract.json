@@ -47,8 +47,10 @@
       "ended_at",
       "environment_id",
       "given_name",
+      "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "limited_until",
       "parent_id",
       "paused_at",
       "pid",
@@ -75,8 +77,10 @@
       "ended_at",
       "environment_id",
       "given_name",
+      "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "limited_until",
       "parent_id",
       "paused_at",
       "pid",
@@ -103,8 +107,10 @@
       "ended_at",
       "environment_id",
       "given_name",
+      "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "limited_until",
       "parent_id",
       "paused_at",
       "pid",
@@ -131,8 +137,10 @@
       "ended_at",
       "environment_id",
       "given_name",
+      "interrupted_at",
       "launch_agent_id",
       "launch_name",
+      "limited_until",
       "parent_id",
       "paused_at",
       "pid",
@@ -198,10 +206,12 @@
       "category",
       "creator_id",
       "description",
+      "fixed_at",
       "line",
       "name",
       "plugin_id",
       "reader_id",
+      "silent_at",
       "variables"
     ]
   },
@@ -217,10 +227,12 @@
       "category",
       "creator_id",
       "description",
+      "fixed_at",
       "line",
       "name",
       "plugin_id",
       "reader_id",
+      "silent_at",
       "variables"
     ]
   },
@@ -236,10 +248,12 @@
       "category",
       "creator_id",
       "description",
+      "fixed_at",
       "line",
       "name",
       "plugin_id",
       "reader_id",
+      "silent_at",
       "variables"
     ]
   },
@@ -288,6 +302,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -299,6 +314,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -312,6 +328,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -323,6 +340,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -336,6 +354,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -347,6 +366,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -360,6 +380,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -371,6 +392,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -384,6 +406,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -395,6 +418,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -408,6 +432,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -419,6 +444,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -432,6 +458,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -443,6 +470,7 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
       "text"
     ]
@@ -456,6 +484,7 @@
     "fields": [
       "answered_by_id",
       "arguments",
+      "command_json",
       "continued_arguments",
       "creator_id",
       "environment_id",
@@ -467,7 +496,56 @@
       "returns_output",
       "review_answer",
       "source_version",
+      "standing_id",
       "state",
+      "text"
+    ]
+  },
+  "core.approvals.standing_approval.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "kind",
+      "same_key",
+      "scope",
+      "target",
+      "text"
+    ]
+  },
+  "core.approvals.standing_approval.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "kind",
+      "same_key",
+      "scope",
+      "target",
+      "text"
+    ]
+  },
+  "core.approvals.standing_approval.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "environment_id",
+      "kind",
+      "same_key",
+      "scope",
+      "target",
       "text"
     ]
   },
@@ -1619,13 +1697,16 @@
       "listen"
     ],
     "fields": [
+      "confirmed_at",
       "creator_id",
       "name",
       "reason",
       "restored_at",
       "session_agent_id",
       "streak",
-      "used_at"
+      "tried",
+      "used_at",
+      "withdrawn_at"
     ]
   },
   "core.drivers.refusal_skip.deleted": {
@@ -1635,13 +1716,16 @@
       "listen"
     ],
     "fields": [
+      "confirmed_at",
       "creator_id",
       "name",
       "reason",
       "restored_at",
       "session_agent_id",
       "streak",
-      "used_at"
+      "tried",
+      "used_at",
+      "withdrawn_at"
     ]
   },
   "core.drivers.refusal_skip.updated": {
@@ -1651,13 +1735,16 @@
       "listen"
     ],
     "fields": [
+      "confirmed_at",
       "creator_id",
       "name",
       "reason",
       "restored_at",
       "session_agent_id",
       "streak",
-      "used_at"
+      "tried",
+      "used_at",
+      "withdrawn_at"
     ]
   },
   "core.drivers.reminder_pass.created": {
@@ -1922,6 +2009,54 @@
       "ends_at",
       "program",
       "reason"
+    ]
+  },
+  "core.helpers.usage_limit.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "baseline_marker",
+      "baseline_percent",
+      "creator_id",
+      "mode",
+      "percent",
+      "program",
+      "window"
+    ]
+  },
+  "core.helpers.usage_limit.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "baseline_marker",
+      "baseline_percent",
+      "creator_id",
+      "mode",
+      "percent",
+      "program",
+      "window"
+    ]
+  },
+  "core.helpers.usage_limit.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "baseline_marker",
+      "baseline_percent",
+      "creator_id",
+      "mode",
+      "percent",
+      "program",
+      "window"
     ]
   },
   "core.journal.booting": {
@@ -3013,11 +3148,36 @@
     ],
     "fields": []
   },
+  "core.plugins.plugin.config_changed": {
+    "forms": [
+      "commit"
+    ],
+    "fields": [
+      "config_digest",
+      "config_document",
+      "config_pointers",
+      "config_version",
+      "creator_id",
+      "enabled",
+      "failing",
+      "fault_count",
+      "files_digest",
+      "last_fault",
+      "name",
+      "release",
+      "source",
+      "title"
+    ]
+  },
   "core.plugins.plugin.created": {
     "forms": [
       "commit"
     ],
     "fields": [
+      "config_digest",
+      "config_document",
+      "config_pointers",
+      "config_version",
       "creator_id",
       "enabled",
       "failing",
@@ -3035,6 +3195,10 @@
       "commit"
     ],
     "fields": [
+      "config_digest",
+      "config_document",
+      "config_pointers",
+      "config_version",
       "creator_id",
       "enabled",
       "failing",
@@ -3052,6 +3216,10 @@
       "commit"
     ],
     "fields": [
+      "config_digest",
+      "config_document",
+      "config_pointers",
+      "config_version",
       "creator_id",
       "enabled",
       "failing",
@@ -3314,6 +3482,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3348,6 +3517,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3382,6 +3552,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3416,6 +3587,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3450,6 +3622,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3484,6 +3657,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3518,6 +3692,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3552,6 +3727,7 @@
       "moved_at",
       "owner_agent_id",
       "pid",
+      "plugin",
       "progress",
       "queued_at",
       "sandbox_level",
@@ -3784,11 +3960,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.processes.watch.deleted": {
@@ -3798,11 +3977,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.processes.watch.end": {
@@ -3812,11 +3994,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.processes.watch.updated": {
@@ -3826,11 +4011,14 @@
       "listen"
     ],
     "fields": [
+      "awaits_confirm",
+      "confirmed_count",
       "creator_id",
       "given_percent",
       "process_id",
       "session_agent_id",
-      "state"
+      "state",
+      "woke_at"
     ]
   },
   "core.project-rules.rule.approve": {

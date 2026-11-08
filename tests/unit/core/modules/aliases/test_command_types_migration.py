@@ -2,7 +2,7 @@ import sqlite3
 
 from core.base.database.database import Database
 from core.modules.aliases.migrations.m004_command_kinds import CommandKindsMigration
-from core.modules.aliases.migrations.m005_command_types import CommandTypesMigration
+from core.modules.aliases.migrations.m006_command_types import CommandTypesMigration
 
 
 def test_the_table_of_command_kinds_becomes_the_table_of_command_types_with_its_rows():
