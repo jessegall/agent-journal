@@ -1,3 +1,4 @@
+import pytest
 import os
 
 from core.base.module.module_finder import ModuleFinder
@@ -18,6 +19,7 @@ def instruction_tick(story):
     handlers[0].handler(story.container)
 
 
+@pytest.mark.real_git
 def test_a_profile_change_reaches_the_instruction_files_at_the_next_task_start_and_at_the_next_tick(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)

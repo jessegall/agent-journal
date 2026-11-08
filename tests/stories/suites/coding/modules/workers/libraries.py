@@ -1,3 +1,4 @@
+import pytest
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
@@ -69,6 +70,7 @@ def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
     expect_clean_environment(story, repository)
 
 
+@pytest.mark.real_git
 def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environment_named_not_of_another_in_its_folder(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

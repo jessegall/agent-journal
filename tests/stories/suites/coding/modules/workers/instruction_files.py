@@ -1,3 +1,4 @@
+import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.story import Story
@@ -26,6 +27,7 @@ def written(repository, worker, name: str) -> str:
     return (repository.worktree_folder(worker.id) / name).read_text()
 
 
+@pytest.mark.real_git
 def test_a_worker_s_worktree_gets_instruction_files_for_its_profile_and_not_the_project_s(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)
@@ -37,6 +39,7 @@ def test_a_worker_s_worktree_gets_instruction_files_for_its_profile_and_not_the_
     repository.expect_clean(worker.id)
 
 
+@pytest.mark.real_git
 def test_a_profile_keeps_the_project_s_files_beside_its_own_when_it_says_so(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)
@@ -69,6 +72,7 @@ def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unle
     story.expect_text("worker injections notes-worker", "commandments.briefing: Inject our briefing into the agent file: off", actor=story.user)
 
 
+@pytest.mark.real_git
 def test_a_change_of_the_base_to_an_instruction_file_merges_into_a_worktree_that_holds_written_files(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)

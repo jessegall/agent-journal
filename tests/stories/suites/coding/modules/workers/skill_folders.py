@@ -1,3 +1,4 @@
+import pytest
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
@@ -22,6 +23,7 @@ def test_preparing_a_worker_publishes_journal_and_plugin_skills_for_both_program
         repository.expect_excluded(worker.id, program_folder)
 
 
+@pytest.mark.real_git
 def test_a_restart_updates_worktrees_and_removes_obsolete_journal_skills(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
@@ -38,6 +40,7 @@ def test_a_restart_updates_worktrees_and_removes_obsolete_journal_skills(new_sto
     story.expect_rows(stale.read_text() != "outdated", not obsolete.exists())
 
 
+@pytest.mark.real_git
 def test_plugin_changes_reach_worktrees_and_withdraw_skills_when_disabled(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

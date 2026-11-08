@@ -1,3 +1,4 @@
+import pytest
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -36,6 +37,7 @@ def test_a_worker_cannot_mark_its_own_logs_read(new_story):
     story.expect_refusal(f"worker merge --wait {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
 
 
+@pytest.mark.real_git
 def test_a_new_delivery_requires_the_logs_to_be_read_again(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

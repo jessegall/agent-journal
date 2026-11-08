@@ -50,6 +50,7 @@ def test_a_route_skip_on_send_is_recorded_on_the_assignment_event(routed_worker_
     story.expect_text("event list --json --limit 100", "workers.route-holds", "The person requested a comparison")
 
 
+@pytest.mark.real_git
 def test_a_person_can_send_a_task_to_another_program_through_the_viewer(routed_worker_task, split_viewer):
     story, worker, task_id, _ = routed_worker_task
     split_viewer.value("agents.agents", ["worker", "send", str(worker.id), "--wait", "--task", str(task_id)])

@@ -143,6 +143,7 @@ def test_worker_deliver_is_still_refused_while_a_task_is_queued(proved):
     proved.story.expect_refusal("worker deliver --wait --differences none", "still in your queue", actor=proved.worker)
 
 
+@pytest.mark.real_git
 def test_a_clash_with_the_base_branch_stops_the_move(conflict_waiting):
     conflict_waiting.story.expect_refusal("worker next --wait --differences none", "clashes", actor=conflict_waiting.worker)
     conflict_waiting.story.expect_text("task show 1", "state: started", actor=conflict_waiting.story.agent)

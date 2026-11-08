@@ -9,6 +9,9 @@ from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
 
+pytestmark = pytest.mark.real_git
+
+
 @pytest.fixture
 def project_files_server(new_story):
     story = new_story(fixture=BuilderWithUser)

@@ -1,3 +1,4 @@
+import pytest
 import json
 import socket
 import sys
@@ -200,6 +201,7 @@ def test_a_plugin_skill_published_only_for_codex_is_known(new_story):
     story.expect_text("skill list", "codex-rules", actor=story.user)
 
 
+@pytest.mark.real_git
 def test_disabling_a_plugin_unlinks_a_worktree_skill_without_removing_its_target(new_story, tmp_path):
     story = installed_story(new_story)
     repository_environment(story)

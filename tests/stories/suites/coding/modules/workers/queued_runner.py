@@ -46,6 +46,7 @@ def worker_runner(new_story):
         yield WorkerRunnerStory(story, worker, binary, variables)
 
 
+@pytest.mark.real_git
 @pytest.mark.parametrize("command_name", ["send", "next", "deliver"])
 def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_runner, monkeypatch, command_name):
     story, worker, binary, variables = worker_runner

@@ -79,6 +79,7 @@ def test_a_release_runs_git_with_no_write_open(git_in_writes):
     expect_git_calls_outside(git_calls)
 
 
+@pytest.mark.real_git
 def test_a_release_whose_git_timed_out_takes_up_again_from_the_abandoned_worktree(git_in_writes, monkeypatch):
     story, git_calls = git_in_writes
     repository_environment(story)
