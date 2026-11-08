@@ -21,7 +21,7 @@ async function create() {
 </script>
 
 <template>
-    <Dialog title="New environment" small @close="emit('close')">
+    <Dialog padded title="New environment" small @close="emit('close')">
         <div class="new-environment">
             <label class="field"><span class="label">Name</span><input v-model="name" placeholder="review" data-environment-name></label>
             <label class="field"><span class="label">Folder</span><input v-model="folder" placeholder="/path/to/checkout" data-environment-folder></label>

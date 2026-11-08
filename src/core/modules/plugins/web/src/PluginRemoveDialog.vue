@@ -7,7 +7,7 @@ const emit = defineEmits(["close", "remove"]);
 </script>
 
 <template>
-    <Dialog :title="`Remove ${title}`" fits @close="emit('close')">
+    <Dialog padded :title="`Remove ${title}`" fits @close="emit('close')">
         <p class="remove-lead">
             Removing this plugin stops its services and event handlers and deletes its folder. You can keep its settings
             and saved data for a future installation, or delete everything.

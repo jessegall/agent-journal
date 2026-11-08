@@ -39,7 +39,7 @@ async function remove() {
             <NewSequence @close="drafting = false" />
         </template>
         <template v-if="opened">
-            <Dialog :title="opened.title" tall @close="openedId = null">
+            <Dialog padded :title="opened.title" tall @close="openedId = null">
                 <SequenceTriggers :sequence="opened" />
                 <SequenceSteps :sequence="opened" :runs="openedRuns" />
                 <SequenceRuns :runs="openedRuns" />

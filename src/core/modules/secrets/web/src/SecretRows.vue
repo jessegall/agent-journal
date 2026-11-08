@@ -86,7 +86,7 @@ async function restore(row) {
             <SecretNewDialog :run="act" @close="isMaking = false" />
         </template>
         <template v-if="removing">
-            <Dialog :title="`Delete ${removing.title}`" fits @close="removing = null">
+            <Dialog padded :title="`Delete ${removing.title}`" fits @close="removing = null">
                 <p class="lead">Deleting this secret stops the agent from using it. You can restore it from Deleted secrets.</p>
                 <template #foot>
                     <Btn @click="removing = null">Cancel</Btn>
