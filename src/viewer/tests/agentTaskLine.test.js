@@ -27,16 +27,21 @@ test("the far right says how many tasks are done, and its tooltip says what is d
     expect(tip(element, "[data-agent-task]").querySelector("span").textContent).toBe("4 of its 6 tasks done. This one is being tested.");
 });
 
-test("the bar has one segment per task: done, the one in hand part full, the rest empty, in the colour of the dot", async () => {
+test("the bar has one segment per task: done first, the one in hand whole in the colour of the dot, the rest empty", async () => {
     const element = await card(worker(), {tasks: tasksOf(2, "testing", 4)});
     expect(kinds(element)).toEqual(["done", "done", "now", "todo"]);
-    expect(element.querySelector("[data-agent-bar] i.now").style.getPropertyValue("--fill")).toBe("66%");
+    expect(element.querySelector("[data-agent-bar] i.now").style.getPropertyValue("--fill")).toBe("");
     expect(element.querySelector("[data-agent-bar]").dataset.state).toBe("running");
     const started = await card(worker(), {tasks: tasksOf(0, "started", 3)});
-    expect(started.querySelector("[data-agent-bar] i.now").style.getPropertyValue("--fill")).toBe("33%");
+    expect(kinds(started)).toEqual(["now", "todo", "todo"]);
     const blocked = await card(worker(), {tasks: tasksOf(0, "blocked", 3), state: "blocked", blocked_reason: "it waits on task 7340"});
     expect(blocked.querySelector("[data-agent-bar]").dataset.state).toBe("blocked");
-    expect(blocked.querySelector("[data-agent-bar] i.now").style.getPropertyValue("--fill")).toBe("33%");
+    expect(kinds(blocked)).toEqual(["now", "todo", "todo"]);
+});
+
+test("a done task after the one in hand still shows before it", () => {
+    const tasks = [{id: 1, state: "completed"}, {id: 2, state: "started"}, {id: 3, state: "completed"}, {id: 4, state: "open"}];
+    expect(taskSegments(tasks, {id: 2, state: "started"}).segments.map((segment) => segment.kind)).toEqual(["done", "done", "now", "todo"]);
 });
 
 test("a retired agent with all its tasks done shows a full bar and says All done", async () => {
@@ -51,7 +56,7 @@ test("over thirty tasks the bar is one continuous bar", async () => {
     expect(bar.continuous).toBe(true);
     expect(bar.segments).toEqual([]);
     expect(bar.done).toBeCloseTo(37.5);
-    expect(bar.now).toBeCloseTo((33 / 100 / 40) * 100);
+    expect(bar.now).toBeCloseTo((1 / 40) * 100);
     const element = await card(worker(), {tasks: tasksOf(15, "started", 40)});
     expect(element.querySelector("[data-agent-bar]").classList.contains("continuous")).toBe(true);
     expect(element.querySelectorAll("[data-agent-bar] i")).toHaveLength(0);

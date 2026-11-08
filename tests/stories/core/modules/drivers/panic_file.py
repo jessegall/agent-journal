@@ -26,9 +26,11 @@ def test_the_journal_shows_a_mark_with_the_reason_when_the_panic_file_appears_an
     PanicWatch()(story.container)
     PanicWatch()(story.container)
     expect_marks_text(story, "Panic: the main agent works around the journal. the journal does not answer")
+    home.panic_count.write_text("4")
     home.panic_file.unlink()
     PanicWatch()(story.container)
     expect_marks_text(story, "The panic ended: the journal answers again. It began because: the journal does not answer")
+    story.expect_rows(not home.panic_count.exists())
 
 
 def test_a_panic_file_with_no_reason_shows_nothing(new_story):

@@ -106,9 +106,10 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         task_flags = {entry.key: entry.job_task_flag for entry in self.registry.agent_types}
         statuses = self.usage.statuses(page.rows)
         account = self.usage.files.plan_windows(statuses)
+        sandboxes = self.usage.sandbox.sandboxed_among(tuple(agents.values()))
         return Page(tuple(AgentListingState(**vars(row), state=states.get(row.id, AgentListState.RETIRED),
                                            resume_reason=self.resume_reason(agents[row.id], *locations[row.id]) if row.id in idle else None,
-                                           facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account).json(),
+                                           facts=self.usage.facts(row, policy, titles, pending.get(row.id), statuses[row.session], account, sandboxes[row.id]).json(),
                                            job_command=job_commands.get(row.role, ()),
                                            job_task_flag=task_flags.get(row.role, "")) for row in page.rows),
                     page.number, page.size, page.total)

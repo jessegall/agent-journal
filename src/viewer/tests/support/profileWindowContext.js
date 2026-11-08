@@ -9,4 +9,5 @@ export const profileWindowContext = (answers) => context({"agent programs": page
     programs: {line: "agent programs"},
     profiles: {line: "profile list"},
     availability: {line: "helper availability", loading: "requested"},
+    skills: {line: "profile skills", loading: "requested"},
 });

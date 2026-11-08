@@ -5,6 +5,7 @@ from core.base.setting.setting_value import SettingValue
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from tunnels.tunler.commands.install_tunler.install_tunler_handler import InstallTunlerHandler
 from tunnels.tunler.commands.install_tunler.install_tunler_subcommand import InstallTunlerSubcommand
 from tunnels.tunler.commands.login_tunler.login_tunler_handler import LoginTunlerHandler
@@ -35,6 +36,6 @@ class TunlerModule(Module):
     subcommands = [TunlerStatusSubcommand, TunlerDomainsSubcommand, TunlerVersionSubcommand, LoginTunlerSubcommand, LogoutTunlerSubcommand,
                    UpdateTunlerSubcommand, InstallTunlerSubcommand, ReleaseTunlerDomainSubcommand]
     handlers = [LoginTunlerHandler, LogoutTunlerHandler, UpdateTunlerHandler, InstallTunlerHandler, ReleaseTunlerDomainHandler]
-    windows = [WindowDeclaration("tunler.account", "Tunler", "tunler.js", WindowLoading.COMPONENT, skeleton=TUNLER_ACCOUNT_SKELETON, group="project", icon=WindowIcon.SHARE,
+    windows = [WindowDeclaration("tunler.account", "Tunler", "tunler.js", WindowLoading.COMPONENT, skeleton=TUNLER_ACCOUNT_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SHARE,
                                  reads=["tunler status", "tunler domains", "tunler version"],
                                  runs=["tunler login", "tunler logout", "tunler update", "tunler install", "tunler release", "setting set"])]

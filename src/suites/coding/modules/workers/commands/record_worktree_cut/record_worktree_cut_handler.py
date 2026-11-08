@@ -33,7 +33,7 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
 
     def handle(self, command: RecordWorktreeCut, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        cut = self.repository.save_change(worktree, replace(worktree.cut(context.timestamp, context.actor, command.base_commit, len(command.task_ids)), library_links=command.library_links), context)
+        cut = self.repository.save_change(worktree, replace(worktree.cut(context.timestamp, context.actor, command.base_commit, len(command.task_ids)), library_links=command.library_links, library_copies=command.library_copies), context)
         with self.scopes.row_scope(worktree):
             for assigned in command.task_sources:
                 if assigned.task_id not in command.task_ids or assigned.source.environment_id != worktree.environment_id:

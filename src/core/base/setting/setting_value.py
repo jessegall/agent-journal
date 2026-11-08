@@ -16,7 +16,7 @@ from core.base.type_guards import is_list, is_text_list, is_tuple
 class SettingValue:
     """One setting a module declares: its short key, the title and one plain sentence the settings window
     shows, its type and default, whether it is a secret such as a token, where it may be set and whether an
-    agent may set it."""
+    agent may set it, and the full keys of the flags that must be on for a window to show it."""
 
     key: str
     title: str
@@ -29,6 +29,7 @@ class SettingValue:
     person_set: bool = False
     rule: SettingRule | None = None
     main_agent_only: bool = False
+    depends_on: Sequence[str] = ()
 
     def accepts(self, value: object) -> bool:
         match self.type:
@@ -50,7 +51,7 @@ class SettingValue:
 
     def declaration(self) -> SettingDeclaration:
         return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
-                                  tuple(self.choices), False, True, person_set=self.person_set, rule=SettingRuleText.to_text(self.rule), main_agent_only=self.main_agent_only)
+                                  tuple(self.choices), False, True, person_set=self.person_set, rule=SettingRuleText.to_text(self.rule), main_agent_only=self.main_agent_only, depends_on=tuple(self.depends_on))
 
     def members(self) -> Sequence[SettingNode]:
         return ()

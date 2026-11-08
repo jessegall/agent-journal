@@ -18,5 +18,8 @@ class SkillProjects:
     def agent_folder(self, agent_id: int, environment_id: int) -> Path:
         return Path(self.environments.find(environment_id).folder)
 
+    def permits(self, project: Path, folder: str) -> bool:
+        return True
+
     def roots(self, program_folders: Sequence[str]) -> tuple[Path, ...]:
         return tuple(project / folder for project in self.projects() for folder in program_folders)

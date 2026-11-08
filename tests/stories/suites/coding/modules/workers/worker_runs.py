@@ -8,6 +8,8 @@ from core.base.database.database import Database
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.hook_event import HookEvent
+from core.base.query.queries import Queries
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -18,6 +20,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_absent_value, expect_count_output_2, expect_total_cost_less
 
@@ -25,7 +28,7 @@ RULE_LIMIT_POINTS = 20
 
 
 def worker_with_background_run(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -168,7 +171,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
     story.run(f"agent end {worker.id}", actor=worker)
     story.hook(session, HookSamples.session_start())
     story.run(f"agent end {worker.id}", actor=worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1")
+    story.expect_rows(any(f"worker:{worker.id} ended with task:1" in line.text for line in story.container.get(Queries).query(MergerLine).all_rows()))
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)

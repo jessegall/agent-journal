@@ -2,6 +2,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.tunnel.commands.tunnel_status.tunnel_status_subcommand import TunnelStatusSubcommand
 from core.base.module.module import Module
 from core.base.setting.setting_scope import SettingScope
@@ -26,4 +27,4 @@ class TunnelModule(Module):
     tunnels = [NoTunnel]
     guards = [TunnelServiceGuard]
     subcommands = [TunnelStatusSubcommand]
-    windows = [WindowDeclaration("tunnel.tunnel", "Tunnel", "tunnel.js", WindowLoading.COMPONENT, skeleton=TUNNEL_TUNNEL_SKELETON, group="project", icon=WindowIcon.SHARE, reads=["tunnel status"], keys=[WindowKey("status", "tunnel status")])]
+    windows = [WindowDeclaration("tunnel.tunnel", "Tunnel", "tunnel.js", WindowLoading.COMPONENT, skeleton=TUNNEL_TUNNEL_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SHARE, reads=["tunnel status"], keys=[WindowKey("status", "tunnel status")])]

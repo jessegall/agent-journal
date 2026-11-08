@@ -23,6 +23,7 @@ class ProfileFields(TypedDict, total=False):
     injections: dict[str, bool]
     mcp_tools: tuple[str, ...]
     writable_folders: tuple[str, ...]
+    skills: tuple[str, ...]
     module: str
     module_text: str
     source_digest: str

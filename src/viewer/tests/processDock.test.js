@@ -99,6 +99,15 @@ test("the pending dots go once a run has steps or a percent", async () => {
     expect((await dockedHead({progress: 40})).querySelector("[data-output-pending]")).toBeNull();
 });
 
+test("a run with a percent and no steps shows the percent where the steps would be, and a run with steps shows the steps", async () => {
+    const percent = await dockedHead({progress: 40});
+    expect(percent.querySelector("[data-output-progress]").textContent).toBe("Progress: 40%");
+    expect(percent.querySelector("[data-output-steps]")).toBeNull();
+    const stepped = await dockedHead({progress: 40, steps_passed: 3});
+    expect(stepped.querySelector("[data-output-steps]").textContent).toBe("Steps: 3 passed");
+    expect(stepped.querySelector("[data-output-progress]")).toBeNull();
+});
+
 test("a chained run's temporary title never shows its script in the header or tooltip", async () => {
     const line = "rm -rf /tmp/example && python3 - <<'PY'\nprint('private script')\nPY";
     const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line, title: "Removing files"}}});
@@ -216,10 +225,12 @@ async function foldedTime(run, collapsed) {
     return {time, head};
 }
 
-test("a card folded to its title line shows only the percent in place of the duration, with no steps or failures", async () => {
+test("a card folded to its title line shows only a small bar with the percent in its tooltip in place of the duration, with no steps or failures", async () => {
     const {time, head} = await foldedTime({progress: 42, steps_passed: 12, steps_failed: 1}, true);
     expect([...time.children].map((child) => child.className)).toEqual(["output-dock-percent"]);
-    expect(time.querySelector("[data-output-percent]").textContent).toBe("42%");
+    expect(time.querySelector("[data-output-percent]").title).toBe("42%");
+    expect(time.querySelector("[data-output-percent] i").style.width).toBe("42%");
+    expect(time.textContent).toBe("");
     expect(time.textContent).not.toMatch(/passed|failed|Steps/);
     expect(head.textContent).not.toMatch(/passed|failed|Steps/);
 });
@@ -246,7 +257,7 @@ async function endedBetweenReads(ending) {
     document.body.append(head, foot, time);
     window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(true), collapsed: ref(true), row: ref({id: 7, target_id: 3})})[key];
     await mounted(OutputDock, window);
-    expect(time.querySelector("[data-output-percent]").textContent).toBe("96%");
+    expect(time.querySelector("[data-output-percent]").title).toBe("96%");
     heard.forEach((handler) => handler({event: "process.finished", row_id: 3}));
     await settle();
     return {time, head};
@@ -254,7 +265,7 @@ async function endedBetweenReads(ending) {
 
 test("a run that ends between two reads shows 100% and passed, never its last percent", async () => {
     const {time, head} = await endedBetweenReads({state: "finished"});
-    expect(time.querySelector("[data-output-percent]").textContent).toBe("100%");
+    expect(time.querySelector("[data-output-percent]").title).toBe("100%");
     expect(head.querySelector("[data-state='good']")).not.toBeNull();
     expect(head.querySelector(".output-dock-fill").style.width).toBe("100%");
 });

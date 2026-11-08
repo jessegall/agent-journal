@@ -1,7 +1,6 @@
 // Version 4's dock behaviour on the docking module's rows: an item leaves once its leaves_at passes unless it is kept or pointed at
 
 export const MOST_DOCKED_RUNS = 6;
-export const GROUP_FROM = 3;
 
 // a run is an item whose type leaves by itself after its row ends; any other is a row docked for as long as the person keeps it
 export const isRunItem = (item, declarationOf) => (declarationOf(item.type)?.leaves_after_seconds || 0) > 0;
@@ -25,6 +24,3 @@ export function keptRuns(runs, now, most = MOST_DOCKED_RUNS) {
     const cleared = new Set(runs.filter((run) => run.leaves_at && !run.kept && !(leaveSeconds(run) > now)).slice(0, over).map((run) => run.id));
     return runs.filter((run) => !cleared.has(run.id));
 }
-
-// whether runs share one compact row: from three at once, and on until fewer than two of them are still going (going defaults to all of them)
-export const groupedRuns = (count, wasGrouped, going = count) => (going < 2 ? false : count >= GROUP_FROM ? true : wasGrouped);

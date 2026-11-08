@@ -1,4 +1,6 @@
-from core.base.agent_sandbox_choice import AgentSandboxChoice
+from collections.abc import Sequence
+
+from core.base.agent_sandbox_choice import AgentSandboxChoice, SandboxedAgent
 from core.base.agent_type_book import AgentTypeBook
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -14,7 +16,12 @@ class WorkerSandboxChoice(AgentSandboxChoice):
         self.agents, self.types, self.settings = agents, types, settings
 
     def sandboxed(self, agent_id: int) -> bool:
-        agent = self.agents.find(agent_id)
+        return self.decided(self.agents.find(agent_id))
+
+    def sandboxed_among(self, agents: Sequence[SandboxedAgent]) -> dict[int, bool]:
+        return {agent.id: self.decided(agent) for agent in agents}
+
+    def decided(self, agent: SandboxedAgent) -> bool:
         if not self.types.find(agent.role).separate_folder:
             return True
         choice = agent.metadata.module_part(MODULE_KEY)

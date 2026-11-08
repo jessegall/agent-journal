@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+import shutil
 import subprocess
 import sys
 from collections.abc import Sequence
@@ -32,6 +33,15 @@ class LibraryFolders:
         for name in copies:
             self.copy(Path(folder) / name, Path(target) / name)
         self.exclude(target, (*links, *copies))
+
+    def drop(self, target: str, copies: Sequence[str]) -> None:
+        for name in copies:
+            shutil.rmtree(Path(target) / name, ignore_errors=True)
+
+    def restore(self, folder: str, target: str, copies: Sequence[str]) -> None:
+        for name in copies:
+            if not (Path(target) / name).exists():
+                self.copy(Path(folder) / name, Path(target) / name)
 
     def copy(self, source: Path, target: Path) -> None:
         program = MAC_COPY if sys.platform == "darwin" else LINUX_COPY

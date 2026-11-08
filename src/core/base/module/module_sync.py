@@ -211,7 +211,7 @@ class ModuleSync:
             for skill in module.skills:
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
-                                          SkillContents.read(path).digest, str(path), module in shipped))
+                                          SkillContents.read(path).digest, str(path), module in shipped, types=tuple(skill.types)))
         return tuple(entries)
 
     def buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]:

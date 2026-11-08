@@ -1,4 +1,3 @@
-from datetime import timedelta
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
@@ -220,21 +219,6 @@ def test_the_usage_names_the_effort_the_session_reported(new_story):
     story = new_story(fixture=UserJoined)
     save_status_file(story, "s-1", {"model": {"display_name": "Opus"}, "effort": {"level": "high"}})
     expect_row(json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0], effort="high")
-
-
-def monitor_start(description: str):
-    command = "journal output monitor 4"
-    tool_input = {"command": command, "description": description}
-    return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": tool_input}).with_raw({"tool_input": tool_input})
-
-
-def test_an_agent_that_started_a_monitor_and_stopped_waits_for_what_the_monitor_describes_until_its_life_ends(new_story):
-    story = new_story(fixture=UserJoined)
-    story.hook("s-1", monitor_start("release v7.18.14 build"))
-    story.hook("s-1", HookSamples.stop())
-    story.expect_text("usage tool --environment main", "waiting for release v7.18.14 build", actor=story.user)
-    story.advance(timedelta(minutes=31))
-    story.expect_absent("usage tool --environment main", "release v7.18.14 build", actor=story.user)
 
 
 def test_with_no_tool_running_the_line_says_what_the_agent_waits_for(new_story):

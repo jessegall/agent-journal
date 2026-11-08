@@ -44,11 +44,11 @@ class KeptWorkerTasks:
         return self.kept.scoped_current(lambda: self.queries.query(Task).find_many(task_ids),
                                         name=f"workers.sent_tasks:{task_ids}")
 
-    def check_tasks(self, task_ids: tuple[int, ...]) -> list[Task]:
-        return AssignableTasks.checked(self.read_tasks(task_ids))
+    def check_tasks(self, task_ids: tuple[int, ...], sender_id: int | None = None) -> list[Task]:
+        return AssignableTasks.checked(self.read_tasks(task_ids), sender_id)
 
-    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...]) -> list[Task]:
-        tasks = self.check_tasks(task_ids)
+    def checked_cut(self, worker: Agent, task_ids: tuple[int, ...], read: list[Task] | None = None) -> list[Task]:
+        tasks = self.check_tasks(task_ids) if read is None else AssignableTasks.checked(read)
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is not None:
             if self.proof_queue.tests_pending(worktree):

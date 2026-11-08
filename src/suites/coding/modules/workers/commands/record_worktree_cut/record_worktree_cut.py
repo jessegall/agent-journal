@@ -16,3 +16,4 @@ class RecordWorktreeCut(Command[Worktree], TasksChangedTogether):
     task_ids: tuple[int, ...]
     task_sources: tuple[TaskSourceCopy, ...] = ()
     library_links: str = "[]"
+    library_copies: str = "[]"

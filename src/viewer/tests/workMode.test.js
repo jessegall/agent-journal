@@ -11,7 +11,11 @@ const KEYS = {
     limits: {line: "agent limits", tab: "agents", events: ["agent.*", "setting.*"]},
 };
 const CONTROL_KEYS = ["auto-mode", "main-writes-code", "workers.main-dispatches-workers", "continue-while-delegatable", "workers.merger-on", "main-starts-helpers", "designer-enabled", "workers.main-agent-may-merge"];
-const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true]))};
+const KEEP_GOING = "journal.suites.coding.continue-while-delegatable";
+const WRITES = "journal.suites.coding.main-writes-code";
+const SENDS = "journal.suites.coding.workers.main-dispatches-workers";
+const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true])),
+    depends: {[KEEP_GOING]: [WRITES], "journal.suites.coding.workers.merger-on": [SENDS], "journal.suites.coding.workers.main-agent-may-merge": [SENDS]}};
 
 const mounted = [];
 afterEach(() => mounted.splice(0).forEach(({app, element}) => { app.unmount(); element.remove(); }));
@@ -80,4 +84,26 @@ test("the auto switch lives here and sets auto mode", async () => {
     element.querySelector("[data-auto-toggle]").click();
     await settled();
     expect(runs).toEqual(["setting set journal.suites.coding.auto-mode false --environment main"]);
+});
+
+test("a setting shows only while the settings it depends on are on, and shows again when they are turned back on", async () => {
+    const {element} = await mount();
+    element.querySelector("[data-open-agent-settings]").click();
+    await settled();
+    const control = (key) => document.querySelector(`[data-agent-settings] [data-control="${key}"]`);
+    const toggle = (key) => control(key).querySelector("[role=switch]").click();
+    expect(control(KEEP_GOING)).not.toBeNull();
+    toggle(WRITES);
+    await settled();
+    expect(control(KEEP_GOING)).toBeNull();
+    toggle(WRITES);
+    await settled();
+    expect(control(KEEP_GOING)).not.toBeNull();
+    toggle(SENDS);
+    await settled();
+    expect(control("journal.suites.coding.workers.merger-on")).toBeNull();
+    expect(control("journal.suites.coding.workers.main-agent-may-merge")).toBeNull();
+    toggle(SENDS);
+    await settled();
+    expect(control("journal.suites.coding.workers.merger-on")).not.toBeNull();
 });

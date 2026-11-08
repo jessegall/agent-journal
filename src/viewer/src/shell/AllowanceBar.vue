@@ -6,7 +6,7 @@ import Icon from "../kit/Icon.vue";
 const props = defineProps({windows: {type: Array, default: () => []}, disabled: Boolean});
 const emit = defineEmits(["open"]);
 const allowance = computed(() => props.windows[0] ?? null);
-const used = computed(() => (allowance.value ? Math.max(0, Math.min(100, Math.round(allowance.value.used_percent))) : null));
+const used = computed(() => (allowance.value && Number.isFinite(allowance.value.used_percent) ? Math.max(0, Math.min(100, Math.round(allowance.value.used_percent))) : null));
 const atLimit = computed(() => used.value !== null && used.value >= 100);
 const resetsAt = computed(() => (allowance.value?.reset_epoch_seconds ? new Date(allowance.value.reset_epoch_seconds * 1000).toLocaleString() : ""));
 const title = computed(() => (atLimit.value ? `At usage limit: the plan's ${allowance.value.title} allowance is used up${resetsAt.value ? `, starts again ${resetsAt.value}` : ""}` : `${used.value}% of the plan's ${allowance.value.title} allowance used${resetsAt.value ? `, starts again ${resetsAt.value}` : ""}`));

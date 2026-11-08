@@ -37,6 +37,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
         parser.add_argument("--keeps-project-instructions", action=BooleanOptionalAction, default=None, help="a worker's worktree keeps the project's instruction files beside the ones written for this profile")
+        parser.add_argument("--skills", help="the skill folders the profile's agents get, a comma list or a JSON list; blank takes the skills of the profile's type")
         parser.add_argument("--injections", help='JSON naming each injection into the instruction files with true or false, such as {"journal": false}')
         parser.add_argument("--program-if-possible", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
@@ -56,6 +57,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             fields["fallback_programs"] = self.registered(ProfileFormat.tools(arguments.fallback_programs))
         if arguments.injections is not None:
             fields["injections"] = ProfileFormat.injections(arguments.injections)
+        if arguments.skills is not None:
+            fields["skills"] = ProfileFormat.tools(arguments.skills)
         if arguments.mcp_tools is not None:
             fields["mcp_tools"] = ProfileFormat.tools(arguments.mcp_tools)
         if arguments.writable_folders is not None:

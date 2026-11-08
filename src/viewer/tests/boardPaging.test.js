@@ -52,6 +52,20 @@ test("more tasks are asked for older than the oldest shown, without doubles, and
     expect(element.textContent).not.toContain("Two");
 });
 
+test("the delegated tasks come with every one in progress and blocked, and more of them are asked for older than the oldest open one shown", async () => {
+    const row = (id, state) => ({...task(id, `Task ${id}`), state, delegated_to: 5});
+    const {window, reads} = reader((line) => {
+        if (line.includes("--before-id")) return {ok: true, value: {groups: [{state: "delegated", total: 5, rows: [row(1, "open")]}]}};
+        return {ok: true, value: {groups: [{state: "delegated", total: 5, rows: [row(2, "blocked"), row(9, "started"), row(8, "blocked"), row(7, "open")]}]}};
+    });
+    const element = await mounted(TaskGroups, window);
+    expect([...element.querySelectorAll(".task-title")].map((title) => title.textContent)).toEqual(["Task 9", "Task 2", "Task 8", "Task 7"]);
+    element.querySelector('[data-more="delegated"]').click();
+    await settle();
+    expect(reads).toContain("task board --state delegated --before-id 7");
+    expect(element.querySelectorAll('[data-more="delegated"]')).toHaveLength(0);
+});
+
 test("a group folds and unfolds from its header, and stays folded on the next load", async () => {
     localStorage.removeItem("journal.tasks.folded");
     const {window} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 1, rows: [task(1, "One")]}]}}));
@@ -108,4 +122,20 @@ test("a plan card shows its state as a badge, and no phase once none is left", a
     await settle();
     expect(element.querySelector("[data-plan-state]").textContent).toBe("Approved");
     expect(element.querySelector(".plan-foot").textContent).toBe("3 of 3 tasks done");
+});
+
+test("the Open group has a switch that hides the tasks of a plan and shows them again, kept on the pane", async () => {
+    const planned = {ok: true, value: {rows: [{id: 5, label: "Plan 5, phase 1", task_ids: [1]}], page: 1, size: 50, total: 1}};
+    const {window} = reader((line) => (line.startsWith("plan places") ? planned : {ok: true, value: {groups: [{state: "open", total: 2, rows: [task(1, "In a plan"), task(2, "Alone")]}]}}));
+    const element = await mounted(TaskGroups, window);
+    const shown = () => [...element.querySelectorAll('[data-state="open"] [data-row]')].map((row) => row.dataset.row);
+    expect(shown()).toEqual(["1", "2"]);
+    element.querySelector("[data-open-plan-switch]").click();
+    await settle();
+    expect(shown()).toEqual(["2"]);
+    expect(window.state["board.hide-plan-tasks"]).toBe("true");
+    element.querySelector("[data-open-plan-switch]").click();
+    await settle();
+    expect(shown()).toEqual(["1", "2"]);
+    expect(window.state["board.hide-plan-tasks"]).toBeUndefined();
 });

@@ -27,7 +27,7 @@ const share = computed(() => (props.inspection.plan?.total ? Math.round((props.i
             <span class="detail" data-agent-doing>{{ doing }}</span>
         </template>
         <template v-if="inspection.last_activity">
-            <span class="detail" data-agent-last-activity>Last heard: <TimeAgo :at="inspection.last_activity" /></span>
+            <span class="detail" data-agent-last-activity>Seen: <TimeAgo :at="inspection.last_activity" /></span>
         </template>
     </div>
     <template v-if="inspection.plan">

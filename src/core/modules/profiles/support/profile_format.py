@@ -50,6 +50,8 @@ class ProfileFormat:
             fields["mcp_tools"] = ProfileFormat.tools(fields["mcp_tools"])
         if "writable_folders" in fields:
             fields["writable_folders"] = ProfileFormat.tools(fields["writable_folders"])
+        if "skills" in fields:
+            fields["skills"] = ProfileFormat.tools(fields["skills"])
         return fields
 
     @staticmethod

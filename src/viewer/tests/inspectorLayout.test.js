@@ -3,6 +3,7 @@ import {resolve} from "node:path";
 import {createApp, h} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import Inspector from "../src/resource/Inspector.vue";
+import TaskDetails from "../src/tasks/TaskDetails.vue";
 import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
 import {startButtons} from "../src/domain/buttons.js";
 import {AllowancePrompts} from "../src/windows/allowancePrompts.js";
@@ -198,4 +199,20 @@ test("an inspector whose part draws the text draws it once, under its own tabs, 
     expect(doc.element.querySelector("[data-resource-text]")).toBeNull();
     const task = await drawn(await catalogueOf([{...TASK, components: [{window: "acme.body", tab: ""}]}], "acme.body"), {"task inspect 7": {ok: true, value: row}});
     expect(task.element.querySelectorAll("[data-resource-text]")).toHaveLength(1);
+});
+
+test("a task inspector and a document inspector show the brief and the abstract once each", async () => {
+    const brief = "Show the brief once";
+    const abstract = "What the document is about";
+    const task = {...TASK, description: "", components: [], draws_text: true};
+    const doc = {...TASK, noun: "doc", label: "Document {id}", reads: "doc inspect {row_id}", description: "{abstract}", components: [], draws_text: true};
+    const opened = await drawn(await catalogueOf([task]), {"task inspect 7": {ok: true, value: {...ROW, brief}}});
+    const details = document.createElement("div");
+    const part = createApp({render: () => h(TaskDetails, {task: {...ROW, brief, waits: [], logs: [], block_renewals: [], updated_at: "2026-01-01T00:00:00Z"}})});
+    part.directive("tip", {});
+    part.mount(details);
+    mounted.push(part);
+    expect(opened.element.textContent.split(brief).length - 1 + details.textContent.split(brief).length - 1).toBe(1);
+    const document_ = await drawn(await catalogueOf([doc]), {"doc inspect 7": {ok: true, value: {...ROW, abstract, body: "The text of the document"}}}, {noun: "doc"});
+    expect(document_.element.textContent.split(abstract).length - 1).toBe(1);
 });

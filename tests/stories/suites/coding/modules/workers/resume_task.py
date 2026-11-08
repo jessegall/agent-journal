@@ -18,7 +18,6 @@ from core.modules.drivers.commands.record_agent_notice.record_agent_notice impor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
@@ -32,7 +31,8 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = GitRepository.sample(story.home.project_folder)
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))} --branch {ENVIRONMENT_BRANCH}")
-    worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} 1")
+    worker_name = f"{program.title()}{'Merged' if merged else 'Open'}{'Pid' if b'123456789' in answer else 'Bare'}"
+    worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} --name {worker_name} 1")
     if merged:
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
@@ -67,6 +67,11 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     try:
         story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
         story.run_listeners()
+        if not merged:
+            story.expect_rows(not launcher.starts, not launches, detail=str(launches))
+            repository.checkout(ENVIRONMENT_BRANCH)
+            story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+            story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1, launches == [worker.id], detail=str(launches))
         launch = launcher.starts[0]
         story.expect_rows(launch["session"] == worker_session(story, worker))
@@ -81,26 +86,29 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
         launcher.server.close()
 
 
-class StoppedWorkerWithEnteredJob(StoryFixture):
-    parent = OrchestratorWithOpenTask
-
-    def steps(self, story) -> None:
-        worker = checked_worker(story, repository_environment(story))
-        story.expect_success(f"agent end {worker.id}", actor=story.agent)
-        story.advance(timedelta(seconds=1))
-        bus = story.container.get(Bus)
-        bus.run(RecordAgentNotice(worker.id, "An earlier task", WORKER_JOB_SOURCE), Actor.core(), environment_id=1)
-        line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, source=WORKER_JOB_SOURCE).newest().first()
-        bus.run(EnterAgentLine(line.id), Actor.core(), environment_id=1)
+def stopped_worker_with_entered_job(story) -> Actor:
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    bus = story.container.get(Bus)
+    bus.run(RecordAgentNotice(worker.id, "An earlier task", WORKER_JOB_SOURCE), Actor.core(), environment_id=1)
+    line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id, source=WORKER_JOB_SOURCE).newest().first()
+    bus.run(EnterAgentLine(line.id), Actor.core(), environment_id=1)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    return worker
 
 
 def test_an_entered_line_without_a_process_does_not_block_a_new_task_start(new_story):
-    story = new_story(fixture=StoppedWorkerWithEnteredJob)
-    worker = story.container.get(Queries).query(Agent).filter(role="worker").first()
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    worker = stopped_worker_with_entered_job(story)
     task_id = story.new_row_id('task make "Another task" --brief "Read the totals"', actor=story.agent)
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")
     try:
         story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
+        story.run_listeners()
+        story.expect_rows(not launcher.starts)
+        story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
         story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1)
         story.expect_rows(story.row(Agent, worker.id).ended_at is None)

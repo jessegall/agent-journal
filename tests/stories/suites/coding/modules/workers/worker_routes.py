@@ -338,7 +338,7 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     story.expect_success(f'worker send {worker.id} --wait --task {task_id} --skip-guard workers.route-holds '
                          '--skip-reason "Keep the existing worker for this comparison"', actor=story.agent)
     expect_program(story, worker, 'claude')
-    story.expect_text(f'task show {task_id}', f'holder_id: {worker.id}')
+    story.expect_text(f'task show {task_id}', f'delegated_to: {worker.id}', 'state: open')
 
 
 def test_skills_name_tiers_tags_and_routes(split_story):

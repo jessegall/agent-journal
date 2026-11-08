@@ -22,9 +22,6 @@ export const givenName = (row, facts) => facts?.given_name || capital(facts?.pro
 // what its dot shows: it ended, it waits for something, or it runs
 export const agentState = (row, facts) => (row.ended_at ? "ended" : row.paused_at || WAITING_STATES.has(facts?.state) ? "waiting" : "running");
 
-// the profile, the program, the model and the effort, as far as they are known
-export const identityParts = (row, facts) => [facts?.profile && capital(facts.profile_title || facts.profile), row.program, facts?.model, facts?.effort && `${facts.effort} effort`].filter(Boolean);
-
 const completedCount = (facts) => (facts?.tasks ?? []).filter((task) => task.state === "completed").length;
 
 // the cells of the strip: the time it has run, what it uses and costs, how fast it finishes tasks, and how many of its runs went wrong

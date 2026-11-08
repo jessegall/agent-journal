@@ -15,6 +15,11 @@ const RESEARCHER = {name: "journal-researcher", description: "Researches a quest
 const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], fallback_programs: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
 const ROUTED = {...BUILDER, name: "routed", description: "Reads on one program, then another", program: "claude", program_if_possible: true, fallback_programs: ["codex"]};
 const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: ""}, {key: "worker", label: "Worker", access: "writing", extends: "helper"}];
+const SKILLS = {ok: true, value: {profile: "journal-researcher", rows: [
+    {key: "journal", description: "Find your way in the journal", state: "on", own: false},
+    {key: "journal-helpers", description: "Start a helper for a bounded read", state: "on", own: true},
+    {key: "journal-dumps", description: "File what the user dropped", state: "off", own: false},
+]}};
 let app;
 let host;
 
@@ -27,7 +32,7 @@ afterEach(() => {
 // the page drawn in the document, over a journal that lists these profiles and answers each line it runs as the given function says
 async function drawn(profiles = [RESEARCHER, BUILDER], run = async () => ({ok: true, value: null}), programs = PROGRAMS) {
     const lines = [];
-    const window_ = {...profileWindowContext({"agent programs": page(programs), "profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
+    const window_ = {...profileWindowContext({"agent programs": page(programs), "profile skills": SKILLS, "profile list": {...page(profiles), value: {...page(profiles).value, types: TYPES}}}), run: async (line) => (lines.push(line), run(line))};
     host = document.createElement("div");
     document.body.append(host);
     app = createApp({render: () => h(ProfileRows)});
@@ -251,4 +256,22 @@ test("a third provider supplies program and model choices and its save option", 
     document.querySelector("[data-profile-save]").click();
     await settle();
     expect(lines[0]).toEqual(expect.arrayContaining(["--sample-model", "sample-fast"]));
+});
+
+test("the panel lists every skill with a switch and marks the ones made for the profile's type, and a switch is saved as the skills the profile names", async () => {
+    const lines = await drawn();
+    await open("journal-researcher");
+    const rows = [...panel().querySelectorAll("[data-profile-skill]")];
+    expect(rows.map((row) => row.dataset.profileSkill)).toEqual(["journal", "journal-helpers", "journal-dumps"]);
+    expect(rows.map((row) => row.querySelector("[data-profile-skill-switch]").getAttribute("aria-checked"))).toEqual(["true", "true", "false"]);
+    expect(rows.map((row) => row.querySelector("[data-profile-skill-own]") !== null)).toEqual([false, true, false]);
+    const save = document.querySelector("[data-profile-save]");
+    expect(save.disabled).toBe(true);
+    rows[2].querySelector("[data-profile-skill-switch]").click();
+    await settle();
+    expect(rows[2].querySelector("[data-profile-skill-switch]").getAttribute("aria-checked")).toBe("true");
+    expect(save.disabled).toBe(false);
+    save.click();
+    await settle();
+    expect(lines.at(-1).slice(-2)).toEqual(["--skills", "journal,journal-helpers,journal-dumps"]);
 });

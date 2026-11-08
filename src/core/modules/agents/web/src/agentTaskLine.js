@@ -1,23 +1,21 @@
 // the task line of an agent's row: the task in hand, how many of the agent's tasks are done, and one bar segment for each task
 
-const STAGES = {started: {fill: 33, words: "started"}, testing: {fill: 66, words: "being tested"}, blocked: {fill: 33, words: "blocked"}};
+const STAGES = {started: {words: "started"}, testing: {words: "being tested"}, blocked: {words: "blocked"}};
 const SEGMENT_LIMIT = 30;
 
 // the tasks that count: a cancelled one is not the agent's to do
 const counted = (tasks) => tasks.filter((task) => task.state !== "cancelled");
 
+// the segments run done, the task in hand whole, then those to come; a long list is one continuous bar in the same order
 export function taskSegments(tasks, inHand) {
     const all = counted(tasks);
-    const stage = STAGES[inHand?.state];
+    const done = all.filter((task) => task.state === "completed").length;
+    const current = STAGES[inHand?.state] && all.some((task) => task.id === inHand.id && task.state !== "completed") ? 1 : 0;
     if (all.length > SEGMENT_LIMIT) {
-        const done = all.filter((task) => task.state === "completed").length;
-        return {continuous: true, done: (done / all.length) * 100, now: stage ? (stage.fill / 100 / all.length) * 100 : 0, segments: []};
+        return {continuous: true, done: (done / all.length) * 100, now: (current / all.length) * 100, segments: []};
     }
-    const segments = all.map((task) => {
-        if (task.state === "completed") return {kind: "done", fill: 0};
-        return task.id === inHand?.id && stage ? {kind: "now", fill: stage.fill} : {kind: "todo", fill: 0};
-    });
-    return {continuous: false, done: 0, now: 0, segments};
+    const kinds = [...Array(done).fill("done"), ...Array(current).fill("now"), ...Array(all.length - done - current).fill("todo")];
+    return {continuous: false, done: 0, now: 0, segments: kinds.map((kind) => ({kind}))};
 }
 
 export function taskLine({tasks, inHand, perHour}) {

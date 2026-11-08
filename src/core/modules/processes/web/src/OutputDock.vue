@@ -77,6 +77,12 @@ const steps = computed(() => {
     ? `${run.value.steps_passed} passed, ${run.value.steps_failed} failed`
     : `${run.value.steps_passed} passed`;
 });
+// a run that gives a percent but no step count shows its percent where the steps would go
+const progressText = computed(() => {
+  if (steps.value || ended.value) return "";
+  const done = Math.round(Number(run.value?.progress ?? 0));
+  return done > 0 ? `${done}%` : "";
+});
 const ranFor = computed(() => {
   if (!run.value?.created_at) return "";
   const until = run.value.ended_at ? Date.parse(run.value.ended_at) : now.value;
@@ -176,9 +182,16 @@ usePoll(load, isRunning, () =>
         ></Teleport
       ></template
     >
+    <template v-if="unref(foot) && progressText"
+      ><Teleport :to="unref(foot)"
+        ><span data-output-progress
+          >Progress: <b>{{ progressText }}</b></span
+        ></Teleport
+      ></template
+    >
     <template v-if="unref(time)"
       ><Teleport :to="unref(time)"
-        ><span v-if="percent" class="output-dock-percent" data-output-percent>{{ percent }}</span
+        ><span v-if="percent" class="output-dock-percent" data-output-percent role="img" :title="percent" :aria-label="percent"><i :style="{ width: percent }" /></span
         ><span v-else class="output-dock-figure">{{ ranFor }}</span></Teleport
       ></template
     >
@@ -290,12 +303,22 @@ usePoll(load, isRunning, () =>
   font-variant-numeric: tabular-nums;
 }
 
+/* a folded card's percent as a small bar, centred on the line, with the number in its tooltip */
 .output-dock-percent {
   flex: none;
+  align-self: center;
+  width: 32px;
+  height: 4px;
   margin-right: 6px;
-  color: var(--text-3);
-  font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--hover);
+}
+
+.output-dock-percent i {
+  display: block;
+  height: 100%;
+  background: var(--text-3);
 }
 
 .output-dock-terminal {

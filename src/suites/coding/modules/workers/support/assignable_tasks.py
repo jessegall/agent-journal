@@ -10,9 +10,9 @@ class AssignableTasks:
     open. The worker starts on the first open task."""
 
     @staticmethod
-    def checked(tasks: list[Task]) -> list[Task]:
+    def checked(tasks: list[Task], sender_id: int | None = None) -> list[Task]:
         for task in tasks:
-            if task.state not in ASSIGNABLE_STATES:
+            if task.state not in ASSIGNABLE_STATES and not (task.state is TaskState.STARTED and task.holder_id == sender_id):
                 raise Refusal(f"task {task.id} is {task.state.value}", "only an open or a blocked task can be assigned to a worker")
         return AssignableTasks.open_first(tasks)
 

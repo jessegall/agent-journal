@@ -4,10 +4,12 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
+from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.base.query.conditions.minimum import Minimum
+from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support import worker_job
 from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_RESTARTED, WORKER_UNFINISHED_TASKS
@@ -31,9 +33,9 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait) -> None:
+    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes) -> None:
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
-        self.resume, self.waits = resume, waits
+        self.resume, self.waits, self.inbox, self.scopes = resume, waits, inbox, scopes
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         new = event.row
@@ -60,4 +62,5 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
                     return
                 self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.id, tasks=tasks)
                 return
-        self.nudger.send(new.parent_id, WORKER_ENDED_WITH_TASKS, SOURCE, context, worker=new.id, tasks=tasks)
+        with self.scopes.row_scope(new):
+            self.inbox.send_nudge(WORKER_ENDED_WITH_TASKS.nudge(worker=new.id, tasks=tasks), SOURCE, context)

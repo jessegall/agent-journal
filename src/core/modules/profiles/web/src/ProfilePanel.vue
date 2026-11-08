@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {Btn, DiffCard, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} from "@journal/window-kit";
+import ProfileSkillToggles from "./ProfileSkillToggles.vue";
 
 const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}, programs: {type: Array, required: true}});
 const emit = defineEmits(["close", "save", "reset"]);
@@ -16,7 +17,7 @@ const draft = ref({});
 watch(
     () => props.profile.name,
     () => {
-        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(","), program_models: {...props.profile.program_models}};
+        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(","), program_models: {...props.profile.program_models}, skills: null};
     },
     {immediate: true},
 );
@@ -34,7 +35,7 @@ const compared = computed(() => {
     return [...lineRows("del", yours, journal), ...lineRows("add", journal, yours)];
 });
 const saved = computed(() => ({...props.profile, mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(",")}));
-const dirty = computed(() => FIELDS.some((key) => JSON.stringify(draft.value[key]) !== JSON.stringify(saved.value[key])) || !props.profile.name);
+const dirty = computed(() => FIELDS.some((key) => JSON.stringify(draft.value[key]) !== JSON.stringify(saved.value[key])) || draft.value.skills !== null || !props.profile.name);
 const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.name || "") && draft.value.description.trim());
 </script>
 
@@ -92,6 +93,11 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             <FormField label="MCP tools this profile may call" for="profile-mcp" help="Separate the names with commas.">
                 <TextInput id="profile-mcp" :value="draft.mcp_tools" @input="draft.mcp_tools = $event.target.value" />
             </FormField>
+            <template v-if="profile.name">
+                <FormField label="Skills" help="The skills this profile's agents get. A worker's worktree holds only these, and a helper in the main checkout may read only these.">
+                    <ProfileSkillToggles :profile="profile.name" :chosen="draft.skills" @change="draft.skills = $event" />
+                </FormField>
+            </template>
             <label class="profile-panel-check"><input v-model="draft.independent" type="checkbox" data-profile-independent /> Must judge fresh</label>
             <template v-if="profile.module_text_changed">
                 <p class="profile-panel-note">Text changed: the journal's instructions have a new version.</p>

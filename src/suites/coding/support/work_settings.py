@@ -1,5 +1,5 @@
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 
 
 @dataclass(frozen=True)
@@ -24,10 +24,12 @@ class WorkSettings:
     revision: str
     controls: tuple[tuple[str, bool], ...]
     fields: tuple[WorkField, ...] = ()
+    depends: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
 
     def lines(self) -> Sequence[str]:
         return [f"workflow: {self.workflow}", f"revision: {self.revision}", *(f"{key}: {'on' if value else 'off'}" for key, value in self.controls),
-                *(f"{field.key}: {field.value}" for field in self.fields)]
+                *(f"{row.key}: {row.value}" for row in self.fields)]
 
     def json(self) -> Mapping[str, object]:
-        return {"workflow": self.workflow, "revision": self.revision, "controls": dict(self.controls), "fields": [asdict(field) for field in self.fields]}
+        return {"workflow": self.workflow, "revision": self.revision, "controls": dict(self.controls), "fields": [asdict(row) for row in self.fields],
+                "depends": {key: list(keys) for key, keys in self.depends.items()}}

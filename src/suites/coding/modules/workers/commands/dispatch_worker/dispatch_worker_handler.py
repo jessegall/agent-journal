@@ -23,7 +23,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.available_workers import AvailableWorkers
 from suites.coding.modules.workers.support.worker_request import WorkerRequest
-from suites.coding.modules.workers.support.worker_settings import LIBRARY_LINKS
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
@@ -42,6 +42,7 @@ from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
+from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker and its tasks, runs git without a write lock and removes an opening that fails."""
@@ -50,7 +51,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     command = DispatchWorker
 
     def __init__(self, queries: Queries, bus: Bus, settings: SettingValues, git: WorktreeGit, worker_command: WorkerCommand, worktrees: WorktreeQuery,
-                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission) -> None:
+                 providers: Providers, models: AllowedModels, routing: WorkerRouting, environments: EnvironmentRows, rows: EventRows, types: AgentTypeBook, profiles: ProfileFiles, scopes: Scopes, sources: WorkSources, places: WorkerPlaces, copies: WorkerTaskCopies, available_workers: AvailableWorkers, admission: AgentAdmission, release: StartedTaskRelease) -> None:
+        self.release = release
         self.places, self.copies, self.available_workers, self.admission = places, copies, available_workers, admission
         self.queries, self.bus, self.settings = queries, bus, settings
         self.git, self.worker_command, self.worktrees, self.providers, self.models = git, worker_command, worktrees, providers, models
@@ -58,7 +60,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.sources, self.routing = sources, routing
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
-        tasks = AssignableTasks.checked(self.queries.query(Task).find_many([command.task_id, *command.delegated_ids]))
+        read = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
+        tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
         if not AssignableTasks.has_open(tasks):
             raise Refusal("every task here is blocked, and a new worker starts on an open one",
                           "assign blocked tasks to a kept worker with journal worker send <n> --task, or dispatch once one opens")
@@ -87,7 +90,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.git.cut(environment.folder, opened.worktree)
             try:
                 self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies, profile.name), context)
-                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links))))), context)
+                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links)))), json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_COPIES), *command.library_copies))))), context)
             except Exception:
                 self.git.remove(environment.folder, opened.worktree)
                 raise

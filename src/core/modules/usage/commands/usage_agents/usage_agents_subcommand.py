@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.agent_policy import AgentPolicy
 import json
@@ -64,16 +65,17 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cards_read = (*running, *ended)
         statuses = self.statuses(cards_read)
         account = self.files.plan_windows(statuses)
-        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account) for card in cards_read))
+        sandboxes = self.sandbox.sandboxed_among(self.queries.query(Agent).find_many([card.id for card in cards_read]))
+        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes[card.id]) for card in cards_read))
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
         return {card.session: self.files.status(card.session) for card in cards}
 
-    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...]) -> AgentFacts:
+    def facts(self, card: AgentCard, policy: AgentPolicy, titles: dict[str, str], work_status: str | None, status: SessionStatus, account: tuple[PlanWindow, ...], sandboxed: bool) -> AgentFacts:
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not self.sandbox.sandboxed(card.id), status.windows or account, card.limited_until.text if card.limited_until is not None else None)
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.limited_until.text if card.limited_until is not None else None)
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:

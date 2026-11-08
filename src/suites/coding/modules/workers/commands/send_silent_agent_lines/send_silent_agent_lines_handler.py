@@ -39,6 +39,7 @@ from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SIL
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
 from suites.coding.support.coding_agent_role import CodingAgentRole
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 RECOVERY_ATTEMPTS = 3
 
@@ -64,7 +65,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         held = tasks.matching(Among("holder_id", agent_ids)).all_rows()
         delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
         working = {agent_id for task in (*held, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
-        main_has_work = self.task_query.open_tasks().matching(IsNull("delegated_to")).matching(self.task_query.unapproved_plan_exclusion()).exists()
+        tasks_remain = self.task_query.open_tasks().matching(IsNull("delegated_to")).matching(self.task_query.unapproved_plan_exclusion()).exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.waiting(agent_ids, context)
@@ -80,7 +81,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         for agent in agents:
             if not resumes and agent.role != CodingAgentRole.MAIN:
                 continue
-            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and main_has_work)
+            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and tasks_remain and self.is_automatic(agent))
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
                 continue
@@ -121,6 +122,10 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
             if previous and previous[-1].creation_timestamp().elapsed_seconds(context.timestamp) < repeat:
                 continue
             self.main_line.send(line.text, IDLE_WORKER.key, context)
+
+    def is_automatic(self, agent: Agent) -> bool:
+        with self.bus.scopes.read_scope((), None, agent.environment_id):
+            return self.settings.flag(AUTO_MODE_SETTING)
 
     def waiting(self, agent_ids: tuple[int, ...], context: Context) -> set[int]:
         excluded = {row.session_agent_id for row in self.processes.running().all_rows()}

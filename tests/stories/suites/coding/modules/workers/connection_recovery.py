@@ -298,6 +298,7 @@ def test_a_second_wake_during_a_session_launch_does_not_start_another_process(ne
 
 def test_a_silent_main_agent_with_open_tasks_is_woken_under_auto_mode(recovery):
     story = recovery.story
+    story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=story.user)
     story.expect_success('task make "For later" --environment main', actor=story.agent)
     recovery.advance(SILENT_SECONDS + 1)
     recovery.tick()

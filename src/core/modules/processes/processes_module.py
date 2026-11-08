@@ -254,7 +254,7 @@ class ProcessesModule(Module):
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
                                  keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS)], runs=WINDOW_RUNS, events=WINDOW_EVENTS),
-               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=[*WINDOW_READS, "window setting"],
+               WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.TERMINAL, auto_scroll=AutoScroll.BOTTOM, reads=[*WINDOW_READS, "window setting"],
                                  keys=[WindowKey("selection", "window setting processes.output output", loading=KeyLoading.REQUESTED),
                                        WindowKey("latest", "process feed --limit 1", arguments=["session-agent-id"], loading=KeyLoading.REQUESTED),
                                        WindowKey("run.*", "process feed --id {id}", loading=KeyLoading.REQUESTED),

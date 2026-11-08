@@ -34,6 +34,10 @@ class JournalHome:
         return self.folder / "runtime" / "panic-announced"
 
     @property
+    def panic_count(self) -> Path:
+        return self.folder / "runtime" / "panic-count"
+
+    @property
     def bypass_log(self) -> Path:
         return self.folder / "runtime" / "bypass.log"
 

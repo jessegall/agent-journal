@@ -42,12 +42,18 @@ class Worktree(Removable, EnvironmentScoped, Model):
     merged_task_ids: str = ""
     new_agent_reason: str = ""
     library_links: str = "[]"
+    library_copies: str = "[]"
+    libraries_dropped_at: Timestamp | None = None
     task_count: int = 1
     route_reason: str = ""
     starts_program: bool = True
 
     def cut(self, timestamp: Timestamp, actor: Actor, base_commit: str, task_count: int = 1) -> "Worktree":
         return self.moved(WorktreeLifecycle.cut, base_commit=base_commit, cut_at=timestamp, task_count=task_count)
+
+    def change_libraries(self, dropped_at: Timestamp | None) -> "Worktree":
+        move = WorktreeLifecycle.change_delivered_libraries if self.state is WorktreeState.DELIVERED else WorktreeLifecycle.change_cut_libraries
+        return self.moved(move, libraries_dropped_at=dropped_at)
 
     def merge(self, timestamp: Timestamp, actor: Actor) -> "Worktree":
         return self.moved(WorktreeLifecycle.merge, merged_at=timestamp)
