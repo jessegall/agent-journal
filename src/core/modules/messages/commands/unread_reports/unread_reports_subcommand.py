@@ -39,6 +39,7 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--search", default="")
+        parser.add_argument("--agent", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> UnreadReports:
         reports = self.queries.query(Message).filter(type=MessageType.AGENT, is_chat_visible=False).matching(IsNull("read_at"))
@@ -46,6 +47,8 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
             reports = reports.filter(target_agent_id=caller.actor.id)
         else:
             reports = reports.matching(IsNull("target_agent_id"))
+        if arguments.agent is not None:
+            reports = reports.filter(session_agent_id=arguments.agent)
         if arguments.search:
             reports = reports.matching(ContainsEvery(["text"], arguments.search.split()))
         page = reports.newest().page(arguments.page, SHOWN_REPORTS)
