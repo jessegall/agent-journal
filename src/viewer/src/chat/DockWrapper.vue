@@ -90,7 +90,7 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
             <template v-else>
                 <Icon :name="look.icon" class="dock-icon" :size="14" />
                 <span class="dock-text">
-                    <span class="dock-title" :title="shownTitle">{{ shownTitle }}</span>
+                    <span :class="['dock-title', {strip: collapsed}]" :title="shownTitle">{{ shownTitle }}</span>
                 </span>
             </template>
             <span ref="time" class="dock-age" data-dock-age>
@@ -199,6 +199,7 @@ const ownsHead = computed(() => Boolean(declaration.value?.draws_head) && !props
     flex-direction: column;
     min-width: 0;
 }
+.dock-title.strip { font-size: 12px; }
 .dock-title {
     flex: 1 1 auto;
     min-width: 0;

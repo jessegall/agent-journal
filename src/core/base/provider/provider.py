@@ -148,6 +148,9 @@ class Provider(ABC):
     @abstractmethod
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None: ...
 
+    def folder_trusted(self, folder: Path) -> None:
+        pass
+
     @abstractmethod
     def hook_trust(self, project: Path) -> HookTrust: ...
 
