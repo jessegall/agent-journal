@@ -4338,9 +4338,7 @@ function z1(e, t, n, { groups: a, programs: s }) {
   return { groups: a, programs: s, chosen: o, failure: l, asking: i, running: r, paused: c, choose: (k, O) => d(["agent", "control", String(e.value.id), k, O.value], { target: o, fields: { value: { ...o.value, [k]: O.label } } }), stop: () => (i.value = !1, d(["agent", "stop", String(e.value.id)], { target: e.value, fields: { ended_at: (/* @__PURE__ */ new Date()).toISOString() } })), start: (k) => d(["agent", "launch", k.name]) };
 }
 function U1(e) {
-  if (!e) return "Not compacted yet";
-  const t = new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" });
-  return e.start_percent === null ? `Last compacted ${t}` : e.end_percent === null ? `Last compacted ${t}, from ${e.start_percent}%` : `Last compacted ${t}, from ${e.start_percent}% to ${e.end_percent}%, ${e.start_percent - e.end_percent}% taken off`;
+  return e ? `Last compacted ${new Date(e.started_at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "medium" })}` : "Not compacted yet";
 }
 const G1 = ["disabled", "title"], V1 = ["disabled", "title"], K1 = { class: "gauge" }, Y1 = ["disabled", "title"], Q1 = ["disabled"], X1 = ["disabled"], J1 = {
   key: 4,
@@ -14102,7 +14100,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = su(() => import("./VoiceFigure-Drj2m6-5.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = su(() => import("./VoiceFigure-CI1hmYfd.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Tf as $,
   Ee as A,

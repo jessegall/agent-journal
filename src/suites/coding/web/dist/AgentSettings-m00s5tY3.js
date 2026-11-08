@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { openBlock as t, createElementBlock as d, createElementVNode as s, computed as b, normalizeClass as X, toDisplayString as k, renderSlot as ke, createTextVNode as w, createCommentVNode as x, createVNode as O, unref as m, withCtx as j, reactive as ie, ref as A, watch as ne, Fragment as S, renderList as U, createBlock as T, withModifiers as ye, useModel as fe, normalizeStyle as le, mergeModels as be, onMounted as he } from "vue";
 import { useWindow as H, Btn as E, Switch as ee, TextInput as _e, useNow as $e, age as we, Icon as Ce, Segmented as re, WindowRoom as Ae } from "@journal/window-kit";
-import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l, label: l.title, type: g.key, key: `${g.key}:${l.profile}` })) : [{ ...g, type: g.key }]), te = (o, g) => g > 0 && o >= g, Se = { class: "step" }, Oe = ["disabled"], xe = ["value", "disabled"], Te = ["disabled"], je = {
   __name: "NumberStep",
   props: { modelValue: { type: [Number, String], default: 0 }, disabled: { type: Boolean, default: !1 } },
@@ -30,7 +30,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       }, "+", 8, Te)
     ]));
   }
-}, Ne = /* @__PURE__ */ F(je, [["__scopeId", "data-v-a7b54780"]]), Ie = { class: "ctl-text" }, Me = { class: "ctl-label" }, Ve = { class: "ctl-help" }, Be = { class: "ctl-input" }, Re = {
+}, Ne = /* @__PURE__ */ F(je, [["__scopeId", "data-v-e9d43b82"]]), Ie = { class: "ctl-text" }, Me = { class: "ctl-label" }, Ve = { class: "ctl-help" }, Be = { class: "ctl-input" }, Re = {
   key: 0,
   class: "ctl-src"
 }, We = {
@@ -62,7 +62,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ])) : x("", !0)
     ], 2));
   }
-}, Z = /* @__PURE__ */ F(We, [["__scopeId", "data-v-c011fa59"]]), Ee = { class: "foot" }, Fe = {
+}, Z = /* @__PURE__ */ F(We, [["__scopeId", "data-v-6e2d513b"]]), Ee = { class: "foot" }, Fe = {
   __name: "SettingsFoot",
   props: { changes: { type: Number, default: 0 }, pending: { type: Boolean, default: !1 }, problem: { type: String, default: "" }, blocked: { type: Boolean, default: !1 } },
   emits: ["cancel", "apply"],
@@ -97,7 +97,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       }, 8, ["disabled"])
     ]));
   }
-}, de = /* @__PURE__ */ F(Fe, [["__scopeId", "data-v-ceae936f"]]), Pe = ["data-agent-settings-group"], Ue = { class: "sw-word" }, Ke = ["value", "disabled", "data-field", "onChange"], Le = ["value"], qe = ["data-field-badge"], De = {
+}, de = /* @__PURE__ */ F(Fe, [["__scopeId", "data-v-88c3dd59"]]), Pe = ["data-agent-settings-group"], Ue = { class: "sw-word" }, Ke = ["value", "disabled", "data-field", "onChange"], Le = ["value"], qe = ["data-field-badge"], De = {
   __name: "AgentSettingsGroup",
   props: { group: { type: String, required: !0 } },
   setup(o) {
@@ -185,7 +185,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ], 8, Pe));
   }
-}, ce = /* @__PURE__ */ F(De, [["__scopeId", "data-v-44858f20"]]), He = {
+}, ce = /* @__PURE__ */ F(De, [["__scopeId", "data-v-561ba16e"]]), He = {
   __name: "AgentSettingsAdvanced",
   setup(o) {
     return (g, l) => (t(), T(ce, {
@@ -235,7 +235,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ])
     ], 32));
   }
-}, Ye = /* @__PURE__ */ F(Ge, [["__scopeId", "data-v-bbe4e841"]]), Je = ["data-edit-type"], Qe = { key: 0 }, Xe = { class: "stepper" }, Ze = ["disabled", "onClick"], et = ["value", "disabled", "data-agent-limit-input", "onChange"], tt = ["disabled", "onClick"], nt = { key: 0 }, at = { key: 1 }, st = {
+}, Ye = /* @__PURE__ */ F(Ge, [["__scopeId", "data-v-23a905c0"]]), Je = ["data-edit-type"], Qe = { key: 0 }, Xe = { class: "stepper" }, Ze = ["disabled", "onClick"], et = ["value", "disabled", "data-agent-limit-input", "onChange"], tt = ["disabled", "onClick"], nt = { key: 0 }, at = { key: 1 }, st = {
   __name: "AgentLimitEditor",
   props: { rows: { type: Array, required: !0 }, pending: Boolean, readOnly: Boolean, environment: { type: String, required: !0 } },
   emits: ["change"],
@@ -281,7 +281,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ], 8, Je))), 128))
     ], 64));
   }
-}, lt = /* @__PURE__ */ F(st, [["__scopeId", "data-v-f4f7965a"]]), ot = { class: "counts-panel" }, it = { class: "counts" }, rt = ["data-count-agent"], ut = { class: "person-text" }, dt = {
+}, lt = /* @__PURE__ */ F(st, [["__scopeId", "data-v-218442c9"]]), ot = { class: "counts-panel" }, it = { class: "counts" }, rt = ["data-count-agent"], ut = { class: "person-text" }, dt = {
   key: 0,
   class: "helper-head"
 }, ct = ["data-agent-limit-type", "data-agent-limit-profile", "onClick"], gt = {
@@ -524,7 +524,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       ])
     ]));
   }
-}, ft = /* @__PURE__ */ F(yt, [["__scopeId", "data-v-cf143060"]]), bt = {
+}, ft = /* @__PURE__ */ F(yt, [["__scopeId", "data-v-6aa51086"]]), bt = {
   class: "agents",
   "data-agent-settings-agents": ""
 }, ht = {
@@ -539,7 +539,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       }, null, 8, ["title"])
     ]));
   }
-}, _t = /* @__PURE__ */ F(ht, [["__scopeId", "data-v-b2fa0c3e"]]), $t = {
+}, _t = /* @__PURE__ */ F(ht, [["__scopeId", "data-v-3e01c727"]]), $t = {
   __name: "AgentSettingsTests",
   setup(o) {
     return (g, l) => (t(), T(ce, {
@@ -657,7 +657,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       }, null, 8, ["changes", "pending", "problem", "blocked"])
     ]));
   }
-}, Nt = /* @__PURE__ */ F(jt, [["__scopeId", "data-v-65899621"]]), It = {
+}, Nt = /* @__PURE__ */ F(jt, [["__scopeId", "data-v-c5fb9f6f"]]), It = {
   class: "settings",
   "data-agent-settings": ""
 }, Mt = { class: "settings-bar" }, Vt = { class: "settings-body" }, Bt = {
@@ -694,7 +694,7 @@ const ue = (o) => o.flatMap((g) => g.per_profile ? g.profiles.map((l) => ({ ...l
       _: 1
     }));
   }
-}, Pt = /* @__PURE__ */ F(Rt, [["__scopeId", "data-v-868efd17"]]);
+}, Pt = /* @__PURE__ */ F(Rt, [["__scopeId", "data-v-f9bdd5f3"]]);
 export {
   Pt as A
 };
