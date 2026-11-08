@@ -2,6 +2,7 @@ from pathlib import Path
 
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
 from core.modules.agents.models.agent import Agent
+from core.base.journal_home import JournalHome
 from core.base.query.conditions.among import Among
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.agents.support.agent_rows import AgentRows
@@ -12,8 +13,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 class WorkerFolders(AgentFolders):
     """A worker works in its worktree, so a helper of a worker works there too."""
 
-    def __init__(self, agents: AgentRows, environments: EnvironmentRows, worktrees: WorktreeQuery) -> None:
-        super().__init__(agents, environments)
+    def __init__(self, agents: AgentRows, environments: EnvironmentRows, worktrees: WorktreeQuery, home: JournalHome) -> None:
+        super().__init__(agents, environments, home)
         self.worktrees = worktrees
 
     def resume_locations(self, agents: tuple[Agent, ...]) -> dict[int, tuple[bool, Path]]:
@@ -29,7 +30,9 @@ class WorkerFolders(AgentFolders):
             parent = parents.get(agent.parent_id)
             available = parent is None or parent.role != AgentRole.WORKER or parent.id in active
             worktree = latest.get(agent.id)
-            if worktree is not None:
+            if self.start_folder(agent).is_dir():
+                folder = self.start_folder(agent)
+            elif worktree is not None:
                 folder = Path(worktree.folder)
             elif parent is not None and parent.id in active:
                 folder = Path(active[parent.id].folder)
