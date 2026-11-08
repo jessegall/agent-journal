@@ -135,7 +135,7 @@ def test_retire_permissions(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     story.expect_refusal(f"agent retire {story.agent.id} {REASON}", "main agent is not retired", actor=story.agent)
-    story.expect_refusal(f"agent retire {helper.id} {REASON}", "answers to", actor=Actor(helper.id, ActorType.AGENT))
+    story.expect_refusal(f"agent retire {helper.id} {REASON}", "belongs to agent", actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f"agent retire {helper.id} {REASON}", actor=story.user)
 
 
@@ -249,7 +249,7 @@ def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
     resumable_session(story, helper, monkeypatch)
     kept = story.container.get(KeptHelpers)
     story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id)
-    monkeypatch.setattr(ClaudeCodeProvider, "context_percent", lambda provider, home, session: 80)
+    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: (80, 1000))
     story.expect_rows(kept.idle("journal-researcher", "", "") == ())
 
 
@@ -259,7 +259,7 @@ def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):
     resumable_session(story, helper, monkeypatch)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f'helper send {helper.id} "One more job"', actor=story.agent)
-    story.expect_success(f'helper send {helper.id} "And another"', actor=story.agent)
+    story.expect_refusal(f'helper send {helper.id} "And another"', "is busy with a job", actor=story.agent)
     open_jobs = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).matching(IsNull("ended_at")).all_rows()
     story.expect_rows(len(tuple(open_jobs)) == 1)
     launcher.server.close()

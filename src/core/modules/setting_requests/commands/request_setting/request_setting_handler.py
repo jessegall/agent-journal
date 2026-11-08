@@ -40,4 +40,4 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
         if command.project:
             arguments = (*arguments, "--project")
         arguments = (*arguments, "--expected-revision", self.revision.current(entry.key))
-        return self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}", why=command.reason.strip()), arguments), context)
+        return self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}", arguments, why=command.reason.strip()), arguments), context)

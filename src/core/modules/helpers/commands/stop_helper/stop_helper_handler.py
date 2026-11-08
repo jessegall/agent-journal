@@ -20,7 +20,7 @@ class StopHelperHandler(Handler[StopHelper, None]):
         self.reach, self.bus, self.jobs = reach, bus, jobs
 
     def handle(self, command: StopHelper, context: Context) -> None:
-        helper = self.reach.checked_helper(command.helper_id, context.actor)
+        helper = self.reach.checked_helper(command.helper_id, context.actor, context.command)
         if helper.ended_at is None:
             self.bus.dispatch(EndAgent(helper.id), context)
             return
