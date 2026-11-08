@@ -8,9 +8,8 @@ const WORKER_ROLE = "worker";
 const MAIN_ROLE = "main";
 const WAITING_STATES = new Set(["waiting", "blocked", "at usage limit"]);
 
-// the rows a list read gave, and how many rows the list holds in all; a read that failed gave none
+// the rows a list read gave; a read that failed gave none
 export const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
-export const totalOf = (answer) => (answer.ok ? answer.value.total : 0);
 
 const capital = (word) => word.slice(0, 1).toUpperCase() + word.slice(1);
 
