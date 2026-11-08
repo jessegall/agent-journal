@@ -56,9 +56,11 @@ class TemplateAdaptation:
     def rewrite_database(self, database: Path, builder: str) -> None:
         connection = sqlite3.connect(database, autocommit=True)
         try:
+            connection.execute("PRAGMA secure_delete = ON")
             for table, columns in self.text_columns(connection):
                 for column in columns:
                     connection.execute(f'UPDATE "{table}" SET "{column}" = replace("{column}", ?, ?) WHERE instr("{column}", ?) > 0', (builder, self.checkout, builder))
+            connection.execute("VACUUM")
         finally:
             connection.close()
 
