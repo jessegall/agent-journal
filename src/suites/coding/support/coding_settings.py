@@ -7,7 +7,7 @@ from core.base.setting.list_rule import ListRule
 
 
 MODULE_KEY = "journal.suites.coding"
-STARTS_HELPERS_SETTING = f"{MODULE_KEY}.builder-starts-helpers"
+STARTS_HELPERS_SETTING = f"{MODULE_KEY}.main-starts-helpers"
 AUTO_MODE_SETTING = f"{MODULE_KEY}.auto-mode"
 WRITES_CODE_SETTING = f"{MODULE_KEY}.main-writes-code"
 COMMAND_TYPES = f"{MODULE_KEY}.worker-command-types"
@@ -18,7 +18,7 @@ CODING_SETTING_VALUES = [
                  default=True, scope=SettingScope.ENVIRONMENT, person_set=True),
     SettingValue("main-writes-code", "Main agent writes code", "The main agent may change project files itself; off sends every change to a worker",
                  SettingType.FLAG, default=True, scope=SettingScope.ENVIRONMENT, person_set=True),
-    SettingValue("builder-starts-helpers", "Use ordinary helpers", "Whether the main agent may start ordinary helpers.",
+    SettingValue("main-starts-helpers", "Use ordinary helpers", "Whether the main agent may start ordinary helpers.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True),
     SettingValue("continue-while-delegatable", "Keep going while work can be delegated", "Keep the main agent working while open tasks can still be sent to workers.",
                  SettingType.FLAG, default=False, person_set=True),

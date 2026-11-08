@@ -13,7 +13,7 @@ from suites.coding.support import coding_settings as coding
 
 AGENT_TYPES = ("worker", "helper")
 ALL_COMMAND_TYPES = tuple(category.value for category in CommandCategory)
-DEFAULT_COMMAND_TYPES = (CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.TEST_RUN.value,
+DEFAULT_COMMAND_TYPES = (CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
                          CommandCategory.BUILD.value)
 SETTING_LISTS = {"coding": coding.CODING_SETTINGS, "workers": workers.WORKER_SETTINGS, "helpers": helpers.HELPER_SETTINGS}
 MODULE_KEYS = {"coding": coding.MODULE_KEY, "workers": workers.MODULE_KEY, "helpers": helpers.MODULE_KEY}

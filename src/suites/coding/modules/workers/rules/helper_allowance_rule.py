@@ -1,5 +1,5 @@
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
-from suites.coding.support.coding_nudges import BUILDER_HELPER_BAN
+from suites.coding.support.coding_nudges import MAIN_HELPER_BAN
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from suites.coding.support.auto_advice import AutoAdvice
 from core.base.driver.agent_hook import AgentHook
@@ -13,7 +13,7 @@ HELPER_START_ARGUMENTS = ("helper", "start")
 
 
 class HelperAllowanceRule(DriverRule):
-    """The main agent starts no ordinary helpers while the setting builder-starts-helpers is off."""
+    """The main agent starts no ordinary helpers while the setting main-starts-helpers is off."""
 
     name = "workers.helper-allowed"
     hook = HookEventName.PRE_TOOL_USE
@@ -28,4 +28,4 @@ class HelperAllowanceRule(DriverRule):
         starts = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and tuple(part.arguments[:2]) == HELPER_START_ARGUMENTS for part in shell.parts)
         if not starts or self.settings.value(STARTS_HELPERS_SETTING) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(BUILDER_HELPER_BAN.nudge(then=self.advice.without_helpers()))
+        return RuleAnswer.refused(MAIN_HELPER_BAN.nudge(then=self.advice.without_helpers()))

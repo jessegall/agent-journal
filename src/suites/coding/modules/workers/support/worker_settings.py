@@ -6,7 +6,7 @@ from core.base.setting.list_rule import ListRule
 from core.base.setting.number_rule import NumberRule
 
 MODULE_KEY = "journal.suites.coding.workers"
-DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.builder-dispatches-workers"
+DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.main-dispatches-workers"
 LIBRARY_LINKS = f"{MODULE_KEY}.library-links"
 LIBRARY_COPIES = f"{MODULE_KEY}.library-copies"
 WORKTREE_COMMANDS_NAME = "worktree-commands"
@@ -51,7 +51,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True),
-    SettingValue("builder-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("resume-silent-agents", "Resume silent agents", "Whether a worker or helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("workers-start-helpers", "Workers may use ordinary helpers", "Whether a worker may start ordinary helpers for the task it works on.", SettingType.FLAG, default=True, person_set=True),

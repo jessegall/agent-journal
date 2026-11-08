@@ -1,3 +1,4 @@
+from suites.coding.migrations.m006_main_starts_helpers_key import MainStartsHelpersKeyMigration
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
 from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsMigration
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
@@ -90,7 +91,7 @@ class CodingModule(Module):
     drivers = [MainDriver, HelperDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
+    migrations = [MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]
@@ -107,7 +108,7 @@ class CodingModule(Module):
                                  reads=["work-settings show", "setting show", "usage bars"], runs=["work-settings preset", "setting set"], events=["setting.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("auto", "setting show journal.suites.coding.auto-mode", events=["setting.*"]),
-                                       WindowKey("dispatches", "setting show journal.suites.coding.workers.builder-dispatches-workers", tab="settings", events=["setting.*"]),
+                                       WindowKey("dispatches", "setting show journal.suites.coding.workers.main-dispatches-workers", tab="settings", events=["setting.*"]),
                                        WindowKey("merger", "setting show journal.suites.coding.workers.merger-on", tab="settings", events=["setting.*"]),
                                        WindowKey("bars", "usage bars", loading=KeyLoading.REQUESTED)]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW, place=WindowPlace.PAGE, group="project",

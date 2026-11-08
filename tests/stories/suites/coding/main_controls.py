@@ -39,8 +39,8 @@ def test_s01_s43_defaults_of_the_agent_options_are_declared_once_and_person_only
 
 def test_s01_s43_defaults_keep_the_existing_keys_and_scopes_with_neutral_labels():
     auto = DECLARED["journal.suites.coding.auto-mode"][1]
-    helpers = DECLARED["journal.suites.coding.builder-starts-helpers"][1]
-    dispatches = DECLARED["journal.suites.coding.workers.builder-dispatches-workers"][1]
+    helpers = DECLARED["journal.suites.coding.main-starts-helpers"][1]
+    dispatches = DECLARED["journal.suites.coding.workers.main-dispatches-workers"][1]
     expect_value((auto.description, auto.scope, auto.default), (MAIN_AUTO_DESCRIPTION, SettingScope.ENVIRONMENT, True))
     expect_value((helpers.title, helpers.scope), ("Use ordinary helpers", SettingScope.PROJECT))
     expect_value((dispatches.title, dispatches.scope), ("Main agent sends workers", SettingScope.LAYERED))

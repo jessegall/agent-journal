@@ -3,8 +3,8 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 AUTO = "journal.suites.coding.auto-mode"
-HELPERS = "journal.suites.coding.builder-starts-helpers"
-DISPATCHES = "journal.suites.coding.workers.builder-dispatches-workers"
+HELPERS = "journal.suites.coding.main-starts-helpers"
+DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers"
 HELPER_START = HookSamples.shell("journal helper start journal-researcher", ShellPart("journal", "journal", ["helper", "start", "journal-researcher"]))
 WORKER_DISPATCH = HookSamples.shell("journal worker dispatch 1", ShellPart("journal", "journal", ["worker", "dispatch", "1"]))
 
@@ -25,7 +25,7 @@ def test_helper_ban_while_writing_no_code_tells_the_main_agent_only_to_send_the_
 def test_dispatch_ban_with_auto_on_tells_the_main_agent_to_do_the_task(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(f"setting set {DISPATCHES} off --environment main", actor=story.user)
-    story.expect_hook_refusal("s-1", WORKER_DISPATCH, "builder-dispatches-workers is off, so do the task yourself")
+    story.expect_hook_refusal("s-1", WORKER_DISPATCH, "main-dispatches-workers is off, so do the task yourself")
 
 
 def test_dispatch_ban_while_writing_no_code_says_nothing_can_be_done_until_a_person_allows_it(new_story):
