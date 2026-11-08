@@ -8,7 +8,7 @@ from core.modules.drivers.models.refusal_skip import RefusalSkip
 
 
 class ApproveRefusalSkipSubcommand(Subcommand[JudgeRefusalSkip, RefusalSkip]):
-    """`journal refusal approve <skip>`: approves a helper's or worker's confirmed skip, which then passes the refusal once."""
+    """`journal refusal approve <skip>`: approves a helper's confirmed skip, which then passes the refusal once."""
 
     cli_name = "refusal"
     name = "approve"

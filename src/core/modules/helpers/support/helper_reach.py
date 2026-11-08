@@ -1,22 +1,29 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
+from core.base.helper_type_book import HelperTypeBook
 from core.base.refusal import Refusal
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 
 
+HELPER_JOB_COMMAND = ("helper", "send")
+
+
 class HelperReach:
     """Who may send to or stop a helper: its parent, the parent's main agent, or a person."""
 
-    def __init__(self, agents: AgentRows) -> None:
-        self.agents = agents
+    def __init__(self, agents: AgentRows, helper_types: HelperTypeBook) -> None:
+        self.agents, self.helper_types = agents, helper_types
 
     def checked_helper(self, helper_id: int, actor: Actor) -> Agent:
         helper = self.agents.find(helper_id)
-        if helper.role != AgentRole.HELPER:
+        if helper.role == AgentRole.MAIN:
             raise Refusal(f"agent {helper_id} is no helper", "journal agent cards lists the helpers")
+        job_command = self.helper_types.find(helper.role).job_command
+        if job_command and job_command != HELPER_JOB_COMMAND:
+            raise Refusal(f"agent {helper_id} is a {self.helper_types.label(helper.role)}: it takes its work with journal {' '.join(job_command)}")
         if helper.retired_at is not None:
             raise Refusal(f"helper {helper.id} is retired, for good", "journal helper start starts a new one")
         if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):

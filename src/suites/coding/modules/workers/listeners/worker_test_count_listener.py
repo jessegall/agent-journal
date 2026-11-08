@@ -1,4 +1,4 @@
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.save_listener import SaveListener
@@ -44,7 +44,7 @@ class WorkerTestCountListener(SaveListener[Changed[Output]]):
             return
         agent = self.rows.required(Agent, process.session_agent_id)
         limit = self.settings.number(WORKER_TEST_LIMIT)
-        if agent.role != AgentRole.WORKER or not 0 < limit < output.test_count:
+        if agent.role != CodingHelperKind.WORKER or not 0 < limit < output.test_count:
             return
         parts = self.queries.query(ProcessPart).filter(process_id=process.id, category=CommandCategory.TEST_RUN)
         if output.reader_position:

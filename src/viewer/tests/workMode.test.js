@@ -10,7 +10,7 @@ const KEYS = {
     auto: {line: "setting show journal.suites.coding.auto-mode", events: ["setting.*"]},
     limits: {line: "agent limits", tab: "agents", events: ["agent.*", "setting.*"]},
 };
-const CONTROL_KEYS = ["auto-mode", "main-writes-code", "workers.main-dispatches-workers", "continue-while-delegatable", "workers.merger-on", "main-starts-helpers", "designer-enabled", "workers.main-agent-may-merge"];
+const CONTROL_KEYS = ["auto-mode", "main-writes-code", "workers.main-dispatches-workers", "continue-while-delegatable", "workers.merger-on", "main-starts-read-only-helpers", "designer-enabled", "workers.main-agent-may-merge"];
 const KEEP_GOING = "journal.suites.coding.continue-while-delegatable";
 const WRITES = "journal.suites.coding.main-writes-code";
 const SENDS = "journal.suites.coding.workers.main-dispatches-workers";

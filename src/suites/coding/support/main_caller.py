@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 
 
 class MainCaller:

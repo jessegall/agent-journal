@@ -1,5 +1,5 @@
 from core.base.actor_type import ActorType
-from core.base.agent_role import AgentRole
+from core.base.helper_kind import HelperKind
 from core.base.command.context import Context
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
@@ -47,7 +47,7 @@ class HelperLimits:
 
     def checked_agent(self, agent: Agent) -> Agent:
         if agent.role not in self.suites.agent_policy().dispatch_roles:
-            raise Refusal("a helper starts no helper", "say in your report what should be done next")
+            raise Refusal("a read-only helper starts no helper", "say in your report what should be done next")
         return agent
 
     def checked_launcher(self) -> None:
@@ -56,7 +56,7 @@ class HelperLimits:
 
     def checked_running(self, profile: str) -> None:
         running_ids = {helper.id for helper in self.helpers(profile).matching(IsNull("ended_at")).all_rows()} | (self.kept.with_open_jobs(profile) - {None})
-        limit = self.limits.lookup(AgentRole.HELPER, profile).run
+        limit = self.limits.lookup(HelperKind.READ_ONLY, profile).run
         if len(running_ids) >= limit:
             names = ", ".join(f"agent:{helper_id}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
             raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
@@ -66,12 +66,12 @@ class HelperLimits:
         self.checked_kept(profile)
 
     def checked_kept(self, profile: str) -> None:
-        limit = self.limits.lookup(AgentRole.HELPER, profile).kept
+        limit = self.limits.lookup(HelperKind.READ_ONLY, profile).kept
         if limit != UNLIMITED_AGENT_COUNT and self.helpers(profile).matching(IsNull("retired_at")).count() >= limit:
             raise Refusal(f"{limit} of {profile} exist, which is the limit", self.use.retire_suggestion(profile) or TypeLimits.retirement_instruction(self.kept.kept(profile)))
 
     def helpers(self, profile: str) -> Query[Agent]:
-        return self.queries.query(Agent).filter(role=AgentRole.HELPER, profile=profile)
+        return self.queries.query(Agent).filter(role=HelperKind.READ_ONLY, profile=profile)
 
     def checked_new_session(self, profile: str) -> None:
         self.admission.checked_new("helper", profile)

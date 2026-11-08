@@ -14,7 +14,7 @@ from core.modules.drivers.support.driver_nudges import CACHE_KEEPALIVE
 from core.modules.helpers.support.helper_settings import COLD_SESSION_MINUTES
 from core.modules.processes.support.output_check_schedule import SECONDS_PER_MINUTE
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from core.base.agent_role import AgentRole
 
 RETRY_SECONDS = Seconds(600)
 
@@ -27,7 +27,7 @@ class CacheKeepAliveRule(DriverRule):
     name = "workers.cache-keepalive"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [CodingAgentRole.MAIN]
+    roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
     def __init__(self, history: HookHistory, hook_calls: HookCallQuery, queries: Queries, settings: SettingValues) -> None:

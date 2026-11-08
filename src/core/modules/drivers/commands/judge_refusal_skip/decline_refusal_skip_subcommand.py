@@ -8,7 +8,7 @@ from core.modules.drivers.models.refusal_skip import RefusalSkip
 
 
 class DeclineRefusalSkipSubcommand(Subcommand[JudgeRefusalSkip, RefusalSkip]):
-    """`journal refusal decline <skip>`: declines a helper's or worker's confirmed skip, so the refusal stays in force."""
+    """`journal refusal decline <skip>`: declines a helper's confirmed skip, so the refusal stays in force."""
 
     cli_name = "refusal"
     name = "decline"

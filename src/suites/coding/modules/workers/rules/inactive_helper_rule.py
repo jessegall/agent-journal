@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 
@@ -8,7 +8,8 @@ from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_nudges import HELPER_INACTIVE, UNSTARTED_JOB
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES, INACTIVE_HELPER_MINUTES
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -45,10 +46,10 @@ class InactiveHelperRule(DriverRule):
     name = "workers.inactive-helper"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: AgentTypeBook, stops: WorkerStop) -> None:
+    def __init__(self, agents: AgentRows, queries: Queries, activities: AgentActivities, history: HookHistory, settings: SettingValues, processes: ProcessQuery, workers: QueueRunWorkers, requests: ReaderRequestQuery, types: HelperTypeBook, stops: WorkerStop) -> None:
         self.agents, self.queries, self.activities, self.hook_history, self.settings = agents, queries, activities, history, settings
         self.processes, self.workers = processes, workers
         self.requests = requests
@@ -72,10 +73,10 @@ class InactiveHelperRule(DriverRule):
 
     @staticmethod
     def action(helper: Agent) -> str:
-        return f"journal worker status {helper.id}" if helper.role == AgentRole.WORKER else "check on it"
+        return f"journal worker status {helper.id}" if helper.role == CodingHelperKind.WORKER else "check on it"
 
     def unstarted(self, hook: AgentHook, grace: Seconds) -> list[Agent]:
-        ended = tuple(self.queries.query(Agent).filter(parent_id=hook.agent_id).matching(Among("role", self.types.derived_types("helper"))).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).all_rows())
+        ended = tuple(self.queries.query(Agent).filter(parent_id=hook.agent_id).matching(Among("role", self.types.helper_keys())).matching(Greater("ended_at", "")).matching(IsNull("retired_at")).matching(IsNull("paused_at")).all_rows())
         ids = [helper.id for helper in ended]
         lines = tuple(self.queries.query(AgentLine).filter(state=AgentLineState.WAITING).matching(Among("session_agent_id", ids)).matching(Among("source", WAITING_WORK_SOURCES)).all_rows())
         jobs = tuple(self.queries.query(HelperJob).matching(Among("helper_id", ids)).matching(IsNull("ended_at")).all_rows())
@@ -100,7 +101,7 @@ class InactiveHelperRule(DriverRule):
         return notes
 
     def helpers(self, main_id: int) -> list[Agent]:
-        roles = self.types.derived_types("helper")
+        roles = self.types.helper_keys()
         helpers = [agent for agent in self.agents.running(parent_id=main_id) if agent.role in roles and agent.profile != MERGER_PROFILE]
         return sorted(helpers, key=lambda helper: roles.index(helper.role))
 

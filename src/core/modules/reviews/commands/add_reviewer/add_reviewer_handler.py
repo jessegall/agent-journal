@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.shell_sandbox import ShellSandbox
-from core.base.agent_role import AgentRole
+from core.base.helper_kind import HelperKind
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -31,6 +31,6 @@ class AddReviewerHandler(Handler[AddReviewer, Reviewer]):
             raise Refusal("a reviewer is added in an environment", "name one with --environment")
         program = self.settings.program()
         session = f"reviewer-{self.reviewers.count() + 1}"
-        agent = self.bus.dispatch(StartAgent(session, program, AgentRole.REVIEWER, access="read-only"), context)
+        agent = self.bus.dispatch(StartAgent(session, program, HelperKind.REVIEWER, access="read-only"), context)
         return self.repository.save(Reviewer(id=agent.id, creator_id=context.actor.id, program=program,
                                              model=self.settings.model()), context)

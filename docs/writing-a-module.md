@@ -55,13 +55,13 @@ A third-party button comes after the journal's buttons and names its module. It 
 Its command must belong to its own allowance: sync refuses a line already allowed by a shipped
 window, a shipped button, or another module's button, and refuses person-only administration lines.
 
-## Register an agent type
+## Register a helper type
 
-`agent_types` declares the roles a module supplies. Depend on `journal.core.agents` and give each
+`helper_types` declares the kinds of helper a module or suite supplies: every agent outside the main agents is a helper of one of these kinds. Depend on `journal.core.agents` and give each
 type a unique key made of lowercase letters and dashes and a label:
 
 ```python
-from core.base.agent_type import AgentType
+from core.base.helper_type import HelperType
 from core.base.module.module import Module
 
 
@@ -69,7 +69,7 @@ class ClerksModule(Module):
     name = "acme.clerks"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents"]
-    agent_types = [AgentType("clerk", "Clerk", extends="helper")]
+    helper_types = [HelperType("clerk", "Clerk")]
 ```
 
 A type can extend another registered type. A helper with `access=Access.WRITING` must have
@@ -79,7 +79,7 @@ is needed; `default_profile` names the profile used when a start names none.
 
 Drivers, driver rules, suite defaults and an `AgentPolicy` must name registered types. Sync
 refuses unknown roles, duplicate keys, invalid rosters, missing base types and inheritance loops
-before changing the stored registry. Register a role in `agent_types` before using it elsewhere.
+before changing the stored registry. Register a helper type in `helper_types` before using it elsewhere. A suite registers its kinds the same way, on its own `helper_types`; every declaration reaches the registry through the module's funnel at boot.
 
 ## Register a profile
 
@@ -104,7 +104,7 @@ An agent type's `default_profile` must name a profile of that same type. Set `in
 when each job needs a fresh review. `model` and `codex_model` select models for the two programs.
 
 `Suite.profiles` and `Suite.profile_types` are no longer declarations. Move profiles to
-`Module.profiles` and register their types in `Module.agent_types`; sync names that correction
+`Module.profiles` and register their types in `Module.helper_types`; sync names that correction
 when a plugin still uses the old fields. The profile CLI keeps its `--type` option.
 
 ## Keep a read-only agent inside the journal

@@ -4,14 +4,14 @@ from core.base.access import Access
 from core.base.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME
-from core.base.agent_type import AgentType
+from core.base.helper_type import HelperType
 
 
 class ProfileCheck:
     """Checks module profiles and refuses old suite declarations before sync writes anything."""
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        types = {declaration.key: declaration for module in modules for declaration in module.agent_types}
+        types = {declaration.key: declaration for module in modules for declaration in module.declared_helper_types()}
         claimed: dict[str, str] = {}
         problems = [f"{suite.name}: register profiles on the module, not the suite" for module in modules for suite in module.suites
                     if hasattr(suite, "profiles") or hasattr(suite, "profile_types")]
@@ -20,7 +20,7 @@ class ProfileCheck:
                 problems.extend(self.profile_problems(module.name, profile, types, claimed))
         return tuple(problems)
 
-    def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, AgentType], claimed: dict[str, str]) -> list[str]:
+    def profile_problems(self, module: str, profile: AgentProfile, types: dict[str, HelperType], claimed: dict[str, str]) -> list[str]:
         problems: list[str] = []
         if profile.name in claimed:
             problems.append(f"the modules {claimed[profile.name]} and {module} both register the profile {profile.name}")

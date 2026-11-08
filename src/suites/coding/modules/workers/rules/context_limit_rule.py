@@ -9,7 +9,8 @@ from core.modules.agents.commands.choose_agent_control.choose_agent_control impo
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED, CONTEXT_STOP_BETWEEN_TASKS, CONTEXT_STOP_NOW
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
+from core.base.agent_role import AgentRole
 from suites.coding.support.context_over_limit import ContextOverLimit
 
 RETRY_SECONDS = Seconds(600)
@@ -22,7 +23,7 @@ class ContextLimitRule(DriverRule):
     name = "workers.context-limit"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = [CodingAgentRole.MAIN, CodingAgentRole.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
     disabled_scopes = [ActorScope]
 
     def __init__(self, history: HookHistory, over_limit: ContextOverLimit) -> None:
@@ -41,7 +42,7 @@ class ContextLimitStopNowRule(DriverRule):
     name = "workers.context-limit-stop-now"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    roles = [CodingAgentRole.MAIN, CodingAgentRole.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
     disabled_scopes = [ActorScope]
 
     def __init__(self, history: HookHistory, over_limit: ContextOverLimit, tasks: TaskQuery, compaction: WorkerCompaction) -> None:

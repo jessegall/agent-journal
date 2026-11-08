@@ -6,7 +6,7 @@ from core.modules.processes.support.process_nudges import RUNNER_MISSING, SANDBO
 from collections.abc import Mapping, Sequence
 
 from core.base.driver.agent_hook import AgentHook
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.access import Access
 from core.base.agent_checkouts import AgentCheckouts
 from core.base.agent_sandbox_choice import AgentSandboxChoice
@@ -39,7 +39,7 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: AgentTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, progress_listing: ProgressListing, choice: AgentSandboxChoice) -> None:
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: HelperTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, progress_listing: ProgressListing, choice: AgentSandboxChoice) -> None:
         self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
         self.types = types
         self.folders = folders

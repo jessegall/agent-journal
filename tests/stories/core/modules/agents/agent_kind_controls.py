@@ -179,7 +179,7 @@ def test_s13_lifecycle_an_empty_profile_list_refuses_a_dispatch_of_every_profile
 
 
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
-PROFILE_LIMITS = "journal.core.helpers.helper-profile-limits"
+PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
 
 
 def helper_profiles(story) -> dict[str, dict]:

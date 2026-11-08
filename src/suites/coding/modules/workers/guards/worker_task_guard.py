@@ -2,7 +2,7 @@ from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.change.moved import Moved
 from core.base.command.context import Context
@@ -21,7 +21,7 @@ class WorkerTaskGuard(Guard[Moved[Task]]):
 
     def check(self, event: Moved[Task], context: Context) -> None:
         agent = self.rows.find(Agent, context.actor.id)
-        if agent is None or agent.role != AgentRole.WORKER:
+        if agent is None or agent.role != CodingHelperKind.WORKER:
             return
         started_tasks = self.tasks.started_tasks(context.actor.id)
         if started_tasks and started_tasks[0].id != event.row.id:

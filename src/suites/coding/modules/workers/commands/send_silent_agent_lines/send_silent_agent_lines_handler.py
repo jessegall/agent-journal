@@ -38,7 +38,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_nudges import IDLE_WORKER, SILENT_AGENT_CONTINUE, SILENT_WORKER_CONTINUE
 from suites.coding.modules.workers.support.worker_settings import SILENT_AGENT_MINUTES, IDLE_WORKER_MINUTES, IDLE_WORKER_REPEAT_MINUTES, RESUME_SILENT_AGENTS
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from core.base.agent_role import AgentRole
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 RECOVERY_ATTEMPTS = 3
@@ -79,9 +79,9 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         span = self.settings.minutes(SILENT_AGENT_MINUTES)
         resumes = self.settings.flag(RESUME_SILENT_AGENTS)
         for agent in agents:
-            if not resumes and agent.role != CodingAgentRole.MAIN:
+            if not resumes and agent.role != AgentRole.MAIN:
                 continue
-            has_work = agent.id in working or (agent.role == CodingAgentRole.MAIN and tasks_remain and self.is_automatic(agent))
+            has_work = agent.id in working or (agent.role == AgentRole.MAIN and tasks_remain and self.is_automatic(agent))
             activity = activities[agent.id]
             if not has_work or agent.id in excluded or agent.paused_at is not None or not activity.is_inactive(context.timestamp, span.count):
                 continue

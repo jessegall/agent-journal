@@ -8,7 +8,8 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent import WakeCompactedAgent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.driver_nudges import AGENT_COMPACTED
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
+from core.base.agent_role import AgentRole
 
 RETRY_SECONDS = Seconds(600)
 
@@ -20,7 +21,7 @@ class CompactionWakeRule(DriverRule):
     name = "workers.compaction-wake"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = [CodingAgentRole.MAIN, CodingAgentRole.WORKER]
+    roles = [AgentRole.MAIN, CodingHelperKind.WORKER]
     disabled_scopes = [ActorScope]
 
     def __init__(self, history: HookHistory, hook_calls: HookCallQuery) -> None:

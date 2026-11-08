@@ -1,4 +1,4 @@
-from core.base.agent_role import AgentRole
+from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -15,13 +15,13 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
 
 class HelperReportRule(DriverRule):
-    """What a helper says as it stops is its report to its parent; with nothing said, the parent hears that too, so
-    no parent waits on a helper that left no word."""
+    """What a read-only helper says as it stops is its report to its parent; with nothing said, the parent hears that
+    too, so no parent waits on a helper that left no word. A worker reports through its own hand-in."""
 
     name = "helpers.report"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = [AgentRole.HELPER]
+    role_group = RoleGroup.READ_ONLY_HELPERS
     overlay_proof = True
 
     def __init__(self, agents: AgentRows, jobs: HelperJobRows, providers: Providers, folders: AgentFolders) -> None:

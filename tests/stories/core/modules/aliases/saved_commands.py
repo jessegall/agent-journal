@@ -95,7 +95,7 @@ def test_a_skip_is_refused_when_a_command_of_that_kind_is_saved(saved_hook):
 
 def test_a_helper_is_told_to_ask_its_parent(new_story):
     story = new_story(fixture=BuilderStarted)
-    expect_helper_refusal(story, "a helper only reads: ask your parent to save an alias for this build")
+    expect_helper_refusal(story, "a read-only helper only reads: ask your parent to save an alias for this build")
 
 
 def test_saving_a_build_writes_its_name_for_the_hook(new_story):

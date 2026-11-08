@@ -35,7 +35,7 @@ async function load() {
 
 async function start() {
     if (blocked.value) return;
-    await run(["helper", "start", props.profile, "--brief", brief.value, ...(program.value ? ["--program", program.value] : []), ...(freshReason.value.trim() ? ["--fresh", freshReason.value.trim()] : [])], "The helper is starting.");
+    await run(["helper", "start", props.profile, "--brief", brief.value, ...(program.value ? ["--program", program.value] : []), ...(freshReason.value.trim() ? ["--fresh", freshReason.value.trim()] : [])], "The read-only helper is starting.");
 }
 
 async function send(helper) {
@@ -63,7 +63,7 @@ watch([() => props.profile, program], load, {immediate: true});
 
 <template>
     <form class="helper-start" data-helper-start @submit.prevent="start">
-        <h3>Give a helper a job</h3>
+        <h3>Give a read-only helper a job</h3>
         <label class="field">
             <span>The job</span>
             <TextArea :value="brief" rows="3" :disabled="pending" data-helper-brief @input="brief = $event.target.value" />
@@ -83,7 +83,7 @@ watch([() => props.profile, program], load, {immediate: true});
             <span>Why start another helper?</span>
             <TextInput v-model="freshReason" :disabled="pending" data-helper-fresh-reason />
         </label></template>
-        <Btn type="submit" :disabled="blocked" data-helper-start-button>Start a helper</Btn>
+        <Btn type="submit" :disabled="blocked" data-helper-start-button>Start a read-only helper</Btn>
         <template v-if="availability.fresh_reason"><p class="reason" data-helper-fresh-blocked>{{ availability.fresh_reason }}</p></template>
         <template v-if="availability.reason && availability.reason !== availability.fresh_reason"><p class="reason" data-helper-start-reason>{{ availability.reason }}</p></template>
         <template v-if="notice"><p class="notice">{{ notice }}</p></template>

@@ -1,4 +1,4 @@
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.query.queries import Queries
@@ -31,11 +31,14 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         worker = self.queries.query(Agent).filter(id=row_id).first()
         if worker is None:
             raise Refusal(f"worker {row_id} does not exist", "name an existing worker")
-        if worker.role != AgentRole.WORKER:
+        if worker.role != CodingHelperKind.WORKER:
             raise Refusal(f"agent {row_id} is not a worker", "name a worker")
         if self.is_finished(worker):
             raise Refusal(f"worker {row_id} has already finished", "nothing waits on it; carry on with the task")
         return f"workers:{row_id}"
+
+    def helper_target(self, row_id: int) -> str:
+        return self.target("worker", row_id) if self.queries.query(Agent).find(row_id).role == CodingHelperKind.WORKER else super().helper_target(row_id)
 
     def is_finished(self, worker: Agent) -> bool:
         worktree = self.worktrees.worker_worktree(worker.id)

@@ -16,7 +16,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class IdleWorkerSend:
@@ -40,7 +40,7 @@ class IdleWorkerSend:
         self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, send_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
 
     def is_idle(self, worker: Agent) -> bool:
-        if worker.role != AgentRole.WORKER or worker.retired_at is not None or worker.parent_id is None:
+        if worker.role != CodingHelperKind.WORKER or worker.retired_at is not None or worker.parent_id is None:
             return False
         if self.tasks.started_tasks(worker.id) or self.operations.active(worker.id) is not None:
             return False

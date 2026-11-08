@@ -4,7 +4,7 @@ from core.base.change.event_log import EventLog
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.server.support.server_client import server_story
 
-HELPERS = "journal.suites.coding.main-starts-helpers"
+HELPERS = "journal.suites.coding.main-starts-read-only-helpers"
 MERGER = "journal.suites.coding.workers.merger-on"
 REFERENCE_KEYS = {"id", "event", "environment", "row_table", "row_id", "actor_id"}
 

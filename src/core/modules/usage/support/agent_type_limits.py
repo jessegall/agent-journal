@@ -1,5 +1,5 @@
 from core.base.registry.registry import Registry
-from core.base.registry.agent_type_entry import AgentTypeEntry
+from core.base.registry.helper_type_entry import HelperTypeEntry
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.agents.support.type_limits import TypeLimits
 
@@ -13,12 +13,12 @@ class AgentTypeLimits:
         self.registry, self.settings = registry, settings
 
     def lookup(self, role: str, profile: str = "") -> TypeLimits | None:
-        entry = next((entry for entry in self.registry.agent_types if entry.key == role), None)
+        entry = next((entry for entry in self.registry.helper_types if entry.key == role), None)
         if entry is None or not entry.run_limit_key:
             return None
         return self.read(entry, profile)
 
-    def read(self, entry: AgentTypeEntry, profile: str = "") -> TypeLimits:
+    def read(self, entry: HelperTypeEntry, profile: str = "") -> TypeLimits:
         profile_limits = entry.profile_limits_key and self.profile_limits(entry.profile_limits_key, profile)
         return profile_limits or TypeLimits(self.settings.number(entry.run_limit_key), self.settings.number(entry.kept_limit_key))
 

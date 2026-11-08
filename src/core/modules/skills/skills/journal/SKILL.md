@@ -16,13 +16,13 @@ task 12, plan 3, message 7: write both, so the chat links it.
 
 - An environment is one line of work in this project, with its own agents, tasks and chat.
 - A task is the work in hand and a plan orders tasks; a message or a question is what you and the user say to each other.
-- A memory keeps what matters past the context window, a rule holds for every agent until it is removed; a helper reads a
-  bounded subject for its parent agent.
+- A memory keeps what matters past the context window, a rule holds for every agent until it is removed; a helper does a
+  bounded job for its parent agent: a read-only helper only reads, a worker is a helper that writes.
 - A sequence is steps followed one at a time; an output is a command's output, kept and read by its number.
 
 When the journal holds you, its line says why and names the way out: reading and journal commands still go through.
 Only a refusal that is wrong for the case in hand is skipped, never to get on faster. `journal refusal skip <rule> --reason "<why>"`
-holds a skip; `journal refusal confirm <n> --tried "<what you tried>"` lets it pass the next attempt once (a helper's or worker's waits until its main agent runs `journal refusal approve <n>` or `journal refusal decline <n>`), and
+holds a skip; `journal refusal confirm <n> --tried "<what you tried>"` lets it pass the next attempt once (a helper's waits until its main agent runs `journal refusal approve <n>` or `journal refusal decline <n>`), and
 `journal refusal withdraw <n>` gives it up. Either answer is final. A `--skip-guard` flag only spends a confirmed skip.
 Obey when you can: five skips in a row lose it. A safety refusal has no skip.
 After a compaction or a new start, run `journal overview` before anything else: until you do, nothing else passes but

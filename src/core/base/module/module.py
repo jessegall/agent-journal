@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
 from core.base.agent_group import AgentGroup
-from core.base.agent_type import AgentType
+from core.base.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
 
 from core.base.driver.nudge_declaration import NudgeDeclaration
@@ -87,7 +87,7 @@ class Module:
     button_slots: ClassVar[list[str]] = []
     inspectors: ClassVar[list[InspectorDeclaration]] = []
     added_states: ClassVar[Sequence[StateAddition]] = ()
-    agent_types: ClassVar[list[AgentType]] = []
+    helper_types: ClassVar[list[HelperType]] = []
     agent_groups: ClassVar[list[AgentGroup]] = []
     profiles: ClassVar[list[AgentProfile]] = []
     providers: ClassVar[list[type[Provider]]] = []
@@ -106,6 +106,11 @@ class Module:
         if "named_plugin_events" in cls.__dict__:
             return cls.declared_plugin_events
         return getattr(cls, "plugin_moments", cls.declared_plugin_events)
+
+    @classmethod
+    def declared_helper_types(cls) -> list[HelperType]:
+        """The funnel of helper types: those the module registers and those of each of its suites, whole."""
+        return [*cls.helper_types, *(declaration for suite in cls.suites for declaration in suite.helper_types)]
 
     @classmethod
     def declared_buttons(cls) -> list[ButtonDeclaration]:

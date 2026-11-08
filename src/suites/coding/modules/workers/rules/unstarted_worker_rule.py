@@ -1,7 +1,7 @@
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNSTARTED
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName

@@ -6,7 +6,7 @@ from suites.coding.drivers.worker.rules.worker_git_rule import WorkerGitRule
 from suites.coding.drivers.worker.rules.worker_full_test_run_rule import WorkerFullTestRunRule
 from suites.coding.drivers.worker.rules.worker_stop_rule import WorkerStopRule
 from suites.coding.drivers.worker.rules.worker_task_start_rule import WorkerTaskStartRule
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class WorkerDriver(Driver):
@@ -15,6 +15,6 @@ class WorkerDriver(Driver):
 
     name = "coding.worker"
     suite = CodingSuite
-    role = AgentRole.WORKER
+    role = CodingHelperKind.WORKER
     rules = [WorkerFullTestRunRule, WorkerGitRule, WorkerCommandTypeRule, WorkerTaskStartRule, WorkerStopRule]
     opening_lines = ["You are a worker: you do your tasks in your worktree, go on with journal worker next and hand them all in with journal worker deliver; journal handles git.", "Run only the tests of what you changed, never the whole test suite.", "Use python3 for Python commands.", CONTEXT_LINE]

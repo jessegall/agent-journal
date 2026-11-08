@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.timestamp import Timestamp
 from core.modules.memories.models.memory_holder import MemoryHolder
 
@@ -19,6 +19,6 @@ class MemoryHolderRow:
     removed_memories: int
 
     @classmethod
-    def built(cls, holder: MemoryHolder, types: AgentTypeBook) -> "MemoryHolderRow":
+    def built(cls, holder: MemoryHolder, types: HelperTypeBook) -> "MemoryHolderRow":
         name = holder.given_name or f"{types.label(holder.role)} {holder.agent_id}"
         return cls(holder.agent_id, holder.environment_id, holder.role, name, holder.started_at, holder.ended_at, holder.active_memories, holder.removed_memories)

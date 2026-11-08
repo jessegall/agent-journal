@@ -1,4 +1,4 @@
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries

@@ -1,4 +1,4 @@
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -22,7 +22,7 @@ class RecordAgentLaunchFailureHandler(Handler[RecordAgentLaunchFailure, None]):
     command = RecordAgentLaunchFailure
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus, types: AgentTypeBook, rows: EventRows) -> None:
+    def __init__(self, queries: Queries, nudger: Nudger, bus: Bus, types: HelperTypeBook, rows: EventRows) -> None:
         self.queries, self.nudger, self.bus, self.types = queries, nudger, bus, types
         self.rows = rows
 

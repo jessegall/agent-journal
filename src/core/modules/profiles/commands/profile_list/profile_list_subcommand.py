@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 from dataclasses import replace
 
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
 from core.base.query.queries import Queries
@@ -20,7 +20,7 @@ class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile | ProfileProble
     cli_name = "profile"
     name = "list"
 
-    def __init__(self, files: ProfileFiles, queries: Queries, types: AgentTypeBook) -> None:
+    def __init__(self, files: ProfileFiles, queries: Queries, types: HelperTypeBook) -> None:
         self.files, self.queries, self.types = files, queries, types
 
     def arguments(self, parser: ArgumentParser) -> None:

@@ -1,6 +1,6 @@
 from suites.coding.modules.workers.support.worker_nudges import SMALL_BATCH
 from suites.coding.modules.workers.support.worker_settings import WORKER_BATCH_SIZE
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule

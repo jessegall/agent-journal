@@ -13,7 +13,7 @@ from tests.stories.suites.coding.support.main_controls_contract import (AGENT_TY
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
 
-NEW_KEYS = ["continue-while-delegatable", "designer-enabled", "main-agent-may-merge", "resume-silent-agents", "workers-start-helpers", "agent-options"]
+NEW_KEYS = ["continue-while-delegatable", "designer-enabled", "main-agent-may-merge", "resume-silent-agents", "workers-start-read-only-helpers", "agent-options"]
 REMOVED_CONTROLS = ["C04", "C08", "C15", "C19"]
 REMOVED_KEYS = {"main-builds-tasks", "work-preference", "provider-choice", "fallback"}
 
@@ -39,10 +39,10 @@ def test_s01_s43_defaults_of_the_agent_options_are_declared_once_and_person_only
 
 def test_s01_s43_defaults_keep_the_existing_keys_and_scopes_with_neutral_labels():
     auto = DECLARED["journal.suites.coding.auto-mode"][1]
-    helpers = DECLARED["journal.suites.coding.main-starts-helpers"][1]
+    helpers = DECLARED["journal.suites.coding.main-starts-read-only-helpers"][1]
     dispatches = DECLARED["journal.suites.coding.workers.main-dispatches-workers"][1]
     expect_value((auto.description, auto.scope, auto.default), (MAIN_AUTO_DESCRIPTION, SettingScope.ENVIRONMENT, True))
-    expect_value((helpers.title, helpers.scope), ("Use ordinary helpers", SettingScope.PROJECT))
+    expect_value((helpers.title, helpers.scope), ("Use read-only helpers", SettingScope.PROJECT))
     expect_value((dispatches.title, dispatches.scope), ("Main agent sends workers", SettingScope.LAYERED))
     expect_value({key.rsplit(".", 1)[-1] for key in DECLARED} & REMOVED_KEYS, set())
 

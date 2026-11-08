@@ -1,5 +1,5 @@
 from core.base.access import Access
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.profile.agent_profile import AgentProfile
@@ -14,7 +14,7 @@ class SaveProfileHandler(Handler[SaveProfile, AgentProfile]):
 
     command = SaveProfile
 
-    def __init__(self, files: ProfileFiles, types: AgentTypeBook) -> None:
+    def __init__(self, files: ProfileFiles, types: HelperTypeBook) -> None:
         self.files, self.types = files, types
 
     def handle(self, command: SaveProfile, context: Context) -> AgentProfile:

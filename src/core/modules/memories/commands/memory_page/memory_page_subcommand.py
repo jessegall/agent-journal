@@ -2,7 +2,7 @@ from core.base.user_approval_refusal import UserApprovalRefusal
 from argparse import ArgumentParser, Namespace
 
 from core.base.actor_type import ActorType
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
@@ -21,7 +21,7 @@ class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
     cli_name = "memory"
     name = "page"
 
-    def __init__(self, memories: MemoryListSubcommand, queries: Queries, types: AgentTypeBook) -> None:
+    def __init__(self, memories: MemoryListSubcommand, queries: Queries, types: HelperTypeBook) -> None:
         self.memories, self.queries, self.types = memories, queries, types
 
     def arguments(self, parser: ArgumentParser) -> None:

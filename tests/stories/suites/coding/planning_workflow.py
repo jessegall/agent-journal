@@ -81,7 +81,7 @@ def test_the_planner_runs_on_a_cheaper_model_and_works_from_the_design(shipped):
 
 def test_the_main_agent_skill_names_who_to_dispatch_and_what_to_do_when_helpers_are_off(shipped):
     shipped.run("skill write")
-    expect_skill_text(shipped, "journal-plan-dispatch", "name: journal-plan-dispatch", FUNCTIONAL_DESIGNER, PLANNER, "When helpers are switched off", "journal-planning")
+    expect_skill_text(shipped, "journal-plan-dispatch", "name: journal-plan-dispatch", FUNCTIONAL_DESIGNER, PLANNER, "When read-only helpers are switched off", "journal-planning")
 
 
 def test_the_functional_design_skill_asks_for_stories_examples_and_phases(shipped):
@@ -97,5 +97,5 @@ def test_the_planning_skill_stays_the_planners_and_takes_a_design_as_its_source(
 def test_with_helpers_switched_off_the_main_agent_cannot_start_a_functional_designer(shipped):
     shipped.expect_success(f"setting set {STARTS_HELPERS_SETTING} false --project", actor=shipped.user)
     launcher = FakeLauncher(shipped.home.socket("launcher"), request_count=1)
-    shipped.expect_refusal(f'helper start {FUNCTIONAL_DESIGNER} --brief "Design the cart" --environment main', "starts no helper", actor=shipped.agent)
+    shipped.expect_refusal(f'helper start {FUNCTIONAL_DESIGNER} --brief "Design the cart" --environment main', "starts no read-only helper", actor=shipped.agent)
     launcher.server.close()

@@ -94,7 +94,7 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
                 <TextInput id="profile-mcp" :value="draft.mcp_tools" @input="draft.mcp_tools = $event.target.value" />
             </FormField>
             <template v-if="profile.name">
-                <FormField label="Skills" help="The skills this profile's agents get. A worker's worktree holds only these, and a helper in the main checkout may read only these.">
+                <FormField label="Skills" help="The skills this profile's agents get. A worker's worktree holds only these, and a read-only helper in the main checkout may read only these.">
                     <ProfileSkillToggles :profile="profile.name" :chosen="draft.skills" @change="draft.skills = $event" />
                 </FormField>
             </template>

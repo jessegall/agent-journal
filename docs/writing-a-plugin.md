@@ -23,7 +23,7 @@ command refers to the plugin.
 | `health` | How a service answers a health check. |
 | `cards` | The tone of each type of card it shows. |
 | `skills` | The folder holding its skills. |
-| `reaches` | For an older event name, which helpers and workers it reaches besides the main agent. |
+| `reaches` | For an older event name, which helpers it reaches besides the main agent, by their role, such as helper or worker. |
 | `aliases` | The commands it provides under short names. |
 | `dashboard` | A page it writes, with a name, a title and `events`, the keys of the events that make the viewer read it again while it is open. With no `events` an open page reads once a minute. |
 | `description` | What it is for. |

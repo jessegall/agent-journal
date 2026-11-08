@@ -1,5 +1,5 @@
 from core.modules.agents.events.agent_ended import AgentEnded
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.change.logged_event import LoggedEvent
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.listeners.worker_stop_mark_listener import WorkerStopMarkListener
@@ -14,6 +14,6 @@ class WorkerStoppedMarkListener(WorkerStopMarkListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, logged: LoggedEvent) -> None:
         worker = event.row
-        tasks = self.unfinished.rows(worker.id) if worker.role == AgentRole.WORKER else ()
+        tasks = self.unfinished.rows(worker.id) if worker.role == CodingHelperKind.WORKER else ()
         if tasks and not self.unfinished.has_running_process(worker.id):
             self.show_stop(logged, worker, WorkerMarkVariant.ENDED_EARLY, f"stopped with {len(tasks)} tasks left", tasks)

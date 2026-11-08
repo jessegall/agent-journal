@@ -28,7 +28,7 @@ from core.base.module.module_error import ModuleError
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.setting_check import SettingCheck
 from core.base.module.state_check import StateCheck
-from core.base.module.agent_type_check import AgentTypeCheck
+from core.base.module.helper_type_check import HelperTypeCheck
 from core.base.module.profile_check import ProfileCheck
 from core.base.module.template_check import TemplateCheck
 from core.base.model.event_form import EventForm
@@ -170,5 +170,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), AgentTypeCheck(), ProfileCheck(), InspectorCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), HelperTypeCheck(), ProfileCheck(), InspectorCheck())
 

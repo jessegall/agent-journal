@@ -13,7 +13,7 @@ MODULES = "tests.stories.core.modules.profiles.support.profile_modules"
 @pytest.mark.parametrize(("module", "message"), [
     ("DuplicateProfile", "both register the profile journal-researcher"),
     ("UnknownType", "missing-type is no agent type: no installed module registers it"),
-    ("WritingProfile", "profile module-reader asks for writing, and a Helper only reads"),
+    ("WritingProfile", "profile module-reader asks for writing, and a Read-only helper only reads"),
     ("MissingDescription", "profile module-reader has no description"),
     ("MissingBody", "profile module-reader has no body"),
     ("InvalidName", "bad name cannot name a profile"),
@@ -45,7 +45,7 @@ def test_shipped_profiles_have_registered_types_and_independent_review(new_story
     for name in ("journal-senior", "journal-medior", "journal-worker"):
         story.expect_rows(registry.profile(name).profile.agent_type == "worker")
     story.expect_rows(registry.profile("journal-plan-reviewer").profile.independent,
-                      registry.agent_type_book().find("worker").default_profile == "journal-worker")
+                      registry.helper_type_book().find("worker").default_profile == "journal-worker")
 
 
 def test_the_shipped_code_reviewer_reads_the_diff_itself_and_files_critical_tasks(new_story):

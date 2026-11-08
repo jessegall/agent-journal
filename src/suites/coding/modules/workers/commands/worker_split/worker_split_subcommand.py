@@ -1,5 +1,5 @@
 from suites.coding.modules.workers.support.worker_split_problem import WorkerSplitProblem
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.base.query.queries import Queries
@@ -8,7 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.tasks.models.task import Task
-from suites.coding.support.coding_agent_role import CodingAgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
 from suites.coding.modules.workers.support.worker_split_preview import WorkerSplitPreview
@@ -36,7 +36,7 @@ class WorkerSplitSubcommand(ReadSubcommand[RowList | WorkerSplitPreview | Worker
     row_line = "{id}  share {share}%  recent {recent}  {line}  {ends_at}"
 
     def __init__(self, providers: Providers, shares: ProgramShares, states: ProgramStates,
-                 counts: WorkerCounts, environments: EnvironmentRows, home: JournalHome, helpers: HelperCounts, routing: WorkerRouting, profiles: ProfileFiles, types: AgentTypeBook, queries: Queries, scopes: Scopes) -> None:
+                 counts: WorkerCounts, environments: EnvironmentRows, home: JournalHome, helpers: HelperCounts, routing: WorkerRouting, profiles: ProfileFiles, types: HelperTypeBook, queries: Queries, scopes: Scopes) -> None:
         self.providers, self.shares, self.states, self.counts, self.environments = providers, shares, states, counts, environments
         self.home = home
         self.helpers = helpers
@@ -66,7 +66,7 @@ class WorkerSplitSubcommand(ReadSubcommand[RowList | WorkerSplitPreview | Worker
         tasks = self.queries.query(Task).find_many(task_ids)
         with self.scopes.row_scope(tasks[0]):
             agent = self.queries.query(Agent).find(caller.read_actor_id) if caller.read_actor_id is not None else MainAgentFinder.newest(self.queries)
-            profile = self.profiles.effective(self.types.find(CodingAgentRole.WORKER).default_profile)
+            profile = self.profiles.effective(self.types.find(CodingHelperKind.WORKER).default_profile)
             try:
                 choice = self.routing.choice(DispatchWorker(task_ids[0], delegated_ids=tuple(task_ids[1:])), tasks, agent, profile)
             except Refusal as refusal:

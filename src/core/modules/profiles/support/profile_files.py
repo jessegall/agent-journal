@@ -38,7 +38,7 @@ class ProfileFiles:
 
     @property
     def profile_types(self) -> tuple[str, ...]:
-        return tuple(entry.key for entry in self.registry.agent_type_book().startable())
+        return tuple(entry.key for entry in self.registry.helper_type_book().startable())
 
     def path(self, name: str) -> Path:
         if not PROFILE_NAME.fullmatch(name):
@@ -88,7 +88,7 @@ class ProfileFiles:
             return ProfileProblem(name, str(path.relative_to(self.home.project_folder)), f"Unreadable: {error}")
 
     def checked_type(self, profile: AgentProfile) -> AgentProfile:
-        types = self.registry.agent_type_book()
+        types = self.registry.helper_type_book()
         if profile.agent_type not in self.profile_types:
             return replace(profile, problem=profile.problem or f"Type: gone — {profile.agent_type} is not registered")
         access = profile.access if profile.access is not None else types.find(profile.agent_type).access
@@ -197,7 +197,7 @@ class ProfileFiles:
         return f"---\nname: {profile.name}\ndescription: {profile.description}\nkind: {profile.agent_type}\n{models}---\n\n{profile.body}\n"
 
     def codex_text(self, profile: AgentProfile) -> str:
-        access = profile.access if profile.access is not None else self.registry.agent_type_book().find(profile.agent_type).access
+        access = profile.access if profile.access is not None else self.registry.helper_type_book().find(profile.agent_type).access
         sandbox = "read-only" if access is Access.READ else "workspace-write"
         model = f"model = {json.dumps(profile.codex_model)}\n" if profile.codex_model else ""
         return (f"name = {json.dumps(profile.name)}\ndescription = {json.dumps(profile.description, ensure_ascii=False)}\n{model}"

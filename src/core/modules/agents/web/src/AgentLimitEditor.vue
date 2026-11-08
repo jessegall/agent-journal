@@ -7,7 +7,7 @@ const emit = defineEmits(["change"]);
     <p>How many agents of a type may run at once, and how many may be kept.</p>
     <template v-for="row in rows" :key="row.key">
         <div class="edit-row" :data-edit-type="row.key">
-            <div><strong>{{ row.per_profile ? 'Each helper type' : 'Workers' }}</strong><template v-if="row.per_profile"><small>Researcher, Planner and the others</small></template></div>
+            <div><strong>{{ row.per_profile ? 'Each read-only helper type' : 'Workers' }}</strong><template v-if="row.per_profile"><small>Researcher, Planner and the others</small></template></div>
             <template v-for="field in [{name: 'Most running', value: row.run_limit, key: row.run_setting, source: row.run_source, kind: 'run'}, {name: 'Most kept', value: row.kept_limit, key: row.kept_setting, source: row.kept_source, kind: 'kept'}]" :key="field.key">
                 <label>
                     {{ field.name }}<span class="stepper"><button type="button" :disabled="pending || readOnly || field.value === 0" @click="emit('change', row, field.key, field.value, field.value - 1)">−</button><input type="number" min="0" :value="field.value" :disabled="pending || readOnly" :data-agent-limit-input="field.kind" @change="emit('change', row, field.key, field.value, $event.target.value)" /><button type="button" :disabled="pending || readOnly" @click="emit('change', row, field.key, field.value, field.value + 1)">+</button></span>

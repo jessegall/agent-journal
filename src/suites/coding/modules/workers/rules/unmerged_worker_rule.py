@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.driver_nudges import REQUIRED_COMMAND_REFUSAL
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName

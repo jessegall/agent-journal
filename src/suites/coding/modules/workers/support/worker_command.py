@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.providers import Providers
 from core.base.provider.resumed_session import ResumedSession
@@ -21,7 +21,7 @@ WORK_STEPS = "Read the test suite and choose which existing tests and test files
 class WorkerCommand:
     """Builds fresh and resumed worker launch commands through their providers."""
 
-    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: AgentTypeBook) -> None:
+    def __init__(self, providers: Providers, servers: ServerConfigs, libraries: LibraryFolders, helpers: HelperCommand, profiles: ProfileFiles, types: HelperTypeBook) -> None:
         self.providers, self.servers, self.libraries, self.helpers = providers, servers, libraries, helpers
         self.profiles, self.types = profiles, types
 

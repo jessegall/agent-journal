@@ -1,7 +1,7 @@
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
-MAX_COST = "journal.core.helpers.helper-max-cost"
+MAX_COST = "journal.core.helpers.read-only-helper-max-cost"
 SPLIT = "journal.core.helpers.program-split"
 COMMAND_TYPES = "journal.suites.coding.worker-command-types"
 WINDOW = "journal.core.helpers.program-window-percent"

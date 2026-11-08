@@ -1,7 +1,7 @@
 import re
 from argparse import ArgumentParser, Namespace
 
-from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
+from suites.coding.support.coding_helper_kind import CodingHelperKind
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -33,7 +33,7 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
         parser.add_argument("text")
 
     def command(self, arguments: Namespace, caller: Caller) -> RecordParentReport | SendMergerInput:
-        worker = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).first()
+        worker = self.queries.query(Agent).filter(id=caller.actor.id, role=CodingHelperKind.WORKER).first()
         if worker is None:
             raise Refusal("only a worker reports to its main agent", "journal message send writes a main agent's message")
         if PROGRESS_WORDS.search(arguments.text):

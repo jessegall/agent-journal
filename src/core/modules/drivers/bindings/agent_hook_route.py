@@ -68,7 +68,7 @@ class AgentHookRoute(HookRoute):
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
 
     def note_timeout(self, event: HookEvent, agent: Agent, actor: Actor) -> None:
-        """A hook answered after its program gave up on it: five seconds for a main agent, and for a worker or helper the 40 seconds a
+        """A hook answered after its program gave up on it: five seconds for a main agent, and for a helper the 40 seconds a
         stop is asked again before it is held."""
         if event.event == HookEventName.TICK:
             return

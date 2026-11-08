@@ -5,7 +5,7 @@ import pytest
 
 from core.base.access import Access
 from core.base.agent_role import AgentRole
-from core.base.agent_type_book import AgentTypeBook
+from core.base.helper_type_book import HelperTypeBook
 from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
@@ -13,18 +13,21 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.base.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
-from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, NativeHelperUnderBuilder, WorkerStarted
+from core.base.driver.tool_type import ToolType
+from core.testing.hook_samples import HookSamples
+from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, NativeHelperUnderBuilder, RuleForEveryHelper, RuleForReadOnlyHelpers, WorkerStarted
 
+READ_SAMPLE = HookSamples.tool_use("Read", ToolType.READ, ["README.md"], None)
 FIXTURES = {"helper": HelperStarted, "helper": NativeHelperUnderBuilder, "worker": WorkerStarted, "clerk": ClerkStarted}
 
 
 def test_shipped_types_restore_their_access_inheritance_and_worker_roster(new_story):
     story = new_story(fixture=CodingEnvironment)
-    book = story.container.get(AgentTypeBook)
+    book = story.container.get(HelperTypeBook)
     worker = book.find("worker")
     story.expect_rows(AgentRole.HELPER.value == "helper", book.find("main").access is Access.WRITING,
-                      book.find("helper").access is Access.READ, book.extends("helper", "helper"),
-                      set(book.derived_types("helper")) == {"helper", "helper", "worker"},
+                      book.find("helper").access is Access.READ, book.find("helper").label == "Read-only helper",
+                      {"helper", "worker", "reviewer", "verifier"} <= set(book.helper_keys()), book.is_helper("worker"), not book.is_helper("main"),
                       book.find("reviewer").label == "Reviewer", book.find("verifier").module == "journal.suites.coding",
                       worker.access is Access.WRITING, worker.separate_folder,
                       worker.default_profile == "journal-worker", worker.start_line == "journal worker dispatch",
@@ -62,3 +65,36 @@ def test_a_helper_has_saved_commands_from_its_first_start(new_story):
     with story.container.get(Scopes).read_scope((), None, 1):
         policy = story.container.get(SuiteChoice).agent_policy()
     story.expect_rows("helper" in policy.saved_command_roles, "helper" in policy.saved_command_roles)
+
+
+@pytest.mark.parametrize("role", ["helper", "worker", "clerk"])
+def test_a_rule_that_names_the_helper_role_holds_for_a_worker_and_every_other_kind(new_story, role):
+    story = new_story(fixture=RuleForEveryHelper)
+    story.expect_hook_refusal(f"s-{role}", READ_SAMPLE, "sample rule holds for every helper")
+
+
+def test_a_rule_that_names_the_helper_role_leaves_the_main_agent_alone(new_story):
+    story = new_story(fixture=RuleForEveryHelper)
+    story.expect_hook_allowed("s-1", READ_SAMPLE)
+
+
+def test_a_rule_for_read_only_helpers_holds_for_a_read_only_helper(new_story):
+    story = new_story(fixture=RuleForReadOnlyHelpers)
+    story.expect_hook_refusal("s-helper", READ_SAMPLE, "sample rule holds for read-only helpers")
+
+
+def test_a_rule_for_read_only_helpers_leaves_a_worker_alone(new_story):
+    story = new_story(fixture=RuleForReadOnlyHelpers)
+    story.expect_hook_allowed("s-worker", READ_SAMPLE)
+
+
+def test_helper_stop_tells_a_worker_where_its_work_goes(new_story):
+    story = new_story(fixture=WorkerStarted)
+    worker = json.loads(story.run("agent list --role worker --json").output_text)["rows"][0]
+    story.expect_refusal(f"helper stop {worker['id']}", "takes its work with journal worker send")
+
+
+def test_a_wait_on_a_helper_that_is_a_worker_follows_the_worker(new_story):
+    story = new_story(fixture=WorkerStarted)
+    worker = json.loads(story.run("agent list --role worker --json").output_text)["rows"][0]
+    story.expect_refusal(f"task block 1 --on helper:{worker['id']}", f"worker {worker['id']} has already finished")
