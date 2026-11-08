@@ -79,13 +79,31 @@ output and only shapes what you get back. A redirect to a file still hides the o
 without one. An ended sample can be read with `journal output read <output> --reader <name>` after saving its
 reader.
 
-## Commands of unknown kind
+## A long command shows how far it has got
 
-A command whose program the journal does not know is refused until you say what kind it is, by its leading words:
-`journal command-kind make "scripts/dev go test" "test run"`. Every later command starting with those words
-is of that kind, and that kind's rules hold at once, the same command included: a test run or build then goes through a
-saved alias with its reader and takes no pipe. Name the words that make it that kind, the program and its first
-arguments, not a whole line. `journal command-kind list` shows them.
+A run of an alias or a command that lasts over a minute and shows no percent in the chat is silent: it has no reader,
+or its reader never finds a percent, or its output went to a file or a pipe. At the next start of that same alias or
+command you are told once what its output looks like (`--- PASS:`/`--- FAIL:`, `PASSED`/`FAILED`, `n/m`, `n of m`,
+`reading n/m`), whether the output states a total, and, if it does not, that the command must print one first.
+
+A reader reads the kept output, so add or adjust it now: a reader added or changed while a run is still going applies
+to that run at once, and you never wait for the run to end.
+
+A second silent run of the same alias or command refuses its next start until a reader was made or changed since, or you
+skip once with a reason why no progress can be shown. The refusal comes with a ready `journal reader add` line for the
+shape found. When a later run shows a percent, you are told once that progress now shows.
+
+A tool prints a line per step when you ask it to, and a reader counts those lines. `go test -v` prints `=== RUN` and
+`--- PASS: TestName` for each test, so a reader with this step pattern shows a percent once the run knows its total, which `go test -list` gives by listing one `Test` line per test:
+`journal reader add go-tests --commands "go test*" --title "Go tests" --lines "^--- (PASS|FAIL):" --summary "^(ok|FAIL)" --step "^--- (?:(?P<passed>PASS)|(?P<failed>FAIL)):" --count "^Test" --count-command "go test -list . ./..."`
+
+## Commands of unknown type
+
+A command whose program the journal does not know is refused until you say what type it is, by its leading words:
+`journal command-type make "scripts/dev go test" "test run"`. Every later command starting with those words
+is of that type, and that type's rules hold at once, the same command included: a test run or build then goes through a
+saved alias with its reader and takes no pipe. Name the words that make it that type, the program and its first
+arguments, not a whole line. `journal command-type list` shows them.
 
 ## Aliases
 

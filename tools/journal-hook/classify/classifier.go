@@ -47,8 +47,8 @@ type Classifier struct {
 	// aliasCategories are the category of each alias that has one, and categorisedRuns those the line being read runs.
 	aliasCategories map[string]string
 	categorisedRuns []categorisedRun
-	// commandKinds are the kinds agents gave commands by their leading words.
-	commandKinds map[string]string
+	// commandTypes are the types agents gave commands by their leading words.
+	commandTypes map[string]string
 }
 
 func NewClassifier(table *Table) *Classifier {
@@ -99,23 +99,23 @@ func (classifier *Classifier) aliasCategory(name string) string {
 	return classifier.aliasCategories[name]
 }
 
-// commandKindFileName is the file that names the kind agents gave commands the table does not know, by their leading
+// commandTypeFileName is the file that names the type agents gave commands the table does not know, by their leading
 // words.
-const commandKindFileName = "command-kinds.json"
+const commandTypeFileName = "command-types.json"
 
-// commandKind is the kind of the longest leading words an agent classified that the command's words start with.
-func (classifier *Classifier) commandKind(text string) string {
-	if classifier.commandKinds == nil {
-		classifier.commandKinds = readNamedTexts(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", commandKindFileName))
+// commandType is the type of the longest leading words an agent classified that the command's words start with.
+func (classifier *Classifier) commandType(text string) string {
+	if classifier.commandTypes == nil {
+		classifier.commandTypes = readNamedTexts(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", commandTypeFileName))
 	}
-	tokens, kind, longest := classifier.tokens(text), "", 0
-	for words, category := range classifier.commandKinds {
+	tokens, commandType, longest := classifier.tokens(text), "", 0
+	for words, category := range classifier.commandTypes {
 		leading := shell.Tokens(words)
 		if len(leading) > longest && len(leading) <= len(tokens) && slices.Equal(tokens[:len(leading)], leading) {
-			kind, longest = category, len(leading)
+			commandType, longest = category, len(leading)
 		}
 	}
-	return kind
+	return commandType
 }
 
 // savedCommandFileName is the file that names the aliases registered as a project's tests and builds.

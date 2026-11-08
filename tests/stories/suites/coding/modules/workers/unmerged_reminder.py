@@ -112,13 +112,12 @@ def test_the_third_reminder_holds_the_main_agent_until_it_merges_or_gives_a_reas
     expect_value(len(merge_block_rows(story, worker.id)), 1)
 
 
-def test_a_reason_starts_the_next_round_of_three_reminders(new_story):
+def test_a_reason_passes_only_that_hold_and_the_next_reminder_holds_again(new_story):
     story = new_story(fixture=MainAgentMerges)
     worker = delivered_worker(story, repository_environment(story))
     remind(story, 3)
     block = merge_block_rows(story, worker.id)[0]
     story.expect_success(f'agent-block skip {block.id} --reason "The user wants this held"', actor=story.agent)
-    remind(story, 2)
     expect_value(merge_block_rows(story, worker.id), [])
     remind(story, 1)
     expect_value(len(merge_block_rows(story, worker.id)), 1)

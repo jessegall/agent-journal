@@ -58,6 +58,16 @@ class ManagedHooks:
             self._write(list(hooks.values()))
             return changed
 
+    def removed_by_stamp(self, stamp: str) -> list[ManagedHook]:
+        if not stamp.strip() or not self.path.is_file():
+            return []
+        with self._locked():
+            hooks = self._read()
+            removed = [hook for hook in hooks if stamp in hook.command]
+            if removed:
+                self._write([hook for hook in hooks if stamp not in hook.command])
+            return removed
+
     def emptied(self) -> list[ManagedHook]:
         with self._locked():
             hooks = self._read()

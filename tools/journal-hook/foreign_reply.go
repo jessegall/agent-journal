@@ -24,7 +24,7 @@ func projectHooksOnly(programName, root string, stdin io.Reader, stdout, stderr 
 		return 0
 	}
 	table := programs.LoadTable(filepath.Join(root, ".journal", "programs.json"))
-	runs := runManaged(Matching(hooks, programName, hookName(body), body, table), body)
+	runs := runManaged(Matching(hooks, programName, hookName(body), body, table), body, programName, root)
 	decodeRuns(table.Programs[programName], table.Programs[programName].Events[hookName(body)], runs)
 	return foreignAnswered(stdout, stderr, table.Programs[programName], hookName(body), runs)
 }

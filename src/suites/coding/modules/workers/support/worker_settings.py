@@ -28,6 +28,7 @@ TEST_BATCH_SIZE = f"{MODULE_KEY}.test-batch-size"
 WORKER_PHASE_TEST_RUNS = f"{MODULE_KEY}.worker-phase-test-runs"
 WORKER_TEST_LIMIT = f"{MODULE_KEY}.worker-run-most-tests"
 MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
+MERGER_WAIT_MINUTES = f"{MODULE_KEY}.merger-wait-minutes"
 MERGER_COMMANDS = f"{MODULE_KEY}.merger-commands"
 DELIVERY_FAILURE_LIMIT = f"{MODULE_KEY}.hand-in-failures-to-flag"
 WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
@@ -51,6 +52,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True),
+    SettingValue("merger-wait-minutes", "Merger wait minutes", "Minutes the merger has to take in a worker whose tests passed, before the main agent is told to merge it.", SettingType.NUMBER, default=15, person_set=True),
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True),
@@ -85,6 +87,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         WORKER_TEST_LIMIT: NumberRule(0),
                         DELIVERY_FAILURE_LIMIT: NumberRule(1),
                         WORKER_RUN_FAILURE_LIMIT: NumberRule(1),
+                        MERGER_WAIT_MINUTES: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
                         MERGE_COMMANDS: ListRule()}

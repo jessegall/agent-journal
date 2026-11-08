@@ -21,12 +21,13 @@ from core.base.role_group import RoleGroup
 class OpenMarkRule(DriverRule):
     """When the agent's context window, as its program's provider reads it, passes a mark of memories.marks
     it has not reached since its last compaction, a mark opens and the agent is given its memories,
-    heaviest first, to weigh. It is blocked once the mark's tool uses have passed."""
+    heaviest first, to weigh. It is blocked once the mark's tool uses have passed. Helpers get the marks too;
+    a jump past two marks gives one line, naming the highest."""
 
     name = "memories.open-mark"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    role_group = RoleGroup.PROMPT
+    role_group = RoleGroup.MARK
 
     def __init__(self, marks: MarkTracker, settings: SettingValues, memories: ActiveMemoryQuery, providers: Providers, home: JournalHome) -> None:
         self.marks, self.settings, self.memories, self.providers, self.home = marks, settings, memories, providers, home

@@ -6,7 +6,7 @@ from core.modules.pins.support.link_pin_check import LinkPinCheck
 
 
 class AutomaticLinkPinRule(DriverRule):
-    """Pins design and pull request links returned by tools."""
+    """Pins pull request links returned by tools; a design link waits for its designer's report."""
 
     name = "pins.automatic-link"
     hook = HookEventName.POST_TOOL_USE
@@ -22,5 +22,4 @@ class AutomaticLinkPinRule(DriverRule):
         if self.check.is_file_or_read(tool):
             return RuleAnswer.allowed()
         text = self.check.joined_text([hook.event.tool_input(), hook.event.raw.get("tool_response")])
-        designs = self.check.design_pins(text)
-        return RuleAnswer.allowed().running(*designs, *self.check.pull_request_pins(text))
+        return RuleAnswer.allowed().running(*self.check.pull_request_pins(text))

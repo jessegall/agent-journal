@@ -87,4 +87,6 @@ src/viewer/tests/sample-window/web/
 /.commandments/sessions/
 
 !src/viewer/tests/look/**/*.png
+# the full-page picture of each design kept in docs/designs
+!docs/designs/**/*.png
 /node_modules/

@@ -9,14 +9,12 @@ const HITS = {hits: [{cli_name: "task", id: 7, excerpt: "Round the cart total to
 
 async function search(answer, words = "cart total") {
     const window = context({"search find": {ok: true, value: answer}}, null, KEYS);
-    const opened = [];
-    window.open = (name) => opened.push(name);
     const element = await mounted(SearchWindow, window);
     element.querySelector("[data-search-input]").value = words;
     element.querySelector("[data-search-input]").dispatchEvent(new Event("input"));
     element.querySelector("[data-search-go]").click();
     await settle();
-    return {element, window, opened};
+    return {element, window};
 }
 
 test("typing terms shows the hits with their excerpt and the total", async () => {
@@ -29,10 +27,29 @@ test("typing terms shows the hits with their excerpt and the total", async () =>
     expect(element.querySelector("[data-total]").textContent).toBe("2 results match all these words: cart total");
 });
 
-test("a hit opens the window of the row it names", async () => {
-    const {element, opened} = await search(HITS);
-    element.querySelectorAll("[data-hit]")[1].click();
-    expect(opened).toEqual(["documents.documents"]);
+const OPEN = /open=([a-z]+:\d+)/;
+const opened = () => decodeURIComponent(location.hash).match(OPEN)?.[1] ?? "";
+
+test("a task, a message and a document hit each open their row in its inspector", async () => {
+    const {element} = await search({hits: [{cli_name: "task", id: 7, excerpt: "Round the total"}, {cli_name: "message", id: 3, excerpt: "Check the cart"}, {cli_name: "doc", id: 2, excerpt: "How the cart counts money"}], total: 3});
+    const hits = element.querySelectorAll("[data-hit]");
+    const shown = [];
+    for (const hit of hits) {
+        location.hash = "#/search";
+        hit.click();
+        shown.push(opened());
+    }
+    expect(shown).toEqual(["tasks:7", "messages:3", "docs:2"]);
+});
+
+test("a hit of a model with no inspector shows its text in a dialog", async () => {
+    const {element} = await search({hits: [{cli_name: "gadget", id: 4, excerpt: "Hinge on the left"}], total: 1});
+    location.hash = "#/search";
+    element.querySelector("[data-hit]").click();
+    await settle();
+    expect(opened()).toBe("");
+    expect(document.body.textContent).toContain("Hinge on the left");
+    expect(document.body.textContent).toContain("gadget 4");
 });
 
 test("a model chip narrows the search to that model, and none picked means all", async () => {

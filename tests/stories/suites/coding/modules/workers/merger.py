@@ -424,3 +424,26 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     story.expect_text("merger next", "no worker waits", actor=actor)
     reports = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text]
     story.expect_rows(len(reports) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
+
+
+def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = merger_of(story)
+    story.expect_success(f"agent end {merger.id}", actor=Actor(merger.id, ActorType.AGENT))
+    story.run_listeners()
+    reminder = f"worker:{worker.id} delivered"
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.tick("s-1")
+    story.expect_rows(reminder not in story.run(main_lines).output_text)
+    story.advance(timedelta(minutes=15))
+    story.tick("s-1")
+    story.expect_rows(reminder in story.run(main_lines).output_text)
