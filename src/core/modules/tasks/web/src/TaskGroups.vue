@@ -27,10 +27,17 @@ const extended = ref(new Set());
 const query = ref("");
 const tag = ref(view.state["board.tag"] || "");
 const tags = computed(() => view.props.tags.rows.value);
-// the Open group can leave out the tasks that belong to a plan, which cannot start before the plan does; kept on the pane
-const hidePlanTasks = ref(view.state["board.hide-plan-tasks"] === "true");
+// each section can leave out the tasks that belong to a plan; the sections that do are kept on the pane, as their states in one word with commas
+const keptHidden = view.state["board.hide-plan-tasks"];
+const hidingPlanTasks = ref(new Set(keptHidden === "true" ? ["open"] : (keptHidden || "").split(",").filter(Boolean)));
+function showPlanTasks(state, shown) {
+    const next = new Set(hidingPlanTasks.value);
+    if (shown) next.delete(state);
+    else next.add(state);
+    hidingPlanTasks.value = next;
+}
 const plannedIds = computed(() => new Set(places.value.flatMap((place) => place.taskIds)));
-const leavesOutPlanTask = (group, row) => group.state === "open" && hidePlanTasks.value && props.display.grouping !== "plan" && plannedIds.value.has(row.id);
+const leavesOutPlanTask = (group, row) => hidingPlanTasks.value.has(group.state) && props.display.grouping !== "plan" && plannedIds.value.has(row.id);
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
 const pageRows = view.option("rows");
 const pageLimit = computed(() => (Number(pageRows.value) > 0 ? String(Number(pageRows.value)) : undefined));
@@ -123,9 +130,9 @@ const planGroups = computed(() => {
     return ordered.map((label) => ({group: {state: label, label, total: byLabel.get(label).length, rows: byLabel.get(label)}, tasks: byLabel.get(label)}));
 });
 const groups = computed(() => (props.display.grouping === "plan" ? planGroups.value : stateGroups.value));
-watch([() => props.display.grouping, hidePlanTasks], async ([grouping, hiding]) => {
-    if (grouping === "plan" || hiding) places.value = await readPlanPlaces(view);
-    if (hiding) view.state["board.hide-plan-tasks"] = "true";
+watch([() => props.display.grouping, hidingPlanTasks], async ([grouping, hiding]) => {
+    if (grouping === "plan" || hiding.size) places.value = await readPlanPlaces(view);
+    if (hiding.size) view.state["board.hide-plan-tasks"] = [...hiding].join(",");
     else delete view.state["board.hide-plan-tasks"];
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
@@ -181,8 +188,8 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                                 <Icon name="caret" :size="12" :class="['tasks-caret', {closed: folded.has(group.state)}]" />
                                 {{ group.label ?? name(group.state) }} <span class="tasks-count">{{ group.total }}</span>
                             </button>
-                            <template v-if="group.state === 'open' && display.grouping !== 'plan'">
-                                <Switch class="tasks-plan-switch" :on="!hidePlanTasks" word="Plan tasks" title="Show the tasks that belong to a plan" data-open-plan-switch @change="hidePlanTasks = !$event" />
+                            <template v-if="display.grouping !== 'plan'">
+                                <Switch class="tasks-plan-switch" :on="!hidingPlanTasks.has(group.state)" word="Show tasks in plans" title="Show the tasks of this section that belong to a plan" :data-plan-switch="group.state" @change="showPlanTasks(group.state, $event)" />
                             </template>
                         </h3>
                     </template>
