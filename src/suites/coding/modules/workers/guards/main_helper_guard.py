@@ -5,7 +5,7 @@ from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from suites.coding.support.coding_main_options import CodingMainOptions
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.main_caller import MainCaller
 
 DESIGNER_PROFILE = "journal-designer"

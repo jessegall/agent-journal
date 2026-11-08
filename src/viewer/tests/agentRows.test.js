@@ -233,7 +233,7 @@ test("a task of a plan shows the plan after its title and a task of no plan show
     cardOf(element, 2).click();
     await settle();
     const [planned, alone] = cardOf(element, 2).querySelectorAll("[data-agent-delegated]");
-    expect(planned.querySelector("[data-agent-task-plan]").textContent).toBe("Plan 7: Cart plan");
+    expect(planned.querySelector("[data-agent-task-plan]").textContent).toBe("Plan 7");
     expect(alone.querySelector("[data-agent-task-plan]")).toBeNull();
 });
 

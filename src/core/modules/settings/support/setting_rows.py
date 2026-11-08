@@ -21,7 +21,7 @@ class SettingRows:
         return self.kept_table(model).get((key, environment_id))
 
     def kept_table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
-        return self.kept.read(TABLES[model], lambda: self.shared.read(self.database, TABLES[model], lambda: self.table(model)), name="settings.rows")
+        return self.kept.read_by_signature(TABLES[model], lambda signature: self.shared.read(self.database, TABLES[model], signature, lambda: self.table(model)), name="settings.rows")
 
     def table(self, model: SettingModel) -> dict[tuple[str, int | None], Setting | SecretSetting]:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}

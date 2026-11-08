@@ -1,11 +1,11 @@
 import json
 
 from core.testing.hook_samples import HookSamples
-from suites.coding.support.available_work import AvailableWork
+from suites.coding.modules.workers.support.available_work import AvailableWork
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
-from tests.stories.suites.coding.support.main_controls_fixture import in_environment
+from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
 
 WRITES_CODE = "journal.suites.coding.main-writes-code"
@@ -14,7 +14,7 @@ SHIP_PHASE_TASK = 4
 
 
 def assigned_task(story):
-    with in_environment(story):
+    with scope_line(story):
         return story.container.get(AvailableWork).answer(story.agent.id).own_task
 
 
@@ -130,7 +130,7 @@ def test_a_plan_sent_to_a_worker_leaves_the_task_reserved_for_the_main_agent(new
 def test_a_reserved_task_is_not_offered_to_send_to_a_worker(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
-    with in_environment(story):
+    with scope_line(story):
         answer = story.container.get(AvailableWork).answer(story.agent.id)
     expect_value(answer.delegatable, ())
 

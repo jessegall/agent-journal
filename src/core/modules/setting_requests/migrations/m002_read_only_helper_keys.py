@@ -5,9 +5,7 @@ MOVED_KEYS = [("journal.core.helpers.helper-run-limit", "journal.core.helpers.re
               ("journal.core.helpers.helper-profile-limits", "journal.core.helpers.read-only-helper-profile-limits"),
               ("journal.core.helpers.helper-max-minutes", "journal.core.helpers.read-only-helper-max-minutes"),
               ("journal.core.helpers.helper-max-cost", "journal.core.helpers.read-only-helper-max-cost"),
-              ("journal.core.helpers.helper-instruction-files", "journal.core.helpers.read-only-helper-instruction-files"),
-              ("journal.suites.coding.main-starts-helpers", "journal.suites.coding.main-starts-read-only-helpers"),
-              ("journal.suites.coding.workers.workers-start-helpers", "journal.suites.coding.workers.workers-start-read-only-helpers")]
+              ("journal.core.helpers.helper-instruction-files", "journal.core.helpers.read-only-helper-instruction-files")]
 
 
 class HelperKeysMigration(Migration):

@@ -9,7 +9,7 @@ from core.base.command.bus import Bus
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError
 from core.base.command.command import Command
-from core.base.command.external_runs import MAX_ROUNDS, OutsideRuns
+from core.base.command.outside_runs import MAX_ROUNDS, OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
 from core.base.command.script_policy import ScriptPolicy
 from core.base.database.kept_rows import KeptRows

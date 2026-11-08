@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.modules.skills.support.profile_skill import ProfileSkill
+from core.modules.profiles.support.profile_skill import ProfileSkill
 
 
 @dataclass(frozen=True)

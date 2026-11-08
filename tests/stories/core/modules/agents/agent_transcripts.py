@@ -1,13 +1,20 @@
 import pytest
 
+from datetime import timedelta
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
+from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
+from core.modules.agents.models.agent import Agent
+from core.modules.messages.commands.send_message.send_message import SendMessage
+from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 
 import json
 
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import MainEnvironment
+from tests.stories.core.support.fixtures import MainEnvironment, UserJoined
 
 
 def test_a_claude_agents_transcript_is_read_from_its_session_file(new_story, tmp_path, monkeypatch):
@@ -101,6 +108,45 @@ def test_a_line_still_being_written_is_read_once_it_ends(partial_transcript):
     transcript, complete_line, story, agent_id = partial_transcript
     transcript.write_text(user_lines(1) + complete_line)
     story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 1", "2  user  user  line 2")
+
+
+def reply_rows(first, last):
+    return [{"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": "private note"}, {"type": "text", "text": f"reply-{number:02}"}]}} for number in range(first, last + 1)]
+
+
+def written_transcript(tmp_path, monkeypatch, session, rows):
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
+    transcript = tmp_path / "claude" / "projects" / "-work-journal" / f"{session}.jsonl"
+    transcript.parent.mkdir(parents=True, exist_ok=True)
+    transcript.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+
+
+def test_own_messages_are_the_last_ten_texts_and_never_a_thinking_block(new_story, tmp_path, monkeypatch):
+    written_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 12))
+    story = new_story(fixture=ClaudeTranscriptAgent)
+    story.expect_text("usage own-messages", "reply-03", "reply-12", actor=story.agent)
+    story.expect_no_text("usage own-messages", "reply-02", "private note", actor=story.agent)
+
+
+def test_own_messages_after_a_clear_come_from_the_session_it_ended(new_story, tmp_path, monkeypatch):
+    written_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 3))
+    story = new_story(fixture=ClaudeTranscriptAgent)
+    story.hook("s-1", HookSamples.sample("session_end").with_fields(launch="s-1").with_raw({"reason": "clear"}))
+    story.container.get(Bus).run(BindAgentSession(story.agent.id, "s-2"), Actor.core())
+    story.expect_text("usage own-messages", "reply-01", "reply-03", actor=story.agent)
+
+
+def test_conversations_show_five_of_each_side_and_leave_out_a_silent_party(new_story):
+    story = new_story(fixture=UserJoined)
+    bus = story.container.get(Bus)
+    environment = story.row(Agent, story.agent.id).environment_id
+    for number in range(1, 8):
+        bus.run(SendMessage(f"asked-{number}"), story.user, environment_id=environment)
+        bus.run(SendMessage(f"answered-{number}"), story.agent, environment_id=environment)
+    story.expect_text("message conversations", "with user:", "user: asked-3", "you: answered-7", actor=story.agent)
+    story.expect_no_text("message conversations", "asked-2", "answered-2", actor=story.agent)
+    story.advance(timedelta(hours=2))
+    story.expect_text("message conversations", "no conversations in the last hour", actor=story.agent)
 
 
 class ClaudeTranscriptAgent(StoryFixture):

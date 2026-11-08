@@ -3,7 +3,6 @@ from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
-from core.modules.processes.commands.read_output.support.output_texts import ENDING_PHRASES
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.waits.support.wait_targets import WaitTargets
@@ -22,7 +21,7 @@ class ProcessWaitTargets(WaitTargets):
     def result(self, row: Model, reference: str) -> str:
         if not isinstance(row, Process):
             return super().result(row, reference)
-        outcome = "timed out" if row.expired_at is not None else ENDING_PHRASES.get(row.state, f"{row.state.value} with exit code {row.exit_code}")
+        outcome = row.ending_phrase()
         kept = self.outputs.process_output(row.id)
         digest = f"; summary: {kept.reader_summary}" if kept is not None and kept.reader_summary else ""
         return f"output {row.id} {outcome}{digest}"

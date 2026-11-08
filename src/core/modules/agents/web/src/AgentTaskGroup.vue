@@ -13,7 +13,7 @@ const emit = defineEmits(["toggle"]);
                 <span class="agent-task-number">{{ task.id }}</span>
                 <span class="agent-task-title">{{ task.title }}</span>
                 <template v-if="task.plan_id">
-                    <span class="agent-task-plan" data-agent-task-plan :title="`Plan ${task.plan_id}: ${task.plan_title}`">Plan {{ task.plan_id }}: {{ task.plan_title }}</span>
+                    <span class="agent-task-plan" data-agent-task-plan :title="`Plan ${task.plan_id}: ${task.plan_title}`">Plan {{ task.plan_id }}</span>
                 </template>
             </button>
         </template>

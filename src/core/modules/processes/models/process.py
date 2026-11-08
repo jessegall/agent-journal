@@ -11,6 +11,7 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 
 FINISHED_PROGRESS = 100
+ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "is running", ProcessState.STOPPED: "was stopped", ProcessState.ORPHANED: "was lost"}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -52,6 +53,11 @@ class Process(EnvironmentScoped, Model):
     timeout_seconds: int | None = None
     expired_at: Timestamp | None = None
     sandbox_level: SandboxLevel = SandboxLevel.NONE
+
+    def ending_phrase(self) -> str:
+        if self.expired_at is not None:
+            return "timed out"
+        return ENDING_PHRASES.get(self.state, f"{self.state.value} with exit code {self.exit_code}")
 
     def has_expired_timeout(self, timestamp: Timestamp) -> bool:
         if self.timeout_seconds is None or self.started_at is None:

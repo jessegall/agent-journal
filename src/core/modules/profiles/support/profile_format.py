@@ -1,7 +1,7 @@
 import json
 
 from core.base.access import Access
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.base.refusal import Refusal
 from core.base.type_guards import is_mapping
 from core.modules.profiles.support.profile_fields import ProfileFields

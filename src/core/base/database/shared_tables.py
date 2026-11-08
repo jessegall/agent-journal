@@ -4,7 +4,7 @@ import threading
 from typing import TypeVar, cast
 
 from core.base.database.database import Database
-from core.base.database.kept_rows import KeptRows
+from core.base.database.kept_rows import Signature
 from core.base.database.kept_value import KeptValue
 from core.base.journal_home import JournalHome
 
@@ -26,8 +26,7 @@ class SharedTables:
     def shared(cls, home: JournalHome) -> "SharedTables":
         return cls()
 
-    def read(self, database: Database, table: str, loader: Callable[[], T]) -> T:
-        signature = tuple(tuple(row) for row in database.rows(KeptRows.signature_read(table, "1 = 1", ())))
+    def read(self, database: Database, table: str, signature: Signature, loader: Callable[[], T]) -> T:
         with self.lock:
             kept = self.tables.get(table)
         if kept is not None and kept.signature == signature:

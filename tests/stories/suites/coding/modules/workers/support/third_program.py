@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from core.base.file_access import FileAccess
 from core.base.module.module import Module
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.program_server_file import ProgramServerFile
 from core.base.provider.tool_server import ToolServer

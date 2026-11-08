@@ -6,7 +6,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.helpers.support.cold_sessions import ColdSessions
-from core.modules.settings.support.context_share import ContextShare
+from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.helpers.commands.cold_sessions.cold_session import ColdSession
 
 

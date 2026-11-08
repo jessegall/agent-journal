@@ -3,7 +3,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
-from suites.coding.support.coding_main_options import CodingMainOptions
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.main_options import MainOptions
 from suites.coding.support.next_task import NextTask
 from suites.coding.support.available_work_answer import AvailableWorkAnswer

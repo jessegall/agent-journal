@@ -2,7 +2,7 @@ from pathlib import Path
 
 from core.base.instruction_imports import INSTRUCTION_FILES
 from core.modules.agents.models.agent import Agent
-from core.modules.profiles.support.profile_settings import WORKER_INSTRUCTION_FILES_SETTING
+from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_instruction_files import ORIGINAL_SUFFIX
 from suites.coding.support.coding_helper_role import CodingHelperRole

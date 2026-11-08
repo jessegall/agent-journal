@@ -10,9 +10,9 @@ from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.checked_setting_value import CheckedSettingValue
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
-from suites.coding.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
+from suites.coding.modules.workers.support.coding_main_options import CONTROL_KEYS, CodingMainOptions
 from suites.coding.support.main_options import PRESETS
-from suites.coding.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_BADGES, FIELD_CHOICES
+from suites.coding.modules.workers.support.work_catalogue import EDITABLE_KEYS, GROUPS, FIELD_BADGES, FIELD_CHOICES
 from suites.coding.support.work_field import WorkField
 from suites.coding.support.work_settings import WorkSettings
 

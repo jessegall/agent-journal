@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output

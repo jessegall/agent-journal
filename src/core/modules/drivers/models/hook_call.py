@@ -5,6 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.foreign_run import ForeignRun
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm
+from core.base.metadata import Metadata
 from core.base.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.type_guards import is_list, is_mapping
@@ -77,6 +78,14 @@ class HookCall(EnvironmentScoped, Model):
         return self.driver_text(DISPLAYED_TEXT)
 
     @property
+    def ended_session(self) -> str:
+        return self.driver_text("ended_session")
+
+    @property
+    def monitor_description(self) -> str:
+        return self.driver_text(MONITOR_DESCRIPTION)
+
+    @property
     def folder(self) -> str:
         return self.driver_text("folder")
 
@@ -97,6 +106,9 @@ class HookCall(EnvironmentScoped, Model):
         percent = self.metadata.module_part(DRIVERS_MODULE).get("context_percent")
         return percent if isinstance(percent, int) else None
 
+    def metadata_with_context_percent(self, percent: int) -> Metadata:
+        return Metadata({**self.metadata.values, DRIVERS_MODULE: {**self.metadata.module_part(DRIVERS_MODULE), "context_percent": percent}})
+
     @property
     def search_category(self) -> str:
         kind = self.metadata.module_part(DRIVERS_MODULE).get("search")
@@ -105,6 +117,14 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def is_compaction_start(self) -> bool:
         return self.metadata.module_part(DRIVERS_MODULE).get("compaction_start") is True
+
+    @property
+    def is_manual_compaction(self) -> bool:
+        return self.metadata.module_part(DRIVERS_MODULE).get("manual_compaction") is True
+
+    @property
+    def is_clear_start(self) -> bool:
+        return self.metadata.module_part(DRIVERS_MODULE).get("clear_start") is True
 
     @property
     def is_session_start(self) -> bool:

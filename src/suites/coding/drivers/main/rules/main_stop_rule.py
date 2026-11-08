@@ -3,8 +3,8 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.commands.start_task.start_task import StartTask
-from suites.coding.support.available_work import AvailableWork
-from suites.coding.support.coding_main_options import CodingMainOptions
+from suites.coding.modules.workers.support.available_work import AvailableWork
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.free_place_notices import FreePlaceNotices
 from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, OPEN_TASKS_WAIT, TASK_ASSIGNMENT
 

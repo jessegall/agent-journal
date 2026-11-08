@@ -12,7 +12,7 @@ from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
-from core.modules.profiles.support.profile_settings import WORKER_INSTRUCTION_FILES_SETTING
+from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.library_folders import LibraryFolders

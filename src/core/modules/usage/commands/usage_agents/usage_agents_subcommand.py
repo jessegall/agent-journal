@@ -1,4 +1,4 @@
-from core.modules.settings.support.context_share import ContextShare
+from core.modules.settings.bindings.support.context_share import ContextShare
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.agent_policy import AgentPolicy

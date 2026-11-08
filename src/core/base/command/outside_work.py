@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from core.base.command.external_runs import OutsideRuns
+    from core.base.command.outside_runs import OutsideRuns
 
 
 class OutsideWork(Protocol):

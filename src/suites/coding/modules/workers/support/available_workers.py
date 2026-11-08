@@ -1,4 +1,4 @@
-from core.modules.settings.support.context_share import ContextShare
+from core.modules.settings.bindings.support.context_share import ContextShare
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.kept_helpers import FULL_SESSION_PERCENT
 from core.modules.agents.models.agent import Agent

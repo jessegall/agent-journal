@@ -14,7 +14,7 @@ from core.base.module.window_check import WindowCheck
 from core.base.registry.button_line import BLANK
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.button_field import ButtonField
-from core.base.viewer.panel_words import PanelLabels
+from core.base.viewer.panel_labels import PanelLabels
 from core.base.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"

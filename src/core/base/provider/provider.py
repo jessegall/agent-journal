@@ -18,7 +18,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.program_folders import ProgramFolders
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.program_server_file import ProgramServerFile
@@ -134,6 +134,12 @@ class Provider(ABC):
         lines = TranscriptTail(path).lines() if path else []
         rows = (self.transcript_row(line, position) for position, line in enumerate(reversed(lines)))
         return next((row.text for row in rows if row and row.author == AGENT_AUTHOR), "")
+
+    def agent_replies(self, project: Path, session: str, count: int) -> tuple[TranscriptRow, ...]:
+        path = self.transcript(project, session)
+        lines = TranscriptTail(path).lines() if path else []
+        rows = (self.transcript_row(line, position) for position, line in enumerate(lines))
+        return tuple(row for row in rows if row and row.author == AGENT_AUTHOR)[-count:]
 
     def transcript_entry(self, line: str) -> TranscriptEntry | None:
         try:

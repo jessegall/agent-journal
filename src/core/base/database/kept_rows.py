@@ -7,6 +7,7 @@ from core.base.database.kept_value import KeptValue
 from core.base.database.statement import Statement
 
 T = TypeVar("T")
+Signature = tuple[tuple[object, ...], ...]
 
 KEPT_ROW_COUNT = 20000
 
@@ -21,12 +22,15 @@ class KeptRows:
         self.write_rollback_count = database.write_rollback_count
 
     def read(self, table: str, loader: Callable[[], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> T:
-        return self.kept_value(self.key(table, condition, parameters, name), loader, self.signature_read(table, condition, parameters))
+        return self.kept_value(self.key(table, condition, parameters, name), lambda _signature: loader(), self.signature_read(table, condition, parameters))
+
+    def read_by_signature(self, table: str, loader: Callable[[Signature], T], *, name: str) -> T:
+        return self.kept_value(self.key(table, "1 = 1", (), name), loader, self.signature_read(table, "1 = 1", ()))
 
     def read_newest(self, table: str, loader: Callable[[], T], condition: str, parameters: Sequence[object], *, name: str) -> T:
-        return self.kept_value(self.key(table, condition, parameters, name), loader, Statement(f"SELECT id, version, updated_at FROM {table} WHERE {condition} ORDER BY id DESC LIMIT 1", list(parameters)))
+        return self.kept_value(self.key(table, condition, parameters, name), lambda _signature: loader(), Statement(f"SELECT id, version, updated_at FROM {table} WHERE {condition} ORDER BY id DESC LIMIT 1", list(parameters)))
 
-    def kept_value(self, cache_key: str, loader: Callable[[], T], signature_read: Statement) -> T:
+    def kept_value(self, cache_key: str, loader: Callable[[Signature], T], signature_read: Statement) -> T:
         self.check_rollback()
         change_mark = self.database.change_mark()
         if cache_key in self.kept and self.kept[cache_key].change_mark == change_mark:
@@ -37,7 +41,7 @@ class KeptRows:
             return cast(T, self.kept[cache_key].value)
         if len(self.kept) >= KEPT_ROW_COUNT:
             self.kept.clear()
-        loaded = loader()
+        loaded = loader(signature)
         self.kept[cache_key] = KeptValue(signature, change_mark, loaded)
         return loaded
 
@@ -53,7 +57,7 @@ class KeptRows:
 
     def scoped_current(self, loader: Callable[[], T], *, name: str) -> T:
         signature = self.database.content_mark()
-        return self.kept_value(f"current:{name}:{self.database.scope_environment_id}", loader,
+        return self.kept_value(f"current:{name}:{self.database.scope_environment_id}", lambda _signature: loader(),
                                Statement("SELECT ?, ?, ?", signature))
 
     def scoped_update(self, table: str, updater: Callable[[T], T], condition: str = "1 = 1", parameters: Sequence[object] = (), *, name: str) -> None:

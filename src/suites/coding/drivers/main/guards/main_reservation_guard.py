@@ -8,7 +8,7 @@ from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
-from suites.coding.support.coding_main_options import CodingMainOptions
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 
 
 class MainReservationGuard(Guard[Updated[Task] | Moved[Task]]):

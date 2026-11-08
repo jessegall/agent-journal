@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, replace
 
 from core.base.actor import Actor
 from core.base.command.command import Command
-from core.base.command.external_runs import OutsideRuns
+from core.base.command.outside_runs import OutsideRuns
 from core.base.explanation import Explanation
 from core.base.timestamp import Timestamp
 

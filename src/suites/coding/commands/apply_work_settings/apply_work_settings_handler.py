@@ -1,7 +1,7 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from suites.coding.commands.apply_work_settings.apply_work_settings import ApplyWorkSettings
-from suites.coding.support.work_controls import WorkControls
+from suites.coding.modules.workers.support.work_controls import WorkControls
 from suites.coding.support.work_settings import WorkSettings
 
 

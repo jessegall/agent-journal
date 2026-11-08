@@ -14,7 +14,7 @@ from core.modules.processes.models.process import Process
 from suites.coding.commands.record_file_changes.record_file_changes import RecordFileChanges
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
 from suites.coding.support.file_change_report import FileChangeReport
-from suites.coding.support.journal_written_files import JournalWrittenFiles
+from suites.coding.modules.workers.support.journal_written_files import JournalWrittenFiles
 
 
 class RecordFileChangesHandler(Handler[RecordFileChanges, None]):

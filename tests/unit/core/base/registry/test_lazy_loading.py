@@ -12,6 +12,6 @@ def test_a_registry_built_twice_from_the_same_rows_stops_the_work():
 
 def test_with_lazy_loading_allowed_a_second_build_goes_on(monkeypatch):
     monkeypatch.setattr(LazyLoading, "prevented", False)
-    monkeypatch.setattr(LazyLoading, "always_prevented", False)
+    monkeypatch.setattr(LazyLoading, "disabled", False)
     LazyLoading.registry_built(hash(("another fingerprint", "{}")))
     LazyLoading.registry_built(hash(("another fingerprint", "{}")))

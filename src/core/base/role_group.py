@@ -7,7 +7,7 @@ from core.base.helper_type_book import HelperTypeBook
 class RoleGroup(StrEnum):
     """A group of agent roles whose members a suite declares, or, for read-only helpers, whose members the
     registered helper types say by their access. A rule that names AgentRole.HELPER in its roles covers
-    every helper, workers too; one that holds only for read-only helpers says so with READ_ONLY_HELPERS."""
+    every helper of any kind; one that holds only for read-only helpers says so with READ_ONLY_HELPERS."""
 
     ANY = "any"
     TASK = "task"
@@ -34,5 +34,5 @@ class RoleGroup(StrEnum):
 
     def has_role(self, role: str, policy: AgentPolicy, helper_types: HelperTypeBook) -> bool:
         if self is RoleGroup.HELPERS:
-            return role in helper_types.helper_keys()
+            return role in helper_types.read_only_keys()
         return self is RoleGroup.ANY or role in self.roles(policy)

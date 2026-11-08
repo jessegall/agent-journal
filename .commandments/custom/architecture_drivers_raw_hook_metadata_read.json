@@ -4,12 +4,44 @@
     "find": {
         "select": "call",
         "where": [
-            {"name": "module_part"},
-            {"argument": {"at": 0, "name": "DRIVERS_MODULE"}}
+            {
+                "name": "module_part"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "name": "DRIVERS_MODULE"
+                }
+            }
         ],
         "reject": [
-            {"testCode": true},
-            {"fileMatches": "(^|/)core/modules/drivers/models/hook_call\\.py$"}
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/drivers/models/hook_call\\.py$"
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "field": "func"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "agent"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
         ]
     },
     "sin": {

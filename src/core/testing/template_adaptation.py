@@ -66,9 +66,9 @@ class TemplateAdaptation:
     @staticmethod
     def text_columns(connection: sqlite3.Connection) -> list[tuple[str, list[str]]]:
         tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND sql NOT LIKE 'CREATE VIRTUAL%' AND name NOT LIKE 'sqlite_%'")]
-        tables = []
+        columns_by_table = []
         for table in tables:
             columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{table}")') if re.search("CHAR|TEXT|CLOB|JSON", row[2].upper() or "TEXT")]
             if columns:
-                tables.append((table, columns))
-        return tables
+                columns_by_table.append((table, columns))
+        return columns_by_table

@@ -31,15 +31,19 @@ RUN_CPU = pytest.StashKey[RunCpu]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
-WORKER_TEST_COUNT_OPTION = "tests_per_worker"
-MOST_WORKERS_OPTION = "most_workers"
+ONE_RUNNER_BELOW_OPTION = "one_runner_below"
+RUNNERS_OPTION = "runners"
+MOST_RUNNERS_FROM_OPTION = "most_runners_from"
+MOST_RUNNERS_OPTION = "most_runners"
 RUNNER_NICENESS = 10
 GATE_LOCK_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini(WORKER_TEST_COUNT_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
-    parser.addini(MOST_WORKERS_OPTION, "the most test runners a run with -n starts", default="4")
+    parser.addini(ONE_RUNNER_BELOW_OPTION, "a run with -n of fewer tests than this runs in one test runner", default="50")
+    parser.addini(RUNNERS_OPTION, "the test runners a run with -n starts", default="4")
+    parser.addini(MOST_RUNNERS_FROM_OPTION, "a run with -n of this many tests or more starts the most test runners", default="1000")
+    parser.addini(MOST_RUNNERS_OPTION, "the most test runners a run with -n starts", default="8")
 
 
 @pytest.hookimpl(tryfirst=True)
@@ -50,10 +54,10 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
     if not config.getoption("numprocesses", None):
         return
     os.nice(RUNNER_NICENESS)
-    worker_test_count, most = int(config.getini(WORKER_TEST_COUNT_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
-    workers = RunSize(config.args, worker_test_count * most).workers(worker_test_count, most)
-    config.option.numprocesses = 0 if workers == 1 else workers
-    if workers > 1:
+    most_runners_from = int(config.getini(MOST_RUNNERS_FROM_OPTION))
+    runner_count = RunSize(config.args, most_runners_from).runner_count(int(config.getini(ONE_RUNNER_BELOW_OPTION)), int(config.getini(RUNNERS_OPTION)), most_runners_from, int(config.getini(MOST_RUNNERS_OPTION)))
+    config.option.numprocesses = 0 if runner_count == 1 else runner_count
+    if runner_count > 1:
         LazyLoading.disabled = True
         TemplatePrebuild(TemplateDatabases(TemplateCache().folder()), Path(config.rootpath) / "tests").run()
 

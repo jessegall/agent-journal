@@ -13,6 +13,7 @@ from core.base.driver.tool import Tool
 HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"
 COMPACTION_SOURCE = "compact"
+MANUAL_TRIGGER = "manual"
 CLEAR_SOURCE = "clear"
 CLEAR_REASON = "clear"
 CONTINUING_SOURCES = (COMPACTION_SOURCE, CLEAR_SOURCE)
@@ -74,6 +75,10 @@ class HookEvent:
     @property
     def is_compaction_start(self) -> bool:
         return self.raw.get("source") == COMPACTION_SOURCE
+
+    @property
+    def is_manual_compaction(self) -> bool:
+        return self.event is HookEventName.COMPACT and self.raw.get("trigger") == MANUAL_TRIGGER
 
     @property
     def is_clear_start(self) -> bool:

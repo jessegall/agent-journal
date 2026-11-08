@@ -4,7 +4,7 @@ import {useWindow} from "@journal/window-kit";
 import {useOutputPages} from "../../../../viewer/src/composables/outputPages.js";
 import OutputLines from "../../../../viewer/src/kit/OutputLines.vue";
 
-const props = defineProps({call: {type: Number, required: true}});
+const props = defineProps({call: {type: Number, required: true}, emptyText: {type: String, default: "No output recorded."}});
 const emit = defineEmits(["command"]);
 const view = useWindow();
 const pages = useOutputPages((words) => view.readKey(`terminal-output.${props.call}`, words[3] ? {[words[3].slice(2)]: words[4]} : {}), () => props.call);
@@ -19,7 +19,7 @@ pages.newest().then((answer) => {
 
 <template>
     <template v-if="failure"><p role="alert">{{ failure }}</p></template>
-    <template v-else-if="loaded"><OutputLines class="terminal-output" :lines="pages.lines.value" empty="No output recorded." :feed="pages.feed" data-terminal-output @older="pages.loadEarlier" /></template>
+    <template v-else-if="loaded"><OutputLines class="terminal-output" :lines="pages.lines.value" :empty="emptyText" :feed="pages.feed" data-terminal-output @older="pages.loadEarlier" /></template>
 </template>
 
 <style scoped>

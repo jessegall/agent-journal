@@ -13,6 +13,7 @@ from core.base.query.conditions.greater import Greater
 
 PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
+COMPACTED_WAKE_SOURCE = "drivers.compacted"
 IDLE_MESSAGE_SOURCE = "messages.idle"
 TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
 
@@ -29,7 +30,7 @@ class WaitingLineTyping:
     def type(self, line: AgentLine, actor_id: int, timestamp: Timestamp) -> None:
         if not (line.wakes_agent or line.source in TERMINAL_SOURCES) or line.state is not AgentLineState.WAITING:
             return
-        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE) and not self.hook_calls.is_idle(line.session_agent_id, timestamp):
+        if line.source not in (PAUSE_SOURCE, RESUME_SOURCE, COMPACTED_WAKE_SOURCE) and not self.hook_calls.is_idle(line.session_agent_id, timestamp):
             return
         if self.agents.find(line.session_agent_id).limited_until is not None:
             return

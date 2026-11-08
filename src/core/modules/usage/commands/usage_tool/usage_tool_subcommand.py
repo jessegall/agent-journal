@@ -13,9 +13,8 @@ from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.module.driver_entries import DRIVERS_MODULE
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import MONITOR_DESCRIPTION, HookCall
+from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL
 from core.modules.processes.models.enums.part_state import PartState
 from core.modules.processes.models.process import Process
@@ -83,7 +82,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
             calls = calls.matching(Minimum("created_at", notice.creation_timestamp().text))
         current = self.clock.timestamp()
         return tuple(text for call in calls.newest().page(1, SHOWN_RUNS).rows if call.creation_timestamp().elapsed_seconds(current) < MONITOR_LIFE_SECONDS
-                     for text in [str(call.metadata.module_part(DRIVERS_MODULE).get(MONITOR_DESCRIPTION, ""))] if text)
+                     for text in [call.monitor_description] if text)
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)

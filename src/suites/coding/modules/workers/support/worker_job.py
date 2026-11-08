@@ -1,11 +1,11 @@
 from core.modules.agents.support.report_nudges import PARENT_REPORT_SOURCE
+from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.test_limit_nudges import WORKER_TEST_LIMIT_SOURCE
 
 SILENT_AGENT_SOURCE = "workers.silent-agent"
 WORKER_JOB_SOURCE = "workers.worker-job"
 WAITING_TASKS_SOURCE = "workers.waiting-tasks"
 MERGE_CONFLICT_SOURCE = "workers.merge-clash"
-UNFINISHED_TASKS_SOURCE = "workers.unfinished-tasks"
 # how many times a worker is told to go on, since a task of it last moved, before its main agent is told it keeps stopping
 RESUME_LIMIT_COUNT = 3
 SHORT_PROOF_SOURCE = "workers.short-proof"

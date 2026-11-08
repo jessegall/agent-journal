@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.support.coding_main_options import CodingMainOptions
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.main_caller import MainCaller
 
 
