@@ -9,6 +9,7 @@ class AgentPolicy:
     active_task_unblocked_roles: tuple[str, ...] = ()
     task_roles: tuple[str, ...] = tuple(["main"])
     prompt_roles: tuple[str, ...] = tuple(["main"])
+    mark_roles: tuple[str, ...] = tuple(["main"])
     plugin_roles: tuple[str, ...] = tuple(["main"])
     dispatch_roles: tuple[str, ...] = tuple(["main"])
     stop_required_roles: tuple[str, ...] = tuple(["main"])

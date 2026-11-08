@@ -9,6 +9,7 @@ class RoleGroup(StrEnum):
     ANY = "any"
     TASK = "task"
     PROMPT = "prompt"
+    MARK = "mark"
     PLUGIN = "plugin"
     DISPATCH = "dispatch"
 
@@ -18,6 +19,8 @@ class RoleGroup(StrEnum):
                 return policy.task_roles
             case RoleGroup.PROMPT:
                 return policy.prompt_roles
+            case RoleGroup.MARK:
+                return policy.mark_roles
             case RoleGroup.PLUGIN:
                 return policy.plugin_roles
             case RoleGroup.DISPATCH:

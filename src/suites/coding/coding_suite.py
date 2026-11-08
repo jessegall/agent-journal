@@ -20,7 +20,7 @@ class CodingSuite(Suite):
     agent_policy = AgentPolicy(
         job_roles=tuple(["worker"]),
         active_task_unblocked_roles=tuple(["worker"]),
-        task_roles=("main", "worker"), prompt_roles=("main", "worker"), plugin_roles=("main", "worker"),
+        task_roles=("main", "worker"), prompt_roles=("main", "worker"), mark_roles=("main", "worker", "helper", "reviewer", "verifier"), plugin_roles=("main", "worker"),
         dispatch_roles=("main", "worker"), stop_required_roles=("main", "worker"),
         private_output_roles=tuple(["worker"]), reader_request_roles=tuple(["worker"]), queued_run_roles=tuple(["worker"]),
        automatic_watch_roles=tuple(["worker"]), continuing_run_roles=tuple(["worker"]),
