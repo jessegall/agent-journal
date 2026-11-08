@@ -33,7 +33,7 @@ class Tools:
         return self.card(tool)
 
     def install(self, tool: ToolDefinition) -> ToolCard:
-        self.graphify.install()
+        self.graphify.install(self.home.project_folder)
         return self.card(tool)
 
     def refresh(self, folder: str) -> GraphStatus:

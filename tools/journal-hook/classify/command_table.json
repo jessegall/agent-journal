@@ -3068,6 +3068,36 @@
     "label": "testing"
    }
   },
+  "graphify": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true
+   },
+   "subcommands": {
+    "query": {
+     "kind": "read",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading the graph"
+    },
+    "path": {
+     "kind": "read",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading the graph"
+    },
+    "explain": {
+     "kind": "read",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading the graph"
+    }
+   }
+  },
   "npm": {
    "base": {
     "kind": "process",
