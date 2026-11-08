@@ -11,6 +11,7 @@ from core.base.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.tool_type import ToolType
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.project_paths import ProjectPaths
 from core.base.journal_home import JournalHome
@@ -138,6 +139,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
 
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool
+        if tool is not None and tool.category is ToolType.MONITOR:
+            return str(command.event.tool_input().get("command", ""))[:SUMMARY_CHARACTERS]
         if tool is not None and tool.shell is not None:
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:

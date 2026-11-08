@@ -4,7 +4,13 @@ from core.base.driver.block_check import BlockCheck
 from core.base.driver.block_condition import BlockCondition
 from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
+from core.base.query.conditions.contains_some import ContainsSome
+from core.base.query.conditions.minimum import Minimum
 from core.base.query.queries import Queries
+from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from core.modules.drivers.models.hook_call import HookCall
+from core.base.driver.hook_event_name import HookEventName
+from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL
 from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.process import Process
 
@@ -16,7 +22,15 @@ class OutputMonitored(BlockCondition):
     name = "output-monitored"
 
     def is_true(self, check: BlockCheck) -> bool:
-        return self.is_watched(check) or check.container.get(Queries).query(Process).find(int(self.text)).state not in RUNNING_STATES
+        process = check.container.get(Queries).query(Process).find(int(self.text))
+        return self.is_watched(check) or process.state not in RUNNING_STATES or self.has_live_monitor(check, process)
+
+    def has_live_monitor(self, check: BlockCheck, process: Process) -> bool:
+        """A Monitor naming this output, allowed since the output began, that its life has not yet ended: one set while the run still
+        waited in the queue counts, though the block came later."""
+        calls = check.container.get(Queries).query(HookCall).filter(session_agent_id=check.hook.agent_id, hook=HookEventName.PRE_TOOL_USE, tool=MONITOR_TOOL,
+                                                                  answer=HookAnswer.ALLOWED).matching(Minimum("created_at", process.creation_timestamp().text)).matching(ContainsSome(["summary"], [self.text])).all_rows()
+        return any(re.search(rf"\b{self.text}\b", call.summary) is not None and call.creation_timestamp().elapsed_seconds(check.hook.timestamp) < MONITOR_LIFE_SECONDS for call in calls)
 
     def is_watched(self, check: BlockCheck) -> bool:
         tool = check.hook.event.tool
