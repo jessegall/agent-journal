@@ -48,7 +48,7 @@ def test_the_program_runs_with_a_throwaway_home_and_nothing_of_the_agents_enviro
 
 def test_a_program_the_user_did_not_allow_is_refused_with_how_to_propose_it(new_story):
     story = filled_story(new_story)
-    story.expect_refusal("secret run 1 -- curl https://api.github.com", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("secret run 1 --reason needed -- curl https://api.github.com", "A person was asked in the dock", actor=story.agent)
 
 
 def test_a_wrapper_is_refused_even_named_after_the_separator(new_story):
@@ -80,7 +80,7 @@ def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_sto
     story = filled_story(new_story)
     worker = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
     helper = Actor(worker, ActorType.AGENT)
-    story.expect_refusal("secret run 1 -- head -c 64", "The main agent was asked to review this request", actor=helper)
+    story.expect_refusal("secret run 1 --reason needed -- head -c 64", "The main agent was asked to review this request", actor=helper)
     story.expect_success("secret allow 1 --helpers", "helpers may use secret 1", actor=story.user)
     story.expect_text("secret run 1 -- head -c 64", MASK, actor=helper)
 
@@ -93,7 +93,7 @@ def test_a_program_that_fails_gives_its_output_and_its_exit_code(new_story):
 def test_only_a_person_removes_a_field_and_its_value_stays_only_to_be_masked(new_story):
     story = filled_story(new_story)
     values = story.container.get(SecretValues)
-    story.expect_refusal("secret update 1 --remove-field key", "only a person removes a field", actor=story.agent)
+    story.expect_refusal("secret update 1 --remove-field key --reason needed", "only a person removes a field", actor=story.agent)
     story.expect_rows("GITHUB_KEY" in values.values())
     story.expect_success("secret update 1 --remove-field key", actor=story.user)
     story.expect_rows("GITHUB_KEY" not in values.values(), VALUE in values.hidden_values())

@@ -19,7 +19,9 @@ LEADER_MISSING_SECONDS = 10
 class RunEndRecovery:
     """Ends each run whose shell is gone and whose end the server never heard of, any agent that ran it, so a
     run that ended during a restart, or one no runner ever started, releases its queue slot while its agent
-    sends no ticks. A run the runner reported first is skipped; one run's refusal leaves the others to go on."""
+    sends no ticks. A run whose folder holds its end is ended from it at once, with no waiting, and the tick runs as the server takes
+    over, so a command that ended while the server restarted shows as ended. A run the runner reported first is skipped; one run's
+    refusal leaves the others to go on."""
 
     def __call__(self, container: Container) -> bool:
         results = [self.end_run(container, process) for process in tuple(container.get(ProcessQuery).running().oldest().all_rows())]
@@ -37,12 +39,15 @@ class RunEndRecovery:
 
     def commands(self, container: Container, process: Process) -> list[Command[object]]:
         folder = container.get(OutputFolder)
+        if folder.has_leader_process(process.id):
+            return []
+        ends = container.get(RunFolderEnds).commands(process)
+        if ends:
+            return ends
         last_sign = folder.heartbeat(process.id) or process.created_at
         has_pid = folder.pid(process.id) is not None
         with container.get(Scopes).read_scope((), None, process.environment_id):
             limit_seconds = LEADER_MISSING_SECONDS if has_pid else container.get(ProcessSettings).integer(ProcessSetting.ORPHAN_SECONDS)
-        if last_sign is None or folder.has_leader_process(process.id):
+        if last_sign is None or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= limit_seconds:
             return []
-        if last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= limit_seconds:
-            return []
-        return container.get(RunFolderEnds).commands(process) or [OrphanProcess(process.id)]
+        return [OrphanProcess(process.id)]

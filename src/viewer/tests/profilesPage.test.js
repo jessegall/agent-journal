@@ -11,8 +11,9 @@ vi.stubGlobal("ResizeObserver", class {
     unobserve() {}
 });
 
-const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", program_models: {claude: "sonnet", codex: "gpt-6.1-sol"}, body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
-const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
+const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], fallback_programs: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", program_models: {claude: "sonnet", codex: "gpt-6.1-sol"}, body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
+const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], fallback_programs: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
+const ROUTED = {...BUILDER, name: "routed", description: "Reads on one program, then another", program: "claude", program_if_possible: true, fallback_programs: ["codex"]};
 const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: ""}, {key: "worker", label: "Worker", access: "writing", extends: "helper"}];
 const SKILLS = {ok: true, value: {profile: "journal-researcher", rows: [
     {key: "journal", description: "Find your way in the journal", state: "on", own: false},
@@ -109,8 +110,31 @@ test("Save waits until something changed, and an edit with a new model is saved 
     expect(panel().querySelector("[data-drop-head]").textContent.trim()).toBe("opus");
     save.click();
     await settle();
-    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--tier", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
+    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--fallback-programs", "", "--tier", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
     expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
+});
+
+test("a profile names the programs to try instead, in the order typed, and saves them as one list", async () => {
+    const lines = await drawn([RESEARCHER, ROUTED]);
+    await open("routed");
+    const field = panel().querySelector("[data-profile-fallbacks]");
+    expect(field.value).toBe("codex");
+    await type(field, "codex,claude");
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    const line = lines.at(-1);
+    expect(line.slice(0, 3)).toEqual(["profile", "save", "routed"]);
+    expect(line[line.indexOf("--fallback-programs") + 1]).toBe("codex,claude");
+    expect(line).toContain("--program-if-possible");
+});
+
+test("a profile that always uses its program offers no list of programs to try instead", async () => {
+    await drawn([RESEARCHER, ROUTED]);
+    await open("routed");
+    const choices = [...panel().querySelectorAll("[data-profile-program-choice] button")];
+    choices.find((button) => button.textContent.trim() === "Always this program").click();
+    await settle();
+    expect(panel().querySelector("[data-profile-fallbacks]")).toBeNull();
 });
 
 test("a new profile asks for a name and a description before it can be saved, and is saved under that name", async () => {

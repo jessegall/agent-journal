@@ -8451,7 +8451,7 @@ const gw = { class: "chat-dock-fold" }, yw = ["aria-label"], bw = { class: "chat
       ])
     ], 2));
   }
-}, sr = /* @__PURE__ */ U($w, [["__scopeId", "data-v-ea4dd536"]]), xw = {
+}, sr = /* @__PURE__ */ U($w, [["__scopeId", "data-v-574cba3d"]]), xw = {
   class: "dock-leave",
   "aria-hidden": "true"
 }, qa = 5, Sw = {
@@ -13782,7 +13782,7 @@ function tC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const nC = ou(() => import("./VoiceFigure-bVTeWDEQ.js").then((e) => e.V)), aC = "1.2.0", sC = "3.5";
+const nC = ou(() => import("./VoiceFigure-6mfgMzSY.js").then((e) => e.V)), aC = "1.2.0", sC = "3.5";
 export {
   Rf as $,
   Ae as A,

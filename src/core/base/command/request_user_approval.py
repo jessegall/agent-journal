@@ -9,3 +9,4 @@ class RequestUserApproval(Command[object]):
     approval: UserApprovalRefusal
     arguments: tuple[str, ...]
     requester_id: int | None = None
+    why: str = ""

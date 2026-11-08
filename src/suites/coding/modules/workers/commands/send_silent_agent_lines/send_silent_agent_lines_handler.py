@@ -7,6 +7,7 @@ from core.base.connection_status import ConnectionStatus
 from core.base.internet_connection import InternetConnection
 from core.base.journal_home import JournalHome
 from core.base.query.conditions.among import Among
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
@@ -21,6 +22,7 @@ from core.modules.reviews.models.review import Review
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
@@ -43,13 +45,15 @@ RECOVERY_ATTEMPTS = 3
 
 
 class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
-    """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs."""
+    """Sends a bounded sequence of waking lines to silent agents with work, excluding explicit waits and runs. The main agent has work to go on with when an open
+    task has no worker and does not belong to a plan that is not approved or started: such a plan cannot start before the person approves it."""
 
     command = SendSilentAgentLines
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 processes: ProcessQuery, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces) -> None:
+                 processes: ProcessQuery, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery) -> None:
+        self.task_query = task_query
         self.home, self.queries, self.settings = home, queries, settings
         self.processes, self.nudger, self.bus, self.stop, self.main_line, self.places = processes, nudger, bus, stop, main_line, places
 
@@ -61,7 +65,7 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
         held = tasks.matching(Among("holder_id", agent_ids)).all_rows()
         delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
         working = {agent_id for task in (*held, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
-        tasks_remain = tasks.exists()
+        tasks_remain = self.task_query.open_tasks().matching(IsNull("delegated_to")).matching(self.task_query.unapproved_plan_exclusion()).exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}
         excluded = self.waiting(agent_ids, context)

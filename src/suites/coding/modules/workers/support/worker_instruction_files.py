@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.file_access import FileAccess
+from core.base.instruction_imports import INSTRUCTION_FILES
 from core.base.profile.agent_profile import AgentProfile
 from core.base.registry.registry import Registry
 from core.modules.plugins.queries.plugin_query import PluginQuery
@@ -15,7 +16,6 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
-INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")
 JOURNAL_KEY = "journal"
 JOURNAL_TITLE = "Inject the journal briefing"
 WORKER_DRIVER = "coding.worker"

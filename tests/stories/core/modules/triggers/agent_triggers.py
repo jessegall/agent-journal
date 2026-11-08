@@ -3,7 +3,18 @@ from core.base.actor_type import ActorType
 from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
 from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE as TRIGGER_FIRED
 from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
+
+class AgentTriggerMade(StoryFixture):
+    """The main agent made a trigger, so its enabling waits on a docked card."""
+
+    parent = BuilderWithUser
+
+    def steps(self, story):
+        story.run(TRIGGER_LINE, actor=story.agent)
+        story.run_listeners()
+
 
 TRIGGER_LINE = 'trigger make "deploy" "Check the release notes" --environment main'
 PROMPT = HookSamples.prompt("We deploy now")
@@ -31,13 +42,13 @@ def test_a_trigger_the_user_makes_is_on_at_once(new_story):
 def test_an_agent_cannot_enable_a_trigger(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run(TRIGGER_LINE, actor=story.agent)
-    story.expect_refusal("trigger enable 1", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("trigger enable 1 --reason needed", "A person was asked in the dock", actor=story.agent)
 
 
 def test_an_agent_cannot_change_what_an_enabled_trigger_does(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run(TRIGGER_LINE, actor=story.user)
-    story.expect_refusal('trigger edit 1 --text "Do something else"', "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal('trigger edit 1 --text "Do something else" --reason needed', "A person was asked in the dock", actor=story.agent)
 
 
 def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):
@@ -66,3 +77,10 @@ def expect_absent_prompt_lines(story, expected) -> None:
 def expect_prompt_lines(story, expected) -> None:
     actual = prompt_lines(story)
     assert expected in actual, actual
+
+
+def test_another_agent_that_runs_the_command_of_a_docked_card_is_refused_and_makes_no_second_approval(new_story):
+    story = new_story(fixture=AgentTriggerMade)
+    helper = Actor(story.new_row_id(f"agent start helper-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story.expect_refusal("trigger enable 1 --reason needed", "approval 1 already asks a person for this on its docked card", actor=helper)
+    story.expect_absent("approval list", "approval 2", actor=story.user)

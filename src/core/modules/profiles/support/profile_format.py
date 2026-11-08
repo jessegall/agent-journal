@@ -42,6 +42,8 @@ class ProfileFormat:
             if not is_mapping(models) or not all(isinstance(name, str) and isinstance(model, str) for name, model in models.items()):
                 raise Refusal("program-models must contain a model name for each program name")
             fields["program_models"] = {name: "" if model == "inherit" else model for name, model in models.items()}
+        if "fallback_programs" in fields:
+            fields["fallback_programs"] = ProfileFormat.tools(fields["fallback_programs"])
         if "injections" in fields:
             fields["injections"] = ProfileFormat.injections(fields["injections"])
         if "mcp_tools" in fields:

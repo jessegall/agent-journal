@@ -17,7 +17,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 
-SAVE_PROFILE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff."'
+SAVE_PROFILE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff." --reason needed'
 
 
 def agents_folder(story):

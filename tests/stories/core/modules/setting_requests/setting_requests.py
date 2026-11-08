@@ -34,7 +34,7 @@ def setting_viewer(pending_setting):
 def test_the_request_shows_the_old_value_new_value_and_reason_in_the_dock(setting_story):
     story = setting_story
     story.expect_success(REQUEST, "A person was asked in the dock: approval 1", actor=story.agent)
-    story.expect_text("approval show 1", "Agents make rules without approval", "from False to True", "Reason: Rules need no card", "state: open")
+    story.expect_text("approval show 1", "Agents make rules without approval", "from False to True", "why: Rules need no card", "state: open")
     story.expect_text(f"setting show {SETTING} --environment main", "value: False", actor=story.user)
 
 

@@ -9,6 +9,7 @@ import shutil
 from pathlib import Path
 
 from core.base.conflict_files import ConflictFiles
+from core.base.instruction_imports import INSTRUCTION_FILES
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.file_status import FileStatus
@@ -30,6 +31,7 @@ RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
 STASH_MESSAGE = "journal merge of "
 STASH_LOCK_FILE = "journal-stash.lock"
+SKIP_WORKTREE_MARK = "S "
 
 
 class WorktreeGit:
@@ -118,7 +120,9 @@ class WorktreeGit:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
 
     def sync(self, worktree: Worktree) -> tuple[str, ...]:
-        if self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-edit", worktree.base_branch).returncode == 0:
+        with self.written_files_set_aside(worktree.folder):
+            merged = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-edit", worktree.base_branch).returncode == 0
+        if merged:
             return ()
         conflicts = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
         folders = self.built_folders(conflicts)
@@ -170,11 +174,29 @@ class WorktreeGit:
             raise Refusal(f"the web build produced no files in {', '.join(missing)}", "fix the web build before merging")
         self.commit(worktree, "Rebuild web files from merged sources", f"Journal: worker worker-{worktree.session_agent_id}")
 
+    @contextmanager
+    def written_files_set_aside(self, folder: str) -> Generator[None]:
+        """Puts the instruction files the journal wrote into the worktree back to what git holds while the base is merged in, so a
+        change of the base to one of them meets no local text to clash with, and writes each one back, held out of the commits as
+        before, once the merge is done."""
+        held = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        texts = {name: FileAccess.shared().read(Path(folder) / name) for name in held}
+        for name in held:
+            self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
+            self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--", name)
+        try:
+            yield
+        finally:
+            for name in held:
+                FileAccess.shared().write(Path(folder) / name, texts[name])
+                self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
+
     def rebase(self, worktree: Worktree) -> bool:
         stash = self.stash(worktree)
         rebased = False
         try:
-            rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
+            with self.written_files_set_aside(worktree.folder):
+                rebased = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0
             return rebased
         finally:
             if not rebased:

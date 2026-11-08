@@ -9,8 +9,8 @@ from core.modules.processes.models.process_queue_row import ProcessQueueRow
 QUEUE_INSPECTOR = InspectorDeclaration(
     ProcessQueueRow,
     reads="queue list",
-    label="Test queue",
-    title="Test queue",
+    label="Process queue",
+    title="Process queue",
     width=InspectorWidth.MEDIUM,
     events=("process.*",),
     actions=(

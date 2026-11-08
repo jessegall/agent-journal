@@ -42,5 +42,7 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
 - A guard or listen script holds no lock, but the caller waits. With no `window_ms` on its entry the journal puts no
   limit on a script, and a hung one is stopped by switching the plugin off. With `"window_ms": <ms>` a script past it is
   stopped: the change goes through unjudged, recorded as the plugin's last fault. A guard on a hook moment keeps the journal's limit.
+- A reader a plugin ships is a file in `.journal-plugin/readers` that declares its title with `title: <text>`, a `.pattern` file on its first line and a
+  `.sh` script in a `# title: <text>` line. A file that opens on a comment instead is rewritten once with that comment as its `title:`.
 - `docs/writing-a-plugin.md` is the whole contract for a plugin's author, with a sample in `docs/samples/tidy-worktrees`.
 - `journal plugin settings <name>` lists its settings; `journal plugin dashboard <name>` reads its dashboard.

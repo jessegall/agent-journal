@@ -5,7 +5,7 @@ from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
 SHAPE = "'{\"tabs\": [\"notes.board\"], \"active\": \"notes.board\", \"width\": \"full\"}'"
-SAVE = f"person-preset save --page home --name Mine --shape {SHAPE} --environment main"
+SAVE = f"person-preset save --page home --name Mine --shape {SHAPE} --reason needed --environment main"
 
 
 def window_story(new_story) -> WindowStory:

@@ -78,7 +78,7 @@ def test_a_worker_that_has_open_help_request_stays_stopped_when_its_run_ends(new
 
 
 def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 1)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
@@ -145,8 +145,24 @@ def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_show
     story.expect_absent("chat-mark list --environment 1", "stopped with")
 
 
+def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(new_story, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+    story, worker, run, bus = worker_with_background_run(new_story)
+    session = worker_session(story, worker)
+    line = f"worker:{worker.id} ended with"
+    for _ in range(3):
+        story.run(f"agent end {worker.id}", actor=worker)
+        story.run_listeners()
+        story.hook(session, HookSamples.session_start())
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", line)
+    bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.run_listeners()
+    story.expect_text(f"agent-line list --agent {story.agent.id}", line)
+
+
 def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 1)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository_environment(story)
     worker = dispatched_worker(story)

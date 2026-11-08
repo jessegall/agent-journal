@@ -21,4 +21,5 @@ class LineParser:
             self.flags.add(parser)
         else:
             parser.add_argument("--environment")
+            self.flags.add_reason(parser)
         return subcommand, parser

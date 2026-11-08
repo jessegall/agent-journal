@@ -15,7 +15,7 @@ from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 
 MODULE = "tests.stories.core.modules.profiles.support.profile_updates:"
-SAVE = ["profile", "save", "critic", "--description", "Reads a change", "--body", "Read the diff."]
+SAVE = ["profile", "save", "critic", "--description", "Reads a change", "--body", "Read the diff.", "--reason", "needed"]
 
 
 class ProfileSession(StoryFixture):
@@ -152,7 +152,7 @@ def test_a_missing_type_keeps_the_file_and_does_not_stop_sync(profile_story):
     expect_value(profile_path(story).is_file(), True)
 
 
-@pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader"], ["profile", "remove", "critic"]])
+@pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader", "--reason", "needed"], ["profile", "remove", "critic", "--reason", "needed"]])
 def test_agents_cannot_change_profiles(profile_story, line):
     profile_story.expect_refusal(shlex.join(line), "A person was asked in the dock", actor=profile_story.agent)
 
@@ -285,6 +285,6 @@ def test_default_models_are_effective_and_native_profiles_still_publish(profile_
     expect_value(profile_row(story, "journal-researcher")["uses"], 1)
 
 
-@pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader"], ["profile", "remove", "critic"]])
+@pytest.mark.parametrize("line", [SAVE, ["profile", "reset", "module-reader", "--reason", "needed"], ["profile", "remove", "critic", "--reason", "needed"]])
 def test_third_party_windows_cannot_change_profiles(profile_story, line):
     profile_refusal(profile_story, line, "may never run profile", "profile-updates.editor")

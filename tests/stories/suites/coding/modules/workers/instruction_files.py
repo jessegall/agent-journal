@@ -4,7 +4,7 @@ from core.testing.story import Story
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 
 PROJECT_TEXT = "The project's own briefing.\n"
 PLUGIN_TEXT = "Run the commandments before you hand in."
@@ -66,3 +66,17 @@ def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unle
     assert PLUGIN_TEXT in written(repository, dispatched_worker(story), "AGENTS.md")
     story.expect_success('profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --injections \'{"commandments.briefing": false}\'', actor=story.user)
     story.expect_text("worker injections notes-worker", "commandments.briefing: Inject our briefing into the agent file: off", actor=story.user)
+
+
+def test_a_change_of_the_base_to_an_instruction_file_merges_into_a_worktree_that_holds_written_files(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = project_with_instructions(story)
+    worker = dispatched_worker(story)
+    repository.committed("AGENTS.md", "The base changed its agent file.\n", "the base changes the agent file")
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
+    story.expect_success(DELIVERY, actor=worker)
+    worktree = repository.worktree_folder(worker.id)
+    assert "You are a worker" in written(repository, worker, "AGENTS.md")
+    assert repository.git("show", "HEAD:AGENTS.md", folder=worktree).stdout == "The base changed its agent file.\n"
+    repository.expect_clean(worker.id)

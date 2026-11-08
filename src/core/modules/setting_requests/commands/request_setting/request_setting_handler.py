@@ -35,9 +35,9 @@ class RequestSettingHandler(Handler[RequestSetting, ApprovalRequest]):
             raise Refusal("say why the setting should change", "--reason '<why>'")
         value = SettingText().value(entry, command.text)
         SetSettingHandler.environment(entry, command.project, context.environment_id)
-        details = f"{entry.title} ({entry.key}) would change from {self.values.current(entry.key).value} to {value}. Reason: {command.reason.strip()}"
+        details = f"{entry.title} ({entry.key}) would change from {self.values.current(entry.key).value} to {value}."
         arguments = ("setting", "set", entry.key, command.text)
         if command.project:
             arguments = (*arguments, "--project")
         arguments = (*arguments, "--expected-revision", self.revision.current(entry.key))
-        return self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}"), arguments), context)
+        return self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(f"Change {entry.title}?\n{details}", why=command.reason.strip()), arguments), context)

@@ -7,6 +7,7 @@ from core.base.caller.caller import Caller
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.cli.console import Console, REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from core.base.cli.usage_error import UsageError
+from core.base.cli.write_flags import WriteFlags
 from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
@@ -39,6 +40,7 @@ class ModuleRemoveLine:
         parser = ArgumentParser(prog="journal module remove")
         parser.add_argument("name")
         parser.add_argument("--json", action="store_true")
+        WriteFlags.add_reason(parser)
         try:
             arguments = parser.parse_args(argv[2:])
         except SystemExit as error:
@@ -46,7 +48,7 @@ class ModuleRemoveLine:
         output = Output(self.tables, arguments.json, stream)
         try:
             if caller.actor.type is ActorType.AGENT:
-                raise UserApprovalRefusal(f"Remove the module {arguments.name}?", tuple(argv))
+                raise UserApprovalRefusal(f"Remove the module {arguments.name}?", WriteFlags.without_reason(argv))
             if caller.actor.type is not ActorType.USER:
                 raise Refusal("module removal requires a person")
             self.removal.remove(arguments.name)
@@ -57,7 +59,7 @@ class ModuleRemoveLine:
             output.error(str(error))
             return REFUSED_CODE
         except Refusal as refusal:
-            self.console.request_approval(refusal, argv, caller)
+            self.console.request_approval(refusal, argv, caller, arguments)
             output.refusal(refusal)
             return REFUSED_CODE
         container = synced_container(self.home)

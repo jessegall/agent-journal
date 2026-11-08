@@ -1,11 +1,11 @@
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentError, ArgumentParser, Namespace
 
 from core.base.registry.registry import Registry
 
 
 class WriteFlags:
     """The flags every subcommand that writes takes: --environment, --skip-guard (repeatable), the short flags
-    modules grant for their own guards, and --explain."""
+    modules grant for their own guards, --explain and --reason."""
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry
@@ -15,8 +15,33 @@ class WriteFlags:
         parser.add_argument("--skip-guard", action="append", default=[], dest="skip_guard")
         parser.add_argument("--skip-reason", default="", dest="skip_reason")
         parser.add_argument("--explain", action="store_true")
+        self.add_reason(parser)
         for short_flag in dict.fromkeys(guard.short_flag for guard in self.registry.guards if guard.short_flag):
             parser.add_argument(f"--{short_flag}", action="store_true", dest=self.destination(short_flag))
+
+    @staticmethod
+    def add_reason(parser: ArgumentParser) -> None:
+        """--reason says why an agent runs a line that asks a person; a command with a --reason of its own keeps it, and that text serves."""
+        try:
+            parser.add_argument("--reason", default="", help="why this is asked, shown to the person when the line needs their approval")
+        except ArgumentError:
+            return None
+        parser.set_defaults(reason_is_ours=True)
+
+    @staticmethod
+    def without_reason(argv: list[str]) -> tuple[str, ...]:
+        """The line without the --reason this flag added: the reason is kept on the approval, not in the line a person runs."""
+        kept: list[str] = []
+        words = iter(argv)
+        for word in words:
+            if word == "--":
+                kept.append(word)
+                kept.extend(words)
+            elif word == "--reason":
+                next(words, None)
+            elif not word.startswith("--reason="):
+                kept.append(word)
+        return tuple(kept)
 
     def skipped_guards(self, arguments: Namespace) -> frozenset[str]:
         flag_guards: list[str] = list(arguments.skip_guard)

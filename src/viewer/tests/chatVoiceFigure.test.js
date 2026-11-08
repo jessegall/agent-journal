@@ -63,6 +63,12 @@ test("the figure is given what the chat reads: the tool, what the agent waits fo
     expect(JSON.parse(element.querySelector("[data-figure-of]").dataset.given)).toEqual({running: "Bash make test", thinking: true, asking: true, waitingFor: "your answer to question 1", marks: 1, messages: 1, here: true});
 });
 
+test("the status line of the chat says what a stopped agent waits for, as a Monitor it started describes it", async () => {
+    const element = await chat({facts: {wait_target: "release v7.18.14 build"}});
+    expect(element.querySelector("[data-running-command]").textContent).toBe("waiting for release v7.18.14 build");
+    expect((await chat()).querySelector("[data-running-command]").textContent).toBe("waiting");
+});
+
 test("a journal that cannot say the voice shows no figure", async () => {
     expect(figure(await chat({answers: {[`${KEY}profile`]: {ok: false, error: "refused"}}}))).toBeNull();
 });

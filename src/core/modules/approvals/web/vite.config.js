@@ -4,6 +4,6 @@ import { windowBuild } from "../../../../viewer/kit/build.js";
 const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export default windowBuild({
-  entries: { "approval-dock": here("./src/approval-dock.js") },
+  entries: { "approval-dock": here("./src/approval-dock.js"), "standing-approvals": here("./src/standing-approvals.js") },
   outDir: here("./dist"),
 });

@@ -144,6 +144,10 @@ def main(argv: list[str]) -> int:
             starting_round.run()
         except Exception as error:
             starting_round.report(error)
+    try:
+        plugin_services.follow()
+    except Exception as error:
+        files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
     server.context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
     listener_thread.wake()
     listener_thread.start()

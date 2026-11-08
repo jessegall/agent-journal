@@ -60,7 +60,7 @@ def test_a_worker_that_ended_in_a_phase_is_started_again_as_today(program_ended)
 
 
 def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_included(program_ended, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
     program_ended.story.tick(MAIN_SESSION)
     program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{program_ended.worker.id} ended with task:1, task:2, task:3 left")
 

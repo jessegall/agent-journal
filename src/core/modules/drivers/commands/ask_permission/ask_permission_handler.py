@@ -34,8 +34,8 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return open_request
         request = self.repository.save(PermissionRequest(asker_id=context.actor.id, action=command.action, reason=command.reason, needs_person=command.needs_person), context)
         if command.needs_person:
-            question = f"Allow agent {context.actor.id} to do this once: {command.action}?\n{command.reason}"
-            self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id)), (), context.actor.id), context)
+            question = f"Allow agent {context.actor.id} to do this once: {command.action}?"
+            self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), why=command.reason), (), context.actor.id), context)
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:

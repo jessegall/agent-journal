@@ -241,7 +241,7 @@ test("a held empty queue shows the reason and empty messages", async () => {
     }));
     expect(document.body.querySelector("[data-queue-held]").textContent).toContain("Machine maintenance");
     expect(document.body.querySelector('[data-queue-empty="waiting"]').textContent).toBe("Nothing waits. A command that starts now gets a place at once.");
-    expect(document.body.textContent).not.toContain("Test queue");
+    expect(document.body.textContent).not.toContain("Process queue");
 });
 
 test("a queue held by an update says the update waits for the running commands and the others keep their order", async () => {
@@ -291,4 +291,12 @@ test("process events refresh the queue and output events refresh only an open ou
     subscriptions.dispatch({event: "output.update", row_id: 70});
     await settle();
     expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
+});
+
+test("the queue is named Process queue in its window and its inspector, and its window may read the pages of an output it opens", () => {
+    const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
+    const inspector = readFileSync(resolve(__dirname, "../../core/modules/processes/support/queue_inspector.py"), "utf8");
+    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?reads=\["queue list", "output page"\]/);
+    expect(inspector).toContain('label="Process queue"');
+    expect(`${module}${inspector}`).not.toContain("Test queue");
 });

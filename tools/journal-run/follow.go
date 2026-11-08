@@ -36,6 +36,9 @@ type Tracker struct {
 	ShownBytes map[int]int
 	Now        func() time.Time
 	Wait       func()
+	// Waited is the time spent telling the journal of an end while its server was away, which no limit counts: a command that ends while
+	// the server restarts is not moved to the background for the time the restart took.
+	Waited time.Duration
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
@@ -50,11 +53,12 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 			return tracker.orphan(stdout)
 		}
 		if tracker.waitsForSlot() {
-			if tracker.now().Sub(queueStarted) >= tracker.Options.QueueWait {
+			if tracker.now().Sub(queueStarted)-tracker.Waited >= tracker.Options.QueueWait {
 				return tracker.move(stdout)
 			}
 			tracker.wait()
 			started = tracker.now()
+			tracker.Waited = 0
 			continue
 		}
 		if tracker.mayMove(started) {
@@ -75,7 +79,7 @@ func (tracker *Tracker) waitsForSlot() bool {
 // mayMove says whether the run reached its foreground limit or was asked to move.
 func (tracker *Tracker) mayMove(started time.Time) bool {
 	limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
-	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && tracker.now().Sub(started) >= limit)
+	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && tracker.now().Sub(started)-tracker.Waited >= limit)
 }
 
 func (tracker *Tracker) now() time.Time {
@@ -200,10 +204,18 @@ func (tracker *Tracker) showPart(stdout io.Writer, position int) {
 
 // report tells the journal of an end, and tells it again while the server is away, as during a restart.
 func (tracker *Tracker) report(arguments ...string) {
+	began := tracker.now()
+	retried := false
+	defer func() {
+		if retried {
+			tracker.Waited += tracker.now().Sub(began)
+		}
+	}()
 	for attempt := 0; attempt < reportAttempts; attempt++ {
 		if tracker.Client.Run(arguments...) == nil || (tracker.Client.Reachable() && !tracker.Client.Restarting()) {
 			return
 		}
+		retried = true
 		time.Sleep(reportRetryInterval)
 	}
 }

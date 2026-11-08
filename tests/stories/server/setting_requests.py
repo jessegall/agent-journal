@@ -47,12 +47,12 @@ def requested(plain_story):
 
 
 def test_an_agents_write_of_a_person_set_setting_is_refused(plain_story):
-    plain_story.expect_refusal(f"setting set {SUITE_KEY} samples --environment main", "A person was asked in the dock", actor=plain_story.agent)
+    plain_story.expect_refusal(f"setting set {SUITE_KEY} samples --environment main --reason needed", "A person was asked in the dock", actor=plain_story.agent)
 
 
 def test_choosing_the_driver_or_the_suite_is_refused_to_an_agent(plain_story):
-    plain_story.expect_refusal("driver choose samples.lead --environment main", "A person was asked in the dock", actor=plain_story.agent)
-    plain_story.expect_refusal("suite choose samples --environment main", "A person was asked in the dock", actor=plain_story.agent)
+    plain_story.expect_refusal("driver choose samples.lead --environment main --reason needed", "A person was asked in the dock", actor=plain_story.agent)
+    plain_story.expect_refusal("suite choose samples --environment main --reason needed", "A person was asked in the dock", actor=plain_story.agent)
 
 
 def test_a_person_set_refusal_has_no_skip(plain_story):

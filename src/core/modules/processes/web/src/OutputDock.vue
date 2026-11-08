@@ -110,17 +110,13 @@ async function load() {
 
 watch(opened, (open) => open && load());
 
-// the agent that ran the run is asked, in a message, to draw a reader that gives its progress
-function askForReader() {
-  const id = item.value?.target_id;
-  view.run([
-    "message",
-    "send",
-    `Output ${id} has no reader that gives its progress, and its box is empty: draw a reader for it with journal reader add.`,
-    "--target-agent",
-    String(run.value.agent_id),
-  ]);
+// the agent that ran the run is asked to draw a reader: the journal opens its request and posts one chat message from the person, and the button goes
+const asked = ref(false);
+async function askForReader() {
+  const answer = await view.run(["output", "ask-reader", String(item.value?.target_id)]);
+  if (answer?.ok !== false) asked.value = true;
 }
+const canAskForReader = computed(() => !asked.value && !run.value?.reader_requested && !run.value?.reads_progress && !ended.value);
 // a run that ends between two reads is read once more, so the card shows its end and not the last percent it drew
 watch(ended, (done) => done && load());
 
@@ -197,17 +193,19 @@ usePoll(load, isRunning, () =>
             ]"
         /></template>
         <template v-else>
-          <pre
-            ref="terminal"
-            class="output-dock-terminal"
-            data-output-terminal
-            @scroll="pages.loadEarlier($event.target)"
-            >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
-          <template v-if="!lines.length && !run?.reads_progress && !ended"
-            ><button type="button" class="output-dock-reader" data-output-reader-ask @click="askForReader">
-              Ask the agent to draw a reader
-            </button></template
-          >
+          <div class="output-dock-box">
+            <pre
+              ref="terminal"
+              class="output-dock-terminal"
+              data-output-terminal
+              @scroll="pages.loadEarlier($event.target)"
+              >{{ lines.length ? lines.join("\n") : "No output yet" }}</pre>
+            <template v-if="!lines.length && canAskForReader"
+              ><button type="button" class="output-dock-reader" data-output-reader-ask @click="askForReader">
+                Ask the agent to draw a reader
+              </button></template
+            >
+          </div>
         </template>
       </div>
     </div>
@@ -330,8 +328,13 @@ usePoll(load, isRunning, () =>
   height: 100%;
   transition: width 0.4s ease;
 }
+.output-dock-box {
+  position: relative;
+}
 .output-dock-reader {
-  margin: 6px 14px 6px 36px;
+  position: absolute;
+  top: 6px;
+  right: 14px;
   padding: 2px 8px;
   border: 1px solid var(--border-2);
   border-radius: 6px;

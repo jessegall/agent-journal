@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from typing import Any
 from core.base.access import Access
 from core.base.provider.model_tier import ModelTier
@@ -16,6 +16,7 @@ class AgentProfile:
     access: Access | None = None
     program: str = ""
     program_if_possible: bool = True
+    fallback_programs: tuple[str, ...] = ()
     model: str = ""
     codex_model: str = ""
     tier: ModelTier | None = None
@@ -44,6 +45,10 @@ class AgentProfile:
     def display_title(self) -> str:
         return self.title or self.name
 
+    def fallbacks_after(self, preferred: str, registered: Sequence[str]) -> tuple[str, ...]:
+        """The programs a start tries after the preferred one cannot start: this profile's own list in its order, else every registered program."""
+        return tuple(name for name in dict.fromkeys(self.fallback_programs or registered) if name != preferred)
+
     @property
     def is_builtin(self) -> bool:
         return bool(self.module)
@@ -52,4 +57,4 @@ class AgentProfile:
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "writable_folders": tuple(fields.get("writable_folders", ())), "skills": tuple(fields.get("skills", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})
+        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "writable_folders": tuple(fields.get("writable_folders", ())), "skills": tuple(fields.get("skills", ())), "fallback_programs": tuple(fields.get("fallback_programs", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})

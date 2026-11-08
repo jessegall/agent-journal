@@ -149,7 +149,7 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
 
 
 def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_agent(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
     story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
@@ -174,7 +174,7 @@ def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_stor
 
 
 def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
     story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -185,7 +185,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
 
 
 def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.listeners.ended_worker_listener.RESUME_LIMIT_COUNT", 0)
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
     story = new_story(fixture=OrchestratorWithMergerOff)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)

@@ -11,13 +11,13 @@ const TIERS = [{key: "", label: "Profile models"}, {key: "fast", label: "Fast"},
 const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
 const programs = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "independent", "mcp_tools", "program_models", "tier", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"];
 
 const draft = ref({});
 watch(
     () => props.profile.name,
     () => {
-        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), program_models: {...props.profile.program_models}, skills: null};
+        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(","), program_models: {...props.profile.program_models}, skills: null};
     },
     {immediate: true},
 );
@@ -34,7 +34,7 @@ const compared = computed(() => {
     const journal = (props.profile.module_body || "").split("\n");
     return [...lineRows("del", yours, journal), ...lineRows("add", journal, yours)];
 });
-const saved = computed(() => ({...props.profile, mcp_tools: props.profile.mcp_tools.join(",")}));
+const saved = computed(() => ({...props.profile, mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(",")}));
 const dirty = computed(() => FIELDS.some((key) => JSON.stringify(draft.value[key]) !== JSON.stringify(saved.value[key])) || draft.value.skills !== null || !props.profile.name);
 const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.name || "") && draft.value.description.trim());
 </script>
@@ -73,6 +73,11 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
                 <FormField label="When it cannot start" for="profile-program-choice" help="If possible: a start uses the other program, on its model, when this one is not installed or not ready, and says so.">
                     <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.program_if_possible ? 'possible' : 'always'" @pick="draft.program_if_possible = $event === 'possible'" />
                 </FormField>
+                <template v-if="draft.program_if_possible">
+                    <FormField label="Programs to try instead" for="profile-fallbacks" help="Program names in the order to try them, separated by commas. Blank tries every other program.">
+                        <TextInput id="profile-fallbacks" :value="draft.fallback_programs" data-profile-fallbacks @input="draft.fallback_programs = $event.target.value" />
+                    </FormField>
+                </template>
             </template>
             <FormField label="Model tier" for="profile-tier" help="Chooses a model when this profile has no named model for the program.">
                 <Segmented data-profile-tier :options="TIERS" :value="draft.tier || ''" @pick="draft.tier = $event || null" />

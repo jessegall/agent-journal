@@ -130,12 +130,12 @@ def test_only_a_person_logs_in_or_changes_tunler(new_story):
     story, _ = account_story(new_story)
     story.expect_refusal(f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one", "sign-in credentials are entered by a person", actor=story.agent)
     for line in ("tunler logout", "tunler update", f"tunler install {TUNLER_HOST}", f"tunler release {SPARE_DOMAIN}"):
-        story.expect_refusal(line, "A person was asked in the dock", actor=story.agent)
+        story.expect_refusal(f"{line} --reason needed", "A person was asked in the dock", actor=story.agent)
 
 
 def test_a_person_accepts_a_tunler_logout_request_in_the_viewer(new_story, monkeypatch):
     story, client = account_story(new_story)
-    story.expect_refusal("tunler logout", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("tunler logout --reason needed", "A person was asked in the dock", actor=story.agent)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     monkeypatch.setattr(TunlerClient, "logout", lambda self: client.logout())
     with viewer_client(story) as viewer:
