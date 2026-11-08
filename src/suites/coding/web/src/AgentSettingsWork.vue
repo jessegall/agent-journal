@@ -3,7 +3,8 @@ import {computed, reactive, ref, watch} from "vue";
 import {Btn, Switch, useWindow} from "@journal/window-kit";
 
 const CONTROLS = [
-    {key: "journal.suites.coding.auto-mode", label: "Auto mode", line: "The main agent may also write code itself"},
+    {key: "journal.suites.coding.auto-mode", label: "Auto mode", line: "The journal hands the main agent its next task, and it keeps going while tasks are left"},
+    {key: "journal.suites.coding.main-writes-code", label: "Main agent writes code", line: "The main agent may change project files itself; off, it plans, delegates and merges"},
     {key: "journal.suites.coding.workers.main-dispatches-workers", label: "Main agent sends workers", line: "Whether the main agent may send workers to do tasks."},
     {key: "journal.suites.coding.continue-while-delegatable", label: "Keep going while work can be delegated", line: "Keep the main agent working while open tasks can still be sent to workers."},
     {key: "journal.suites.coding.workers.merger-on", label: "Merger takes in workers", line: "A helper merges workers whose tests passed, and passes on what the main agent must judge."},
