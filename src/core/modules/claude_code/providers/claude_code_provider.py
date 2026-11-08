@@ -51,7 +51,7 @@ MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("f
 EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 SESSION_EFFORT = "high"
 
-COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Leave out earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
+COMPACT_LINE = "/compact Focus on continuing the work at once: what you were doing last, what comes next, and the facts those depend on. Keep every instruction, request, direction and correction the user gave you. Leave out the rest of the earlier history and old messages: the journal gives back recent messages, tasks, memories and rules."
 
 class ClaudeCodeProvider(Provider):
     """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's
