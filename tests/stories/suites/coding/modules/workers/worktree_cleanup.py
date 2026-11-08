@@ -1,3 +1,4 @@
+import pytest
 from datetime import timedelta
 
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
@@ -9,6 +10,9 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree, orphan_worktree
+
+
+pytestmark = pytest.mark.real_git
 
 MAIN_SESSION = "s-1"
 DEFAULT_HOURS = 6

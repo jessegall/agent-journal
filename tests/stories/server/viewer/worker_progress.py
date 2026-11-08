@@ -1,3 +1,4 @@
+import pytest
 from datetime import timedelta
 
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
@@ -7,6 +8,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import c
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
+@pytest.mark.real_git
 def test_a_second_dispatch_shows_only_its_worktree_totals_and_keeps_its_pace_on_resume(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

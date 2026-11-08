@@ -105,6 +105,7 @@ def test_removal_clears_files_left_by_git(delivered_folder, monkeypatch):
     repository.expect_no_folder(worker.id)
 
 
+@pytest.mark.real_git
 def test_send_clears_an_unregistered_leftover_folder(delivered_folder):
     story, repository, worker = delivered_folder
     story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
@@ -116,6 +117,7 @@ def test_send_clears_an_unregistered_leftover_folder(delivered_folder):
     story.expect_rows((folder / '.git').is_file(), not (folder / 'late.pyc').exists())
 
 
+@pytest.mark.real_git
 def test_send_preserves_a_registered_worktree(delivered_folder):
     story, repository, worker = delivered_folder
     story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)

@@ -67,6 +67,7 @@ def test_a_second_build_of_the_same_program_and_folder_is_refused(saved_pytest):
     story.expect_refusal('alias add private-build "cd src/viewer && npm run build --mode production" --category build', "journal viewer-build", actor=story.agent)
 
 
+@pytest.mark.real_git
 def test_a_worker_runs_the_shared_pytest_in_its_own_checkout(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

@@ -94,6 +94,7 @@ def worker_git_command(worker_command, name):
 
 @pytest.mark.parametrize(("name", "method"), [(WorkerOperationName.NEXT, "rebased_commit"), (WorkerOperationName.DELIVER, "rebased_commit"),
                                                (WorkerOperationName.JOB, "sync"), (WorkerOperationName.MERGE, "merge")])
+@pytest.mark.real_git
 @pytest.mark.parametrize("queue_full", [False, True])
 def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_command, monkeypatch, name, method, queue_full):
     story, repository, worker, launches = worker_git_command
@@ -171,6 +172,7 @@ def test_a_second_command_on_the_same_worker_is_refused(worker_command):
     story.expect_rows(len(launches) == 1)
 
 
+@pytest.mark.real_git
 def test_a_failed_background_command_releases_the_worker_and_names_its_output(worker_command, monkeypatch):
     story, _, worker, _ = worker_command
     story.expect_text('worker deliver --differences none', "command accepted", actor=worker)

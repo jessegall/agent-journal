@@ -31,6 +31,9 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_requests_launcher
 
+
+pytestmark = pytest.mark.real_git
+
 MAIN_SESSION = "s-1"
 BUILT_FILE = "app/web/dist/chat.js"
 

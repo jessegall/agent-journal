@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 
 from core.base.refusal import Refusal
@@ -25,6 +26,7 @@ def refused(handoff, worktree, patch) -> bool:
     return False
 
 
+@pytest.mark.real_git
 def test_s53_assigned_main_task_goes_to_new_worker(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository, worker = worker_with_main_progress(story)
@@ -37,6 +39,7 @@ def test_s53_assigned_main_task_goes_to_new_worker(new_story):
                  ("TOTAL = 5\n", "TOTAL = 0\n", "unrelated\n"))
 
 
+@pytest.mark.real_git
 def test_s53_failed_handoff_preserves_main_and_unrelated_edits(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository, worker = worker_with_main_progress(story)

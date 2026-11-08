@@ -7,6 +7,9 @@ from tests.stories.core.modules.plugins.support.event_stories import REFUSAL, Ev
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 
+
+pytestmark = pytest.mark.real_git
+
 WORKTREE_CUT = "suites.coding.workers.worker_worktree.cut"
 WORKTREE_DELIVER = "suites.coding.workers.worker_worktree.deliver"
 WORKTREE_MERGE = "suites.coding.workers.worker_worktree.merge"

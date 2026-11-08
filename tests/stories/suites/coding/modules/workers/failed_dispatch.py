@@ -51,10 +51,12 @@ def failed_dispatch(dispatch_story, monkeypatch, request):
     return story
 
 
+@pytest.mark.real_git
 def test_a_dispatch_failing_at_each_step_says_why_leaves_nothing_and_the_next_goes_through(failed_dispatch):
     failed_dispatch.expect_success(DISPATCH, actor=failed_dispatch.agent)
 
 
+@pytest.mark.real_git
 def test_a_dispatch_failing_once_a_row_refers_to_its_worker_ends_the_worker_and_says_why(dispatch_story, monkeypatch):
     story = dispatch_story
     bus = story.container.get(Bus)

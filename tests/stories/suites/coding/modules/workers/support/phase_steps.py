@@ -17,7 +17,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment, repository_folder, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment, repository_folder, story_repository, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
@@ -162,7 +162,7 @@ def dispatched_story_worker(story: Story, dispatch: str, monkeypatch) -> StoryWo
     install_runner(story)
     started = recording_launch(monkeypatch)
     worker = dispatched_worker(story, dispatch)
-    repository = GitRepository(repository_folder(story))
+    repository = story_repository(story)
     return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(lines_of_agent(story, story.agent)))
 
 

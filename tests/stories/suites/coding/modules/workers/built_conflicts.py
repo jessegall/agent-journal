@@ -6,6 +6,9 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_FILE, BUILT_TEXT, build_repository
 from tests.stories.support.story_checks import expect_absent_exists_folder_repository
 
+
+pytestmark = pytest.mark.real_git
+
 HASHED_FILE = "app/web/dist/Chat-CD-8c9Cq.mjs"
 
 
