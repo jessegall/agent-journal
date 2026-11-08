@@ -135,9 +135,8 @@ never starts is retired after the idle time.
   files cover the code you changed. Include those and your new tests in the proof's `--test` command; it covers both.
   A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
-- Before you hand in, when the project has a `journal sins` check and its plugin is on, run `journal sins --changes` once over
-  your own changes and fix each finding at its source. With the plugin off the command is refused: hand in without it.
-  What it still finds after the merge comes back to you.
+- Never run the judge on your own work, with `journal sins` or the judge's own command. The journal judges your work when
+  you hand it in and when it is merged, and what it finds comes back to you to fix at its source.
 - At each hand-in, say what you did differently from the task or left out: `journal worker next --differences "<what>"`,
   or `--differences none`; the same goes for `journal worker deliver`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
