@@ -15,8 +15,8 @@ DEFAULT_HOURS = 24
 
 
 class TaskCountsSubcommand(ReadSubcommand[TaskCounts]):
-    """`journal task counts [--hours <n> | --since <time>]`: the started, blocked and open tasks as they stand now, delegated ones among the open, and the
-    tasks completed in the last hours (24 by default) or after a time."""
+    """`journal task counts [--hours <n> | --since <time>]`: the tasks in progress (started or in testing), blocked and open
+    as they stand now, delegated ones included, and the tasks completed in the last hours (24 by default) or after a time."""
 
     cli_name = "task"
     name = "counts"
@@ -33,9 +33,9 @@ class TaskCountsSubcommand(ReadSubcommand[TaskCounts]):
     def read(self, arguments: Namespace, caller: Caller) -> TaskCounts:
         since = Timestamp.parsed(arguments.since) if arguments.since else Timestamp(self.clock.timestamp().value - timedelta(hours=arguments.hours))
         completed = self.cards.cards(TaskState.COMPLETED, []).matching(Greater("closed_at", since.text)).count()
-        return TaskCounts(self.cards.cards(TaskState.STARTED, []).count(), self.cards.cards(TaskState.BLOCKED, []).count(), self.cards.every(TaskState.OPEN).count(), completed, since.text)
+        return TaskCounts(self.cards.every(TaskState.STARTED, TaskState.TESTING).count(), self.cards.every(TaskState.BLOCKED).count(), self.cards.every(TaskState.OPEN).count(), completed, since.text)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskCounts):
-            output.write(f"started: {value.started}\nblocked: {value.blocked}\nopen: {value.open}\ncompleted: {value.completed} since {value.since}",
-                         {"started": value.started, "blocked": value.blocked, "open": value.open, "completed": value.completed, "since": value.since})
+            output.write(f"in progress: {value.in_progress}\nblocked: {value.blocked}\nopen: {value.open}\ncompleted: {value.completed} since {value.since}",
+                         {"in_progress": value.in_progress, "blocked": value.blocked, "open": value.open, "completed": value.completed, "since": value.since})
