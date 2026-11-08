@@ -34,7 +34,7 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
         differences = required_differences(arguments)
         worktree = self.worktrees.worker_worktree(caller.actor.id)
         if worktree is not None:
-            self.step_check.check(worktree, DELIVERY_EVENTS, "put it right in your worktree, then journal worker next again")
+            self.step_check.check(worktree, DELIVERY_EVENTS, "fix each of these in your worktree, then run journal worker next again")
         return self.requests.command(StartNextWorkerTask(differences), caller.actor.id,
                                      ["worker", "next", "--differences", differences], arguments, caller)
 
