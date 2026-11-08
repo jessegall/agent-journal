@@ -1,6 +1,6 @@
 <script setup>
 import {computed, watch} from "vue";
-import {InspectorPart, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
+import {InspectorPart, TimeAgo, eventAboutRows, peekRef, useWindow} from "@journal/window-kit";
 
 // how many review rounds a plan had, and for each when it ran, who read it and its reports, newest first
 const view = useWindow();
@@ -13,7 +13,7 @@ const reviewerCount = (round) => (round.reviewers.length === 1 ? "1 reviewer" : 
 const reviewerNames = (round) => round.reviewers.map((reviewer) => reviewer.name).join(", ");
 const openReport = (report) => peekRef(`reports:${report.id}`);
 watch(key, (name) => view.reload(name), {immediate: true});
-view.follow(["plan.*"], () => view.reload(key.value));
+view.follow(["plan.*"], (event) => eventAboutRows(event, new Set([row.value.id])) && view.reload(key.value));
 </script>
 
 <template>

@@ -23,6 +23,7 @@ from core.modules.agents.commands.agent_controls.agent_controls_subcommand impor
 from core.modules.agents.commands.agent_environments.agent_environments_subcommand import AgentEnvironmentsSubcommand
 from core.modules.agents.commands.agent_main.agent_main_subcommand import AgentMainSubcommand
 from core.modules.agents.commands.launch_agent.launch_agent_subcommand import LaunchAgentSubcommand
+from core.modules.agents.commands.agent_people.agent_people_subcommand import AgentPeopleSubcommand
 from core.modules.agents.commands.agent_programs.agent_programs_subcommand import AgentProgramsSubcommand
 from core.modules.agents.guards.agent_name_guard import AgentNameGuard
 from core.modules.agents.guards.retired_delete_guard import RetiredDeleteGuard
@@ -125,7 +126,7 @@ class AgentsModule(Module):
     nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES]
     guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard]
     handlers = [RenewAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
-    subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, RunningMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
+    subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, RunningMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "agent retire"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],
@@ -133,7 +134,7 @@ class AgentsModule(Module):
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, skeleton=AGENTS_TRANSCRIPT_SKELETON, icon=WindowIcon.DOCUMENT, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM,
                                  reads=["agent transcript", "hook-call feed"], runs=["message send"], events=["hook_call.*"], keys=[WindowKey("transcript.*", "agent transcript {id}", arguments=["before-id"], page_size=50)]),
                WindowDeclaration("agents.agent-detail", "Agent", "agent-detail.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.AGENT, skeleton=[SkeletonPart.line()],
-                                 reads=["agent show", "agent list", "usage agents", "usage agent", "usage tool", "agent-skill list"], events=["agent.*"])]
+                                 reads=["usage inspector", "agent list", "agent-skill list"], events=["agent.*"])]
     inspectors = [AGENT_INSPECTOR]
     listeners = [MenuAnswerMarkListener, EndedAgentProgramListener, InstructionImportsListener, BootInstructionImportsListener]
     marks = AGENT_MARKS

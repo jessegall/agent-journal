@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
-import {AutoScrollPane, Btn, FeedPaginator, RowList, WindowRoom, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, Btn, FeedPaginator, RowList, WindowRoom, eventMayBeChildOf, useWindow} from "@journal/window-kit";
 
 // the conversation oldest first with its newest row at the foot, where the pane opens and stays as rows arrive; scrolling up stops that and
 // shows Newest, and reaching the top reads the page of rows before the oldest; each row says who wrote it, lined up with the card's tabs, its words, and at its end when
@@ -10,7 +10,8 @@ const feed = view.props[props.name];
 const {failure, loaded} = feed;
 const paginator = FeedPaginator.ofRows("transcript", feed);
 view.reload(props.name);
-const stopFollowing = view.follow(["hook_call.*"], () => view.reload(props.name));
+const shownAgent = new Set([Number(props.name.split(".").pop())]);
+const stopFollowing = view.follow(["hook_call.*"], (event) => eventMayBeChildOf(event, "session_agent_id", shownAgent) && view.reload(props.name));
 onUnmounted(() => stopFollowing?.());
 const message = ref("");
 const sending = ref(false);

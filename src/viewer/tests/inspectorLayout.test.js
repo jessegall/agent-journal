@@ -216,3 +216,12 @@ test("a task inspector and a document inspector show the brief and the abstract 
     const document_ = await drawn(await catalogueOf([doc]), {"doc inspect 7": {ok: true, value: {...ROW, abstract, body: "The text of the document"}}}, {noun: "doc"});
     expect(document_.element.textContent.split(abstract).length - 1).toBe(1);
 });
+
+test("a row's inspector reads the row and one read for both of its people", async () => {
+    const people = {actor: {type: "agent", name: "s-5"}, creator_agent: {id: 5, role: "worker", given_name: "Ada"}, owner: {id: 9, role: "worker", given_name: "Grace"}};
+    const row = {id: 7, text: "Remember", state: "kept", creator_id: 5, agent_id: 9};
+    const {element, lines} = await drawn(await catalogueOf([]), {"memory show 7": {ok: true, value: row}, "agent people --creator 5 --owner 9": {ok: true, value: people}}, {noun: "memory"});
+    expect(lines.filter((line) => ["agent", "actor"].includes(line[0])).map((line) => line.join(" "))).toEqual(["agent people --creator 5 --owner 9"]);
+    expect(element.textContent).toContain("Ada");
+    expect(element.textContent).toContain("Grace");
+});

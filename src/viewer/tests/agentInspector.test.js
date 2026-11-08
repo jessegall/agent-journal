@@ -15,11 +15,19 @@ const row = (overrides) => ({id: 12, role: "worker", program: "claude", session:
 const facts = (overrides) => ({id: 12, given_name: "Lovelace", profile: "builder", model: "Sonnet 5.5", effort: "medium", context_percent: 41, cost_dollars: 3.18, state: "", instruction: "Rebuild the process queue inspector from the design.", tasks: [{state: "completed"}, {state: "completed"}, {state: "started"}], ...overrides});
 const inspection = (overrides) => ({id: 12, started_by: "Ada, the main agent", last_activity: before(12000), failed_runs: 0, recent: [], task: null, plan: null, ...overrides});
 
+// the one answer of the inspector's read, put together from the parts a test names
+function inspectorAnswer(answers) {
+    const part = (start) => answers[Object.keys(answers).find((key) => key.startsWith(start))];
+    return {agent: part("agent show"), facts: part("usage agents")?.rows[0] ?? null, inspection: part("usage agent "), tool: part("usage tool") ?? {},
+        helpers: part("agent list --parent")?.total ?? 0, skills: part("agent-skill list")?.total ?? 0, points: part("worker-worktree points")?.points ?? [], programs: part("agent programs")?.rows ?? []};
+}
+
 // one read the way the viewer sends it: the answers are the ones of the reads, found by the start of the line
 function opened(answers, props = {}) {
     const lines = [];
     const read = async (line) => {
         lines.push(line.join(" "));
+        if (line[0] === "usage" && line[1] === "inspector") return {ok: true, value: inspectorAnswer(answers)};
         const found = Object.keys(answers).find((start) => line.join(" ").startsWith(start));
         return found ? {ok: true, value: answers[found]} : {ok: false, error: `no answer for ${line.join(" ")}`};
     };
@@ -41,12 +49,10 @@ const WORKER = {
     "worker-worktree points --agent 12": {points: [{id: 1, text: "Every label is the one in the spec", proof: {state: "checked", text: "labels match"}}, {id: 2, text: "The tests pass", proof: null}]},
 };
 
-test("opening an inspector reads facts for that agent alone", async () => {
+test("opening an inspector is one read, for that agent alone", async () => {
     const {lines} = opened(WORKER);
     await settle();
-    expect(lines.filter((line) => line.startsWith("usage agents"))).toEqual(["usage agents --closed --agent 12 --environment main"]);
-    expect(lines.some((line) => line.startsWith("agent transcript") || line.startsWith("output ") || line.startsWith("task-log "))).toBe(false);
-    expect(lines.filter((line) => line.startsWith("agent list") || line.startsWith("agent-skill list")).every((line) => line.includes("--limit 1"))).toBe(true);
+    expect(lines).toEqual(["usage inspector 12 --environment main"]);
 });
 
 test("a running worker says who it is, how it does, what it does now and what it was told", async () => {
@@ -204,14 +210,12 @@ test("the strip wraps on a phone and only the middle scrolls", () => {
     expect(source("../src/resource/agent/AgentDetail.vue")).toMatch(/\.scroll \{[^}]*overflow-y: auto/);
 });
 
-test("a fold reads only its count while it is closed, and its list when it opens, again after each reload while it stays open", async () => {
+test("a closed fold has its count from the inspector's read and reads its list only when it opens", async () => {
     const {element, lines} = opened(WORKER);
     await settle();
     const skillFold = () => [...element.querySelectorAll("[data-agent-fold]")].find((fold) => fold.textContent.includes("Skills loaded"));
     expect(texts(element, "[data-agent-fold] .count")).toEqual(["0", "2", "7"]);
-    expect(lines.filter((line) => line.startsWith("agent-skill list") || line.startsWith("agent list"))).toEqual([
-        "agent list --parent 12 --limit 1 --columns id", "agent-skill list --agent 12 --state loaded --limit 1 --columns id",
-    ]);
+    expect(lines.filter((line) => line.startsWith("agent-skill list") || line.startsWith("agent list"))).toEqual([]);
     skillFold().click();
     await settle();
     expect(lines).toContain("agent-skill list --agent 12 --state loaded");

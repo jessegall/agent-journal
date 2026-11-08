@@ -85,7 +85,7 @@ export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
 export {OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
-export {eventAboutRows, eventChildOf} from "./eventRows.js";
+export {eventAboutRows, eventChildOf, eventMayBeChildOf} from "./eventRows.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version

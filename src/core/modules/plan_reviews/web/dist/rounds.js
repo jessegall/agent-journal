@@ -1,70 +1,70 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-fbaf60f93c69")) { const style = document.createElement("style"); style.id = "window-styles-fbaf60f93c69"; style.textContent = ".rounds[data-v-e3f1dc65]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.round[data-v-e3f1dc65]{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.when[data-v-e3f1dc65],.reviewers[data-v-e3f1dc65]{color:var(--text-3);font-size:12px}.running[data-v-e3f1dc65]{color:var(--progress);font-size:12px}.report[data-v-e3f1dc65]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.failure[data-v-e3f1dc65]{margin:0;color:var(--tone-warn)}\n"; document.head.appendChild(style); }
-import { computed as c, watch as x, openBlock as r, createBlock as f, unref as p, withCtx as h, createElementVNode as _, toDisplayString as u, createElementBlock as o, Fragment as k, renderList as y, createVNode as N, createCommentVNode as v } from "vue";
-import { useWindow as B, InspectorPart as g, TimeAgo as P, peekRef as V } from "@journal/window-kit";
+if (!document.getElementById("window-styles-54370200df1c")) { const style = document.createElement("style"); style.id = "window-styles-54370200df1c"; style.textContent = ".rounds[data-v-422d44f3]{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}.round[data-v-422d44f3]{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}.when[data-v-422d44f3],.reviewers[data-v-422d44f3]{color:var(--text-3);font-size:12px}.running[data-v-422d44f3]{color:var(--progress);font-size:12px}.report[data-v-422d44f3]{padding:0;border:0;background:none;color:var(--accent-text);font:inherit;cursor:pointer}.failure[data-v-422d44f3]{margin:0;color:var(--tone-warn)}\n"; document.head.appendChild(style); }
+import { computed as u, watch as x, openBlock as s, createBlock as f, unref as p, withCtx as h, createElementVNode as v, toDisplayString as c, createElementBlock as o, Fragment as k, renderList as y, createVNode as N, createCommentVNode as _ } from "vue";
+import { useWindow as B, eventAboutRows as P, InspectorPart as g, TimeAgo as V, peekRef as A } from "@journal/window-kit";
 const E = (d, t) => {
-  const l = d.__vccOpts || d;
-  for (const [s, a] of t)
-    l[s] = a;
-  return l;
+  const a = d.__vccOpts || d;
+  for (const [r, l] of t)
+    a[r] = l;
+  return a;
 }, F = {
   class: "failure",
   role: "alert"
 }, I = {
   class: "rounds",
   "data-plan-rounds": ""
-}, j = { class: "number" }, A = {
+}, S = { class: "number" }, j = {
   key: 0,
   class: "running"
 }, D = ["title"], L = ["title", "onClick"], O = {
   __name: "PlanRounds",
   setup(d) {
-    const t = B(), l = t.option("row"), s = c(() => `rounds.${l.value.id}`), a = c(() => t.props[s.value].rows.value), w = c(() => t.props[s.value].failure.value), R = c(() => [...a.value].reverse()), b = (e) => e.reviewers.length === 1 ? "1 reviewer" : `${e.reviewers.length} reviewers`, $ = (e) => e.reviewers.map((m) => m.name).join(", "), C = (e) => V(`reports:${e.id}`);
-    return x(s, (e) => t.reload(e), { immediate: !0 }), t.follow(["plan.*"], () => t.reload(s.value)), (e, m) => w.value ? (r(), f(p(g), {
+    const t = B(), a = t.option("row"), r = u(() => `rounds.${a.value.id}`), l = u(() => t.props[r.value].rows.value), w = u(() => t.props[r.value].failure.value), R = u(() => [...l.value].reverse()), b = (e) => e.reviewers.length === 1 ? "1 reviewer" : `${e.reviewers.length} reviewers`, $ = (e) => e.reviewers.map((m) => m.name).join(", "), C = (e) => A(`reports:${e.id}`);
+    return x(r, (e) => t.reload(e), { immediate: !0 }), t.follow(["plan.*"], (e) => P(e, /* @__PURE__ */ new Set([a.value.id])) && t.reload(r.value)), (e, m) => w.value ? (s(), f(p(g), {
       key: 0,
       title: "Review rounds"
     }, {
       default: h(() => [
-        _("p", F, u(w.value), 1)
+        v("p", F, c(w.value), 1)
       ]),
       _: 1
-    })) : a.value.length ? (r(), f(p(g), {
+    })) : l.value.length ? (s(), f(p(g), {
       key: 1,
-      title: `Review rounds: ${a.value.length}`
+      title: `Review rounds: ${l.value.length}`
     }, {
       default: h(() => [
-        _("ol", I, [
-          (r(!0), o(k, null, y(R.value, (n) => (r(), o("li", {
+        v("ol", I, [
+          (s(!0), o(k, null, y(R.value, (n) => (s(), o("li", {
             key: n.number,
             class: "round",
             "data-plan-round": ""
           }, [
-            _("span", j, "Round " + u(n.number), 1),
-            N(p(P), {
+            v("span", S, "Round " + c(n.number), 1),
+            N(p(V), {
               class: "when",
               at: n.started_at
             }, null, 8, ["at"]),
-            n.ended_at ? v("", !0) : (r(), o("span", A, "Running")),
-            n.reviewers.length ? (r(), o("span", {
+            n.ended_at ? _("", !0) : (s(), o("span", j, "Running")),
+            n.reviewers.length ? (s(), o("span", {
               key: 1,
               class: "reviewers",
               title: $(n),
               "data-plan-round-reviewers": ""
-            }, u(b(n)), 9, D)) : v("", !0),
-            (r(!0), o(k, null, y(n.reports, (i) => (r(), o("button", {
+            }, c(b(n)), 9, D)) : _("", !0),
+            (s(!0), o(k, null, y(n.reports, (i) => (s(), o("button", {
               key: i.id,
               type: "button",
               class: "report",
               title: `Filed by ${i.filed_by}`,
-              onClick: (S) => C(i)
-            }, "Report " + u(i.id), 9, L))), 128))
+              onClick: (T) => C(i)
+            }, "Report " + c(i.id), 9, L))), 128))
           ]))), 128))
         ])
       ]),
       _: 1
-    }, 8, ["title"])) : v("", !0);
+    }, 8, ["title"])) : _("", !0);
   }
-}, q = /* @__PURE__ */ E(O, [["__scopeId", "data-v-e3f1dc65"]]);
+}, z = /* @__PURE__ */ E(O, [["__scopeId", "data-v-422d44f3"]]);
 export {
-  q as default
+  z as default
 };

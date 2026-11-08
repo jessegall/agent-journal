@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, InspectorPart, TextInput, useWindow} from "@journal/window-kit";
+import {Btn, InspectorPart, TextInput, eventMayBeChildOf, useWindow} from "@journal/window-kit";
 
 // the words that give a memory back to an agent that names them, added and taken off here
 const view = useWindow();
@@ -22,7 +22,7 @@ async function add() {
 }
 
 watch(key, (name) => view.reload(name), {immediate: true});
-view.follow(["memory_keyword.*"], () => view.reload(key.value));
+view.follow(["memory_keyword.*"], (event) => eventMayBeChildOf(event, "memory_id", new Set([row.value.id])) && view.reload(key.value));
 </script>
 
 <template>

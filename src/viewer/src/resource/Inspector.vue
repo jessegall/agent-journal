@@ -16,7 +16,7 @@ import InspectorSections from "../windows/InspectorSections.vue";
 import CommentSide from "./CommentSide.vue";
 import InspectorHead from "./InspectorHead.vue";
 import ResourceFields from "./ResourceFields.vue";
-import {creatorFor, ownerFor} from "./rowPeople.js";
+import {peopleOf} from "./rowPeople.js";
 import {useResourceEvents} from "./resourceEvents.js";
 
 // the one layout of an inspector, with no veil and no width of its own so the overlay and the tasks dialog both mount it: the head, the actions of the
@@ -68,12 +68,6 @@ const tabs = computed(() => (tabNames.value.length || commentsTab.value
     : []));
 const textComments = useTextComments(() => (listing.value.comments && row.value ? {noun: props.noun, id: props.id, title: row.value.title} : {}), (line) => props.read(line));
 
-// a name read for the row, dropped when another row has opened since
-async function named(turn, pending) {
-    const name = await pending;
-    return turn === reading ? name : "";
-}
-
 async function load() {
     const turn = ++reading;
     const answer = await props.read(fill(listing.value.reads, null, filled.value).split(/\s+/).filter(Boolean));
@@ -81,8 +75,10 @@ async function load() {
     failure.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     row.value = answer.value;
-    if (row.value.creator_id) creator.value = await named(turn, creatorFor(props.read, row.value.creator_id));
-    if (row.value.agent_id) owner.value = await named(turn, ownerFor(props.read, row.value));
+    const people = await peopleOf(props.read, row.value);
+    if (turn !== reading) return;
+    creator.value = people.creator;
+    owner.value = people.owner;
 }
 
 // a different row starts again; an event reload keeps what is drawn, so an open action form or a comment draft stays as typed

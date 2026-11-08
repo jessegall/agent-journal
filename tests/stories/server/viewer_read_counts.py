@@ -556,6 +556,21 @@ def test_the_workload_reads_scan_no_large_table_whole(read_sample):
     expect_value(whole_reads, [])
 
 
+def test_an_agents_inspector_is_one_answer_on_one_connection(read_sample):
+    agent_id = read_sample.server.story.agent.id
+    measured = read_sample.read([ReadLine("agents.agent-detail", ("usage", "inspector", str(agent_id), "--environment", "main"))])
+    print(json.dumps(measured.report(), sort_keys=True))
+    expect_value((len(measured.answers), measured.answers[0]["code"], measured.connections), (1, 0, 1))
+    expect_value(measured.answers[0]["value"]["agent"]["id"], agent_id)
+
+
+def test_a_rows_two_people_are_one_answer_on_one_connection(read_sample):
+    agent_id = read_sample.server.story.agent.id
+    measured = read_sample.read([ReadLine("viewer.shell", ("agent", "people", "--creator", str(agent_id), "--owner", str(agent_id)))])
+    expect_value((len(measured.answers), measured.answers[0]["code"], measured.connections), (1, 0, 1))
+    expect_value((measured.answers[0]["value"]["actor"]["id"], measured.answers[0]["value"]["owner"]["id"]), (agent_id, agent_id))
+
+
 @pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
 def test_baseline_rejects_missing_attribution_retention_losses_or_funnel(missing):
     evidence = complete_sample_evidence()
