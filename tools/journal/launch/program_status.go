@@ -34,8 +34,12 @@ type statusCost struct {
 // programEvent is one line of Claude Code's stream-json output: an assistant line of the agent itself carries the
 // context in use, a result line what the session cost so far and each model's context window.
 type programEvent struct {
-	Type         string   `json:"type"`
-	SessionID    string   `json:"session_id"`
+	Type       string `json:"type"`
+	Subtype    string `json:"subtype"`
+	SessionID  string `json:"session_id"`
+	Compaction struct {
+		PostTokens int `json:"post_tokens"`
+	} `json:"compact_metadata"`
 	ParentToolID *string  `json:"parent_tool_use_id"`
 	TotalCostUSD *float64 `json:"total_cost_usd"`
 	ModelUsage   map[string]struct {
@@ -92,6 +96,8 @@ func (status *ProgramStatus) read(line []byte) {
 		usage := event.Message.Usage
 		status.model = event.Message.Model
 		status.tokens = usage.InputTokens + usage.CacheReadTokens + usage.CacheCreationTokens
+	case event.Type == "system" && event.Subtype == "compact_boundary" && event.Compaction.PostTokens > 0:
+		status.tokens = event.Compaction.PostTokens
 	case event.Type == "result" && event.TotalCostUSD != nil:
 		status.report.Cost = &statusCost{TotalCostUSD: *event.TotalCostUSD}
 		if window := event.ModelUsage[status.model].ContextWindow; window > 0 {

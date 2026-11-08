@@ -7,7 +7,8 @@ from core.base.driver.seconds import Seconds
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED, CONTEXT_STOP_NOW
+from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
+from suites.coding.modules.workers.support.worker_nudges import CONTEXT_COMPACTED, CONTEXT_STOP_BETWEEN_TASKS, CONTEXT_STOP_NOW
 from suites.coding.support.coding_agent_role import CodingAgentRole
 from suites.coding.support.context_over_limit import ContextOverLimit
 
@@ -34,8 +35,8 @@ class ContextLimitRule(DriverRule):
 
 
 class ContextLimitStopNowRule(DriverRule):
-    """An agent whose context has reached the token limit and that holds no task is told to stop, so that its stop
-    compacts it."""
+    """An agent whose context has reached the token limit and that holds no task, or a worker just handed its next
+    task, is told to stop, so that its stop compacts it."""
 
     name = "workers.context-limit-stop-now"
     hook = HookEventName.POST_TOOL_USE
@@ -43,10 +44,12 @@ class ContextLimitStopNowRule(DriverRule):
     roles = [CodingAgentRole.MAIN, CodingAgentRole.WORKER]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, history: HookHistory, over_limit: ContextOverLimit, tasks: TaskQuery) -> None:
-        self.history, self.over_limit, self.tasks = history, over_limit, tasks
+    def __init__(self, history: HookHistory, over_limit: ContextOverLimit, tasks: TaskQuery, compaction: WorkerCompaction) -> None:
+        self.history, self.over_limit, self.tasks, self.compaction = history, over_limit, tasks, compaction
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.compaction.is_between_tasks(hook.agent_id):
+            return RuleAnswer.with_nudges(CONTEXT_STOP_BETWEEN_TASKS.nudge())
         if self.over_limit.tokens(hook.agent_id) is None or self.tasks.started_tasks(hook.agent_id) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(CONTEXT_STOP_NOW.nudge())

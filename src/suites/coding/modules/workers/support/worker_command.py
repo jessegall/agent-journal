@@ -45,6 +45,9 @@ class WorkerCommand:
         return self.launched(worker, worktree, environment, ResumedSession(worker.session),
                              f"{job}\nRead journal task overview {worktree.task_id} before changing project files.\n{WORK_STEPS}")
 
+    def compacting(self, worker: Agent, worktree: Worktree, environment: Environment, line: str) -> LaunchCommand:
+        return self.launched(worker, worktree, environment, ResumedSession(worker.session), line)
+
     def launched(self, worker: Agent, worktree: Worktree, environment: Environment, session: SessionStart, brief: str) -> LaunchCommand:
         if not worker.program_model.strip():
             raise Refusal(f"worker {worker.id} has no recorded model", "dispatch a worker with --model <model>")

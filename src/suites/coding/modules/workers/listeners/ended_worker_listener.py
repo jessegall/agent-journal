@@ -39,7 +39,7 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
 
     def handle(self, event: AgentEnded, context: Context) -> None:
         new = event.row
-        if new.role != AgentRole.WORKER or new.parent_id is None:
+        if new.role != AgentRole.WORKER or new.parent_id is None or self.resume.compaction.is_running(new.id):
             return
         unfinished = self.unfinished.rows(new.id)
         if not unfinished:

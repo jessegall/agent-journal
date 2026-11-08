@@ -32,10 +32,13 @@ class ColdSessions:
         return self.bus.run(RenewAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
 
     def renewed_if_silent(self, agent: Agent) -> Agent:
-        activity = self.rows.required(AgentActivity, agent.id)
-        if not activity.is_inactive(self.clock.timestamp(), STALE_SESSION_SECONDS) and not self.is_cold_by(agent, activity) and not self.is_past_context_limit(agent):
+        if not self.is_silent(agent) and not self.is_past_context_limit(agent):
             return agent
         return self.bus.run(RenewAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
+
+    def is_silent(self, agent: Agent) -> bool:
+        activity = self.rows.required(AgentActivity, agent.id)
+        return activity.is_inactive(self.clock.timestamp(), STALE_SESSION_SECONDS) or self.is_cold_by(agent, activity)
 
     def require_fresh(self, agent: Agent) -> None:
         activity = self.rows.required(AgentActivity, agent.id)

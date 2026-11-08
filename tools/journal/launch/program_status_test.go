@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -97,5 +98,17 @@ func TestAResumedSessionKeepsTheCostOfItsEndedFile(t *testing.T) {
 	report := keptStatus(t, home, "")
 	if report.Cost == nil || report.Cost.TotalCostUSD != 7.25 {
 		t.Fatalf("kept %+v", report)
+	}
+}
+
+func TestACompactionLineLowersTheContextTokens(t *testing.T) {
+	home := t.TempDir()
+	status := NewProgramStatus(home)
+	session := "11111111-1111-4111-8111-111111111111"
+	fmt.Fprintf(status, "{\"type\":\"assistant\",\"session_id\":\"%s\",\"message\":{\"model\":\"m\",\"usage\":{\"input_tokens\":500000}}}\n", session)
+	fmt.Fprintf(status, "{\"type\":\"system\",\"subtype\":\"compact_boundary\",\"session_id\":\"%s\",\"compact_metadata\":{\"post_tokens\":3664}}\n", session)
+	body, err := os.ReadFile(filepath.Join(home, "runtime", "status", session+".json"))
+	if err != nil || !strings.Contains(string(body), `"total_input_tokens":3664`) {
+		t.Fatalf("status file %q: %v", body, err)
 	}
 }

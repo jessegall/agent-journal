@@ -58,6 +58,7 @@ class Provider(ABC):
     hook_files: ClassVar[tuple[Path, ...]] = ()
     worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
     controls: ClassVar[Sequence[ControlGroup]] = ()
+    compacts_in_print_mode: ClassVar[bool] = False
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]

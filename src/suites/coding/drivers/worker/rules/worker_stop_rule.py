@@ -13,23 +13,27 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
+from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class WorkerStopRule(DriverRule):
     """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues,
-    or while a reader is needed. Its run, tests or helper's report restart it; otherwise it delivers or says
+    while a reader is needed, or between tasks to be compacted. Its run, tests or helper's report restart it; otherwise it delivers or says
     it is stuck."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, next_task: WorkerNextTask) -> None:
+    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, next_task: WorkerNextTask, compaction: WorkerCompaction) -> None:
         self.next_task = next_task
+        self.compaction = compaction
         self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
         self.requests, self.clock, self.agents = requests, clock, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.compaction.is_between_tasks(hook.agent_id):
+            return RuleAnswer.allowed()
         started = self.tasks.holder(hook.agent_id).started().first()
         task = started if started is not None else self.next_task.following(hook.agent_id)
         worktree = self.worktrees.worker_worktree(hook.agent_id)

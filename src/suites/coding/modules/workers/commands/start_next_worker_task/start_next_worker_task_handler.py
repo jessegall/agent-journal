@@ -25,6 +25,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
+from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
@@ -37,8 +38,9 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask) -> None:
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, compaction: WorkerCompaction) -> None:
         self.next_task = next_task
+        self.compaction = compaction
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
@@ -107,6 +109,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     def start_following(self, worktree: Worktree, following: Task, context: Context) -> Task:
         started = self.bus.dispatch(StartTask(following.id), context)
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        self.compaction.stop_between_tasks(context.actor.id)
         return started
 
     def close_checked(self, task: Task, context: Context) -> None:
