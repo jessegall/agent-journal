@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
+from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
@@ -9,13 +10,13 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.approvals.commands.answer_approval.answer_approval import AnswerApproval
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_decision import ApprovalDecision
-from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.models.standing_approval import StandingApproval
 
 
 class StandingApprovalAcceptListener(CommitListener[Changed[ApprovalRequest]]):
-    """Accepts a request a standing yes covers once the request is saved, as the person who gave that yes, so the
-    accepted command runs on its own like one a person accepted, never inside the transaction that asked for it."""
+    """Accepts a request saved under a standing yes that nothing has answered since, as the person who gave that yes, so
+    the accepted command runs on its own like one a person accepted, never inside the transaction that asked for it; an
+    agent's own line answers it at once instead, and a failed accept leaves the request in the dock."""
 
     name = "approvals.standing-accept"
     disabled_scopes = [ActorScope]
@@ -25,7 +26,7 @@ class StandingApprovalAcceptListener(CommitListener[Changed[ApprovalRequest]]):
 
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
-        if request.standing_id is None or request.state is not ApprovalState.OPEN:
+        if not isinstance(event, Created) or request.standing_id is None or self.queries.query(ApprovalRequest).find(request.id).version != request.version:
             return
         standing = self.queries.query(StandingApproval).find(request.standing_id)
         self.bus.run(AnswerApproval(request.id, ApprovalDecision.ACCEPT), Actor(standing.creator_id, ActorType.USER), cause_id=logged.id,

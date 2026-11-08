@@ -36,6 +36,11 @@ def ask_for_resume(story: Story) -> None:
     story.expect_refusal(f"agent resume {story.agent.id}", ASKED, actor=story.agent)
 
 
+def resume_under_standing_yes(story: Story) -> None:
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_text(f"agent resume {story.agent.id}", "accepted approval", actor=story.agent)
+
+
 class ResumeAsked(StoryFixture):
     """A person paused the agent and the agent asked to be resumed, so the dock holds the question."""
 
@@ -67,7 +72,7 @@ def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_s
     story = new_story(NOTES, fixture=ResumeAlwaysSame)
     standing = standing_yeses(story)
     story.expect_rows(len(standing) == 1, standing[0].scope is StandingScope.SAME, standing[0].creator_id == story.user.id, detail=str(standing))
-    ask_for_resume(story)
+    resume_under_standing_yes(story)
     covered = requests(story)[1]
     story.expect_rows(covered.state is ApprovalState.ACCEPTED, covered.standing_id == standing[0].id, story.row(Agent, story.agent.id).paused_at is None, detail=str(covered))
     story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
@@ -77,7 +82,7 @@ def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_s
 def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_story):
     story = new_story(NOTES, fixture=ResumeAlwaysSame)
     story.expect_text("standing-approval list", "ResumeAgent", actor=story.user)
-    ask_for_resume(story)
+    resume_under_standing_yes(story)
     story.run_listeners()
     story.expect_text("chat-mark list --environment main", f"Standing yes {standing_yeses(story)[0].id} accepted approval {requests(story)[1].id}", actor=story.user)
 
@@ -87,8 +92,7 @@ def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever
     story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
     accepted_always(story, requests(story)[0], "like")
     story.expect_rows(standing_yeses(story)[0].scope is StandingScope.LIKE)
-    story.expect_refusal(save_preset("Other"), "", actor=story.agent)
-    story.run_listeners()
+    story.expect_text(save_preset("Other"), "accepted approval", actor=story.agent)
     story.expect_rows(len(requests(story)) == 2, requests(story)[1].state is ApprovalState.ACCEPTED, requests(story)[1].standing_id == standing_yeses(story)[0].id)
     ask_for_resume(story)
     story.expect_rows(requests(story)[2].state is ApprovalState.OPEN)

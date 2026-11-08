@@ -19,6 +19,7 @@ from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.command.context import Context
+from core.base.command.accept_covered_approval import AcceptCoveredApproval
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.server_stopping_error import ServerStoppingError
 from core.base.command.handler import Handler
@@ -86,13 +87,16 @@ class Console:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
 
-    def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller) -> None:
+    def request_approval(self, refusal: Refusal, argv: list[str], caller: Caller) -> str | None:
         approval = refusal.original
         if not isinstance(approval, UserApprovalRefusal):
-            return
+            return None
         arguments = approval.arguments or (() if approval.command is not None else tuple(argv))
         self.bus.run(RequestUserApproval(approval, arguments), caller.actor, environment_id=caller.environment_id)
-        self.run_commit_listeners(argv)
+        try:
+            return self.bus.run(AcceptCoveredApproval(), caller.actor, environment_id=caller.environment_id)
+        finally:
+            self.run_commit_listeners(argv)
 
     def subcommand_help(self, cli_name: str, stream: TextIO) -> int:
         names = self.line_parser.lookup.names(cli_name)
@@ -127,8 +131,11 @@ class Console:
         try:
             return self.parsed_run(argv, subcommand, arguments, caller, output)
         except Refusal as refusal:
-            self.request_approval(refusal, argv, caller)
-            raise
+            accepted = self.request_approval(refusal, argv, caller)
+            if accepted is None:
+                raise
+            output.write(accepted, {"accepted": accepted})
+            return SUCCESS_CODE
 
     def parsed_run(self, argv: list[str], subcommand: Subcommand | ReadSubcommand, arguments: Namespace,
                    caller: Caller, output: Output) -> int:

@@ -4,6 +4,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 TEST_NAME_SEPARATOR = "::"
+HEAVY_TESTS = 50
 WHOLE_SUITE = "tests"
 TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
@@ -18,6 +19,17 @@ class RunSize:
 
     def is_whole_suite(self) -> bool:
         return all(target.rstrip("/") == WHOLE_SUITE for target in self.targets)
+
+    def is_heavy(self) -> bool:
+        """Whether the run needs the machine to itself: the whole suite, or more than a handful of tests; one named file or test
+        never does."""
+        if not self.targets or self.is_whole_suite():
+            return True
+        named = len(self.targets) == 1 and (TEST_NAME_SEPARATOR in self.targets[0] or Path(self.targets[0]).is_file())
+        return not named and self.counted_to(HEAVY_TESTS) >= HEAVY_TESTS
+
+    def counted_to(self, limit: int) -> int:
+        return RunSize(self.targets, limit).counted()
 
     def workers(self, tests_per_worker: int, most_workers: int) -> int:
         if not self.targets:

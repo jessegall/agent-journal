@@ -7,11 +7,12 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_access import AliasAccess
-from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_UNEXPANDED
+from core.modules.aliases.support.alias_nudges import ALIAS_MISSING, ALIAS_ACCESS_REFUSED, ALIAS_PLUGIN_OFF, ALIAS_UNEXPANDED
 
 
 class AliasExpansionRule(DriverRule):
-    """Checks expanded alias references and permissions before the shell line runs."""
+    """Checks expanded alias references and permissions before the shell line runs; an alias of a plugin that is switched off
+    is refused, so nothing of that plugin runs."""
 
     name = "aliases.expansion"
     hook = HookEventName.PRE_TOOL_USE
@@ -32,6 +33,8 @@ class AliasExpansionRule(DriverRule):
             alias = self.aliases.saved(name)
             if alias is None:
                 return RuleAnswer.refused(ALIAS_MISSING.nudge())
+            if self.access.is_plugin_off(alias):
+                return RuleAnswer.refused(ALIAS_PLUGIN_OFF.nudge(plugin=alias.plugin_id))
             if self.access.refusal(alias, Caller(Actor(hook.agent_id, ActorType.AGENT))):
                 return RuleAnswer.refused(ALIAS_ACCESS_REFUSED.nudge())
         return RuleAnswer.allowed()
