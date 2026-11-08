@@ -32,6 +32,8 @@ class AvailableWork:
         self.options, self.next_task, self.tasks, self.worktrees, self.places = options, next_task, tasks, worktrees, places
 
     def answer(self, main_agent_id: int) -> AvailableWorkAnswer:
+        if self.next_task.holds_back_from(main_agent_id):
+            return AvailableWorkAnswer(None, ())
         controls = self.options.options()
         holds_started_task = self.tasks.holder(main_agent_id).started().exists()
         own_task = self.next_task.following() if controls.auto and not holds_started_task else None

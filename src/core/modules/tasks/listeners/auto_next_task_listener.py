@@ -35,7 +35,7 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
         if holder_id is None:
             return
         holder = self.rows.required(Agent, holder_id)
-        if holder.role != AgentRole.MAIN or holder.ended_at is not None:
+        if holder.role != AgentRole.MAIN or holder.ended_at is not None or assigner.holds_back_from(holder_id):
             return
         excluded_id = closed_task.id if event.move is TaskLifecycle.release else None
         select_next = assigner.urgent if self.current.started_tasks(holder_id) else assigner.following

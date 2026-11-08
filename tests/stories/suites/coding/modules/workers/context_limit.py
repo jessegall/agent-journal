@@ -86,7 +86,7 @@ def turned_on_at(story, tokens):
 
 def between_turns(story):
     story.advance(timedelta(minutes=10))
-    story.tick(SESSION)
+    story.hook(SESSION, HookSamples.stop())
 
 
 def holds_a_task(story):
@@ -101,7 +101,7 @@ def test_with_the_switch_off_an_agent_is_never_compacted(agent):
     agent.expect_rows(agent.typing.typed == [])
 
 
-def test_an_agent_is_compacted_between_its_turns_once_its_context_reaches_the_limit(limited):
+def test_an_agent_is_compacted_at_its_stop_once_its_context_reaches_the_limit(limited):
     agent = limited
     between_turns(agent)
     agent.expect_rows(agent.typing.typed == [], detail="no size reported")
@@ -112,14 +112,15 @@ def test_an_agent_is_compacted_between_its_turns_once_its_context_reaches_the_li
     between_turns(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
     agent.advance(timedelta(minutes=1))
-    agent.tick(SESSION)
+    agent.hook(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [COMPACT], detail="not typed again while the last one runs")
 
 
-def test_an_agent_in_the_middle_of_a_turn_is_not_compacted(agent):
-    agent.hook(SESSION, HookSamples.prompt("go on"))
+def test_a_tick_never_compacts_an_agent(agent):
+    agent.hook(SESSION, HookSamples.stop())
     turned_on_at(agent, LIMIT)
     has_context(agent, 900_000)
+    agent.advance(timedelta(minutes=10))
     agent.tick(SESSION)
     agent.expect_rows(agent.typing.typed == [])
 
@@ -163,9 +164,6 @@ def test_an_agent_with_no_task_in_hand_is_compacted_the_moment_it_stops(limited)
     has_context(agent, LIMIT)
     stops(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
-    agent.advance(timedelta(seconds=40))
-    agent.tick(SESSION)
-    agent.expect_rows(agent.typing.typed == [COMPACT], detail="the tick does not type it a second time")
 
 
 def test_an_agent_that_stops_with_a_task_in_hand_is_not_compacted_at_the_stop(limited_with_a_task):
@@ -191,3 +189,17 @@ def test_an_agent_working_again_after_a_compaction_is_not_woken(agent):
     agent.advance(timedelta(seconds=10))
     agent.tick(SESSION)
     agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
+
+
+def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_given_no_next_task(with_a_task):
+    agent = with_a_task
+    agent.expect_success('task make "Fix the basket" --brief "It drops items"', actor=agent.agent)
+    agent.expect_success("setting set journal.suites.coding.auto-mode true --environment main", actor=agent.user)
+    turned_on_at(agent, LIMIT)
+    has_context(agent, LIMIT)
+    agent.expect_success('task close 1 --outcome "Done"', actor=agent.agent)
+    agent.run_listeners()
+    agent.expect_success("task show 2", "state: open", actor=agent.agent)
+    agent.expect_hook_allowed(SESSION, HookSamples.sample("post_tool_use"), "stop now")
+    agent.hook(SESSION, HookSamples.stop())
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
