@@ -3798,7 +3798,7 @@ function bn(e, t) {
     s(), a.cancel();
   });
 }
-const Ap = "Not known", Op = 80, Tp = 1e3, Ip = "worker", Rp = "main", Bp = /* @__PURE__ */ new Set(["waiting", "blocked"]), Ci = (e) => e.ok ? e.value.rows : [], qo = (e) => e.ok ? e.value.total : 0, Ei = (e) => e.slice(0, 1).toUpperCase() + e.slice(1), Lp = (e, t) => (t == null ? void 0 : t.given_name) || Ei((t == null ? void 0 : t.profile_title) || (t == null ? void 0 : t.profile) || e.role), Np = (e, t) => e.ended_at ? "ended" : e.paused_at || Bp.has(t == null ? void 0 : t.state) ? "waiting" : "running", qp = (e, t) => [(t == null ? void 0 : t.profile) && Ei(t.profile_title || t.profile), e.program, t == null ? void 0 : t.model, (t == null ? void 0 : t.effort) && `${t.effort} effort`].filter(Boolean), Ai = (e) => ((e == null ? void 0 : e.tasks) ?? []).filter((t) => t.state === "completed").length;
+const Ap = "Not known", Op = 80, Tp = 1e3, Ip = "worker", Rp = "main", Bp = /* @__PURE__ */ new Set(["waiting", "blocked", "at usage limit"]), Ci = (e) => e.ok ? e.value.rows : [], qo = (e) => e.ok ? e.value.total : 0, Ei = (e) => e.slice(0, 1).toUpperCase() + e.slice(1), Lp = (e, t) => (t == null ? void 0 : t.given_name) || Ei((t == null ? void 0 : t.profile_title) || (t == null ? void 0 : t.profile) || e.role), Np = (e, t) => e.ended_at ? "ended" : e.paused_at || Bp.has(t == null ? void 0 : t.state) ? "waiting" : "running", qp = (e, t) => [(t == null ? void 0 : t.profile) && Ei(t.profile_title || t.profile), e.program, t == null ? void 0 : t.model, (t == null ? void 0 : t.effort) && `${t.effort} effort`].filter(Boolean), Ai = (e) => ((e == null ? void 0 : e.tasks) ?? []).filter((t) => t.state === "completed").length;
 function Dp({ row: e, facts: t, inspection: n, now: a }) {
   const s = !!e.ended_at, o = ((s ? Date.parse(e.ended_at) : a) - Date.parse(e.process_started_at || e.created_at)) / Tp, l = [{ key: "time", label: s ? "Ran for" : "Running for", value: _i(o) }];
   return Number.isFinite(t == null ? void 0 : t.context_percent) && l.push({ key: "context", label: "Context used", value: `${t.context_percent}%`, meter: t.context_percent, high: t.context_percent > Op }), t && l.push({ key: "cost", label: "Cost", value: t.cost_dollars === null ? Ap : `$${t.cost_dollars.toFixed(2)}` }), e.role === Ip && l.push({ key: "pace", label: "Tasks an hour", value: String(Mp(Ai(t), e.process_started_at || e.created_at, e.ended_at, a)) }), e.role === Rp && n.plan && l.push({ key: "done", label: "Tasks done", value: `${n.plan.done} of ${n.plan.total}` }), l.push({ key: "failed", label: "Failed runs", value: String(n.failed_runs), bad: n.failed_runs > 0 }), l;
@@ -13629,7 +13629,7 @@ function DM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const PM = tu(() => import("./VoiceFigure-DWPXU85d.js").then((e) => e.V)), jM = "1.2.0", FM = "3.5";
+const PM = tu(() => import("./VoiceFigure-CKVCmhVu.js").then((e) => e.V)), jM = "1.2.0", FM = "3.5";
 export {
   Af as $,
   Oe as A,
