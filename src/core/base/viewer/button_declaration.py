@@ -10,6 +10,9 @@ from core.base.viewer.choice_field import ChoiceField
 from core.base.viewer.template_field import TemplateField
 from core.base.viewer.text_field import TextField
 
+CARD_SLOT_PREFIX = "dock."
+MODEL_SLOT_PREFIXES = ("row.", CARD_SLOT_PREFIX)
+
 __all__ = ["Choice", "ChoiceField", "TextField", "TemplateField", "ButtonCondition", "ButtonMenuItem", "ButtonDeclaration"]
 
 
@@ -30,6 +33,12 @@ class ButtonDeclaration:
     tip: str = ""
     confirm: str = ""
     danger: bool = False
+
+    def lacks_card_icon(self, inspected: bool) -> bool:
+        return not self.icon and (inspected or any(slot.startswith(CARD_SLOT_PREFIX) for slot in self.slots))
+
+    def on_model_slot(self) -> bool:
+        return any(slot.startswith(MODEL_SLOT_PREFIXES) for slot in self.slots)
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "ButtonDeclaration":
