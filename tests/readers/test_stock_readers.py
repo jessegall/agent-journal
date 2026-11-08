@@ -121,3 +121,10 @@ def test_the_steps_of_a_failed_output_include_a_failure(sample):
 @pytest.mark.parametrize("name", sorted(set(READERS) - TEST_READERS))
 def test_a_stock_reader_has_the_fields_of_its_category(name):
     assert judge().fields_missing(reader_row(READERS[name]), category_of(name)) == ()
+
+
+def test_no_fixture_names_a_home_folder_other_than_the_made_up_user():
+    folder = Path(__file__).parent / "fixtures"
+    homes = {match for path in folder.rglob("*") if path.is_file() for match in re.findall(r"/(?:Users|home)/[\w.-]+", path.read_text(errors="replace"))}
+    assert homes <= {"/home/user", "/Users/user"}, sorted(homes)
+

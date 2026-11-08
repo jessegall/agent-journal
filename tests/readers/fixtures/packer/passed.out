@@ -8,7 +8,7 @@ learn-packer.docker.ubuntu: output will be in this color.
     learn-packer.docker.ubuntu: Status: Downloaded newer image for ubuntu:jammy
     learn-packer.docker.ubuntu: docker.io/library/ubuntu:jammy
 ==> learn-packer.docker.ubuntu: Starting docker container...
-    learn-packer.docker.ubuntu: Run command: docker run -v /Users/youruser/.packer.d/tmp819964324:/packer-files -d -i -t --entrypoint=/bin/sh -- ubuntu:jammy
+    learn-packer.docker.ubuntu: Run command: docker run -v /Users/user/.packer.d/tmp819964324:/packer-files -d -i -t --entrypoint=/bin/sh -- ubuntu:jammy
     learn-packer.docker.ubuntu: Container ID: 6e18a8066f5f9b758a35a257bb7a08a2e06b5b257d51d3599f15466ccab74691
 ==> learn-packer.docker.ubuntu: Using docker communicator to connect: 172.17.0.2
 ==> learn-packer.docker.ubuntu: Committing the container
