@@ -279,14 +279,26 @@ async function emptyBox(run, runs) {
     return element;
 }
 
-test("an empty output box says No output yet, and a run with no reader offers a button that sends the agent its message", async () => {
-    const runs = [];
-    const element = await emptyBox({}, runs);
-    expect(element.querySelector("[data-output-terminal]").textContent).toBe("No output yet");
+test("an empty output box says No output yet and holds the button that asks the agent for a reader, on its right, inside the box", async () => {
+    const element = await emptyBox({}, []);
+    const terminal = element.querySelector("[data-output-terminal]");
+    expect(terminal.textContent).toBe("No output yet");
     const ask = element.querySelector("[data-output-reader-ask]");
     expect(ask.textContent.trim()).toBe("Ask the agent to draw a reader");
-    ask.click();
-    expect(runs).toEqual([["message", "send", "Output 3 has no reader that gives its progress, and its box is empty: draw a reader for it with journal reader add.", "--target-agent", "21"]]);
+    expect(ask.parentElement).toBe(terminal.parentElement);
+    expect(ask.parentElement.classList.contains("output-dock-box")).toBe(true);
+});
+
+test("the button asks for the reader by one command and goes once pressed", async () => {
+    const runs = [];
+    const element = await emptyBox({}, runs);
+    element.querySelector("[data-output-reader-ask]").click();
+    await vi.waitFor(() => expect(element.querySelector("[data-output-reader-ask]")).toBeNull());
+    expect(runs).toEqual([["output", "ask-reader", "3"]]);
+});
+
+test("a run whose reader was asked for already offers no button", async () => {
+    expect((await emptyBox({reader_requested: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
 });
 
 test("a run whose reader gives progress, or one that ended, offers no reader button", async () => {

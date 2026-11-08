@@ -26,11 +26,11 @@ class ProcessCardSubcommand(ReadSubcommand[ProcessCard]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessCard:
         kept = self.outputs.process(arguments.process_id).first()
-        parts = self.parts.process(arguments.process_id).all_rows()
+        parts = list(self.parts.process(arguments.process_id).all_rows())
         process = self.processes.find(arguments.process_id)
         visible = next((part for part in parts if part.category.is_watched), None)
         reader = self.readers.find(kept.reader_id) if kept is not None and kept.reader_id else None
-        return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN)
+        return ProcessCard(process, kept, RunTitle.temporary(visible), reader, visible.category if visible else CommandCategory.UNKNOWN, any(part.reader_request_id is not None for part in parts))
 
     def write_output(self, value: object, output: CommandOutput) -> None:
         if isinstance(value, ProcessCard):
