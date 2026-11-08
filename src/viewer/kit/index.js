@@ -68,7 +68,6 @@ export {useNow} from "./useNow.js";
 export {default as TimeAgo} from "./TimeAgo.vue";
 export {useRows, useDeclaredRows} from "./useRows.js";
 export {FeedPaginator, feeds} from "./feedPaginator.js";
-export {useDockRow} from "./useDockRow.js";
 export {afterSkeletonMinimum} from "./skeletonMinimum.js";
 export {matchesSearch} from "./searchFields.js";
 export {added, patched, patchedWhere, removed} from "./rowChanges.js";
@@ -86,6 +85,7 @@ export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
 export {OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
+export {eventAboutRows, eventChildOf} from "./eventRows.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version

@@ -4,6 +4,7 @@ import {ago} from "../../format/time.js";
 import {useNow} from "../../../kit/useNow.js";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
+import {eventAboutRows, eventChildOf} from "../../../kit/eventRows.js";
 import {agentState, agentTitle, detailRows, finishedWords, givenName, rowsOf, stripCells, totalOf} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
@@ -56,7 +57,12 @@ async function load() {
     loads.value += 1;
 }
 
-useResourceEvents(["agent.*", "task.*", "process.*", "plan.*", "hook_call.*"], load);
+const thisAgent = computed(() => new Set([props.id]));
+const concernsAgent = {
+    agent: (event) => eventAboutRows(event, thisAgent.value),
+    hook_call: (event) => eventChildOf(event, "session_agent_id", thisAgent.value),
+};
+useResourceEvents(["agent.*", "task.*", "process.*", "plan.*", "hook_call.*"], load, (event) => concernsAgent[event.event.split(".")[0]]?.(event) ?? true);
 onMounted(load);
 </script>
 

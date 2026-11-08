@@ -1,6 +1,8 @@
 import {planWindowContext} from "./support/planWindowContext.js";
 import {activityWindowContext} from "./support/activityWindowContext.js";
 import {beforeAll, expect, test} from "vitest";
+import {h, provide, ref} from "vue";
+import {provideDockCard} from "@journal/window-kit";
 import {context, mounted, mountedDock, page, settle} from "./support/windowContext.js";
 import {loadStates} from "../src/domain/states.js";
 import TaskDock from "../../core/modules/tasks/web/src/TaskDock.vue";
@@ -19,9 +21,13 @@ beforeAll(() => loadStates(async () => ({ok: true, json: async () => ({states: {
     plan: {reviewing: {label: "Review required", looks_like: "reviewing"}},
 }})})));
 
+const withCard = (dock, row) => ({setup() {
+    provideDockCard(provide, {data: ref(row), reload: async () => {}});
+    return () => h(dock);
+}});
+
 test("a task dock draws an added state by its declared label", async () => {
-    const window = context({"task show 3": {ok: true, value: {id: 3, state: "reviewing", title: "Check the cart"}}});
-    const element = await mountedDock(TaskDock, window, {target_id: 3});
+    const element = await mountedDock(withCard(TaskDock, {id: 3, state: "reviewing", title: "Check the cart"}), context({}), {target_id: 3});
     expect(element.querySelector("footer").textContent).toBe("Task: under review");
 });
 
@@ -33,8 +39,7 @@ test("shared state rows draw an added state for their declared model", async () 
 });
 
 test("a question dock uses question state labels", async () => {
-    const window = context({"question show 2": {ok: true, value: {id: 2, state: "checking", text: "Is the cart ready?"}}});
-    const element = await mountedDock(QuestionDock, window, {target_id: 2});
+    const element = await mountedDock(withCard(QuestionDock, {id: 2, state: "checking", text: "Is the cart ready?"}), context({}), {target_id: 2});
     expect(element.querySelector("footer").textContent).toBe("Question: checking the answer");
 });
 

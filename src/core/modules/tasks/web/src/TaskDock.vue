@@ -1,7 +1,7 @@
 <script setup>
 import { unref } from "vue";
-import { stateLabel, useDockRow, useWindow } from "@journal/window-kit";
-const row = useDockRow("task");
+import { stateLabel, useDockCard, useWindow } from "@journal/window-kit";
+const row = useDockCard().data;
 const foot = useWindow().option("foot");
 </script>
 <template>

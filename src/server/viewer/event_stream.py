@@ -65,7 +65,8 @@ class EventStream:
 
     @staticmethod
     def message(event: LoggedEvent, environment: str | None) -> str:
-        value: dict[str, object] = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id}
+        changed_ids = {name: [number for number in pair if type(number) is int] for name, pair in event.data.items() if name.endswith("_id")}
+        value: dict[str, object] = {"id": event.id, "event": event.event, "environment": environment, "row_table": event.row_table, "row_id": event.row_id, "actor_id": event.actor_id, "changed_ids": changed_ids}
         if event.row_table == "links":
             sources = []
             for position in (0, 1):

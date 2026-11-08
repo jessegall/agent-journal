@@ -1,6 +1,6 @@
 <script setup>
 import { computed, unref } from "vue";
-import {READ_RATES, coalesced, peekRef, SkeletonLine, useDockCard, useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, eventAboutRows, eventChildOf, peekRef, SkeletonLine, useDockCard, useWindow} from "@journal/window-kit";
 
 const PREVIEW_PHASES = 5;
 const view = useWindow();
@@ -17,7 +17,18 @@ const agents = computed(() => [
 const hidden = computed(() =>
   Math.max(0, phases.value.length - PREVIEW_PHASES),
 );
-view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], coalesced(card.reload, READ_RATES.planCard));
+const idsOf = (rows) => new Set(rows.map((row) => row.id));
+const concerns = {
+  phase: (event) => eventAboutRows(event, idsOf(phases.value)) || eventChildOf(event, "plan_id", new Set([unref(item).target_id])),
+  phase_task: (event) => eventChildOf(event, "phase_id", idsOf(phases.value)),
+  task: (event) => eventAboutRows(event, idsOf(phases.value.flatMap((phase) => phase.tasks))),
+  agent: (event) => eventAboutRows(event, idsOf(agents.value)),
+};
+const reload = coalesced(card.reload, READ_RATES.planCard);
+view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], (event) => {
+  const concernsThisPlan = concerns[event.event.split(".")[0]];
+  if (!concernsThisPlan || concernsThisPlan(event)) reload();
+});
 </script>
 
 <template>

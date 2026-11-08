@@ -5,6 +5,7 @@ import {useSharedNow} from "../composables/now.js";
 import {useResourceEvents} from "./resourceEvents.js";
 import {peek} from "../route.js";
 import Icon from "../kit/Icon.vue";
+import {eventAboutRows} from "../../kit/eventRows.js";
 const props = defineProps({run: {type: Object, required: true}, environment: {type: String, required: true}, position: {type: Number, required: true}, read: {type: Function, required: true}, expanded: Boolean});
 const emit = defineEmits(["toggle"]);
 const output = ref();
@@ -38,7 +39,7 @@ async function open() {
     pages.feed.drawn(output.value);
 }
 watch(() => props.expanded, open, {immediate: true});
-useResourceEvents(["output.*"], refresh);
+useResourceEvents(["output.*"], refresh, (event) => eventAboutRows(event, new Set([props.run.id])));
 </script>
 <template>
     <div class="run" :data-queue-row="run.section" :data-queue-process="run.id">
