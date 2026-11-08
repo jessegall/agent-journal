@@ -79,10 +79,11 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if refusal:
             return MergeOutcome(self.rows.required(Worktree, worktree.id), (), refusal)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
-        followup = self.followups.snapshot(worktree, environment.folder, commit_before_merge, self.git.tip(environment.folder, worktree.base_branch), context)
+        commit_after_merge = self.git.tip(environment.folder, worktree.base_branch)
+        followup = self.followups.snapshot(worktree, environment.folder, commit_before_merge, commit_after_merge, context)
         if followup is not None:
             return self.finished_merge(worktree, environment, followup, command, context)
-        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, self.git.tip(environment.folder, worktree.base_branch)), context)
+        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, commit_after_merge), context)
         return self.removed(environment, merge_outcome.worktree, context)
 
     def finished_merge(self, worktree: Worktree, environment: Environment, followup: MergeFollowup, command: MergeWorker, context: Context) -> MergeOutcome:

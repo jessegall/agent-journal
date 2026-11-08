@@ -14,4 +14,4 @@ class WorkerQueuedStart:
     def start(self, worker_id: int, context: Context) -> None:
         queued = self.next_task.following(worker_id)
         if queued is not None:
-            self.bus.run_with_context(SendWorker(worker_id, task_ids=(queued.id,)), context)
+            self.bus.run(SendWorker(worker_id, task_ids=(queued.id,)), context.actor, environment_id=context.environment_id)
