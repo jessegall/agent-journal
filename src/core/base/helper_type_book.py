@@ -23,7 +23,7 @@ class HelperTypeBook:
     def helper_keys(self) -> tuple[str, ...]:
         return tuple(entry.key for entry in self.startable())
 
-    def read_only_keys(self) -> tuple[str, ...]:
+    def read_access_keys(self) -> tuple[str, ...]:
         return self.keys_with(Access.READ)
 
     def find(self, key: str) -> HelperTypeEntry:

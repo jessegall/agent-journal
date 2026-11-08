@@ -34,5 +34,5 @@ class RoleGroup(StrEnum):
 
     def has_role(self, role: str, policy: AgentPolicy, helper_types: HelperTypeBook) -> bool:
         if self is RoleGroup.HELPERS:
-            return role in helper_types.read_only_keys()
+            return role in helper_types.read_access_keys()
         return self is RoleGroup.ANY or role in self.roles(policy)

@@ -14,7 +14,7 @@ from core.modules.processes.models.process import Process
 from suites.coding.commands.record_file_changes.record_file_changes import RecordFileChanges
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
 from suites.coding.support.file_change_report import FileChangeReport
-from suites.coding.modules.workers.support.journal_written_files import JournalWrittenFiles
+from suites.coding.modules.workers.support.journal_written_files import JournalManagedFiles
 
 
 class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
@@ -23,15 +23,15 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
 
     command = RecordFileChanges
 
-    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes, agents: AgentRows, written: JournalWrittenFiles) -> None:
-        self.queries, self.bus, self.files, self.scopes, self.agents, self.written = queries, bus, files, scopes, agents, written
+    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes, agents: AgentRows, managed_files: JournalManagedFiles) -> None:
+        self.queries, self.bus, self.files, self.scopes, self.agents, self.managed_files = queries, bus, files, scopes, agents, managed_files
 
     def handle(self, command: RecordFileChanges, context: Context) -> None:
         agent = self.scan_agent(command)
         report = FileChangeReport.parsed(self.files.read(command.report_path))
         scoped = replace(context, environment_id=agent.environment_id)
         with self.scopes.opened(None, agent.environment_id):
-            for change in [change for change in report.changes if not self.written.has(agent, change.diff.path)]:
+            for change in [change for change in report.changes if not self.managed_files.has(agent, change.diff.path)]:
                 self.bus.dispatch(RecordFileEdit(agent.id, change.diff, change.rows), scoped)
                 self.bus.dispatch(DeliverFileEdit(agent.id, change.diff.path, report.folder, change.rows), scoped)
 

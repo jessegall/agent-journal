@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.modules.messages.models.message import Message
 
-SIDE_LIMIT = 5
+SIDE_MESSAGE_COUNT = 5
 SHOWN_CHARACTERS = 300
 
 
@@ -25,7 +25,7 @@ class RecentConversation:
         return tuple(message for message in self.messages if message.creator_id != self.agent_id)
 
     def shown(self) -> tuple[Message, ...]:
-        return tuple(sorted((*self.mine()[-SIDE_LIMIT:], *self.theirs()[-SIDE_LIMIT:]), key=lambda message: message.id))
+        return tuple(sorted((*self.mine()[-SIDE_MESSAGE_COUNT:], *self.theirs()[-SIDE_MESSAGE_COUNT:]), key=lambda message: message.id))
 
     def lines(self) -> str:
         return "\n".join([f"with {self.actor}:", *(self.line(message) for message in self.shown())])
