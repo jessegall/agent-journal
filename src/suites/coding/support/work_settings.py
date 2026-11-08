@@ -13,7 +13,7 @@ class WorkField:
     type: str
     value: object
     source: str
-    choices: tuple[int, ...] = ()
+    choices: tuple[int | str, ...] = ()
     badge: str = ""
 
 

@@ -6,6 +6,8 @@ import SettingRow from "./SettingRow.vue";
 import SettingsFoot from "./SettingsFoot.vue";
 
 const props = defineProps({group: {type: String, required: true}});
+// a size shows in thousands, a word shows with its first letter capitalised
+const choiceText = (choice) => (typeof choice === "number" ? `${choice / 1000}k` : `${choice.charAt(0).toUpperCase()}${choice.slice(1)}`);
 const view = useWindow();
 const work = view.props.work;
 const draft = reactive({});
@@ -53,7 +55,7 @@ async function apply() {
                 </template>
                 <template v-else-if="field.choices?.length">
                     <select class="choice" :value="draft[field.key]" :disabled="view.readOnly" :data-field="field.key" @change="draft[field.key] = $event.target.value">
-                        <template v-for="choice in field.choices" :key="choice"><option :value="String(choice)">{{ choice / 1000 }}k</option></template>
+                        <template v-for="choice in field.choices" :key="choice"><option :value="String(choice)">{{ choiceText(choice) }}</option></template>
                     </select>
                 </template>
                 <template v-else>

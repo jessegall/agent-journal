@@ -38,7 +38,7 @@ onUnmounted(() => window.removeEventListener("journal:toggle-auto", toggleAuto))
             </template>
         </span>
         <template v-if="open">
-            <Dialog wide title="Agent settings" @close="closeSettings">
+            <Dialog wide flush title="Agent settings" @close="closeSettings">
                 <AgentSettings />
             </Dialog>
         </template>
