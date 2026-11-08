@@ -4,7 +4,7 @@ import pytest
 
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.testing.shell_part import ShellPart
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
@@ -16,6 +16,7 @@ LIMIT = 400_000
 HARD = 600_000
 SESSION = "s-1"
 COMPACTION_START = HookSamples.session_start().with_raw({"source": "compact"})
+CLEAR_START = HookSamples.session_start().with_raw({"source": "clear"})
 
 
 class RecordedTyping(TerminalTyping):
@@ -128,6 +129,18 @@ def test_an_agent_is_compacted_at_its_stop_once_its_context_reaches_the_limit(li
     agent.advance(timedelta(minutes=1))
     agent.hook(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [COMPACT], detail="not typed again while the last one runs")
+
+
+def test_with_clear_chosen_the_limit_clears_the_context_and_a_cleared_agent_is_woken_to_go_on(limited):
+    agent = limited
+    set_to(agent, CONTEXT_LIMIT_ACTION, "clear")
+    has_context(agent, LIMIT)
+    stops(agent)
+    agent.expect_rows(agent.typing.typed == ["/clear"], detail=str(agent.typing.typed))
+    agent.hook(SESSION, CLEAR_START)
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_rows(len(agent.typing.typed) == 2 and "compacted" in agent.typing.typed[1], detail=str(agent.typing.typed))
 
 
 def test_a_tick_never_compacts_an_agent(agent):

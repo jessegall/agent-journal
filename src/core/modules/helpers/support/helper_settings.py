@@ -23,6 +23,8 @@ COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
 CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
 SKIPS_NEED_APPROVAL = f"{MODULE_KEY}.skips-need-approval"
+CONTEXT_LIMIT_ACTION = f"{MODULE_KEY}.context-limit-action"
+CONTEXT_ACTIONS = ("compact", "clear")
 HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
                    SettingValue("helper-run-limit", "Helpers running, per profile", "Helpers of each profile that run at once; six profiles at 4 make 24. At 0 none run.", SettingType.NUMBER, default=4, person_set=True),
                    SettingValue("helper-kept-limit", "Helpers kept, per profile", "Helpers kept of each profile, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
@@ -39,6 +41,7 @@ HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use count
                    SettingValue("context-limit-tokens", "Compact at this context size", "An agent with this many tokens in its context is compacted between turns.", SettingType.NUMBER, default=400000, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
                    SettingValue("context-limit-finish-task", "Let it finish its task first", "An agent past the limit first finishes the task in hand, and is compacted when it ends.", SettingType.FLAG, default=True, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
                    SettingValue("context-limit-hard-tokens", "Compact anyway at this context size", "Past this many tokens an agent is compacted even with a task in hand.", SettingType.NUMBER, default=600000, person_set=True, depends_on=(CONTEXT_LIMIT_ON,)),
+                   SettingValue("context-limit-action", "At the context size", "Compact the context, or clear it and let the journal give back the open tasks and memories.", SettingType.CHOICE, default=CONTEXT_ACTIONS[0], choices=CONTEXT_ACTIONS, person_set=True),
                    SettingValue("skips-need-approval", "Main agent approves skips", "A skip of a refusal by a helper or worker passes only once its main agent approves it.", SettingType.FLAG, default=True, person_set=True),
                    SettingValue("agent-options", "Agent options", "Options of workers and helpers, a line each, such as worker allow_new=off or helper:researcher max_cost=2.", SettingType.LIST, default=(), person_set=True)]
 HELPER_SETTING_RULES = {COLD_SESSION_MINUTES: NumberRule(0),

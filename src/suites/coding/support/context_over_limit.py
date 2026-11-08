@@ -1,7 +1,7 @@
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
 
@@ -20,6 +20,9 @@ class ContextOverLimit:
         agent = self.agents.find(agent_id)
         tokens = self.providers.provider(agent.program).context_tokens(self.home, agent.session)
         return tokens if tokens is not None and tokens >= self.settings.number(CONTEXT_LIMIT_TOKENS) else None
+
+    def action(self) -> str:
+        return self.settings.text(CONTEXT_LIMIT_ACTION)
 
     def is_past_second_limit(self, agent_id: int) -> bool:
         tokens, hard = self.tokens(agent_id), self.settings.number(CONTEXT_LIMIT_HARD_TOKENS)

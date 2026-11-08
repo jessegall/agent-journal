@@ -31,7 +31,7 @@ class ContextLimitRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not self.over_limit.compacts_at_stop(hook.agent_id) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(CONTEXT_COMPACTED.nudge()).running(ChooseAgentControl(hook.agent_id, "context", "compact"))
+        return RuleAnswer.with_nudges(CONTEXT_COMPACTED.nudge()).running(ChooseAgentControl(hook.agent_id, "context", self.over_limit.action()))
 
 
 class ContextLimitStopNowRule(DriverRule):

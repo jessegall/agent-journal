@@ -33,4 +33,4 @@ class ContextLimitHardStopRule(DriverRule):
         if is_memory_command or not self.over_limit.is_past_second_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
-        return refusal if self.history.has_recent_answer(self.name, hook, RETRY_SECONDS) else refusal.running(ChooseAgentControl(hook.agent_id, "context", "compact"))
+        return refusal if self.history.has_recent_answer(self.name, hook, RETRY_SECONDS) else refusal.running(ChooseAgentControl(hook.agent_id, "context", self.over_limit.action()))
