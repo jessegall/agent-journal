@@ -17,3 +17,6 @@ class Environment(Model):
     creator_id: int
     test: bool = False
     test_agent_id: int | None = None
+
+    def grants(self, agent_id: int) -> bool:
+        return self.test and self.test_agent_id == agent_id
