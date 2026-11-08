@@ -181,7 +181,7 @@ test("a refused close of a docked card says why on the card", async () => {
 
 // task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand
 test("docked cards fold when the chat is scrolled up, open at its foot, and a hand fold holds", async () => {
-    const element = await mountedChat();
+    const element = await mountedChat({"dock-item main": [REPORT_DOCK, {...REPORT_DOCK, id: REPORT_DOCK.id + 1, target_id: REPORT_DOCK.target_id + 1}]});
     const history = element.querySelector(".history");
     Object.defineProperty(history, "scrollHeight", {value: 1000, configurable: true});
     Object.defineProperty(history, "clientHeight", {value: 300, configurable: true});
