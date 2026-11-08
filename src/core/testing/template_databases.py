@@ -1,7 +1,6 @@
 from core.base.file_access import FileAccess
 import fcntl
 import hashlib
-import inspect
 import json
 import pickle
 import shutil
@@ -21,8 +20,10 @@ from core.testing.story_state import StoryState
 from core.testing.story_fixture import StoryFixture
 from core.testing.template import Template
 from core.testing.template_adaptation import STATE_FILE, TemplateAdaptation
+from core.testing.template_requests import TemplateRequests
 from core.testing.working_journal import WorkingJournal
 
+REQUESTS_FILE = "template-requests.jsonl"
 
 
 class TemplateDatabases:
@@ -35,6 +36,7 @@ class TemplateDatabases:
         self.templates: dict[tuple[tuple[str, ...], type[StoryFixture] | None], Template] = {}
         self.working_folder = tempfile.TemporaryDirectory(prefix="story-journals-")
         self.working_journals: dict[Path, list[WorkingJournal]] = {}
+        self.requests = TemplateRequests(folder.parent / REQUESTS_FILE)
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
         template = self.template(modules, fixture)
@@ -79,6 +81,8 @@ class TemplateDatabases:
                 FileAccess.shared().write_binary(state, pickle.dumps(built.state))
                 FileAccess.shared().replace(state, folder / STATE_FILE)
                 self.adaptation.mark(folder)
+                if modules:
+                    self.requests.add(modules, fixture)
             usable = self.usable_folder(folder, name)
             return Template(JournalHome(usable), pickle.loads(FileAccess.shared().binary(usable / STATE_FILE)))
 
@@ -95,8 +99,7 @@ class TemplateDatabases:
         key: list[object] = [modules]
         current = fixture
         while current is not None:
-            source = inspect.getsourcefile(current)
-            key += [current.__module__, current.__qualname__, FileAccess.shared().read(Path(source)) if source else ""]
+            key += [current.__module__, current.__qualname__, current.source_text]
             current = current.parent
         return key
 

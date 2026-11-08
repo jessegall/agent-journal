@@ -31,15 +31,18 @@ RUN_CPU = pytest.StashKey[RunCpu]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
-WORKER_TEST_COUNT_OPTION = "tests_per_worker"
-MOST_WORKERS_OPTION = "most_workers"
+RUNNER_BLOCK_OPTION = "tests_per_runner"
+MOST_RUNNERS_OPTION = "most_runners"
 RUNNER_NICENESS = 10
 GATE_LOCK_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
+TEMPLATE_FOLDER_VARIABLE = "JOURNAL_TEMPLATE_FOLDER"
+MOST_BUILD_PROCESSES = 8
+LISTING_OPTIONS = ("collectonly", "help", "version")
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini(WORKER_TEST_COUNT_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
-    parser.addini(MOST_WORKERS_OPTION, "the most test runners a run with -n starts", default="4")
+    parser.addini(RUNNER_BLOCK_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
+    parser.addini(MOST_RUNNERS_OPTION, "the most test runners a run with -n starts", default="4")
 
 
 @pytest.hookimpl(tryfirst=True)
@@ -47,15 +50,28 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
     if GATE_LOCK_VARIABLE not in os.environ and RunSize(config.args, 1).is_heavy():
         HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
         os.environ[GATE_LOCK_VARIABLE] = "1"
+    if is_template_build_due(config):
+        LazyLoading.disabled = True
+        templates = TemplateDatabases(run_template_folder())
+        TemplatePrebuild(templates, Path(config.rootpath) / "tests", processes=min(MOST_BUILD_PROCESSES, os.cpu_count() or 1)).run()
     if not config.getoption("numprocesses", None):
         return
     os.nice(RUNNER_NICENESS)
-    worker_test_count, most = int(config.getini(WORKER_TEST_COUNT_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
-    workers = RunSize(config.args, worker_test_count * most).workers(worker_test_count, most)
-    config.option.numprocesses = 0 if workers == 1 else workers
-    if workers > 1:
-        LazyLoading.disabled = True
-        TemplatePrebuild(TemplateDatabases(TemplateCache().folder()), Path(config.rootpath) / "tests").run()
+    runner_block, most = int(config.getini(RUNNER_BLOCK_OPTION)), int(config.getini(MOST_RUNNERS_OPTION))
+    runners = RunSize(config.args, runner_block * most).runner_count(runner_block, most)
+    config.option.numprocesses = 0 if runners == 1 else runners
+
+
+def is_template_build_due(config: pytest.Config) -> bool:
+    is_listing = any(config.getoption(option, False) for option in LISTING_OPTIONS)
+    return not (hasattr(config, "workerinput") or is_listing or TEMPLATE_FOLDER_VARIABLE in os.environ) and RunSize(config.args, 1).reaches_stories()
+
+
+def run_template_folder() -> Path:
+    # The first process of a run chooses the folder and its runners inherit it, so a merge cannot move them.
+    if TEMPLATE_FOLDER_VARIABLE not in os.environ:
+        os.environ[TEMPLATE_FOLDER_VARIABLE] = str(TemplateCache().folder())
+    return Path(os.environ[TEMPLATE_FOLDER_VARIABLE])
 
 
 def pytest_configure(config: pytest.Config) -> None:
@@ -74,7 +90,7 @@ def pytest_itemcollected(item: pytest.Item) -> None:
 
 @pytest.fixture(scope="session")
 def templates() -> TemplateDatabases:
-    return TemplateDatabases(TemplateCache().folder())
+    return TemplateDatabases(run_template_folder())
 
 
 @pytest.fixture
