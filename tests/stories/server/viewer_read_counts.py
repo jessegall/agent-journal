@@ -522,6 +522,38 @@ def test_output_bytes_and_small_pages_use_the_fixed_large_file(read_sample):
     expect_greater(large.payload_bytes, small.payload_bytes)
 
 
+def test_one_and_fifty_message_rows_are_one_answer_with_the_same_statements(read_sample):
+    read_sample.read([ReadLine("messages.chat", ("message", "feed", "--limit", "1"))])
+    one = read_sample.read([ReadLine("messages.chat", ("message", "feed", "--limit", "1"))])
+    fifty = read_sample.read([ReadLine("messages.chat", ("message", "feed", "--limit", "50"))])
+    print(json.dumps({"one": one.report(), "fifty": fifty.report()}, sort_keys=True))
+    expect_value((len(one.answers), len(one.answers[0]["value"]["rows"])), (1, 1))
+    expect_value((len(fifty.answers), len(fifty.answers[0]["value"]["rows"])), (1, 50))
+    expect_value((one.connections, fifty.connections), (1, 1))
+    expect_value(fifty.statement_count, one.statement_count)
+
+
+def test_one_and_ten_docks_are_one_answer_with_the_same_statements(read_sample):
+    line = [ReadLine("messages.chat", ("dock-item", "main"))]
+    read_sample.read(line)
+    ten = read_sample.read(line)
+    for dock in ten.answers[0]["value"]["rows"][1:]:
+        read_sample.action(("dock", "remove", str(dock["id"])))
+    read_sample.read(line)
+    one = read_sample.read(line)
+    print(json.dumps({"one": one.report(), "ten": ten.report()}, sort_keys=True))
+    expect_value(len([dock for dock in ten.answers[0]["value"]["rows"] if dock["state"] == "docked"]), 10)
+    expect_value(len([dock for dock in one.answers[0]["value"]["rows"] if dock["state"] == "docked"]), 1)
+    expect_value(ten.statement_count, one.statement_count)
+
+
+def test_the_workload_reads_scan_no_large_table_whole(read_sample):
+    measured = read_sample.read(read_sample.workload.reads)
+    print(json.dumps([asdict(plan) for plan in measured.plans], indent=1))
+    scans = [(plan.sql, step) for plan in measured.plans for step in plan.steps if step.startswith("SCAN") and "USING" not in step]
+    expect_value(scans, [])
+
+
 @pytest.mark.parametrize("missing", ["attribution", "retention", "losses", "funnel"])
 def test_baseline_rejects_missing_attribution_retention_losses_or_funnel(missing):
     evidence = complete_sample_evidence()
