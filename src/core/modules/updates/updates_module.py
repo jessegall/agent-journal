@@ -8,6 +8,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
 from core.modules.updates.commands.show_update_step.show_update_step_handler import ShowUpdateStepHandler
 from core.modules.updates.commands.show_update_step.show_update_step_subcommand import ShowUpdateStepSubcommand
@@ -38,7 +39,7 @@ class UpdatesModule(Module):
     handlers = [RecordReleaseInstallHandler, InstallReleaseHandler, ShowUpdateStepHandler]
     subcommands = [UpdateCheckSubcommand, InstallReleaseSubcommand, UpdateNotesSubcommand, ShowUpdateStepSubcommand]
     marks = UPDATE_MARKS
-    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="project", icon=WindowIcon.UPDATE,
+    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, skeleton=UPDATES_UPDATES_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.UPDATE,
                                  reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*", "release_install.*"],
                                  keys=[WindowKey("releases", "release list", events=["release.*"]),
                                        WindowKey("standing", "update check", events=["release.*", "release_install.*"]),

@@ -1,3 +1,4 @@
+from core.base.registry.registry import Registry
 from core.base.registry.suite_windows import SuiteWindows
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
@@ -85,3 +86,18 @@ def test_agent_dropdowns_declare_that_they_need_one_agent(new_story):
 def expect_absent_questions_viewer_names(text, text_2, names) -> None:
     actual = {text, text_2} & names
     assert not actual, actual
+
+
+MENU_REMOVED = ("reviews.reviewer", "reviews.reviewers", "phone.phones", "usage.fitness", "suggestions.suggestions", "workers.models", "tunnel.tunnel", "tunler.account", "updates.updates", "templates.templates", "processes.output")
+MENU_KEPT = ("drivers.hook-calls", "drivers.nudges", "sharing.shares", "triggers.triggers", "messages.attachments", "workers.points", "tasks.task-counts")
+
+
+def test_the_window_menu_of_the_coding_suite_lists_only_the_kept_windows(new_story):
+    registry = new_story(fixture=CodingEnvironment).container.get(Registry)
+    offered = SuiteWindows(registry).windows("coding")
+    menu = {window.name: window for window in offered if window.place not in ("bar", "page", "section")}
+    assert not [name for name in MENU_REMOVED if name in menu], sorted(menu)
+    assert all(name in menu for name in MENU_KEPT), sorted(menu)
+    assert menu["workers.points"].title == "Brief points"
+    pages = {window.name for window in offered if window.place == "page"}
+    assert {"processes.output", "templates.templates", "updates.updates", "workers.models", "tunnel.tunnel"} <= pages

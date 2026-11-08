@@ -9,6 +9,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.templates.commands.make_template.make_template_handler import MakeTemplateHandler
 from core.modules.templates.commands.make_template.make_template_subcommand import MakeTemplateSubcommand
 from core.modules.templates.commands.template_list.template_list_subcommand import TemplateListSubcommand
@@ -46,5 +47,5 @@ class TemplatesModule(Module):
     guards = [StandardTemplateGuard]
     seeders = [TemplatesSeeder]
     window_extensions = [WindowExtension("messages.chat", reads=["template list"])]
-    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, skeleton=TEMPLATES_TEMPLATES_SKELETON, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", icon=WindowIcon.FILED,
+    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, skeleton=TEMPLATES_TEMPLATES_SKELETON, search=WindowSearch(TemplateSearcher, "Search the templates"), group="project", place=WindowPlace.PAGE, icon=WindowIcon.FILED,
                                  reads=["template list", "template show"], events=["template.*"], keys=[WindowKey("templates", "template list", events=["template.*"])])]
