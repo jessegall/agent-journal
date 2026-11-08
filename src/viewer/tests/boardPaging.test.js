@@ -52,6 +52,20 @@ test("more tasks are asked for older than the oldest shown, without doubles, and
     expect(element.textContent).not.toContain("Two");
 });
 
+test("the delegated tasks come with every one in progress and blocked, and more of them are asked for older than the oldest open one shown", async () => {
+    const row = (id, state) => ({...task(id, `Task ${id}`), state, delegated_to: 5});
+    const {window, reads} = reader((line) => {
+        if (line.includes("--before-id")) return {ok: true, value: {groups: [{state: "delegated", total: 5, rows: [row(1, "open")]}]}};
+        return {ok: true, value: {groups: [{state: "delegated", total: 5, rows: [row(2, "blocked"), row(9, "started"), row(8, "blocked"), row(7, "open")]}]}};
+    });
+    const element = await mounted(TaskGroups, window);
+    expect([...element.querySelectorAll(".task-title")].map((title) => title.textContent)).toEqual(["Task 9", "Task 2", "Task 8", "Task 7"]);
+    element.querySelector('[data-more="delegated"]').click();
+    await settle();
+    expect(reads).toContain("task board --state delegated --before-id 7");
+    expect(element.querySelectorAll('[data-more="delegated"]')).toHaveLength(0);
+});
+
 test("a group folds and unfolds from its header, and stays folded on the next load", async () => {
     localStorage.removeItem("journal.tasks.folded");
     const {window} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 1, rows: [task(1, "One")]}]}}));

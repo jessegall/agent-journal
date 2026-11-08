@@ -77,6 +77,15 @@ def test_delegated_tasks_come_after_blocked_and_before_open(new_story):
     expect_index(states, "blocked", "delegated", "open")
 
 
+def test_the_blocked_tasks_come_whole_whatever_the_limit(three_board_tasks):
+    story, number = three_board_tasks
+    for number in (1, 2, 3):
+        story.expect_success(f'task block {number} --reason "waits"', actor=story.user)
+    groups = json.loads(story.run("task board --environment main --limit 1 --json", actor=story.user).output_text)["groups"]
+    rows = {group["state"]: group for group in groups}
+    assert [row["id"] for row in rows["blocked"]["rows"]] == [3, 2, 1]
+
+
 @pytest.fixture
 def three_board_tasks(new_story):
     story = new_story(fixture=UserJoined)

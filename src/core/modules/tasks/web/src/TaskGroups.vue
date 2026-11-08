@@ -64,10 +64,12 @@ async function readBoard(answer) {
 }
 watch(() => view.props.board.data.value, readBoard, {immediate: true});
 
+const isOpen = (row) => row.state === "open";
+
 // a group shown past its first page reads again as many rows as it shows, so a task that moved leaves it
 async function withHeldRows(group, held) {
     if (!extended.value.has(group.state) || !held?.rows.length) return group;
-    const flags = {state: group.state, limit: String(held.rows.length)};
+    const flags = {state: group.state, limit: String(Math.max(1, (group.state === "delegated" ? held.rows.filter(isOpen) : held.rows).length))};
     if (tag.value) flags.tag = tag.value;
     const answer = await view.readKey("group", flags);
     return answer.ok ? answer.value.groups[0] : group;
@@ -77,8 +79,10 @@ async function more(group) {
     const flags = {state: group.state};
     if (tag.value) flags.tag = tag.value;
     if (pageLimit.value) flags.limit = pageLimit.value;
-    if (group.rows.length) {
-        flags["before-id"] = String(FINISHED.has(group.state) ? group.rows.at(-1).id : Math.min(...group.rows.map((row) => row.id)));
+    // the delegated tasks in progress, in testing and blocked come whole, so a page past them holds open tasks only
+    const paged = group.state === "delegated" ? group.rows.filter(isOpen) : group.rows;
+    if (paged.length) {
+        flags["before-id"] = String(FINISHED.has(group.state) ? paged.at(-1).id : Math.min(...paged.map((row) => row.id)));
         if (FINISHED.has(group.state)) flags["before-closed-at"] = group.rows.at(-1).closed_at;
     }
     const answer = await view.readKey("group", flags);
