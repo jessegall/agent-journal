@@ -28,3 +28,4 @@ class SettingDeclaration:
     person_set: bool = False
     rule: str = ""
     main_agent_only: bool = False
+    depends_on: Sequence[str] = ()

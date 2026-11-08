@@ -21,7 +21,7 @@ CODING_SETTING_VALUES = [
     SettingValue("main-starts-helpers", "Use ordinary helpers", "Whether the main agent may start ordinary helpers.",
                  SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True),
     SettingValue("continue-while-delegatable", "Keep going while work can be delegated", "Keep the main agent working while open tasks can still be sent to workers.",
-                 SettingType.FLAG, default=False, person_set=True),
+                 SettingType.FLAG, default=False, person_set=True, depends_on=[WRITES_CODE_SETTING]),
     SettingValue("designer-enabled", "Use a designer", "Whether the main agent may start a designer, which writes a design document and changes no code.",
                  SettingType.FLAG, default=False, person_set=True),
     SettingValue("worker-command-types", "Worker command types", "The types of shell command a worker may run.", SettingType.LIST,

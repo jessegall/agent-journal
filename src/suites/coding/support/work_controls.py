@@ -28,7 +28,8 @@ class WorkControls:
         controls = tuple(zip(CONTROL_KEYS.values(), current.bundle, strict=True))
         fields = tuple(self.field(group, key) for group, keys in GROUPS.items() for key in keys)
         revision = hashlib.sha256(repr((controls, current.sources, current.problems, [(field.key, field.value, field.source) for field in fields])).encode()).hexdigest()[:12]
-        return WorkSettings(current.workflow, revision, controls, fields)
+        depends = {key: tuple(self.declared.value(key).depends_on) for key in (*CONTROL_KEYS.values(), *(row.key for row in fields))}
+        return WorkSettings(current.workflow, revision, controls, fields, {key: keys for key, keys in depends.items() if keys})
 
     def field(self, group: str, key: str) -> WorkField:
         current = self.reader.current(key)

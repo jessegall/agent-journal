@@ -30,8 +30,11 @@ const changed = computed(() => CONTROLS.filter((control) => draft[control.key] !
 const dirty = computed(() => changed.value.length > 0);
 const stale = computed(() => dirty.value && work.data.value && base.value && work.data.value.revision !== base.value);
 const workflow = computed(() => work.data.value?.workflow ?? "");
-const taking = computed(() => CONTROLS.filter((control) => TAKING_ON_WORK.includes(control.key)));
-const working = computed(() => CONTROLS.filter((control) => !TAKING_ON_WORK.includes(control.key)));
+// a control shows only while every switch it depends on is on in the draft
+const depends = computed(() => work.data.value?.depends ?? {});
+const shown = (control) => (depends.value[control.key] ?? []).every((key) => draft[key] !== false);
+const taking = computed(() => CONTROLS.filter((control) => TAKING_ON_WORK.includes(control.key) && shown(control)));
+const working = computed(() => CONTROLS.filter((control) => !TAKING_ON_WORK.includes(control.key) && shown(control)));
 const problem = computed(() => failure.value || (stale.value ? "These settings changed since you opened them. Cancel to read them again." : ""));
 const nothingStarts = computed(() => draft[AUTO] === false && draft[DISPATCHES] === false);
 
