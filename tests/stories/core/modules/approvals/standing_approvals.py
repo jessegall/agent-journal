@@ -5,6 +5,9 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 from core.modules.approvals.models.enums.standing_scope import StandingScope
 from core.modules.approvals.models.standing_approval import StandingApproval
 from core.testing.story import Story
+from core.modules.approvals.models.enums.approval_dock_type import ApprovalDockType
+from core.modules.docking.models.dock_item import DockItem
+from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.support.fixtures import UserJoined
@@ -85,6 +88,8 @@ def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_stor
     resume_under_standing_yes(story)
     story.run_listeners()
     story.expect_text("chat-mark list --environment main", f"Standing yes {standing_yeses(story)[0].id} accepted approval {requests(story)[1].id}", actor=story.user)
+    notices = docked(story, ApprovalDockType.STANDING_USED.value)
+    story.expect_rows(docked(story, ApprovalDockType.REQUEST.value) == [], len(notices) == 1, notices[0].target_id == standing_yeses(story)[0].id, notices[0].leaves_at is not None, detail=str(notices))
 
 
 def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever_follows(new_story):
@@ -109,3 +114,7 @@ def test_a_removed_standing_yes_asks_again(new_story):
 def test_an_agent_cannot_make_or_remove_a_standing_yes(new_story):
     story = new_story(NOTES, fixture=ResumeAlwaysSame)
     story.expect_refusal(f"standing-approval delete {standing_yeses(story)[0].id}", "an agent cannot", actor=story.agent)
+
+
+def docked(story, dock_type):
+    return list(story.container.get(Queries).query(DockItem).filter(type=dock_type, state=DockItemState.DOCKED).all_rows())

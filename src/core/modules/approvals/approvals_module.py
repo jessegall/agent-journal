@@ -1,4 +1,5 @@
 from core.base.chat.dock_declaration import DockDeclaration
+from core.base.chat.mark_button import MarkButton
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_handler import AnswerAgentApprovalHandler
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval_subcommand import AnswerAgentApprovalSubcommand
 from core.base.module.model_declaration import ModelDeclaration
@@ -33,6 +34,7 @@ from core.modules.approvals.commands.make_standing_approval.make_standing_approv
 from core.base.viewer.button_menu_item import ButtonMenuItem
 from core.modules.approvals.commands.accept_covered_approval.accept_covered_approval_handler import AcceptCoveredApprovalHandler
 from core.modules.approvals.listeners.standing_approval_accept_listener import StandingApprovalAcceptListener
+from core.modules.approvals.listeners.standing_approval_dock_listener import StandingApprovalDockListener
 from core.modules.approvals.listeners.standing_approval_mark_listener import StandingApprovalMarkListener
 from core.modules.approvals.support.approval_marks import APPROVAL_MARKS
 from core.modules.approvals.commands.relay_approval.relay_approval_handler import RelayApprovalHandler
@@ -57,11 +59,12 @@ class ApprovalsModule(Module):
     handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]
-    listeners = [StandingApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
+    listeners = [StandingApprovalDockListener, StandingApprovalAcceptListener, StandingApprovalMarkListener, ApprovalDockListener, ApprovalNoticeListener, PendingApprovalDockListener]
     guards = [ApprovalDecisionGuard, StandingApprovalGuard]
     marks = APPROVAL_MARKS
     nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW]
-    docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False)]
+    docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False),
+             DockDeclaration(ApprovalDockType.STANDING_USED, "check", "Went on under a standing yes", reads=["standing-approval show"], buttons=[MarkButton("close", "Withdraw", "standing-approval delete {row_id}")], leaves_after_seconds=8)]
     button_slots = list(APPROVAL_SLOT)
     buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST,
                               menu=(ButtonMenuItem("Accept and always for the same request", "approval accept {row_id} --always same", description="Keeps a standing yes: the same kind of approval with the same command line, in this environment, is accepted with no card."),
