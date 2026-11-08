@@ -4,7 +4,7 @@ MOVED_KEYS = [("journal.suites.coding.main-starts-helpers", "journal.suites.codi
               ("journal.suites.coding.workers.workers-start-helpers", "journal.suites.coding.workers.workers-start-read-only-helpers")]
 
 
-class ReadOnlyHelperRequestsMigration(Migration):
+class HelperRequestKeysMigration(Migration):
     """Requests for the coding settings renamed for read-only helpers keep their setting."""
 
     number = 8

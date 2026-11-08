@@ -114,7 +114,7 @@ def reply_rows(first, last):
     return [{"type": "assistant", "message": {"content": [{"type": "thinking", "thinking": "private note"}, {"type": "text", "text": f"reply-{number:02}"}]}} for number in range(first, last + 1)]
 
 
-def written_transcript(tmp_path, monkeypatch, session, rows):
+def saved_transcript(tmp_path, monkeypatch, session, rows):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
     transcript = tmp_path / "claude" / "projects" / "-work-journal" / f"{session}.jsonl"
     transcript.parent.mkdir(parents=True, exist_ok=True)
@@ -122,14 +122,14 @@ def written_transcript(tmp_path, monkeypatch, session, rows):
 
 
 def test_own_messages_are_the_last_ten_texts_and_never_a_thinking_block(new_story, tmp_path, monkeypatch):
-    written_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 12))
+    saved_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 12))
     story = new_story(fixture=ClaudeTranscriptAgent)
     story.expect_text("usage own-messages", "reply-03", "reply-12", actor=story.agent)
     story.expect_no_text("usage own-messages", "reply-02", "private note", actor=story.agent)
 
 
 def test_own_messages_after_a_clear_come_from_the_session_it_ended(new_story, tmp_path, monkeypatch):
-    written_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 3))
+    saved_transcript(tmp_path, monkeypatch, "s-1", reply_rows(1, 3))
     story = new_story(fixture=ClaudeTranscriptAgent)
     story.hook("s-1", HookSamples.sample("session_end").with_fields(launch="s-1").with_raw({"reason": "clear"}))
     story.container.get(Bus).run(BindAgentSession(story.agent.id, "s-2"), Actor.core())

@@ -10,8 +10,9 @@ from suites.coding.support.coding_helper_role import CodingHelperRole
 ORIGINAL_FILES = tuple(f"{Path(name).stem}{ORIGINAL_SUFFIX}{Path(name).suffix}" for name in INSTRUCTION_FILES)
 
 
-class JournalWrittenFiles:
-    """Says whether a file of a worker's worktree is one the journal itself writes there, so it is not the worker's edit."""
+class JournalManagedFiles:
+    """Says whether a file of a worker's worktree is one the journal itself writes there, so it is not the
+    worker's edit."""
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
