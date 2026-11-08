@@ -19,8 +19,9 @@ SOURCE = "drivers.permission"
 
 
 class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
-    """Saves an agent's request for leave to do one thing and tells the main agent, or puts a card in the dock where the action
-    needs a person; the same action asked again while its request is open gives that request."""
+    """Saves an agent's request for leave to do one thing and tells the main agent, or puts a card in the dock
+    where the action needs a person; the same action asked again while its request is open gives that
+    request."""
 
     command = AskPermission
 

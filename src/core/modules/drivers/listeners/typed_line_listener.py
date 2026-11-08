@@ -8,10 +8,10 @@ __all__ = ["IDLE_MESSAGE_SOURCE", "PAUSE_SOURCE", "RESUME_SOURCE", "TERMINAL_SOU
 
 
 class TypedLineListener(CommitListener[Created[AgentLine]]):
-    """Types that an agent was paused or resumed, and, for an idle agent, which sends no hook that
-    could carry it, a line that wakes it, that a message was edited or that a task it waited on opened. An
-    agent at work gets those by its next hook, as does one with no terminal to type in and one at its program's usage
-    limit; a line a hook has taken is typed no more."""
+    """Types that an agent was paused or resumed, and, for an idle agent, which sends no hook that could carry
+    it, a line that wakes it, that a message was edited or that a task it waited on opened. An agent at
+    work gets those by its next hook, as does one with no terminal to type in and one at its program's
+    usage limit; a line a hook has taken is typed no more."""
 
     name = "drivers.typed-line"
     run_order = -1

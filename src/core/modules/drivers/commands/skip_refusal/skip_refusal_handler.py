@@ -27,11 +27,11 @@ SKIP_SOURCE = "drivers.refusal-skip"
 
 
 class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
-    """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip.
-    A skip counts as one more in a row unless the agent obeyed a refusal since its last, meaning something
+    """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip. A
+    skip counts as one more in a row unless the agent obeyed a refusal since its last, meaning something
     other than the skipped refusal refused it (a retry is no obeying). At five, the skip is gone; its main
-    agent or the person is told, and only a restore gives it back. A new skip is held until the agent confirms it;
-    a --skip-guard flag only spends a skip already confirmed."""
+    agent or the person is told, and only a restore gives it back. A new skip is held until the agent
+    confirms it; a --skip-guard flag only spends a skip already confirmed."""
 
     command = SkipRefusal
 

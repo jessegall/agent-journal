@@ -8,7 +8,8 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 
 
 class AskPermissionSubcommand(Subcommand[AskPermission, PermissionRequest]):
-    """`journal permission ask "<command or file>" --reason "<why>" [--person]`: asks for leave to do that one thing once."""
+    """`journal permission ask "<command or file>" --reason "<why>" [--person]`: asks for leave to do that one
+    thing once."""
 
     cli_name = "permission"
     name = "ask"

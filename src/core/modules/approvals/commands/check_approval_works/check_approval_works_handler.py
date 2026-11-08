@@ -19,10 +19,11 @@ from core.modules.actors.models.actor_record import ActorRecord
 
 
 class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
-    """Explains what Accept would run, as the person who would accept, and refuses the request when that would fail, so a
-    card that cannot work is never shown. Where no person has joined there is none to run it as, and a command whose
-    handler does work before its transaction cannot be tried without doing that work, so it is not tried. A command that reaches
-    a change outside the database has passed everything before it, and the dry run stops there."""
+    """Explains what Accept would run, as the person who would accept, and refuses the request when that would
+    fail, so a card that cannot work is never shown. Where no person has joined there is none to run it as,
+    and a command whose handler does work before its transaction cannot be tried without doing that work,
+    so it is not tried. A command that reaches a change outside the database has passed everything before
+    it, and the dry run stops there."""
 
     command = CheckApprovalWorks
 

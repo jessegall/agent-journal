@@ -20,8 +20,8 @@ UNTIMED_RULE = "none timed"
 
 
 class RecordHookTimeoutHandler(Handler[RecordHookTimeout, None]):
-    """Counts an agent's hook timeouts, and when it had three in ten minutes tells its main agent in one line naming the agent
-    and the slowest rule, and shows the same once in the person's chat."""
+    """Counts an agent's hook timeouts, and when it had three in ten minutes tells its main agent in one line
+    naming the agent and the slowest rule, and shows the same once in the person's chat."""
 
     command = RecordHookTimeout
 

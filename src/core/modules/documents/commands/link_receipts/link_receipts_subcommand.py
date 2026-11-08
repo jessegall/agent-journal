@@ -14,8 +14,9 @@ SENT_PAGE_SIZE = 25
 
 
 class LinkReceiptsSubcommand(ReadSubcommand[tuple[MessageReceipt, ...]]):
-    """`journal link receipts --messages <ids>`: for each message, the first page of the rows it names and of the agents
-    it also went to, read together so a chat reads the links of the messages it shows in one request."""
+    """`journal link receipts --messages <ids>`: for each message, the first page of the rows it names and of
+    the agents it also went to, read together so a chat reads the links of the messages it shows in one
+    request."""
 
     cli_name = "link"
     name = "receipts"
@@ -31,7 +32,7 @@ class LinkReceiptsSubcommand(ReadSubcommand[tuple[MessageReceipt, ...]]):
         if not numbers or len(numbers) > MOST_MESSAGES:
             raise Refusal(f"name between 1 and {MOST_MESSAGES} messages")
         return tuple(MessageReceipt(number, self.pages.read(self.asked(number, (LinkType.SUBJECT, LinkType.EDITED), NAMED_PAGE_SIZE, True)),
-                                    self.pages.read(self.asked(number, (LinkType.RECIPIENT,), SENT_PAGE_SIZE, False))) for number in numbers)
+                                    self.pages.read(self.asked(number, tuple([LinkType.RECIPIENT]), SENT_PAGE_SIZE, False))) for number in numbers)
 
     @staticmethod
     def asked(number: int, types: tuple[LinkType, ...], size: int, grouped: bool) -> Namespace:

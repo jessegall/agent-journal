@@ -10,9 +10,9 @@ KIND_WORDS = 2
 
 
 class StandingApprovals:
-    """Tells what kind a request is and what it targets, and finds the standing yes of its environment that covers it. A
-    request's kind is its command's class, or the first two words of its command line; its target is the next word of the
-    line, or the first field of the command, the program or row it is about."""
+    """Tells what kind a request is and what it targets, and finds the standing yes of its environment that
+    covers it. A request's kind is its command's class, or the first two words of its command line; its
+    target is the next word of the line, or the first field of the command, the program or row it is about."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

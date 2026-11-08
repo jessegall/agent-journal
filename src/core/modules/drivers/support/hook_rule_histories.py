@@ -5,8 +5,9 @@ from core.modules.drivers.models.rule_history import RuleHistory
 
 
 class HookRuleHistories:
-    """The rule history rows of an agent, read once for the whole hook, for every layer: the rules ask what they remember
-    from them and the writer saves its changes against them. They are dropped when the hook's histories are written."""
+    """The rule history rows of an agent, read once for the whole hook, for every layer: the rules ask what
+    they remember from them and the writer saves its changes against them. They are dropped when the hook's
+    histories are written."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

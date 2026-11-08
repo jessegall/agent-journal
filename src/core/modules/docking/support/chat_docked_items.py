@@ -8,8 +8,9 @@ DOCKED = "dock_id = ? AND state = ?"
 
 
 class ChatDockedItems:
-    """The items docked in the chat of the agent in scope, oldest first, read once and kept: the dock keeps the list up to date as
-    it docks and undocks, and it is read again only when the table changes some other way."""
+    """The items docked in the chat of the agent in scope, oldest first, read once and kept: the dock keeps
+    the list up to date as it docks and undocks, and it is read again only when the table changes some
+    other way."""
 
     def __init__(self, items: DockItemQuery, kept: KeptRows, scopes: Scopes) -> None:
         self.items, self.kept, self.scopes = items, kept, scopes

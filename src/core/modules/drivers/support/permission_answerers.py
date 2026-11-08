@@ -7,8 +7,8 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 
 
 class PermissionAnswerers:
-    """Who may answer a request for leave: the main agent of its environment, or a person; the asker never answers its own, and
-    only a person answers one that needs a person."""
+    """Who may answer a request for leave: the main agent of its environment, or a person; the asker never
+    answers its own, and only a person answers one that needs a person."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

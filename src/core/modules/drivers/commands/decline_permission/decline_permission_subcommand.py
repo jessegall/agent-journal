@@ -8,7 +8,8 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 
 
 class DeclinePermissionSubcommand(Subcommand[DeclinePermission, PermissionRequest]):
-    """`journal permission decline <request>`: the main agent, or a person, answers an agent's request for leave once."""
+    """`journal permission decline <request>`: the main agent, or a person, answers an agent's request for
+    leave once."""
 
     cli_name = "permission"
     name = "decline"

@@ -24,9 +24,9 @@ TRANSCRIPT = re.compile(r"^\s*\{.*\"sessionId\".*\"(?:message|content)\"")
 
 
 class PrivateDataScan:
-    """Looks through one file for private data and says where, by line and kind: an email address, the home folder of a real
-    user, a session id, a token or key shape, the journal's own message or transcript text, a recording not marked sanitised.
-    Built files and the anonymised hook recordings are left out."""
+    """Looks through one file for private data and says where, by line and kind: an email address, the home
+    folder of a real user, a session id, a token or key shape, the journal's own message or transcript
+    text, a recording not marked sanitised. Built files and the anonymised hook recordings are left out."""
 
     def scan(self, file: Path, text: str) -> list[PrivateDataFinding]:
         shown = str(file)

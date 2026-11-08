@@ -12,10 +12,10 @@ COMPACTION_TO_SETTLE = "compaction_to_settle"
 
 
 class CompactionEndPercent:
-    """The session start hook of a compaction runs before the program rewrites its status file, so the percent stored
-    there is still the one from before the compaction. The next hook of the session, a tick included, reads the
-    percent again and replaces it once it is lower. The agent's row carries a mark from the compaction until it is
-    settled, so every other hook reads no hook call for this."""
+    """The session start hook of a compaction runs before the program rewrites its status file, so the percent
+    stored there is still the one from before the compaction. The next hook of the session, a tick
+    included, reads the percent again and replaces it once it is lower. The agent's row carries a mark from
+    the compaction until it is settled, so every other hook reads no hook call for this."""
 
     def __init__(self, hook_calls: HookCallQuery, share: ContextShare, repository: Repository) -> None:
         self.hook_calls, self.share, self.repository = hook_calls, share, repository

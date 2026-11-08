@@ -8,8 +8,9 @@ from core.modules.drivers.models.lifecycles.permission_lifecycle import Permissi
 
 @dataclass(frozen=True, kw_only=True)
 class PermissionRequest(EnvironmentScoped, Model):
-    """One funnel for an agent that needs one thing it may not do: the command or file it names and why, answered once by the
-    main agent of its environment, or by a person's dock card where the action needs one."""
+    """One funnel for an agent that needs one thing it may not do: the command or file it names and why,
+    answered once by the main agent of its environment, or by a person's dock card where the action needs
+    one."""
 
     model_name = "permission_request"
     cli_name = "permission-request"

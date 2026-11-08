@@ -5,7 +5,8 @@ from core.modules.processes.queries.process_query import ProcessQuery
 
 
 class SilentAliasMarking:
-    """Marks a saved command silent while a run of it prints nothing, and clears the mark when a run of its edited line prints."""
+    """Marks a saved command silent while a run of it prints nothing, and clears the mark when a run of its
+    edited line prints."""
 
     def __call__(self, container: Container) -> bool:
         timestamp = container.get(Clock).timestamp()
