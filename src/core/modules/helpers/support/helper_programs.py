@@ -13,8 +13,8 @@ HOOK_RUNNER = "bin/journal-hook"
 
 class HelperPrograms:
     """Makes sure a program can run under the journal's rules in a folder: it is installed, its hooks are written
-    there and trusted, and the folder itself is trusted, so no person has to accept either; a program with no hooks
-    runs with no rule at all."""
+    there and trusted, each naming the project root where the journal's server runs even in a worktree, and the
+    folder itself is trusted, so no person has to accept either; a program with no hooks runs with no rule at all."""
 
     def __init__(self, home: JournalHome, providers: Providers, managed: ManagedHooks) -> None:
         self.home, self.providers, self.managed = home, providers, managed
@@ -29,6 +29,6 @@ class HelperPrograms:
         provider = self.providers.provider(program)
         hooks = ProgramHooks.hooks(type(provider), folder)
         provider.folder_trusted(folder)
-        if hooks.is_complete() and provider.hook_trust(folder) is HookTrust.READY:
+        if hooks.is_complete() and hooks.names_root(self.home.project_folder) and provider.hook_trust(folder) is HookTrust.READY:
             return
-        hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', folder, self.managed.all())
+        hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', self.home.project_folder, self.managed.all())
