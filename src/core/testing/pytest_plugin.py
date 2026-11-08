@@ -1,4 +1,6 @@
+import os
 import shutil
+import sys
 from collections.abc import Callable, Generator
 import time
 from pathlib import Path
@@ -6,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from core.base.registry.lazy_loading import LazyLoading
+from core.testing.heavy_run_gate import HeavyRunGate
 from core.testing.run_cpu import RunCpu
 from core.testing.run_size import RunSize
 from core.testing.full_run_record import FullRunRecord
@@ -30,6 +33,8 @@ CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
 TESTS_PER_WORKER_OPTION = "tests_per_worker"
 MOST_WORKERS_OPTION = "most_workers"
+RUNNER_NICENESS = 10
+HELD_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -39,8 +44,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_cmdline_main(config: pytest.Config) -> None:
+    if HELD_VARIABLE not in os.environ and RunSize(config.args, 1).is_heavy():
+        HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
+        os.environ[HELD_VARIABLE] = "1"
     if not config.getoption("numprocesses", None):
         return
+    os.nice(RUNNER_NICENESS)
     per_worker, most = int(config.getini(TESTS_PER_WORKER_OPTION)), int(config.getini(MOST_WORKERS_OPTION))
     workers = RunSize(config.args, per_worker * most).workers(per_worker, most)
     config.option.numprocesses = 0 if workers == 1 else workers
