@@ -1,3 +1,4 @@
+from core.modules.settings.support.context_share import ContextShare
 import json
 from collections.abc import Mapping
 from dataclasses import asdict, replace
@@ -49,8 +50,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome) -> None:
-        self.home = home
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare) -> None:
+        self.home, self.share = home, share
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
@@ -76,8 +77,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         tool = command.event.tool
         metadata = {**answers.metadata(), "foreign": [asdict(run) for run in command.event.foreign], "folder": str(command.event.raw.get("cwd", "")), "resumed": command.event.is_resume, "compaction_start": command.event.is_compaction_start, "interrupted": command.event.is_interrupt, "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}
         if command.event.event == HookEventName.COMPACT or command.event.is_compaction_start:
-            provider = self.providers.provider(command.event.program)
-            percent = provider.context_percent(self.home, command.event.session)
+            percent = self.share.percent(command.event.program, command.event.session)
             if percent is not None:
                 metadata["context_percent"] = percent
         if command.event.displayed_text:

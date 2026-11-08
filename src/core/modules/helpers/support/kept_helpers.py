@@ -1,6 +1,6 @@
+from core.modules.settings.support.context_share import ContextShare
 from core.base.agent_role import AgentRole
 from core.base.database.kept_rows import KeptRows
-from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -19,9 +19,9 @@ class KeptHelpers:
     the program and model asked for, with a session that resumes in its folder and is not nearly full. The
     newest comes first."""
 
-    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, home: JournalHome, states: ProgramStates) -> None:
-        self.queries, self.providers, self.folders, self.kept_rows, self.home = queries, providers, folders, kept_rows, home
-        self.states = states
+    def __init__(self, queries: Queries, providers: Providers, folders: AgentFolders, kept_rows: KeptRows, states: ProgramStates, share: ContextShare) -> None:
+        self.queries, self.providers, self.folders, self.kept_rows = queries, providers, folders, kept_rows
+        self.states, self.share = states, share
 
     def with_open_jobs(self, profile: str) -> set[int | None]:
         return self.kept_rows.scoped_read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows()},
@@ -44,7 +44,7 @@ class KeptHelpers:
         provider = self.providers.provider(helper.program)
         if not provider.session_matches_folder(self.folders.folder(helper), helper.session):
             return False
-        return (provider.context_percent(self.home, helper.session) or 0) < FULL_SESSION_PERCENT
+        return (self.share.percent(helper.program, helper.session) or 0) < FULL_SESSION_PERCENT
 
     def idle_refusal(self, helpers: tuple[Agent, ...]) -> Refusal:
         additional_helpers = f" (also {', '.join(str(helper.id) for helper in helpers[1:3])})" if helpers[1:] else ""

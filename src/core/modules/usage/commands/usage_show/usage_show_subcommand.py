@@ -1,5 +1,7 @@
+from core.modules.settings.support.context_share import ContextShare
 from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
+from dataclasses import replace
 
 from core.base.agent_role import AgentRole
 from core.base.query.conditions.excluding import Excluding
@@ -30,8 +32,8 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
     name = "show"
     environment_refusal = "usage is shown for one environment"
 
-    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity) -> None:
-        self.activity = activity
+    def __init__(self, queries: Queries, agents: AgentQuery, files: StatusFiles, activity: AgentActivity, share: ContextShare) -> None:
+        self.activity, self.share = activity, share
         self.queries, self.agents, self.files = queries, agents, files
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -41,8 +43,12 @@ class UsageShowSubcommand(ReadSubcommand[EnvironmentUsage]):
         activity = self.activity.current()
         opened = tuple(self.agents.matching(activity).oldest().all_rows())
         counted = opened if arguments.open_only else (*opened, *self.ended_helpers(self.agents, opened))
-        statuses = {agent.session: self.files.status(agent.session) for agent in counted}
+        statuses = {agent.session: self.with_share(agent) for agent in counted}
         return EnvironmentUsage(tuple((agent, statuses[agent.session]) for agent in counted), self.files.plan_windows(statuses), activity.pending)
+
+    def with_share(self, agent: Agent) -> SessionStatus:
+        status = self.files.status(agent.session)
+        return replace(status, context_percent=self.share.percent(agent.program, agent.session)) if status.context_percent is not None else status
 
     @staticmethod
     def ended_helpers(agents: Query[Agent], opened: tuple[Agent, ...]) -> tuple[Agent, ...]:

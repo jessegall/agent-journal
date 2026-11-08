@@ -24,9 +24,6 @@ class Providers:
     def reported_model(self, program: str, home: JournalHome, session: str) -> str:
         return self.provider(program).reported_model(home, session)
 
-    def context_percent(self, program: str, home: JournalHome, session: str) -> int | None:
-        return self.provider(program).context_percent(home, session)
-
     def all(self) -> list[Provider]:
         return [self.provider(entry.name) for entry in self.registry.providers]
 

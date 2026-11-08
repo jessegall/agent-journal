@@ -4,6 +4,8 @@ from core.base.setting.setting_value import SettingValue
 from core.base.setting.list_rule import ListRule
 from core.base.setting.number_rule import NumberRule
 
+from core.modules.settings.support.context_share import CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+
 MODULE_KEY = "journal.core.helpers"
 HELPER_RUN_LIMIT = f"{MODULE_KEY}.helper-run-limit"
 HELPER_KEPT_LIMIT = f"{MODULE_KEY}.helper-kept-limit"
@@ -18,8 +20,6 @@ AGENT_OPTIONS = f"{MODULE_KEY}.agent-options"
 HELPER_INSTRUCTION_FILES = f"{MODULE_KEY}.helper-instruction-files"
 COLD_SESSION_MINUTES = f"{MODULE_KEY}.cold-session-minutes"
 COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
-CONTEXT_LIMIT_ON = f"{MODULE_KEY}.context-limit-on"
-CONTEXT_LIMIT_TOKENS = f"{MODULE_KEY}.context-limit-tokens"
 CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
 HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
