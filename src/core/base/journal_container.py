@@ -1,5 +1,7 @@
 from core.base.container import Container
 from core.base.helper_type_book import HelperTypeBook
+from core.base.hosting.hosted_file import HostedFile
+from core.base.hosting.hosting import Hosting
 from core.base.database.database import Database
 from core.base.database.shared_tables import SharedTables
 from core.base.journal_home import JournalHome
@@ -25,6 +27,7 @@ def database_container(home: JournalHome, database: Database) -> Container:
     container = Container()
     container.bind(JournalHome, home)
     container.bind(Database, database)
+    container.bind(Hosting, HostedFile.shared_hosting(home))
     container.bind(PluginScriptProcesses, PluginScriptProcesses.shared(home))
     container.bind(SharedTables, SharedTables.shared(home))
     return container
