@@ -190,3 +190,12 @@ test("an inspector with no declaration of its own still lists the fields of its 
     const {element} = await drawn(await catalogueOf([]), {"pin show 7": {ok: true, value: {id: 7, title: "A pin", state: "kept"}}}, {noun: "pin"});
     expect(element.querySelector("[data-resource-fields]")).not.toBeNull();
 });
+
+test("an inspector whose part draws the text draws it once, under its own tabs, and one that does not draws it above its parts", async () => {
+    const DOC = {...TASK, noun: "doc", label: "Document {id}", reads: "doc inspect {row_id}", description: "", components: [{window: "acme.body", tab: ""}], draws_text: true};
+    const row = {...ROW, body: "A document that reads by default."};
+    const doc = await drawn(await catalogueOf([DOC], "acme.body"), {"doc inspect 7": {ok: true, value: row}}, {noun: "doc"});
+    expect(doc.element.querySelector("[data-resource-text]")).toBeNull();
+    const task = await drawn(await catalogueOf([{...TASK, components: [{window: "acme.body", tab: ""}]}], "acme.body"), {"task inspect 7": {ok: true, value: row}});
+    expect(task.element.querySelectorAll("[data-resource-text]")).toHaveLength(1);
+});

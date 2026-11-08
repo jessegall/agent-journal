@@ -257,3 +257,11 @@ def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
     story.expect_rows(helper_agent(story).parent_id == story.agent.id)
     story.hook(helper_agent(story).session, stop_with_report("The diff is clean."))
     story.expect_text(f"message read {helper_report(story).id}", "The diff is clean.")
+
+
+def test_a_message_the_main_agent_sends_a_helper_is_not_among_the_main_agents_reports(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = helper_agent(story)
+    sent = story.new_row_id(f'message send "Look at the tax as well" --to agent:{helper.id} --environment main', actor=story.agent)
+    story.expect_text("message reports --environment main", "no unread reports", actor=story.agent)
+    story.expect_text("message reports --environment main", f"message:{sent}", actor=Actor(helper.id, ActorType.AGENT))

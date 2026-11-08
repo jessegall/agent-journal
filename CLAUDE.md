@@ -1,5 +1,3 @@
-@AGENTS.md
-
 <!-- BEGIN: code-commandments skills (auto-generated, run `composer update`) -->
 @AGENTS.md
 

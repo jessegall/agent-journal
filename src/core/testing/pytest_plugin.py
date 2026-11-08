@@ -1,11 +1,13 @@
 import shutil
 from collections.abc import Callable, Generator
+import time
 from pathlib import Path
 
 import pytest
 
 from core.base.registry.lazy_loading import LazyLoading
 from core.testing.run_size import RunSize
+from core.testing.full_run_record import FullRunRecord
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
@@ -19,6 +21,7 @@ STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
 RUN_FOLDER = pytest.StashKey[Path]()
 CALL_PASSED = pytest.StashKey[bool]()
+RUN_START = pytest.StashKey[float]()
 STORY_STEPS_KEY = "journal_story_steps"
 TESTS_PER_WORKER_OPTION = "tests_per_worker"
 MOST_WORKERS_OPTION = "most_workers"
@@ -40,6 +43,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 
 def pytest_configure(config: pytest.Config) -> None:
     LazyLoading.always_prevented = True
+    config.stash[RUN_START] = time.monotonic()
     config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, cpu_seconds, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
@@ -118,6 +122,8 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     if process_output is not None:
         process_output[STORY_STEPS_KEY] = overlap.stories
         return
+    if RunSize(session.config.args, 1).is_whole_suite():
+        FullRunRecord(session.testscollected, session.testsfailed, time.monotonic() - session.config.stash[RUN_START]).write()
     lines = overlap.report_lines()
     if not lines:
         return

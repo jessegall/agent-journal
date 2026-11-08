@@ -12009,7 +12009,8 @@ const L8 = {
       events: [],
       links: { kinds: [], open: !1, outside_plan: !1, page_size: 10 },
       shareable: !1,
-      lists_fields: !0
+      lists_fields: !0,
+      draws_text: !1
     }), l = _(null), i = _(""), r = _(""), c = _(""), d = _("details"), h = _(null), p = _(0);
     let y = 0;
     const b = C(() => ({ row_id: n.id, id: n.id })), A = C(() => l.value ? Vn(o.value.title, l.value, b.value) || xw(n.noun, l.value, n.id) : ""), S = C(() => l.value ? l8(o.value, n.noun, l.value, n.id) : ""), $ = C(() => S.value === A.value ? "" : S.value), I = C(() => l.value ? Vn(o.value.description, l.value, b.value) : ""), H = C(() => {
@@ -12077,7 +12078,7 @@ const L8 = {
               T(Gt, { value: d.value }, {
                 details: j(() => [
                   m("div", F8, [
-                    N.value ? (u(), f("div", {
+                    N.value && !o.value.draws_text ? (u(), f("div", {
                       key: 0,
                       class: "md text",
                       "data-resource-text": "",
@@ -12151,7 +12152,7 @@ const L8 = {
       ]))
     ], 512));
   }
-}, z8 = /* @__PURE__ */ U(H8, [["__scopeId", "data-v-3a0c8a17"]]), WM = {
+}, z8 = /* @__PURE__ */ U(H8, [["__scopeId", "data-v-f9efe913"]]), WM = {
   __name: "HostedInspector",
   props: {
     noun: { type: String, required: !0 },
@@ -13724,7 +13725,7 @@ function VM(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const KM = su(() => import("./VoiceFigure-BJOpskj1.mjs").then((e) => e.V)), YM = "1.2.0", QM = "3.5";
+const KM = su(() => import("./VoiceFigure-Bufu6tkM.mjs").then((e) => e.V)), YM = "1.2.0", QM = "3.5";
 export {
   If as $,
   Oe as A,
