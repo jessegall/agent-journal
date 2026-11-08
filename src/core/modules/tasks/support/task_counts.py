@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-TASK_COUNT_PERIODS = [("1", "Last hour"), ("6", "Last 6 hours"), ("24", "Last 24 hours"), ("168", "Last 7 days"), ("now", "From now")]
+TASK_COUNT_PERIODS = [("1", "Last hour"), ("6", "Last 6 hours"), ("24", "Today"), ("168", "This week"), ("now", "From now")]
 
 
 @dataclass(frozen=True)
