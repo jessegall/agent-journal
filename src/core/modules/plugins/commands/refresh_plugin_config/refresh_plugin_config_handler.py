@@ -42,6 +42,8 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
             if problems:
                 raise Refusal(f"the {plugin.name} config does not fit its schema: {'; '.join(problems)}", "change the values at those places")
             self.write(file, handed_in)
+        if handed_in is None and not file.is_file():
+            return plugin
         text = handed_in if handed_in is not None else self.read(file)
         digest = SkillDigest.digest(text)
         if digest == plugin.config_digest:
