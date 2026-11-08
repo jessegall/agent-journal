@@ -62,10 +62,18 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
 
 def test_a_design_link_a_helper_returned_is_pinned(new_story):
     story = new_story(fixture=UserJoined)
-    response = {"content": [{"type": "text", "text": "Link: https://claude.ai/design/p/1"}]}
+    response = {"content": [{"type": "text", "text": "Link: https://claude.ai/design/p/1?file=Cart.html"}]}
     sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_response": response})
     expect_absent_pin_lines(story.hook("s-1", sample))
-    story.expect_text("pin list --environment main", "Design: 1", "https://claude.ai/design/p/1", actor=story.user)
+    story.expect_text("pin list --environment main", "Design: Cart.html", "https://claude.ai/design/p/1?file=Cart.html", actor=story.user)
+
+
+def test_a_bare_design_project_link_is_not_pinned(new_story):
+    story = new_story(fixture=UserJoined)
+    response = {"content": [{"type": "text", "text": "Projects: https://claude.ai/design/p/1 https://claude.ai/design/p/2"}]}
+    sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_response": response})
+    story.hook("s-1", sample)
+    story.expect_absent("pin list --environment main", "https://claude.ai/design/p/1", actor=story.user)
 
 
 def test_a_helper_report_pins_a_design_only_once_even_after_it_is_closed(new_story):

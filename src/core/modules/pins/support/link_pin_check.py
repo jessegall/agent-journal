@@ -25,6 +25,7 @@ LOCAL_ADDRESS = re.compile(r"^https?://(?:[^/.:]+|127\.0\.0\.1)(?:[:/]|$)")
 PIN_CLAIM = re.compile(r"\b(pinned (?:above|at the top|for you)|(?:i've|i have|i) pinned|(?:it's|it is|now) pinned)\b", re.IGNORECASE)
 PR_ADDRESS = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 DESIGN_ADDRESS = re.compile(r"^https://claude\.ai/design/[^\s]+$")
+PROJECT_PATH = "/design/p/"
 OPEN_LABEL = "Open"
 CLAIM_WINDOW_SECONDS = 60
 BANG_COMMAND = re.compile(r"(?:^|`|\b(?:run|type|enter|try)\s+)!\s?([^\s`][^`\n]*)", re.IGNORECASE | re.MULTILINE)
@@ -71,7 +72,7 @@ class LinkPinCheck:
         made = []
         for url in links:
             project, filename = self.design_key(url)
-            if not filename or (project, filename) in existing:
+            if self.is_bare_project(project, filename) or (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):
                 continue
             made.append(MakePin(self.design_title(url), url, OPEN_LABEL))
             existing.add((project, filename))
@@ -83,6 +84,10 @@ class LinkPinCheck:
         name = parse_qs(parsed.query).get("file", [parsed.path.rstrip("/").rsplit("/", 1)[-1]])[0]
         name = unquote(name).replace("-", " ").replace("_", " ")
         return f"Design: {name}"[:80]
+
+    @staticmethod
+    def is_bare_project(path: str, filename: str) -> bool:
+        return path.startswith(PROJECT_PATH) and not filename
 
     @staticmethod
     def design_key(url: str) -> tuple[str, str]:
