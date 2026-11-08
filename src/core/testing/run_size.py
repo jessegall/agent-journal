@@ -6,6 +6,7 @@ from pathlib import Path
 TEST_NAME_SEPARATOR = "::"
 HEAVY_TESTS = 50
 FULL_SUITE = "tests"
+UNIT_FOLDER = "unit"
 TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
 
@@ -20,6 +21,9 @@ class RunSize:
     def is_full_suite(self) -> bool:
         return all(target.rstrip("/") == FULL_SUITE for target in self.targets)
 
+    def reaches_stories(self) -> bool:
+        return not self.targets or any(UNIT_FOLDER not in Path(target).parts for target in self.targets)
+
     def is_heavy(self) -> bool:
         if not self.targets or self.is_full_suite():
             return True
@@ -29,13 +33,13 @@ class RunSize:
     def limited_count(self, limit: int) -> int:
         return RunSize(self.targets, limit).counted()
 
-    def runner_count(self, one_runner_below: int, runners: int, most_runners_from: int, most_runners: int) -> int:
+    def runner_count(self, single_runner_limit: int, runners: int, highest_count_start: int, most_runners: int) -> int:
         if not self.targets:
             return most_runners
         count = self.counted()
-        if count < one_runner_below:
+        if count < single_runner_limit:
             return 1
-        return most_runners if count >= most_runners_from else runners
+        return most_runners if count >= highest_count_start else runners
 
     def counted(self) -> int:
         count = 0

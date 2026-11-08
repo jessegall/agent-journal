@@ -18,9 +18,9 @@ def test_a_module_can_declare_an_inspector_and_the_registry_keeps_it(new_story):
 
 def test_a_module_without_inspectors_syncs_as_before(new_story):
     story = new_story(fixture=MainEnvironment)
-    before = Registry.read(story.container.get(Database)).inspectors
+    module_inspectors = Registry.read(story.container.get(Database)).inspectors
     story.expect_sync_success(f"{PATH}:PlainModule")
-    expect_value(Registry.read(story.container.get(Database)).inspectors, before)
+    expect_value(Registry.read(story.container.get(Database)).inspectors, module_inspectors)
 
 
 def test_an_inspector_is_drawn_at_one_of_four_widths():

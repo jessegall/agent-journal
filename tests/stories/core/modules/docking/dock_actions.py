@@ -8,10 +8,10 @@ from tests.stories.support.story_checks import expect_value
 
 def dock_actions(story) -> list[tuple[str, str, str]]:
     registry = Registry.read(story.container.get(Database))
-    on_marks = [(mark.module, button["icon"], button["label"]) for mark in registry.marks for button in (*mark.buttons, *mark.group_buttons)]
-    on_docks = [(dock.module, button["icon"], button["label"]) for dock in registry.docks for button in dock.buttons]
-    on_slots = [(button.module, button.declaration.icon, button.declaration.label) for button in registry.buttons if any(slot.startswith("dock.") for slot in button.declaration.slots)]
-    return [*on_marks, *on_docks, *on_slots]
+    mark_buttons = [(mark.module, button["icon"], button["label"]) for mark in registry.marks for button in (*mark.buttons, *mark.group_buttons)]
+    dock_buttons = [(dock.module, button["icon"], button["label"]) for dock in registry.docks for button in dock.buttons]
+    slot_buttons = [(button.module, button.declaration.icon, button.declaration.label) for button in registry.buttons if any(slot.startswith("dock.") for slot in button.declaration.slots)]
+    return [*mark_buttons, *dock_buttons, *slot_buttons]
 
 
 def test_every_dock_button_has_an_icon_in_the_set_and_a_short_plain_label(new_story):

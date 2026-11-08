@@ -1,13 +1,23 @@
+import inspect
+from pathlib import Path
 from typing import ClassVar
 
+from core.base.file_access import FileAccess
 from core.testing.story import Story
 
 
 class StoryFixture:
     """A named starting state for stories: the fixture it builds on, the steps that make its state, and what
-    that state must be; it is built once per run and copied for every story that starts from it."""
+    that state must be; it is built once per run and copied for every story that starts from it. Its source
+    is read when the class is defined, so a file changed during a run does not ask for another template."""
 
     parent: ClassVar[type["StoryFixture"] | None] = None
+    source_text: ClassVar[str] = ""
+
+    def __init_subclass__(cls, **options: object) -> None:
+        super().__init_subclass__(**options)
+        source = inspect.getsourcefile(cls)
+        cls.source_text = FileAccess.shared().read(Path(source)) if source else ""
 
     def steps(self, story: Story) -> None:
         raise NotImplementedError(f"{type(self).__name__} has no steps")

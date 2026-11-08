@@ -88,7 +88,7 @@ class CodingModule(Module):
     requires_core = ">=5,<6"
     settings = CODING_SETTINGS
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.viewer", "journal.core.plugins"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins"]
     guards = [MainTaskStartGuard, MainReservationGuard]
     suites = [CodingSuite]
     drivers = [MainDriver, HelperDriver, WorkerDriver]

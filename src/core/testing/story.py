@@ -53,6 +53,7 @@ from core.modules.tasks.support.task_brief_requirement import TaskBriefRequireme
 from core.testing.hook_sample import HookSample
 from core.testing.hook_samples import SAMPLE_FIRING, HookSamples
 from core.testing.manual_clock import ManualClock
+from core.testing.story_journal import StoryJournal
 from core.testing.story_state import StoryState
 from core.testing.fixed_process_table import FixedProcessTable
 from core.testing.line_outcome import LineOutcome
@@ -61,17 +62,19 @@ from core.testing.line_outcome import LineOutcome
 M = TypeVar("M", bound=Model)
 S = TypeVar("S")
 
+COMMITTING_JOURNAL = StoryJournal()
 TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
 
 
 class Story:
-    """One story on its own copy of the template database, the public entry a plugin's stories use: it loads
-    the modules named, runs command lines as text through the same console, container and registry as a real
-    run, moves its clock by hand, reads rows and refusals, and checks what came back. It knows no model of the
-    core."""
+    """One story on a journal of its template that rolls back at its end, the public entry a plugin's
+    stories use: it loads the modules named, runs command lines as text through the same console, container
+    and registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back.
+    It knows no model of the core."""
 
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
+        self.journal = COMMITTING_JOURNAL
         self.results: list[LineOutcome] = []
         self.steps: list[str] = []
         self.agent, self.user, self.helper = state.agent, state.user, state.helper
@@ -83,12 +86,17 @@ class Story:
         clock, process_table = ManualClock(), FixedProcessTable([])
         return cls(home, story_container(home, clock, process_table), clock, process_table, state)
 
+    def attach_journal(self, journal: StoryJournal) -> None:
+        self.journal = journal
+        journal.defer_writes(self.container.get(Database))
+
     @property
     def state(self) -> StoryState:
         return StoryState(self.agent, self.user, self.helper)
 
     def close(self) -> None:
         self.container.get(Database).close()
+        self.journal.discard_writes()
 
     def bind(self, class_type: type[S], replacement: S) -> None:
         self.replacements[class_type] = replacement
@@ -257,7 +265,7 @@ class Story:
         code, output_text = self.synced_with(module)
         assert code == 0, f"module sync with {module} gave {code}: {output_text}"
 
-    def expect_shipped_sync_refusal(self, module: type[Module], text: str) -> None:
+    def expect_default_module_sync_refusal(self, module: type[Module], text: str) -> None:
         with patch("core.modules.DEFAULT_MODULES", (*DEFAULT_MODULES, module)):
             code, output_text = self.synced()
         assert code != 0 and text in output_text, f"module sync with the shipped {module.name} gave {code}: {output_text}"
@@ -288,7 +296,7 @@ class Story:
         code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
         if code == 0:
             self.container.get(Database).close()
-            self.container = story_container(self.home, self.clock, self.process_table)
+            self.container = story_container(self.home, self.clock, self.process_table, self.journal)
             for class_type, replacement in self.replacements.items():
                 self.container.bind(class_type, replacement)
         return code, stream.getvalue()
@@ -297,8 +305,9 @@ class Story:
         assert all(checks), detail or f"a row check failed: {checks}"
 
 
-def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable") -> Container:
+def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable", journal: StoryJournal = COMMITTING_JOURNAL) -> Container:
     container = synced_container(home)
+    journal.defer_writes(container.get(Database))
     container.bind(ScriptPolicy, ScriptPolicy(guards_run=True, commit_limit_ms=None))
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
