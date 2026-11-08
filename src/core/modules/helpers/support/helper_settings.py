@@ -15,6 +15,7 @@ AGENT_USE_DAYS = "journal.core.helpers.agent-use-days"
 PROGRAM_WINDOW_PERCENT = f"{MODULE_KEY}.program-window-percent"
 PROGRAM_SPLIT = f"{MODULE_KEY}.program-split"
 AGENT_OPTIONS = f"{MODULE_KEY}.agent-options"
+HELPER_INSTRUCTION_FILES = f"{MODULE_KEY}.helper-instruction-files"
 COLD_SESSION_MINUTES = f"{MODULE_KEY}.cold-session-minutes"
 COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
 HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
@@ -26,6 +27,7 @@ HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use count
                    SettingValue("helper-max-cost", "Largest helper cost", "Dollars a helper may cost before it is stopped; 0 sets no limit.", SettingType.NUMBER, default=0, person_set=True),
                    SettingValue("program-window-percent", "Plan allowance used", "Stop assigning new agents when a plan window reaches this percent; 0 turns this check off.", SettingType.NUMBER, default=95, person_set=True),
                    SettingValue("program-split", "Program split", "Percentage of new work for each program. Task routes take priority.", SettingType.LIST, default=(), person_set=True),
+                   SettingValue("helper-instruction-files", "Instruction files for a helper's profile", "A helper starts in a folder of links with instruction files written for its profile.", SettingType.FLAG, default=True, person_set=True),
                    SettingValue("cold-session-minutes", "Prompt cache lifetime", "Minutes after an agent's last reply that its prompt cache counts as gone. At 0 this check is off.", SettingType.NUMBER, default=55, person_set=True),
                    SettingValue("cold-session-context-percent", "Context too large to resume cold", "A cold agent whose context fills this percent or more starts a new session. At 0 this check is off.", SettingType.NUMBER, default=20, person_set=True),
                    SettingValue("agent-options", "Agent options", "Options of workers and helpers, a line each, such as worker allow_new=off or helper:researcher max_cost=2.", SettingType.LIST, default=(), person_set=True)]
