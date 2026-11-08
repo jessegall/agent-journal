@@ -105,6 +105,8 @@ never starts is retired after the idle time.
 
 ## As the worker
 
+- A full context is no reason to hurry or stop: it is compacted, and you get your task's overview, your memories and
+  the memory marks back, so nothing you keep is lost. Keep working as before.
 - Before changing project files, read `journal task overview <current task>`. A fresh dispatch, queued task,
   rework, resumed launch or compaction requires the current task's overview, not a previous task's read.
   Use `journal task context <n>` for more conversation and follow the returned page, text-offset and ancestry
