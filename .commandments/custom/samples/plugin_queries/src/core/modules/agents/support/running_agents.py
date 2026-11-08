@@ -18,6 +18,6 @@ def read_open_tasks(queries):
     return queries.query(Task).matching(IsNull("ended_at")).all_rows()
 
 
-def read_named_running(agents):
+def read_running(agents):
     # @righteous architecture_agents_running_agents_by_hand
     return agents.running().all_rows()

@@ -37,7 +37,7 @@ class SendHelperHandler(Handler[SendHelper, int]):
         self.kept, self.files = kept, files
 
     def handle(self, command: SendHelper, context: Context) -> int:
-        helper = self.reach.checked_helper(command.helper_id, context.actor)
+        helper = self.reach.checked_helper(command.helper_id, context.actor, context.command)
         jobs = self.jobs.helper_jobs(helper.id)
         if not jobs:
             raise Refusal(f"helper {helper.id} has no job to go on from", "journal helper start starts a new one")

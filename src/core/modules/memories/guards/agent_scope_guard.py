@@ -21,4 +21,4 @@ class AgentScopeGuard(Guard[Changed[Memory]]):
             return
         for memory in (event.old_row, event.row):
             if memory is not None:
-                self.scope.check(memory, context.actor, event.old_row is None)
+                self.scope.check(memory, context.actor, event.old_row is None, context.command)

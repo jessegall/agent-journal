@@ -13,7 +13,7 @@ ALIASED = Declaration("sample.alias", NudgeType.STEERING, "{summary}")
 # @sin architecture_nudges_stored_text
 PLURAL = NudgeDeclaration("sample.plural", NudgeType.STEERING, "message:{message}", plural_text="{words}")
 # @sin architecture_nudges_stored_text
-NAMED = NudgeDeclaration(key="sample.named", type=NudgeType.NOTICE, text="{message_text}")
+KEYWORDS = NudgeDeclaration(key="sample.named", type=NudgeType.NOTICE, text="{message_text}")
 # @righteous architecture_nudges_stored_text
 ROWS = NudgeDeclaration("sample.rows", NudgeType.STEERING, "{count} messages: {messages}")
 # @righteous architecture_nudges_stored_text
@@ -24,4 +24,4 @@ OPENING = NudgeDeclaration("drivers.opening_line", NudgeType.NOTICE, "{text}")
 FAULT = NudgeDeclaration("drivers.rule_failed", NudgeType.NOTICE, "{text}")
 
 # @righteous architecture_nudges_stored_text
-OTHER = dict(text="{reason}")
+PLAIN_DICT = dict(text="{reason}")

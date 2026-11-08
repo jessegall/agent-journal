@@ -1,4 +1,5 @@
 from core.base.actor import Actor
+from core.base.command.command import Command
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.helper_type_book import HelperTypeBook
@@ -17,7 +18,7 @@ class HelperReach:
     def __init__(self, agents: AgentRows, helper_types: HelperTypeBook) -> None:
         self.agents, self.helper_types = agents, helper_types
 
-    def checked_helper(self, helper_id: int, actor: Actor) -> Agent:
+    def checked_helper(self, helper_id: int, actor: Actor, command: Command[object]) -> Agent:
         helper = self.agents.find(helper_id)
         if helper.role == AgentRole.MAIN:
             raise Refusal(f"agent {helper_id} is no helper", "journal agent cards lists the helpers")
@@ -27,7 +28,7 @@ class HelperReach:
         if helper.retired_at is not None:
             raise Refusal(f"helper {helper.id} is retired, for good", "journal helper start starts a new one")
         if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):
-            raise UserApprovalRefusal(f"Allow this action on helper {helper.id}, which belongs to agent {helper.parent_id}?")
+            raise UserApprovalRefusal(f"Allow this action on helper {helper.id}, which belongs to agent {helper.parent_id}?", command=command)
         return helper
 
     def new_parent(self, helper: Agent, actor: Actor) -> int | None:
