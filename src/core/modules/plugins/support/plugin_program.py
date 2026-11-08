@@ -32,6 +32,7 @@ from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX
 from core.modules.plugins.support.plugin_manifest import LINE_VERSION
 from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.plugins.support.login_path import LoginPath
+from core.modules.plugins.support.plugin_service_waits import PluginServiceWaits
 from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.support.plugin_stopped_error import PluginStoppedError
@@ -47,7 +48,8 @@ class PluginProgram:
     """Runs a plugin event through its service or a time-limited process."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths, skills: LoadedSkills, checkouts: AgentCheckouts, scripts: PluginScriptProcesses, agents: AgentRows,
-                 plugins: PluginQuery, places: PluginPlaces, scopes: Scopes, environments: EnvironmentRows) -> None:
+                 plugins: PluginQuery, places: PluginPlaces, scopes: Scopes, environments: EnvironmentRows, waits: PluginServiceWaits) -> None:
+        self.waits = waits
         self.home, self.folders, self.sockets, self.skills, self.checkouts, self.scripts, self.agents = home, folders, sockets, skills, checkouts, scripts, agents
         self.plugins, self.places, self.scopes, self.environments = plugins, places, scopes, environments
         self.written_settings: dict[Path, str] = {}
@@ -108,11 +110,13 @@ class PluginProgram:
             raise PluginFaultError("its answer is not JSON") from None
 
     def service_answer(self, plugin: str, service: str, line: str, limit_ms: int | None) -> PluginAnswer | None:
-        service_socket = PluginSocket(self.sockets.answers(plugin, service))
+        path = self.sockets.answers(plugin, service)
+        service_socket = PluginSocket(path)
         if not service_socket.is_open():
             return None
         try:
-            return PluginAnswer.parsed(service_socket.ask(line, limit_ms))
+            with self.waits.held(path):
+                return PluginAnswer.parsed(service_socket.ask(line, limit_ms))
         except (ConnectionError, FileNotFoundError):
             return None
         except json.JSONDecodeError:

@@ -19,6 +19,8 @@ from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_late_error import PluginLateError
+from core.modules.plugins.support.plugin_service_waits import MOST_WAITING_CALLS, PluginServiceWaits
 from core.modules.plugins.support.plugin_program import PluginProgram, STOP_LIMIT_SECONDS
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
@@ -68,7 +70,7 @@ def program_at(tmp_path: Path, body: str, script: str = "") -> tuple[PluginProgr
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "late", "title": "Late", "version": "1", "program": "run.sh"}))
     (folder / "run.sh").write_text(body)
     (folder / "run.sh").chmod(0o755)
-    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), PluginScriptProcesses(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(role="main")), SimpleNamespace(), UNQUEUED_PLACES, SimpleNamespace(opened=lambda *args, **kwargs: nullcontext()), SimpleNamespace(all=lambda: ()))
+    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), PluginScriptProcesses(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(role="main")), SimpleNamespace(), UNQUEUED_PLACES, SimpleNamespace(opened=lambda *args, **kwargs: nullcontext()), SimpleNamespace(all=lambda: ()), PluginServiceWaits())
     return program, PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {}, script=script)
 
 
@@ -117,3 +119,16 @@ def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tm
     assert str(failures[0]) == "it was stopped when the plugin was switched off"
     assert failures[0].counts_toward_failing is False
     assert program.scripts.running("late") == ()
+
+
+def test_a_call_past_the_most_that_may_wait_on_a_service_is_refused_and_a_finished_one_frees_its_place(tmp_path):
+    waits, path = PluginServiceWaits(), tmp_path / "service.sock"
+    held = [waits.held(path) for _ in range(MOST_WAITING_CALLS)]
+    for place in held:
+        place.__enter__()
+    with pytest.raises(PluginLateError):
+        with waits.held(path):
+            pass
+    held[0].__exit__(None, None, None)
+    with waits.held(path):
+        pass
