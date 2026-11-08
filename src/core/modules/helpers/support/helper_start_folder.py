@@ -17,9 +17,9 @@ ROLE = "helper"
 
 
 class HelperStartFolder:
-    """Makes a helper's start folder: outside the project, every top-level entry of its parent's checkout a link to the real one, and CLAUDE.md
-    and AGENTS.md written for its profile, so the helper reads its parent's checkout as it is but only the instructions and
-    skills it needs."""
+    """Makes a helper's start folder: outside the project, every top-level entry of its parent's checkout a
+    link to the real one, and CLAUDE.md and AGENTS.md written for its profile, so the helper reads its
+    parent's checkout as it is but only the instructions and skills it needs."""
 
     def __init__(self, home: JournalHome, folders: AgentFolders, settings: SettingValues, suites: SuiteChoice, profiles: ProfileFiles, skills: AgentProfileSkills) -> None:
         self.home, self.folders, self.settings, self.suites, self.profiles, self.skills = home, folders, settings, suites, profiles, skills

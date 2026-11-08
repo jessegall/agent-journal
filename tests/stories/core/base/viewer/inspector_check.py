@@ -2,6 +2,7 @@ from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.base.viewer.support.inspector_faults import PATH, NoIconModule, PanelWordModule
 from tests.stories.core.support.fixtures import MainEnvironment
+from tests.stories.support.story_checks import expect_value
 
 
 def test_two_declarations_for_one_model_are_refused(new_story):
@@ -48,4 +49,4 @@ def test_inspector_actions_become_buttons_on_the_row_slot(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{PATH}:ValidModule")
     buttons = {entry.declaration.name: entry.declaration for entry in Registry.read(story.container.get(Database)).buttons}
-    assert tuple(buttons["shown.start"].slots) == ("row.reminder",)
+    expect_value(tuple(buttons["shown.start"].slots), tuple(["row.reminder"]))

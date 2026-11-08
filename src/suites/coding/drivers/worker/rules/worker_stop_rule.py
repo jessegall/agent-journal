@@ -19,8 +19,8 @@ from suites.coding.modules.workers.support.worker_next_task import WorkerNextTas
 
 class WorkerStopRule(DriverRule):
     """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues,
-    while a reader is needed, or between tasks to be compacted. Its run, tests or helper's report restart it; otherwise it delivers or says
-    it is stuck."""
+    while a reader is needed, or between tasks to be compacted. Its run, tests or helper's report restart
+    it; otherwise it delivers or says it is stuck."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP

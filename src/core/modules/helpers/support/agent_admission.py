@@ -5,9 +5,10 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AgentAdmission:
-    """Whether an agent type and profile may start, resume or use a provider and model. Every restriction has to
-    allow it: the agent options of the type and profile, then the allowed models of the environment. A list that is
-    set and empty allows nothing, one that is not set allows everything, and a preference never widens a restriction."""
+    """Whether an agent type and profile may start, resume or use a provider and model. Every restriction has
+    to allow it: the agent options of the type and profile, then the allowed models of the environment. A
+    list that is set and empty allows nothing, one that is not set allows everything, and a preference
+    never widens a restriction."""
 
     def __init__(self, options: AgentOptions, settings: SettingValues) -> None:
         self.options, self.settings = options, settings

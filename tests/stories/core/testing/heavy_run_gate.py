@@ -2,6 +2,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from tests.stories.support.story_checks import expect_value
 
 CHECKOUT = Path(__file__).resolve().parents[4]
 HOLDING = "holding the gate"
@@ -72,18 +73,18 @@ def test_a_second_full_run_waits_for_the_first(tmp_path):
     first = holder(tmp_path)
     second = started(tmp_path, project(tmp_path, "quick", "test_quick.py", QUICK_TEST), "tests")
     read_until(second.stderr, WAITING)
-    assert second.poll() is None
+    expect_value(second.poll() is None, True)
     release(tmp_path, first)
     second_output, _ = second.communicate(timeout=120)
-    assert second.returncode == 0 and "1 passed" in second_output
+    expect_value(bool(second.returncode == 0 and "1 passed" in second_output), True)
 
 
 def test_a_single_test_file_does_not_wait(tmp_path):
     first = holder(tmp_path)
     single = started(tmp_path, project(tmp_path, "single", "test_quick.py", QUICK_TEST), "tests/test_quick.py")
     output, _ = single.communicate(timeout=120)
-    assert single.returncode == 0 and "1 passed" in output
-    assert first.poll() is None
+    expect_value(bool(single.returncode == 0 and "1 passed" in output), True)
+    expect_value(first.poll() is None, True)
     release(tmp_path, first)
 
 
@@ -93,12 +94,12 @@ def test_a_dead_holder_frees_the_gate(tmp_path):
     first.communicate(timeout=60)
     second = started(tmp_path, project(tmp_path, "quick", "test_quick.py", QUICK_TEST), "tests")
     output, _ = second.communicate(timeout=120)
-    assert second.returncode == 0 and "1 passed" in output
+    expect_value(bool(second.returncode == 0 and "1 passed" in output), True)
 
 
 def test_runners_start_under_nice(tmp_path):
     nice_file = tmp_path / "nice-value"
     run = started(tmp_path, project(tmp_path, "nice", "test_nice.py", NICE_TEST), "tests", "-n", "2", "-o", "tests_per_worker=1", "-o", "most_workers=2", extra={"NICE_FILE": str(nice_file)})
     output, errors = run.communicate(timeout=300)
-    assert run.returncode == 0, output + errors
-    assert int(nice_file.read_text()) > 0
+    expect_value(run.returncode, 0)
+    expect_value(int(nice_file.read_text()) > 0, True)

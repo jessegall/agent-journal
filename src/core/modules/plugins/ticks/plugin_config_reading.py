@@ -6,8 +6,8 @@ from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 
 class PluginConfigReading:
-    """Takes in a plugin config file changed by hand: each switched-on plugin that declares a config has its file read
-    again, and a change becomes its next version."""
+    """Takes in a plugin config file changed by hand: each switched-on plugin that declares a config has its
+    file read again, and a change becomes its next version."""
 
     def __call__(self, container: Container) -> None:
         plugins = container.get(RunnablePlugins)

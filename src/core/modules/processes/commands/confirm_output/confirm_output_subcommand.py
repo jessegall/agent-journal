@@ -7,7 +7,8 @@ from core.modules.processes.models.watch import Watch
 
 
 class ConfirmOutputSubcommand(Subcommand[ConfirmOutput, Watch]):
-    """`journal output confirm <n>`: you checked that the run you wait on still does its work, and its next wake is later."""
+    """`journal output confirm <n>`: you checked that the run you wait on still does its work, and its next
+    wake is later."""
 
     cli_name = "output"
     name = "confirm"

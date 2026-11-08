@@ -10,8 +10,9 @@ ACCEPT_TIMEOUT_SECONDS = 10
 
 class FakeLauncher:
     """A launcher socket in a story's journal folder that takes requests and keeps them until it is closed,
-    answering each as told; told nothing, it answers a stop as the launcher does and a start, as an older launcher
-    does, not at all. With answers, request number n gets answers[n] and any later request gets the last one."""
+    answering each as told; told nothing, it answers a stop as the launcher does and a start, as an older
+    launcher does, not at all. With answers, request number n gets answers[n] and any later request gets
+    the last one."""
 
     def __init__(self, path: Path, answer: bytes = b"", request_count: int = 1, answers: tuple[bytes, ...] = ()) -> None:
         self.path, self.requests, self.answer, self.request_count = path, list[dict[str, object]](), answer, request_count

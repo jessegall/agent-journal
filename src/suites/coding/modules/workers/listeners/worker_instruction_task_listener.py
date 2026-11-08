@@ -8,11 +8,11 @@ from suites.coding.modules.workers.support.worker_instruction_files import Worke
 
 
 class WorkerInstructionTaskListener(CommitListener[Moved[Task]]):
-    """When a worker starts a task, the instruction files of its worktree are written again from its profile as it
-    is now, where the text differs."""
+    """When a worker starts a task, the instruction files of its worktree are written again from its profile
+    as it is now, where the text differs."""
 
     name = "workers.instruction-task-start"
-    moves = (TaskLifecycle.start,)
+    moves = tuple([TaskLifecycle.start])
 
     def __init__(self, worktrees: WorktreeQuery, files: WorkerInstructionFiles) -> None:
         self.worktrees, self.files = worktrees, files

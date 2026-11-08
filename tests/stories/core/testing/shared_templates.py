@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from core.base.code_copy import IGNORED
+from tests.stories.support.story_checks import expect_value
 
 CHECKOUT = Path(__file__).resolve().parents[4]
 STORY_SCRIPT = """
@@ -64,8 +65,8 @@ def test_a_second_checkout_reuses_the_templates_the_first_built_and_a_second_run
     initial = run_first_story(first, tmp_path / "cache", tmp_path / "first-story")
     other = run_first_story(second, tmp_path / "cache", tmp_path / "second-story", str(first))
     again = run_first_story(second, tmp_path / "cache", tmp_path / "third-story")
-    assert initial["builds"] > 0
-    assert other["builds"] == 0, other
-    assert initial["folder"] == other["folder"]
-    assert again["builds"] == 0, again
-    assert other["foreign_paths"] == 0, other
+    expect_value(initial["builds"] > 0, True)
+    expect_value(other["builds"], 0)
+    expect_value(initial["folder"], other["folder"])
+    expect_value(again["builds"], 0)
+    expect_value(other["foreign_paths"], 0)

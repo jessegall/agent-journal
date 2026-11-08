@@ -15,9 +15,9 @@ RETRY_SECONDS = Seconds(600)
 
 
 class ContextLimitHardStopRule(DriverRule):
-    """An agent whose context has passed the second limit may run no more tools, so it stops, whatever task it holds,
-    and its context is compacted at once: the compaction is typed the first time and again after the retry time. A
-    journal memory command still runs, because a stop waits for the memories to be weighed."""
+    """An agent whose context has passed the second limit may run no more tools, so it stops, whatever task it
+    holds, and its context is compacted at once: the compaction is typed the first time and again after the
+    retry time. A journal memory command still runs, because a stop waits for the memories to be weighed."""
 
     name = "workers.context-limit-hard-stop"
     hook = HookEventName.PRE_TOOL_USE

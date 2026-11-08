@@ -61,7 +61,7 @@ def test_a_choice_the_program_does_not_offer_and_an_ended_agent_are_refused(new_
 def test_the_programs_are_listed_by_name_and_title(new_story):
     story = new_story(fixture=UserJoined)
     rows = json.loads(story.run("agent programs --json", actor=story.user).output_text)["rows"]
-    assert any(row["name"] == "claude" and row["title"] == "Claude Code" for row in rows), rows
+    expect_value(bool(any(row["name"] == "claude" and row["title"] == "Claude Code" for row in rows)), True)
 
 
 def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, tmp_path):

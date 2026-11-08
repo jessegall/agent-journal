@@ -6,9 +6,9 @@ from core.modules.skills.support.start_skills import StartSkills
 
 
 class ProfileSkills:
-    """The skills a profile's agents get: of the skills the journal ships, the ones the profile names, or else the
-    ones made for its agent type and those made for every type; every plugin or project skill that fits its type; and
-    always the ones every agent reads at its start."""
+    """The skills a profile's agents get: of the skills the journal ships, the ones the profile names, or else
+    the ones made for its agent type and those made for every type; every plugin or project skill that fits
+    its type; and always the ones every agent reads at its start."""
 
     def __init__(self, catalogue: SkillCatalogue, start: StartSkills) -> None:
         self.catalogue, self.start = catalogue, start

@@ -16,9 +16,9 @@ from suites.coding.support.coding_helper_kind import CodingHelperKind
 
 
 class WorkerStartedWork:
-    """The stopped workers that hold started work they can go on with and have no job waiting, which nothing else resumes: not
-    one whose tests wait, not one a person or another agent stopped, and not one that was told to go on three times with no
-    task moved since."""
+    """The stopped workers that hold started work they can go on with and have no job waiting, which nothing
+    else resumes: not one whose tests wait, not one a person or another agent stopped, and not one that was
+    told to go on three times with no task moved since."""
 
     def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus) -> None:
         self.queries, self.unfinished, self.stop, self.bus = queries, unfinished, stop, bus
@@ -35,7 +35,6 @@ class WorkerStartedWork:
         return not self.was_told_to_go_on(worker) and not self.stop.was_stopped(worker) and self.told_count(worker) < worker_job.RESUME_LIMIT_COUNT
 
     def was_told_to_go_on(self, worker: Agent) -> bool:
-        """Whether a job waits for it, or one was handed to it since it stopped, so a start of its program is on its way."""
         lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id).matching(Among("source", tuple(RESUMING_SOURCES))).all_rows()
         return any(line.state is AgentLineState.WAITING or line.update_timestamp().value > worker.ended_at.value for line in lines)
 

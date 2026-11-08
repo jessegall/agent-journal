@@ -10,9 +10,9 @@ MOST_LISTED_TASKS = 5
 
 
 class AvailableWork:
-    """Reads the work the main agent can act on under its workflow controls: with auto mode on it is handed the next
-    eligible task; while it may send workers and a worker can start, open tasks can be delegated; a task it already
-    holds is never offered again."""
+    """Reads the work the main agent can act on under its workflow controls: with auto mode on it is handed
+    the next eligible task; while it may send workers and a worker can start, open tasks can be delegated;
+    a task it already holds is never offered again."""
 
     def __init__(self, options: CodingMainOptions, next_task: NextTask, tasks: TaskQuery, worktrees: WorktreeQuery, places: WorkerPlaces) -> None:
         self.options, self.next_task, self.tasks, self.worktrees, self.places = options, next_task, tasks, worktrees, places

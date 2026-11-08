@@ -13,9 +13,10 @@ STATE_FILE = "story-state.pickle"
 
 
 class TemplateAdaptation:
-    """Makes a template built in one checkout usable in another: a template holds the paths of the checkout that built
-    it (the files of its skills, for one), so a copy for another checkout has that checkout's path put in place of the
-    builder's, in its databases and its lists; it is made once for each checkout and kept beside the template."""
+    """Makes a template built in one checkout usable in another: a template holds the paths of the checkout
+    that built it (the files of its skills, for one), so a copy for another checkout has that checkout's
+    path put in place of the builder's, in its databases and its lists; it is made once for each checkout
+    and kept beside the template."""
 
     def __init__(self, checkout: Path) -> None:
         self.checkout = str(checkout)
@@ -28,7 +29,6 @@ class TemplateAdaptation:
         FileAccess.shared().write(folder / CHECKOUT_FILE, self.checkout)
 
     def adapted(self, template: Path, adapted: Path) -> None:
-        """Copies the template into the adapted folder with its builder's checkout path replaced by this checkout's."""
         builder = self.built_in(template)
         shutil.rmtree(adapted, ignore_errors=True)
         shutil.copytree(template, adapted)
@@ -42,7 +42,6 @@ class TemplateAdaptation:
         self.mark(adapted)
 
     def rewritten(self, value: object, builder: str) -> object:
-        """The value with the builder's checkout path replaced in every text it holds, whatever it is made of."""
         if type(value) is str:
             return value.replace(builder, self.checkout)
         if type(value) in (list, tuple, set, frozenset):

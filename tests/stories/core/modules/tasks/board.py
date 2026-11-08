@@ -83,7 +83,7 @@ def test_the_blocked_tasks_come_whole_whatever_the_limit(three_board_tasks):
         story.expect_success(f'task block {number} --reason "waits"', actor=story.user)
     groups = json.loads(story.run("task board --environment main --limit 1 --json", actor=story.user).output_text)["groups"]
     rows = {group["state"]: group for group in groups}
-    assert [row["id"] for row in rows["blocked"]["rows"]] == [3, 2, 1]
+    expect_value([row["id"] for row in rows["blocked"]["rows"]], [3, 2, 1])
 
 
 @pytest.fixture

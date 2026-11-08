@@ -70,7 +70,7 @@ class UnknownEventModule(ShownModule):
 
 
 class OtherRowModule(ShownModule):
-    inspectors = [InspectorDeclaration(Reminder, actions=[ButtonDeclaration("shown.start", ("row.plan",), "Start the reminder", "reminder delete {row_id}", icon="start")])]
+    inspectors = [InspectorDeclaration(Reminder, actions=[ButtonDeclaration("shown.start", tuple(["row.plan"]), "Start the reminder", "reminder delete {row_id}", icon="start")])]
 
 
 class NoIconModule(ShownModule):

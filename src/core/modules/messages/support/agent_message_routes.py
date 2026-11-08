@@ -7,9 +7,9 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 
 
 class AgentMessageRoutes:
-    """Who may message whom: a main agent and its own helpers, in both directions, and an agent that
-    takes messages from its siblings (the merger) with the helpers under the same main agent. A
-    sender that is not an agent is not limited. An agent of another environment is not found at all, so it is never
+    """Who may message whom: a main agent and its own helpers, in both directions, and an agent that takes
+    messages from its siblings (the merger) with the helpers under the same main agent. A sender that is
+    not an agent is not limited. An agent of another environment is not found at all, so it is never
     reached."""
 
     def __init__(self, agents: AgentRows, profiles: ProfileFiles) -> None:

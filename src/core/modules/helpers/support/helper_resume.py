@@ -7,7 +7,8 @@ from core.modules.helpers.support.kept_helpers import KeptHelpers
 
 
 class HelperResume:
-    """Starts an ended helper's session again in its folder, with a job as its brief, or a new session when its old one has gone cold."""
+    """Starts an ended helper's session again in its folder, with a job as its brief, or a new session when
+    its old one has gone cold."""
 
     def __init__(self, launcher: AgentLauncher, commands: HelperCommand, environments: EnvironmentRows, kept: KeptHelpers, cold: ColdSessions) -> None:
         self.launcher, self.commands, self.environments = launcher, commands, environments

@@ -9,7 +9,8 @@ from core.modules.helpers.support.usage_limits import UsageLimits
 
 
 class SetUsageLimitHandler(Handler[SetUsageLimit, UsageLimit]):
-    """Saves a new limit, or changes the one the program has for that window and mode, taking the baseline of a budget from the window as it is now."""
+    """Saves a new limit, or changes the one the program has for that window and mode, taking the baseline of
+    a budget from the window as it is now."""
 
     command = SetUsageLimit
 

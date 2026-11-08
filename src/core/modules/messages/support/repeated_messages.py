@@ -8,9 +8,9 @@ ALREADY_SAID_SHARE = 0.7
 
 
 class RepeatedMessages:
-    """Finds the one of an agent's last five chat messages that already said most of a new text: 70 percent of its
-    content words, each in about the same part of the text. A question, a text of three words or fewer, or one naming a number the earlier message did not,
-    repeats nothing."""
+    """Finds the one of an agent's last five chat messages that already said most of a new text: 70 percent of
+    its content words, each in about the same part of the text. A question, a text of three words or fewer,
+    or one naming a number the earlier message did not, repeats nothing."""
 
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages

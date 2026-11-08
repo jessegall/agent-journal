@@ -22,9 +22,10 @@ from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 
 
 class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
-    """Keeps a plugin's config as the project holds it, never a worktree's copy: a document handed in is checked
-    against the plugin's schema and written whole, and a changed file becomes the next version with the places that
-    changed, or, when it no longer fits the schema, leaves the last good copy served and records the fault."""
+    """Keeps a plugin's config as the project holds it, never a worktree's copy: a document handed in is
+    checked against the plugin's schema and written whole, and a changed file becomes the next version with
+    the places that changed, or, when it no longer fits the schema, leaves the last good copy served and
+    records the fault."""
 
     command = RefreshPluginConfig
 

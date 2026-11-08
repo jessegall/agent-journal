@@ -39,9 +39,9 @@ WAITING_WORK_SOURCES = (*RESUMING_SOURCES, HELPER_JOB_SOURCE)
 
 
 class InactiveHelperRule(DriverRule):
-    """A tick names each inactive helper to its parent once its grace has passed and again after the configured
-    number of minutes, and in the same way each ended helper whose waiting work has not started. The merger waits
-    between workers by design, so it is not named for being inactive."""
+    """A tick names each inactive helper to its parent once its grace has passed and again after the
+    configured number of minutes, and in the same way each ended helper whose waiting work has not started.
+    The merger waits between workers by design, so it is not named for being inactive."""
 
     name = "workers.inactive-helper"
     hook = HookEventName.TICK

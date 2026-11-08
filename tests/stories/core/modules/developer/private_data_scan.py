@@ -3,6 +3,7 @@ import subprocess
 from core.modules.developer.ticks.private_data_tick import PrivateDataTick
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value
 
 PLANTED = "contact " + "jane.doe" + "@" + "mail" + ".nl for access\n"
 
@@ -32,8 +33,8 @@ def test_a_planted_file_gets_one_card_naming_the_file_line_and_kind_and_never_th
     planted_project(story)
     PrivateDataTick()(story.container)
     marks = chat_marks(story)
-    assert "notes.txt, line 2: an email address" in marks, marks
-    assert "clean.txt" not in marks and "jane" not in marks, marks
+    expect_value("notes.txt, line 2: an email address" in marks, True)
+    expect_value(bool("clean.txt" not in marks and "jane" not in marks), True)
 
 
 def test_a_file_already_scanned_is_not_scanned_again_until_it_changes(new_story):
@@ -42,11 +43,11 @@ def test_a_file_already_scanned_is_not_scanned_again_until_it_changes(new_story)
     PrivateDataTick()(story.container)
     first = chat_marks(story).count("again.txt, line 2")
     PrivateDataTick()(story.container)
-    assert first == 1 and chat_marks(story).count("again.txt, line 2") == 1
+    expect_value(bool(first == 1 and chat_marks(story).count("again.txt, line 2") == 1), True)
 
 
 def test_with_the_developer_tools_off_nothing_is_scanned(new_story):
     story = new_story(fixture=BuilderStarted)
     planted_project(story, "quiet.txt")
     PrivateDataTick()(story.container)
-    assert "quiet.txt" not in chat_marks(story)
+    expect_value("quiet.txt" not in chat_marks(story), True)

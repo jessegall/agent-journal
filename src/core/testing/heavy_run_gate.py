@@ -14,10 +14,10 @@ REPEAT_SECONDS = 30
 
 
 class HeavyRunGate:
-    """One heavy run holds the machine's processors at a time and the others wait their turn, in the order they came.
-    The holder keeps a lock on a file of the gate's folder, which the system drops when the holder ends, however it ends;
-    a waiting run leaves a ticket named for its arrival and its process number, and only the oldest live ticket tries
-    the lock."""
+    """One heavy run holds the machine's processors at a time and the others wait their turn, in the order
+    they came. The holder keeps a lock on a file of the gate's folder, which the system drops when the
+    holder ends, however it ends; a waiting run leaves a ticket named for its arrival and its process
+    number, and only the oldest live ticket tries the lock."""
 
     def __init__(self, folder: Path = GATE_FOLDER) -> None:
         self.folder = folder

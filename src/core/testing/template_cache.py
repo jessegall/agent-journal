@@ -19,13 +19,13 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates between every checkout of a project, keyed on their python sources (the viewer's sources are no
-    part of a template, so editing them rebuilds nothing), and when a new one is made removes
-    the ones unused for a day and then the least recently used until the cache is under its size limit, never one a
-    running suite holds (each process leaves a lease named for its process number); a cache
-    already pruned within the hour is left alone. The
-    templates are kept for the source code and the stories' support folders; a story file's own fixtures are in each
-    template's key, so editing a story rebuilds only the templates of the fixtures it defines."""
+    """Shares complete story templates between every checkout of a project, keyed on their python sources (the
+    viewer's sources are no part of a template, so editing them rebuilds nothing), and when a new one is
+    made removes the ones unused for a day and then the least recently used until the cache is under its
+    size limit, never one a running suite holds (each process leaves a lease named for its process number);
+    a cache already pruned within the hour is left alone. The templates are kept for the source code and
+    the stories' support folders; a story file's own fixtures are in each template's key, so editing a
+    story rebuilds only the templates of the fixtures it defines."""
 
     def __init__(self, root: Path = CACHE_FOLDER, limit_bytes: int = CACHE_LIMIT_BYTES) -> None:
         self.root, self.limit_bytes = root, limit_bytes
@@ -46,7 +46,6 @@ class TemplateCache:
 
     @staticmethod
     def is_in_use(folder: Path) -> bool:
-        """Whether a running process of this machine holds the folder: it left a lease named for its process number."""
         for lease in folder.glob(f"{LEASE_PREFIX}*"):
             try:
                 os.kill(int(lease.name.removeprefix(LEASE_PREFIX)), 0)

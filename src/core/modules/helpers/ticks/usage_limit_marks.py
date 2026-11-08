@@ -12,8 +12,9 @@ from core.modules.helpers.support.usage_limits import UsageLimits
 
 
 class UsageLimitMarks:
-    """Every few seconds, marks the open agents of each program whose plan allowance is used up in full as at the usage
-    limit until it starts again, or until the limit a person set is lifted, and, once it has started again, clears the mark and types the lines that waited."""
+    """Every few seconds, marks the open agents of each program whose plan allowance is used up in full as at
+    the usage limit until it starts again, or until the limit a person set is lifted, and, once it has
+    started again, clears the mark and types the lines that waited."""
 
     def __call__(self, container: Container) -> None:
         states, bus, agents = container.get(ProgramStates), container.get(Bus), container.get(AgentRows).running()

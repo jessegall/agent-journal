@@ -25,9 +25,10 @@ BLOCKING_REMINDER_COUNT = 3
 
 class UnmergedWorkerRule(DriverRule):
     """A tick names to the main agent each worker whose delivered work is not merged or released, with its
-    tasks, again after the interval of the line; from the third reminder on, each one holds the agent until it
-    merges or gives a reason, and a reason passes only that hold. With the merger on, a worker is named once the
-    merger has had the wait setting's minutes to take it in, or at once when the merger left it to the main agent."""
+    tasks, again after the interval of the line; from the third reminder on, each one holds the agent until
+    it merges or gives a reason, and a reason passes only that hold. With the merger on, a worker is named
+    once the merger has had the wait setting's minutes to take it in, or at once when the merger left it to
+    the main agent."""
 
     name = "workers.unmerged-worker"
     hook = HookEventName.TICK

@@ -15,9 +15,9 @@ from core.modules.skills.support.block_conditions.skill_loaded import SkillLoade
 
 
 class SkillReadFirstRule(DriverRule):
-    """Names a due skill and the tool uses left before it is held, three from the moment it became due; a tool is
-    refused once they have run out, until the skill has been read. A skill the program put back after a compaction
-    counts as read."""
+    """Names a due skill and the tool uses left before it is held, three from the moment it became due; a tool
+    is refused once they have run out, until the skill has been read. A skill the program put back after a
+    compaction counts as read."""
 
     name = "skills.read-first"
     hook = HookEventName.PRE_TOOL_USE

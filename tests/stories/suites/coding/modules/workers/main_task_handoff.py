@@ -29,7 +29,7 @@ def test_s53_assigned_main_task_goes_to_new_worker(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository, worker = worker_with_main_progress(story)
     handoff = story.container.get(MainTaskHandoff)
-    patch = handoff.saved(str(repository.folder), 1, ("cart.py",))
+    patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))
     worktree = repository.worktree_folder(worker.id)
     handoff.taken(str(worktree), patch)
     handoff.removed_from_main(str(repository.folder), patch)
@@ -41,7 +41,7 @@ def test_s53_failed_handoff_preserves_main_and_unrelated_edits(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository, worker = worker_with_main_progress(story)
     handoff = story.container.get(MainTaskHandoff)
-    patch = handoff.saved(str(repository.folder), 1, ("cart.py",))
+    patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))
     worktree = Path(repository.worktree_folder(worker.id))
     (worktree / "cart.py").write_text("TOTAL = 9\n")
     expect_value((refused(handoff, worktree, patch), (repository.folder / "cart.py").read_text(), (repository.folder / "notes.txt").read_text()),

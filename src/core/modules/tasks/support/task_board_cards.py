@@ -13,8 +13,8 @@ DELEGATED = "delegated"
 
 
 class TaskBoardCards:
-    """The task cards of one board group: the tasks of a state that are not delegated, the delegated tasks that are not finished,
-    or the finished tasks of a state."""
+    """The task cards of one board group: the tasks of a state that are not delegated, the delegated tasks
+    that are not finished, or the finished tasks of a state."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

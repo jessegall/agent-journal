@@ -18,9 +18,9 @@ from core.modules.skills.support.skill_requirement import SkillRequirement
 
 class CommandSkillRule(DriverRule):
     """A journal command of a noun a skill covers makes that skill due unless the agent holds it loaded in its
-    current text, and names it with three tool uses before it is held. Once they run out the command is refused
-    and every other tool but reading is blocked until the skill is read, and the refusal gives the path. A skill
-    the agent's profile does not give it is not asked for, since it could not read it."""
+    current text, and names it with three tool uses before it is held. Once they run out the command is
+    refused and every other tool but reading is blocked until the skill is read, and the refusal gives the
+    path. A skill the agent's profile does not give it is not asked for, since it could not read it."""
 
     name = "skills.command"
     hook = HookEventName.PRE_TOOL_USE

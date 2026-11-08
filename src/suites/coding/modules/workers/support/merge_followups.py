@@ -13,10 +13,10 @@ from suites.coding.modules.workers.support.worker_settings import MERGE_COMMANDS
 
 
 class MergeFollowups:
-    """The required commands after a merge as a durable plan: saved as they stand when git merges, run one step at a
-    time with each result saved at once, resumed from the saved plan and never from the setting, and a merge into the
-    same checkout waits until the plan is finished. A step that ran out of time is uncertain: it is not run again
-    unless the main agent says what it checked."""
+    """The required commands after a merge as a durable plan: saved as they stand when git merges, run one
+    step at a time with each result saved at once, resumed from the saved plan and never from the setting,
+    and a merge into the same checkout waits until the plan is finished. A step that ran out of time is
+    uncertain: it is not run again unless the main agent says what it checked."""
 
     def __init__(self, queries: Queries, bus: Bus, commands: WorktreeCommands, settings: SettingValues, revision: SettingRevision) -> None:
         self.queries, self.bus, self.commands, self.settings, self.revision = queries, bus, commands, settings, revision

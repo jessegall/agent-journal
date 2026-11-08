@@ -40,7 +40,6 @@ class AgentTextFilter:
         return "?" not in text and self.has_recent_reply(agent_id, created_at)
 
     def is_single_line(self, text: str) -> bool:
-        """A single line after a reply is an acknowledgement or a last line, whatever its words."""
         return "\n" not in text.strip()
 
     def is_held_after_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:

@@ -10,8 +10,8 @@ from core.modules.waits.support.wait_targets import WaitTargets
 
 
 class ProcessWaitTargets(WaitTargets):
-    """Wait targets with the output word for a process, and what an ended output says in the refusal of a wait on it: how
-    it ended, with its exit code, and the summary its reader wrote."""
+    """Wait targets with the output word for a process, and what an ended output says in the refusal of a wait
+    on it: how it ended, with its exit code, and the summary its reader wrote."""
 
     words = {"output": "processes"}
 

@@ -7,9 +7,9 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class ContextOverLimit:
-    """Says how many tokens an agent's context holds once the context limit is on and that context has reached it,
-    and whether the agent's next stop compacts it: it does unless it holds a task to finish first and is under the
-    second limit."""
+    """Says how many tokens an agent's context holds once the context limit is on and that context has reached
+    it, and whether the agent's next stop compacts it: it does unless it holds a task to finish first and
+    is under the second limit."""
 
     def __init__(self, settings: SettingValues, agents: AgentRows, providers: Providers, home: JournalHome, tasks: TaskQuery) -> None:
         self.settings, self.agents, self.providers, self.home, self.tasks = settings, agents, providers, home, tasks

@@ -11,9 +11,9 @@ PARTS_APART = 1
 
 
 class MessageWords:
-    """The words of a chat message, and how much of a new message an earlier one already said: the share of the new
-    message's content words, the words left after common ones such as the, on and is, that the earlier one holds in
-    about the same part of its text, the same quarter or the one next to it."""
+    """The words of a chat message, and how much of a new message an earlier one already said: the share of
+    the new message's content words, the words left after common ones such as the, on and is, that the
+    earlier one holds in about the same part of its text, the same quarter or the one next to it."""
 
     @staticmethod
     def words(text: str) -> list[str]:

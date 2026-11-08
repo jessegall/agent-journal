@@ -12,7 +12,8 @@ from core.modules.pins.support.link_pin_check import LinkPinCheck
 
 
 class ReportPinListener(CommitListener[Created[Message]]):
-    """Pins pull request links sent in agent reports, and design links only in the report that ended a designer's job."""
+    """Pins pull request links sent in agent reports, and design links only in the report that ended a
+    designer's job."""
 
     name = "messages.report-pins"
 

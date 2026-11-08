@@ -16,9 +16,10 @@ SKILL_TEXT_COMMAND = ["journal", "skill", "show"]
 
 
 class SkillPartReadListener(SaveListener[Created[ProcessPart]]):
-    """When a part of a shell line names the SKILL.md of a skill in the catalogue, or runs journal skill show on
-    it, the agent has that skill loaded in the same write, so the very next command finds it read. Each part
-    counts by itself, however many others the line has, and a skill named by several parts of one line loads once."""
+    """When a part of a shell line names the SKILL.md of a skill in the catalogue, or runs journal skill show
+    on it, the agent has that skill loaded in the same write, so the very next command finds it read. Each
+    part counts by itself, however many others the line has, and a skill named by several parts of one line
+    loads once."""
 
     name = "skills.part-read"
 

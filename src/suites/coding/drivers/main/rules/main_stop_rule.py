@@ -10,9 +10,10 @@ from suites.coding.support.coding_nudges import FREE_WORKER_PLACE, OPEN_TASKS_WA
 
 
 class MainStopRule(DriverRule):
-    """A main agent that stops is handed the next task when it may work on it, and is held back while a task can still be
-    sent to a worker and its work controls ask it to keep going; with nothing it can do it may stop. While a task can go to a worker and a place is free, a stop is held once for
-    each state of the tasks and places, so the agent sends them or says why not."""
+    """A main agent that stops is handed the next task when it may work on it, and is held back while a task
+    can still be sent to a worker and its work controls ask it to keep going; with nothing it can do it may
+    stop. While a task can go to a worker and a place is free, a stop is held once for each state of the
+    tasks and places, so the agent sends them or says why not."""
 
     name = "coding.main-stop"
     hook = HookEventName.STOP

@@ -3,8 +3,9 @@ from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 
 class AutoAdvice:
-    """What a refused main agent is told to do instead, read from the code-writing switch now in force: while it writes
-    code it may do the work itself, otherwise it writes no project file and can only send the work on."""
+    """What a refused main agent is told to do instead, read from the code-writing switch now in force: while
+    it writes code it may do the work itself, otherwise it writes no project file and can only send the
+    work on."""
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings

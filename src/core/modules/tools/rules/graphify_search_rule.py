@@ -15,10 +15,10 @@ SCANNED_TOOL_USES_PER_BLOCK = 3
 
 
 class GraphifySearchRule(DriverRule):
-    """While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are counted
-    back to its last use of Graphify: from the nudge count on it is told to use Graphify, again ten searches later,
-    and past the block count every search that is not Graphify is refused until it has used Graphify, which
-    starts the count again."""
+    """While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are
+    counted back to its last use of Graphify: from the nudge count on it is told to use Graphify, again ten
+    searches later, and past the block count every search that is not Graphify is refused until it has used
+    Graphify, which starts the count again."""
 
     name = "tools.graphify-search"
     hook = HookEventName.PRE_TOOL_USE

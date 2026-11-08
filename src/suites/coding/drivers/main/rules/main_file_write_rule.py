@@ -17,8 +17,9 @@ ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, C
 
 
 class MainFileWriteRule(DriverRule):
-    """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a shell line; files
-    outside the checkout, in the .journal folder (agent memory and worker worktrees) and journal commands stay allowed."""
+    """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a
+    shell line; files outside the checkout, in the .journal folder (agent memory and worker worktrees) and
+    journal commands stay allowed."""
 
     name = "coding.main-writes-no-code"
     hook = HookEventName.PRE_TOOL_USE

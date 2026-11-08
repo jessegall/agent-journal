@@ -20,7 +20,7 @@ class MarkedVariant(StrEnum):
 
 
 def labelled(label: str) -> ButtonDeclaration:
-    return ButtonDeclaration("labelled.act", ("row.plan",), label, "task start {row_id}", icon="check")
+    return ButtonDeclaration("labelled.act", tuple(["row.plan"]), label, "task start {row_id}", icon="check")
 
 
 class LabelModule(Module):

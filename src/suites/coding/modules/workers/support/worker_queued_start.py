@@ -5,8 +5,8 @@ from suites.coding.modules.workers.support.worker_next_task import WorkerNextTas
 
 
 class WorkerQueuedStart:
-    """Starts a worker on the first task queued for it once its delivered work is merged: a task sent while the
-    delivery waited stayed with the worker, and the merge frees it to cut a new worktree for that task."""
+    """Starts a worker on the first task queued for it once its delivered work is merged: a task sent while
+    the delivery waited stayed with the worker, and the merge frees it to cut a new worktree for that task."""
 
     def __init__(self, next_task: WorkerNextTask, bus: Bus) -> None:
         self.next_task, self.bus = next_task, bus
@@ -14,4 +14,4 @@ class WorkerQueuedStart:
     def start(self, worker_id: int, context: Context) -> None:
         queued = self.next_task.following(worker_id)
         if queued is not None:
-            self.bus.run(SendWorker(worker_id, task_ids=(queued.id,)), context.actor, environment_id=context.environment_id)
+            self.bus.run(SendWorker(worker_id, task_ids=tuple([queued.id])), context.actor, environment_id=context.environment_id)

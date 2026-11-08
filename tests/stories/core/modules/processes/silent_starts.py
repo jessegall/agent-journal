@@ -10,6 +10,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.support.story_checks import expect_value
 
 ALIAS = "journal build-npm --tail 5"
 ALIAS_START = HookSamples.shell(ALIAS, ShellPart("journal", CommandCategory.BUILD, ["build-npm", "--tail", "5"]))
@@ -89,7 +90,7 @@ def test_the_first_silent_run_is_taught_at_the_next_start_with_the_shape_found(n
     finish_build(story, 1, GO_OUTPUT)
     lines = lines_of(story, ALIAS_START)
     for text in ("journal build-npm ran 70 seconds and showed no percent in the chat", "line shape --- PASS:/--- FAIL:", "states no total, so the command must print one first", "never wait for the run to end"):
-        assert any(text in line for line in lines), lines
+        expect_value(bool(any(text in line for line in lines)), True)
 
 
 def test_a_shape_that_states_a_total_says_so(new_story):
@@ -102,9 +103,9 @@ def test_a_second_silent_run_refuses_the_next_start_with_a_ready_reader(new_stor
     story = new_story(fixture=SecondBuildStarted)
     finish_build(story, 2, GO_OUTPUT, seconds=71)
     reply = story.hook("s-1", ALIAS_START)
-    assert "journal build-npm ran silent twice" in reply.refusal, reply.refusal
+    expect_value("journal build-npm ran silent twice" in reply.refusal, True)
     ready = [line for line in reply.lines if "a reader for journal build-npm" in line]
-    assert ready and 'journal reader add build-npm --commands "journal build-npm --tail 5"' in ready[0] and '--step "(?m)^\\s*--- (?:(?P<passed>PASS)|(?P<failed>FAIL)):"' in ready[0], reply.lines
+    expect_value(bool(ready and 'journal reader add build-npm --commands "journal build-npm --tail 5"' in ready[0] and '--step "(?m)^\\s*--- (?:(?P<passed>PASS)|(?P<failed>FAIL)):"' in ready[0]), True)
 
 
 def test_a_skip_with_a_reason_lets_the_refused_start_through_once(new_story):
@@ -133,7 +134,7 @@ def test_a_redirected_run_with_no_output_counts_silent(new_story):
     silent_run(story, GO_TESTS, "", category=CommandCategory.TEST_RUN)
     lines = lines_of(story, GO_START)
     for text in ("go test ./... ran 70 seconds and showed no percent in the chat", "line shape none of the known ones"):
-        assert any(text in line for line in lines), lines
+        expect_value(bool(any(text in line for line in lines)), True)
 
 
 def test_a_run_that_printed_lines_with_no_percent_counts_silent(new_story):

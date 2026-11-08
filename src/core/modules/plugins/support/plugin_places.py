@@ -41,7 +41,7 @@ class PluginPlaces:
 
     def session_agents(self, agent_id: int | None, environment: str) -> tuple[Agent, ...]:
         if agent_id is not None:
-            return (self.queries.query(Agent).find(agent_id),)
+            return tuple([self.queries.query(Agent).find(agent_id)])
         environments = tuple(self.queries.query(Environment).filter(name=environment).all_rows()) if environment else ()
         if not environments:
             return MainAgentFinder.rows(self.queries)

@@ -9,9 +9,10 @@ from suites.coding.support.context_over_limit import ContextOverLimit
 
 
 class NextTask:
-    """The coding suite's task assigner: an agent with empty hands is given a task above high outside any plan,
-    else a started plan's next task, else the most urgent open task outside any plan that waits on nothing. An
-    agent with tasks still in hand is given only the task above high. Auto mode turns it on, and an agent past its context limit is given nothing until its stop has compacted it."""
+    """The coding suite's task assigner: an agent with empty hands is given a task above high outside any
+    plan, else a started plan's next task, else the most urgent open task outside any plan that waits on
+    nothing. An agent with tasks still in hand is given only the task above high. Auto mode turns it on,
+    and an agent past its context limit is given nothing until its stop has compacted it."""
 
     def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, over_limit: ContextOverLimit) -> None:
         self.tasks, self.plan_tasks, self.queries, self.settings, self.over_limit = tasks, plan_tasks, queries, settings, over_limit

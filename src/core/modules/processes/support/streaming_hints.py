@@ -42,7 +42,6 @@ class StreamingHints:
 
     @staticmethod
     def holds_back_packages(command: str) -> bool:
-        """Whether a go test line runs several packages at once, which holds back the output of each until it is done."""
         found = GO_TEST_PATTERN.search(command)
         if found is None or SERIAL_PACKAGES_PATTERN.search(found.group(1)):
             return False

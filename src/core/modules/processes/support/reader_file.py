@@ -14,10 +14,10 @@ SETTING_NAMES = {"progress: ": "progress_pattern", "title: ": "title", "label: "
 
 @dataclass(frozen=True)
 class ReaderFile:
-    """A reader written as a file, as version 4 kept them and plugins ship them: a .pattern file holds its title line, its
-    pattern line and its settings, one per line; a .sh script holds its settings in # lines and is the reader itself. Every
-    file declares title: ; a file that opens on a comment instead is rewritten once, when it is loaded, with that comment
-    as its title."""
+    """A reader written as a file, as version 4 kept them and plugins ship them: a .pattern file holds its
+    title line, its pattern line and its settings, one per line; a .sh script holds its settings in # lines
+    and is the reader itself. Every file declares title: ; a file that opens on a comment instead is
+    rewritten once, when it is loaded, with that comment as its title."""
 
     name: str
     type: ReaderType
@@ -35,7 +35,6 @@ class ReaderFile:
 
     @classmethod
     def titled(cls, path: Path, lines: list[str]) -> list[str]:
-        """The lines of the file with a title: line, rewriting the file when its first comment is the title it never declared."""
         is_script = path.suffix == SCRIPT_SUFFIX
         declared = [line.removeprefix(NOTE_MARK).strip() if is_script else line for line in lines]
         if any(line.startswith(TITLE_PREFIX) for line in declared):
