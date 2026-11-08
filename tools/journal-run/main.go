@@ -60,9 +60,8 @@ func main() {
 // runOptions are the options of a run from its flags.
 func (flags Flags) runOptions(home, shell string) Options {
 	position, _ := strconv.Atoi(os.Getenv("JOURNAL_RUN_PROGRESS_POSITION"))
-	fileCommands := os.Getenv("JOURNAL_RUN_FILE_COMMANDS") == "1"
 	_ = os.Unsetenv("JOURNAL_RUN_FILE_COMMANDS")
-	return Options{WriteFolder: flags.WriteFolder, ReadOnlyShell: flags.ReadOnlyShell, Count: flags.Count, ProgressCount: os.Getenv("JOURNAL_RUN_PROGRESS_LISTING"), ProgressPosition: position, ProgressPattern: os.Getenv("JOURNAL_RUN_PROGRESS_PATTERN"), Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, FileCommands: fileCommands, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
+	return Options{WriteFolder: flags.WriteFolder, ReadOnlyShell: flags.ReadOnlyShell, Count: flags.Count, ProgressCount: os.Getenv("JOURNAL_RUN_PROGRESS_LISTING"), ProgressPosition: position, ProgressPattern: os.Getenv("JOURNAL_RUN_PROGRESS_PATTERN"), Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Queue: flags.Queue, OnlyReads: flags.OnlyReads, Line: flags.Line, Aliases: flags.Aliases, Home: home, Shell: shell,
 		MostOutputBytes: mostOutputBytes(), ReadFolders: readFolders(), ReadFlags: outputReading(), QueueWait: queueWait(), HeartbeatEvery: HeartbeatInterval, Detach: Detach, ScanFiles: ScanFiles}
 }
 

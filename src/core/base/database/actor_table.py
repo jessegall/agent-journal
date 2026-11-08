@@ -25,7 +25,6 @@ class ActorTable:
         self.kept = KeptRows(database)
         self.agent_answers: dict[int, bool] = {}
         self.row_owners: dict[int, RowOwner | None] = {}
-        self.test_grants: dict[tuple[object, int, int], bool] = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
@@ -70,10 +69,8 @@ class ActorTable:
         return RowOwner(agent, rows[0]["environment_id"])
 
     def is_granted_test_environment(self, actor_id: int, environment_id: int) -> bool:
-        key = (self.database.content_mark(), actor_id, environment_id)
-        if key not in self.test_grants:
-            self.test_grants = {key: bool(self.database.rows(Statement(TEST_ENVIRONMENT_GRANT.sql, [environment_id, actor_id])))}
-        return self.test_grants[key]
+        return self.kept.read("environments", lambda: bool(self.database.rows(Statement(TEST_ENVIRONMENT_GRANT.sql, [environment_id, actor_id]))),
+                              "id = ?", [environment_id], name=f"actors.test_grant.{actor_id}")
 
     def newest_main_agent_id(self, environment_id: int) -> int | None:
         rows = self.database.rows(Statement(NEWEST_MAIN_AGENT_ID.sql, [environment_id]))

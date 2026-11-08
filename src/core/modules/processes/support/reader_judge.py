@@ -15,6 +15,8 @@ from core.modules.processes.support.reader_judgement import ReaderJudgement
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.reader_selection import ReaderSelection
 
+SUMMARY_COUNT = re.compile(r"(\d+)\s+(?:passed|failed|errors?|tests?|stories|skipped)\b")
+
 WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
@@ -121,9 +123,9 @@ class ReaderJudge:
             checks["--summary found nothing"] = bool(summary)
         if reader.count_pattern and not reader.count_command:
             checks["--count found nothing"] = count > 0
-        numbers = re.findall(r"\d+", summary)
-        if count > 0 and numbers:
-            checks["--summary exceeds --count"] = int(numbers[0]) <= count
+        counted = [int(number) for number in SUMMARY_COUNT.findall(summary)]
+        if count > 0 and counted:
+            checks[f"--summary names {max(counted)} tests but --count found {count}"] = max(counted) <= count
         step_progress = bool(reader.step_pattern)
         if category is not CommandCategory.CHECK and COUNTED.search(text) and not step_progress:
             checks["--progress found nothing"] = self.run.progress(reader, text, -1) >= 0
