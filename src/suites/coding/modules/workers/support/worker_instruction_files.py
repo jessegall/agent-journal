@@ -46,7 +46,7 @@ class WorkerInstructionFiles:
                  agents: AgentRows) -> None:
         self.settings, self.profiles, self.registry, self.plugins, self.folders, self.git, self.libraries = settings, profiles, registry, plugins, folders, git, libraries
         self.agents = agents
-        self.block_texts: dict[Path, tuple[FileVersion, str]] = {}
+        self.file_texts: dict[Path, tuple[FileVersion, str]] = {}
 
     def injections(self, profile: AgentProfile) -> tuple[InstructionInjection, ...]:
         driver = self.registry.driver(WORKER_DRIVER)
@@ -64,11 +64,14 @@ class WorkerInstructionFiles:
     def block_text(self, folder: Path, file: str, path: Path) -> str:
         if not ManifestListener.is_contained_path(file, folder) or not path.is_file():
             return ""
+        return self.kept_text(path).strip()
+
+    def kept_text(self, path: Path) -> str:
         version = FileAccess.shared().version(path)
-        kept = self.block_texts.get(path)
+        kept = self.file_texts.get(path)
         if kept is None or kept[0] != version:
-            kept = (version, FileAccess.shared().read(path).strip())
-            self.block_texts[path] = kept
+            kept = (version, FileAccess.shared().read(path))
+            self.file_texts[path] = kept
         return kept[1]
 
     def profile(self, name: str) -> AgentProfile | None:
@@ -103,6 +106,5 @@ class WorkerInstructionFiles:
     def refresh(self, worktree: Worktree) -> None:
         self.write(worktree.folder, self.agents.find(worktree.session_agent_id).profile, originals=False)
 
-    @staticmethod
-    def text_of(path: Path) -> str | None:
-        return FileAccess.shared().read(path) if path.is_file() else None
+    def text_of(self, path: Path) -> str | None:
+        return self.kept_text(path) if path.is_file() else None
