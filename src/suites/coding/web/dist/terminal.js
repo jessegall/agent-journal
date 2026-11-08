@@ -1,12 +1,12 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-63b688dc478e")) { const style = document.createElement("style"); style.id = "window-styles-63b688dc478e"; style.textContent = ".file-feed[data-v-393b9c61]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-393b9c61]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-393b9c61]:hover{background:var(--hover);color:var(--text)}.step[data-v-e9d43b82]{display:flex;align-items:stretch;width:132px;height:30px;border:1px solid var(--border-2, var(--border));border-radius:8px;background:var(--bg);overflow:hidden}.step[data-v-e9d43b82]:focus-within{border-color:var(--accent)}.step button[data-v-e9d43b82]{flex:none;width:30px;padding:0;border:0;background:none;color:var(--text-2);font-size:15px;line-height:1;cursor:pointer}.step button[data-v-e9d43b82]:hover{background:var(--hover);color:var(--text)}.step button[disabled][data-v-e9d43b82]{cursor:default;opacity:.35}.step input[data-v-e9d43b82]{flex:1;min-width:0;width:100%;padding:0;border:0;border-inline:1px solid var(--border-inner, var(--border));outline:0;background:none;color:var(--text);font:inherit;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;text-align:center;-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}.step input[data-v-e9d43b82]::-webkit-outer-spin-button,.step input[data-v-e9d43b82]::-webkit-inner-spin-button{margin:0;-webkit-appearance:none;-moz-appearance:none;appearance:none}.step input[disabled][data-v-e9d43b82]{color:var(--text-2)}.ctl[data-v-6e2d513b]{display:grid;grid-template-columns:minmax(0,1fr) 220px 170px;gap:6px 18px;align-items:center;padding:10px 0;border-top:1px solid var(--border-inner, var(--border))}.ctl.flat[data-v-6e2d513b]{grid-template-columns:minmax(0,1fr) 220px}.ctl-text[data-v-6e2d513b]{min-width:0}.ctl-label[data-v-6e2d513b]{display:block;color:var(--text);font-size:13px}.ctl-help[data-v-6e2d513b]{display:block;margin-top:1px;color:var(--text-3);font-size:12px;text-wrap:pretty}.ctl-input[data-v-6e2d513b]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}.ctl-src[data-v-6e2d513b]{display:flex;flex-direction:column;gap:2px;align-items:flex-start;color:var(--text-3);font-size:11.5px}.src[data-v-6e2d513b]{display:inline-flex;gap:5px;align-items:center}.src i[data-v-6e2d513b]{width:6px;height:6px;border-radius:50%;background:var(--text-4, var(--text-3))}.src.here i[data-v-6e2d513b]{background:var(--accent)}.src.changed[data-v-6e2d513b]{color:var(--text)}.src.changed i[data-v-6e2d513b]{background:var(--warn)}@container (max-width: 640px){.ctl[data-v-6e2d513b],.ctl.flat[data-v-6e2d513b]{grid-template-columns:minmax(0,1fr)}}.foot[data-v-88c3dd59]{position:sticky;bottom:0;display:flex;gap:8px;align-items:center;min-height:50px;margin:18px -18px -22px;padding:9px 16px;border-top:1px solid var(--border);background:var(--raised, var(--bg))}.foot-note[data-v-88c3dd59]{flex:1;min-width:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.foot-note.bad[data-v-88c3dd59]{color:var(--danger);white-space:normal}.foot-note.busy[data-v-88c3dd59]{color:var(--text)}.group[data-v-561ba16e]{margin-top:14px}.badge[data-v-561ba16e]{margin-left:8px;padding:1px 7px;border:1px solid var(--tone-warn);border-radius:999px;color:var(--tone-warn);font-size:11px}.sw-word[data-v-561ba16e]{color:var(--text-2);font-size:12px}.choice[data-v-561ba16e]{padding:4px 6px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);font:inherit;font-size:12px}form[data-v-23a905c0],.action-field[data-v-23a905c0]{display:flex;flex-direction:column;gap:6px}form[data-v-23a905c0]{padding:10px;border:1px solid var(--border);border-radius:7px}.action-buttons[data-v-23a905c0]{display:flex;gap:6px;flex-wrap:wrap}p[data-v-23a905c0]{margin:0;color:var(--text-2)}[data-v-23a905c0] .text-area{min-height:84px}p[data-v-fc209014]{color:var(--text-3);margin:0 0 12px}.edit-row[data-v-fc209014]{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}small[data-v-fc209014]{display:block;color:var(--text-3);margin-top:4px}.stepper[data-v-fc209014]{display:flex;height:32px;margin-top:4px}.stepper button[data-v-fc209014],.stepper input[data-v-fc209014]{width:32px;border:1px solid var(--border);background:var(--raised);color:var(--text);text-align:center}.stepper input[data-v-fc209014]{width:48px}@media(max-width:600px){.stepper[data-v-fc209014]{height:44px}.edit-row[data-v-fc209014]{grid-template-columns:1fr 1fr}.edit-row>div[data-v-fc209014]{grid-column:span 2}}.counts[data-v-604ef447]{width:min(570px,100%);font-size:12px}p[data-v-604ef447]{color:var(--text-3);margin:0 0 12px}.back[data-v-604ef447]{border:0;background:none;color:var(--accent-text);cursor:pointer;margin-bottom:12px}.columns[data-v-604ef447],.count-row[data-v-604ef447]{display:grid;grid-template-columns:minmax(100px,1fr) minmax(90px,1fr) minmax(90px,1fr) 12px;gap:12px;align-items:center}.columns[data-v-604ef447],.helper-head[data-v-604ef447]{color:var(--text-3);padding:8px 0}.helper-head[data-v-604ef447]{display:flex;justify-content:space-between}.count-row[data-v-604ef447]{width:100%;padding:9px 0;background:none;border:0;border-top:1px solid var(--border);color:var(--text);text-align:left;cursor:pointer}.count-row[data-v-604ef447]:hover{background:var(--hover)}.full[data-v-604ef447]{font-weight:600}.bar[data-v-604ef447]{display:block;position:relative;height:4px;background:var(--border);margin-top:5px}.bar span[data-v-604ef447]{display:block;height:100%;background:var(--text-3)}.full .bar span[data-v-604ef447]{background:var(--tone-warn)}.bar i[data-v-604ef447]{position:absolute;right:0;top:0;height:100%;background:var(--danger)}small[data-v-604ef447]{display:block;color:var(--text-3);margin-top:4px}.person[data-v-604ef447]{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}.person-text[data-v-604ef447]{flex:1;min-width:0}.person-text small[data-v-604ef447]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dot[data-v-604ef447]{width:7px;height:7px;border-radius:50%;background:var(--text-3)}.dot.running[data-v-604ef447]{background:var(--accent)}[role=alert][data-v-604ef447]{color:var(--danger)}.foot-note[data-v-604ef447]{flex:1;color:var(--text-3)}@media(max-width:600px){.bar[data-v-604ef447]{display:none}}.foot[data-v-604ef447]{display:flex;align-items:center;gap:12px;margin-top:16px}.agents[data-v-3e01c727]{display:flex;flex-direction:column;gap:12px;padding-top:14px}.section[data-v-9f39da05]{margin-top:18px}.section-title[data-v-9f39da05]{margin:0 0 2px;color:var(--text);font-size:12.5px;font-weight:600}.section-help[data-v-9f39da05]{margin:0 0 6px;color:var(--text-3);font-size:12px;text-wrap:pretty}.section-help.warn[data-v-9f39da05]{margin-top:8px;color:var(--warn)}.sw-word[data-v-9f39da05]{color:var(--text-2);font-size:12px}.settings[data-v-f9bdd5f3]{container-type:inline-size;display:flex;flex-direction:column;min-height:100%;background:var(--raised, var(--bg))}.settings-bar[data-v-f9bdd5f3]{position:sticky;top:0;z-index:2;background:var(--raised, var(--bg))}.settings-bar[data-v-f9bdd5f3] .segmented{width:100%;border:0;border-radius:0;padding:0}.settings-body[data-v-f9bdd5f3]{flex:1;padding:4px 18px 22px}.note[data-v-f9bdd5f3]{margin:14px 0 0;padding:8px 12px;border:1px solid var(--accent);border-radius:8px;background:var(--accent-dim, var(--hover));color:var(--text);font-size:12.5px}.main[data-v-de4b6996]{flex:1}.note[data-v-de4b6996]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-db39481b]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-d6c82d3f]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-d6c82d3f]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-d6c82d3f]{gap:0;padding:0}.file-feed-failure[data-v-d6c82d3f]{padding:8px 12px;color:var(--danger)}.files[data-v-3cd926d2]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-3cd926d2]{flex-wrap:wrap;gap:4px}.files-body[data-v-3cd926d2]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-3cd926d2]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-3cd926d2]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-3cd926d2]:hover,.files-row.on[data-v-3cd926d2]{background:var(--hover)}.files-name[data-v-3cd926d2]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-3cd926d2]{overflow:auto;padding:14px 18px}.files-path[data-v-3cd926d2]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-3cd926d2]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-3cd926d2]{display:block;white-space:pre}.files-line.target[data-v-3cd926d2]{background:var(--hover)}.files-number[data-v-3cd926d2]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-3cd926d2]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-d3f94cc6]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-d3f94cc6]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-d3f94cc6]{margin:0;font-size:13px;font-weight:600}.row[data-v-d3f94cc6]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-d3f94cc6]{font-weight:600}.name[data-v-d3f94cc6],.subject[data-v-d3f94cc6]{min-width:0;overflow-wrap:anywhere}.subject[data-v-d3f94cc6]{flex:1}.sha[data-v-d3f94cc6],.fact[data-v-d3f94cc6]{color:var(--text-3);font-size:12px}.sha[data-v-d3f94cc6]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-d3f94cc6]{color:var(--danger)}.output-lines[data-v-5a8693fe]{overflow:auto}.output-follow[data-v-5a8693fe]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-5a8693fe]:hover{border-color:var(--accent)}.terminal-output[data-v-df854e58]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-90f7914c]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-90f7914c] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-90f7914c]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-90f7914c],.terminal-state[data-v-90f7914c]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-90f7914c],.terminal-row.refused .terminal-state[data-v-90f7914c]{color:var(--danger)}.terminal-text[data-v-90f7914c]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-90f7914c]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-90f7914c]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-90f7914c]{color:var(--text-3)}.terminal-input[data-v-90f7914c]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-90f7914c]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-ccb50614]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-ccb50614]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-ccb50614]:hover,.agentset-settings[aria-expanded=true][data-v-ccb50614]{background:var(--hover);color:var(--text)}.agentset-failure[data-v-ccb50614]{margin:0;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
-import { nextTick as M, ref as y, getCurrentScope as X, onScopeDispose as G, watch as I, openBlock as v, createElementBlock as S, createTextVNode as Z, toDisplayString as E, unref as g, createCommentVNode as N, createBlock as $, onMounted as Q, onUnmounted as Y, computed as ee, withCtx as te, Fragment as R, renderList as oe, createElementVNode as x, normalizeClass as D, withModifiers as A, withDirectives as ne, withKeys as U, vModelText as le } from "vue";
-import { useWindow as K, FeedPaginator as ae, Skeleton as se, EmptyState as re, AutoScrollPane as ie } from "@journal/window-kit";
+if (!document.getElementById("window-styles-a6300442e515")) { const style = document.createElement("style"); style.id = "window-styles-a6300442e515"; style.textContent = ".file-feed[data-v-e6e52aef]{display:flex;flex:1;flex-direction:column;min-height:0}.file-feed-older[data-v-e6e52aef]{align-self:flex-start;margin:0 0 6px;padding:2px 8px;border:0;border-radius:5px;background:none;color:var(--text-3);font:inherit;font-size:12px;cursor:pointer}.file-feed-older[data-v-e6e52aef]:hover{background:var(--hover);color:var(--text)}.step[data-v-e9d43b82]{display:flex;align-items:stretch;width:132px;height:30px;border:1px solid var(--border-2, var(--border));border-radius:8px;background:var(--bg);overflow:hidden}.step[data-v-e9d43b82]:focus-within{border-color:var(--accent)}.step button[data-v-e9d43b82]{flex:none;width:30px;padding:0;border:0;background:none;color:var(--text-2);font-size:15px;line-height:1;cursor:pointer}.step button[data-v-e9d43b82]:hover{background:var(--hover);color:var(--text)}.step button[disabled][data-v-e9d43b82]{cursor:default;opacity:.35}.step input[data-v-e9d43b82]{flex:1;min-width:0;width:100%;padding:0;border:0;border-inline:1px solid var(--border-inner, var(--border));outline:0;background:none;color:var(--text);font:inherit;font-size:13px;font-weight:500;font-variant-numeric:tabular-nums;text-align:center;-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}.step input[data-v-e9d43b82]::-webkit-outer-spin-button,.step input[data-v-e9d43b82]::-webkit-inner-spin-button{margin:0;-webkit-appearance:none;-moz-appearance:none;appearance:none}.step input[disabled][data-v-e9d43b82]{color:var(--text-2)}.ctl[data-v-6e2d513b]{display:grid;grid-template-columns:minmax(0,1fr) 220px 170px;gap:6px 18px;align-items:center;padding:10px 0;border-top:1px solid var(--border-inner, var(--border))}.ctl.flat[data-v-6e2d513b]{grid-template-columns:minmax(0,1fr) 220px}.ctl-text[data-v-6e2d513b]{min-width:0}.ctl-label[data-v-6e2d513b]{display:block;color:var(--text);font-size:13px}.ctl-help[data-v-6e2d513b]{display:block;margin-top:1px;color:var(--text-3);font-size:12px;text-wrap:pretty}.ctl-input[data-v-6e2d513b]{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}.ctl-src[data-v-6e2d513b]{display:flex;flex-direction:column;gap:2px;align-items:flex-start;color:var(--text-3);font-size:11.5px}.src[data-v-6e2d513b]{display:inline-flex;gap:5px;align-items:center}.src i[data-v-6e2d513b]{width:6px;height:6px;border-radius:50%;background:var(--text-4, var(--text-3))}.src.here i[data-v-6e2d513b]{background:var(--accent)}.src.changed[data-v-6e2d513b]{color:var(--text)}.src.changed i[data-v-6e2d513b]{background:var(--warn)}@container (max-width: 640px){.ctl[data-v-6e2d513b],.ctl.flat[data-v-6e2d513b]{grid-template-columns:minmax(0,1fr)}}.foot[data-v-88c3dd59]{position:sticky;bottom:0;display:flex;gap:8px;align-items:center;min-height:50px;margin:18px -18px -22px;padding:9px 16px;border-top:1px solid var(--border);background:var(--raised, var(--bg))}.foot-note[data-v-88c3dd59]{flex:1;min-width:0;overflow:hidden;color:var(--text-3);font-size:12px;text-overflow:ellipsis;white-space:nowrap}.foot-note.bad[data-v-88c3dd59]{color:var(--danger);white-space:normal}.foot-note.busy[data-v-88c3dd59]{color:var(--text)}.group[data-v-561ba16e]{margin-top:14px}.badge[data-v-561ba16e]{margin-left:8px;padding:1px 7px;border:1px solid var(--tone-warn);border-radius:999px;color:var(--tone-warn);font-size:11px}.sw-word[data-v-561ba16e]{color:var(--text-2);font-size:12px}.choice[data-v-561ba16e]{padding:4px 6px;border:1px solid var(--border-2);border-radius:6px;background:var(--bg);color:var(--text);font:inherit;font-size:12px}form[data-v-23a905c0],.action-field[data-v-23a905c0]{display:flex;flex-direction:column;gap:6px}form[data-v-23a905c0]{padding:10px;border:1px solid var(--border);border-radius:7px}.action-buttons[data-v-23a905c0]{display:flex;gap:6px;flex-wrap:wrap}p[data-v-23a905c0]{margin:0;color:var(--text-2)}[data-v-23a905c0] .text-area{min-height:84px}p[data-v-fc209014]{color:var(--text-3);margin:0 0 12px}.edit-row[data-v-fc209014]{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}small[data-v-fc209014]{display:block;color:var(--text-3);margin-top:4px}.stepper[data-v-fc209014]{display:flex;height:32px;margin-top:4px}.stepper button[data-v-fc209014],.stepper input[data-v-fc209014]{width:32px;border:1px solid var(--border);background:var(--raised);color:var(--text);text-align:center}.stepper input[data-v-fc209014]{width:48px}@media(max-width:600px){.stepper[data-v-fc209014]{height:44px}.edit-row[data-v-fc209014]{grid-template-columns:1fr 1fr}.edit-row>div[data-v-fc209014]{grid-column:span 2}}.counts[data-v-604ef447]{width:min(570px,100%);font-size:12px}p[data-v-604ef447]{color:var(--text-3);margin:0 0 12px}.back[data-v-604ef447]{border:0;background:none;color:var(--accent-text);cursor:pointer;margin-bottom:12px}.columns[data-v-604ef447],.count-row[data-v-604ef447]{display:grid;grid-template-columns:minmax(100px,1fr) minmax(90px,1fr) minmax(90px,1fr) 12px;gap:12px;align-items:center}.columns[data-v-604ef447],.helper-head[data-v-604ef447]{color:var(--text-3);padding:8px 0}.helper-head[data-v-604ef447]{display:flex;justify-content:space-between}.count-row[data-v-604ef447]{width:100%;padding:9px 0;background:none;border:0;border-top:1px solid var(--border);color:var(--text);text-align:left;cursor:pointer}.count-row[data-v-604ef447]:hover{background:var(--hover)}.full[data-v-604ef447]{font-weight:600}.bar[data-v-604ef447]{display:block;position:relative;height:4px;background:var(--border);margin-top:5px}.bar span[data-v-604ef447]{display:block;height:100%;background:var(--text-3)}.full .bar span[data-v-604ef447]{background:var(--tone-warn)}.bar i[data-v-604ef447]{position:absolute;right:0;top:0;height:100%;background:var(--danger)}small[data-v-604ef447]{display:block;color:var(--text-3);margin-top:4px}.person[data-v-604ef447]{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 0;border-bottom:1px solid var(--border)}.person-text[data-v-604ef447]{flex:1;min-width:0}.person-text small[data-v-604ef447]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dot[data-v-604ef447]{width:7px;height:7px;border-radius:50%;background:var(--text-3)}.dot.running[data-v-604ef447]{background:var(--accent)}[role=alert][data-v-604ef447]{color:var(--danger)}.foot-note[data-v-604ef447]{flex:1;color:var(--text-3)}@media(max-width:600px){.bar[data-v-604ef447]{display:none}}.foot[data-v-604ef447]{display:flex;align-items:center;gap:12px;margin-top:16px}.agents[data-v-3e01c727]{display:flex;flex-direction:column;gap:12px;padding-top:14px}.section[data-v-9f39da05]{margin-top:18px}.section-title[data-v-9f39da05]{margin:0 0 2px;color:var(--text);font-size:12.5px;font-weight:600}.section-help[data-v-9f39da05]{margin:0 0 6px;color:var(--text-3);font-size:12px;text-wrap:pretty}.section-help.warn[data-v-9f39da05]{margin-top:8px;color:var(--warn)}.sw-word[data-v-9f39da05]{color:var(--text-2);font-size:12px}.settings[data-v-f9bdd5f3]{container-type:inline-size;display:flex;flex-direction:column;min-height:100%;background:var(--raised, var(--bg))}.settings-bar[data-v-f9bdd5f3]{position:sticky;top:0;z-index:2;background:var(--raised, var(--bg))}.settings-bar[data-v-f9bdd5f3] .segmented{width:100%;border:0;border-radius:0;padding:0}.settings-body[data-v-f9bdd5f3]{flex:1;padding:4px 18px 22px}.note[data-v-f9bdd5f3]{margin:14px 0 0;padding:8px 12px;border:1px solid var(--accent);border-radius:8px;background:var(--accent-dim, var(--hover));color:var(--text);font-size:12.5px}.main[data-v-de4b6996]{flex:1}.note[data-v-de4b6996]{color:var(--text-3);font-size:12px}.feed-bar-lines[data-v-db39481b]{display:flex;flex-direction:column;gap:6px;align-items:flex-start;padding:6px 10px;font-size:13px}.file-feed[data-v-d6c82d3f]{display:flex;flex-direction:column;height:100%;min-height:0;container-type:inline-size}.file-feed-flow[data-v-d6c82d3f]{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;padding:12px}.file-feed.flush .file-feed-flow[data-v-d6c82d3f]{gap:0;padding:0}.file-feed-failure[data-v-d6c82d3f]{padding:8px 12px;color:var(--danger)}.files[data-v-3cd926d2]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-3cd926d2]{flex-wrap:wrap;gap:4px}.files-body[data-v-3cd926d2]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-3cd926d2]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-3cd926d2]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-3cd926d2]:hover,.files-row.on[data-v-3cd926d2]{background:var(--hover)}.files-name[data-v-3cd926d2]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-3cd926d2]{overflow:auto;padding:14px 18px}.files-path[data-v-3cd926d2]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-3cd926d2]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-3cd926d2]{display:block;white-space:pre}.files-line.target[data-v-3cd926d2]{background:var(--hover)}.files-number[data-v-3cd926d2]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-3cd926d2]{margin:6px 8px;color:var(--text-2);font-size:13px}.git[data-v-d3f94cc6]{display:flex;flex-direction:column;gap:24px;padding:24px 28px}.part[data-v-d3f94cc6]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}h3[data-v-d3f94cc6]{margin:0;font-size:13px;font-weight:600}.row[data-v-d3f94cc6]{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;width:100%;font-size:13px}.row.current .name[data-v-d3f94cc6]{font-weight:600}.name[data-v-d3f94cc6],.subject[data-v-d3f94cc6]{min-width:0;overflow-wrap:anywhere}.subject[data-v-d3f94cc6]{flex:1}.sha[data-v-d3f94cc6],.fact[data-v-d3f94cc6]{color:var(--text-3);font-size:12px}.sha[data-v-d3f94cc6]{font-family:var(--font-mono, ui-monospace, monospace)}.fact.failed[data-v-d3f94cc6]{color:var(--danger)}.output-lines[data-v-5a8693fe]{overflow:auto}.output-follow[data-v-5a8693fe]{position:sticky;bottom:8px;display:block;width:fit-content;margin-left:auto;padding:3px 10px;border:1px solid var(--border-2);border-radius:999px;background:var(--raised);color:var(--text);font:inherit;font-size:11.5px;cursor:pointer;-webkit-user-select:none;user-select:none}.output-follow[data-v-5a8693fe]:hover{border-color:var(--accent)}.terminal-output[data-v-df854e58]{max-height:240px;margin:4px 0 8px 18px;color:var(--text-3);white-space:pre-wrap;overflow-wrap:anywhere}.terminal[data-v-5fa5efce]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal[data-v-5fa5efce] .terminal-body{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45}.terminal-row[data-v-5fa5efce]{display:flex;gap:7px;align-items:baseline}.terminal-mark[data-v-5fa5efce],.terminal-state[data-v-5fa5efce]{flex:none;color:var(--text-3)}.terminal-row.refused .terminal-text[data-v-5fa5efce],.terminal-row.refused .terminal-state[data-v-5fa5efce]{color:var(--danger)}.terminal-text[data-v-5fa5efce]{min-width:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.terminal-text.open[data-v-5fa5efce]{overflow-wrap:anywhere;white-space:pre-wrap}.terminal-run[data-v-5fa5efce]{display:flex;align-items:center;gap:8px;padding:6px 12px;border-top:1px solid var(--border);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px}.terminal-prompt[data-v-5fa5efce]{color:var(--text-3)}.terminal-input[data-v-5fa5efce]{flex:1;min-width:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}.terminal-failure[data-v-5fa5efce]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-ccb50614]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-ccb50614]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-ccb50614]:hover,.agentset-settings[aria-expanded=true][data-v-ccb50614]{background:var(--hover);color:var(--text)}.agentset-failure[data-v-ccb50614]{margin:0;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
+import { nextTick as M, ref as y, getCurrentScope as X, onScopeDispose as G, watch as I, openBlock as v, createElementBlock as S, createTextVNode as Z, toDisplayString as E, unref as g, createCommentVNode as N, createBlock as $, onMounted as Q, onUnmounted as Y, computed as ee, withCtx as te, Fragment as R, renderList as oe, createElementVNode as x, normalizeClass as D, withModifiers as L, withDirectives as ne, withKeys as U, vModelText as ae } from "vue";
+import { useWindow as K, FeedPaginator as le, eventMayBeChildOf as se, Skeleton as re, EmptyState as ie, AutoScrollPane as ue } from "@journal/window-kit";
 import { _ as F } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const ue = 8, ce = 40;
+const ce = 8, de = 40;
 class P {
-  constructor(e, t, { top: o = ue, development: a = !1 } = {}) {
-    Object.assign(this, { name: e, source: t, top: o, development: a }), this.breaches = [], this.shown = !1, this.loading = !1;
+  constructor(e, t, { top: o = ce, development: l = !1 } = {}) {
+    Object.assign(this, { name: e, source: t, top: o, development: l }), this.breaches = [], this.shown = !1, this.loading = !1;
   }
   // a feed over a window's rows, as `useRows` and a window's props give them: refs of the rows, whether they loaded and whether more follow
   static ofRows(e, t, o) {
@@ -31,7 +31,7 @@ class P {
     if (this.shown || !this.source.loaded() || !this.source.count()) return;
     this.shown = !0;
     const t = e.scrollHeight - e.scrollTop - e.clientHeight;
-    t > ce && this.breach(`opened ${t}px above the bottom`), this.source.count() > this.source.pageSize() && this.breach(`opened with ${this.source.count()} rows, more than the newest page of ${this.source.pageSize()}`);
+    t > de && this.breach(`opened ${t}px above the bottom`), this.source.count() > this.source.pageSize() && this.breach(`opened with ${this.source.count()} rows, more than the newest page of ${this.source.pageSize()}`);
   }
   // the reader scrolled: at the top of the pane the page before the oldest one is read
   async reachTop(e) {
@@ -44,124 +44,124 @@ class P {
     if (e && e.scrollTop >= this.top) return this.breach(`an earlier page was read ${e.scrollTop}px below the top`);
     this.loading = !0;
     const t = this.source.count(), o = (e == null ? void 0 : e.scrollHeight) ?? 0;
-    let a = !1;
+    let l = !1;
     try {
-      a = await this.source.previous();
+      l = await this.source.previous();
     } finally {
       this.loading = !1;
     }
     const s = this.source.count() - t;
-    return s > this.source.pageSize() && this.breach(`one scroll up added ${s} rows, a page is ${this.source.pageSize()}`), a && e && (await M(), e.scrollTop += e.scrollHeight - o), a;
+    return s > this.source.pageSize() && this.breach(`one scroll up added ${s} rows, a page is ${this.source.pageSize()}`), l && e && (await M(), e.scrollTop += e.scrollHeight - o), l;
   }
   // rows too few to scroll leave no way to reach the top, so earlier pages are read until the pane scrolls or none is left
   async fill(e) {
     for (; e.clientHeight > 0 && e.scrollHeight <= e.clientHeight && this.source.more() && await this.scrollUp(); ) await M();
   }
 }
-const de = 60, fe = 300;
-function me(i, e) {
+const fe = 60, me = 300;
+function he(c, e) {
   const t = y([]), o = y(0);
-  let a = -1, s = 0;
-  async function c() {
-    const n = await i(["output", "page", String(e())]);
-    return n.ok && (t.value = n.value.lines, o.value = n.value.first_byte, a = n.value.last_byte, s = n.value.cut_bytes), n;
+  let l = -1, s = 0;
+  async function d() {
+    const n = await c(["output", "page", String(e())]);
+    return n.ok && (t.value = n.value.lines, o.value = n.value.first_byte, l = n.value.last_byte, s = n.value.cut_bytes), n;
   }
   async function m() {
-    if (a < 0) return c();
-    const n = await i(["output", "page", String(e()), "--after", String(a)]);
-    return n.ok ? n.value.cut_bytes !== s || n.value.total < a ? c() : (n.value.lines.length && (t.value = [...t.value, ...n.value.lines]), a = n.value.last_byte, n) : n;
+    if (l < 0) return d();
+    const n = await c(["output", "page", String(e()), "--after", String(l)]);
+    return n.ok ? n.value.cut_bytes !== s || n.value.total < l ? d() : (n.value.lines.length && (t.value = [...t.value, ...n.value.lines]), l = n.value.last_byte, n) : n;
   }
-  async function r() {
-    const n = await i(["output", "page", String(e()), "--before", String(o.value)]);
+  async function i() {
+    const n = await c(["output", "page", String(e()), "--before", String(o.value)]);
     return n.ok ? (t.value = [...n.value.lines, ...t.value], o.value = n.value.first_byte, !0) : !1;
   }
-  const h = new P("output", { loaded: () => a >= 0, count: () => t.value.length, pageSize: () => fe, more: () => o.value > 0, previous: r }, { top: de });
-  return { lines: t, newest: c, follow: m, loadEarlier: (n) => h.reachTop(n), feed: h };
+  const h = new P("output", { loaded: () => l >= 0, count: () => t.value.length, pageSize: () => me, more: () => o.value > 0, previous: i }, { top: fe });
+  return { lines: t, newest: d, follow: m, loadEarlier: (n) => h.reachTop(n), feed: h };
 }
-const he = 24, pe = 1e3, j = 2e3, ve = 0.25, ge = 5e3;
-function ye(i, e = he, t = () => !0) {
-  const o = y(!1), a = y(0), s = y(!1);
-  let c = 0, m = 0, r = 0;
-  const h = () => i && "value" in i ? i.value : i, p = () => {
+const pe = 24, ve = 1e3, j = 2e3, ge = 0.25, ye = 5e3;
+function _e(c, e = pe, t = () => !0) {
+  const o = y(!1), l = y(0), s = y(!1);
+  let d = 0, m = 0, i = 0;
+  const h = () => c && "value" in c ? c.value : c, p = () => {
     const _ = h();
     return _ ? _.scrollHeight - _.scrollTop - _.clientHeight : 0;
   }, n = () => !h() || p() <= e;
   function k(_) {
-    if (clearTimeout(c), !_) {
-      s.value = !1, r = Date.now();
+    if (clearTimeout(d), !_) {
+      s.value = !1, i = Date.now();
       return;
     }
-    const d = Date.now() - r < j ? j : pe;
-    c = setTimeout(() => s.value = o.value, d);
+    const f = Date.now() - i < j ? j : ve;
+    d = setTimeout(() => s.value = o.value, f);
   }
   function w() {
-    clearTimeout(m), o.value = !1, a.value = 0, k(!1);
+    clearTimeout(m), o.value = !1, l.value = 0, k(!1);
   }
   function b(_ = !1) {
-    const d = h();
-    d && _ && d.scrollTo ? d.scrollTo({ top: d.scrollHeight, behavior: "smooth" }) : d && (d.scrollTop = d.scrollHeight), w();
+    const f = h();
+    f && _ && f.scrollTo ? f.scrollTo({ top: f.scrollHeight, behavior: "smooth" }) : f && (f.scrollTop = f.scrollHeight), w();
   }
   function O() {
     B(), !o.value && (o.value = !0, k(!0));
   }
-  const T = () => !!h() && p() <= h().clientHeight * ve;
+  const T = () => !!h() && p() <= h().clientHeight * ge;
   function B() {
-    clearTimeout(m), T() && (m = setTimeout(() => o.value && T() && t() && b(!0), ge));
+    clearTimeout(m), T() && (m = setTimeout(() => o.value && T() && t() && b(!0), ye));
   }
-  function H() {
+  function A() {
     n() ? w() : O();
   }
-  function C(_ = 1, d = !1) {
-    o.value ? a.value += Math.max(0, _) : b(d);
+  function C(_ = 1, f = !1) {
+    o.value ? l.value += Math.max(0, _) : b(f);
   }
-  return X() && G(() => [c, m].forEach(clearTimeout)), { away: o, missed: a, showNewest: s, gap: p, atBottom: n, follow: w, toBottom: b, left: O, scrolled: H, arrived: C };
+  return X() && G(() => [d, m].forEach(clearTimeout)), { away: o, missed: l, showNewest: s, gap: p, atBottom: n, follow: w, toBottom: b, left: O, scrolled: A, arrived: C };
 }
-const _e = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, we = (i) => String(i ?? "").replace(_e, ""), Te = {
+const we = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\-_]|\x1b/g, Te = (c) => String(c ?? "").replace(we, ""), Se = {
   __name: "OutputLines",
   props: { lines: { type: Array, required: !0 }, empty: { type: String, default: "No output yet." }, feed: { type: Object, default: null } },
   emits: ["older"],
-  setup(i, { emit: e }) {
-    const t = i, o = e, a = y(null), { away: s, scrolled: c, arrived: m, toBottom: r } = ye(a);
+  setup(c, { emit: e }) {
+    const t = c, o = e, l = y(null), { away: s, scrolled: d, arrived: m, toBottom: i } = _e(l);
     I(
       () => t.lines.length,
       () => M(() => {
         var p;
-        m(), a.value && ((p = t.feed) == null || p.drawn(a.value));
+        m(), l.value && ((p = t.feed) == null || p.drawn(l.value));
       }),
       { immediate: !0 }
     );
     function h(p) {
-      c(), o("older", p.target);
+      d(), o("older", p.target);
     }
     return (p, n) => (v(), S("pre", {
       ref_key: "box",
-      ref: a,
+      ref: l,
       class: "output-lines",
       onScroll: h
     }, [
-      Z(E(g(we)(i.lines.join(`
-`)) || i.empty), 1),
+      Z(E(g(Te)(c.lines.join(`
+`)) || c.empty), 1),
       g(s) ? (v(), S("button", {
         key: 0,
         type: "button",
         class: "output-follow",
         title: "Follow the output: keep its newest line in view as lines arrive",
-        onClick: n[0] || (n[0] = (k) => g(r)(!0))
+        onClick: n[0] || (n[0] = (k) => g(i)(!0))
       }, "Follow")) : N("", !0)
     ], 544));
   }
-}, Se = /* @__PURE__ */ F(Te, [["__scopeId", "data-v-5a8693fe"]]), be = {
+}, be = /* @__PURE__ */ F(Se, [["__scopeId", "data-v-5a8693fe"]]), ke = {
   key: 0,
   role: "alert"
-}, ke = {
+}, xe = {
   __name: "TerminalOutput",
   props: { call: { type: Number, required: !0 } },
   emits: ["command"],
-  setup(i, { emit: e }) {
-    const t = i, o = e, a = K(), s = me((r) => a.readKey(`terminal-output.${t.call}`, r[3] ? { [r[3].slice(2)]: r[4] } : {}), () => t.call), c = y(""), m = y(!1);
-    return s.newest().then((r) => {
-      c.value = r.ok ? "" : r.error, r.ok && r.value.command && o("command", r.value.command), m.value = !0;
-    }), (r, h) => c.value ? (v(), S("p", be, E(c.value), 1)) : m.value ? (v(), $(Se, {
+  setup(c, { emit: e }) {
+    const t = c, o = e, l = K(), s = he((i) => l.readKey(`terminal-output.${t.call}`, i[3] ? { [i[3].slice(2)]: i[4] } : {}), () => t.call), d = y(""), m = y(!1);
+    return s.newest().then((i) => {
+      d.value = i.ok ? "" : i.error, i.ok && i.value.command && o("command", i.value.command), m.value = !0;
+    }), (i, h) => d.value ? (v(), S("p", ke, E(d.value), 1)) : m.value ? (v(), $(be, {
       key: 1,
       class: "terminal-output",
       lines: g(s).lines.value,
@@ -171,14 +171,14 @@ const _e = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       onOlder: g(s).loadEarlier
     }, null, 8, ["lines", "feed", "onOlder"])) : N("", !0);
   }
-}, xe = /* @__PURE__ */ F(ke, [["__scopeId", "data-v-df854e58"]]), Ee = {
+}, Ee = /* @__PURE__ */ F(xe, [["__scopeId", "data-v-df854e58"]]), Oe = {
   key: 0,
   class: "terminal-failure"
-}, Oe = ["title"], $e = { class: "terminal-mark" }, Ne = ["aria-expanded", "onClick"], Be = {
+}, $e = ["title"], Ne = { class: "terminal-mark" }, Be = ["aria-expanded", "onClick"], Ce = {
   key: 0,
   class: "terminal-state",
   "data-terminal-refused": ""
-}, Ce = ["onKeydown"], He = {
+}, Ae = ["onKeydown"], He = {
   key: 4,
   class: "terminal-failure",
   role: "alert",
@@ -186,108 +186,108 @@ const _e = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
 }, Le = {
   __name: "Terminal",
   props: { agent: { type: Number, default: null } },
-  setup(i) {
-    const e = /* @__PURE__ */ new Set(["Bash", "Monitor", "shell", "exec_command"]), t = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/, o = K(), a = i, s = a.agent ?? o.agent, c = a.agent !== null;
-    c || (o.state["calls.session-agent-id"] = String(s));
-    const m = o.props[c ? `terminal-calls.${s}` : "calls"], { rows: r, failure: h, loaded: p, more: n } = m, k = ae.ofRows("terminal", m);
-    if (c) {
+  setup(c) {
+    const e = /* @__PURE__ */ new Set(["Bash", "Monitor", "shell", "exec_command"]), t = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/, o = K(), l = c, s = l.agent ?? o.agent, d = l.agent !== null;
+    d || (o.state["calls.session-agent-id"] = String(s));
+    const m = o.props[d ? `terminal-calls.${s}` : "calls"], { rows: i, failure: h, loaded: p, more: n } = m, k = le.ofRows("terminal", m);
+    if (d) {
       Q(() => m.loadLatest());
-      const l = o.follow(["hook_call.*"], m.heard);
-      Y(l);
+      const a = /* @__PURE__ */ new Set([s]), u = o.follow(["hook_call.*"], (r) => se(r, "session_agent_id", a) && m.heard(r));
+      Y(u);
     }
-    const w = y(""), b = y(""), O = y(null), T = y(/* @__PURE__ */ new Set()), B = y({}), H = {
-      commands: (l) => e.has(l.tool) && !C(l),
-      journal: (l) => e.has(l.tool),
+    const w = y(""), b = y(""), O = y(null), T = y(/* @__PURE__ */ new Set()), B = y({}), A = {
+      commands: (a) => e.has(a.tool) && !C(a),
+      journal: (a) => e.has(a.tool),
       everything: () => !0
-    }, C = (l) => t.test(l.summary), _ = o.option("verbosity"), d = ee(() => r.value.filter((l) => l.hook === "pre_tool_use" && l.summary && H[_.value ?? "everything"](l)).sort((l, f) => l.id - f.id)), V = (l) => C(l) ? "#" : e.has(l.tool) ? "$" : ">";
+    }, C = (a) => t.test(a.summary), _ = o.option("verbosity"), f = ee(() => i.value.filter((a) => a.hook === "pre_tool_use" && a.summary && A[_.value ?? "everything"](a)).sort((a, u) => a.id - u.id)), V = (a) => C(a) ? "#" : e.has(a.tool) ? "$" : ">";
     async function W() {
-      for (; p.value && !d.value.length && n.value && await k.scrollUp(); ) ;
+      for (; p.value && !f.value.length && n.value && await k.scrollUp(); ) ;
     }
-    I(() => p.value && !d.value.length, W, { immediate: !0 });
-    function q(l) {
-      const f = new Set(T.value);
-      f.delete(l.id) || f.add(l.id), T.value = f;
+    I(() => p.value && !f.value.length, W, { immediate: !0 });
+    function q(a) {
+      const u = new Set(T.value);
+      u.delete(a.id) || u.add(a.id), T.value = u;
     }
-    async function L() {
-      const l = w.value;
-      if (!l.trim()) return;
+    async function H() {
+      const a = w.value;
+      if (!a.trim()) return;
       w.value = "";
-      const f = await o.run(["agent", "type", String(s), l]);
-      b.value = f.ok ? "" : f.error, f.ok || (w.value = l);
+      const u = await o.run(["agent", "type", String(s), a]);
+      b.value = u.ok ? "" : u.error, u.ok || (w.value = a);
     }
-    function J(l) {
-      var f;
-      String(globalThis.getSelection()) || l.target.closest("button, a, input, textarea, .terminal-text") || (f = O.value) == null || f.focus();
+    function J(a) {
+      var u;
+      String(globalThis.getSelection()) || a.target.closest("button, a, input, textarea, .terminal-text") || (u = O.value) == null || u.focus();
     }
-    return (l, f) => (v(), S("section", {
+    return (a, u) => (v(), S("section", {
       class: "terminal",
       onClick: J
     }, [
-      g(h) ? (v(), S("p", Ee, E(g(h)), 1)) : g(p) ? d.value.length ? (v(), $(g(ie), {
+      g(h) ? (v(), S("p", Oe, E(g(h)), 1)) : g(p) ? f.value.length ? (v(), $(g(ue), {
         key: 3,
-        "row-count": d.value.length,
+        "row-count": f.value.length,
         feed: g(k),
         "pane-class": "terminal-body",
         "data-terminal-log": ""
       }, {
         default: te(() => [
-          (v(!0), S(R, null, oe(d.value, (u) => (v(), S(R, {
-            key: u.id
+          (v(!0), S(R, null, oe(f.value, (r) => (v(), S(R, {
+            key: r.id
           }, [
             x("div", {
-              class: D(["terminal-row", { refused: u.refusal }]),
+              class: D(["terminal-row", { refused: r.refusal }]),
               "data-terminal-command": "",
-              title: u.refusal ? `The journal refused this before it ran: ${u.refusal}` : null
+              title: r.refusal ? `The journal refused this before it ran: ${r.refusal}` : null
             }, [
-              x("span", $e, E(V(u)), 1),
+              x("span", Ne, E(V(r)), 1),
               x("button", {
                 type: "button",
-                class: D(["terminal-text", { open: T.value.has(u.id) }]),
-                "aria-expanded": T.value.has(u.id),
-                onClick: (z) => q(u)
-              }, E(T.value.has(u.id) && B.value[u.id] || u.summary), 11, Ne),
-              u.refusal ? (v(), S("span", Be, "refused")) : N("", !0)
-            ], 10, Oe),
-            T.value.has(u.id) ? (v(), $(xe, {
+                class: D(["terminal-text", { open: T.value.has(r.id) }]),
+                "aria-expanded": T.value.has(r.id),
+                onClick: (z) => q(r)
+              }, E(T.value.has(r.id) && B.value[r.id] || r.summary), 11, Be),
+              r.refusal ? (v(), S("span", Ce, "refused")) : N("", !0)
+            ], 10, $e),
+            T.value.has(r.id) ? (v(), $(Ee, {
               key: 0,
-              call: u.id,
-              onCommand: (z) => B.value[u.id] = z
+              call: r.id,
+              onCommand: (z) => B.value[r.id] = z
             }, null, 8, ["call", "onCommand"])) : N("", !0)
           ], 64))), 128))
         ]),
         _: 1
-      }, 8, ["row-count", "feed"])) : (v(), $(g(re), {
+      }, 8, ["row-count", "feed"])) : (v(), $(g(ie), {
         key: 2,
         title: "No commands from this agent yet"
-      })) : (v(), $(g(se), {
+      })) : (v(), $(g(re), {
         key: 1,
         shape: "text"
       })),
       x("form", {
         class: "terminal-run",
         "data-terminal-run": "",
-        onSubmit: A(L, ["prevent"])
+        onSubmit: L(H, ["prevent"])
       }, [
-        f[1] || (f[1] = x("span", { class: "terminal-prompt" }, "$", -1)),
+        u[1] || (u[1] = x("span", { class: "terminal-prompt" }, "$", -1)),
         ne(x("input", {
           ref_key: "input",
           ref: O,
-          "onUpdate:modelValue": f[0] || (f[0] = (u) => w.value = u),
+          "onUpdate:modelValue": u[0] || (u[0] = (r) => w.value = r),
           class: "terminal-input",
           "aria-label": "A command to run in the agent's terminal",
           autocomplete: "off",
           onKeydown: [
-            U(A(L, ["ctrl", "prevent"]), ["enter"]),
-            U(A(L, ["meta", "prevent"]), ["enter"])
+            U(L(H, ["ctrl", "prevent"]), ["enter"]),
+            U(L(H, ["meta", "prevent"]), ["enter"])
           ]
-        }, null, 40, Ce), [
-          [le, w.value]
+        }, null, 40, Ae), [
+          [ae, w.value]
         ])
       ], 32),
       b.value ? (v(), S("p", He, E(b.value), 1)) : N("", !0)
     ]));
   }
-}, Pe = /* @__PURE__ */ F(Le, [["__scopeId", "data-v-90f7914c"]]);
+}, ze = /* @__PURE__ */ F(Le, [["__scopeId", "data-v-5fa5efce"]]);
 export {
-  Pe as default
+  ze as default
 };

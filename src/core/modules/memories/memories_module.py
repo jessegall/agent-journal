@@ -108,6 +108,6 @@ class MemoriesModule(Module):
     ], runs=["memory make"], events=["memory.*", "agent.*"]),
                WindowDeclaration("memories.memory-facts", "Keywords", "memory-facts.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.FILED, skeleton=[SkeletonPart.line()],
                                  reads=["memory-keyword list"], runs=["memory-keyword make", "memory-keyword delete"], events=["memory_keyword.*"],
-                                 keys=[WindowKey("keywords.*", "memory-keyword list --memory {id}", events=["memory_keyword.*"], loading=KeyLoading.REQUESTED)])]
+                                 keys=[WindowKey("keywords.*", "memory-keyword list --memory {id}", loading=KeyLoading.REQUESTED)])]
     inspectors = [MEMORY_INSPECTOR]
     seeders = [MemoriesSeeder]

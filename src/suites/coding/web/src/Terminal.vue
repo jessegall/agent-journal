@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref, watch} from "vue";
-import {AutoScrollPane, EmptyState, FeedPaginator, Skeleton, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, EmptyState, FeedPaginator, Skeleton, eventMayBeChildOf, useWindow} from "@journal/window-kit";
 import TerminalOutput from "./TerminalOutput.vue";
 
 // Commands are listed oldest first and open to their full text; a line typed here goes to the agent's terminal.
@@ -17,7 +17,8 @@ const {rows, failure, loaded, more} = feed;
 const paginator = FeedPaginator.ofRows("terminal", feed);
 if (embedded) {
     onMounted(() => feed.loadLatest());
-    const stop = view.follow(["hook_call.*"], feed.heard);
+    const shownAgent = new Set([agent]);
+    const stop = view.follow(["hook_call.*"], (event) => eventMayBeChildOf(event, "session_agent_id", shownAgent) && feed.heard(event));
     onUnmounted(stop);
 }
 const typed = ref("");

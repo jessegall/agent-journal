@@ -5,7 +5,7 @@ import {useNow} from "../../../kit/useNow.js";
 import Skeleton from "../../kit/Skeleton.vue";
 import {useResourceEvents} from "../resourceEvents.js";
 import {eventAboutRows, eventChildOf} from "../../../kit/eventRows.js";
-import {agentState, agentTitle, detailRows, finishedWords, givenName, rowsOf, stripCells, totalOf} from "./agentView.js";
+import {agentState, agentTitle, detailRows, finishedWords, givenName, stripCells} from "./agentView.js";
 import AgentBrief from "./AgentBrief.vue";
 import AgentFolds from "./AgentFolds.vue";
 import AgentNow from "./AgentNow.vue";
@@ -31,29 +31,17 @@ const nothing = computed(() => (row.value.ended_at ? finishedWords(facts.value) 
 
 async function load() {
     const turn = ++reading;
-    const shown = await props.read(["agent", "show", String(props.id)]);
+    const answer = await props.read(["usage", "inspector", String(props.id), "--environment", props.environment]);
     if (turn !== reading) return;
-    if (!shown.ok) return void (failure.value = shown.error);
-    const id = String(props.id);
-    const worker = shown.value.role === "worker";
-    const [listed, inspected, tooled, children, loaded, pointed, offered] = await Promise.all([
-        props.read(["usage", "agents", "--closed", "--agent", id, "--environment", props.environment]),
-        props.read(["usage", "agent", id]),
-        shown.value.ended_at ? {ok: false} : props.read(["usage", "tool", "--agent", id]),
-        props.read(["agent", "list", "--parent", id, "--limit", "1", "--columns", "id"]),
-        props.read(["agent-skill", "list", "--agent", id, "--state", "loaded", "--limit", "1", "--columns", "id"]),
-        worker ? props.read(["worker-worktree", "points", "--agent", id]) : {ok: false},
-        props.read(["agent", "programs"]),
-    ]);
-    if (turn !== reading) return;
-    failure.value = inspected.ok ? "" : inspected.error;
-    row.value = shown.value;
-    facts.value = rowsOf(listed).find((one) => one.id === props.id) ?? null;
-    inspection.value = inspected.ok ? inspected.value : null;
-    tool.value = tooled.ok ? tooled.value : {};
-    counts.value = {helpers: totalOf(children), skills: totalOf(loaded)};
-    points.value = pointed.ok ? pointed.value.points : [];
-    programs.value = rowsOf(offered);
+    failure.value = answer.ok ? "" : answer.error;
+    if (!answer.ok) return;
+    row.value = answer.value.agent;
+    facts.value = answer.value.facts;
+    inspection.value = answer.value.inspection;
+    tool.value = answer.value.tool;
+    counts.value = {helpers: answer.value.helpers, skills: answer.value.skills};
+    points.value = answer.value.points;
+    programs.value = answer.value.programs;
     loads.value += 1;
 }
 

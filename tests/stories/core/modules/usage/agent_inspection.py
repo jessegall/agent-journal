@@ -1,3 +1,5 @@
+import json
+
 from core.base.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.testing.hook_samples import HookSamples
@@ -26,3 +28,11 @@ def test_the_task_an_agent_holds_shows_its_plan_with_the_phase_and_the_tasks_don
     story = new_story(fixture=PhaseWithThreeTasks)
     story.run("task start 1", actor=story.agent)
     story.expect_text(f"usage agent {story.agent.id} --json", '"task": {"id": 1', '"title": "Version 5 core"', '"phase": 1', '"done": 0', '"total": 3')
+
+
+def test_the_inspector_read_answers_all_an_agents_inspector_draws(new_story):
+    story = new_story(fixture=BuilderWithBriefedTask)
+    story.run("task start 1", actor=story.agent)
+    answer = json.loads(story.run(f"usage inspector {story.agent.id} --environment main --json", actor=story.user).output_text)
+    story.expect_rows(answer["agent"]["id"] == story.agent.id, answer["facts"]["id"] == story.agent.id, answer["inspection"]["task"]["title"] == "Fix the cart",
+                      answer["helpers"] == 0, answer["points"] == [], {program["name"] for program in answer["programs"]} >= {"claude"}, "tool" in answer["tool"])

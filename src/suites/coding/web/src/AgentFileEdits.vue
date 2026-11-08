@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted} from "vue";
-import {AutoScrollPane, DiffCard, FeedPaginator, RowList, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, DiffCard, FeedPaginator, RowList, eventMayBeChildOf, useWindow} from "@journal/window-kit";
 
 // the files one agent changed, oldest first with the newest edit at the foot, where the pane opens and stays as edits arrive; scrolling up stops
 // that and shows Newest; each edit is a diff card of its first lines, and reaching the top reads the page of older edits, or the button above
@@ -11,7 +11,8 @@ const feed = view.props[`agent-edits.${props.agent}`];
 const {rows, failure, loaded, more} = feed;
 const paginator = FeedPaginator.ofRows("agent-file-edits", feed);
 feed.loadLatest();
-const stopFollowing = view.follow(["file_edit.create"], feed.heard);
+const shownAgent = new Set([props.agent]);
+const stopFollowing = view.follow(["file_edit.create"], (event) => eventMayBeChildOf(event, "session_agent_id", shownAgent) && feed.heard(event));
 onUnmounted(() => stopFollowing?.());
 const edits = computed(() => rows.value.map((edit) => ({...edit, lines: JSON.parse(edit.rows || "[]")})).reverse());
 const newest = computed(() => rows.value[0]?.id ?? 0);

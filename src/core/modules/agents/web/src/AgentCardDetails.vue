@@ -1,6 +1,6 @@
 <script setup>
 import {computed, defineAsyncComponent, onUnmounted, ref, watch} from "vue";
-import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, loadWindowComponent, peekRef, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
+import {READ_RATES, coalesced, EmptyState, FoldGroup, InnerTabs, eventMayBeChildOf, loadWindowComponent, peekRef, SwitchCase, TabBody, useWindow} from "@journal/window-kit";
 import AgentCommand from "./AgentCommand.vue";
 import AgentTaskGroup from "./AgentTaskGroup.vue";
 import TranscriptRows from "./TranscriptRows.vue";
@@ -42,7 +42,8 @@ async function readCommand() {
     context.state["tool.agent"] = String(props.row.id);
     await context.reload("tool");
 }
-const stopFollowing = context.follow(["hook_call.*", "process_part.*"], coalesced(readCommand, READ_RATES.agentCommand));
+const readCommandSoon = coalesced(readCommand, READ_RATES.agentCommand);
+const stopFollowing = context.follow(["hook_call.*", "process_part.*"], (event) => eventMayBeChildOf(event, "session_agent_id", new Set([props.row.id])) && readCommandSoon());
 onUnmounted(() => stopFollowing?.());
 watch(() => props.open, (open) => { if (open) readCommand(); }, {immediate: true});
 </script>

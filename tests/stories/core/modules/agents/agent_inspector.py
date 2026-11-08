@@ -46,4 +46,4 @@ def test_the_agent_inspector_declares_the_detail_component(new_story):
     registry, declaration = registry_of(new_story(fixture=MainEnvironment))
     assert ([component.window for component in declaration.components], declaration.links, declaration.width.value) == (["agents.agent-detail"], None, "medium")
     window = next(window for window in registry.windows if window.name == "agents.agent-detail")
-    assert (window.place, "worker-worktree points" in window.reads) == ("section", True)
+    assert (window.place, "usage inspector" in window.reads) == ("section", True)

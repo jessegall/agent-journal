@@ -6,7 +6,6 @@ import {RESOURCE_SUBSCRIPTIONS} from "../src/resource/resourceEvents.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import {AGENT_EDIT_KEYS} from "./support/fileFeedWindowContext.js";
-import {terminalWindowContext} from "./support/terminalWindowContext.js";
 import {context, mounted, settle} from "./support/windowContext.js";
 import AgentCardDetails from "../../core/modules/agents/web/src/AgentCardDetails.vue";
 import TranscriptRows from "../../core/modules/agents/web/src/TranscriptRows.vue";
@@ -46,8 +45,7 @@ async function readsFor(mount, event) {
 }
 
 function terminal() {
-    const window = terminalWindowContext({"hook-call feed --session-agent-id 7": empty}, null);
-    window.props = undefined;
+    const window = agentContext({"hook-call feed --session-agent-id 7": empty});
     window.option = () => ({value: "commands"});
     return {...hearing(window), component: Terminal, props: {agent: 7}};
 }
