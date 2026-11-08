@@ -97,6 +97,14 @@ def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
     story.expect_refusal("profile save critic", "a profile needs a description", actor=story.user)
 
 
+def test_saving_a_shipped_profile_with_only_a_program_keeps_its_description_and_body(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    before = story.container.get(ProfileFiles).effective("journal-merger")
+    story.expect_success("profile save journal-merger --program codex", actor=story.user)
+    after = story.container.get(ProfileFiles).effective("journal-merger")
+    story.expect_rows(after.program == "codex", after.description == before.description, after.body == before.body, detail=str(after))
+
+
 def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_folder(new_story):
     story = saved_profile_story(new_story)
     expect_absent_exists_project_folder_2(story, ".codex", "agents", "journal-researcher.toml")

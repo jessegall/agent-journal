@@ -32,8 +32,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         for provider in self.providers.all():
             parser.add_argument(provider.model_option, dest=f"program_model_{provider.name}")
         parser.add_argument("--tier", help="fast, general or strongest; blank uses the profile models")
-        parser.add_argument("--description", default="")
-        parser.add_argument("--body", default="")
+        parser.add_argument("--description")
+        parser.add_argument("--body")
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
         parser.add_argument("--keeps-project-instructions", action=BooleanOptionalAction, default=None, help="a worker's worktree keeps the project's instruction files beside the ones written for this profile")
@@ -47,7 +47,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             if isinstance(profile, ProfileProblem) or profile.problem:
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
-            profile = AgentProfile(arguments.profile_name, description=arguments.description, body=arguments.body)
+            profile = AgentProfile(arguments.profile_name, description=arguments.description or "", body=arguments.body or "")
         fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "program_if_possible", "access", "independent", "keeps_project_instructions") and value is not None}
         if arguments.tier is not None:
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None
