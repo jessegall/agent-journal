@@ -2,14 +2,15 @@ import {h} from "vue";
 import {expect, test} from "vitest";
 import FitnessPanel from "../../core/modules/usage/web/src/FitnessPanel.vue";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
-import {context, mounted} from "./support/windowContext.js";
+import {mounted} from "./support/windowContext.js";
+import {fitnessWindowContext} from "./support/fitnessWindowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 
 const page = (rows) => ({ok: true, value: {rows, total: rows.length, page: 1, size: 25}});
 
 test("fitness names only the activity it counts", async () => {
     const fitness = {is_measured: true, score: 60, measures: []};
-    const element = await mounted(FitnessPanel, context({"usage fitness --agent 7": {ok: true, value: fitness}}, 7));
+    const element = await mounted(FitnessPanel, fitnessWindowContext({"usage fitness": {ok: true, value: fitness}}, 7));
     expect(element.querySelector(".fitness-note").textContent).toBe("Counts messages, waits and tasks.");
 });
 

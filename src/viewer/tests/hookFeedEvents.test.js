@@ -1,10 +1,11 @@
 import {expect, test} from "vitest";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {mounted, page, settle} from "./support/windowContext.js";
+import {activityWindowContext} from "./support/activityWindowContext.js";
 
 test.each(["prompt", "stop_allowed", "stop_refused", "compact", "session_start"])("the activity window refreshes on hook_call.%s", async (change) => {
     const answers = {"hook-call feed": page([])};
-    const window = context(answers, 2);
+    const window = activityWindowContext(answers, 2);
     const follows = [];
     window.follow = (patterns, heard) => follows.push({patterns, heard});
     const element = await mounted(HookCallList, window);

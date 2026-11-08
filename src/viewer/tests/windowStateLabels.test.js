@@ -1,4 +1,5 @@
 import {planWindowContext} from "./support/planWindowContext.js";
+import {activityWindowContext} from "./support/activityWindowContext.js";
 import {beforeAll, expect, test} from "vitest";
 import {context, mounted, mountedDock, page, settle} from "./support/windowContext.js";
 import {loadStates} from "../src/domain/states.js";
@@ -51,7 +52,7 @@ test("instruction types have readable labels and keep their stored styling value
 });
 
 test("agent calls show their readable event label", async () => {
-    const element = await mounted(HookCallList, context({"hook-call feed": page([{id: 2, hook: "pre_tool_use", tool: "Read", summary: "cart.py", answer: "allow"}])}, 7));
+    const element = await mounted(HookCallList, activityWindowContext({"hook-call feed": page([{id: 2, hook: "pre_tool_use", tool: "Read", summary: "cart.py", answer: "allow"}])}, 7));
     expect(element.querySelector(".note").textContent).toBe("Before a tool runs");
 });
 

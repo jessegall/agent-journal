@@ -2,6 +2,7 @@ import {createApp, h, nextTick, ref} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {shellKeysAnswer} from "./shellWindowContext.js";
 import {WindowSubscriptions} from "../../src/windows/windowSubscriptions.js";
+import {INSPECTOR_HOST} from "../../src/windows/windowContext.js";
 
 export const page = (rows) => ({ok: true, value: {rows, page: 1, size: 50, total: rows.length}});
 
@@ -90,6 +91,7 @@ export async function mounted(component, windowContext, props = {}) {
     const element = document.createElement("div");
     const app = createApp({render: () => h(component, props)});
     app.provide(WINDOW_CONTEXT, windowContext);
+    if (windowContext.inspectorHost) app.provide(INSPECTOR_HOST, windowContext.inspectorHost);
     app.mount(element);
     await settle();
     return element;

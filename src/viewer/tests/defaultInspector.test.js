@@ -7,7 +7,7 @@ import {perLine, settle} from "./support/windowContext.js";
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 60));
 const LISTING = (noun, extra = {}) => ({noun, module: "acme", fingerprint: "a", reads: `${noun} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [], shareable: false,
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, ...extra});
+    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, lists_fields: true, draws_text: false, ...extra});
 const BUTTONS = [{name: "rules.approve", slots: ["row.rule"], label: "Approve the rule", runs: "rule approve {row_id}", fields: [], menu: [], icon: "check", primary: true, condition: null, tip: "", confirm: "", danger: false}];
 const MEMORY = {id: 4, text: "Keep it **short**", state: "active", weight: 9, creator_id: 78, created_at: "2026-11-01T10:00:00Z"};
 let app = null;

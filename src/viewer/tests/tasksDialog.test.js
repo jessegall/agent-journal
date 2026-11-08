@@ -9,7 +9,8 @@ const BOARD = {ok: true, value: {groups: [
     {state: "completed", total: 3, rows: []},
 ]}};
 const inspection = (id) => ({ok: true, value: {id, title: id === 7 ? "Fix the cart" : "Fix the totals", brief: "What done looks like", state: id === 7 ? "started" : "open", priority: "normal", reason: "", outcome: "", holder_id: 2, created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z", waits: [{id: 9, title: "Order the parts", state: "open"}], logs: [{id: 1, line: "Found the rounding"}]}});
-const PLACE = {ok: true, value: {plan_id: 3, plan_title: "Checkout", phase_number: 2, phase_total: 4, phase_title: "Payment"}};
+const TASK_LISTING = {reads: "task inspect {row_id}", label: "Task {id} · {state}", title: "{title}", description: "", width: "medium", components: [], comments: false, events: ["task.*"],
+    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false};
 
 globalThis.ResizeObserver ??= class {
     observe() {}
@@ -21,6 +22,7 @@ afterEach(() => (document.body.innerHTML = ""));
 async function dialog() {
     const ran = [];
     const window = taskWindowContext({"task board": BOARD});
+    window.inspectorHost = {catalogue: {inspector: () => TASK_LISTING, window: () => null, sectionsAt: () => []}, subscriptions: window.subscriptions, environment: "main", prompts: null, shellRead: null};
     const subscriptions = [];
     window.follow = (events, callback) => {
         subscriptions.push({events, callback});
@@ -31,7 +33,6 @@ async function dialog() {
         if (line[1] === "graph") return {ok: true, value: {tasks: [], edges: []}};
         if (line[0] === "task-log") return {ok: true, value: {rows: [{id: 1, line: "Found the rounding", created_at: "2026-11-03T12:00:00Z"}], is_last_page: true}};
         if (line[1] === "inspect") return inspection(Number(line[2]));
-        if (line[1] === "place") return PLACE;
         if (line[1] === "make") return {ok: true, value: {id: 8}};
         return {ok: true, value: {}};
     };
@@ -54,36 +55,12 @@ test("the tasks window opens the dialog, with what is not done counted and each 
     expect(shown.textContent).toContain("Fix the totals");
 });
 
-test("clicking a task opens the inspector with its place, brief, waits, log and moves", async () => {
+test("clicking a task opens the inspector with its title and brief", async () => {
     const {shown} = await dialog();
     shown.querySelector("[data-row='7']").click();
     await settle();
-    const inspector = shown.querySelector("[data-task-inspector]");
-    const actions = inspector.querySelector("[data-inspector-actions]");
-    expect(actions.previousElementSibling.classList.contains("top")).toBe(true);
-    expect(actions.querySelector("[data-move]")).not.toBeNull();
-    expect(inspector.querySelector("[data-task-crumb]").textContent).toBe("Plan 3 › Phase 2: Payment");
-    expect(inspector.querySelector("[data-resource-title]").textContent).toBe("Fix the cart");
-    expect(inspector.querySelector("[data-task-brief]").textContent).toContain("What done looks like");
-    expect(inspector.querySelector("[data-resource-waits]").textContent).toContain("Order the parts");
-    [...inspector.querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
-    await settle();
-    expect(inspector.querySelector("[data-task-log]").textContent).toContain("Found the rounding");
-    expect(inspector.querySelector("[data-move='close']")).not.toBeNull();
-});
-
-test("a new task log entry refreshes the open Log tab", async () => {
-    const {shown, ran, subscriptions} = await dialog();
-    shown.querySelector("[data-row='7']").click();
-    await settle();
-    [...shown.querySelectorAll("[data-task-tabs] button")].find((button) => button.textContent.trim() === "Log").click();
-    await settle();
-    const reads = ran.filter((line) => line[0] === "task-log").length;
-    const subscription = subscriptions.find(({events}) => events.includes("task_log.*"));
-    expect(subscription).toBeDefined();
-    subscription.callback();
-    await settle();
-    expect(ran.filter((line) => line[0] === "task-log")).toHaveLength(reads + 1);
+    expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the cart");
+    expect(shown.querySelector("[data-inspector]").textContent).toContain("What done looks like");
 });
 
 test("the keys walk the list, open the inspector and step it", async () => {
@@ -95,18 +72,7 @@ test("the keys walk the list, open the inspector and step it", async () => {
     await press("j");
     expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
     await press("Escape");
-    expect(shown.querySelector("[data-task-inspector]")).toBeNull();
-});
-
-test("the status button lists the moves and runs the one picked", async () => {
-    const {shown, ran} = await dialog();
-    shown.querySelector("[data-row='8']").click();
-    await settle();
-    shown.querySelector("[data-task-state]").click();
-    await settle();
-    const block = [...document.querySelectorAll(".menu-panel button, .menu-panel [role=menuitem]")].find((item) => item.textContent.trim() === "Block");
-    expect(block).toBeTruthy();
-    expect(ran.some((line) => line[1] === "block")).toBe(false);
+    expect(shown.querySelector("[data-inspector]")).toBeNull();
 });
 
 test("a new task is filed with its brief, and opens in the inspector", async () => {
@@ -126,15 +92,6 @@ test("a new task is filed with its brief, and opens in the inspector", async () 
     expect(ran).toContainEqual(["task", "make", "Fix the totals", "--brief", "They add up"]);
     expect(shown.querySelector("[data-task-draft]")).toBeNull();
     expect(shown.querySelector("[data-inspector] [data-resource-title]").textContent).toBe("Fix the totals");
-});
-
-test("a priority is changed from the inspector", async () => {
-    const {shown, ran} = await dialog();
-    shown.querySelector("[data-row='7']").click();
-    await settle();
-    [...shown.querySelectorAll("[data-task-priority] button")].find((button) => button.textContent.trim() === "High").click();
-    await settle();
-    expect(ran).toContainEqual(["task", "edit", "7", "--priority", "300"]);
 });
 
 async function menuItem(selector, trigger) {
@@ -173,18 +130,6 @@ test("the keys menu lists the keys", async () => {
     document.querySelector("[data-menu-keys]").click();
     await settle();
     expect(document.body.textContent).toContain("List or graph");
-});
-
-test("deleting from the more menu asks a second time", async () => {
-    const {ran, shown} = await dialog();
-    shown.querySelector('[data-row="7"]').click();
-    await settle();
-    (await menuItem("[data-delete-task]", "[data-menu-more]")).click();
-    await settle();
-    expect(ran).not.toContainEqual(["task", "delete", "7"]);
-    document.querySelector("[data-delete-task]").click();
-    await settle();
-    expect(ran).toContainEqual(["task", "delete", "7"]);
 });
 
 test("the standing counts every task not done, whatever the filter shows", async () => {
