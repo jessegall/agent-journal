@@ -169,7 +169,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         </EmptyState></template>
         <template v-else><RowList :rows="visible" :failure="failure" :loaded="loaded" :more="!openRow && more" :older="older" :empty="emptyText.title" :hint="emptyText.hint" :searching="searching">
             <template #default="{row}">
-                <div :class="['agent-row', {lingering: lingerIds.has(row.id)}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null">
+                <div :class="['agent-row', {lingering: lingerIds.has(row.id) && row.id !== openId}]" :data-agent-row="row.id" :data-agent-lingering="lingerIds.has(row.id) ? '' : null">
                     <AgentCard :row="row" :facts="factsOf(row)" :progress="progressOf(row)" :wait-reason="waitReasonOf(row)" :open="row.id === openId" @toggle="toggle(row)" />
                 </div>
             </template>
