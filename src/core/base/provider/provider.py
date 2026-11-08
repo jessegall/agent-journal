@@ -193,6 +193,10 @@ class Provider(ABC):
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return None
 
+    def context_window(self, home: JournalHome, session: str) -> tuple[int | None, int | None]:
+        """The percent of the window and the tokens in use, read together from one look at the program's files."""
+        return self.context_percent(home, session), self.context_tokens(home, session)
+
     def session_effort(self, home: JournalHome, session: str) -> str:
         return ""
 

@@ -16,9 +16,7 @@ class ContextShare:
         self.settings, self.providers, self.home = settings, providers, home
 
     def reading(self, program: str, session: str) -> ContextReading:
-        provider = self.providers.provider(program)
-        window_percent = provider.context_percent(self.home, session)
-        tokens = provider.context_tokens(self.home, session)
+        window_percent, tokens = self.providers.provider(program).context_window(self.home, session)
         if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ON):
             return ContextReading(window_percent, tokens, None)
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)

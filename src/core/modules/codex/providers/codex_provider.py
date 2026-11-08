@@ -138,12 +138,14 @@ class CodexProvider(Provider):
         return located
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
-        latest = self.latest_token_count(home, session)
-        return latest.percent() if latest else None
+        return self.context_window(home, session)[0]
 
     def context_tokens(self, home: JournalHome, session: str) -> int | None:
+        return self.context_window(home, session)[1]
+
+    def context_window(self, home: JournalHome, session: str) -> tuple[int | None, int | None]:
         latest = self.latest_token_count(home, session)
-        return latest.used_tokens if latest else None
+        return (latest.percent(), latest.used_tokens) if latest else (None, None)
 
     def latest_token_count(self, home: JournalHome, session: str) -> CodexTokenCount | None:
         path = self.transcript(home.folder.parent, session)
