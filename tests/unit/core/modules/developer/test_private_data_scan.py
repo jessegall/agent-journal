@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -44,3 +45,25 @@ def test_a_recording_not_marked_sanitised_is_a_finding_and_a_marked_one_passes()
 def test_a_finding_names_the_file_line_and_kind_and_never_the_text():
     finding = PrivateDataScan().scan(Path("a.txt"), PLANTED[PrivateDataKind.EMAIL])[0]
     assert finding.text == "a.txt, line 1: an email address"
+
+
+@pytest.mark.parametrize("line", ['journal-path-begin:/home/.nvm/bin', 'layouts = {"home@notes.orchestrator": 1}', "@pytest.fixture", "see@AGENTS.md", '"/home/coding.builder/x"'])
+def test_what_only_looks_like_private_data_is_not_a_finding(line):
+    assert list(PrivateDataScan().kinds(line)) == []
+
+
+@pytest.mark.parametrize("line, kind", [("/home/" + "jdoe/src", PrivateDataKind.HOME_PATH), ("reach me at jane" + "@acme.com", PrivateDataKind.EMAIL), ("jane" + "@acme.nl", PrivateDataKind.EMAIL)])
+def test_a_real_name_or_address_is_a_finding(line, kind):
+    assert list(PrivateDataScan().kinds(line)) == [kind]
+
+
+def test_no_tracked_file_holds_private_data():
+    root = Path(__file__).parents[5]
+    tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
+    scan, found = PrivateDataScan(), []
+    for name in filter(None, tracked):
+        path = root / name
+        data = path.read_bytes() if path.is_file() else b"\0"
+        found += [] if b"\0" in data else [f"{name}:{finding.line} {finding.kind}" for finding in scan.scan(Path(name), data.decode(errors="replace"))]
+    assert found == [], found[:20]
+
