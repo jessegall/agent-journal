@@ -11,6 +11,7 @@ from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.base.provider.program_hooks import ProgramHooks
 from core.modules.codex.providers.codex_provider import CodexProvider
+from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.program_split import SPLIT, real_program_checks, set_split, viewer_client
 from tests.stories.support.program_states import real_program_states
@@ -67,6 +68,19 @@ def test_a_named_program_whose_hooks_are_not_trusted_has_them_written_and_truste
     ProgramHooks.store(hooks.path, settings)
     FakeLauncher(story.home.socket('launcher'))
     story.expect_success(f'{START} --program codex', actor=story.agent)
+
+
+def test_hooks_in_a_worktree_name_the_project_root_where_the_server_runs(helper_split_story, tmp_path, monkeypatch):
+    # worker 707 on 8 November: its worktree's hooks named the worktree as root, found no server there and held every stop
+    story = helper_split_story
+    monkeypatch.setenv('CODEX_HOME', str(tmp_path / 'codex-config'))
+    monkeypatch.setattr('shutil.which', lambda name: name)
+    real_program_checks(story)
+    folder = tmp_path / 'worktrees' / 'worker-707'
+    hooks = ProgramHooks.hooks(ClaudeCodeProvider, folder)
+    hooks.write('"journal-hook"', folder)
+    story.container.get(HelperPrograms).checked('claude', folder)
+    story.expect_rows(hooks.names_root(story.home.project_folder), not hooks.names_root(folder))
 
 
 @pytest.mark.parametrize('shares,reason', [('claude 80,codex 10', '100'), ('claude 80,unknown 20', 'unknown')])

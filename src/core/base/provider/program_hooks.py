@@ -58,6 +58,11 @@ class ProgramHooks:
         return is_mapping(stored_hooks) and all(is_list(blocks := stored_hooks.get(event)) and any(self.is_journals(block) for block in blocks)
                                                 for event in self.events)
 
+    def names_root(self, root: Path) -> bool:
+        stored_hooks = self.settings().get("hooks")
+        blocks = [block for event in self.events if is_mapping(stored_hooks) and is_list(stored_hooks.get(event)) for block in stored_hooks[event] if self.is_journals(block)]
+        return all(f'"{root}"' in json.dumps(block).replace('\\"', '"') for block in blocks)
+
     def settings(self) -> dict[str, object]:
         return self.read(self.path)
 
