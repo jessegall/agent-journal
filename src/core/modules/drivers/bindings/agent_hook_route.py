@@ -2,6 +2,7 @@ from dataclasses import replace
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
 from core.base.log_level import LogLevel
@@ -21,9 +22,15 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.access_nudges import ENDED_AGENT, UNKNOWN_AGENT
 from core.modules.drivers.support.hook_rule_answers import HookRuleAnswers
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
+from core.modules.drivers.commands.record_hook_timeout.record_hook_timeout import RecordHookTimeout
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
 from core.modules.settings.bindings.support.setting_values import SettingValues
+
+
+MAIN_HOOK_SECONDS = 5
+AGENT_HOOK_SECONDS = 40
+MILLISECONDS = 1000
 
 
 class AgentHookRoute(HookRoute):
@@ -33,7 +40,8 @@ class AgentHookRoute(HookRoute):
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
     record, a hook from an unknown agent when the event does not require an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues) -> None:
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock) -> None:
+        self.clock = clock
         self.rule_answers, self.request_values = rule_answers, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
         self.agents, self.program = agents, program
@@ -54,9 +62,20 @@ class AgentHookRoute(HookRoute):
         with self.bus.scopes.command_scope((), actor, agent.environment_id):
             answers = self.rule_answers.evaluate(event, agent)
         reply = self.bus.run(RecordHookCall(event, agent.id, answers), actor, environment_id=agent.environment_id)
+        self.note_timeout(event, agent, actor)
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             measured = self.durations.measured(event, reply.labelled_lines or [*reply.lines, reply.refusal])
         return replace(reply, terminal="\n".join(line for line in (reply.terminal, measured) if line))
+
+    def note_timeout(self, event: HookEvent, agent: Agent, actor: Actor) -> None:
+        """A hook answered after its program gave up on it: five seconds for a main agent, and for a worker or helper the 40 seconds a
+        stop is asked again before it is held."""
+        if event.event == HookEventName.TICK:
+            return
+        limit = MAIN_HOOK_SECONDS if agent.role == AgentRole.MAIN else AGENT_HOOK_SECONDS
+        waited = self.clock.timestamp().value.timestamp() - event.hook_timestamp_ms / MILLISECONDS
+        if waited >= limit:
+            self.bus.run(RecordHookTimeout(agent.id), actor, environment_id=agent.environment_id)
 
     def ended_agent_reply(self, event: HookEvent) -> HookReply:
         row = self.ended_agent(event)
