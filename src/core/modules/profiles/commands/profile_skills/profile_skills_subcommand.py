@@ -8,8 +8,8 @@ from core.modules.skills.support.profile_skills import ProfileSkills
 
 
 class ProfileSkillsSubcommand(ReadSubcommand[ProfileSkillList]):
-    """`journal profile skills --profile <profile>`: every skill, whether the profile's agents get it, and whether it is made for
-    the profile's own agent type."""
+    """`journal profile skills --profile <profile>`: every skill, whether the profile's agents get it, and whether it
+    is made for the profile's own agent type."""
 
     cli_name = "profile"
     name = "skills"

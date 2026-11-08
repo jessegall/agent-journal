@@ -12,8 +12,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class WorkerSkillProjects(SkillProjects):
-    """Include Git worktrees when publishing skills, hold a worker's worktree to the skills of its profile, and select a
-    worker's own folder for reminders."""
+    """Include Git worktrees when publishing skills, hold a worker's worktree to the skills of its profile, and
+    select a worker's own folder for reminders."""
 
     def __init__(self, home: JournalHome, environments: EnvironmentRows, worktrees: WorktreeQuery, git: WorktreeGit, agents: AgentRows, profiles: ProfileFiles,
                  listed: ProfileSkills) -> None:
@@ -33,7 +33,7 @@ class WorkerSkillProjects(SkillProjects):
             self.kept_folders[project] = (mark, tuple(Path(folder) for folder, _ in self.git.folders(str(project))))
         return self.kept_folders[project][1]
 
-    def holds(self, project: Path, folder: str) -> bool:
+    def permits(self, project: Path, folder: str) -> bool:
         worktree = next((row for row in self.worktrees.open_worktrees() if Path(row.folder).resolve() == project), None)
         if worktree is None:
             return True

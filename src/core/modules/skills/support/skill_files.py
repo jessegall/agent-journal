@@ -60,7 +60,7 @@ class SkillFiles:
         return self.publish(project, skill, SkillContents.read(Path(skill.path)).text)
 
     def publish(self, project: Path, skill: SkillEntry, text: str) -> bool:
-        if not self.projects.holds(project, skill.folder):
+        if not self.projects.permits(project, skill.folder):
             return False
         changed = False
         for program_folder in self.providers.skill_folders():
