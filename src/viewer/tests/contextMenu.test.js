@@ -28,11 +28,11 @@ async function menu(last_compaction, extra = {}) {
     return document;
 }
 
-test("the context menu shows how full the context is as a bar and the exact time of the last compaction with what it took off", async () => {
+test("the context menu shows how full the context is as a bar and the exact time of the last compaction", async () => {
     const page = await menu({started_at: AT, start_percent: 92, end_percent: 18});
     expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
     expect(page.querySelector("[data-context-menu-meter] .gauge span").style.width).toBe("95%");
-    expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe(`Last compacted ${EXACT}, from 92% to 18%, 74% taken off`);
+    expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe(`Last compacted ${EXACT}`);
     expect(page.querySelector("[data-context-menu-compaction]").nextElementSibling).toBe(page.querySelector("[data-context-menu-meter]"));
     expect(page.body.textContent).toContain("Compact context");
 });
@@ -53,7 +53,7 @@ test("the context menu says none yet for a session never compacted", async () =>
     expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe("Not compacted yet");
 });
 
-test("a compaction with only the percent before shows that and a compaction with none shows the time alone", () => {
-    expect(compactionLine({started_at: AT, start_percent: 92, end_percent: null})).toBe(`Last compacted ${EXACT}, from 92%`);
+test("a compaction shows the time alone, whatever percents it has", () => {
+    expect(compactionLine({started_at: AT, start_percent: 92, end_percent: null})).toBe(`Last compacted ${EXACT}`);
     expect(compactionLine({started_at: AT, start_percent: null, end_percent: null})).toBe(`Last compacted ${EXACT}`);
 });
