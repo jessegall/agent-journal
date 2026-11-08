@@ -38,6 +38,7 @@ class AgentProfile:
     program_models: Mapping[str, str] = field(default_factory=dict)
     keeps_project_instructions: bool = False
     injections: Mapping[str, bool] = field(default_factory=dict)
+    skills: tuple[str, ...] = ()
 
     @property
     def display_title(self) -> str:
@@ -51,4 +52,4 @@ class AgentProfile:
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "writable_folders": tuple(fields.get("writable_folders", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})
+        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "writable_folders": tuple(fields.get("writable_folders", ())), "skills": tuple(fields.get("skills", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})

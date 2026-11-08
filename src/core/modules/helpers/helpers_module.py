@@ -48,6 +48,7 @@ from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits_h
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.helpers.commands.helper_availability.helper_availability_subcommand import HelperAvailabilitySubcommand
 from core.modules.helpers.rules.helper_report_rule import HelperReportRule
+from core.modules.helpers.rules.helper_skill_read_rule import HelperSkillReadRule
 from core.modules.helpers.rules.unstarted_helper_rule import UnstartedHelperRule
 from core.modules.helpers.support.helper_settings import HELPER_SETTINGS
 from core.modules.helpers.listeners.helper_job_source_listener import HelperJobSourceListener
@@ -64,7 +65,7 @@ class HelpersModule(Module):
     requires_core = ">=5,<6"
     migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration]
     models = [ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
-    dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat"]
+    dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills"]
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
     guards = [UsageLimitGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
@@ -74,4 +75,4 @@ class HelpersModule(Module):
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
     subcommands = [SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
-    driver_rules = [UnstartedHelperRule, HelperReportRule]
+    driver_rules = [UnstartedHelperRule, HelperReportRule, HelperSkillReadRule]
