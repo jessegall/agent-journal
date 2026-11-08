@@ -90,3 +90,4 @@ src/viewer/tests/sample-window/web/
 # the full-page picture of each design kept in docs/designs
 !docs/designs/**/*.png
 /node_modules/
+*.graphify-bak
