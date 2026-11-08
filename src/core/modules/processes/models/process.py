@@ -10,6 +10,8 @@ from core.base.duration import Duration
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLifecycle
 
+FINISHED_PROGRESS = 100
+
 
 @dataclass(frozen=True, kw_only=True)
 class Process(EnvironmentScoped, Model):
@@ -60,7 +62,7 @@ class Process(EnvironmentScoped, Model):
         return self.moved(ProcessLifecycle.background, moved_at=timestamp)
 
     def finish(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
-        return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)
+        return self.moved(ProcessLifecycle.finish, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False, progress=FINISHED_PROGRESS)
 
     def fail(self, timestamp: Timestamp, actor: Actor, exit_code: int) -> "Process":
         return self.moved(ProcessLifecycle.fail, exit_code=exit_code, ended_at=timestamp, queued_at=None, slot_assigned=False)

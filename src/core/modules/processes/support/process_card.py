@@ -28,4 +28,5 @@ class ProcessCard:
         process, output = self.process, self.output
         return {"id": process.id, "line": process.line, "state": process.state.value, "progress": process.progress, "created_at": process.created_at.text if process.created_at else None,
                 "ended_at": process.ended_at.text if process.ended_at else None, "title": self.title, "steps_passed": output.steps_passed if output else 0,
-                "steps_failed": output.steps_failed if output else 0, "summary": output.reader_summary if output else ""}
+                "steps_failed": output.steps_failed if output else 0, "summary": output.reader_summary if output else "",
+                "agent_id": process.session_agent_id, "reads_progress": bool(self.reader and (self.reader.progress_pattern or self.reader.step_pattern))}

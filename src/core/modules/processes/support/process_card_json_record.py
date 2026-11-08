@@ -14,3 +14,5 @@ class ProcessCardJsonRecord(TypedDict):
     steps_passed: object
     steps_failed: object
     summary: object
+    agent_id: object
+    reads_progress: object

@@ -230,3 +230,66 @@ test("a process with no progress shows no percent, and an unfolded card shows no
     expect(idle.querySelector(".output-dock-figure")).not.toBeNull();
     expect((await foldedTime({progress: 42}, false)).time.querySelector("[data-output-percent]")).toBeNull();
 });
+
+// a run that ends between two reads: the first read says it runs at 96%, the next says it ended with the row's percent still 96
+async function endedBetweenReads(ending) {
+    const window = context({"output peek 3": {ok: true, value: {lines: []}}});
+    const answers = [{id: 3, state: "running", line: "make build", created_at: "2026-11-02T10:00:00Z", progress: 96}, {id: 3, line: "make build", created_at: "2026-11-02T10:00:00Z", ended_at: "2026-11-02T10:00:05Z", progress: 96, ...ending}];
+    let reads = 0;
+    const read = window.read;
+    window.read = async (line) => (line === "process card 3" ? {ok: true, value: answers[Math.min(reads++, answers.length - 1)]} : read(line));
+    const heard = [];
+    window.follow = (patterns, handler) => heard.push(handler);
+    const head = document.createElement("span");
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(head, foot, time);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(true), collapsed: ref(true), row: ref({id: 7, target_id: 3})})[key];
+    await mounted(OutputDock, window);
+    expect(time.querySelector("[data-output-percent]").textContent).toBe("96%");
+    heard.forEach((handler) => handler({event: "process.finished", row_id: 3}));
+    await settle();
+    return {time, head};
+}
+
+test("a run that ends between two reads shows 100% and passed, never its last percent", async () => {
+    const {time, head} = await endedBetweenReads({state: "finished"});
+    expect(time.querySelector("[data-output-percent]").textContent).toBe("100%");
+    expect(head.querySelector("[data-state='good']")).not.toBeNull();
+    expect(head.querySelector(".output-dock-fill").style.width).toBe("100%");
+});
+
+test("a run that ends between two reads in failure shows the failure and no percent", async () => {
+    const {time, head} = await endedBetweenReads({state: "failed"});
+    expect(time.querySelector("[data-output-percent]")).toBeNull();
+    expect(head.querySelector("[data-state='bad']")).not.toBeNull();
+});
+
+// an unfolded card whose output box is still empty
+async function emptyBox(run, runs) {
+    const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", created_at: "2026-11-02T10:00:00Z", agent_id: 21, reads_progress: false, ...run}}, "output peek 3": {ok: true, value: {lines: []}}});
+    window.run = async (line) => (runs.push(line), {ok: true, value: null});
+    const head = document.createElement("span");
+    const foot = document.createElement("span");
+    const time = document.createElement("span");
+    document.body.append(head, foot, time);
+    window.option = (key) => ({head: ref(head), foot: ref(foot), time: ref(time), folded: ref(false), collapsed: ref(false), row: ref({id: 7, target_id: 3})})[key];
+    const element = await mounted(OutputDock, window);
+    await vi.waitFor(() => expect(element.querySelector("[data-output-terminal]")).not.toBeNull());
+    return element;
+}
+
+test("an empty output box says No output yet, and a run with no reader offers a button that sends the agent its message", async () => {
+    const runs = [];
+    const element = await emptyBox({}, runs);
+    expect(element.querySelector("[data-output-terminal]").textContent).toBe("No output yet");
+    const ask = element.querySelector("[data-output-reader-ask]");
+    expect(ask.textContent.trim()).toBe("Ask the agent to draw a reader");
+    ask.click();
+    expect(runs).toEqual([["message", "send", "Output 3 has no reader that gives its progress, and its box is empty: draw a reader for it with journal reader add.", "--target-agent", "21"]]);
+});
+
+test("a run whose reader gives progress, or one that ended, offers no reader button", async () => {
+    expect((await emptyBox({reads_progress: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
+    expect((await emptyBox({state: "finished", ended_at: "2026-11-02T10:00:05Z"}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
+});

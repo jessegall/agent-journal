@@ -24,6 +24,7 @@ from suites.coding.modules.workers.models.merge_followup import MergeFollowup
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
+from suites.coding.modules.workers.support.worker_queued_start import WorkerQueuedStart
 from suites.coding.modules.workers.commands.record_merge_request.record_merge_request import RecordMergeRequest
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 
@@ -37,8 +38,8 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
     command = MergeWorker
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines) -> None:
-        self.log_lines = log_lines
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, checks: MergeChecks, git: WorktreeGit, environments: EnvironmentRows, bus: Bus, followups: MergeFollowups, log_lines: WorkerLogLines, queued_start: WorkerQueuedStart) -> None:
+        self.log_lines, self.queued_start = log_lines, queued_start
         self.rows, self.worktrees, self.checks, self.git = rows, worktrees, checks, git
         self.environments, self.bus, self.followups = environments, bus, followups
 
@@ -78,18 +79,23 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if refusal:
             return MergeOutcome(self.rows.required(Worktree, worktree.id), (), refusal)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
-        followup = self.followups.snapshot(worktree, environment.folder, commit_before_merge, self.git.tip(environment.folder, worktree.base_branch), context)
+        commit_after_merge = self.git.tip(environment.folder, worktree.base_branch)
+        followup = self.followups.snapshot(worktree, environment.folder, commit_before_merge, commit_after_merge, context)
         if followup is not None:
             return self.finished_merge(worktree, environment, followup, command, context)
-        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, self.git.tip(environment.folder, worktree.base_branch)), context)
-        self.git.remove(environment.folder, merge_outcome.worktree)
-        return MergeOutcome(self.bus.run_with_context(RecordWorktreeRemoval(worktree.id), context), ())
+        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, commit_after_merge), context)
+        return self.removed(environment, merge_outcome.worktree, context)
 
     def finished_merge(self, worktree: Worktree, environment: Environment, followup: MergeFollowup, command: MergeWorker, context: Context) -> MergeOutcome:
         self.followups.run(followup, command.reconciled, context)
         merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), followup.commit_before, followup.commit_after), context)
-        self.git.remove(environment.folder, merge_outcome.worktree)
-        return MergeOutcome(self.bus.run_with_context(RecordWorktreeRemoval(worktree.id), context), ())
+        return self.removed(environment, merge_outcome.worktree, context)
+
+    def removed(self, environment: Environment, merged: Worktree, context: Context) -> MergeOutcome:
+        self.git.remove(environment.folder, merged)
+        removal = self.bus.run_with_context(RecordWorktreeRemoval(merged.id), context)
+        self.queued_start.start(merged.session_agent_id, context)
+        return MergeOutcome(removal, ())
 
     def refused_merge(self, worktree: Worktree, environment: Environment, target_commit: str, context: Context) -> str:
         branch_commit = self.git.tip(environment.folder, worktree.branch)
