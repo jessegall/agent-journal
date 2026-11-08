@@ -11,6 +11,7 @@ ANSWER_BYTES = 32
 STOPPED_ANSWER = b"stopped\n"
 STOP_FIELD = "stop"
 START_FIELD = "command"
+QUIET_FIELD = "quiet"
 REFUSED_TRIES = 3
 REFUSED_PAUSE_SECONDS = 0.1
 
@@ -29,6 +30,13 @@ class LauncherLink:
 
     def stop(self, agent_id: int) -> bool:
         return self.sent({"agent_id": agent_id, STOP_FIELD: True}, ANSWER_BYTES) == STOPPED_ANSWER
+
+    def quiet_seconds(self, agent_id: int) -> int | None:
+        """How many seconds ago a person last typed at the keyboard of the agent's terminal, nothing when the launcher
+        could not say."""
+        answer = self.sent({"agent_id": agent_id, QUIET_FIELD: True}, ANSWER_BYTES)
+        words = answer.split() if answer else []
+        return int(words[1]) if len(words) == 2 and words[0] == b"quiet" and words[1].isdigit() else None
 
     def request_stop(self, agent_id: int) -> None:
         self.sent({"agent_id": agent_id, STOP_FIELD: True})

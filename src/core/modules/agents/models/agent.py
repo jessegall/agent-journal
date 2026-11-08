@@ -46,6 +46,7 @@ class Agent(EnvironmentScoped, Model):
     retirement_reason: str = ""
     retiring_actor_id: int | None = None
     limited_until: Timestamp | None = None
+    interrupted_at: Timestamp | None = None
 
     def change_name(self, old_row: "Agent | None") -> str | None:
         newly_ended = old_row is not None and old_row.ended_at is None and self.ended_at is not None

@@ -26,7 +26,8 @@ func RunLauncherService(home string, standalone bool, stderr io.Writer) int {
 	}
 	inputs := launch.NewTerminalInputs()
 	journal := launchJournal()
-	starter := launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}
+	inputs.OnLogin(journal.TellInterrupt)
+	starter := launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs), OnInterrupt: journal.TellInterrupt}
 	listener, err := replacementListener(home, version.Digest, standalone, starter, inputs)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
