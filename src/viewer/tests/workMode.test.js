@@ -61,8 +61,9 @@ test("the settings button opens the agent settings in a modal, where a preset is
     await settled();
     expect(opened).toEqual([]);
     expect(document.querySelector(".dialog [data-agent-settings], [role=dialog] [data-agent-settings]")).not.toBeNull();
-    expect([...document.querySelectorAll("[data-agent-settings] [data-preset]")].map((button) => button.textContent.trim())).toEqual(["Builder", "Orchestrator"]);
-    document.querySelector('[data-agent-settings] [data-preset="builder"]').click();
+    const presets = [...document.querySelectorAll("[data-agent-settings] [data-work-flow] [role=radio]")];
+    expect(presets.map((button) => button.textContent.trim())).toEqual(["Builder", "Orchestrator"]);
+    presets[0].click();
     await settled();
     expect(runs).toEqual(["work-settings preset builder --revision r1"]);
 });

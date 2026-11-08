@@ -13,12 +13,10 @@ onMounted(() => view.reload("limits"));
 
 <template>
     <section class="agents" data-agent-settings-agents>
-        <h3 class="agents-title">{{ title }}</h3>
         <AgentCountsPanel v-model:title="title" @open-agent="openAgent" />
     </section>
 </template>
 
 <style scoped>
-.agents { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
-.agents-title { margin: 0; font-size: 13px; }
+.agents { display: flex; flex-direction: column; gap: 12px; padding-top: 14px; }
 </style>

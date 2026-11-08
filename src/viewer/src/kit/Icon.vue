@@ -1,4 +1,6 @@
 <script setup>
+import {AGENT_ICON} from "./markIcons.js";
+
 const props = defineProps({
     name: {type: String, default: "dot"},
     size: {type: Number, default: 0},
@@ -33,6 +35,7 @@ const alias = {
     chevron: "arrow",
 };
 const shapes = {
+    agent: AGENT_ICON,
     time: '<circle cx="8" cy="8" r="5.5"/><path d="M8 4.5V8l2.4 1.5"/>',
     allowance: '<path d="M3 4.5h10v7H3zM5 6.5h1M10 9.5h1"/><circle cx="8" cy="8" r="1.4"/>',
     phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',

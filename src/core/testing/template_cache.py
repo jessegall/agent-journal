@@ -1,4 +1,3 @@
-import hashlib
 from core.base.file_access import FileAccess
 import shutil
 import time
@@ -18,7 +17,7 @@ HASH_CHARACTERS = 16
 
 
 class TemplateCache:
-    """Shares complete story templates within a checkout, keyed on its python sources (the viewer's sources are no
+    """Shares complete story templates between every checkout of a project, keyed on their python sources (the viewer's sources are no
     part of a template, so editing them rebuilds nothing), and when a new one is made removes
     the ones unused for a day and then the least recently used until the cache is under its size limit; a cache
     already pruned within the hour is left alone. The
@@ -33,8 +32,7 @@ class TemplateCache:
         support_folders = tuple(sorted(folder for folder in (checkout / "tests").rglob("support") if folder.is_dir()))
         source_folders = tuple(sorted(folder for folder in CORE_FOLDER.parent.iterdir() if folder.is_dir() and folder.name not in UNTEMPLATED_FOLDERS))
         source_hash = SourceHash.text((*source_folders, *support_folders))
-        checkout_hash = hashlib.sha256(str(checkout).encode()).hexdigest()[:HASH_CHARACTERS]
-        current = self.root / f"{checkout_hash}-{source_hash[:HASH_CHARACTERS]}"
+        current = self.root / source_hash[:HASH_CHARACTERS]
         is_new = not current.is_dir()
         current.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().update_timestamp(current)

@@ -55,20 +55,14 @@ def run_first_story(checkout, cache, home):
     return json.loads(answer.stdout.splitlines()[-1])
 
 
-def test_each_checkout_builds_its_own_template_and_reuses_it(tmp_path):
+def test_a_second_checkout_reuses_the_templates_the_first_built_and_a_second_run_builds_none(tmp_path):
     first, second = tmp_path / "first", tmp_path / "second"
     copy_checkout(first)
     copy_checkout(second)
     initial = run_first_story(first, tmp_path / "cache", tmp_path / "first-story")
     other = run_first_story(second, tmp_path / "cache", tmp_path / "second-story")
-    reused = run_first_story(second, tmp_path / "cache", tmp_path / "third-story")
+    again = run_first_story(second, tmp_path / "cache", tmp_path / "third-story")
     assert initial["builds"] > 0
-    assert other["builds"] > 0
-    assert initial["folder"] != other["folder"]
-    expect_reused_template(other, reused)
-
-
-def expect_reused_template(initial, reused):
-    assert initial["builds"] > 0, initial
-    assert reused["builds"] == 0, reused
-    assert initial["folder"] == reused["folder"], (initial, reused)
+    assert other["builds"] == 0, other
+    assert initial["folder"] == other["folder"]
+    assert again["builds"] == 0, again

@@ -1,6 +1,8 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
-import {Btn, Switch, useWindow} from "@journal/window-kit";
+import {Segmented, Switch, useWindow} from "@journal/window-kit";
+import SettingRow from "./SettingRow.vue";
+import SettingsFoot from "./SettingsFoot.vue";
 
 const CONTROLS = [
     {key: "journal.suites.coding.auto-mode", label: "Auto mode", line: "The journal hands the main agent its next task, and it keeps going while tasks are left"},
@@ -14,6 +16,7 @@ const CONTROLS = [
 ];
 const PRESETS = [{key: "builder", label: "Builder"}, {key: "orchestrator", label: "Orchestrator"}];
 const AUTO = "journal.suites.coding.auto-mode";
+const TAKING_ON_WORK = [AUTO];
 const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 
 const view = useWindow();
@@ -27,6 +30,9 @@ const changed = computed(() => CONTROLS.filter((control) => draft[control.key] !
 const dirty = computed(() => changed.value.length > 0);
 const stale = computed(() => dirty.value && work.data.value && base.value && work.data.value.revision !== base.value);
 const workflow = computed(() => work.data.value?.workflow ?? "");
+const taking = computed(() => CONTROLS.filter((control) => TAKING_ON_WORK.includes(control.key)));
+const working = computed(() => CONTROLS.filter((control) => !TAKING_ON_WORK.includes(control.key)));
+const problem = computed(() => failure.value || (stale.value ? "These settings changed since you opened them. Cancel to read them again." : ""));
 const nothingStarts = computed(() => draft[AUTO] === false && draft[DISPATCHES] === false);
 
 function reset() {
@@ -58,33 +64,35 @@ const usePreset = (name) => send(`work-settings preset ${name} --revision ${base
 
 <template>
     <section class="work" data-agent-settings-work>
-        <p class="work-flow" data-work-flow>Workflow: <strong>{{ workflow || "unknown" }}</strong></p>
-        <div class="work-presets">
-            <Btn v-for="preset in PRESETS" :key="preset.key" :disabled="pending || stale" :data-preset="preset.key" @click="usePreset(preset.key)">{{ preset.label }}</Btn>
+        <div class="section">
+            <p class="section-title">Taking on work</p>
+            <SettingRow label="Workflow" help="A preset sets the switches below at once; Custom is any other mix." data-work-flow>
+                <Segmented :options="PRESETS" :value="workflow" @pick="usePreset" />
+            </SettingRow>
+            <template v-for="control in taking" :key="control.key">
+                <SettingRow :label="control.label" :help="control.line" :data-control="control.key">
+                    <Switch :on="draft[control.key]" :disabled="view.readOnly" @change="draft[control.key] = !draft[control.key]" /><span class="sw-word">{{ draft[control.key] ? "On" : "Off" }}</span>
+                </SettingRow>
+            </template>
         </div>
-        <label v-for="control in CONTROLS" :key="control.key" class="work-row" :data-control="control.key">
-            <span class="work-text"><span class="work-label">{{ control.label }}</span><span class="work-line">{{ control.line }}</span></span>
-            <Switch :on="draft[control.key]" @change="draft[control.key] = !draft[control.key]" />
-        </label>
-        <p v-if="nothingStarts" class="work-hint" data-work-hint>With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.</p>
-        <p v-if="stale" class="work-hint" role="alert" data-work-stale>These settings changed since you opened them. Cancel to read them again.</p>
-        <p v-if="failure" class="work-failure" role="alert" data-work-failure>{{ failure }}</p>
-        <div class="work-buttons">
-            <Btn :disabled="!dirty || pending" data-work-cancel @click="reset">Cancel</Btn>
-            <Btn :disabled="!dirty || pending || stale" data-work-apply @click="apply">Apply</Btn>
+        <div class="section">
+            <p class="section-title">How the main agent works</p>
+            <p class="section-help">Your models, maximums and tests stay as you set them.</p>
+            <template v-for="control in working" :key="control.key">
+                <SettingRow :label="control.label" :help="control.line" :data-control="control.key">
+                    <Switch :on="draft[control.key]" :disabled="view.readOnly" @change="draft[control.key] = !draft[control.key]" /><span class="sw-word">{{ draft[control.key] ? "On" : "Off" }}</span>
+                </SettingRow>
+            </template>
+            <template v-if="nothingStarts"><p class="section-help warn" data-work-hint>With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.</p></template>
         </div>
+        <SettingsFoot :changes="changed.length" :pending="pending" :problem="problem" :blocked="stale" @cancel="reset" @apply="apply" />
     </section>
 </template>
 
 <style scoped>
-.work { display: flex; flex-direction: column; gap: 10px; padding: 12px; }
-.work-flow { margin: 0; color: var(--text-2); font-size: 12.5px; }
-.work-presets { display: flex; gap: 8px; }
-.work-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.work-text { display: flex; flex-direction: column; }
-.work-label { font-size: 13px; color: var(--text); }
-.work-line { font-size: 12px; color: var(--text-2); }
-.work-hint { margin: 0; font-size: 12px; color: var(--text-2); }
-.work-failure { margin: 0; font-size: 12px; color: var(--danger); }
-.work-buttons { display: flex; justify-content: flex-end; gap: 8px; }
+.section { margin-top: 18px; }
+.section-title { margin: 0 0 2px; color: var(--text); font-size: 12.5px; font-weight: 600; }
+.section-help { margin: 0 0 6px; color: var(--text-3); font-size: 12px; text-wrap: pretty; }
+.section-help.warn { margin-top: 8px; color: var(--warn); }
+.sw-word { color: var(--text-2); font-size: 12px; }
 </style>
