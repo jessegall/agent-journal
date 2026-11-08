@@ -1,6 +1,3 @@
-from core.base.query.conditions.among import Among
-from core.base.query.conditions.has_value import HasValue
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
 from core.base.query.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
@@ -8,21 +5,16 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.model.state_book import StateBook
-from core.base.query.query import PAGE_SIZE_ROWS, Query
+from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
-from core.base.query.queries import Queries
 from core.modules.tasks.models.task import Task
-from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.support.task_board import TaskBoard
 from core.modules.tasks.support.task_group import TaskGroup
-from core.modules.tasks.conditions.task_tag_match import TaskTagMatch
+from core.modules.tasks.support.task_board_cards import DELEGATED, FINISHED_STATES, TaskBoardCards
 
-ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN)
-FINISHED_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
 FINISHED_PAGE_ROWS = 10
-DELEGATED = "delegated"
 
 
 def board_group(text: str) -> TaskState | str:
@@ -36,8 +28,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     name = "board"
     environment_refusal = "the board is shown for one environment"
 
-    def __init__(self, queries: Queries, book: StateBook) -> None:
-        self.queries, self.book = queries, book
+    def __init__(self, cards: TaskBoardCards, book: StateBook) -> None:
+        self.cards, self.book = cards, book
 
     def added_states(self) -> tuple[str, ...]:
         lifecycle = self.book.lifecycle(Task)
@@ -60,7 +52,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         return TaskBoard((*active_groups, *finished))
 
     def group(self, state: TaskState | str, arguments: Namespace) -> TaskGroup:
-        cards = self.cards(state, arguments.tag)
+        cards = self.cards.cards(state, arguments.tag)
         previous_id = arguments.before_id if arguments.state is not None else None
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
         return TaskGroup(str(state), cards.count(), tuple(rows.newest().limited(arguments.limit or PAGE_SIZE_ROWS)))
@@ -74,19 +66,10 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         return ClosedTaskCursor(arguments.before_closed_at, arguments.before_id)
 
     def finished_group(self, state: TaskState, arguments: Namespace) -> TaskGroup:
-        cards = self.cards(state, arguments.tag)
+        cards = self.cards.cards(state, arguments.tag)
         cursor = self.finished_cursor(arguments) if arguments.state is not None else None
         rows = cards.matching(cursor) if cursor is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(arguments.limit or FINISHED_PAGE_ROWS)))
-
-    def cards(self, state: TaskState | str, tags: list[str]) -> Query[TaskCard]:
-        cards = self.queries.query(TaskCard)
-        for word in tags:
-            cards = cards.matching(TaskTagMatch(word))
-        if state == DELEGATED:
-            return cards.matching(HasValue("delegated_to")).matching(Among("state", [active.value for active in ACTIVE_STATES]))
-        cards = cards.filter(state=state)
-        return cards if state in FINISHED_STATES else cards.matching(IsNull("delegated_to"))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskBoard):
