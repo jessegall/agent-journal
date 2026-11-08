@@ -85,7 +85,14 @@ const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.hos
 const foldedFor = (item) =>
     Boolean(dockDeclaration(item.type)?.folds) && (props.insidesFolded || dockFolded(byHand.value[item.id], isRunItem(item, dockDeclaration) || props.folded));
 function fold(item) {
+    if (foldedFor(item)) keepOpen(item);
     byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
+}
+
+// a card whose output the person opened stays open when the others are folded, as one opened by a click does, so a card docking beside it does not fold it
+function keepOpen(item) {
+    if (!sizeChoice.value?.collapsed || sizeChoice.value.opened.includes(item.id)) return;
+    sizeChoice.value = {collapsed: true, opened: [...sizeChoice.value.opened, item.id]};
 }
 
 function hold(item) {

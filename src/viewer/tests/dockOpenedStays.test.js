@@ -49,3 +49,21 @@ test("a card and its output that the person opened stay open when another card d
     expect(host.querySelectorAll(".chat-dock.collapsed")).toHaveLength(2);
     expect(host.querySelector("[data-dock-fold]").getAttribute("aria-expanded")).toBe("true");
 });
+
+test("a card that docked alone and its output, which the person opened, stay open when a second card docks while all were folded before", async () => {
+    const items = reactive([run(1), run(2)]);
+    const host = stacked(items);
+    await nextTick();
+    host.querySelector("[data-dock-all]").click();
+    await nextTick();
+    items.splice(1, 1);
+    await nextTick();
+    expect(host.querySelector(".chat-dock").classList.contains("collapsed")).toBe(false);
+    host.querySelector("[data-dock-fold]").click();
+    await nextTick();
+    expect(host.querySelector("[data-dock-fold]").getAttribute("aria-expanded")).toBe("true");
+    items.push(run(3));
+    await nextTick();
+    expect(host.querySelector(".chat-dock").classList.contains("collapsed")).toBe(false);
+    expect(host.querySelector("[data-dock-fold]").getAttribute("aria-expanded")).toBe("true");
+});
