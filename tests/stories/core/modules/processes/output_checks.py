@@ -24,7 +24,7 @@ def waited(story, minutes: int, process) -> int:
     return wakes(story, process)
 
 
-def test_a_confirmed_wait_is_woken_at_5_10_25_and_40_minutes(new_story):
+def test_a_confirmed_wait_is_woken_at_5_15_30_and_45_minutes(new_story):
     story = new_story(fixture=BuilderWithUser)
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(minutes=4, seconds=59))
@@ -34,14 +34,14 @@ def test_a_confirmed_wait_is_woken_at_5_10_25_and_40_minutes(new_story):
     check_tick(story)
     story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=5), actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
-    story.expect_rows(waited(story, 4, process) == 1, waited(story, 1, process) == 2)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=10), actor=story.agent)
+    story.expect_rows(waited(story, 9, process) == 1, waited(story, 1, process) == 2)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=15), actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_rows(waited(story, 14, process) == 2, waited(story, 1, process) == 3)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=25), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=30), actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_rows(waited(story, 14, process) == 3, waited(story, 1, process) == 4)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=40), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=45), actor=story.agent)
 
 
 def test_a_wake_nobody_confirms_comes_again_after_the_same_wait(new_story):
@@ -58,7 +58,7 @@ def test_a_confirm_said_twice_moves_the_next_wake_one_step_only(new_story):
     story.expect_rows(waited(story, 5, process) == 1)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
-    story.expect_rows(waited(story, 5, process) == 2)
+    story.expect_rows(waited(story, 10, process) == 2)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_rows(waited(story, 14, process) == 2, waited(story, 1, process) == 3)
 
@@ -68,5 +68,5 @@ def test_an_ended_output_is_not_woken_for_and_cannot_be_confirmed(new_story):
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     end_run(story, process, "built\n")
     story.run_listeners()
-    story.expect_rows(waited(story, 30, process) == 0)
+    story.expect_rows(waited(story, 50, process) == 0)
     story.expect_refusal(f"output confirm {process.id}", "not waiting", actor=story.agent)
