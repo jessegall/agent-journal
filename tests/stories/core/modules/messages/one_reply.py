@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from tests.stories.core.support.fixtures import MessageAnswered
 from tests.stories.core.modules.messages.chat_messages import user_story
+from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 
 
 def answered_story(new_story):
@@ -12,16 +13,18 @@ def test_a_second_agent_reply_is_refused_with_the_flag_that_passes_it(new_story)
     story = answered_story(new_story)
     story.expect_refusal('message reply 1 "Still on it" --environment main',
                          "refused by messages.one-reply-per-message: message 1 already has your reply 2: send it again only if it adds something new"
-                         " (to pass it: --confirm --skip-reason '<why>')", actor=story.agent)
+                         " (only if this refusal is wrong for the case in hand, never to get on faster: --confirm --skip-reason '<why it is wrong here>')", actor=story.agent)
 
 
 def test_confirm_and_skip_guard_both_pass_it_with_a_reason_after_a_refusal(new_story):
     story = answered_story(new_story)
     story.expect_refusal('message reply 1 "Done now" --environment main', "already has your reply", actor=story.agent)
+    confirmed_skip(story, "messages.one-reply-per-message", story.agent, "it adds the result")
     story.advance(timedelta(seconds=1))
     story.expect_success('message reply 1 "Done now" --confirm --skip-reason "it adds the result" --environment main', "parent_id: 1", actor=story.agent)
     story.advance(timedelta(seconds=1))
     story.expect_refusal('message reply 1 "And tested" --environment main', "already has your reply", actor=story.agent)
+    confirmed_skip(story, "messages.one-reply-per-message", story.agent, "it adds the tests")
     story.advance(timedelta(seconds=1))
     story.expect_success('message reply 1 "And tested" --skip-guard messages.one-reply-per-message --skip-reason "it adds the tests" --environment main', "parent_id: 1", actor=story.agent)
 

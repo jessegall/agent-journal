@@ -21,4 +21,4 @@ class GuardEntry:
         flag = f"--{self.short_flag}" if self.short_flag else f"--skip-guard {self.name}"
         if self.is_confirmation:
             return flag
-        return f"{flag} --skip-reason '<why>'"
+        return f"{flag} --skip-reason '<why it is wrong here>'"

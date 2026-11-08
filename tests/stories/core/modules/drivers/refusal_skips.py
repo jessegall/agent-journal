@@ -27,6 +27,7 @@ GUARD = "tasks.dependencies-closed"
 SKIP = f'refusal skip {RULE} --reason "the failure is fixed" --environment main'
 GUARD_SKIP = f'refusal skip {GUARD} --reason "it does not apply" --environment main'
 REFUSED = "your last full test run failed"
+TRIED = "ran the failed tests by name and they pass"
 FIRINGS = count(1)
 
 
@@ -76,10 +77,13 @@ def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_a_retry_of_the_same
     story = failed_run_story(new_story)
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
     story.advance(timedelta(seconds=1))
-    story.expect_success(SKIP, actor=story.agent)
+    story.expect_text(SKIP, "held", actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    story.expect_hook_refusal("s-1", full_line(), REFUSED)
+    story.expect_success(f'refusal confirm 1 --tried "{TRIED}" --environment main', actor=story.agent)
     story.advance(timedelta(seconds=1))
     story.expect_hook_allowed("s-1", full_line())
-    story.expect_text("refusal-skip show 1", "reason: the failure is fixed", f"name: {RULE}", "used_at: 20", actor=story.user)
+    story.expect_text("refusal-skip show 1", "reason: the failure is fixed", f"name: {RULE}", "used_at: 20", f"tried: {TRIED}", actor=story.user)
     end_run(story, story.row(Process, 2), "1 failed\n", exit_code=1)
     story.advance(timedelta(seconds=1))
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
@@ -125,3 +129,22 @@ def test_a_worker_at_five_skips_is_raised_to_its_main_agent_not_the_person(new_s
     guard_skips(story, worker, 5)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{worker.id} skipped 5 refusals in a row")
     story.expect_absent("message list --environment main", "skipped 5", actor=story.user)
+
+
+def test_a_withdrawn_skip_leaves_the_refusal_in_force_and_an_answer_is_final(new_story):
+    story = failed_run_story(new_story)
+    story.expect_hook_refusal("s-1", full_line(), REFUSED)
+    story.advance(timedelta(seconds=1))
+    story.expect_text(SKIP, "held", actor=story.agent)
+    story.expect_text("refusal withdraw 1 --environment main", "withdrawn", actor=story.agent)
+    story.advance(timedelta(seconds=1))
+    story.expect_hook_refusal("s-1", full_line(), REFUSED)
+    story.expect_refusal(f'refusal confirm 1 --tried "{TRIED}" --environment main', "answered already, and its answer is final", actor=story.agent)
+
+
+def test_a_confirmation_must_name_what_was_tried(new_story):
+    story = failed_run_story(new_story)
+    story.expect_hook_refusal("s-1", full_line(), REFUSED)
+    story.advance(timedelta(seconds=1))
+    story.expect_success(SKIP, actor=story.agent)
+    story.expect_refusal('refusal confirm 1 --tried "the failure is fixed" --environment main', "name what you tried", actor=story.agent)

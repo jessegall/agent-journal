@@ -8,6 +8,7 @@ from core.base.command.request_user_approval import RequestUserApproval
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.guard.guard import Guard
 from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.is_not_null import IsNotNull
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
@@ -29,7 +30,8 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     """Keeps an agent's skip of a refusal that just met it, with its reason. A safety refusal has no skip.
     A skip counts as one more in a row unless the agent obeyed a refusal since its last, meaning something
     other than the skipped refusal refused it (a retry is no obeying). At five, the skip is gone; its main
-    agent or the person is told, and only a restore gives it back."""
+    agent or the person is told, and only a restore gives it back. A new skip is held until the agent confirms it;
+    a --skip-guard flag only spends a skip already confirmed."""
 
     command = SkipRefusal
 
@@ -46,6 +48,8 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             raise Refusal(f"{command.name} is a safety refusal and has no skip", "say in your report what you need")
         if not command.reason.strip():
             raise Refusal("say why this refusal does not apply", "--skip-reason '<why>'" if command.is_used else "--reason '<why>'")
+        if command.is_used:
+            return self.confirmed_skip_used(actor, command.name, context)
         last = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id).newest().first()
         if last is not None and last.streak >= MOST_SKIP_COUNT and last.restored_at is None:
             agent = self.queries.query(Agent).find(actor.id)
@@ -54,11 +58,17 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
-        skip = self.repository.save(RefusalSkip(session_agent_id=actor.id, creator_id=actor.id, name=command.name, reason=command.reason.strip(), streak=self.skip_count(actor, last, command.name, skipped_at),
-                                                used_at=context.timestamp if command.is_used else None), context)
+        skip = self.repository.save(RefusalSkip(session_agent_id=actor.id, creator_id=actor.id, name=command.name, reason=command.reason.strip(), streak=self.skip_count(actor, last, command.name, skipped_at)), context)
         if skip.streak == MOST_SKIP_COUNT:
             self.raised(actor.id, context)
         return skip
+
+    def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> RefusalSkip:
+        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, withdrawn_at=None).matching(IsNotNull("confirmed_at")).newest().first()
+        if skip is None:
+            raise Refusal(f"{name} has no confirmed skip of yours: a skip is held until you confirm it with what you tried",
+                          f"journal refusal skip {name} --reason '<why it is wrong here>', then confirm it")
+        return self.repository.update(skip, context, used_at=context.timestamp)
 
     def check_refused(self, actor: Actor, name: str, skipped_at: str) -> None:
         if self.refusals.guard_refused_past(actor.id, name.partition(":")[0], skipped_at):

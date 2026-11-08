@@ -17,6 +17,7 @@ from tests.stories.core.modules.plugins.support.refusing_modules import LATER_KE
 from tests.stories.core.modules.plugins.support.event_stories import (
     REFUSAL, SECOND_JOB, SECOND_JOB_TITLE, TASK_CREATED, EventPluginStarted, deliveries, event_plugin_story, install_event_plugin, logged_events, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 from tests.stories.core.modules.processes.support.process_samples import install_runner
+from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 
 GUARD_MESSAGE = "noted by the guard"
 CARD_LABEL = "Lane open"
@@ -49,6 +50,7 @@ def test_s21_a_guard_that_refuses_stops_the_change_with_nothing_saved(new_story)
 def test_s21_a_skip_named_for_the_plugin_passes_the_guard_and_the_log_records_it(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "refuse.sh"})
     story.expect_refusal(SECOND_JOB, REFUSAL, actor=story.agent)
+    confirmed_skip(story, f"{GUARD_SKIP}:events", story.agent)
     story.expect_success(f"{SECOND_JOB} --skip-guard {GUARD_SKIP}:events {SKIP_REASON}", actor=story.agent)
     story.expect_rows(len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
     story.expect_rows(f"{GUARD_SKIP}:events" in logged_events(story, "task.create")[-1].skipped_guards)

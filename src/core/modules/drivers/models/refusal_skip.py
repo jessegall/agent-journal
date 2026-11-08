@@ -6,7 +6,8 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class RefusalSkip(Model):
-    """An agent passing one refusal once, with its reason, and how many refusals in a row it has passed so."""
+    """An agent passing one refusal once, with its reason, and how many refusals in a row it has passed so. A skip
+    is held until the agent confirms it with what it tried instead, or withdraws it; either answer is final."""
 
     model_name = "refusal_skip"
     cli_name = "refusal-skip"
@@ -19,3 +20,10 @@ class RefusalSkip(Model):
     streak: int = 1
     used_at: Timestamp | None = None
     restored_at: Timestamp | None = None
+    confirmed_at: Timestamp | None = None
+    withdrawn_at: Timestamp | None = None
+    tried: str = ""
+
+    @property
+    def is_answered(self) -> bool:
+        return self.confirmed_at is not None or self.withdrawn_at is not None
