@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.database.statement import Statement
 from core.base.module.driver_entries import DRIVERS_MODULE
 
-HAS_FOREIGN_RUNS = f"""json_type(metadata, '$."{DRIVERS_MODULE}".foreign') IS NOT NULL"""
+HAS_FOREIGN_RUNS = f"""json_array_length(metadata, '$."{DRIVERS_MODULE}".foreign') > 0"""
 
 
 @dataclass(frozen=True)
