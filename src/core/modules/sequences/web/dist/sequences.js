@@ -1,27 +1,27 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1de124a1f0f0")) { const style = document.createElement("style"); style.id = "window-styles-1de124a1f0f0"; style.textContent = ".step-cards[data-v-300b0c61]{display:flex;flex-direction:column;gap:8px;margin:0 0 8px;padding:0;list-style:none}.step-card[data-v-300b0c61]{display:flex;gap:8px;align-items:flex-start}.step-number[data-v-300b0c61]{flex:none;width:18px;padding-top:8px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-moves[data-v-300b0c61]{display:flex;flex:none;gap:2px}textarea[data-v-300b0c61]{flex:1;box-sizing:border-box;min-width:0;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-sequence[data-v-d7c062c8]{display:flex;flex-direction:column;gap:14px}.field[data-v-d7c062c8]{display:flex;flex-direction:column;gap:6px}.label[data-v-d7c062c8],.note[data-v-d7c062c8]{color:var(--text-3);font-size:12px}.note[data-v-d7c062c8]{flex:1}input[data-v-d7c062c8]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px;font-weight:600}.runs[data-v-c969f999]{margin-top:20px}.runs-title[data-v-c969f999]{margin:0 0 8px;color:var(--text-3);font-size:12px;font-weight:600}.run[data-v-c969f999]{margin-bottom:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border-2));border-radius:9px;background:var(--raised)}.run-head[data-v-c969f999]{display:flex;justify-content:space-between;color:var(--text-2);font-size:12.5px}.run-count[data-v-c969f999]{color:var(--text-3);font-size:11.5px}.run-steps[data-v-c969f999]{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding-left:20px;color:var(--text-3);font-size:12.5px}.run-steps .done[data-v-c969f999]{text-decoration:line-through}.run-steps .current[data-v-c969f999]{color:var(--text);font-weight:500}.stop-guard[data-v-ac2162f7]{display:block;color:var(--text-3);font-size:12px}.guard[data-v-ac2162f7]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}.guard-commands[data-v-ac2162f7]{flex:1;min-width:160px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.steps-head[data-v-ac2162f7]{display:flex;gap:8px;align-items:center;margin-bottom:14px}.steps-title[data-v-ac2162f7]{color:var(--text-3);font-size:12px;font-weight:600}.steps-count[data-v-ac2162f7]{flex:1;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.track[data-v-ac2162f7]{margin:0;padding:0;list-style:none}.stop[data-v-ac2162f7]{--node: 24px;position:relative;display:flex;gap:14px;padding-bottom:18px}.stop[data-v-ac2162f7]:before{content:\"\";position:absolute;top:var(--node);bottom:0;left:calc(var(--node) / 2 - .5px);width:1px;background:var(--border-2)}.stop.end[data-v-ac2162f7]{align-items:center;padding-bottom:0}.stop.end[data-v-ac2162f7]:before{display:none}.node[data-v-ac2162f7]{display:inline-grid;flex:none;place-items:center;box-sizing:border-box;width:var(--node);height:var(--node);border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}.stop.start .node[data-v-ac2162f7]{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-text)}.stop.now .node[data-v-ac2162f7]{border-color:var(--accent);background:var(--accent);color:#fff}.stop.end .node[data-v-ac2162f7]{--node: 12px;margin:0 6px;background:var(--border-2)}.stop-body[data-v-ac2162f7]{display:flex;flex-direction:column;gap:4px;min-width:0;padding-top:2px}.stop-title[data-v-ac2162f7]{color:var(--accent-text);font-size:12px;font-weight:600}.stop-text[data-v-ac2162f7]{color:var(--text-2)}.now-label[data-v-ac2162f7]{align-self:flex-start;padding:0 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent-text);font-size:10.5px;font-weight:500;line-height:17px}.end-label[data-v-ac2162f7],.editor-note[data-v-ac2162f7]{color:var(--text-3);font-size:12px}.editor-foot[data-v-ac2162f7]{display:flex;gap:8px;align-items:center;margin-top:12px}.sequence-triggers[data-v-4037395c]{margin-bottom:14px}.head[data-v-4037395c]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-4037395c],.label[data-v-4037395c],.note[data-v-4037395c]{color:var(--text-3);font-size:12px}.line[data-v-4037395c]{margin:0 0 2px;font-size:13px}.card[data-v-4037395c]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-4037395c]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-4037395c]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.note[data-v-791360c4]{flex:1;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-d056f2dce186")) { const style = document.createElement("style"); style.id = "window-styles-d056f2dce186"; style.textContent = ".step-cards[data-v-e37eba39]{display:flex;flex-direction:column;gap:8px;margin:0 0 8px;padding:0;list-style:none}.step-card[data-v-e37eba39]{display:flex;gap:8px;align-items:flex-start}.step-number[data-v-e37eba39]{flex:none;width:18px;padding-top:8px;color:var(--text-3);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}.step-moves[data-v-e37eba39]{display:flex;flex:none;gap:2px}textarea[data-v-e37eba39]{flex:1;box-sizing:border-box;min-width:0;padding:6px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:13px;resize:vertical}.new-sequence[data-v-2322c625]{display:flex;flex-direction:column;gap:14px}.field[data-v-2322c625]{display:flex;flex-direction:column;gap:6px}.label[data-v-2322c625],.note[data-v-2322c625]{color:var(--text-3);font-size:12px}.note[data-v-2322c625]{flex:1}input[data-v-2322c625]{box-sizing:border-box;width:100%;padding:7px 10px;border:1px solid var(--border-2);border-radius:8px;background:var(--bg);color:var(--text);font:inherit;font-size:14px;font-weight:600}.runs[data-v-7b0ad51f]{margin-top:20px}.runs-title[data-v-7b0ad51f]{margin:0 0 8px;color:var(--text-3);font-size:12px;font-weight:600}.run[data-v-7b0ad51f]{margin-bottom:10px;padding:12px 14px;border:1px solid color-mix(in srgb,var(--accent) 40%,var(--border-2));border-radius:9px;background:var(--raised)}.run-head[data-v-7b0ad51f]{display:flex;justify-content:space-between;color:var(--text-2);font-size:12.5px}.run-count[data-v-7b0ad51f]{color:var(--text-3);font-size:11.5px}.run-steps[data-v-7b0ad51f]{display:flex;flex-direction:column;gap:4px;margin:10px 0 0;padding-left:20px;color:var(--text-3);font-size:12.5px}.run-steps .done[data-v-7b0ad51f]{text-decoration:line-through}.run-steps .current[data-v-7b0ad51f]{color:var(--text);font-weight:500}.stop-guard[data-v-b8f8d176]{display:block;color:var(--text-3);font-size:12px}.guard[data-v-b8f8d176]{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0;font-size:12.5px}.guard-commands[data-v-b8f8d176]{flex:1;min-width:160px;padding:3px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.steps-head[data-v-b8f8d176]{display:flex;gap:8px;align-items:center;margin-bottom:14px}.steps-title[data-v-b8f8d176]{color:var(--text-3);font-size:12px;font-weight:600}.steps-count[data-v-b8f8d176]{flex:1;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.track[data-v-b8f8d176]{margin:0;padding:0;list-style:none}.stop[data-v-b8f8d176]{--node: 24px;position:relative;display:flex;gap:14px;padding-bottom:18px}.stop[data-v-b8f8d176]:before{content:\"\";position:absolute;top:var(--node);bottom:0;left:calc(var(--node) / 2 - .5px);width:1px;background:var(--border-2)}.stop.end[data-v-b8f8d176]{align-items:center;padding-bottom:0}.stop.end[data-v-b8f8d176]:before{display:none}.node[data-v-b8f8d176]{display:inline-grid;flex:none;place-items:center;box-sizing:border-box;width:var(--node);height:var(--node);border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);font-size:11.5px;font-weight:600;font-variant-numeric:tabular-nums}.stop.start .node[data-v-b8f8d176]{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 14%,var(--bg));color:var(--accent-text)}.stop.now .node[data-v-b8f8d176]{border-color:var(--accent);background:var(--accent);color:#fff}.stop.end .node[data-v-b8f8d176]{--node: 12px;margin:0 6px;background:var(--border-2)}.stop-body[data-v-b8f8d176]{display:flex;flex-direction:column;gap:4px;min-width:0;padding-top:2px}.stop-title[data-v-b8f8d176]{color:var(--accent-text);font-size:12px;font-weight:600}.stop-text[data-v-b8f8d176]{color:var(--text-2)}.now-label[data-v-b8f8d176]{align-self:flex-start;padding:0 7px;border-radius:99px;background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent-text);font-size:10.5px;font-weight:500;line-height:17px}.end-label[data-v-b8f8d176],.editor-note[data-v-b8f8d176]{color:var(--text-3);font-size:12px}.editor-foot[data-v-b8f8d176]{display:flex;gap:8px;align-items:center;margin-top:12px}.sequence-triggers[data-v-2da9d503]{margin-bottom:14px}.head[data-v-2da9d503]{display:flex;gap:8px;align-items:center;margin-bottom:6px}.title[data-v-2da9d503],.label[data-v-2da9d503],.note[data-v-2da9d503]{color:var(--text-3);font-size:12px}.line[data-v-2da9d503]{margin:0 0 2px;font-size:13px}.card[data-v-2da9d503]{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:8px;padding:10px;border:1px solid var(--border);border-radius:8px}.card input[data-v-2da9d503]{width:100%;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:13px}.foot[data-v-2da9d503]{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.note[data-v-edbee63e]{flex:1;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as r, createElementBlock as v, Fragment as T, createElementVNode as l, renderList as W, toDisplayString as S, createVNode as i, unref as o, withCtx as g, createTextVNode as C, ref as A, computed as I, createBlock as D, withDirectives as P, vModelText as j, normalizeClass as F, createCommentVNode as V, vModelCheckbox as L } from "vue";
 import { Btn as h, Icon as E, useWindow as x, Dialog as M, TextDisplay as H, Segmented as K, RowCards as Q, removed as X } from "@journal/window-kit";
-const B = (e, c) => {
+const B = (e, p) => {
   const u = e.__vccOpts || e;
-  for (const [a, k] of c)
+  for (const [a, k] of p)
     u[a] = k;
   return u;
 }, Z = { class: "step-cards" }, ee = { class: "step-number" }, te = ["value", "aria-label", "onInput"], se = { class: "step-moves" }, le = {
   __name: "StepCards",
   props: { steps: { type: Array, required: !0 } },
   emits: ["steps"],
-  setup(e, { emit: c }) {
-    const u = e, a = c;
-    function k(q, p) {
-      a("steps", u.steps.map((n, t) => t === q ? p : n));
+  setup(e, { emit: p }) {
+    const u = e, a = p;
+    function k(q, c) {
+      a("steps", u.steps.map((n, t) => t === q ? c : n));
     }
-    function $(q, p) {
+    function $(q, c) {
       const n = [...u.steps], [t] = n.splice(q, 1);
-      n.splice(q + p, 0, t), a("steps", n);
+      n.splice(q + c, 0, t), a("steps", n);
     }
-    const _ = (q) => a("steps", u.steps.filter((p, n) => n !== q));
-    return (q, p) => (r(), v(T, null, [
+    const _ = (q) => a("steps", u.steps.filter((c, n) => n !== q));
+    return (q, c) => (r(), v(T, null, [
       l("ol", Z, [
         (r(!0), v(T, null, W(e.steps, (n, t) => (r(), v("li", {
           key: t,
@@ -89,24 +89,24 @@ const B = (e, c) => {
         small: "",
         bordered: "",
         "data-step-add": "",
-        onClick: p[0] || (p[0] = (n) => a("steps", [...e.steps, ""]))
+        onClick: c[0] || (c[0] = (n) => a("steps", [...e.steps, ""]))
       }, {
-        default: g(() => [...p[1] || (p[1] = [
+        default: g(() => [...c[1] || (c[1] = [
           C("Add a step", -1)
         ])]),
         _: 1
       })
     ], 64));
   }
-}, G = /* @__PURE__ */ B(le, [["__scopeId", "data-v-300b0c61"]]), ae = { class: "new-sequence" }, ne = { class: "field" }, oe = { class: "field" }, re = {
+}, G = /* @__PURE__ */ B(le, [["__scopeId", "data-v-e37eba39"]]), ae = { class: "new-sequence" }, ne = { class: "field" }, oe = { class: "field" }, re = {
   class: "note",
   role: "status"
 }, ue = {
   __name: "NewSequence",
   emits: ["close"],
-  setup(e, { emit: c }) {
-    const u = c, a = x(), k = A(""), $ = A([""]), _ = A(""), q = I(() => k.value.trim() ? $.value.some((n) => !n.trim()) ? "Add instructions for each step." : "" : "Give the sequence a title.");
-    async function p() {
+  setup(e, { emit: p }) {
+    const u = p, a = x(), k = A(""), $ = A([""]), _ = A(""), q = I(() => k.value.trim() ? $.value.some((n) => !n.trim()) ? "Add instructions for each step." : "" : "Give the sequence a title.");
+    async function c() {
       const n = await a.run(["sequence", "make", k.value.trim(), "--steps", $.value.map((t) => t.trim()).join(" | ")]);
       _.value = n.ok ? "" : n.error, n.ok && u("close");
     }
@@ -128,7 +128,7 @@ const B = (e, c) => {
           variant: "primary",
           disabled: !!q.value,
           "data-sequence-create": "",
-          onClick: p
+          onClick: c
         }, {
           default: g(() => [...t[7] || (t[7] = [
             C("Create sequence", -1)
@@ -160,23 +160,23 @@ const B = (e, c) => {
       _: 1
     }));
   }
-}, de = /* @__PURE__ */ B(ue, [["__scopeId", "data-v-d7c062c8"]]), ie = {
+}, de = /* @__PURE__ */ B(ue, [["__scopeId", "data-v-2322c625"]]), ie = {
   key: 0,
   class: "runs",
   "data-sequence-runs": ""
-}, ce = { class: "run-head" }, pe = { class: "run-count" }, me = { class: "run-steps" }, ve = {
+}, pe = { class: "run-head" }, ce = { class: "run-count" }, me = { class: "run-steps" }, ve = {
   __name: "SequenceRuns",
   props: { runs: { type: Array, required: !0 } },
   setup(e) {
-    return (c, u) => e.runs.length ? (r(), v("section", ie, [
+    return (p, u) => e.runs.length ? (r(), v("section", ie, [
       u[0] || (u[0] = l("h3", { class: "runs-title" }, "Running now", -1)),
       (r(!0), v(T, null, W(e.runs, (a) => (r(), v("div", {
         key: a.id,
         class: "run"
       }, [
-        l("div", ce, [
+        l("div", pe, [
           l("span", null, "Agent " + S(a.session_agent_id), 1),
-          l("span", pe, S(a.step_started ? `Step ${a.step_number} of ${JSON.parse(a.steps).length}` : `Step ${a.step_number} of ${JSON.parse(a.steps).length}, not started yet`), 1)
+          l("span", ce, S(a.step_started ? `Step ${a.step_number} of ${JSON.parse(a.steps).length}` : `Step ${a.step_number} of ${JSON.parse(a.steps).length}, not started yet`), 1)
         ]),
         l("ol", me, [
           (r(!0), v(T, null, W(JSON.parse(a.steps), (k, $) => (r(), v("li", {
@@ -187,7 +187,7 @@ const B = (e, c) => {
       ]))), 128))
     ])) : V("", !0);
   }
-}, fe = /* @__PURE__ */ B(ve, [["__scopeId", "data-v-c969f999"]]), _e = { class: "sequence-steps" }, ge = { class: "steps-head" }, be = { class: "steps-count" }, ye = {
+}, fe = /* @__PURE__ */ B(ve, [["__scopeId", "data-v-7b0ad51f"]]), _e = { class: "sequence-steps" }, ge = { class: "steps-head" }, be = { class: "steps-count" }, ye = {
   key: 0,
   class: "track"
 }, ke = { class: "node" }, $e = { class: "stop-body" }, qe = {
@@ -203,18 +203,18 @@ const B = (e, c) => {
   __name: "SequenceSteps",
   props: { sequence: { type: Object, required: !0 }, runs: { type: Array, required: !0 } },
   setup(e) {
-    const c = e, u = x(), a = A(null), k = A(""), $ = I(() => new Set(c.runs.map((f) => f.step_number))), _ = I(() => {
+    const p = e, u = x(), a = A(null), k = A(""), $ = I(() => new Set(p.runs.map((f) => f.step_number))), _ = I(() => {
       var f;
       return (f = a.value) != null && f.some((s) => !s.trim()) ? "Add instructions for each step." : "";
-    }), q = I(() => JSON.parse(c.sequence.step_guards || "[]")), p = A([]), n = (f) => q.value[f] ?? { file_edits_allowed: !0, allowed_commands: [] }, t = (f) => [n(f).file_edits_allowed ? "File edits allowed" : "File edits wait", ...n(f).allowed_commands].join(", ");
+    }), q = I(() => JSON.parse(p.sequence.step_guards || "[]")), c = A([]), n = (f) => q.value[f] ?? { file_edits_allowed: !0, allowed_commands: [] }, t = (f) => [n(f).file_edits_allowed ? "File edits allowed" : "File edits wait", ...n(f).allowed_commands].join(", ");
     function d() {
-      a.value = [...c.sequence.steps], p.value = c.sequence.steps.map((f, s) => ({ step: s, file_edits_allowed: n(s).file_edits_allowed, commands: n(s).allowed_commands.join(", ") }));
+      a.value = [...p.sequence.steps], c.value = p.sequence.steps.map((f, s) => ({ step: s, file_edits_allowed: n(s).file_edits_allowed, commands: n(s).allowed_commands.join(", ") }));
     }
     function b(f) {
-      a.value = f, p.value = f.map((s, y) => p.value[y] ?? { step: y, file_edits_allowed: !0, commands: "" });
+      a.value = f, c.value = f.map((s, y) => c.value[y] ?? { step: y, file_edits_allowed: !0, commands: "" });
     }
     async function w() {
-      const f = p.value.map((y) => ({ file_edits_allowed: y.file_edits_allowed, allowed_commands: y.commands.split(",").map((O) => O.trim()).filter(Boolean) })), s = await u.run(["sequence", "edit", String(c.sequence.id), "--steps", ...a.value.map((y) => y.trim()), "--step-guards", JSON.stringify(f)]);
+      const f = c.value.map((y) => ({ file_edits_allowed: y.file_edits_allowed, allowed_commands: y.commands.split(",").map((O) => O.trim()).filter(Boolean) })), s = await u.run(["sequence", "edit", String(p.sequence.id), "--steps", ...a.value.map((y) => y.trim()), "--step-guards", JSON.stringify(f)]);
       k.value = s.ok ? "" : s.error, s.ok && (a.value = null);
     }
     return (f, s) => (r(), v("section", _e, [
@@ -242,7 +242,7 @@ const B = (e, c) => {
           steps: a.value,
           onSteps: b
         }, null, 8, ["steps"]),
-        (r(!0), v(T, null, W(p.value, (y, O) => (r(), v("div", {
+        (r(!0), v(T, null, W(c.value, (y, O) => (r(), v("div", {
           key: y.step,
           class: "guard",
           "data-step-guard-edit": ""
@@ -313,14 +313,14 @@ const B = (e, c) => {
       ]))
     ]));
   }
-}, Ie = /* @__PURE__ */ B(Ae, [["__scopeId", "data-v-ac2162f7"]]), U = [
+}, Ie = /* @__PURE__ */ B(Ae, [["__scopeId", "data-v-b8f8d176"]]), U = [
   { value: "row", label: "A record is made", fields: [{ name: "event", label: "Record and event", placeholder: "plan.create" }] },
   { value: "phrase", label: "You ask for it", fields: [{ name: "text", label: "Words you write", placeholder: "an update please" }] },
   { value: "command", label: "A command runs", fields: [{ name: "pattern", label: "Pattern on the command line", placeholder: "^git push" }] },
   { value: "file", label: "A file is edited", fields: [{ name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py" }] },
   { value: "file-text", label: "An edit adds text", fields: [{ name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py" }, { name: "text", label: "Text in the new content", placeholder: "TODO" }] },
   { value: "tool", label: "A tool is used", fields: [{ name: "tool", label: "Tool name", placeholder: "Edit" }, { name: "pattern", label: "Pattern on its input, if any", placeholder: "migrations/" }] }
-], J = (e) => U.find((c) => c.value === e) ?? U[0], We = {
+], J = (e) => U.find((p) => p.value === e) ?? U[0], We = {
   row: (e) => `When ${e.event} happens`,
   phrase: (e) => `When you ask “${e.text}”`,
   command: (e) => `When a command matching “${e.pattern}” runs`,
@@ -329,13 +329,13 @@ const B = (e, c) => {
   tool: (e) => `When ${e.tool} is used${e.pattern ? ` with “${e.pattern}” in its input` : ""}`
 }, Re = (e) => We[e.trigger_type](e), Y = (e) => e.length ? e.map(Re) : ["Only when you or the agent start it"], z = () => ({ trigger_type: "phrase", event: "", text: "", pattern: "", tool: "" });
 function De(e) {
-  const c = J(e.trigger_type).fields.map((u) => [u.name, (e[u.name] || "").trim()]);
-  return { trigger_type: e.trigger_type, ...Object.fromEntries(c.filter(([, u]) => u)) };
+  const p = J(e.trigger_type).fields.map((u) => [u.name, (e[u.name] || "").trim()]);
+  return { trigger_type: e.trigger_type, ...Object.fromEntries(p.filter(([, u]) => u)) };
 }
 const Ve = { tool: ["pattern"] };
 function Be(e) {
-  const c = e.find((u) => J(u.trigger_type).fields.some((a) => !(Ve[u.trigger_type] ?? []).includes(a.name) && !(u[a.name] || "").trim()));
-  return c ? `${J(c.trigger_type).label}: complete every field.` : "";
+  const p = e.find((u) => J(u.trigger_type).fields.some((a) => !(Ve[u.trigger_type] ?? []).includes(a.name) && !(u[a.name] || "").trim()));
+  return p ? `${J(p.trigger_type).label}: complete every field.` : "";
 }
 const Ee = {
   class: "sequence-triggers",
@@ -347,9 +347,9 @@ const Ee = {
   __name: "SequenceTriggers",
   props: { sequence: { type: Object, required: !0 } },
   setup(e) {
-    const c = e, u = x(), a = U.map((d) => ({ key: d.value, label: d.label })), k = I(() => JSON.parse(c.sequence.triggers || "[]")), $ = I(() => Y(k.value)), _ = A(null), q = A(""), p = I(() => _.value ? Be(_.value) : ""), n = () => _.value = k.value.map((d) => ({ ...z(), ...d }));
+    const p = e, u = x(), a = U.map((d) => ({ key: d.value, label: d.label })), k = I(() => JSON.parse(p.sequence.triggers || "[]")), $ = I(() => Y(k.value)), _ = A(null), q = A(""), c = I(() => _.value ? Be(_.value) : ""), n = () => _.value = k.value.map((d) => ({ ...z(), ...d }));
     async function t() {
-      const d = await u.run(["sequence", "edit", String(c.sequence.id), "--triggers", JSON.stringify(_.value.map(De))]);
+      const d = await u.run(["sequence", "edit", String(p.sequence.id), "--triggers", JSON.stringify(_.value.map(De))]);
       q.value = d.ok ? "" : d.error, d.ok && (_.value = null);
     }
     return (d, b) => (r(), v("section", Ee, [
@@ -420,7 +420,7 @@ const Ee = {
           i(o(h), {
             small: "",
             variant: "primary",
-            disabled: !!p.value,
+            disabled: !!c.value,
             "data-sequence-triggers-save": "",
             onClick: t
           }, {
@@ -438,7 +438,7 @@ const Ee = {
             ])]),
             _: 1
           }),
-          l("span", je, S(q.value || p.value), 1)
+          l("span", je, S(q.value || c.value), 1)
         ])
       ], 64)) : (r(!0), v(T, { key: 0 }, W($.value, (w) => (r(), v("p", {
         key: w,
@@ -447,16 +447,16 @@ const Ee = {
       }, S(w), 1))), 128))
     ]));
   }
-}, Fe = /* @__PURE__ */ B(ze, [["__scopeId", "data-v-4037395c"]]), Me = {
+}, Fe = /* @__PURE__ */ B(ze, [["__scopeId", "data-v-2da9d503"]]), Me = {
   class: "note",
   role: "status"
 }, Ge = {
   __name: "SequenceCards",
   setup(e) {
-    const c = x(), { rows: u, data: a, failure: k, loaded: $, act: _ } = c.props.board, q = I(() => {
+    const p = x(), { rows: u, data: a, failure: k, loaded: $, act: _ } = p.props.board, q = I(() => {
       var m;
       return ((m = a.value) == null ? void 0 : m.runs) ?? [];
-    }), p = A(!1), n = A(null), t = A(!1), d = A(""), b = (m) => `${m.steps.length} steps · ${s(m) ? `${s(m)} running now` : Y(JSON.parse(m.triggers || "[]"))[0]}`, w = I(() => u.value.find((m) => m.id === n.value) || null), f = I(() => q.value.filter((m) => m.sequence_id === n.value)), s = (m) => q.value.filter((N) => N.sequence_id === m.id).length;
+    }), c = A(!1), n = A(null), t = A(!1), d = A(""), b = (m) => `${m.steps.length} steps · ${s(m) ? `${s(m)} running now` : Y(JSON.parse(m.triggers || "[]"))[0]}`, w = I(() => u.value.find((m) => m.id === n.value) || null), f = I(() => q.value.filter((m) => m.sequence_id === n.value)), s = (m) => q.value.filter((N) => N.sequence_id === m.id).length;
     function y(m) {
       d.value = "", t.value = !1, n.value = m.id;
     }
@@ -474,13 +474,13 @@ const Ee = {
       head: (R) => `Sequence ${R.id}`,
       title: (R) => R.title,
       foot: b,
-      onNew: N[3] || (N[3] = (R) => p.value = !0),
+      onNew: N[3] || (N[3] = (R) => c.value = !0),
       onOpen: y
     }, {
       default: g(() => [
-        p.value ? (r(), D(de, {
+        c.value ? (r(), D(de, {
           key: 0,
-          onClose: N[0] || (N[0] = (R) => p.value = !1)
+          onClose: N[0] || (N[0] = (R) => c.value = !1)
         })) : V("", !0),
         w.value ? (r(), D(o(M), {
           key: 1,
@@ -524,7 +524,7 @@ const Ee = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "head", "title"]));
   }
-}, He = /* @__PURE__ */ B(Ge, [["__scopeId", "data-v-791360c4"]]);
+}, He = /* @__PURE__ */ B(Ge, [["__scopeId", "data-v-edbee63e"]]);
 export {
   He as default
 };
