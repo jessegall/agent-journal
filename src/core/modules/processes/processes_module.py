@@ -259,7 +259,7 @@ class ProcessesModule(Module):
                                        WindowKey("summary.*", "output peek {id} --summary", loading=KeyLoading.REQUESTED),
                                        WindowKey("output.*", "output page {id}", arguments=["after", "before"], loading=KeyLoading.REQUESTED)],
                                  runs=WINDOW_RUNS, events=WINDOW_EVENTS),
-               WindowDeclaration("processes.queue-body", "Test queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
-                                 reads=["queue list"], runs=["setting set"])]
+               WindowDeclaration("processes.queue-body", "Process queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
+                                 reads=["queue list", "output page"], runs=["setting set"])]
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]
