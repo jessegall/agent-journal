@@ -22,7 +22,7 @@ class ProcessSetting(Enum):
                                      "Seconds a queued command waits before continuing in the background.", SettingType.NUMBER, default=5)
     ORPHAN_SECONDS = SettingValue("orphan-seconds", "Run inactivity limit (seconds)", "Seconds without activity before a run is marked as lost.",
                                   SettingType.NUMBER, default=90)
-    HANG_SECONDS = SettingValue("hang-seconds", "Seconds before an idle run is stopped", "Seconds a running command's process tree prints nothing and uses no processor time before the run is stopped and its agent told.",
+    HANG_SECONDS = SettingValue("hang-seconds", "Seconds before an idle run is stopped", "Seconds a run prints nothing and uses no processor time before it is stopped and its agent told.",
                                 SettingType.NUMBER, default=300)
     RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
