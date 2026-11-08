@@ -24,9 +24,11 @@ class HelperCommand:
         self.providers, self.folders, self.profiles, self.environments = providers, folders, profiles, environments
 
     def command(self, helper: Agent, job: HelperJob) -> LaunchCommand:
+        return self.restarted(helper, job.brief)
+
+    def restarted(self, helper: Agent, job: str) -> LaunchCommand:
         profile = self.profiles.effective(helper.profile)
-        brief = BLANK_LINE.join((f"You are helper {helper.id}.", profile.body, job.brief, REPORT_STEP))
-        return self.launched(helper, SessionStart(helper.session), brief)
+        return self.launched(helper, SessionStart(helper.session), BLANK_LINE.join((f"You are helper {helper.id}.", profile.body, job, REPORT_STEP)))
 
     def resumed(self, helper: Agent, job: str) -> LaunchCommand:
         return self.launched(helper, ResumedSession(helper.session), BLANK_LINE.join((job, REPORT_STEP)))

@@ -30,6 +30,11 @@ type sessionRow struct {
 	Session string `json:"session"`
 }
 
+type coldSessionRow struct {
+	Session        string `json:"session"`
+	ContextPercent int    `json:"context_percent"`
+}
+
 type runningRow struct {
 	ID int `json:"id"`
 }
@@ -59,9 +64,17 @@ func (journal CommandJournal) Conversations(environment, program string) ([]Conv
 	if err != nil {
 		return nil, err
 	}
+	cold, err := readRows[coldSessionRow](journal, "helper", "cold-sessions", program, "--environment", environment)
+	if err != nil {
+		return nil, err
+	}
+	percents := map[string]int{}
+	for _, row := range cold {
+		percents[row.Session] = row.ContextPercent
+	}
 	conversations := make([]Conversation, 0, len(rows))
 	for _, row := range rows {
-		conversations = append(conversations, Conversation{Session: row.Session})
+		conversations = append(conversations, Conversation{Session: row.Session, ColdPercent: percents[row.Session]})
 	}
 	return conversations, nil
 }

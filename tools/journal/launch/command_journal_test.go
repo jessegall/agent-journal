@@ -40,13 +40,17 @@ func TestTheCommandJournalStopsTheRunningMainsItIsToldOfPastAThousandAgents(t *t
 
 func TestTheCommandJournalKeepsTheOrderOfTheMainSessions(t *testing.T) {
 	journal := CommandJournal{Run: func(argv ...string) (string, error) {
-		if strings.Join(argv, " ") != "agent main-sessions claude --environment main --json" {
-			t.Fatalf("the journal was asked %v", argv)
+		switch strings.Join(argv, " ") {
+		case "agent main-sessions claude --environment main --json":
+			return `{"rows": [{"session": "s-new"}, {"session": "s-old"}]}`, nil
+		case "helper cold-sessions claude --environment main --json":
+			return `{"rows": [{"session": "s-old", "context_percent": 60}]}`, nil
 		}
-		return `{"rows": [{"session": "s-new"}, {"session": "s-old"}]}`, nil
+		t.Fatalf("the journal was asked %v", argv)
+		return "", nil
 	}}
 	conversations, err := journal.Conversations("main", "claude")
-	if err != nil || len(conversations) != 2 || conversations[0].Session != "s-new" {
+	if err != nil || len(conversations) != 2 || conversations[0].Session != "s-new" || conversations[0].ColdPercent != 0 || conversations[1].ColdPercent != 60 {
 		t.Fatalf("the conversations read are %+v, %v", conversations, err)
 	}
 }

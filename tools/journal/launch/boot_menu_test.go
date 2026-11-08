@@ -76,6 +76,66 @@ func TestAConversationOfTheJournalIsOffered(t *testing.T) {
 	}
 }
 
+func coldConversationScreen(terminal *fakeTerminal) bool {
+	for _, screen := range terminal.screens {
+		if strings.Contains(screen, ColdQuestion) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestAWarmConversationIsNeverAskedAboutItsCache(t *testing.T) {
+	journal := codingProject()
+	journal.conversations = []Conversation{{Session: "s-1"}}
+	terminal := keys(enterPress, enterPress, enterPress)
+	choice, err := Boot(journal, terminal, Request{Program: "codex", Root: "/work/shop"})
+	if err != nil || choice.Session != "s-1" || coldConversationScreen(terminal) {
+		t.Fatalf("the launch chose %+v, %v", choice, err)
+	}
+}
+
+func TestAColdConversationOffersANewSessionFirstAndShowsItsSize(t *testing.T) {
+	journal := codingProject()
+	journal.conversations = []Conversation{{Session: "s-1", ColdPercent: 60}}
+	terminal := keys(enterPress, enterPress, enterPress, enterPress)
+	choice, err := Boot(journal, terminal, Request{Program: "codex", Root: "/work/shop"})
+	joined := strings.Join(terminal.screens, "\n")
+	if err != nil || choice.Session != "" || !coldConversationScreen(terminal) || !strings.Contains(joined, "60% full") {
+		t.Fatalf("the launch chose %+v, %v", choice, err)
+	}
+}
+
+func TestAColdConversationCanStillBeCarriedOn(t *testing.T) {
+	journal := codingProject()
+	journal.conversations = []Conversation{{Session: "s-1", ColdPercent: 20}}
+	terminal := keys(enterPress, enterPress, downPress, enterPress, enterPress)
+	choice, err := Boot(journal, terminal, Request{Program: "codex", Root: "/work/shop"})
+	if err != nil || choice.Session != "s-1" {
+		t.Fatalf("the launch chose %+v, %v", choice, err)
+	}
+}
+
+func TestStartingFreshFromTheListIsNotAskedAboutACache(t *testing.T) {
+	journal := codingProject()
+	journal.conversations = []Conversation{{Session: "s-1", ColdPercent: 60}}
+	terminal := keys(enterPress, downPress, enterPress, enterPress)
+	choice, err := Boot(journal, terminal, Request{Program: "codex", Root: "/work/shop"})
+	if err != nil || choice.Session != "" || coldConversationScreen(terminal) {
+		t.Fatalf("the launch chose %+v, %v", choice, err)
+	}
+}
+
+func TestASessionNamedOnTheCommandLineIsNotAskedAboutItsCache(t *testing.T) {
+	journal := codingProject()
+	journal.conversations = []Conversation{{Session: "s-1", ColdPercent: 60}}
+	terminal := keys(enterPress, enterPress)
+	choice, err := Boot(journal, terminal, Request{Program: "codex", Root: "/work/shop", ProgramArguments: []string{ResumeFlag, "s-1"}})
+	if err != nil || choice.Session != "s-1" || coldConversationScreen(terminal) {
+		t.Fatalf("the launch chose %+v, %v", choice, err)
+	}
+}
+
 func TestTheLeftArrowGoesBackToTheLastQuestion(t *testing.T) {
 	journal := codingProject()
 	journal.suites = []string{"coding", "marketing"}

@@ -8,6 +8,7 @@ SOCKET_PATH_LIMIT_CHARACTERS = 100
 SHORT_SOCKET_FOLDER = Path("/tmp")
 SERVER_SOCKET = "server"
 LAUNCHER_SOCKET = "launcher"
+ENDED_STATUS_FOLDER = "ended"
 
 
 @dataclass(frozen=True)
@@ -114,6 +115,10 @@ class JournalHome:
     @property
     def status_folder(self) -> Path:
         return self.folder / "runtime" / "status"
+
+    def status_file(self, session: str) -> Path:
+        running = self.status_folder / f"{session}.json"
+        return running if running.is_file() else self.status_folder / ENDED_STATUS_FOLDER / f"{session}.json"
 
     @property
     def program_table(self) -> Path:

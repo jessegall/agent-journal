@@ -1,4 +1,3 @@
-from functools import lru_cache
 from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 import json
@@ -8,13 +7,13 @@ from collections.abc import Sequence
 from collections.abc import Mapping
 from pathlib import Path
 
-from core.base.journal_home import JournalHome
+from core.base.journal_home import ENDED_STATUS_FOLDER, JournalHome
+from core.base.provider.status_file_fields import StatusFileFields
 from core.base.timestamp import Timestamp
 from core.modules.usage.support.plan_window import PlanWindow
 from core.modules.usage.support.session_status import SessionStatus
 
 PLAN_FILE = "plan.json"
-ENDED_FOLDER = "ended"
 ENDED_KEPT_SECONDS = 30 * 24 * 3600
 READINESS_MAX_AGE_SECONDS = 24 * 3600
 
@@ -30,7 +29,7 @@ class StatusFiles:
     def __init__(self, home: JournalHome) -> None:
         self.folder = home.status_folder
         self.plan_file = self.folder / PLAN_FILE
-        self.ended_folder = self.folder / ENDED_FOLDER
+        self.ended_folder = self.folder / ENDED_STATUS_FOLDER
 
     def status(self, session: str) -> SessionStatus:
         path = self.folder / f"{session}.json"
@@ -79,6 +78,5 @@ class StatusFiles:
             return SessionStatus()
 
     @staticmethod
-    @lru_cache(maxsize=64)
     def kept_status(path: Path, version: FileVersion) -> SessionStatus:
-        return SessionStatus.reported(json.loads(FileAccess.shared().read(path) or "{}"))
+        return SessionStatus.reported(StatusFileFields.read(path, version))
