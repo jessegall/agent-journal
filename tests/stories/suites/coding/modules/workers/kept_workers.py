@@ -131,15 +131,32 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story.expect_rows(start_count_at_limit == 1, len(launcher.starts) == 2)
 
 
-def test_a_kept_worker_takes_a_new_task_on_its_open_worktree_and_what_it_delivered_stays(new_story):
+def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeable(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
-    worker = delivered_worker(story, repository)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
-    story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    story.expect_text(f"task show {task_id}", "state: open", f"delegated_to: {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
+    story.expect_text("worker-worktree list", "delivered", actor=story.agent)
     story.expect_text("proof list --task 1", "cart.py:1", actor=story.agent)
+
+
+def test_the_merge_of_a_delivered_worker_starts_the_task_sent_while_it_waited(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    task_id = story.new_row_id('task make "A second task"', actor=story.agent)
+    story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: completed", actor=story.agent)
+    story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.id)
+    story.expect_rows(worktree.task_id == task_id, Path(worktree.folder).is_dir())
 
 
 def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
