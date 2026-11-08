@@ -12,6 +12,11 @@ stays kept on the same agent number and session until retired.
 
 - Read each task to delegate with `journal task info <n>`, not its whole brief: open the brief only when the title and facts are not enough.
   Choose the model from its complexity: 1 to 3 on the fast tier, 4 and 5 on the strongest.
+- Choose the profile from what the job is, before the model. A job that only reads goes to a read-only helper, never a worker:
+  research and checks to `journal-researcher`, a review to `journal-code-reviewer`, tracing a fault to `journal-debugger`, a
+  design to `journal-planner`. A job that writes goes to a worker: `journal-medior` for a change the brief states,
+  `journal-senior` for one that needs judgement. A task titled check, find out or investigate is a reading job. Never send a
+  task to a worker only to clear the notice that a place is free: say why not instead.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept worker only when it is on that model,
   and never because a stronger one happens to be there. When no kept worker on that model is idle and no place is free,
   retire a finished worker and start one on the simpler model.

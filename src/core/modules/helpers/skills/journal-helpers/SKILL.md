@@ -8,6 +8,8 @@ description: Start a helper for a bounded read, send it more, stop it, and read 
 A helper is an agent program of its own that works for you on one bounded job and reports back. A read-only helper
 reads; work that writes goes to a worker or stays with you.
 
+- Choose the profile from what the job is: `journal-researcher` for research and checks, `journal-code-reviewer` for a review,
+  `journal-debugger` to trace a fault, `journal-planner` for a design. A job that writes is not a helper's.
 - Choose the model first: the least expensive one that fits the job. Reuse a kept helper only when it is on that model,
   and never because a stronger one happens to be there. When no kept helper on that model is idle and no place is free,
   retire a finished helper and start one on the simpler model.
