@@ -29,7 +29,7 @@ test("the agent column shows the agent icon, solid when it holds the task and da
     const element = await drawn([task({id: 1, state: "started", delegated_to: 12, delegated_name: "Joan Clarke"}), task({id: 2, delegated_to: 12, delegated_name: "Joan Clarke"}), task({id: 3})]);
     const held = cell(element, 1, "data-task-agent");
     const queued = cell(element, 2, "data-task-agent");
-    expect(held.querySelector("[data-icon='agents']")).not.toBeNull();
+    expect(held.querySelector("[data-icon='agent']")).not.toBeNull();
     expect(held.classList.contains("queued")).toBe(false);
     expect(queued.classList.contains("queued")).toBe(true);
     expect(tipOf(held)).toEqual(["Joan Clarke works on it", "Open the agent"]);

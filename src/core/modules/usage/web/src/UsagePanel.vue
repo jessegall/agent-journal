@@ -51,7 +51,7 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
         <div class="limit-form" data-usage-limit-form>
             <p class="current">Stop the agents at your own limit</p>
             <select v-model="kind" aria-label="Window the limit counts"><option>5 hours</option><option>7 days</option><option>hour</option></select>
-            <select v-model="mode" aria-label="Kind of limit"><option value="fixed">halt at</option><option value="budget">halt after more than</option></select>
+            <select v-model="mode" aria-label="Type of limit"><option value="fixed">halt at</option><option value="budget">halt after more than</option></select>
             <input v-model="percent" type="number" min="1" max="100" aria-label="Percent of the window">
             <Btn small @click="setLimit">Set limit</Btn>
             <p v-if="limitFailure" class="none" data-usage-limit-failure>{{ limitFailure }}</p>
