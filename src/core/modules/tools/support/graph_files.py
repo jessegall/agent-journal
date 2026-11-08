@@ -38,24 +38,22 @@ class GraphFiles:
         return FileAccess.shared().read(path).strip() if path.is_file() else ""
 
     def is_running(self) -> bool:
+        """Whether a refresh holds the claim; a claim whose process is gone is removed."""
         if not self.running_path.is_file():
             return False
         text = FileAccess.shared().read(self.running_path).strip()
-        if not text:
-            return time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS
-        return text.isdigit() and self.is_alive(int(text))
+        is_held = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else text.isdigit() and self.is_alive(int(text))
+        if not is_held:
+            self.running_path.unlink(missing_ok=True)
+        return is_held
 
     def claim(self) -> bool:
         self.output.mkdir(parents=True, exist_ok=True)
-        for _ in range(2):
-            try:
-                with FileAccess.shared().descriptor_writer(self.running_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600):
-                    return True
-            except FileExistsError:
-                if self.is_running():
-                    return False
-                self.running_path.unlink(missing_ok=True)
-        return False
+        try:
+            with FileAccess.shared().descriptor_writer(self.running_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600):
+                return True
+        except FileExistsError:
+            return False
 
     def hold(self, pid: int) -> None:
         FileAccess.shared().write(self.running_path, str(pid))

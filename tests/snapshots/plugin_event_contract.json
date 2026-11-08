@@ -5804,6 +5804,12 @@
       "title"
     ]
   },
+  "core.tools.tool.changed": {
+    "forms": [
+      "commit"
+    ],
+    "fields": []
+  },
   "core.transcriptions.transcription.created": {
     "forms": [
       "commit",

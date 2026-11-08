@@ -14,7 +14,7 @@ from core.modules.tools.commands.set_tool.set_tool_off_subcommand import SetTool
 from core.modules.tools.commands.set_tool.set_tool_on_subcommand import SetToolOnSubcommand
 from core.modules.tools.commands.tool_list.tool_list_subcommand import ToolListSubcommand
 from core.modules.tools.support.skeletons import TOOLS_TOOLS_SKELETON
-from core.modules.tools.support.tool_settings import TOOL_SETTINGS
+from core.modules.tools.support.tool_setting import TOOL_SETTINGS
 
 
 class ToolsModule(Module):

@@ -9,7 +9,7 @@ from core.base.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tools.support.graph_files import FAILED_FILE, RUNNING_FILE, GraphFiles
 from core.modules.tools.support.graph_status import GraphStatus
-from core.modules.tools.support.tool_settings import ToolSetting
+from core.modules.tools.support.tool_setting import ToolSetting
 
 GIT_LIMIT_SECONDS = 10
 INSTALL_LIMIT_SECONDS = 600
@@ -71,17 +71,20 @@ class GraphifyTool:
         self.checked_folder(folder)
         if not self.is_installed():
             raise Refusal("Graphify is not installed", "install it on the Tools page or with journal tool install graphify")
-        commit = self.head(folder)
-        if not commit:
+        if not self.head(folder):
             raise Refusal(f"{folder} is not a git checkout with a commit")
-        return self.status(folder, self.started(folder, commit))
+        status = self.status(folder)
+        return status if status.is_running else self.after_start(folder, status)
 
     def tick(self, folder: Path) -> GraphStatus:
         """Starts a refresh only when a commit has landed since the last one and none failed for it or runs."""
         self.checked_folder(folder)
         status = self.status(folder)
-        if not self.is_installed() or not status.commit or status.is_current or self.is_failed(folder):
+        if not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder):
             return status
+        return self.after_start(folder, status)
+
+    def after_start(self, folder: Path, status: GraphStatus) -> GraphStatus:
         return replace(status, is_running=True, is_started=True) if self.started(folder, status.commit) else status
 
     def started(self, folder: Path, commit: str) -> bool:
