@@ -64,13 +64,6 @@ def expect_terminal_line(text, typing) -> None:
     assert actual, actual
 
 
-def test_a_workers_report_reaches_the_main_agent_as_a_line_while_no_merger_runs(new_story):
-    story, worker = story_with_worker(new_story)
-    story.expect_success('worker report "Which branch should I rebase on?"', actor=worker)
-    story.run_listeners()
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "reports in message", actor=story.agent)
-
-
 def test_a_report_that_only_states_progress_is_refused_with_the_way_to_log_it(new_story):
     story, worker = story_with_worker(new_story)
     story.expect_refusal('worker report "tests queued, stopping"', "this is progress", actor=worker)

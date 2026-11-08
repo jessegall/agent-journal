@@ -12,7 +12,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.messages.models.message import Message
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.send_merger_input.send_merger_input import SendMergerInput
-from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 
 
@@ -27,8 +26,8 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
     name = "report"
     outward = True
 
-    def __init__(self, queries: Queries, settings: SettingValues, inbox: MergerInbox) -> None:
-        self.queries, self.settings, self.inbox = queries, settings, inbox
+    def __init__(self, queries: Queries, settings: SettingValues) -> None:
+        self.queries, self.settings = queries, settings
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")
@@ -41,7 +40,7 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
             raise Refusal("a report is for what the main agent must act on; this is progress", f'journal task log <n> "{PROGRESS_LOG}"')
         if worker.parent_id is None:
             raise Refusal("the worker has no main agent", f"journal agent show {worker.id}")
-        if self.settings.flag(MERGER_ENABLED) and self.inbox.merger_runs():
+        if self.settings.flag(MERGER_ENABLED):
             return SendMergerInput(worker.id, arguments.text)
         return RecordParentReport(worker.id, worker.parent_id, arguments.text)
 
