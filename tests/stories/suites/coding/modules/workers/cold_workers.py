@@ -52,7 +52,7 @@ def test_a_worker_idle_over_an_hour_with_a_small_context_gets_a_new_session(stop
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session != worker.session, "--resume" not in request["command"], detail=str(request))
 
 
-@pytest.mark.parametrize("minutes, percent", [(49, 100), (55, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])
+@pytest.mark.parametrize("minutes, percent", [(49, 100), (50, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])
 def test_a_worker_idle_under_an_hour_that_is_warm_or_small_resumes_its_own_session(stopped_worker, minutes, percent):
     worker, request = sent_a_job(stopped_worker, minutes, percent)
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session == worker.session, "--resume" in request["command"], worker.session in request["command"], detail=str(request))
