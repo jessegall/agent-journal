@@ -31,7 +31,8 @@ def test_a_trigger_the_user_makes_is_on_at_once(new_story):
 def test_an_agent_cannot_enable_a_trigger(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.run(TRIGGER_LINE, actor=story.agent)
-    story.expect_refusal("trigger enable 1 --reason needed", "A person was asked in the dock", actor=story.agent)
+    story.expect_refusal("trigger enable 1 --reason needed", "approval 1 already asks a person for this on its docked card", actor=story.agent)
+    story.expect_absent("approval list", "approval 2", actor=story.user)
 
 
 def test_an_agent_cannot_change_what_an_enabled_trigger_does(new_story):

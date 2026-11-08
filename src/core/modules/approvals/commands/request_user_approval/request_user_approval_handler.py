@@ -9,6 +9,7 @@ from core.base.command.request_user_approval import RequestUserApproval
 from core.base.database.actor_table import ActorTable
 from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -56,6 +57,9 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
         if command.approval.source_version is not None:
             requests = actions
         existing = requests.matching(Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).first()
+        docked = actions.matching(Among("state", (ApprovalState.OPEN, ApprovalState.RUNNING))).matching(Greater("source_version", 0)).first() if command.approval.source_version is None else None
+        if existing is None and docked is not None:
+            raise Refusal(f"approval {docked.id} already asks a person for this on its docked card", "wait for the person to decide it")
         if existing is not None:
             if existing.relayed_by_id is not None:
                 recipient = None
