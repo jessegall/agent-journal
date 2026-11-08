@@ -72,6 +72,7 @@ ALLOWED_FILE_READS = {
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
     "core/modules/claude_code/providers/support/claude_trust.py": "A helper's start marks its parent's folder trusted and its launch marks its own start folder, each against the file as it is then.",
 }
+ALLOWED_FILE_READERS = tuple(ALLOWED_FILE_READS)
 
 
 class RepeatedWork(PointTally):
@@ -84,7 +85,7 @@ class RepeatedWork(PointTally):
         self.database = database
         self.read_text_limit = read_text_limit
         self.reads: Counter[Statement] = Counter()
-        self.read_origins: dict[Statement, str] = {}
+        self.read_origins: dict[Statement, list[traceback.FrameSummary]] = {}
         self.read_texts: Counter[str] = Counter()
         self.commands: Counter[str] = Counter()
         self.findings: list[RepeatedFinding] = []
@@ -128,14 +129,16 @@ class RepeatedWork(PointTally):
         self.reads[statement] += 1
         self.read_texts[statement.sql] += 1
         if self.reads[statement] == 1:
-            self.read_origins[statement] = self.shown_calls()
+            self.read_origins[statement] = self.caller_frames()
         if self.reads[statement] == READ_LIMIT_REPEATS + 1:
-            self.reject(self.found("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {self.read_origins[statement]}\nrepeated read:"))
+            first_read = self.shown_calls(self.read_origins[statement])
+            self.reject(self.found("read", self.sql_without_parameters(statement), f"one request read this more than {READ_LIMIT_REPEATS} times: {statement.sql} {statement.parameters}\nfirst read: {first_read}\nrepeated read:"))
         if self.read_texts[statement.sql] == self.read_text_limit + 1:
             self.reject(self.found("read-sql", self.sql_without_parameters(statement), f"one request read this SQL more than {self.read_text_limit} times: {statement.sql} {statement.parameters}"))
 
     def take_read_mark(self) -> None:
-        self.started_mark = self.database.content_mark() if self.database is not None else None
+        if OPEN_REQUEST.get() is self and self.database is not None:
+            self.started_mark = self.database.content_mark()
 
     def reset_stale_reads(self) -> None:
         change_mark = self.started_mark
@@ -208,19 +211,23 @@ class RepeatedWork(PointTally):
         return PLACEHOLDER_LIST.sub("?...", " ".join(statement.sql.split()))
 
     @staticmethod
-    def stack_calls() -> list[str]:
+    def caller_frames() -> list[traceback.FrameSummary]:
         stack = traceback.StackSummary.extract(traceback.walk_stack(sys._getframe(1)), limit=CALLER_FRAMES, lookup_lines=False)
-        frames = [frame for frame in reversed(stack) if not frame.filename.endswith(WATCH_FILES)]
-        calls = [(os.path.relpath(frame.filename, SOURCE_ROOT), frame.lineno, frame.name) for frame in frames]
+        return [frame for frame in stack if not frame.filename.endswith(WATCH_FILES)]
+
+    @staticmethod
+    def stack_calls(frames: list[traceback.FrameSummary]) -> list[str]:
+        calls = [(os.path.relpath(frame.filename, SOURCE_ROOT), frame.lineno, frame.name) for frame in reversed(frames)]
         return [f"{path}:{line} {name}" for path, line, name in calls if not path.startswith(ACCESS_LAYERS) and (not path.startswith("..") or path.startswith(TEST_FOLDER))]
 
     @classmethod
-    def shown_calls(cls) -> str:
-        return "\n".join(f"  {call}" for call in cls.stack_calls()[-SHOWN_CALLS:])
+    def shown_calls(cls, frames: list[traceback.FrameSummary]) -> str:
+        return "\n".join(f"  {call}" for call in cls.stack_calls(frames)[-SHOWN_CALLS:])
 
     @classmethod
     def found(cls, category: str, subject: str, text: str) -> RepeatedFinding:
-        return RepeatedFinding("|".join([category, subject, *cls.stack_calls()[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls()}")
+        frames = cls.caller_frames()
+        return RepeatedFinding("|".join([category, subject, *cls.stack_calls(frames)[-SHOWN_CALLS:]]), f"{text}\n{cls.shown_calls(frames)}")
 
     def note_command(self, command: str) -> None:
         self.commands[command] += 1
@@ -244,7 +251,14 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_file_read() -> bool:
-        return any(frame.filename.endswith(reader) for frame in traceback.extract_stack(limit=CALLER_FRAMES) for reader in ALLOWED_FILE_READS)
+        frame = sys._getframe(1)
+        for _ in range(CALLER_FRAMES):
+            if frame is None:
+                return False
+            if frame.f_code.co_filename.endswith(ALLOWED_FILE_READERS):
+                return True
+            frame = frame.f_back
+        return False
 
     def note_file_write(self, path: str) -> None:
         self.file_reads.pop(path, None)

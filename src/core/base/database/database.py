@@ -111,9 +111,10 @@ class Database:
             self.write_rollback_count += 1
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
-        if not statement.is_read:
+        if statement.is_read:
+            self.tally.take_read_mark()
+        else:
             self.tally.count_write(statement.sql)
-        self.tally.take_read_mark()
         rows = statement.result(self.connection).fetchall()
         self.tally.loaded(rows, statement)
         return rows
