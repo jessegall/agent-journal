@@ -5,6 +5,7 @@ from core.base.file_access import FileAccess
 from core.base.instruction_imports import INSTRUCTION_FILES
 from core.base.profile.agent_profile import AgentProfile
 from core.base.registry.registry import Registry
+from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.manifest_listener import ManifestListener
 from core.modules.plugins.support.plugin_folders import PluginFolders
@@ -13,6 +14,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
 from core.modules.profiles.support.profile_settings import WORKER_INSTRUCTION_FILES_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -39,8 +41,10 @@ class WorkerInstructionFiles:
     project's originals stay beside them when the profile says so, and the written files stay out of the worker's
     commits. A person can turn it off with the setting."""
 
-    def __init__(self, settings: SettingValues, profiles: ProfileFiles, registry: Registry, plugins: PluginQuery, folders: PluginFolders, git: WorktreeGit, libraries: LibraryFolders) -> None:
+    def __init__(self, settings: SettingValues, profiles: ProfileFiles, registry: Registry, plugins: PluginQuery, folders: PluginFolders, git: WorktreeGit, libraries: LibraryFolders,
+                 agents: AgentRows) -> None:
         self.settings, self.profiles, self.registry, self.plugins, self.folders, self.git, self.libraries = settings, profiles, registry, plugins, folders, git, libraries
+        self.agents = agents
 
     def injections(self, profile: AgentProfile) -> tuple[InstructionInjection, ...]:
         driver = self.registry.driver(WORKER_DRIVER)
@@ -59,7 +63,7 @@ class WorkerInstructionFiles:
         row = self.profiles.row(name) if name else None
         return None if row is None or isinstance(row, ProfileProblem) else row
 
-    def write(self, folder: str, profile_name: str) -> None:
+    def write(self, folder: str, profile_name: str, originals: bool = True) -> None:
         profile = self.profile(profile_name)
         if profile is None or not self.settings.flag(WORKER_INSTRUCTION_FILES_SETTING):
             return
@@ -67,15 +71,26 @@ class WorkerInstructionFiles:
         if profile.keeps_project_instructions:
             parts.append("The project's own instruction files are kept beside these, named with .original before .md.")
         text = "\n\n".join(part for part in parts if part) + "\n"
+        held = {name: self.text_of(Path(folder) / name) for name in INSTRUCTION_FILES}
+        if all(held[name] == text for name in INSTRUCTION_FILES):
+            return
         untracked_after = self.git.hold_back(folder, INSTRUCTION_FILES)
         written: list[str] = []
         for name in INSTRUCTION_FILES:
             path = Path(folder) / name
-            if profile.keeps_project_instructions and path.is_file():
+            if originals and profile.keeps_project_instructions and held[name] is not None:
                 original = path.with_name(f"{path.stem}{ORIGINAL_SUFFIX}{path.suffix}")
-                FileAccess.shared().write(original, FileAccess.shared().read(path))
+                FileAccess.shared().write(original, held[name])
                 written.append(original.name)
-            FileAccess.shared().write(path, text)
+            if held[name] != text:
+                FileAccess.shared().write(path, text)
             if name in untracked_after:
                 written.append(name)
         self.libraries.exclude(folder, written)
+
+    def refresh(self, worktree: Worktree) -> None:
+        self.write(worktree.folder, self.agents.find(worktree.session_agent_id).profile, originals=False)
+
+    @staticmethod
+    def text_of(path: Path) -> str | None:
+        return FileAccess.shared().read(path) if path.is_file() else None

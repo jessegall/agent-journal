@@ -41,6 +41,7 @@ from core.base.scope.scopes import Scopes
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from pathlib import Path
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import ReportWorkerProgramRecovery
+from suites.coding.modules.workers.support.worker_instruction_files import WorkerInstructionFiles
 
 
 class WorkerResume:
@@ -48,8 +49,8 @@ class WorkerResume:
     with no job waiting is given the line that tells it to go on."""
 
     def __init__(self, launcher: AgentLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock, requirement: TaskBriefRequirement,
-                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions) -> None:
-        self.admission, self.started_work = admission, started_work
+                 places: WorkerPlaces, program: AgentProgram, states: ProgramStates, shares: ProgramShares, environments: EnvironmentRows, scopes: Scopes, reports: WorkerRecoveryReports, routes: WorkerRoutes, rows: EventRows, admission: AgentAdmission, started_work: WorkerStartedWork, cold: ColdSessions, instruction_files: WorkerInstructionFiles) -> None:
+        self.admission, self.started_work, self.instruction_files = admission, started_work, instruction_files
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
         self.cold = cold
         self.requirement, self.places, self.program = requirement, places, program
@@ -106,6 +107,7 @@ class WorkerResume:
         if not self.may_resume(worker) or not self.places.can_resume(worker):
             return LaunchAnswer.SKIPPED
         environment = self.queries.query(Environment).find(worktree.environment_id)
+        self.instruction_files.refresh(worktree)
         current = self.cold.renewed(worker)
         command = self.worker_command.resumed(worker, worktree, environment, job.text) if current.session == worker.session else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)
         answer = self.launcher.hand(current, environment, command)
