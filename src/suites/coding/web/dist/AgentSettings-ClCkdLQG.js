@@ -694,7 +694,7 @@ const ue = (l) => l.flatMap((g) => g.per_profile ? g.profiles.map((i) => ({ ...i
       _: 1
     }));
   }
-}, Pt = /* @__PURE__ */ U(Bt, [["__scopeId", "data-v-f9bdd5f3"]]);
+}, Pt = /* @__PURE__ */ U(Bt, [["__scopeId", "data-v-ed2bb547"]]);
 export {
   Pt as A
 };

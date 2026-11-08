@@ -35,22 +35,30 @@ const status = (tool) => {
 
 <template>
     <WindowRoom>
-        <p v-if="failure" class="failure" data-tools-failure>{{ failure }}</p>
-        <article v-for="tool in tools" :key="tool.name" class="tool" :data-tool="tool.name">
-            <div class="head">
-                <span class="title">{{ tool.title }}</span>
-                <span class="state" data-tool-state>{{ status(tool) }}</span>
-            </div>
-            <p class="detail">{{ tool.description }}</p>
-            <p class="detail" data-tool-installed>{{ tool.is_installed ? "Installed" : "Not installed" }}</p>
-            <p class="detail" data-tool-refreshed>{{ refreshed(tool) }}</p>
-            <div class="actions">
-                <Btn v-if="!tool.is_installed" bordered :disabled="readOnly || busy !== ''" data-tool-install @click="act(tool, ['tool', 'install', tool.name])">Install</Btn>
-                <Btn bordered :disabled="readOnly || busy !== ''" data-tool-switch @click="act(tool, ['tool', tool.is_on ? 'off' : 'on', tool.name])">{{ tool.is_on ? "Turn off" : "Turn on" }}</Btn>
-                <Btn bordered :disabled="readOnly || busy !== '' || !tool.is_installed || tool.is_running" data-tool-refresh @click="act(tool, ['tool', 'refresh', tool.name])">Refresh now</Btn>
-            </div>
-            <p v-if="failed.name === tool.name && failed.text" class="failure" data-tool-failure>{{ failed.text }}</p>
-        </article>
+        <template v-if="failure">
+          <p class="failure" data-tools-failure>{{ failure }}</p>
+        </template>
+        <template v-for="tool in tools" :key="tool.name">
+          <article class="tool" :data-tool="tool.name">
+              <div class="head">
+                  <span class="title">{{ tool.title }}</span>
+                  <span class="state" data-tool-state>{{ status(tool) }}</span>
+              </div>
+              <p class="detail">{{ tool.description }}</p>
+              <p class="detail" data-tool-installed>{{ tool.is_installed ? "Installed" : "Not installed" }}</p>
+              <p class="detail" data-tool-refreshed>{{ refreshed(tool) }}</p>
+              <div class="actions">
+                  <template v-if="!tool.is_installed">
+                    <Btn bordered :disabled="readOnly || busy !== ''" data-tool-install @click="act(tool, ['tool', 'install', tool.name])">Install</Btn>
+                  </template>
+                  <Btn bordered :disabled="readOnly || busy !== ''" data-tool-switch @click="act(tool, ['tool', tool.is_on ? 'off' : 'on', tool.name])">{{ tool.is_on ? "Turn off" : "Turn on" }}</Btn>
+                  <Btn bordered :disabled="readOnly || busy !== '' || !tool.is_installed || tool.is_running" data-tool-refresh @click="act(tool, ['tool', 'refresh', tool.name])">Refresh now</Btn>
+              </div>
+              <template v-if="failed.name === tool.name && failed.text">
+                <p class="failure" data-tool-failure>{{ failed.text }}</p>
+              </template>
+          </article>
+        </template>
     </WindowRoom>
 </template>
 

@@ -10,16 +10,22 @@ const line = computed(() => (props.inHand ? taskLine({tasks: props.tasks, inHand
 </script>
 
 <template>
-    <span v-if="job && !line" class="task-line" data-agent-task-line>
-        <HoverTip as="button" class="task" data-agent-job>Job<template #tip><b>{{ job }}</b></template></HoverTip>
-    </span>
+    <template v-if="job && !line">
+      <span class="task-line" data-agent-task-line>
+          <HoverTip as="button" class="task" data-agent-job>Job<template #tip><b>{{ job }}</b></template></HoverTip>
+      </span>
+    </template>
     <template v-else-if="line">
         <span class="task-line" data-agent-task-line>
             <HoverTip as="button" class="task" data-agent-task :data-peek="`tasks:${line.number}`" :aria-label="`Task ${line.number}: ${line.title}`" @click.stop="peekRef(`tasks:${line.number}`)">Task {{ line.number }}<template #tip><b>{{ line.title }}</b><span>{{ line.taskTip }}</span></template></HoverTip>
-            <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><span v-if="line.paceTip">{{ line.paceTip }}</span></template></HoverTip>
+            <HoverTip class="count" tabindex="0" place="right" data-agent-count>{{ line.count }}<template #tip><b>{{ line.countTip }}</b><template v-if="line.paceTip">
+  <span>{{ line.paceTip }}</span>
+</template></template></HoverTip>
         </span>
         <span :class="['bar', {continuous: line.bar.continuous}]" :data-state="state" :style="line.bar.continuous ? {'--done': `${line.bar.done}%`, '--now': `${line.bar.now}%`} : undefined" data-agent-bar aria-hidden="true">
-            <i v-for="(segment, place) in line.bar.segments" :key="place" :class="segment.kind" />
+            <template v-for="(segment, place) in line.bar.segments" :key="place">
+              <i :class="segment.kind" />
+            </template>
         </span>
     </template>
 </template>

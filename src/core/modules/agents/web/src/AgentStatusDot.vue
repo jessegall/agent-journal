@@ -13,7 +13,11 @@ const label = computed(() => [props.doing, props.since, props.seen].filter(Boole
 <template>
     <HoverTip as="button" place="corner" :class="['agent-dot', {pulse: pulses}]" :data-state="state" :aria-label="label" data-agent-status @click.stop>
         <i />
-        <template #tip><b class="line">{{ doing }}</b><span v-if="since" class="line" data-agent-since>{{ since }}</span><span v-if="seen" class="line" data-agent-seen>{{ seen }}</span></template>
+        <template #tip><b class="line">{{ doing }}</b><template v-if="since">
+  <span class="line" data-agent-since>{{ since }}</span>
+</template><template v-if="seen">
+  <span class="line" data-agent-seen>{{ seen }}</span>
+</template></template>
     </HoverTip>
 </template>
 

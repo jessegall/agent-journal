@@ -54,12 +54,16 @@ const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleStri
             <select v-model="mode" aria-label="Type of limit"><option value="fixed">halt at</option><option value="budget">halt after more than</option></select>
             <input v-model="percent" type="number" min="1" max="100" aria-label="Percent of the window">
             <Btn small @click="setLimit">Set limit</Btn>
-            <p v-if="limitFailure" class="none" data-usage-limit-failure>{{ limitFailure }}</p>
+            <template v-if="limitFailure">
+              <p class="none" data-usage-limit-failure>{{ limitFailure }}</p>
+            </template>
         </div>
-        <div v-for="limit in limits" :key="limit.id" class="meter" data-usage-limit>
-            <span>{{ describe(limit) }}</span>
-            <Btn small @click="removeLimit(limit)">Remove</Btn>
-        </div>
+        <template v-for="limit in limits" :key="limit.id">
+          <div class="meter" data-usage-limit>
+              <span>{{ describe(limit) }}</span>
+              <Btn small @click="removeLimit(limit)">Remove</Btn>
+          </div>
+        </template>
         <template v-if="usage && !windows.length">
             <p class="none">No current plan window has been reported here.</p>
         </template>

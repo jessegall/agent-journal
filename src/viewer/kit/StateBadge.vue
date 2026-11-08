@@ -23,14 +23,24 @@ const toggle = () => (open.value ? hide() : show());
 </script>
 
 <template>
-    <span v-if="tipRead" class="state-badge" tabindex="0" role="button" :aria-expanded="open" data-state-badge @mouseenter="show" @mouseleave="hide" @focus="show" @blur="hide" @click="toggle" @keydown.escape="hide">
-        {{ stateLabel(type, state) }}
-        <span v-if="open" class="state-tip" role="tooltip" data-state-tip>
-            <span v-if="failure" class="tip-failure">{{ failure }}</span>
-            <span v-for="(line, place) in lines" :key="place" class="tip-line">{{ line }}</span>
-        </span>
-    </span>
-    <span v-else>{{ stateLabel(type, state) }}</span>
+    <template v-if="tipRead">
+      <span class="state-badge" tabindex="0" role="button" :aria-expanded="open" data-state-badge @mouseenter="show" @mouseleave="hide" @focus="show" @blur="hide" @click="toggle" @keydown.escape="hide">
+          {{ stateLabel(type, state) }}
+          <template v-if="open">
+            <span class="state-tip" role="tooltip" data-state-tip>
+                <template v-if="failure">
+                  <span class="tip-failure">{{ failure }}</span>
+                </template>
+                <template v-for="(line, place) in lines" :key="place">
+                  <span class="tip-line">{{ line }}</span>
+                </template>
+            </span>
+          </template>
+      </span>
+    </template>
+    <template v-else>
+      <span>{{ stateLabel(type, state) }}</span>
+    </template>
 </template>
 
 <style scoped>

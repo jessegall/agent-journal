@@ -28,21 +28,31 @@ function pick(key) {
                 <template #tip><b>{{ held ? `${row.delegated_name} works on it` : `Waiting for ${row.delegated_name}` }}</b><span>{{ held ? "Open the agent" : "It takes this task after the one it is on" }}</span></template>
             </HoverTip>
         </template>
-        <span v-else class="cell empty" />
+        <template v-else>
+          <span class="cell empty" />
+        </template>
         <template v-if="row.complexity">
             <HoverTip class="cell" place="right" tabindex="0" role="img" data-task-complexity :aria-label="`Complexity ${row.complexity} of ${MOST_COMPLEX}: ${scoreMeaning(row.complexity)}`">
-                <svg :class="['cx', {hard: row.complexity >= HARD_FROM}]" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><rect v-for="place in MOST_COMPLEX" :key="place" :x="1.6 + (place - 1) * 2.7" :y="13 - (1 + place * 2)" width="1.8" :height="1 + place * 2" rx="0.6" :class="{on: place <= row.complexity}" /></svg>
+                <svg :class="['cx', {hard: row.complexity >= HARD_FROM}]" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><template v-for="place in MOST_COMPLEX" :key="place">
+  <rect :x="1.6 + (place - 1) * 2.7" :y="13 - (1 + place * 2)" width="1.8" :height="1 + place * 2" rx="0.6" :class="{on: place <= row.complexity}" />
+</template></svg>
                 <template #tip><b>Complexity {{ row.complexity }} of {{ MOST_COMPLEX }}</b><span>{{ scoreMeaning(row.complexity) }}</span></template>
             </HoverTip>
         </template>
-        <span v-else class="cell empty" />
+        <template v-else>
+          <span class="cell empty" />
+        </template>
         <span :class="['cell', 'prio-cell', {shown: open}]" tabindex="0" role="button" aria-haspopup="menu" :aria-label="`Priority: ${priorityLabel(named)}. Change it`" data-task-priority @click="open = !open" @keydown.space.prevent="open = !open" @keydown.esc="open = false">
             <PriorityIcon :value="row.priority" />
             <span class="menu" role="menu" data-priority-menu>
                 <span class="menu-head">Priority: {{ priorityLabel(named) }}</span>
-                <button v-for="level in levels" :key="level.key" type="button" :class="['menu-item', {on: level.key === named}]" role="menuitemradio" :aria-checked="level.key === named" :data-priority-option="level.key" @click.stop="pick(level.key)">
-                    <PriorityIcon :value="level.key" />{{ level.label }}<Icon v-if="level.key === named" name="check" :size="12" class="check" />
-                </button>
+                <template v-for="level in levels" :key="level.key">
+                  <button type="button" :class="['menu-item', {on: level.key === named}]" role="menuitemradio" :aria-checked="level.key === named" :data-priority-option="level.key" @click.stop="pick(level.key)">
+                      <PriorityIcon :value="level.key" />{{ level.label }}<template v-if="level.key === named">
+    <Icon name="check" :size="12" class="check" />
+  </template>
+                  </button>
+                </template>
             </span>
         </span>
     </span>

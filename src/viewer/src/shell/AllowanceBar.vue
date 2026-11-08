@@ -13,9 +13,11 @@ const title = computed(() => (atLimit.value ? `At usage limit: the plan's ${allo
 </script>
 
 <template>
-    <button v-if="used !== null" type="button" class="fact" :disabled="disabled" data-fact="usage" :title="title" @click="emit('open', $event.currentTarget)">
-        <Icon name="allowance" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ atLimit ? "At usage limit" : `${used}%` }}
-    </button>
+    <template v-if="used !== null">
+      <button type="button" class="fact" :disabled="disabled" data-fact="usage" :title="title" @click="emit('open', $event.currentTarget)">
+          <Icon name="allowance" :size="12" /> <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ atLimit ? "At usage limit" : `${used}%` }}
+      </button>
+    </template>
 </template>
 
 <style scoped>

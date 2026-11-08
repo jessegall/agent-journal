@@ -20,14 +20,22 @@ const covers = (row) => (row.scope === "same" ? "the same request" : "any reques
 <template>
     <WindowRoom padding="14px 16px">
         <p class="heading">Standing yeses</p>
-        <p v-if="failure" class="none">{{ failure }}</p>
-        <p v-else-if="!standing.length" class="none" data-standing-empty>No standing yes is kept. Choose Accept and always on an approval to keep one.</p>
-        <div v-for="row in standing" :key="row.id" class="row" data-standing-yes>
-            <span>{{ row.text }}</span>
-            <small>Accepts {{ covers(row) }}</small>
-            <Btn small @click="remove(row)">Remove</Btn>
-        </div>
-        <p v-if="removeFailure" class="none" data-standing-failure>{{ removeFailure }}</p>
+        <template v-if="failure">
+          <p class="none">{{ failure }}</p>
+        </template>
+        <template v-else-if="!standing.length">
+          <p class="none" data-standing-empty>No standing yes is kept. Choose Accept and always on an approval to keep one.</p>
+        </template>
+        <template v-for="row in standing" :key="row.id">
+          <div class="row" data-standing-yes>
+              <span>{{ row.text }}</span>
+              <small>Accepts {{ covers(row) }}</small>
+              <Btn small @click="remove(row)">Remove</Btn>
+          </div>
+        </template>
+        <template v-if="removeFailure">
+          <p class="none" data-standing-failure>{{ removeFailure }}</p>
+        </template>
     </WindowRoom>
 </template>
 

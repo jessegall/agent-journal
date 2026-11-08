@@ -27,10 +27,18 @@ function pick(key) {
                 <template v-if="view.readOnly">
                     <p class="note lock" role="note" data-settings-lock>Only a person can change these settings. You can read every value, and ask a person for a change.</p>
                 </template>
-                <AgentSettingsWork v-if="tab === 'work'" />
-                <AgentSettingsAgents v-else-if="tab === 'agents'" />
-                <AgentSettingsTests v-else-if="tab === 'tests'" />
-                <AgentSettingsAdvanced v-else />
+                <template v-if="tab === 'work'">
+                  <AgentSettingsWork />
+                </template>
+                <template v-else-if="tab === 'agents'">
+                  <AgentSettingsAgents />
+                </template>
+                <template v-else-if="tab === 'tests'">
+                  <AgentSettingsTests />
+                </template>
+                <template v-else>
+                  <AgentSettingsAdvanced />
+                </template>
             </div>
         </div>
     </WindowRoom>

@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-f6669d85e48b")) { const style = document.createElement("style"); style.id = "window-styles-f6669d85e48b"; style.textContent = ".tool[data-v-7d129986]{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.head[data-v-7d129986]{display:flex;align-items:baseline;gap:10px}.title[data-v-7d129986]{flex:1;font-weight:600}.state[data-v-7d129986],.detail[data-v-7d129986]{margin:0;color:var(--text-3);font-size:12px}.actions[data-v-7d129986]{display:flex;gap:8px}.failure[data-v-7d129986]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-e907f1e2388e")) { const style = document.createElement("style"); style.id = "window-styles-e907f1e2388e"; style.textContent = ".tool[data-v-4683a112]{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.head[data-v-4683a112]{display:flex;align-items:baseline;gap:10px}.title[data-v-4683a112]{flex:1;font-weight:600}.state[data-v-4683a112],.detail[data-v-4683a112]{margin:0;color:var(--text-3);font-size:12px}.actions[data-v-4683a112]{display:flex;gap:8px}.failure[data-v-4683a112]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
 import { computed as k, ref as C, openBlock as r, createBlock as L, unref as o, withCtx as f, createElementBlock as v, toDisplayString as s, createCommentVNode as y, Fragment as I, renderList as B, createElementVNode as n, createTextVNode as b, createVNode as N } from "vue";
 import { useWindow as P, usePoll as R, WindowRoom as S, Btn as x } from "@journal/window-kit";
 const V = (m, a) => {
@@ -99,7 +99,7 @@ const V = (m, a) => {
       _: 1
     }));
   }
-}, Q = /* @__PURE__ */ V(H, [["__scopeId", "data-v-7d129986"]]);
+}, Q = /* @__PURE__ */ V(H, [["__scopeId", "data-v-4683a112"]]);
 export {
   Q as default
 };
