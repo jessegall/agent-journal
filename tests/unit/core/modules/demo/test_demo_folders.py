@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 
 from core.modules.demo.support.demo_folders import DEMO_LIFE_SECONDS, START_SECONDS, DemoFolders
 
@@ -16,7 +15,7 @@ def demo_folder(root, name, age_seconds, pid=None):
 
 
 def finished_pid() -> int:
-    process = subprocess.run([sys.executable, "-c", "import os; print(os.getpid())"], capture_output=True, text=True, check=True)
+    process = subprocess.run(["sh", "-c", "echo $$"], capture_output=True, text=True, check=True)
     return int(process.stdout)
 
 
@@ -29,8 +28,8 @@ def test_a_folder_whose_demo_ended_or_crashed_goes_and_a_young_folder_stays(tmp_
 
 
 def test_a_running_demo_stays_until_it_is_older_than_a_day_and_is_then_stopped(tmp_path):
-    recent_server = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"], stdin=subprocess.PIPE)
-    old_server = subprocess.Popen([sys.executable, "-c", "import sys; sys.stdin.read()"], stdin=subprocess.PIPE)
+    recent_server = subprocess.Popen(["cat"], stdin=subprocess.PIPE)
+    old_server = subprocess.Popen(["cat"], stdin=subprocess.PIPE)
     recent = demo_folder(tmp_path, "journal-demo-recent", START_SECONDS + 1, recent_server.pid)
     old = demo_folder(tmp_path, "journal-demo-old", DEMO_LIFE_SECONDS + 1, old_server.pid)
     assert DemoFolders([tmp_path]).prune() == 0
