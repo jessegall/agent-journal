@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import StandingApprovalsPanel from "../../core/modules/approvals/web/src/StandingApprovalsPanel.vue";
+import StandingApprovalsPanel from "../src/windows/StandingApprovalsPanel.vue";
 import {context} from "./support/windowContext.js";
 import {mounted, pickButton} from "./support/windowContext.js";
 
