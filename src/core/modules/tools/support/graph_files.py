@@ -14,7 +14,7 @@ CLAIM_GRACE_SECONDS = 30
 
 class GraphFiles:
     """The files the journal keeps in one folder's graphify-out: the stamp of the last refresh, the claim a
-    running refresh holds, and the commit a refresh failed for."""
+    running refresh holds, and the commit a refresh failed for. The folder ignores itself, so git never takes it in."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
@@ -49,6 +49,7 @@ class GraphFiles:
 
     def claim(self) -> bool:
         self.output.mkdir(parents=True, exist_ok=True)
+        FileAccess.shared().write(self.output / ".gitignore", "*\n")
         try:
             with FileAccess.shared().descriptor_writer(self.running_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600):
                 return True

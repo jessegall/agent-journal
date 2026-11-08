@@ -1,3 +1,5 @@
+import subprocess
+
 import json
 
 from core.base.provider.managed_hooks import ManagedHooks
@@ -51,6 +53,14 @@ def test_a_new_commit_starts_one_incremental_update_in_the_checkout(new_story, t
     story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
     repo.wait_for_refresh()
     story.expect_rows(repo.call_count() == 2)
+
+
+def test_the_graph_folder_is_ignored_by_git(new_story, tmp_path):
+    story, repo = story_with_graphify(new_story, tmp_path)
+    story.run(f"{TICK} {repo.folder}", actor=story.agent)
+    repo.wait_for_refresh()
+    status = subprocess.run(["git", "-C", str(repo.folder), "status", "--porcelain"], capture_output=True, text=True, check=True).stdout
+    story.expect_rows("graphify-out" not in status, detail=status)
 
 
 def test_no_update_starts_while_no_commit_has_landed_and_the_agent_is_told_the_graph_is_current(new_story, tmp_path):
