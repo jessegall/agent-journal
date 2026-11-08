@@ -128,6 +128,18 @@ def test_install_runs_the_install_command_and_the_card_shows_installed(new_story
     story.expect_text("tool list", "not installed", actor=story.user)
     story.expect_text("tool install graphify", "installed", actor=story.user)
     story.expect_rows(installed.is_file())
+    calls = [line.split(" ", 1)[1] for line in repo.calls.read_text().splitlines()]
+    story.expect_rows(calls == ["install", "claude install", "codex install"], detail=str(calls))
+
+
+def test_an_agent_install_that_fails_is_refused_with_its_last_line(new_story, tmp_path):
+    story, _ = story_with_graphify(new_story, tmp_path)
+    failing = tmp_path / "failing-graphify"
+    failing.write_text('#!/bin/sh\nif [ "$1" = claude ]; then echo no settings file >&2; exit 4; fi\n')
+    failing.chmod(0o755)
+    story.expect_success(f"setting set {COMMAND_SETTING} {failing} --project", actor=story.user)
+    story.expect_success(f"setting set {INSTALL_SETTING} true --project", actor=story.user)
+    story.expect_refusal("tool install graphify", "no settings file", actor=story.user)
 
 
 def test_a_failing_install_is_refused_with_its_last_line(new_story, tmp_path):

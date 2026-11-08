@@ -13,6 +13,7 @@ from core.modules.tools.support.tool_setting import ToolSetting
 
 GIT_LIMIT_SECONDS = 10
 INSTALL_LIMIT_SECONDS = 600
+AGENT_INSTALLS = (("install",), ("claude", "install"), ("codex", "install"))
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the
 # claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
@@ -38,12 +39,18 @@ class GraphifyTool:
         command = self.command()
         return bool(command) and shutil.which(command[0]) is not None
 
-    def install(self) -> None:
+    def install(self, folder: Path) -> None:
         line = shlex.split(self.settings.project.text(ToolSetting.GRAPHIFY_INSTALL_COMMAND.key))
         if not line:
             raise Refusal("the Graphify install command is empty", "set journal.core.tools.graphify-install-command")
+        self.run_install(line, folder)
+        for words in AGENT_INSTALLS:
+            self.run_install([*self.command(), *words], folder)
+
+    @staticmethod
+    def run_install(line: list[str], folder: Path) -> None:
         try:
-            result = subprocess.run(line, capture_output=True, text=True, timeout=INSTALL_LIMIT_SECONDS, check=False)
+            result = subprocess.run(line, cwd=folder, capture_output=True, text=True, timeout=INSTALL_LIMIT_SECONDS, check=False)
         except (OSError, subprocess.TimeoutExpired) as error:
             raise Refusal(f"installing Graphify failed: {error}") from error
         if result.returncode != 0:
