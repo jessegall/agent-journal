@@ -1,4 +1,5 @@
 from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
 from suites.coding.support.available_work import AvailableWork
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 from tests.stories.suites.coding.support.main_controls_fixture import in_environment
@@ -46,6 +47,15 @@ def test_s48_a_task_the_main_agent_already_holds_is_not_handed_out_again(new_sto
 KEEP_GOING = "journal.suites.coding.continue-while-delegatable"
 
 
+class MainWithKeepGoingOff(StoryFixture):
+    parent = BuilderWithOpenTask
+
+    def steps(self, story):
+        story.expect_success("driver choose coding.main --environment main")
+        story.expect_success(f"setting set {KEEP_GOING} off --environment main")
+        story.expect_success(f"setting set {AUTO} off --environment main")
+
+
 def main_story(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.expect_success("driver choose coding.main --environment main")
@@ -64,10 +74,17 @@ def test_s02_the_main_driver_holds_a_stop_while_a_task_can_go_to_a_worker_and_ke
     story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait")
 
 
-def test_s08_the_main_driver_lets_the_main_agent_stop_when_auto_is_off_and_keep_going_is_off(new_story):
-    story = main_story(new_story)
-    story.expect_success(f"setting set {KEEP_GOING} off --environment main")
-    story.expect_success(f"setting set {AUTO} off --environment main")
+def test_s08_the_main_driver_holds_a_stop_once_for_a_free_worker_place_when_keep_going_is_off(new_story):
+    story = new_story(fixture=MainWithKeepGoingOff)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+
+
+def test_the_free_place_notice_comes_back_when_another_task_can_go_to_a_worker(new_story):
+    story = new_story(fixture=MainWithKeepGoingOff)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
+    story.expect_success('task make "Another task" --brief "A second task that a worker can take"', actor=story.agent)
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "can go to a worker and a place is free")
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 

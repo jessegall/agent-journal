@@ -12,9 +12,7 @@ SOURCE = Path(__file__).resolve().parents[3] / "src"
 SKIPPED_FOLDERS = ("dist", "migrations", "__pycache__", "node_modules")
 
 # a declared setting nothing reads yet, with the task that gives it a reader or removes it
-UNREAD_SETTINGS = {
-    "journal.suites.coding.continue-while-delegatable": "task 7731 makes the keep-going switch work",
-}
+UNREAD_SETTINGS: dict[str, str] = {}
 
 
 @dataclass(frozen=True)

@@ -55,6 +55,9 @@ class WorkerPlaces:
         all_kept_run = self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit() and all(worker.id in running_ids for worker in workers)
         return not all_kept_run and len(running) < self.run_limit()
 
+    def free_count(self) -> int:
+        return max(0, self.run_limit() - len(self.running()))
+
     def check_new_place(self) -> None:
         if len(self.running()) + self.resuming_count() >= self.run_limit():
             raise Refusal(f"{self.run_limit()} workers are running", "wait for a merge, release or retirement")

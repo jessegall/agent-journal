@@ -13,10 +13,11 @@ MOST_LISTED_TASKS = 5
 @dataclass(frozen=True)
 class AvailableWorkAnswer:
     """What the main agent can do next: the task it is handed to work on, the oldest open task ids it can send to a worker
-    (at most five are read), and whether it may stop. It may stop when neither is possible, so no setting leaves it stuck."""
+    (at most five are read), the places a worker can start in, and whether it may stop. It may stop when neither is possible, so no setting leaves it stuck."""
 
     own_task: Task | None
     delegatable: tuple[int, ...]
+    free_places: int = 0
 
     @property
     def may_stop(self) -> bool:
@@ -37,7 +38,8 @@ class AvailableWork:
         controls = self.options.options()
         holds_started_task = self.tasks.holder(main_agent_id).started().exists()
         own_task = self.next_task.following() if controls.auto and not holds_started_task else None
-        return AvailableWorkAnswer(own_task, self.delegatable(controls.sends_workers))
+        delegatable = self.delegatable(controls.sends_workers)
+        return AvailableWorkAnswer(own_task, delegatable, self.places.free_count() if delegatable else 0)
 
     def delegatable(self, may_send: bool) -> tuple[int, ...]:
         if not may_send or not self.places.can_start_new():

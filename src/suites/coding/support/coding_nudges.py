@@ -10,7 +10,9 @@ MAIN_WRITES_NO_CODE = NudgeDeclaration("coding.main_writes_no_code", NudgeType.R
 TASK_ASSIGNMENT = NudgeDeclaration("coding.task_is_yours", NudgeType.REFUSAL, 'task:{task} is yours now')
 OPEN_TASKS_WAIT = NudgeDeclaration("coding.open_tasks_wait", NudgeType.REFUSAL, 'open tasks wait for a worker: {tasks}')
 
+FREE_WORKER_PLACE = NudgeDeclaration("coding.free_worker_place", NudgeType.REFUSAL, 'tasks can go to a worker and a place is free ({places} free): {tasks}; send them or say why not, then you may stop')
+
 INTRODUCTION_NUDGE = NudgeDeclaration("coding.introduce_yourself", NudgeType.STEERING, "introduce yourself in the chat in one or two lines, then ask what to do unless the user has already asked")
 WAITING_ITEMS = NudgeDeclaration("coding.waiting_items", NudgeType.STEERING, "waiting for you: {items}")
 WORKER_FULL_TEST_RUN = NudgeDeclaration("coding.worker_full_test_run", NudgeType.REFUSAL, 'a worker runs only the tests of what it changed, never the whole suite: name the test files', turn_limited=False)
-CODING_NUDGES = [WORKER_FULL_TEST_RUN, INTRODUCTION_NUDGE, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, MAIN_HELPER_BAN, MAIN_WRITES_NO_CODE, TASK_ASSIGNMENT, OPEN_TASKS_WAIT]
+CODING_NUDGES = [WORKER_FULL_TEST_RUN, INTRODUCTION_NUDGE, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, MAIN_HELPER_BAN, MAIN_WRITES_NO_CODE, TASK_ASSIGNMENT, OPEN_TASKS_WAIT, FREE_WORKER_PLACE]
