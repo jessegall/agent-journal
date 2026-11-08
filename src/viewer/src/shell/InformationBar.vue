@@ -2,6 +2,7 @@
 import {computed, ref, toRef} from "vue";
 import AgentSkillsMenu from "./AgentSkillsMenu.vue";
 import AllowanceBar from "./AllowanceBar.vue";
+import DashboardBadge from "../kit/DashboardBadge.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
@@ -53,6 +54,9 @@ const LOW_FITNESS = 75;
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
 const context = computed(() => (status.value?.context_percent == null ? null : Math.round(status.value.context_percent)));
+const tokensWord = (tokens) => `${Math.round(tokens / 1000)}k`;
+// while a limit caps this agent's context, its tokens out of the limit, as the usage read gives them
+const cap = computed(() => (status.value?.context_limit_tokens ? `${tokensWord(status.value.context_tokens ?? 0)} of ${tokensWord(status.value.context_limit_tokens)}` : ""));
 const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_dollars.toFixed(2)}` : ""));
 </script>
 
@@ -128,6 +132,9 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
                             <span class="gauge"><span :style="{width: `${context}%`}" /></span>
                             <span class="context-used">{{ context }}%</span>
                         </div>
+                        <template v-if="cap">
+                            <p class="context-cap" data-context-menu-cap>{{ cap }} <DashboardBadge text="Capped" tone="warn" /></p>
+                        </template>
                     </template>
                     <template v-for="choice in group.choices" :key="choice.value">
                         <MenuItem :data-agent-choice="choice.value" @click="controls.choose(group.key, choice), closeMenu()">{{ choice.label }}</MenuItem>
@@ -161,6 +168,16 @@ const cost = computed(() => (status.value?.cost_dollars ? `$${status.value.cost_
 }
 
 .context-used {
+    color: var(--text-2);
+    font-size: 11.5px;
+}
+
+.context-cap {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 0;
+    padding: 0 10px 6px;
     color: var(--text-2);
     font-size: 11.5px;
 }

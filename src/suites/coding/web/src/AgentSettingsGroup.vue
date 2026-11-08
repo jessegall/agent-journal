@@ -59,6 +59,9 @@ async function apply() {
                 <template v-else>
                     <NumberStep v-model="draft[field.key]" :disabled="view.readOnly" :data-field="field.key" />
                 </template>
+                <template v-if="field.badge">
+                    <span class="badge" :data-field-badge="field.key">{{ field.badge }}</span>
+                </template>
             </SettingRow>
         </template>
         <SettingsFoot :changes="changed.length" :pending="pending" :problem="problem" :blocked="stale || blank" @cancel="reset" @apply="apply" />
@@ -67,6 +70,7 @@ async function apply() {
 
 <style scoped>
 .group { margin-top: 14px; }
+.badge { margin-left: 8px; padding: 1px 7px; border: 1px solid var(--tone-warn); border-radius: 999px; color: var(--tone-warn); font-size: 11px; }
 .sw-word { color: var(--text-2); font-size: 12px; }
 .choice { padding: 4px 6px; border: 1px solid var(--border-2); border-radius: 6px; background: var(--bg); color: var(--text); font: inherit; font-size: 12px; }
 </style>

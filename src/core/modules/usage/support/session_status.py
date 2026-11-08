@@ -17,6 +17,8 @@ class SessionStatus:
     cost_dollars: float | None = None
     windows: tuple[PlanWindow, ...] = ()
     effort: str = ""
+    context_tokens: int | None = None
+    context_limit_tokens: int | None = None
 
     @classmethod
     def reported(cls, report: object) -> "SessionStatus":
