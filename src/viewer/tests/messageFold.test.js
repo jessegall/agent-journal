@@ -2,7 +2,7 @@ import {afterEach, expect, test, vi} from "vitest";
 import {context, mounted, settle} from "./support/windowContext.js";
 import {foldedHeight, unfoldedHeight} from "./support/foldedHeights.js";
 import MessageCard from "../kit/MessageCard.vue";
-import {FOLDS, foldKind, foldOf} from "../src/domain/messageFold.js";
+import {FOLDS, foldOf} from "../src/domain/messageFold.js";
 
 let next = 100;
 const base = {type: "agent", reactions: "[]", files: [], captions: "{}", created_at: "2026-11-02T10:00:00Z", text: "A reply"};
@@ -25,8 +25,7 @@ test("the lengths are version 4's: a report folds above 70px and shows 46px, a m
 });
 
 test("a report is the kind of a message of a worker, and the person's words and the agent's reply are one kind", () => {
-    expect([foldKind({type: "agent", worker_id: 9}), foldKind({type: "agent"}), foldKind({type: "user"}), foldKind({type: "comment"})]).toEqual(["report", "message", "message", "message"]);
-    expect([foldOf({type: "user"}), foldOf({type: "agent"})]).toEqual([FOLDS.message, FOLDS.message]);
+    expect([foldOf({type: "agent", worker_id: 9}), foldOf({type: "agent"}), foldOf({type: "user"}), foldOf({type: "comment"})]).toEqual([FOLDS.report, FOLDS.message, FOLDS.message, FOLDS.message]);
 });
 
 test("an agent's reply taller than 420px is folded to 320px until Show more opens it", async () => {

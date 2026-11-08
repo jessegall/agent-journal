@@ -1,7 +1,7 @@
 import {h} from "vue";
 import {expect, test} from "vitest";
 import AgentCard from "../../core/modules/agents/web/src/AgentCard.vue";
-import {taskSegments} from "../../core/modules/agents/web/src/agentTaskLine.js";
+import {taskLine} from "../../core/modules/agents/web/src/agentTaskLine.js";
 import {context, mounted} from "./support/agentWindowContext.js";
 
 const STARTED = new Date(Date.now() - 2 * 3600000).toISOString();
@@ -41,7 +41,7 @@ test("the bar has one segment per task: done first, the one in hand whole in the
 
 test("a done task after the one in hand still shows before it", () => {
     const tasks = [{id: 1, state: "completed"}, {id: 2, state: "started"}, {id: 3, state: "completed"}, {id: 4, state: "open"}];
-    expect(taskSegments(tasks, {id: 2, state: "started"}).segments.map((segment) => segment.kind)).toEqual(["done", "done", "now", "todo"]);
+    expect(taskLine({tasks, inHand: {id: 2, state: "started"}, perHour: 0}).bar.segments.map((segment) => segment.kind)).toEqual(["done", "done", "now", "todo"]);
 });
 
 test("a retired agent with all its tasks done shows a full bar and says All done", async () => {
@@ -52,7 +52,7 @@ test("a retired agent with all its tasks done shows a full bar and says All done
 });
 
 test("over thirty tasks the bar is one continuous bar", async () => {
-    const bar = taskSegments(tasksOf(15, "started", 40), {id: 115, state: "started"});
+    const {bar} = taskLine({tasks: tasksOf(15, "started", 40), inHand: {id: 115, state: "started"}, perHour: 0});
     expect(bar.continuous).toBe(true);
     expect(bar.segments).toEqual([]);
     expect(bar.done).toBeCloseTo(37.5);

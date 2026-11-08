@@ -72,10 +72,10 @@ test("every module window that tracks loading shows the shared skeleton or lists
         }
     };
     roots.forEach(walk);
-    // SkillRows only hands its first read to LoadedSkills, which lists through RowList, and HookRequests only waits for its first read before it polls
-    const loading = files.filter((file) => /\bloaded\b/.test(read(file)) && !file.endsWith("SkillRows.vue") && !file.endsWith("HookRequests.vue"));
+    // SkillRows only hands its first read to LoadedSkills, which lists through RowList, and HookRequests and SystemLogs only wait for their first read before they poll
+    const loading = files.filter((file) => /\bloaded\b/.test(read(file)) && !file.endsWith("SkillRows.vue") && !file.endsWith("HookRequests.vue") && !file.endsWith("SystemLogs.vue"));
     expect(loading.length).toBeGreaterThan(10);
-    for (const file of loading) expect(read(file), file).toMatch(/RowList|RowCards|Skeleton|<EmptyState[^>]*:loading/);
+    for (const file of loading) expect(read(file), file).toMatch(/RowList|RowCards|OutputLines|Skeleton|<EmptyState[^>]*:loading/);
 });
 
 test("a list shows the skeleton in the shape it was given until its first read answers, then fades the rows in", () => {

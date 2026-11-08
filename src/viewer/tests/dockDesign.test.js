@@ -56,8 +56,7 @@ test.each(["Document", "Report", "Memory", "Dump", "Task", "Question"])(
         expect(host.querySelector(".dock-title").title).toBe("Example");
         expect(host.querySelector("[data-dock-age]").textContent).toBe("10m ago");
         const foot = host.querySelector(".chat-dock-foot");
-        expect(host.querySelector(".chat-dock-head [data-dock-row]").textContent).toBe(`${word} 3`);
-        expect(foot.querySelector("[data-dock-row]")).toBeNull();
+        expect(foot.querySelector("[data-dock-row]").textContent).toBe(`${word} 3`);
         expect([...foot.querySelectorAll("button")].map((b) => b.textContent.trim())).toEqual([]);
         expect([...host.querySelectorAll(".chat-dock-head button")].map((b) => b.title)).toEqual(["Open in the inspector", "Dismiss this card"]);
         expect(host.querySelector("[data-dock-fold]")).toBeNull();
@@ -70,14 +69,14 @@ test.each([["Document", "doc", 1223], ["Report", "report", 1255], ["Memory", "me
         expect(host.querySelector("[data-dock-row]").textContent).toBe(`${word} ${target_id}`);
     }
 );
-test("a dock without a declared word names its row type and number", async () => {
+test("a dock without a declared word names no row", async () => {
     const host = await draw({}, {target_model: "task", target_id: 17});
-    expect(host.querySelector("[data-dock-row]").textContent).toBe("Task 17");
+    expect(host.querySelector("[data-dock-row]")).toBeNull();
 });
 test("each plan state has its pill in the head and Phases in the foot", async () => {
     for (const badge of ["Planned", "Started", "Paused", "Done", "Cancelled"]) {
         const host = await draw({badge, folds: "Phases"});
-        expect(host.querySelector(".chat-dock-head .dock-badge").textContent).toBe(badge);
+        expect(host.querySelector(".chat-dock-foot .dock-badge").textContent).toBe(badge);
         expect(host.querySelector("[data-dock-fold]").classList.contains("bordered")).toBe(false);
         expect(host.querySelector("[data-dock-acts], .dock-acts").previousElementSibling).toBe(host.querySelector("[data-dock-fold]"));
         expect(host.querySelector("[data-dock-fold]").textContent).toContain("Phases");
@@ -118,10 +117,10 @@ test("a collapsed card keeps Open and the X, and pressing the X dismisses it wit
     expect(told).toEqual(["undock"]);
 });
 
-test("a collapsed card hides the pin and the card elsewhere still expands it", async () => {
+test("a collapsed card keeps the pin and the card elsewhere still expands it", async () => {
     const told = [];
     const host = await draw({leaves_after_seconds: 5}, {}, true, true, {onOpen: () => told.push("expand")});
-    expect(host.querySelector("[data-dock-action='keep']")).toBeNull();
+    expect(host.querySelector("[data-dock-action='keep']")).not.toBeNull();
     host.querySelector(".dock-title").click();
     expect(told).toEqual(["expand"]);
 });
