@@ -9,6 +9,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
 from core.testing.story_steps import StorySteps
+from core.testing.story_budget import BUDGET_MARKER, CPU_SECONDS_BUDGET, POINTS_BUDGET, StoryBudget
 from core.testing.template_cache import TemplateCache
 from core.testing.temp_folders import TempFolders
 from core.testing.template_databases import TemplateDatabases
@@ -37,6 +38,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 
 def pytest_configure(config: pytest.Config) -> None:
     LazyLoading.always_prevented = True
+    config.addinivalue_line("markers", f"{BUDGET_MARKER}(points, cpu_seconds, reason): a story that may cost more than the default budget, and why")
     config.stash[STORY_OVERLAP] = StoryOverlap()
     if config.option.basetemp is None and not hasattr(config, "workerinput"):
         config.stash[RUN_FOLDER] = config.option.basetemp = TempFolders().start()
@@ -78,6 +80,18 @@ def pytest_runtest_call(item: pytest.Item) -> Generator[None]:
     finally:
         for steps in item.stash[STORY_RUNS]:
             steps.finish_test()
+    budget = story_budget(item)
+    for steps in item.stash[STORY_RUNS]:
+        overrun = budget.overrun(steps.points, steps.cpu_seconds)
+        if overrun:
+            pytest.fail(overrun, pytrace=False)
+
+
+def story_budget(item: pytest.Item) -> StoryBudget:
+    marker = item.get_closest_marker(BUDGET_MARKER)
+    if marker is None:
+        return StoryBudget()
+    return StoryBudget(points=marker.kwargs.get("points", POINTS_BUDGET), cpu_seconds=marker.kwargs.get("cpu_seconds", CPU_SECONDS_BUDGET))
 
 
 @pytest.hookimpl(optionalhook=True)
