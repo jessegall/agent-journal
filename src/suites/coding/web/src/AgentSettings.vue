@@ -39,7 +39,7 @@ function pick(key) {
 <style scoped>
 .settings { container-type: inline-size; display: flex; flex-direction: column; min-height: 100%; background: var(--raised, var(--bg)); }
 .settings-bar { position: sticky; top: 0; z-index: 2; background: var(--raised, var(--bg)); }
-.settings-bar :deep(.segmented) { width: 100%; border: 0; border-radius: 0; padding: 4px 18px; }
+.settings-bar :deep(.segmented) { width: 100%; border: 0; border-radius: 0; padding: 0; }
 .settings-body { flex: 1; padding: 4px 18px 22px; }
 .note { margin: 14px 0 0; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-dim, var(--hover)); color: var(--text); font-size: 12.5px; }
 </style>

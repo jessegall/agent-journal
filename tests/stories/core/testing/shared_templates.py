@@ -36,8 +36,10 @@ folder = TemplateCache(Path(sys.argv[1])).folder()
 templates = CountingTemplateDatabases(folder)
 story = templates.story(Path(sys.argv[2]), (), UserJoined)
 story.expect_success("environment show 1", "name: main")
+foreign = sys.argv[3].encode()
+foreign_paths = story.home.database.read_bytes().count(foreign) if foreign else 0
 story.close()
-print(json.dumps({"folder": str(folder), "builds": templates.builds, "seconds": time.perf_counter() - started_seconds}))
+print(json.dumps({"folder": str(folder), "builds": templates.builds, "seconds": time.perf_counter() - started_seconds, "foreign_paths": foreign_paths}))
 """
 
 
@@ -47,9 +49,9 @@ def copy_checkout(folder):
         shutil.copytree(CHECKOUT / name, folder / name, symlinks=True, ignore=shutil.ignore_patterns(*IGNORED))
 
 
-def run_first_story(checkout, cache, home):
+def run_first_story(checkout, cache, home, foreign=""):
     environment = {**os.environ, "PYTHONPATH": os.pathsep.join([str(checkout / "src"), str(checkout)])}
-    answer = subprocess.run([sys.executable, "-c", STORY_SCRIPT, str(cache), str(home)], cwd=checkout,
+    answer = subprocess.run([sys.executable, "-c", STORY_SCRIPT, str(cache), str(home), foreign], cwd=checkout,
                             env=environment, capture_output=True, text=True, timeout=60)
     assert answer.returncode == 0, answer.stdout + answer.stderr
     return json.loads(answer.stdout.splitlines()[-1])
@@ -60,9 +62,10 @@ def test_a_second_checkout_reuses_the_templates_the_first_built_and_a_second_run
     copy_checkout(first)
     copy_checkout(second)
     initial = run_first_story(first, tmp_path / "cache", tmp_path / "first-story")
-    other = run_first_story(second, tmp_path / "cache", tmp_path / "second-story")
+    other = run_first_story(second, tmp_path / "cache", tmp_path / "second-story", str(first))
     again = run_first_story(second, tmp_path / "cache", tmp_path / "third-story")
     assert initial["builds"] > 0
     assert other["builds"] == 0, other
     assert initial["folder"] == other["folder"]
     assert again["builds"] == 0, again
+    assert other["foreign_paths"] == 0, other

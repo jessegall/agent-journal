@@ -1,4 +1,5 @@
 from core.base.file_access import FileAccess
+import os
 import shutil
 import time
 from pathlib import Path
@@ -11,6 +12,7 @@ CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"
 UNUSED_FOLDER_SECONDS = 24 * 3600
 PRUNE_EVERY_SECONDS = 3600
 PRUNED_STAMP = ".pruned"
+LEASE_PREFIX = ".in-use-"
 CACHE_LIMIT_BYTES = 3 * 1024 ** 3
 UNTEMPLATED_FOLDERS = frozenset(("viewer", "__pycache__"))
 HASH_CHARACTERS = 16
@@ -19,7 +21,8 @@ HASH_CHARACTERS = 16
 class TemplateCache:
     """Shares complete story templates between every checkout of a project, keyed on their python sources (the viewer's sources are no
     part of a template, so editing them rebuilds nothing), and when a new one is made removes
-    the ones unused for a day and then the least recently used until the cache is under its size limit; a cache
+    the ones unused for a day and then the least recently used until the cache is under its size limit, never one a
+    running suite holds (each process leaves a lease named for its process number); a cache
     already pruned within the hour is left alone. The
     templates are kept for the source code and the stories' support folders; a story file's own fixtures are in each
     template's key, so editing a story rebuilds only the templates of the fixtures it defines."""
@@ -36,9 +39,24 @@ class TemplateCache:
         is_new = not current.is_dir()
         current.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().update_timestamp(current)
+        (current / f"{LEASE_PREFIX}{os.getpid()}").touch()
         if is_new or self.is_prune_due():
             self.remove_old(current)
         return current
+
+    @staticmethod
+    def is_in_use(folder: Path) -> bool:
+        """Whether a running process of this machine holds the folder: it left a lease named for its process number."""
+        for lease in folder.glob(f"{LEASE_PREFIX}*"):
+            try:
+                os.kill(int(lease.name.removeprefix(LEASE_PREFIX)), 0)
+            except (ValueError, ProcessLookupError):
+                lease.unlink(missing_ok=True)
+            except PermissionError:
+                return True
+            else:
+                return True
+        return False
 
     def is_prune_due(self) -> bool:
         stamp = self.root / PRUNED_STAMP
@@ -50,7 +68,7 @@ class TemplateCache:
     def remove_old(self, kept: Path | None = None) -> None:
         limit = time.time() - UNUSED_FOLDER_SECONDS
         for folder in self.root.iterdir() if self.root.is_dir() else ():
-            if folder.is_dir() and folder != kept and FolderStat.modified_time(folder) < limit:
+            if folder.is_dir() and folder != kept and FolderStat.modified_time(folder) < limit and not self.is_in_use(folder):
                 shutil.rmtree(folder, ignore_errors=True)
         self.remove_oldest_templates(kept)
 
@@ -60,6 +78,6 @@ class TemplateCache:
         for folder in sorted(sizes, key=FolderStat.modified_time):
             if total <= self.limit_bytes:
                 break
-            if folder != kept:
+            if folder != kept and not self.is_in_use(folder):
                 shutil.rmtree(folder, ignore_errors=True)
                 total -= sizes[folder]
