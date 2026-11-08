@@ -39,15 +39,14 @@ class StartMergerHandler(Handler[StartMerger, None]):
             if main_agent is None:
                 raise Refusal("no main agent runs")
             self.give_job(Actor(main_agent.id, ActorType.AGENT), context)
-        except Exception:
-            text = command.fallback_line.text if isinstance(command.fallback_line, Nudge) else command.fallback_line
+        except Exception as failure:
+            fallback = command.fallback_line.text if isinstance(command.fallback_line, Nudge) else command.fallback_line
+            reason = failure.reason if isinstance(failure, Refusal) else f"an unexpected fault, {type(failure).__name__}: {failure}"
+            text = f"{fallback} (the merger did not start: {reason})"
             existing = self.queries.query(AgentLine).filter(source=MERGER_SOURCE, state=AgentLineState.WAITING, text=text).first()
             if existing is not None or self.is_told_since(command, text):
                 return
-            if isinstance(command.fallback_line, Nudge):
-                self.main_line.send_nudge(command.fallback_line, MERGER_SOURCE, context)
-            else:
-                self.main_line.send(command.fallback_line, MERGER_SOURCE, context)
+            self.main_line.send(text, MERGER_SOURCE, context)
 
     def is_told_since(self, command: StartMerger, text: str) -> bool:
         if command.since is None:
