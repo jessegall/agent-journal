@@ -12,3 +12,4 @@ class AddDockItem(Command[DockItem]):
     type: str
     row_model: str
     row_id: int
+    title_detail: str | None = None

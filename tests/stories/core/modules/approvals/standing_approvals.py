@@ -90,6 +90,7 @@ def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_stor
     story.expect_text("chat-mark list --environment main", f"Standing yes {standing_yeses(story)[0].id} accepted approval {requests(story)[1].id}", actor=story.user)
     notices = docked(story, ApprovalDockType.STANDING_USED.value)
     story.expect_rows(docked(story, ApprovalDockType.REQUEST.value) == [], len(notices) == 1, notices[0].target_id == standing_yeses(story)[0].id, notices[0].leaves_at is not None, detail=str(notices))
+    story.expect_rows(notices[0].title == f"Went on under a standing yes: {requests(story)[1].text.splitlines()[0]}", detail=notices[0].title)
 
 
 def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever_follows(new_story):

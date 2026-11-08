@@ -14,7 +14,7 @@ from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockIte
 
 
 class StandingApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
-    """Docks a passing notice when a standing yes has let a request through, with a button to withdraw that yes."""
+    """Docks a passing notice that says which request a standing yes has let through, with a button to withdraw that yes."""
 
     name = "approvals.standing-dock"
     disabled_scopes = [ActorScope, EnvironmentScope]
@@ -26,5 +26,5 @@ class StandingApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
         request = event.row
         if isinstance(event, Created) or request.standing_id is None or request.state is not ApprovalState.ACCEPTED or event.old_row.state is ApprovalState.ACCEPTED:
             return
-        self.bus.run(AddDockItem(ApprovalDockType.STANDING_USED.value, StandingApproval.cli_name, request.standing_id), self.actors.actor("journal.core.approvals"),
+        self.bus.run(AddDockItem(ApprovalDockType.STANDING_USED.value, StandingApproval.cli_name, request.standing_id, title_detail=request.text.splitlines()[0]), self.actors.actor("journal.core.approvals"),
                      cause_id=logged.id, environment_id=request.environment_id)
