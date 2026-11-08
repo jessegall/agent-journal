@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-9f564d394c33")) { const style = document.createElement("style"); style.id = "window-styles-9f564d394c33"; style.textContent = ".plan-dock-agents[data-v-98152033]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-98152033]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-98152033]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-98152033]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-98152033]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-98152033]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-98152033]{color:var(--text-4)}.plan-dock-tasks[data-v-98152033]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-98152033]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-98152033]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-98152033]{color:var(--text-3)}.plan-dock-loading[data-v-98152033]{margin:8px 36px}.plan-agents[data-v-c34d84f7]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-c34d84f7]{color:var(--text-4)}.plan-agents-button[data-v-c34d84f7]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-c34d84f7]:hover{background:var(--hover);color:var(--text)}.plans[data-v-343aee68]{display:flex;flex-direction:column}.plans-grid[data-v-343aee68]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-343aee68]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-343aee68]:hover{background:var(--raised)}.plan-head[data-v-343aee68]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-343aee68]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-343aee68],.plan-state.completed[data-v-343aee68]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-343aee68]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-343aee68]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-343aee68]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-343aee68]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-343aee68]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-343aee68],.plans-note[data-v-343aee68]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-343aee68],[data-plans-more][data-v-343aee68]{padding:8px 14px}\n"; document.head.appendChild(style); }
-import { computed as p, openBlock as e, createElementBlock as l, Fragment as h, unref as t, createBlock as m, Teleport as x, createTextVNode as A, createElementVNode as n, toDisplayString as d, createCommentVNode as i, renderList as E, normalizeClass as D } from "vue";
+if (!document.getElementById("window-styles-6424ed44b9c0")) { const style = document.createElement("style"); style.id = "window-styles-6424ed44b9c0"; style.textContent = ".plan-dock-agents[data-v-e1c7afc3]{display:flex;flex-wrap:wrap;gap:6px;padding:7px 14px 0 36px;align-items:center;color:var(--text-3);font-size:12px}.plan-dock-agent[data-v-e1c7afc3]{padding:0 8px;height:20px;border:1px solid var(--border-2);border-radius:99px;background:none;color:var(--text-2);font:inherit;font-size:11.5px;line-height:20px;cursor:pointer}.plan-dock-phases[data-v-e1c7afc3]{margin:0;padding:4px 14px 5px;list-style:none}.plan-dock-phase[data-v-e1c7afc3]{display:grid;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;height:24px;font-size:12.5px}.plan-dock-number[data-v-e1c7afc3]{color:var(--text-4);font-family:var(--mono);font-size:11px}.plan-dock-name[data-v-e1c7afc3]{overflow:hidden;color:var(--text-2);text-overflow:ellipsis;white-space:nowrap}.plan-dock-phase.quiet .plan-dock-name[data-v-e1c7afc3]{color:var(--text-4)}.plan-dock-tasks[data-v-e1c7afc3]{color:var(--text-4);font-size:11.5px}.plan-dock-agent[data-v-e1c7afc3]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.plan-dock-phase.current .plan-dock-name[data-v-e1c7afc3]{color:var(--text)}.plan-dock-phase.current .plan-dock-tasks[data-v-e1c7afc3]{color:var(--text-3)}.plan-dock-loading[data-v-e1c7afc3]{margin:8px 36px}.plan-agents[data-v-b925bf06]{display:flex;align-items:center;min-width:0;height:34px;margin:2px -14px 0;padding:0 14px;border-top:1px solid var(--border-inner);color:var(--text-3);font-size:12px}.plan-agents-none[data-v-b925bf06]{color:var(--text-4)}.plan-agents-button[data-v-b925bf06]{display:inline-flex;gap:5px;align-items:center;min-width:0;margin-left:-6px;padding:3px 6px;overflow:hidden;border:0;border-radius:6px;background:none;color:var(--text-2);font:inherit;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}.plan-agents-button[data-v-b925bf06]:hover{background:var(--hover);color:var(--text)}.plans[data-v-2fdaa18b]{display:flex;flex-direction:column}.plans-grid[data-v-2fdaa18b]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-right:-1px}.plan[data-v-2fdaa18b]{cursor:pointer;display:flex;flex-direction:column;gap:8px;min-width:0;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}.plan[data-v-2fdaa18b]:hover{background:var(--raised)}.plan-head[data-v-2fdaa18b]{display:flex;gap:6px;align-items:center;color:var(--text-3);font-size:12px}.plan-state[data-v-2fdaa18b]{margin-left:auto;padding:1px 7px;border:1px solid var(--border-2);border-radius:999px;color:var(--text-2);font-size:11px}.plan-state.started[data-v-2fdaa18b],.plan-state.completed[data-v-2fdaa18b]{border-color:var(--tone-good, var(--green));color:var(--tone-good, var(--green))}.plan-state.blocked[data-v-2fdaa18b]{border-color:var(--tone-warn);color:var(--tone-warn)}.plan-title[data-v-2fdaa18b]{overflow:hidden;font-weight:500;text-overflow:ellipsis;white-space:nowrap}.plan-bar[data-v-2fdaa18b]{display:flex;height:4px;overflow:hidden;border-radius:2px;background:var(--chip)}.plan-bar-fill[data-v-2fdaa18b]{display:block;height:100%;background:var(--accent)}.plan-bar-testing[data-v-2fdaa18b]{display:block;height:100%;background:color-mix(in srgb,var(--accent) 40%,transparent)}.plan-foot[data-v-2fdaa18b],.plans-note[data-v-2fdaa18b]{margin:0;color:var(--text-3);font-size:12px}.plans-note[data-v-2fdaa18b],[data-plans-more][data-v-2fdaa18b]{padding:8px 14px}\n"; document.head.appendChild(style); }
+import { computed as p, openBlock as t, createElementBlock as l, Fragment as h, unref as e, createBlock as m, Teleport as x, createTextVNode as A, createElementVNode as n, toDisplayString as c, createCommentVNode as i, renderList as E, normalizeClass as D } from "vue";
 import { useWindow as S, useDockCard as P, coalesced as R, READ_RATES as T, SkeletonLine as $, peekRef as V } from "@journal/window-kit";
-import { _ as B } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+import { _ as B } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
 const N = { key: 1 }, I = {
   key: 2,
   class: "plan-dock-agents",
@@ -15,7 +15,7 @@ const N = { key: 1 }, I = {
   setup(j) {
     const u = S(), r = P();
     u.option("row");
-    const g = u.option("foot"), c = r.data, v = p(() => !r.data.value), f = p(() => {
+    const g = u.option("foot"), d = r.data, v = p(() => !r.data.value), f = p(() => {
       var a;
       return ((a = r.data.value) == null ? void 0 : a.phases) ?? [];
     }), C = p(() => {
@@ -26,20 +26,20 @@ const N = { key: 1 }, I = {
     ]), k = p(
       () => Math.max(0, f.value.length - b)
     );
-    return u.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], R(r.reload, T.planCard)), (a, o) => (e(), l(h, null, [
-      t(t(g)) ? (e(), m(x, {
+    return u.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], R(r.reload, T.planCard)), (a, o) => (t(), l(h, null, [
+      e(e(g)) ? (t(), m(x, {
         key: 0,
-        to: t(t(g))
+        to: e(e(g))
       }, [
-        v.value ? (e(), m(t($), {
+        v.value ? (t(), m(e($), {
           key: 0,
           bars: [{ width: "80px", height: 10 }]
-        })) : t(c) ? (e(), l("span", N, [
+        })) : e(d) ? (t(), l("span", N, [
           o[0] || (o[0] = A("Tasks: ", -1)),
-          n("b", null, d(t(c).finished ? `${t(c).finished} of ${t(c).total}` : t(c).total), 1)
+          n("b", null, c(e(d).finished ? `${e(d).finished} of ${e(d).total}` : e(d).total), 1)
         ])) : i("", !0)
       ], 8, ["to"])) : i("", !0),
-      v.value ? (e(), m(t($), {
+      v.value ? (t(), m(e($), {
         key: 1,
         class: "plan-dock-loading",
         bars: [
@@ -47,41 +47,41 @@ const N = { key: 1 }, I = {
           { width: "45%", height: 12 }
         ]
       })) : i("", !0),
-      y.value.length ? (e(), l("div", I, [
+      y.value.length ? (t(), l("div", I, [
         o[1] || (o[1] = n("span", null, "Agents:", -1)),
-        (e(!0), l(h, null, E(y.value, (s) => (e(), l("button", {
+        (t(!0), l(h, null, E(y.value, (s) => (t(), l("button", {
           key: s.id,
           type: "button",
           class: "plan-dock-agent",
           title: `Open ${s.name}`,
           "data-plan-dock-agent": "",
-          onClick: (_) => t(V)(`agents:${s.id}`)
-        }, d(s.name), 9, L))), 128))
+          onClick: (_) => e(V)(`agents:${s.id}`)
+        }, c(s.name), 9, L))), 128))
       ])) : i("", !0),
       n("ol", M, [
-        (e(!0), l(h, null, E(f.value.slice(0, b), (s, _) => {
+        (t(!0), l(h, null, E(f.value.slice(0, b), (s, _) => {
           var w;
-          return e(), l("li", {
+          return t(), l("li", {
             key: s.id,
             class: D([
               "plan-dock-phase",
-              { current: ((w = t(c)) == null ? void 0 : w.current_phase) === _ + 1 }
+              { current: ((w = e(d)) == null ? void 0 : w.current_phase) === _ + 1 }
             ])
           }, [
-            n("span", W, d(_ + 1), 1),
-            n("span", q, d(s.title), 1),
-            n("span", z, d(s.tasks.length ? `${s.tasks.length} task${s.tasks.length === 1 ? "" : "s"}` : ""), 1)
+            n("span", W, c(_ + 1), 1),
+            n("span", q, c(s.title), 1),
+            n("span", z, c(s.tasks.length ? `${s.tasks.length} task${s.tasks.length === 1 ? "" : "s"}` : ""), 1)
           ], 2);
         }), 128)),
-        k.value ? (e(), l("li", F, [
+        k.value ? (t(), l("li", F, [
           o[2] || (o[2] = n("span", null, null, -1)),
-          n("span", H, "and " + d(k.value) + " more phase" + d(k.value === 1 ? "" : "s"), 1),
+          n("span", H, "and " + c(k.value) + " more phase" + c(k.value === 1 ? "" : "s"), 1),
           o[3] || (o[3] = n("span", null, null, -1))
         ])) : i("", !0)
       ])
     ], 64));
   }
-}, Q = /* @__PURE__ */ B(O, [["__scopeId", "data-v-98152033"]]);
+}, Q = /* @__PURE__ */ B(O, [["__scopeId", "data-v-e1c7afc3"]]);
 export {
   Q as default
 };

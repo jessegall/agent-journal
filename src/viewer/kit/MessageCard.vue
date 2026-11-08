@@ -11,6 +11,7 @@ import {useTextRender} from "../src/text/useTextRender.js";
 import {peekChip, peekRef} from "../src/route.js";
 import {meta, tableOfWord} from "../src/domain/tables.js";
 import {foldOf} from "../src/domain/messageFold.js";
+import Folded from "../src/kit/Folded.vue";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
@@ -33,7 +34,6 @@ const commentedRow = computed(() => {
 });
 const worker = computed(() => props.message.worker_id ?? null);
 const folding = computed(() => foldOf(props.message));
-const textOpen = ref(false);
 const deletable = computed(() => fromPerson.value && !props.message.read_at && !props.message.local);
 async function copy() {
     await navigator.clipboard?.writeText(props.message.text ?? "");
@@ -95,10 +95,9 @@ function pick(face) {
                     <template v-if="worker !== null">
                         <button type="button" class="message-worker" data-message-worker :title="`Open worker ${worker}`" @click.stop="peekRef(`agents:${worker}`)">Worker {{ worker }}</button>
                     </template>
-                    <div :class="{'message-folded': folding.long && !textOpen}" :style="{'--fold-lines': folding.shown}" data-message-text v-html="html" />
-                    <template v-if="folding.long">
-                        <button type="button" class="message-more" data-message-more @click.stop="textOpen = !textOpen">{{ textOpen ? "Show less" : "Show more" }}</button>
-                    </template>
+                    <Folded :at="folding.at" :keep="folding.keep" :name="`message:${message.id}`">
+                        <div data-message-text v-html="html" />
+                    </Folded>
                     <template v-if="edges.length">
                         <button type="button" class="message-flowchart" data-flowchart-open @click="chartOpen = true">Open the flowchart</button>
                         <template v-if="chartOpen">
@@ -319,8 +318,7 @@ function pick(face) {
     color: var(--text);
 }
 
-.message-worker,
-.message-more {
+.message-worker {
     display: block;
     padding: 0;
     border: 0;
@@ -335,21 +333,8 @@ function pick(face) {
     margin-bottom: 3px;
 }
 
-.message-worker:hover,
-.message-more:hover {
+.message-worker:hover {
     color: var(--text);
-}
-
-.message-more {
-    margin-top: 3px;
-}
-
-.message-folded {
-    display: -webkit-box;
-    overflow: hidden;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: var(--fold-lines, 2);
-    line-clamp: var(--fold-lines, 2);
 }
 
 .message-card:has(.message-quote) {
