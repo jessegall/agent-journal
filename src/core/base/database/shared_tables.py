@@ -10,7 +10,7 @@ from core.base.journal_home import JournalHome
 
 T = TypeVar("T")
 
-NO_CHANGE_MARK = (-1, -1)
+UNSET_CHANGE_MARK = (-1, -1)
 
 
 class SharedTables:
@@ -35,5 +35,5 @@ class SharedTables:
         loaded = loader()
         if not database.has_transaction:
             with self.lock:
-                self.tables[table] = KeptValue(signature, NO_CHANGE_MARK, loaded)
+                self.tables[table] = KeptValue(signature, UNSET_CHANGE_MARK, loaded)
         return loaded

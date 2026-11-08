@@ -26,7 +26,7 @@ def home(tmp_path):
     return JournalHome(tmp_path)
 
 
-def read_once(home, tables, loader):
+def read_table(home, tables, loader):
     database = Database.opened(home)
     try:
         return tables.read(database, "notes", loader)
@@ -36,16 +36,16 @@ def read_once(home, tables, loader):
 
 def test_a_fresh_connection_of_the_same_home_loads_the_table_once(home):
     tables, loader = SharedTables(), CountingLoader()
-    assert (read_once(home, tables, loader), read_once(home, tables, loader), loader.loads) == ("load 1", "load 1", 1)
+    assert (read_table(home, tables, loader), read_table(home, tables, loader), loader.loads) == ("load 1", "load 1", 1)
 
 
 def test_a_change_to_the_table_loads_it_again(home):
     tables, loader = SharedTables(), CountingLoader()
-    read_once(home, tables, loader)
+    read_table(home, tables, loader)
     database = Database.opened(home)
     database.update(Statement("UPDATE notes SET version = 2, updated_at = '2027'"))
     database.close()
-    assert (read_once(home, tables, loader), loader.loads) == ("load 2", 2)
+    assert (read_table(home, tables, loader), loader.loads) == ("load 2", 2)
 
 
 def test_a_table_read_inside_a_transaction_is_not_kept(home):
@@ -55,7 +55,7 @@ def test_a_table_read_inside_a_transaction_is_not_kept(home):
         database.update(Statement("UPDATE notes SET version = 2, updated_at = '2027'"))
         tables.read(database, "notes", loader)
     database.close()
-    assert (read_once(home, tables, loader), loader.loads) == ("load 2", 2)
+    assert (read_table(home, tables, loader), loader.loads) == ("load 2", 2)
 
 
 def test_each_home_shares_one_store(tmp_path):
