@@ -60,12 +60,18 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
     story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
 
 
-def test_a_design_link_a_helper_returned_is_pinned(new_story):
+def test_a_design_link_in_a_designers_working_output_is_not_pinned(new_story):
     story = new_story(fixture=UserJoined)
     response = {"content": [{"type": "text", "text": "Link: https://claude.ai/design/p/1?file=Cart.html"}]}
     sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_response": response})
     expect_absent_pin_lines(story.hook("s-1", sample))
-    story.expect_text("pin list --environment main", "Design: Cart.html", "https://claude.ai/design/p/1?file=Cart.html", actor=story.user)
+    story.expect_absent("pin list --environment main", "https://claude.ai/design/p/1?file=Cart.html", actor=story.user)
+
+
+def test_the_same_design_link_is_pinned_when_the_designers_report_arrives(new_story):
+    address = "https://claude.ai/design/p/1?file=Cart.html"
+    story = reported(new_story, StartedHelper, f"Done: {address}")
+    story.expect_text("pin list --environment main", "Design: Cart.html", address, actor=story.user)
 
 
 def test_a_bare_design_project_link_is_not_pinned(new_story):
@@ -92,11 +98,11 @@ def test_a_helper_tool_output_pins_a_pull_request(new_story):
     story.expect_text("pin list --environment main", "Pull request 23", address, actor=story.user)
 
 
-def test_the_main_agents_text_pins_a_design(new_story):
+def test_the_main_agents_text_does_not_pin_a_design(new_story):
     story = new_story(fixture=UserJoined)
     address = "https://claude.ai/design/cart/payment-page"
     story.hook("s-1", HookSamples.message_display(f"The design: {address}"))
-    story.expect_text("pin list --environment main", "Design: payment page", address, actor=story.user)
+    story.expect_absent("pin list --environment main", address, actor=story.user)
 
 
 def test_a_link_in_a_message_the_agent_sends_is_offered(new_story):
@@ -118,28 +124,21 @@ def test_shortened_links_are_neither_pinned_nor_suggested(new_story):
     story.expect_absent("pin list --environment main", "github.com", actor=story.user)
 
 
-def test_a_design_is_read_from_the_full_tool_input_and_named_for_its_file(new_story):
-    story = new_story(fixture=UserJoined)
+def test_a_designs_long_address_is_pinned_in_full_and_named_for_its_file_at_the_report(new_story):
     address = "https://claude.ai/design/p/" + "a" * 220 + "?file=Agent%20limits"
-    sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_input": {"prompt": address}, "tool_response": {"content": "finished"}})
-    story.hook("s-1", sample)
+    story = reported(new_story, StartedHelper, f"Done: {address}")
     story.expect_text("pin list --environment main", "Design: Agent limits", address, actor=story.user)
 
 
-def test_a_design_after_a_long_tool_output_is_pinned_in_full(new_story):
-    story = new_story(fixture=UserJoined)
+def test_a_design_after_a_long_report_is_pinned_in_full(new_story):
     address = "https://claude.ai/design/p/cart?file=Agent%20limits"
-    story.hook("s-1", shell_call("curl example", "output " * 100 + address))
+    story = reported(new_story, StartedHelper, "output " * 100 + address)
     story.expect_text("pin list --environment main", "Design: Agent limits", address, actor=story.user)
 
 
 def test_design_files_are_pinned_once_and_a_bare_project_does_not_duplicate_them(new_story):
-    story = new_story(fixture=UserJoined)
     project = "https://claude.ai/design/p/cart"
-    story.hook("s-1", shell_call("curl example", f"{project}?file=Checkout&mode=edit"))
-    story.hook("s-1", shell_call("curl example", f"{project}?mode=preview&file=Checkout"))
-    story.hook("s-1", shell_call("curl example", project))
-    story.hook("s-1", shell_call("curl example", f"{project}?file=Payment"))
+    story = reported(new_story, StartedHelper, "\n".join((f"{project}?file=Checkout&mode=edit", f"{project}?mode=preview&file=Checkout", project, f"{project}?file=Payment")))
     pins = json.loads(story.run("pin list --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows(len(pins) == 2, {pin["title"] for pin in pins} == {"Design: Checkout", "Design: Payment"})
 
