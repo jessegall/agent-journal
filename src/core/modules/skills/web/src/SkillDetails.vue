@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import {TextDisplay} from "@journal/window-kit";
+import {skillMarkdown} from "./skillMarkdown.js";
 import SkillRequirements from "./SkillRequirements.vue";
 import SkillTriggerCard from "./SkillTriggerCard.vue";
 import SkillTriggerEditor from "./SkillTriggerEditor.vue";
@@ -38,7 +39,7 @@ watch(() => props.text, (text, previous, cleanup) => {
             <template v-if="skill.commands?.length"><li>Before it runs a command about <code>{{ skill.commands.join(', ') }}</code></li></template>
             <template v-if="skill.events?.length"><li>When these changes happen: <code>{{ skill.events.join(', ') }}</code></li></template>
         </ul></section></template>
-        <section class="block"><div class="block-head"><h3>What the skill says</h3><template v-if="file"><a :href="file" target="_blank" rel="noopener">Open SKILL.md</a></template></div><template v-if="text"><div data-skill-text><TextDisplay :text="text.text" :row-names="false" /></div></template><template v-else><p class="help">Reading the skill…</p></template></section>
+        <section class="block"><div class="block-head"><h3>What the skill says</h3><template v-if="file"><a :href="file" target="_blank" rel="noopener">Open SKILL.md</a></template></div><template v-if="text"><div data-skill-text><TextDisplay :text="skillMarkdown(text.text)" :row-names="false" /></div></template><template v-else><p class="help">Reading the skill…</p></template></section>
     </div>
 </template>
 
