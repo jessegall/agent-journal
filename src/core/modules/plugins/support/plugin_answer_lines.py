@@ -7,7 +7,7 @@ from core.base.cli.console import Console
 from core.base.cli.usage_error import UsageError
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.command.external_runs import OutsideRuns
+from core.base.command.outside_runs import OutsideRuns
 from core.base.module.module_actors import ModuleActors
 from core.base.refusal import Refusal
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault

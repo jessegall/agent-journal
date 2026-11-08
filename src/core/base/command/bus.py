@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler, is_handler_class
 from core.base.command.outside_run_rollback_error import OutsideRunRollbackError
-from core.base.command.external_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
+from core.base.command.outside_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
 from core.base.command.script_policy import ScriptPolicy
 from core.base.container import Container
 from core.base.database.database import Database

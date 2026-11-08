@@ -31,6 +31,9 @@ class ButtonDeclaration:
     confirm: str = ""
     danger: bool = False
 
+    def has_slot_with(self, prefixes: str | tuple[str, ...]) -> bool:
+        return any(slot.startswith(prefixes) for slot in self.slots)
+
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "ButtonDeclaration":
         condition = stored.get("condition")

@@ -14,7 +14,7 @@ from core.base.module.window_check import WindowCheck
 from core.base.registry.button_line import BLANK
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.button_field import ButtonField
-from core.base.viewer.panel_words import PanelLabels
+from core.base.viewer.panel_labels import PanelLabels
 from core.base.viewer.text_field import TextField
 
 ROW_PLACEHOLDER = "row_id"
@@ -72,9 +72,9 @@ class ButtonCheck:
     def style_problems(self, module: type[Module], button: ButtonDeclaration) -> list[str]:
         owner = f"the button {button.name} of module {module.name}"
         inspector_actions = {action.name for inspector in module.inspectors for action in inspector.actions}
-        card_button = button.name in inspector_actions or any(slot.startswith(CARD_SLOT_PREFIX) for slot in button.slots)
+        card_button = button.name in inspector_actions or button.has_slot_with(CARD_SLOT_PREFIX)
         problems = [f"{owner} shows no icon, and a button on a card or in an inspector has one"] if card_button and not button.icon else []
-        if any(slot.startswith(MODEL_SLOT_PREFIXES) for slot in button.slots):
+        if button.has_slot_with(MODEL_SLOT_PREFIXES):
             problems += self.label_problems(owner, button.label)
         return problems
 
