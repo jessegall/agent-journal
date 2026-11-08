@@ -42,6 +42,8 @@ class Worktree(Removable, EnvironmentScoped, Model):
     merged_task_ids: str = ""
     new_agent_reason: str = ""
     library_links: str = "[]"
+    library_copies: str = "[]"
+    libraries_dropped_at: Timestamp | None = None
     task_count: int = 1
     route_reason: str = ""
     starts_program: bool = True

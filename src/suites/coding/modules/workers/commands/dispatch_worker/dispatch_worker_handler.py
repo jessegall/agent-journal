@@ -23,7 +23,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.support.available_workers import AvailableWorkers
 from suites.coding.modules.workers.support.worker_request import WorkerRequest
-from suites.coding.modules.workers.support.worker_settings import LIBRARY_LINKS
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskCopies
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
@@ -87,7 +87,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.git.cut(environment.folder, opened.worktree)
             try:
                 self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), context)
-                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links))))), context)
+                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links)))), json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_COPIES), *command.library_copies))))), context)
             except Exception:
                 self.git.remove(environment.folder, opened.worktree)
                 raise

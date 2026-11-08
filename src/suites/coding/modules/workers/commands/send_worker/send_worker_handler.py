@@ -19,7 +19,9 @@ from core.modules.messages.models.message import Message
 from core.modules.tasks.models.task import TASK_TITLE_LIMIT_CHARACTERS, Task
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.modules.workers.support.worker_settings import LIBRARY_LINKS
+from suites.coding.modules.workers.commands.record_worktree_libraries.record_worktree_libraries import RecordWorktreeLibraries
+from suites.coding.modules.workers.support.library_folders import LibraryFolders
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.commands.open_kept_worktree.open_kept_worktree import OpenKeptWorktree
@@ -51,8 +53,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission) -> None:
-        self.admission = admission
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, repository: Repository, git: WorktreeGit, nudger: Nudger, advance: WorkerTaskAdvance, bus: Bus, missing_agents: GoneAgents, sources: WorkSources, task_sources: WorkerTaskSources, kept_tasks: KeptWorkerTasks, environments: EnvironmentRows, settings: SettingValues, scopes: Scopes, admission: AgentAdmission, libraries: LibraryFolders) -> None:
+        self.admission, self.libraries = admission, libraries
         self.rows, self.worktrees, self.repository, self.git, self.nudger = rows, worktrees, repository, git, nudger
         self.advance, self.bus, self.missing_agents = advance, bus, missing_agents
         self.sources, self.task_sources, self.kept_tasks, self.environments = sources, task_sources, kept_tasks, environments
@@ -100,6 +102,9 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             return
+        if worktree.libraries_dropped_at is not None:
+            self.libraries.restore(self.environments.find(worker.environment_id).folder, worktree.folder, json.loads(worktree.library_copies))
+            self.bus.run(RecordWorktreeLibraries(worktree.id, False), actor, environment_id=worker.environment_id)
         task = self.rows.required(Task, worktree.task_id)
         if not self.git.conflict_files(worktree):
             self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
@@ -116,6 +121,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         links = tuple(dict.fromkeys((*json.loads(last.library_links), *command.library_links)))
         with self.scopes.row_scope(worker):
             configured = self.settings.texts(LIBRARY_LINKS)
+            configured_copies = self.settings.texts(LIBRARY_COPIES)
         extra_links = tuple(link for link in links if link not in configured)
         opened = self.bus.run(OpenKeptWorktree(worker.id, tasks[0].id), actor, environment_id=worker.environment_id)
         try:
@@ -124,7 +130,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             try:
                 self.bus.run(PrepareWorktree(opened.folder, environment.folder, environment.name, extra_links, command.library_copies), actor,
                              environment_id=worker.environment_id)
-                self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links))))), actor, environment_id=worker.environment_id)
+                self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links)))), library_copies=json.dumps(tuple(dict.fromkeys((*configured_copies, *command.library_copies))))), actor, environment_id=worker.environment_id)
             except Exception:
                 self.git.remove(environment.folder, opened)
                 raise
