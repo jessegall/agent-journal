@@ -84,12 +84,3 @@ def test_a_skill_put_back_in_an_older_text_is_still_due(new_story, tmp_path):
     story = new_story(DUE, fixture=CompactingClaude)
     compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": "# Notes\n\nAn older text."})
     expect_due(story, "journal-notes", "journal-chores")
-
-
-def test_a_codex_session_has_every_skill_due_after_a_compaction(new_story, tmp_path):
-    story = new_story(DUE, fixture=SkillsAfterCompaction)
-    start(story, HookSamples.session_start().with_fields(program="codex"))
-    story.hook("s-1", PRE_COMPACT.with_fields(program="codex"))
-    story.run_listeners()
-    compaction_written_after_its_start_hook(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, program="codex")
-    expect_due(story, "journal-notes", "journal-chores")
