@@ -16,3 +16,9 @@ package's own hooks step aside. That is a property of this agent alone — under
 agent with no hook protocol the same disciplines are documents you are asked to follow,
 and nothing checks that you did.
 <!-- END: code-commandments skills -->
+
+## Private data
+
+Never commit private data: no messages, transcripts, recordings, corpus lines, keys or files from a person's
+own folders. A recording or private file used for a test is stripped and sanitised first: names, paths, message
+text, ids and tokens are replaced with made-up values, and only the sanitised copy is committed (message 109950).

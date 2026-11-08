@@ -4,18 +4,11 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.driver.nudge_declaration import NudgeDeclaration
-from core.base.driver.nudge_type import NudgeType
 from core.base.file_access import FileAccess
 
 INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")
 SKIPPED_FOLDERS = frozenset((".git", ".journal", "node_modules", ".venv", "dist", "vendor"))
 IMPORT_LINE = re.compile(r"^@(\S+\.md)\s*$", re.MULTILINE)
-IMPORT_TWICE = NudgeDeclaration("agents.instruction-import-twice", NudgeType.NOTICE, "{path} imports {other} {count} times, so its text is in every context that often: keep one import",
-                                turn_limited=False, path_fields=("path", "other"))
-IMPORT_CYCLE = NudgeDeclaration("agents.instruction-import-cycle", NudgeType.NOTICE, "{path} and {other} import each other: keep the import in one of them",
-                                turn_limited=False, path_fields=("path", "other"))
-INSTRUCTION_NUDGES = [IMPORT_TWICE, IMPORT_CYCLE]
 
 
 @dataclass(frozen=True)
@@ -54,3 +47,10 @@ class InstructionImports:
     @staticmethod
     def imported_names(file: Path) -> list[str]:
         return IMPORT_LINE.findall(FileAccess.shared().read(file, errors="replace"))
+
+    @staticmethod
+    def without_import(text: str, imported: str) -> str:
+        lines = text.split("\n")
+        places = [number for number, line in enumerate(lines) if line.strip() == f"@{imported}"]
+        dropped = set(places[1:]) if len(places) > 1 else set(places)
+        return "\n".join(line for number, line in enumerate(lines) if number not in dropped)

@@ -153,7 +153,7 @@ def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_refusal("agent launch claude --environment main", "no launcher is running here", actor=story.user)
     story.expect_absent("agent list --environment main", "launch-", actor=story.user)
-    story.expect_refusal("agent launch claude --environment main", "no launcher is running here", actor=story.agent)
+    story.expect_refusal("agent launch claude --environment main", "an agent does not replace it", actor=story.agent)
 
 
 def test_the_agent_windows_hear_task_changes_so_their_cards_update_without_a_refresh():
