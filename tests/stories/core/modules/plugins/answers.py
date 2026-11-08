@@ -77,3 +77,15 @@ def test_the_commands_in_a_plugins_answer_run_after_the_reply_as_the_plugins_mod
     story.hook("s-1", LOG_SAMPLE)
     story.run_listeners()
     story.expect_text("pin list --environment main", "Release notes", actor=story.user)
+
+
+def test_a_plugins_command_shows_a_card_in_the_chat_of_the_agent_that_ran_it(new_story):
+    story = installed_story(new_story)
+    story.expect_success('plugin card sample --label "Lanes: 2 trees warm" --detail "main: warm since 23:10" --tone note', "card shown: 1", actor=story.agent)
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --columns text,detail", "sample: Lanes: 2 trees warm", "main: warm since 23:10", actor=story.user)
+
+
+def test_an_agent_shows_a_card_in_no_other_agents_chat(new_story):
+    story = installed_story(new_story)
+    story.expect_refusal('plugin card sample --label "Lanes" --agent 1', "an agent may name only itself", actor=story.agent)

@@ -108,6 +108,8 @@ A cut worktree starts from `base_commit` of the branch. Nothing promises that it
 
 ## A server stop
 
+A plugin's own command, run by an agent through one of the plugin's aliases, shows its result as a chat card with `journal plugin card <plugin> --label "<one line>" --detail "<text>" [--tone good|warn|danger|note|muted] [--key <key>]`: the card shows in the chat of the agent that ran the command, its detail folded. A card with the same key replaces the last one.
+
 A server stop kills a running commit script. That delivery, and any still queued, run after the next start, so a commit script can run twice for one event: make it safe to run again. A guard or listen script that a stop kills answers its waiting command with the stop, and nothing is written.
 
 ## A worker's merge

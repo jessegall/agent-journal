@@ -23,6 +23,8 @@ A plugin adds rules, services, skills and a dashboard to the journal from a fold
   there exits with code 4.
 - `journal plugin run [--agent <n>] [--read-only] -- <command>` runs a command at the root of a checkout with the sandbox of
   its agent. Only a plugin or a person may call it.
+- `journal plugin card <name> --label "<one line>" --detail "<text>" [--tone good|warn|danger|note|muted]` shows a card in the
+  chat of the agent that ran it, its detail folded: a plugin's own command or alias posts its result this way.
 - `journal plugin record <name>` shows what it did, its newest outputs and its last fault, and `--inputs` the last lines it
   was sent; `journal plugin services` shows whether each service runs.
 - `journal event keys` lists every event by its key. A manifest's `listen` list names a key with a script for any of three
