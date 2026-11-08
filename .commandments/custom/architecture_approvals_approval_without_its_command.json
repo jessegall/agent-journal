@@ -9,7 +9,18 @@
             },
             {
                 "not": {
-                    "textMatches": "command\\s*="
+                    "child": {
+                        "all": [
+                            {
+                                "kind": "keyword"
+                            },
+                            {
+                                "nameIn": [
+                                    "command"
+                                ]
+                            }
+                        ]
+                    }
                 }
             }
         ],
