@@ -60,3 +60,13 @@ def test_a_line_to_the_plugin_names_its_config_version(new_story):
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     story.run_listeners()
     assert script_calls(story, "see.sh")[-1]["config"] == {"version": 1}
+
+
+def test_a_config_file_that_does_not_exist_yet_is_served_as_nothing_and_taken_in_once_it_appears(new_story):
+    story = configured_story(new_story)
+    (story.home.folder.parent / CONFIG["file"]).unlink()
+    story.expect_text("plugin config events", "version 0", "null", actor=story.user)
+    story.expect_rows(plugin_row(story).last_fault == "")
+    (story.home.folder.parent / CONFIG["file"]).write_text(json.dumps(DOCUMENT))
+    PluginConfigReading()(story.container)
+    story.expect_rows(plugin_row(story).config_version == 1)
