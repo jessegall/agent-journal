@@ -13,8 +13,8 @@ const CONTROLS = [
     {key: "journal.suites.coding.workers.main-agent-may-merge", label: "Main agent may merge workers", line: "Whether the main agent may merge the work of a worker itself."},
 ];
 const PRESETS = [{key: "builder", label: "Builder"}, {key: "orchestrator", label: "Orchestrator"}];
-const AUTO = CONTROLS[0].key;
-const DISPATCHES = CONTROLS[1].key;
+const AUTO = "journal.suites.coding.auto-mode";
+const DISPATCHES = "journal.suites.coding.workers.main-dispatches-workers";
 
 const view = useWindow();
 const work = view.props.work;
@@ -37,7 +37,7 @@ function reset() {
     failure.value = "";
 }
 
-watch(() => work.data.value, () => { if (!dirty.value) reset(); }, {immediate: true});
+watch(() => work.data.value, () => { if (!base.value || !dirty.value) reset(); }, {immediate: true});
 
 async function send(words) {
     pending.value = true;
