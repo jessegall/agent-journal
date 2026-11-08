@@ -289,7 +289,7 @@ const L = (e, g) => {
       ])) : S("", !0)
     ]));
   }
-}, Qe = /* @__PURE__ */ L(Je, [["__scopeId", "data-v-6dff01bb"]]), Xe = [
+}, Qe = /* @__PURE__ */ L(Je, [["__scopeId", "data-v-7c679e99"]]), Xe = [
   { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
@@ -693,7 +693,7 @@ const nt = {
       ])
     ], 32));
   }
-}, de = /* @__PURE__ */ L(zt, [["__scopeId", "data-v-c6bfd348"]]), Yt = { class: "skill-details" }, Jt = { class: "status" }, Qt = { class: "block" }, Xt = { class: "block-head" }, Zt = {
+}, de = /* @__PURE__ */ L(zt, [["__scopeId", "data-v-272d3d66"]]), Yt = { class: "skill-details" }, Jt = { class: "status" }, Qt = { class: "block" }, Xt = { class: "block-head" }, Zt = {
   key: 0,
   class: "help"
 }, _t = {

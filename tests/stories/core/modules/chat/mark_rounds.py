@@ -9,8 +9,8 @@ from tests.stories.core.support.fixtures import OpenTask, UserJoined
 
 
 def test_an_expected_listener_refusal_is_logged_once_without_an_exception_mark(new_story):
-    story = new_story(PATH, fixture=UserJoined)
-    story.expect_success('task make "Refused mark source" --environment main', actor=story.agent)
+    story = new_story(PATH, fixture=UserJoined, environment="main")
+    story.expect_success('task make "Refused mark source"', actor=story.agent)
 
     for _ in range(3):
         story.run_listeners()

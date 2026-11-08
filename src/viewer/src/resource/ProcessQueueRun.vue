@@ -33,7 +33,9 @@ async function open() {
     if (!props.expanded) return;
     await pages.newest();
     await nextTick();
-    if (props.expanded) output.value.scrollTop = output.value.scrollHeight;
+    if (!props.expanded) return;
+    output.value.scrollTop = output.value.scrollHeight;
+    pages.feed.drawn(output.value);
 }
 watch(() => props.expanded, open, {immediate: true});
 useResourceEvents(["output.*"], refresh);

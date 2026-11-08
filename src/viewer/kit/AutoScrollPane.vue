@@ -7,7 +7,8 @@ import {WINDOW_CONTEXT} from "./windowContextKey.js";
 // the rows): scrolling away stops that and shows a Newest button, and the button or reaching that end again starts it
 const EDGE_PIXELS = 40;
 const TOP = "top";
-const props = defineProps({rowCount: {type: Number, default: 0}, paneClass: {type: String, default: ""}});
+// `feed` is the window's FeedPaginator: it reads the page before the oldest when the top is reached, and checks the pane opened at the bottom
+const props = defineProps({rowCount: {type: Number, default: 0}, paneClass: {type: String, default: ""}, feed: {type: Object, default: null}});
 const direction = inject(WINDOW_CONTEXT, null)?.autoScroll;
 const followsTop = computed(() => direction === TOP);
 const pane = ref(null);
@@ -18,11 +19,18 @@ const scrollToEdge = () => pane.value.scrollTo({top: edgeTop(), behavior: "smoot
 
 function followScroll() {
     paused.value = edgeDistance(pane.value) >= EDGE_PIXELS;
+    if (!followsTop.value) props.feed?.reachTop(pane.value);
 }
 
-watch(() => props.rowCount, async () => {
+// the pane goes to its edge as rows arrive and once the feed has loaded, which can draw more than the rows alone did
+watch(() => [props.rowCount, props.feed?.isLoaded()], async () => {
     await nextTick();
-    if (!paused.value && pane.value) pane.value.scrollTop = edgeTop();
+    if (!pane.value) return;
+    if (!paused.value) pane.value.scrollTop = edgeTop();
+    if (props.feed && !followsTop.value) {
+        props.feed.drawn(pane.value);
+        await props.feed.fill(pane.value);
+    }
 }, {immediate: true, flush: "post"});
 
 let contentWatch = null;
@@ -43,12 +51,14 @@ defineExpose({pane});
         <div ref="pane" :class="['auto-scroll-pane', paneClass]" @scroll="followScroll">
             <slot />
         </div>
-        <Transition name="auto-scroll-rise">
-            <button v-show="paused" type="button" class="auto-scroll-newest" data-scroll-newest title="Back to the newest" @click="scrollToEdge">
-                <Icon :name="followsTop ? 'up' : 'down'" />
-                Newest
-            </button>
-        </Transition>
+        <div class="auto-scroll-newest-line" data-scroll-newest-line>
+            <Transition name="auto-scroll-rise">
+                <button v-show="paused" type="button" class="auto-scroll-newest" data-scroll-newest title="Back to the newest" @click="scrollToEdge">
+                    <Icon :name="followsTop ? 'up' : 'down'" />
+                    Newest
+                </button>
+            </Transition>
+        </div>
     </div>
 </template>
 
@@ -67,10 +77,18 @@ defineExpose({pane});
     overflow-y: auto;
 }
 
-.auto-scroll-newest {
-    position: absolute;
+/* a line with no height at the foot of the list that sticks 6px above the foot of what the reader can see, so the button is inside the visible
+   area of the window however tall the list is drawn; the button stands on that line */
+.auto-scroll-newest-line {
+    position: sticky;
     z-index: 3;
     bottom: 6px;
+    height: 0;
+}
+
+.auto-scroll-newest {
+    position: absolute;
+    bottom: 0;
     left: 50%;
     display: inline-flex;
     gap: 5px;

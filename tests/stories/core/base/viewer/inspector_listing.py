@@ -42,7 +42,12 @@ def test_the_windows_list_is_unchanged(new_story):
     assert sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name) == before
 
 
-def test_only_the_test_queue_inspector_lists_no_fields_of_its_row(new_story):
+def test_an_inspector_lists_the_fields_of_its_row_only_when_it_declares_so(new_story):
     listed = inspectors_of(new_story(fixture=MainEnvironment))
-    assert listed["test-queue"].lists_fields is False
-    assert listed["task"].lists_fields is True
+    assert {noun: listed[noun].lists_fields for noun in ("agent", "task", "plan", "test-queue", "doc", "pin", "memory")} == {
+        "agent": False, "task": False, "plan": False, "test-queue": False, "doc": False, "pin": True, "memory": True}
+
+
+def test_an_inspector_whose_part_draws_the_text_says_so(new_story):
+    listed = inspectors_of(new_story(fixture=MainEnvironment))
+    assert {noun: listed[noun].draws_text for noun in ("doc", "report", "task", "memory")} == {"doc": True, "report": True, "task": False, "memory": False}

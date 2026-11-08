@@ -15,7 +15,7 @@ export const AGENT_KEYS = {
     programs: {line: "agent programs", events: []},
     limits: {line: "agent limits", events: ["agent.*", "setting.*"]},
     tool: {line: "usage tool", events: [], loading: "requested"},
-    "transcript.*": {line: "agent transcript {id}", events: []},
+    "transcript.*": {line: "agent transcript {id}", events: [], page_size: 50},
     jobs: {line: "task list --state open --limit 100", events: [], loading: "requested"},
     waits: {line: "worker waits", events: ["agent.*", "task.*", "proof.*", "worker_worktree.*"]},
     progress: {line: "worker progress", events: ["task.*", "worker_worktree.*"]},

@@ -34,31 +34,31 @@ def test_a_person_sends_the_same_critique_request_as_the_button(new_story):
 @pytest.mark.parametrize("count", [1, 2, 3, 4, 5])
 @pytest.mark.parametrize("size", ["a quick look", "a normal read", "a thorough review"])
 def test_every_critique_sentence_matches_version_four_with_a_named_template(new_story, count, size):
-    story = new_story(fixture=SendingTemplates)
+    story = new_story(fixture=SendingTemplates, environment="main")
     agents = "one agent" if count == 1 else f"{count} agents"
-    story.expect_success(f'template send 1 --on=plan:1 --set=agents="{agents}" --set=size="{size}" --environment main', actor=story.user)
+    story.expect_success(f'template send 1 --on=plan:1 --set=agents="{agents}" --set=size="{size}"', actor=story.user)
     expected = (f"Please have {agents} give plan 1 {size}, following template 1 (Plan critique), "
                 "and compile what they find into a report linked to the plan.")
     expect_row(story.container.get(Queries).query(Message).find(1), text=expected)
 
 
 def test_an_unknown_purpose_uses_the_default_prompt(new_story):
-    story = new_story(fixture=SendingTemplates)
+    story = new_story(fixture=SendingTemplates, environment="main")
     story.expect_success('template make "Custom purpose" --purpose custom --applies-to plan', actor=story.user)
-    story.expect_success("template send 5 --on=plan:1 --environment main", actor=story.user)
+    story.expect_success("template send 5 --on=plan:1", actor=story.user)
     story.expect_text("plan comments 1", "Please follow template 5 (Custom purpose) on plan 1.")
 
 
 def test_a_template_with_no_targets_fits_a_task(new_story):
-    story = new_story(fixture=SendingTemplates)
-    story.expect_success("task make Work --environment main", actor=story.user)
-    story.expect_success("template send 3 --on=task:1 --environment main", actor=story.user)
+    story = new_story(fixture=SendingTemplates, environment="main")
+    story.expect_success("task make Work", actor=story.user)
+    story.expect_success("template send 3 --on=task:1", actor=story.user)
     story.expect_text("task comments 1", "Please follow template 3 (Any row) on task 1.")
 
 
 def test_a_template_with_no_targets_fits_a_row_without_an_environment(new_story):
-    story = new_story(fixture=SendingTemplates)
-    story.expect_success("template send 3 --on=environment:1 --environment main", actor=story.user)
+    story = new_story(fixture=SendingTemplates, environment="main")
+    story.expect_success("template send 3 --on=environment:1", actor=story.user)
     story.expect_text("message list", "Please follow template 3 (Any row) on environment 1.")
 
 
@@ -72,8 +72,8 @@ def test_an_agent_is_refused_before_a_template_is_sent(new_story, flags):
 @pytest.mark.parametrize("values,wrong", [('', "agents, size"), ('--set=agents="2 agents"', "size"),
                                        ('--set=agents="2 agents" --set=size=Brief --set=extra=unused', "extra")])
 def test_missing_or_unused_values_are_refused_without_a_message(new_story, values, wrong):
-    story = new_story(fixture=SendingTemplates)
-    story.expect_refusal(f"template send 1 --on=plan:1 --environment main {values}", wrong, actor=story.user)
+    story = new_story(fixture=SendingTemplates, environment="main")
+    story.expect_refusal(f"template send 1 --on=plan:1 {values}", wrong, actor=story.user)
     expect_empty_messages(story)
 
 
@@ -86,8 +86,8 @@ def test_reserved_prompt_values_cannot_be_supplied(new_story, name):
 
 @pytest.mark.parametrize("target", ["plan", "plan:unknown", "unknown:1", "plan:999"])
 def test_a_target_that_cannot_be_found_leaves_no_message(new_story, target):
-    story = new_story(fixture=SendingTemplates)
-    story.expect_refusal(f"template send 2 --on={target} --environment main", "row" if target != "plan:999" else "no plan 999", actor=story.user)
+    story = new_story(fixture=SendingTemplates, environment="main")
+    story.expect_refusal(f"template send 2 --on={target}", "row" if target != "plan:999" else "no plan 999", actor=story.user)
     expect_empty_messages(story)
 
 
@@ -126,8 +126,8 @@ def test_an_inactive_modules_template_is_refused_without_a_message(installed_rev
 
 @pytest.mark.parametrize("value", ["agents", "=value", "agents=first --set=agents=second"])
 def test_malformed_or_repeated_values_are_refused(new_story, value):
-    story = new_story(fixture=SendingTemplates)
-    story.expect_refusal(f"template send 1 --on=plan:1 --set={value} --environment main", "value", actor=story.user)
+    story = new_story(fixture=SendingTemplates, environment="main")
+    story.expect_refusal(f"template send 1 --on=plan:1 --set={value}", "value", actor=story.user)
     expect_empty_messages(story)
 
 

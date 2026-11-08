@@ -79,7 +79,7 @@ watch(
                 </template>
                 <template v-else-if="hasOutput && outputLoaded">
                     <p class="mark-label">Output</p>
-                    <OutputLines class="mark-terminal" :lines="outputLines" @older="pages.loadEarlier" />
+                    <OutputLines class="mark-terminal" :lines="outputLines" :feed="pages.feed" @older="pages.loadEarlier" />
                 </template>
                 <template v-else-if="lines.length">
                     <p class="mark-lines">{{ lines.join("\n") }}</p>

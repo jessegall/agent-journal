@@ -28,7 +28,7 @@ test("the receipt fixture renders the real message and requests its links", asyn
     const windowContext = receiptContext();
     const element = await mounted(MessageCard, windowContext, {message: REQUEST});
     expect(element.textContent).toContain(REQUEST.text);
-    expect(windowContext.requests.some((line) => line.slice(0, 2).join(" ") === "link list")).toBe(true);
+    expect(windowContext.requests.some((line) => line.slice(0, 2).join(" ") === "link receipts")).toBe(true);
 });
 
 const EDGE = {id: 1, source_model: "message", source_id: 1, target_model: "task", target_id: 4, source_title: "Request", target_title: "Cart totals", link_type: "about"};
@@ -121,10 +121,9 @@ test("task 6894: transcription links request bounded counterpart pages", async (
     expect(links.every((words) => words.includes("--page") && words.includes("--page-size") && words.includes("--group-counterparts"))).toBe(true);
 });
 
-test("task 6895: receipt relation filters and page bounds are sent to the server", async () => {
+test("task 6895: a receipt reads the links of its message with one line the server filters and bounds", async () => {
     const windowContext = receiptContext();
     await mounted(MessageCard, windowContext, {message: REQUEST});
-    const links = windowContext.requests.filter((line) => line.slice(0, 2).join(" ") === "link list");
-    expect(links.every((line) => line.includes("--page") && line.includes("--page-size"))).toBe(true);
-    expect(links.some((line) => line.includes("--type") && line.includes("about") && line.includes("edited"))).toBe(true);
+    const links = windowContext.requests.filter((line) => line[0] === "link");
+    expect(links.map((line) => line.join(" "))).toEqual([`link receipts --messages ${REQUEST.id}`]);
 });

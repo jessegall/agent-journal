@@ -4,6 +4,7 @@ const windows = new WeakMap();
 const WORK = "work";
 const SENT = "sent";
 const VISIBLE_PAGE = 50;
+const RECEIPTS_AT_MOST = 50;
 const pageState = () => ({rows: ref([]), total: ref(0), next: ref(null), loading: ref(false), failure: ref(""), version: 0});
 
 function pagesFor(context) {
@@ -13,30 +14,61 @@ function pagesFor(context) {
     let timer = null;
     const visible = (state) => context.visible?.value !== false && [...state.views].some((view) => view.visible);
 
-    async function read(state, kind, page = 1) {
+    function start(state, kind) {
         const current = state[kind];
         const version = ++current.version;
         current.loading.value = true;
         current.failure.value = "";
+        return version;
+    }
+
+    // shows what a read answered for one kind of one message, unless the message went or a newer read of the kind began
+    function show(state, kind, version, page, answer) {
+        const current = state[kind];
+        if (entries.get(state.id) !== state || current.version !== version) return;
+        current.loading.value = false;
+        if (!answer.ok) {
+            current.failure.value = answer.error;
+            return;
+        }
+        const rows = kind === WORK ? answer.value.counterparts ?? [] : answer.value.rows ?? [];
+        const combined = page === 1 ? rows : [...current.rows.value, ...rows];
+        const key = kind === WORK ? (row) => `${row.endpoint.model}:${row.endpoint.id}` : (row) => row.id ?? row.target_id;
+        current.rows.value = [...new Map(combined.map((row) => [key(row), row])).values()];
+        current.total.value = answer.value.total ?? current.rows.value.length;
+        current.next.value = answer.value.next_page ?? null;
+    }
+
+    function fail(state, kind, version, error) {
+        const current = state[kind];
+        if (current.version !== version) return;
+        current.failure.value = error.message;
+        current.loading.value = false;
+    }
+
+    // a page behind the first of one message
+    async function read(state, kind, page) {
+        const version = start(state, kind);
         const types = kind === WORK ? "--type about --type edited --group-counterparts" : "--type sent_to";
-        const line = `link list --source message:${state.id} ${types} --page ${page} --page-size ${kind === WORK ? 10 : 25}`;
         try {
-            const answer = await context.read(line);
-            if (entries.get(state.id) !== state || current.version !== version) return;
-            if (!answer.ok) {
-                current.failure.value = answer.error;
-                return;
-            }
-            const rows = kind === WORK ? answer.value.counterparts ?? [] : answer.value.rows ?? [];
-            const combined = page === 1 ? rows : [...current.rows.value, ...rows];
-            const key = kind === WORK ? (row) => `${row.endpoint.model}:${row.endpoint.id}` : (row) => row.id ?? row.target_id;
-            current.rows.value = [...new Map(combined.map((row) => [key(row), row])).values()];
-            current.total.value = answer.value.total ?? current.rows.value.length;
-            current.next.value = answer.value.next_page ?? null;
+            show(state, kind, version, page, await context.read(`link list --source message:${state.id} ${types} --page ${page} --page-size ${kind === WORK ? 10 : 25}`));
         } catch (error) {
-            if (current.version === version) current.failure.value = error.message;
-        } finally {
-            if (current.version === version) current.loading.value = false;
+            fail(state, kind, version, error);
+        }
+    }
+
+    // the first page of what several messages name and of the agents they also went to, in one request
+    async function readFirstPages(states) {
+        const versions = states.map((state) => ({[WORK]: start(state, WORK), [SENT]: start(state, SENT)}));
+        try {
+            const answer = await context.read(`link receipts --messages ${states.map((state) => state.id).join(",")}`);
+            states.forEach((state, at) => {
+                const receipt = answer.ok ? answer.value.messages[String(state.id)] : null;
+                show(state, WORK, versions[at][WORK], 1, answer.ok ? {ok: true, value: receipt.named} : answer);
+                show(state, SENT, versions[at][SENT], 1, answer.ok ? {ok: true, value: receipt.sent} : answer);
+            });
+        } catch (error) {
+            states.forEach((state, at) => [WORK, SENT].forEach((kind) => fail(state, kind, versions[at][kind], error)));
         }
     }
 
@@ -44,11 +76,8 @@ function pagesFor(context) {
         timer = null;
         const states = [...pending].map((id) => entries.get(id)).filter((state) => state && visible(state));
         pending.clear();
-        for (const state of states) {
-            const kinds = [...state.dirty];
-            state.dirty.clear();
-            for (const kind of kinds) read(state, kind);
-        }
+        states.forEach((state) => state.dirty.clear());
+        for (let first = 0; first < states.length; first += RECEIPTS_AT_MOST) readFirstPages(states.slice(first, first + RECEIPTS_AT_MOST));
     }
 
     function queue(state, kinds = [WORK, SENT]) {

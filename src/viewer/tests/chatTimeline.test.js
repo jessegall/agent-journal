@@ -1,5 +1,5 @@
-import {expect, test} from "vitest";
-import {foldedMarks, interleaved} from "../src/domain/chatTimeline.js";
+import {expect, test, vi} from "vitest";
+import {foldedMarks, interleaved, reachMessages} from "../src/domain/chatTimeline.js";
 
 test("messages and marks stand in one list by created_at, a message first when both came at once", () => {
     const messages = [{id: 1, created_at: 10}, {id: 2, created_at: 30}];
@@ -72,4 +72,27 @@ test("marks that fold by their row fold only with marks naming the same row", ()
 
 test("a mark of a type no declaration names stays single", () => {
     expect(shape(foldedMarks([markItem(1, "gone"), markItem(2, "gone"), markItem(3, "gone")], declarationOf))).toEqual(["mark:1", "mark:2", "mark:3"]);
+});
+
+test("older pages of marks are read until the marks reach back as far as the messages do", async () => {
+    const message = (time) => ({created_at: time});
+    const messages = [message("2026-11-07T20:59:00Z"), message("2026-11-07T20:00:00Z")];
+    let marks = [{created_at: "2026-11-07T21:30:00Z"}, {created_at: "2026-11-07T21:10:00Z"}];
+    const pages = [[{created_at: "2026-11-07T20:59:23Z"}], [{created_at: "2026-11-07T19:55:00Z"}]];
+    const older = async () => {
+        const page = pages.shift();
+        marks = [...marks, ...page];
+        return true;
+    };
+    const read = await reachMessages(() => messages, () => marks, older);
+    expect(read).toBe(2);
+    expect(marks.map((mark) => mark.created_at)).toContain("2026-11-07T20:59:23Z");
+});
+
+test("no older page is read when the marks already reach back as far as the messages, or when there are none left", async () => {
+    const older = vi.fn(async () => false);
+    expect(await reachMessages(() => [{created_at: "2026-11-07T20:00:00Z"}], () => [{created_at: "2026-11-07T19:00:00Z"}], older)).toBe(0);
+    expect(older).not.toHaveBeenCalled();
+    expect(await reachMessages(() => [{created_at: "2026-11-07T20:00:00Z"}], () => [{created_at: "2026-11-07T21:00:00Z"}], older)).toBe(0);
+    expect(older).toHaveBeenCalledTimes(1);
 });

@@ -75,7 +75,7 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		}
 	}
 	for _, run := range classifier.savedRuns {
-		if run.line != strings.TrimSpace(command.Text) {
+		if strings.TrimSpace(run.line) != strings.TrimSpace(command.Text) {
 			continue
 		}
 		prepared.SavedCommand, prepared.ReadFlag = run.name, run.selection

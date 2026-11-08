@@ -38,7 +38,7 @@ const emit = defineEmits(["close", "back", "step", "open"]);
 const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
 const listing = computed(() => props.catalogue.inspector(props.noun) ?? {
     reads: `${props.noun} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true,
+    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false,
 });
 const row = ref(null);
 const creator = ref("");
@@ -142,10 +142,10 @@ onUnmounted(() => watcher?.disconnect());
                         <SwitchCase :value="tab">
                             <template #details>
                                 <div class="inspector-text">
-                                    <template v-if="html">
+                                    <template v-if="html && !listing.draws_text">
                                         <div class="md text" data-resource-text v-html="html" />
                                     </template>
-                                    <template v-if="listing.lists_fields !== false">
+                                    <template v-if="listing.lists_fields">
                                         <ResourceFields :fields="fields" @peek="emit('open', $event)" />
                                     </template>
                                 </div>

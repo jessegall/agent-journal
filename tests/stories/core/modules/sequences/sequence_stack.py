@@ -71,8 +71,8 @@ def test_a_sequence_started_by_hand_goes_on_top_of_a_running_one_but_the_same_on
 
 
 def test_a_record_made_again_starts_no_second_run_of_a_sequence_already_running(new_story):
-    story = new_story(fixture=CleanupOverRelease)
-    story.run('plan make "Another plan" --environment main', actor=story.user)
+    story = new_story(fixture=CleanupOverRelease, environment="main")
+    story.run('plan make "Another plan"', actor=story.user)
     story.run_listeners()
     story.expect_rows(open_runs(story) == [1, 2])
 
@@ -89,7 +89,7 @@ def test_a_lower_sequence_ending_leaves_the_one_on_top_running(new_story):
 
 
 def test_two_agents_keep_stacks_of_their_own(new_story):
-    story = new_story(fixture=ReleaseAndCleanup)
-    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story = new_story(fixture=ReleaseAndCleanup, environment="main")
+    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"), ActorType.AGENT)
     story.expect_success("sequence run 1", actor=story.agent)
     story.expect_success("sequence run 1", "sequence 1, step 1: Run the suite", actor=helper)

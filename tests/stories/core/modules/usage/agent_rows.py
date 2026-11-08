@@ -82,6 +82,7 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     expect_states_2(states, helper, "idle")
     expect_states_2(states, worker, "retired")
     story.expect_text(f"agent transcript {helper}", "The review is complete", actor=story.user)
+    story.expect_text(f"agent transcript {helper} --before-id 2", "The review is complete", actor=story.user)
 
 
 def expect_states_2(states, worker, expected) -> None:

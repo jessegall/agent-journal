@@ -175,3 +175,27 @@ test("the inspector adds no padding around its sections, and each section declar
         expect(source(path), path).toMatch(/padding:\s*[^;]*\d+px/);
     }
 });
+
+const AGENT = {...TASK, noun: "agent", reads: "agent show {row_id}", label: "Agent · {activity}", title: "{display_name}", description: "", lists_fields: false, links: null, events: []};
+const AGENT_ROW = {id: 705, display_name: "Worker 705", activity: "working", role: "worker", session: "s-9", pid: 4411, program: "claude"};
+
+test("the agent inspector shows one title and none of the row's raw fields", async () => {
+    const {element} = await drawn(await catalogueOf([AGENT]), {"agent show 705": {ok: true, value: AGENT_ROW}}, {noun: "agent", id: 705});
+    expect(element.textContent.split("Worker 705").length - 1).toBe(1);
+    expect(element.textContent).not.toContain("Agent 705");
+    expect(element.querySelector("[data-resource-fields]")).toBeNull();
+});
+
+test("an inspector with no declaration of its own still lists the fields of its row", async () => {
+    const {element} = await drawn(await catalogueOf([]), {"pin show 7": {ok: true, value: {id: 7, title: "A pin", state: "kept"}}}, {noun: "pin"});
+    expect(element.querySelector("[data-resource-fields]")).not.toBeNull();
+});
+
+test("an inspector whose part draws the text draws it once, under its own tabs, and one that does not draws it above its parts", async () => {
+    const DOC = {...TASK, noun: "doc", label: "Document {id}", reads: "doc inspect {row_id}", description: "", components: [{window: "acme.body", tab: ""}], draws_text: true};
+    const row = {...ROW, body: "A document that reads by default."};
+    const doc = await drawn(await catalogueOf([DOC], "acme.body"), {"doc inspect 7": {ok: true, value: row}}, {noun: "doc"});
+    expect(doc.element.querySelector("[data-resource-text]")).toBeNull();
+    const task = await drawn(await catalogueOf([{...TASK, components: [{window: "acme.body", tab: ""}]}], "acme.body"), {"task inspect 7": {ok: true, value: row}});
+    expect(task.element.querySelectorAll("[data-resource-text]")).toHaveLength(1);
+});

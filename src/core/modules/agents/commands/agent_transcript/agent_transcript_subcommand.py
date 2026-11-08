@@ -17,7 +17,7 @@ from core.modules.environments.models.environment import Environment
 
 class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
     """`journal agent transcript <agent>`: the agent program's conversation, from the session file its
-    provider names, the newest rows last."""
+    provider names, the newest rows last; --before-id reads the page of rows before a row."""
 
     cli_name = "agent"
     name = "transcript"
@@ -28,6 +28,7 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent_id", type=int)
         page_arguments(parser)
+        parser.add_argument("--before-id", type=int, default=None)
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[TranscriptRow]:
         agent = self.queries.query(Agent).find(arguments.agent_id)
@@ -36,5 +37,8 @@ class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
         path = provider.transcript(folder, agent.session)
         if path is None:
             return Page((), arguments.page, arguments.limit, 0)
-        page = self.index.page(provider, path, arguments.page, arguments.limit)
+        if arguments.before_id is not None:
+            page = self.index.before(provider, path, arguments.before_id, arguments.limit)
+        else:
+            page = self.index.page(provider, path, arguments.page, arguments.limit)
         return replace(page, rows=self.authors.tagged(agent, page.rows))

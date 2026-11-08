@@ -1,3 +1,11 @@
+import json
+
+from core.base.command.bus import Bus
+from core.base.module.module_actors import ModuleActors
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.memories.listeners.memory_mark_listener import MEMORIES_MODULE
+from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
+from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
@@ -27,3 +35,14 @@ def test_the_viewer_reads_the_compaction_mark_and_its_declaration(new_story):
         marks = server.viewer_line_value(cookie, {"window": "messages.chat", "line": ["chat-mark", "main"], "environment": "main"})
         story.expect_rows([row["type"] for row in marks["rows"]] == ["memories.compaction"], detail=str(marks)[:600])
         server.expect_viewer_status("/api/marks", 200, cookie, text='"type": "memories.compaction"')
+
+
+def test_the_newest_page_of_chat_marks_leaves_an_older_compaction_mark_for_a_page_behind_it(new_story):
+    story = new_story(fixture=CompactedMainAgent)
+    for number in range(55):
+        story.container.get(Bus).run(ShowMark(MemoryMarkType.MEMORY, MemoryMarkVariant.GIVEN, f"given:{number}", f"Fact {number}", agent_id=story.agent.id), story.container.get(ModuleActors).actor(MEMORIES_MODULE), environment_id=1)
+    first = json.loads(story.run("chat-mark main --environment main --limit 50 --json", actor=story.user).output_text)["rows"]
+    story.expect_rows(len(first) == 50, "memories.compaction" not in {row["type"] for row in first}, detail=str(len(first)))
+    older = story.run(f"chat-mark main --environment main --before-id {min(row['id'] for row in first)} --json", actor=story.user)
+    behind = json.loads(older.output_text).get("rows", [])
+    story.expect_rows("memories.compaction" in {row["type"] for row in behind}, detail=older.output_text[:300])
