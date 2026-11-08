@@ -17,6 +17,7 @@ class FakeLauncher:
         self.path, self.requests, self.answer, self.request_count = path, list[dict[str, object]](), answer, request_count
         self.answers, self.arrived = answers, threading.Condition()
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        path.unlink(missing_ok=True)
         self.server.bind(str(path))
         self.server.listen(1)
         self.server.settimeout(ACCEPT_TIMEOUT_SECONDS)

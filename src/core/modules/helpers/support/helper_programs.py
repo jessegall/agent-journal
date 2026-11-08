@@ -28,8 +28,7 @@ class HelperPrograms:
         self.installed(program)
         provider = self.providers.provider(program)
         hooks = ProgramHooks.hooks(type(provider), folder)
-        if not hooks.is_complete() or provider.hook_trust(folder) is not HookTrust.READY:
-            hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', folder, self.managed.all())
         provider.folder_trusted(folder)
-        if provider.hook_trust(folder) is not HookTrust.READY:
-            raise Refusal(f"the journal cannot use untrusted {program} hooks in {folder}", "install the journal's hooks in that folder")
+        if hooks.is_complete() and provider.hook_trust(folder) is HookTrust.READY:
+            return
+        hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', folder, self.managed.all())

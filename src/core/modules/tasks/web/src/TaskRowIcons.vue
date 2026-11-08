@@ -24,7 +24,7 @@ function pick(key) {
     <span class="icons" data-task-icons @click.stop @keydown.enter.stop>
         <template v-if="row.delegated_to">
             <HoverTip as="button" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="held ? `${row.delegated_name} works on it` : `Waiting for ${row.delegated_name}`" @click="peekRef(`agents:${row.delegated_to}`)">
-                <span class="mark"><Icon name="agents" :size="11" /></span>
+                <span class="mark"><Icon name="agent" :size="14" /></span>
                 <template #tip><b>{{ held ? `${row.delegated_name} works on it` : `Waiting for ${row.delegated_name}` }}</b><span>{{ held ? "Open the agent" : "It takes this task after the one it is on" }}</span></template>
             </HoverTip>
         </template>
@@ -54,8 +54,8 @@ function pick(key) {
 .cell:hover { background: var(--sel); }
 .cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .cell.empty { pointer-events: none; }
-.mark { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--chip); color: var(--text-2); box-shadow: inset 0 0 0 1.25px var(--progress, var(--accent)); }
-.agent.queued .mark { box-shadow: none; outline: 1.25px dashed var(--border-3); outline-offset: -1.25px; color: var(--text-3); }
+.mark { display: grid; place-items: center; width: 18px; height: 18px; color: var(--progress, var(--accent)); }
+.agent.queued .mark { color: var(--text-3); }
 .cx rect { fill: var(--border-3); }
 .cx rect.on { fill: var(--text-3); }
 .cx.hard rect.on { fill: var(--blocking); }
