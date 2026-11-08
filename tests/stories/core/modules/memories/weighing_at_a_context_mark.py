@@ -6,7 +6,7 @@ import pytest
 
 from core.modules.drivers.rules.agent_block_rule import COUNTDOWN_USES
 from core.testing.hook_samples import HookSamples
-from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
 
@@ -105,7 +105,7 @@ class Limited(StoryFixture):
     limit = 400_000
 
     def steps(self, story):
-        story.expect_success(f"setting set {CONTEXT_LIMIT_ON} true --project", actor=story.user)
+        story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
         story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {self.limit} --project", actor=story.user)
 
 

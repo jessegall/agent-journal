@@ -16,7 +16,7 @@ from core.base.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.search_kind import CODE, GRAPHIFY
+from core.modules.drivers.support.search_category import CODE, GRAPHIFY
 
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
@@ -57,7 +57,7 @@ class HookCallQuery(Query[HookCall]):
         return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(hook=HookEventName.PROMPT).matching(Maximum("created_at", cutoff_at.text)).newest().first,
                                      "session_agent_id = ? AND hook = ? AND created_at <= ?", [agent_id, HookEventName.PROMPT, cutoff_at.text], name="drivers.prompt_before")
 
-    def latest_write_call(self, agent_id: int) -> HookCall | None:
+    def latest_file_edit_call(self, agent_id: int) -> HookCall | None:
         return self.kept.read_newest(self.table.name, self.agent(agent_id).filter(writes_files=True).newest().first,
                                      "session_agent_id = ? AND writes_files = 1", [agent_id], name="drivers.latest_write")
 
@@ -68,12 +68,12 @@ class HookCallQuery(Query[HookCall]):
         events = (HookEventName.PROMPT, HookEventName.STOP, *TOOL_HOOKS)
         return self.agent(agent_id).matching(Among("hook", events)).matching(Greater("created_at", cutoff_at.text)).oldest().first()
 
-    def code_searches_since_graphify(self, agent_id: int, tool_uses: int) -> int:
+    def code_searches_after_graphify(self, agent_id: int, tool_uses: int) -> int:
         count = 0
         for call in self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).newest().limited(tool_uses):
-            if call.search_kind == GRAPHIFY:
+            if call.search_category == GRAPHIFY:
                 break
-            count += call.search_kind == CODE
+            count += call.search_category == CODE
         return count
 
     def has_tool_hook_after(self, agent_id: int, cutoff_at: Timestamp) -> bool:

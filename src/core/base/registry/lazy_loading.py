@@ -9,13 +9,13 @@ class LazyLoading:
     say."""
 
     prevented = False
-    always_prevented = False
+    disabled = False
     built_registries: set[int] = set()
 
     @classmethod
-    def refuse(cls, what: str) -> None:
-        if cls.prevented or cls.always_prevented:
-            raise LazyLoadError(f"lazy load: {what}; load it whole when the journal loads and share it")
+    def refuse(cls, subject: str) -> None:
+        if cls.prevented or cls.disabled:
+            raise LazyLoadError(f"lazy load: {subject}; load it whole when the journal loads and share it")
 
     @classmethod
     def registry_built(cls, content: int) -> None:

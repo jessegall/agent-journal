@@ -19,7 +19,7 @@ def worker_with_main_progress(story):
 
 def refused(handoff, worktree, patch) -> bool:
     try:
-        handoff.taken(str(worktree), patch)
+        handoff.collect_patch(str(worktree), patch)
     except Refusal:
         return True
     return False
@@ -31,8 +31,8 @@ def test_s53_assigned_main_task_goes_to_new_worker(new_story):
     handoff = story.container.get(MainTaskHandoff)
     patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))
     worktree = repository.worktree_folder(worker.id)
-    handoff.taken(str(worktree), patch)
-    handoff.removed_from_main(str(repository.folder), patch)
+    handoff.collect_patch(str(worktree), patch)
+    handoff.clear_main_patch(str(repository.folder), patch)
     expect_value(((worktree / "cart.py").read_text(), (repository.folder / "cart.py").read_text(), (repository.folder / "notes.txt").read_text()),
                  ("TOTAL = 5\n", "TOTAL = 0\n", "unrelated\n"))
 

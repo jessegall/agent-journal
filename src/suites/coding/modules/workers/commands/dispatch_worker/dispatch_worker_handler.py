@@ -15,7 +15,7 @@ from core.base.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
@@ -83,7 +83,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_model(program, model, profile.name)
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
-        start = StartAgent(command.session or str(uuid4()), program, CodingHelperKind.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
+        start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program), context)
@@ -120,7 +120,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"worker {idle.id} is idle: journal worker send {idle.id} --task {task_ids}", 'or --fresh "<why>"')
 
     def worker_profile(self, name: str) -> AgentProfile:
-        worker_type = self.types.find(CodingHelperKind.WORKER)
+        worker_type = self.types.find(CodingHelperRole.WORKER)
         profile = self.profiles.effective(name or worker_type.default_profile)
         if profile.agent_type != worker_type.key:
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")

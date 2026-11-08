@@ -53,7 +53,7 @@ class PluginEventListener(SaveListener[Changed[Model]]):
 
     def save_deliveries(self, change: Change[Model], context: Context) -> None:
         log_name = change.event
-        subscriptions = [subscription for subscription in self.subscriptions.scripts(log_name, EventForm.COMMIT) if subscription.plugin != context.outside_runs.plugin_script]
+        subscriptions = [subscription for subscription in self.subscriptions.scripts(log_name, EventForm.COMMIT) if subscription.plugin != context.external_runs.plugin_script]
         if not subscriptions:
             return
         row = change.row

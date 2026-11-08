@@ -99,7 +99,7 @@ class WorkSources:
         authorized = self.authorized_sources.get((context.actor.id, context.environment_id))
         if authorized is not None:
             return authorized
-        if context.actor.type is not ActorType.AGENT or self.agents.of_any_environment(context.actor.id).ended_at is not None:
+        if context.actor.type is not ActorType.AGENT or self.agents.find_unscoped(context.actor.id).ended_at is not None:
             return None
         assigned = self.assignments.current(context)
         if assigned is not None:

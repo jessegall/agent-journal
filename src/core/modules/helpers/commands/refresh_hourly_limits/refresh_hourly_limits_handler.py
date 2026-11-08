@@ -15,6 +15,6 @@ class RefreshHourlyLimitsHandler(Handler[RefreshHourlyLimits, None]):
         self.repository, self.limits, self.states = repository, limits, states
 
     def handle(self, command: RefreshHourlyLimits, context: Context) -> None:
-        now = context.timestamp.value.timestamp()
+        current_epoch = context.timestamp.value.timestamp()
         for limit, window in self.limits.stale_hourly(command.program, self.states.windows(command.program), context.timestamp):
-            self.repository.update(limit, context, baseline_percent=window.used_percent, baseline_marker=self.limits.marker(limit, window, now))
+            self.repository.update(limit, context, baseline_percent=window.used_percent, baseline_marker=self.limits.marker(limit, window, current_epoch))

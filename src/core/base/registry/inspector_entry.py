@@ -27,7 +27,7 @@ class InspectorEntry:
         declaration = self.declaration
         links = {"kinds": list(declaration.links.kinds), "open": declaration.links.open, "outside_plan": declaration.links.outside_plan,
                  "page_size": declaration.links.page_size} if declaration.links is not None else None
-        return InspectorListing(declaration.noun, self.module, fingerprint, declaration.reads or f"{declaration.noun} show {{row_id}}",
+        return InspectorListing(declaration.model_name, self.module, fingerprint, declaration.reads or f"{declaration.model_name} show {{row_id}}",
                                 declaration.label, declaration.title, declaration.description, declaration.width.value,
                                 [{"window": component.window, "tab": component.tab} for component in declaration.components],
                                 declaration.comments, list(declaration.events), links, shareable, declaration.lists_fields, declaration.draws_text)

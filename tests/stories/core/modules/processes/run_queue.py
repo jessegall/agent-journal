@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.command_category import CommandCategory
 from core.base.query.queries import Queries
 from core.base.command.bus import Bus
@@ -15,7 +15,7 @@ from tests.stories.core.modules.processes.support.queue_fixtures import QueueAge
 def queued(story, line: str, category: CommandCategory = CommandCategory.TEST_RUN) -> Process:
     queries = story.container.get(Queries)
     agent = queries.query(Agent).find(story.agent.id)
-    workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=CodingHelperKind.WORKER).oldest().all_rows())
+    workers = tuple(queries.query(Agent).filter(environment_id=agent.environment_id, role=CodingHelperRole.WORKER).oldest().all_rows())
     worker = Actor(workers[0].id, ActorType.AGENT)
     return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work", category, 30), story.agent, environment_id=agent.environment_id)
 

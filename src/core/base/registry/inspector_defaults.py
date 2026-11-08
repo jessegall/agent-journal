@@ -11,6 +11,6 @@ class InspectorDefaults:
         self.registry = registry
 
     def entries(self) -> tuple[InspectorEntry, ...]:
-        declared = {entry.declaration.noun for entry in self.registry.inspectors}
-        return tuple(InspectorEntry(entry.module, InspectorDeclaration.default_for(entry.model.loaded()), True)
-                     for noun, entry in self.registry.models.items() if noun not in declared)
+        declared = {entry.declaration.model_name for entry in self.registry.inspectors}
+        return tuple(InspectorEntry(entry.module, InspectorDeclaration.default_declaration(entry.model.loaded()), True)
+                     for model_name, entry in self.registry.models.items() if model_name not in declared)

@@ -44,7 +44,7 @@ def test_only_the_newest_failed_runs_are_kept(tmp_path):
     for name in names:
         filled(tmp_path / name, 1)
 
-    TempFolders(tmp_path).remove_old()
+    TempFolders(tmp_path).drop_expired()
 
     assert sorted(folder.name for folder in tmp_path.iterdir()) == names[-KEPT_FAILED_RUNS:]
 
@@ -55,7 +55,7 @@ def test_a_run_still_going_is_left_and_an_old_leftover_is_removed(tmp_path):
     old = os.stat(leftover).st_mtime - RUNNING_FOLDER_SECONDS - 1
     os.utime(leftover, (old, old))
 
-    TempFolders(tmp_path).remove_old()
+    TempFolders(tmp_path).drop_expired()
 
     assert going.is_dir() and not leftover.exists()
 
@@ -78,7 +78,7 @@ def test_the_template_cache_removes_the_least_recently_used_folder_over_its_limi
     newer = filled(tmp_path / "newer", 100)
     os.utime(older, (1, 1))
 
-    cache.remove_oldest_templates()
+    cache.drop_oldest_templates()
 
     assert not older.exists() and newer.is_dir()
 
@@ -153,6 +153,6 @@ def test_the_template_cache_drops_folders_unused_for_a_day_but_never_the_one_in_
     os.utime(old, (day_ago, day_ago))
     os.utime(current, (day_ago, day_ago))
 
-    cache.remove_old(current)
+    cache.drop_expired(current)
 
     assert not old.exists() and recent.is_dir() and current.is_dir()

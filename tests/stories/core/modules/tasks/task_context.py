@@ -187,9 +187,9 @@ def test_context_loads_only_a_bounded_message_page(linked_scenario):
     for number in range(40):
         linked_scenario.person("viewer.shell", "task", "comment", "1", f"Bounded comment {number}")
     database = linked_scenario.story.container.get(Database)
-    initial_points = database.tally.points()
+    initial_points = database.repeated_work.points()
     page = linked_scenario.context()
-    after = database.tally.points()
+    after = database.repeated_work.points()
     linked_scenario.story.expect_rows(len(page["messages"]) == 5)
     linked_scenario.story.expect_rows(after.tables["messages"] - initial_points.tables["messages"] <= 10)
     linked_scenario.story.expect_rows(sum(len(row["text"]) for row in page["messages"]) <= 8000)
@@ -221,9 +221,9 @@ def test_all_context_pages_recover_each_message_once(linked_scenario):
 def test_oversized_text_is_projected_before_loading(linked_scenario):
     linked_scenario.person("messages.chat", "message", "edit", "1", "--text", "Large " * 30000)
     database = linked_scenario.story.container.get(Database)
-    initial_points = database.tally.points()
+    initial_points = database.repeated_work.points()
     segment = linked_scenario.context(flags="--message 1 --text-offset 8000")
-    after = database.tally.points()
+    after = database.repeated_work.points()
     linked_scenario.story.expect_rows(len(segment["text"]) <= 8000, segment["next_text_offset"] == 16000)
     linked_scenario.story.expect_rows(after.bytes - initial_points.bytes < 50000)
 

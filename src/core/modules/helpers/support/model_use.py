@@ -16,5 +16,5 @@ class ModelUse:
         return tuple(sorted((agent for agent in self.agents if agent.ended_at is not None), key=lambda agent: agent.ended_at.value))
 
     @property
-    def agents_per_job(self) -> float:
+    def job_agent_ratio(self) -> float:
         return len(self.agents) / max(self.jobs, 0.5)

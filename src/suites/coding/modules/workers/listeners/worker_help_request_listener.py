@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -30,6 +30,6 @@ class WorkerHelpRequestListener(SaveListener[Created[Wait]]):
         if wait.type is not WaitType.HELP_REQUEST:
             return
         worker = self.queries.query(Agent).find(wait.session_agent_id)
-        should_notify = worker.role == CodingHelperKind.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id)
+        should_notify = worker.role == CodingHelperRole.WORKER and worker.parent_id is not None and not self.unfinished.has_running_process(worker.id)
         if should_notify:
             self.nudger.send(worker.parent_id, WORKER_HELP_REQUEST, SOURCE, context, worker=worker.id, tasks=self.unfinished.names(self.unfinished.rows(worker.id)), wait=wait.id)

@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class PrivateDataKind(StrEnum):
+class PrivateDataCategory(StrEnum):
     """What kind of private data a finding is; a finding names the kind, never the text."""
 
     EMAIL = "an email address"

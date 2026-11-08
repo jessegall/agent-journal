@@ -14,5 +14,5 @@ class NoPluginPlace(PluginPlace):
     def leave(self, exit_code: int) -> None:
         return
 
-    def through(self, places: PluginPlaceRows) -> PluginPlace:
+    def resolve(self, places: PluginPlaceRows) -> PluginPlace:
         return self

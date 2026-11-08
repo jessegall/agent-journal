@@ -60,9 +60,9 @@ def test_unchanged_reads_run_the_loader_once_and_read_no_more_table_rows(databas
         return texts(database)
 
     assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
-    table_reads = dict(database.tally.points().tables)
+    table_reads = dict(database.repeated_work.points().tables)
     assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Saved"])
-    assert len(calls) == 1 and database.tally.points().tables == table_reads
+    assert len(calls) == 1 and database.repeated_work.points().tables == table_reads
 
 
 def test_a_known_write_refreshes_the_kept_value_without_reloading_rows(database):
@@ -98,10 +98,10 @@ def test_a_rollback_without_writes_keeps_the_loaded_rows(database):
 def test_a_read_only_transaction_reuses_the_kept_value(database):
     kept = KeptRows(database)
     assert kept.read("notes", lambda: texts(database), name="notes.text") == tuple(["Saved"])
-    table_reads = dict(database.tally.points().tables)
+    table_reads = dict(database.repeated_work.points().tables)
     with database.transaction():
         assert kept.read("notes", lambda: texts(database), name="notes.text") == tuple(["Saved"])
-    assert database.tally.points().tables == table_reads
+    assert database.repeated_work.points().tables == table_reads
 
 
 def test_a_rollback_reuses_rows_that_were_never_loaded_from_the_failed_write(database):
@@ -137,9 +137,9 @@ def test_a_write_transaction_reuses_reads_until_another_write(database):
     with database.transaction():
         database.update(Statement("UPDATE notes SET text = 'Temporary', version = version + 1"))
         assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Temporary"])
-        table_reads = dict(database.tally.points().tables)
+        table_reads = dict(database.repeated_work.points().tables)
         assert kept.read("notes", collect_texts, name="notes.text") == tuple(["Temporary"])
-        assert len(calls) == 1 and database.tally.points().tables == table_reads
+        assert len(calls) == 1 and database.repeated_work.points().tables == table_reads
 
 
 def test_a_write_by_another_connection_is_read_after_a_rollback_that_wrote_nothing(database, tmp_path):

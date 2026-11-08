@@ -24,4 +24,4 @@ class PrivateDataTick:
         actor = container.get(ModuleActors).actor("journal.core.chat")
         for environment in container.get(Queries).query(Environment).all_rows():
             for finding in findings:
-                container.get(Bus).run(ShowMark(ChatMarkType.PRIVATE_DATA, PrivateDataMarkVariant.FOUND, finding.key, finding.text), actor, environment_id=environment.id)
+                container.get(Bus).run(ShowMark(ChatMarkType.PRIVATE_DATA, PrivateDataMarkVariant.DETECTED, finding.key, finding.text), actor, environment_id=environment.id)

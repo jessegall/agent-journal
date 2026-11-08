@@ -100,7 +100,7 @@ class PluginProgram:
             stop_reason = self.scripts.stop_reason(process)
         finally:
             self.scripts.finish(process)
-        if stop_reason is not ScriptStop.NOT_STOPPED:
+        if stop_reason is not ScriptStop.STOP_FAILED:
             raise PluginStoppedError(stop_reason)
         if process.returncode != 0:
             raise PluginFaultError(self.ended_text(process.returncode, pipes.error_tail(), call))

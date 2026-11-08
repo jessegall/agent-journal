@@ -20,7 +20,7 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.support.hook_facts import HookFacts
 from core.modules.plugins.support.plugin_event import PluginEvent
-from core.modules.plugins.support.plugin_declared_event import CEILING_SETTING
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest

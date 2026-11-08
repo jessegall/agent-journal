@@ -23,11 +23,11 @@ class DockRoom:
         if dock is None or self.limits.requires_user(type_name):
             return MOST_PLACES
         docked = self.items.read(dock.id)
-        of_type = [item for item in docked if item.type == type_name]
+        type_entries = [item for item in docked if item.type == type_name]
         type_capacity = self.limits.type_capacity(type_name)
         room = [self.room(docked, self.limits.dock_capacity(dock.id))]
         if type_capacity is not None:
-            room.append(self.room(of_type, type_capacity))
+            room.append(self.room(type_entries, type_capacity))
         return max(0, min(room))
 
     def room(self, docked: list[DockItem], capacity: int) -> int:

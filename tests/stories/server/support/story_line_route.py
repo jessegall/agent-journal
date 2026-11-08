@@ -21,7 +21,7 @@ class StoryLineRoute(LineRoute):
         self.line_run = StoryLineRun(home, listener_runner=ListenerWake(listener_thread), reported=reported, completion_callback=completion_callback)
 
     def run_line(self, container: Container, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None) -> LineAnswer:
-        work = container.get(Database).tally
+        work = container.get(Database).repeated_work
         assert isinstance(work, RepeatedWork)
         with work.request():
             return super().run_line(container, window, argv, person_id, environment, shared)

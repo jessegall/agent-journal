@@ -29,5 +29,5 @@ class ProfileModels:
     def option_default(self, profile: AgentProfile, provider: Provider, agent_type: str) -> str:
         if not agent_type:
             return ""
-        defaults = self.options.reading(agent_type, profile.name).options.model_defaults or ()
+        defaults = self.options.resolved(agent_type, profile.name).options.model_defaults or ()
         return next((default.split(":", 1)[1] for default in defaults if default.startswith(f"{provider.name}:")), "")

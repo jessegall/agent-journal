@@ -109,7 +109,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     def start_following(self, worktree: Worktree, following: Task, context: Context) -> Task:
         started = self.bus.dispatch(StartTask(following.id), context)
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        self.compaction.stop_between_tasks(context.actor.id)
+        self.compaction.stop_after_task(context.actor.id)
         return started
 
     def close_checked(self, task: Task, context: Context) -> None:

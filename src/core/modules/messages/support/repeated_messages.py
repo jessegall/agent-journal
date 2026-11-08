@@ -1,10 +1,10 @@
 from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
-from core.modules.messages.support.message_words import MessageWords
+from core.modules.messages.support.message_tokens import MessageTokens
 
 COMPARED_MESSAGES = 5
-SHORTEST_WORDS = 4
-ALREADY_SAID_SHARE = 0.7
+MINIMUM_TOKENS = 4
+REPEATED_SHARE = 0.7
 
 
 class RepeatedMessages:
@@ -16,12 +16,12 @@ class RepeatedMessages:
         self.messages = messages
 
     def repeated(self, creator_id: int, text: str, new_id: int | None = None) -> Message | None:
-        if "?" in text or len(MessageWords.words(text)) < SHORTEST_WORDS:
+        if "?" in text or len(MessageTokens.tokens(text)) < MINIMUM_TOKENS:
             return None
         newest = self.messages.agent_messages().filter(creator_id=creator_id).newest().limited(COMPARED_MESSAGES + 1)
-        earlier = [row for row in newest if row.id != new_id][:COMPARED_MESSAGES]
-        return next((row for row in earlier if self.says_nothing_new(row.text, text)), None)
+        previous = [row for row in newest if row.id != new_id][:COMPARED_MESSAGES]
+        return next((row for row in previous if self.repeats_previous(row.text, text)), None)
 
     @staticmethod
-    def says_nothing_new(earlier: str, text: str) -> bool:
-        return not MessageWords.names_a_new_number(earlier, text) and MessageWords.already_said(earlier, text) >= ALREADY_SAID_SHARE
+    def repeats_previous(previous: str, text: str) -> bool:
+        return not MessageTokens.adds_number(previous, text) and MessageTokens.repeated_share(previous, text) >= REPEATED_SHARE

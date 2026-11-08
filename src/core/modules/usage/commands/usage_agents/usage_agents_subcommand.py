@@ -75,9 +75,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True)) for card in cards_read))
 
     def sandboxes(self, cards: Sequence[AgentCard], read_rows: Sequence[Agent]) -> dict[int, bool]:
-        own_folder = {card.id for card in cards if self.types.find(card.role).separate_folder}
-        rows = [row for row in read_rows if row.id in own_folder]
-        unread = sorted(own_folder - {row.id for row in rows})
+        separate_folder_ids = {card.id for card in cards if self.types.find(card.role).separate_folder}
+        rows = [row for row in read_rows if row.id in separate_folder_ids]
+        unread = sorted(separate_folder_ids - {row.id for row in rows})
         return self.sandbox.sandboxed_among([*rows, *(self.queries.query(Agent).find_many(unread) if unread else ())])
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:

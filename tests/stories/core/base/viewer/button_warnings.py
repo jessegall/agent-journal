@@ -12,7 +12,7 @@ def button_entry(story, name):
 
 
 def test_a_shipped_module_with_a_card_button_without_an_icon_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_shipped_sync_refusal(BareCardButtonModule, f"the button styled.start of module styled {NO_ICON}")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(BareCardButtonModule, f"the button styled.start of module styled {NO_ICON}")
 
 
 def test_a_module_the_journal_does_not_ship_is_warned_and_still_syncs(new_story):

@@ -50,7 +50,7 @@ class AgentUse:
         candidates = [model_use for model_use in self.models() if model_use.agent_type == agent_type and model_use.idle()]
         if not candidates:
             return ""
-        selected = max(candidates, key=lambda model_use: model_use.agents_per_job)
+        selected = max(candidates, key=lambda model_use: model_use.job_agent_ratio)
         agent = selected.idle()[0]
         return (f"to make room: journal agent retire {agent.id} --reason \"<why>\": a {selected.model} agent idle for "
                 f"{self.age(agent)}, and {selected.model} ran {selected.jobs} jobs with {len(selected.agents)} kept")

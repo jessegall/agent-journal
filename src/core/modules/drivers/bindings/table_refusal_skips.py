@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.driver.refusal_skips import RefusalSkips
 from core.base.guard.guards import LIFECYCLE_GUARD
-from core.base.query.conditions.is_not_null import IsNotNull
+from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
 from core.base.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
@@ -26,7 +26,7 @@ class TableRefusalSkips(RefusalSkips):
         self.queries, self.bus, self.registry, self.refusals = queries, bus, registry, refusals
 
     def waiting(self, agent_id: int, rule: str) -> Command[object] | None:
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, used_at=None, withdrawn_at=None, waits_for_approval=False).matching(IsNotNull("confirmed_at")).newest().first()
+        skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, used_at=None, withdrawn_at=None, waits_for_approval=False).matching(HasValue("confirmed_at")).newest().first()
         return UseRefusalSkip(skip.id) if skip is not None else None
 
     def has_refused(self, agent_id: int, rule: str) -> bool:

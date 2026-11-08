@@ -12,7 +12,7 @@ from unittest.mock import patch
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.commands.end_idle_worker.end_idle_worker import EndIdleWorker
+from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
@@ -30,7 +30,7 @@ REASON = '--reason "Its work is finished"'
 
 
 def stopped(story, worker) -> None:
-    story.container.get(Bus).run(EndIdleWorker(worker.id), story.agent)
+    story.container.get(Bus).run(EndInactiveWorker(worker.id), story.agent)
 
 
 def test_a_worker_with_unmerged_work_is_not_retired(new_story):

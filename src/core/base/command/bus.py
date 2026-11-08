@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler, is_handler_class
 from core.base.command.outside_run_rollback_error import OutsideRunRollbackError
-from core.base.command.outside_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
+from core.base.command.external_runs import SERVER_THREAD_REASON, SINGLE_RUN_REASON, OutsideRuns
 from core.base.command.script_policy import ScriptPolicy
 from core.base.container import Container
 from core.base.database.database import Database
@@ -30,7 +30,7 @@ class Bus:
     def run(self, command: Command[R], actor: Actor, skipped_guards: frozenset[str] = frozenset(), cause_id: int | None = None,
             environment_id: int | None = None, plugin_script: str = "", approval_id: int | None = None) -> R:
         if self.database.nested and (self.database.has_transaction or not command.lock):
-            return self.dispatch(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id, outside_runs=OutsideRuns(True, plugin_script, SINGLE_RUN_REASON), approval_id=approval_id))
+            return self.dispatch(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id, external_runs=OutsideRuns(True, plugin_script, SINGLE_RUN_REASON), approval_id=approval_id))
         if self.database.has_transaction:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
@@ -39,12 +39,12 @@ class Bus:
             runs = self.create_deferred_runs(command, handler, plugin_script)
             if not command.lock:
                 with self.database.savepoint(command.label()):
-                    return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs, approval_id=approval_id)), command)
+                    return self.result(handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, external_runs=runs, approval_id=approval_id)), command)
             while True:
                 try:
                     with self.database.transaction(), self.database.savepoint(command.label()):
                         self.timing.stamp("write_started")
-                        context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, outside_runs=runs.next_round(), approval_id=approval_id)
+                        context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, self.scopes.environment_id or environment_id, external_runs=runs.next_round(), approval_id=approval_id)
                         command_output = self.result(handler.handle(command, context), command)
                         self.timing.stamp("handled")
                         runs.refuse_unfinished_work()
@@ -62,7 +62,7 @@ class Bus:
     def run_with_context(self, command: Command[R], context: Context) -> R:
         if self.database.nested or self.database.has_transaction:
             return self.dispatch(command, context)
-        return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id, environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script)
+        return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id, environment_id=context.environment_id, plugin_script=context.external_runs.plugin_script)
 
     def explain(self, command: Command[object], actor: Actor, skipped_guards: frozenset[str] = frozenset(), environment_id: int | None = None) -> Explanation:
         if self.database.has_transaction:
@@ -78,14 +78,14 @@ class Bus:
     def dispatch(self, command: Command[R], context: Context) -> R:
         if not self.database.has_transaction and (command.lock or not self.database.nested):
             return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id,
-                            environment_id=context.environment_id, plugin_script=context.outside_runs.plugin_script, approval_id=context.approval_id)
+                            environment_id=context.environment_id, plugin_script=context.external_runs.plugin_script, approval_id=context.approval_id)
         handler = self.handler(command)
         if type(handler).prepare is not Handler.prepare and not handler.caller_prepares:
             if self.database.has_transaction:
                 raise TransactionError(f"{command.label()} has a prepare step, which a dispatch skips: run it instead")
             handler.prepare(command, context.actor)
         if handler.runs_once:
-            context.outside_runs.close()
+            context.external_runs.close()
         with self.database.savepoint(command.label()), self.scopes.command_scope(handler.disabled_scopes, context.actor, context.environment_id):
             return self.result(handler.handle(command, context.nested(command)), command)
 

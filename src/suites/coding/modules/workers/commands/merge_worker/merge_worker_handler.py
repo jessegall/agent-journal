@@ -80,7 +80,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
             return MergeOutcome(self.rows.required(Worktree, worktree.id), (), refusal)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.session_agent_id}")
         commit_after_merge = self.git.tip(environment.folder, worktree.base_branch)
-        followup = self.followups.snapshot(worktree, environment.folder, commit_before_merge, commit_after_merge, context)
+        followup = self.followups.record_followup(worktree, environment.folder, commit_before_merge, commit_after_merge, context)
         if followup is not None:
             return self.finished_merge(worktree, environment, followup, command, context)
         merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), commit_before_merge, commit_after_merge), context)
@@ -120,7 +120,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.checks.check_proofs(worktree)
         self.checks.check_logs(worktree)
         self.checks.check_base_branch(worktree)
-        waiting = self.followups.waiting_elsewhere(worktree)
+        waiting = self.followups.blocked_followup(worktree)
         if waiting is not None and self.followups.planned(worktree.id) is None:
             raise Refusal(f"the merge of worker {waiting.worker_id} still has required commands to run in environment {environment.name}",
                           f"merge worker {waiting.worker_id} again to finish them, with --reconcile if a step ended uncertain")

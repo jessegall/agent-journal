@@ -7,7 +7,7 @@ CEILING_SETTING = "journal.core.plugins.hold_window_ms"
 
 
 @dataclass(frozen=True)
-class PluginDeclaredEvent:
+class PluginEventEntry:
     """A named event subscription and its script."""
 
     event: str

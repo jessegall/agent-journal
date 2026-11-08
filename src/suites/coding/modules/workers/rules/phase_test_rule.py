@@ -28,7 +28,7 @@ from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUS
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.test_request_identity import TestRequestIdentity
 from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
 class PhaseTestRule(DriverRule):
@@ -38,7 +38,7 @@ class PhaseTestRule(DriverRule):
     priority = -2
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperKind.WORKER]
+    roles = [CodingHelperRole.WORKER]
 
     def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, queries: Queries, saved_commands: SavedCommandRule, identity: TestRequestIdentity, settings: SettingValues) -> None:
         self.phases, self.commands, self.worktrees, self.queries, self.saved_commands, self.identity, self.settings = phases, commands, worktrees, queries, saved_commands, identity, settings

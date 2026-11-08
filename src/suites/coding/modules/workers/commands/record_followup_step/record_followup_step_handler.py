@@ -18,5 +18,5 @@ class RecordFollowupStepHandler(Handler[RecordFollowupStep, MergeFollowup]):
 
     def handle(self, command: RecordFollowupStep, context: Context) -> MergeFollowup:
         followup = self.rows.required(MergeFollowup, command.followup_id)
-        results = tuple(command.result if index == command.index else result for index, result in enumerate(followup.results))
+        results = tuple(command.outcome if index == command.index else outcome for index, outcome in enumerate(followup.results))
         return self.repository.update(followup, context, results=results)

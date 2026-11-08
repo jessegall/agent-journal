@@ -29,4 +29,4 @@ class TableHookHistory(HookHistory):
         return self.history(key)
 
     def history(self, key: RuleHistoryKey) -> RuleHistory | None:
-        return self.histories.of(key.agent_id).get((key.rule, key.layer))
+        return self.histories.rows(key.agent_id).get((key.rule, key.layer))

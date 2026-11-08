@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.modules.developer.support.private_data_kind import PrivateDataKind
+from core.modules.developer.support.private_data_category import PrivateDataCategory
 
 
 @dataclass(frozen=True)
@@ -9,12 +9,12 @@ class PrivateDataFinding:
 
     file: str
     line: int
-    kind: PrivateDataKind
+    category: PrivateDataCategory
 
     @property
     def key(self) -> str:
-        return f"private-data:{self.file}:{self.line}:{self.kind.name}"
+        return f"private-data:{self.file}:{self.line}:{self.category.name}"
 
     @property
     def text(self) -> str:
-        return f"{self.file}, line {self.line}: {self.kind.value}"
+        return f"{self.file}, line {self.line}: {self.category.value}"

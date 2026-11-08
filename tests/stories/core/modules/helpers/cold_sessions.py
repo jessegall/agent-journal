@@ -5,7 +5,7 @@ import pytest
 
 from core.modules.helpers.support.cold_sessions import ColdSessions
 from core.modules.helpers.support.stale_session_error import StaleSessionError
-from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ON, CONTEXT_LIMIT_TOKENS
+from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
 from tests.stories.core.modules.usage.support.status_files import full_status, save_status_file
@@ -104,10 +104,10 @@ def sent_a_job(story, monkeypatch, minutes, percent):
 
 def test_a_cold_helper_starts_a_new_session_under_the_same_agent_and_is_told_who_it_is(ended_helper, monkeypatch):
     helper, request = sent_a_job(ended_helper, monkeypatch, LIMIT_MINUTES, LIMIT_PERCENT)
-    renewed = helper_agent(ended_helper)
+    replaced = helper_agent(ended_helper)
     prompt = " ".join(request["command"])
-    ended_helper.expect_rows(renewed.id == helper.id, renewed.session != helper.session, request["session"] == renewed.session, "--resume" not in request["command"],
-                             renewed.session in request["command"], f"You are helper {helper.id}." in prompt, JOB in prompt, not is_cold(ended_helper), detail=str(request))
+    ended_helper.expect_rows(replaced.id == helper.id, replaced.session != helper.session, request["session"] == replaced.session, "--resume" not in request["command"],
+                             replaced.session in request["command"], f"You are helper {helper.id}." in prompt, JOB in prompt, not is_cold(ended_helper), detail=str(request))
 
 
 def test_a_warm_helper_resumes_its_own_session(ended_helper, monkeypatch):
@@ -157,7 +157,7 @@ def test_the_boot_menu_reads_no_cold_session_of_another_program(main_session):
 
 
 def test_a_helper_past_the_context_limit_starts_a_new_session_when_it_is_sent_a_job(ended_helper, monkeypatch):
-    ended_helper.expect_success(f"setting set {CONTEXT_LIMIT_ON} true --project", actor=ended_helper.user)
+    ended_helper.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=ended_helper.user)
     ended_helper.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=ended_helper.user)
     helper = helper_agent(ended_helper)
     save_status_file(ended_helper, helper.session, {"context_window": {"total_input_tokens": 400000}})
@@ -172,9 +172,9 @@ def test_a_helper_past_the_context_limit_starts_a_new_session_when_it_is_sent_a_
 def test_a_session_whose_last_message_is_over_an_hour_old_may_not_be_resumed(ended_helper):
     ended_helper.advance(timedelta(minutes=61))
     with pytest.raises(StaleSessionError):
-        ended_helper.container.get(ColdSessions).require_fresh(helper_agent(ended_helper))
+        ended_helper.container.get(ColdSessions).require_replaced(helper_agent(ended_helper))
 
 
 def test_a_session_whose_last_message_is_under_an_hour_old_may_be_resumed(ended_helper):
     ended_helper.advance(timedelta(minutes=59))
-    ended_helper.container.get(ColdSessions).require_fresh(helper_agent(ended_helper))
+    ended_helper.container.get(ColdSessions).require_replaced(helper_agent(ended_helper))

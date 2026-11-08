@@ -43,7 +43,7 @@ class UnmergedWorkerRule(DriverRule):
         nudges: list[Nudge] = []
         delivered = self.delivered.delivered()
         for worktree in delivered:
-            if self.merger_has_it(worktree, hook):
+            if self.is_with_merger(worktree, hook):
                 continue
             proofs = tuple(self.proofs.waiting_proofs(worktree.id).oldest().all_rows())
             action = f"journal worker merge {worktree.session_agent_id}, or journal worker release {worktree.session_agent_id}"
@@ -58,7 +58,7 @@ class UnmergedWorkerRule(DriverRule):
         stale = [CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands]
         return RuleAnswer.with_nudges(*nudges).running(*stale)
 
-    def merger_has_it(self, worktree: Worktree, hook: AgentHook) -> bool:
+    def is_with_merger(self, worktree: Worktree, hook: AgentHook) -> bool:
         if not self.settings.flag(MERGER_ENABLED) or worktree.left_to_main_at is not None:
             return False
         if worktree.tests_passed_at is None:

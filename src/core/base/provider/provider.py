@@ -58,7 +58,7 @@ class Provider(ABC):
     hook_files: ClassVar[tuple[Path, ...]] = ()
     worktree_hook_files: ClassVar[tuple[Path, ...]] = ()
     controls: ClassVar[Sequence[ControlGroup]] = ()
-    compacts_in_print_mode: ClassVar[bool] = False
+    compacts_headless: ClassVar[bool] = False
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]
@@ -184,7 +184,7 @@ class Provider(ABC):
         path = event.raw.get("transcript_path")
         return Path(path).expanduser() if isinstance(path, str) and path else None
 
-    def line_sent(self, line: SessionLine) -> bool:
+    def delivered_line(self, line: SessionLine) -> bool:
         return False
 
     def peer_note(self, line: str) -> Sequence[PeerNote]:

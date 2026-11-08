@@ -40,10 +40,10 @@ def sent_a_job(story, minutes, percent):
 def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(stopped_worker):
     folder = stopped_worker.container.get(WorktreeQuery).worker_worktree(stopped_worker.worker.id).folder
     worker, request = sent_a_job(stopped_worker, 55, 20)
-    renewed = stopped_worker.row(Agent, worker.id)
+    replaced = stopped_worker.row(Agent, worker.id)
     worktree = stopped_worker.container.get(WorktreeQuery).worker_worktree(worker.id)
     prompt = " ".join(request["command"])
-    stopped_worker.expect_rows(renewed.session != worker.session, request["session"] == renewed.session, "--resume" not in request["command"], worktree.folder == folder,
+    stopped_worker.expect_rows(replaced.session != worker.session, request["session"] == replaced.session, "--resume" not in request["command"], worktree.folder == folder,
                                f"You are worker {worker.id}." in prompt, JOB in prompt, f"journal task overview {worktree.task_id}" in prompt, detail=prompt)
 
 

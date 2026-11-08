@@ -18,8 +18,8 @@ class GroupCpuTime:
 
     @classmethod
     def group_total(cls, listing: str, group: int) -> float | None:
-        times = [cls.parsed(fields[1]) for fields in (line.split() for line in listing.splitlines()) if len(fields) == 2 and fields[0] == str(group)]
-        return sum(times) if times else None
+        cpu_seconds = [cls.parsed(fields[1]) for fields in (line.split() for line in listing.splitlines()) if len(fields) == 2 and fields[0] == str(group)]
+        return sum(cpu_seconds) if cpu_seconds else None
 
     @staticmethod
     def parsed(text: str) -> float:

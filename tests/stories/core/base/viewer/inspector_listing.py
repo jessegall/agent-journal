@@ -26,7 +26,7 @@ def test_a_declared_inspector_is_listed_with_its_width_and_components(new_story)
 
 def test_a_row_with_a_shared_read_is_shareable(new_story):
     listed = inspectors_of(new_story(fixture=MainEnvironment))
-    expect_value({noun: listed[noun].shareable for noun in ("plan", "doc", "task", "agent")}, {"plan": True, "doc": True, "task": False, "agent": False})
+    expect_value({model_name: listed[model_name].shareable for model_name in ("plan", "doc", "task", "agent")}, {"plan": True, "doc": True, "task": False, "agent": False})
 
 
 def test_an_inactive_module_lists_no_inspector(new_story):
@@ -45,10 +45,10 @@ def test_the_windows_list_is_unchanged(new_story):
 
 def test_an_inspector_lists_the_fields_of_its_row_only_when_it_declares_so(new_story):
     listed = inspectors_of(new_story(fixture=MainEnvironment))
-    expect_value({noun: listed[noun].lists_fields for noun in ("agent", "task", "plan", "test-queue", "doc", "pin", "memory")}, {
+    expect_value({model_name: listed[model_name].lists_fields for model_name in ("agent", "task", "plan", "test-queue", "doc", "pin", "memory")}, {
         "agent": False, "task": False, "plan": False, "test-queue": False, "doc": False, "pin": True, "memory": True})
 
 
 def test_an_inspector_whose_part_draws_the_text_says_so(new_story):
     listed = inspectors_of(new_story(fixture=MainEnvironment))
-    expect_value({noun: listed[noun].draws_text for noun in ("doc", "report", "task", "plan", "memory")}, {"doc": True, "report": True, "task": True, "plan": True, "memory": False})
+    expect_value({model_name: listed[model_name].draws_text for model_name in ("doc", "report", "task", "plan", "memory")}, {"doc": True, "report": True, "task": True, "plan": True, "memory": False})

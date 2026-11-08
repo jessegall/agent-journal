@@ -10,7 +10,7 @@ from core.modules.processes.models.enums.process_state import RUNNING_STATES
 from core.modules.processes.models.enums.watch_state import WatchState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import Watch
-from core.modules.processes.support.output_check_schedule import SECONDS_PER_MINUTE, OutputCheckSchedule
+from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS, OutputCheckSchedule
 from core.modules.processes.support.process_nudges import OUTPUT_CHECK
 
 
@@ -29,8 +29,8 @@ class CheckOutputHandler(Handler[CheckOutput, Watch]):
         process = self.rows.required(Process, watch.process_id)
         agent = self.rows.required(Agent, watch.session_agent_id)
         waiting = watch.state is WatchState.OPEN and process.state in RUNNING_STATES and process.queued_at is None
-        if not waiting or agent.role in self.suites.agent_policy().automatic_watch_roles or not self.schedule.is_due(watch, context.timestamp):
+        if not waiting or agent.role in self.suites.agent_policy().automatic_watch_roles or not self.schedule.wait_elapsed(watch, context.timestamp):
             return watch
-        minutes = round(watch.creation_timestamp().elapsed_seconds(context.timestamp) / SECONDS_PER_MINUTE)
+        minutes = round(watch.creation_timestamp().elapsed_seconds(context.timestamp) / MINUTE_SECONDS)
         self.nudger.send(agent.id, OUTPUT_CHECK, "processes.output_check", context, output=process.id, minutes=minutes)
         return self.repository.update(watch, context, woke_at=context.timestamp, awaits_confirm=True)

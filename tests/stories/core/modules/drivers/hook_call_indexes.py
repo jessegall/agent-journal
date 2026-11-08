@@ -20,14 +20,14 @@ def test_latest_matching_hook_reads_one_row_with_an_index(new_story, condition, 
     )
     statement = Statement(f"SELECT * FROM hook_calls WHERE session_agent_id = ? AND {condition} ORDER BY id DESC LIMIT 1", (agent, *parameters))
     story.expect_rows(any(index in line for line in database.query_plan(statement)))
-    initial_reads = database.tally.points().tables['hook_calls']
+    initial_reads = database.repeated_work.points().tables['hook_calls']
     steps = []
     database.connection.set_progress_handler(lambda: steps.append(1) or 0, 1)
     try:
         story.expect_rows(len(database.rows(statement)) == 1)
     finally:
         database.connection.set_progress_handler(None, 0)
-    story.expect_rows(len(steps) < 100, database.tally.points().tables['hook_calls'] - initial_reads == 1)
+    story.expect_rows(len(steps) < 100, database.repeated_work.points().tables['hook_calls'] - initial_reads == 1)
 
 
 def test_agent_activity_uses_the_non_tick_index(new_story):

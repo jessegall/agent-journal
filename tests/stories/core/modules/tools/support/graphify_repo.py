@@ -13,10 +13,10 @@ class GraphifyRepo:
     def __init__(self, base: Path, name: str = "checkout") -> None:
         self.folder = base / name
         self.calls = base / f"{name}-calls.log"
-        self.hold = base / f"{name}-hold"
+        self.claim = base / f"{name}-hold"
         self.script = base / f"{name}-graphify"
         self.folder.mkdir(parents=True)
-        self.script.write_text(f'#!/bin/sh\necho "$PWD $*" >> "{self.calls}"\nwhile [ -e "{self.hold}" ]; do sleep 0.05; done\n'
+        self.script.write_text(f'#!/bin/sh\necho "$PWD $*" >> "{self.calls}"\nwhile [ -e "{self.claim}" ]; do sleep 0.05; done\n'
                                "mkdir -p graphify-out\necho graph > graphify-out/graph.json\n")
         self.script.chmod(0o755)
         self.git("init", "-q")
@@ -34,10 +34,10 @@ class GraphifyRepo:
         return len(self.calls.read_text().splitlines()) if self.calls.is_file() else 0
 
     def hold_graphify(self) -> None:
-        self.hold.write_text("")
+        self.claim.write_text("")
 
     def release_graphify(self) -> None:
-        self.hold.unlink(missing_ok=True)
+        self.claim.unlink(missing_ok=True)
 
     def wait_for_calls(self, count: int) -> None:
         self.wait(lambda: self.call_count() >= count)

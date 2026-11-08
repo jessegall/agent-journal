@@ -15,7 +15,7 @@ class TranscriptTail:
         with self.path.open(encoding="utf-8") as log:
             return log.readline()
 
-    def read_from(self, offset: int) -> bytes:
+    def read_remainder(self, offset: int) -> bytes:
         with self.path.open("rb") as log:
             log.seek(offset)
             return log.read()
@@ -26,12 +26,12 @@ class TranscriptTail:
         size = self.path.stat().st_size
         window = TAIL_BYTES
         while True:
-            lines = self.lines_within(window)
+            lines = self.tail_lines(window)
             if size <= window or len(lines) > count:
                 return lines
             window *= 2
 
-    def lines_within(self, window: int) -> list[str]:
+    def tail_lines(self, window: int) -> list[str]:
         if not self.path.is_file():
             return []
         size = self.path.stat().st_size

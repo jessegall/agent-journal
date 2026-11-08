@@ -22,9 +22,9 @@ NATIVE_SUBAGENT_WITHOUT_LAUNCH = NudgeDeclaration("drivers.native_subagent_no_la
 PANIC_FILE = NudgeDeclaration("drivers.panic_file", NudgeType.SAFETY_REFUSAL, "the panic file is for a journal that does not answer: the journal answers you, so say in your report what is wrong")
 PRIVATE_CORPUS = NudgeDeclaration("drivers.private_corpus", NudgeType.SAFETY_REFUSAL, "the private command corpus is read or run only in its sandboxed go test: say in your report what you need")
 
-SKIP_WAITS_FOR_APPROVAL = NudgeDeclaration("drivers.skip_waits_for_approval", NudgeType.STEERING, "agent:{agent} confirmed a skip that waits for your answer: refusal-skip:{refusal}", turn_limited=False)
+SKIP_NEEDS_APPROVAL = NudgeDeclaration("drivers.skip_waits_for_approval", NudgeType.STEERING, "agent:{agent} confirmed a skip that waits for your answer: refusal-skip:{refusal}", turn_limited=False)
 SKIP_APPROVED = NudgeDeclaration("drivers.skip_approved", NudgeType.STEERING, "your skip refusal-skip:{refusal} is approved: try again", turn_limited=False)
 SKIP_DECLINED = NudgeDeclaration("drivers.skip_declined", NudgeType.STEERING, "your skip refusal-skip:{refusal} is declined: do what the refusal asks", turn_limited=False)
 SKIPS_SPENT = NudgeDeclaration("drivers.skips_spent", NudgeType.STEERING, "agent:{agent} skipped {count} refusals in a row and lost the skip", turn_limited=False, wakes_agent=True)
-ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_WAITS_FOR_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
+ACCESS_NUDGES = [PANIC_FILE, PRIVATE_CORPUS, SKIPS_SPENT, SKIP_NEEDS_APPROVAL, SKIP_APPROVED, SKIP_DECLINED, NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH, ENDED_AGENT, UNKNOWN_AGENT, UNJUDGED_LINE, OLD_HOOK_LINE, OUTWARD_JOURNAL_LINE, LIMITED_TOOL, TOOL_RESTRICTION, COMMAND_RESTRICTION, READONLY, FILE_ACCESS_RESTRICTION, JOURNAL_RESTRICTION,
                  SHELL_RESTRICTION, PROGRAM_RESTRICTION, GIT_RESTRICTION, FULL_TEST_RESTRICTION]

@@ -16,10 +16,10 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
-class IdleWorkerSend:
+class InactiveWorkerSend:
     """Sends a task given to a worker to that worker at once, on the main agent's behalf, when the worker is
     idle: no started task, no command running, and no worktree, a delivered one with no tests waiting, or
     an open one whose program has ended. A busy worker takes the task as its next one by itself."""
@@ -40,7 +40,7 @@ class IdleWorkerSend:
         self.bus.dispatch(QueueWorkerOperation(worker.id, operation_line, send_command, WorkerOperationName.JOB), replace(context, actor=Actor(worker.parent_id, ActorType.AGENT)))
 
     def is_idle(self, worker: Agent) -> bool:
-        if worker.role != CodingHelperKind.WORKER or worker.retired_at is not None or worker.parent_id is None:
+        if worker.role != CodingHelperRole.WORKER or worker.retired_at is not None or worker.parent_id is None:
             return False
         if self.tasks.started_tasks(worker.id) or self.operations.active(worker.id) is not None:
             return False

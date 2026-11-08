@@ -92,7 +92,7 @@ class WorkerResume:
         job = next((line for line in sorted(lines, key=lambda line: line.source != WORKER_TEST_LIMIT_SOURCE)
                     if line.source in RESUMING_SOURCES and line.source != UNFINISHED_TASKS_SOURCE), None)
         job = job or self.lost_job(worker) or next((line for line in lines if line.source == UNFINISHED_TASKS_SOURCE), None)
-        if job is None and self.started_work.is_stranded(worker):
+        if job is None and self.started_work.is_abandoned(worker):
             job = self.started_work.job(worker)
         if job is None:
             return LaunchAnswer.SKIPPED
@@ -117,9 +117,9 @@ class WorkerResume:
             if answer is LaunchAnswer.STARTED:
                 self.compaction.started(worker.id)
             return answer
-        current = self.cold.renewed_if_silent(worker)
+        current = self.cold.replaced_silent(worker)
         if current.session == worker.session:
-            self.cold.require_fresh(current)
+            self.cold.require_replaced(current)
         command = self.worker_command.resumed(worker, worktree, environment, job.text) if current.session == worker.session else self.worker_command.restarted(current, worktree, environment, self.queries.query(Task).find(worktree.task_id), job.text)
         answer = self.launcher.hand(current, environment, command)
         if answer is not LaunchAnswer.STARTED:

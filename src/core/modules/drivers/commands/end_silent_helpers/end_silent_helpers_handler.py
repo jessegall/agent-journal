@@ -1,7 +1,7 @@
 from dataclasses import replace
 from datetime import timedelta
 
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -26,7 +26,7 @@ class EndSilentHelpersHandler(Handler[EndSilentHelpers, None]):
         self.agents, self.hook_calls, self.bus = agents, hook_calls, bus
 
     def handle(self, command: EndSilentHelpers, context: Context) -> None:
-        helpers = self.agents.running(HelperKind.READ_ONLY)
+        helpers = self.agents.running(HelperRole.HELPER)
         recent_limit = Timestamp(context.timestamp.value - timedelta(seconds=SILENT_HELPER_SECONDS))
         helpers = tuple(helpers)
         recently_called = {call.session_agent_id for call in self.hook_calls.matching(Among("session_agent_id", [helper.id for helper in helpers])).matching(Greater("created_at", recent_limit.text)).all_rows()}

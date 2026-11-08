@@ -10,7 +10,7 @@ class SendAgentMessage(Command[Message]):
     line naming it, which wakes it when it is stopped; a helper job's report is recorded whatever it
     repeats, since it ends the job."""
 
-    to_agent_id: int
+    recipient_agent_id: int
     text: str
     notifies: bool = True
     ends_job: bool = False

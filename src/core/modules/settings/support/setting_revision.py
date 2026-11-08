@@ -12,5 +12,5 @@ class SettingRevision:
         self.values = values
 
     def current(self, key: str) -> str:
-        here, project = self.values.current(key), self.values.project(key)
-        return hashlib.sha256(json.dumps([here.value, here.source, project.value, project.source], default=str).encode()).hexdigest()[:12]
+        current, project = self.values.current(key), self.values.project(key)
+        return hashlib.sha256(json.dumps([current.value, current.source, project.value, project.source], default=str).encode()).hexdigest()[:12]

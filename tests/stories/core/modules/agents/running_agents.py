@@ -26,9 +26,9 @@ class FourAgents(StoryFixture):
 def test_a_tick_with_four_agents_reads_one_row_set(new_story):
     story = new_story(fixture=FourAgents)
     database = story.container.get(Database)
-    start = database.tally.points()
+    start = database.repeated_work.points()
     AgentTicks()(story.container)
-    cost = database.tally.points().minus(start)
+    cost = database.repeated_work.points().minus(start)
     rows_read = sum(rows for statement, rows in cost.statements.items() if "agents" in statement and RUNNING_READ in statement and "count(*)" not in statement)
     story.expect_rows(rows_read == AGENT_COUNT)
 

@@ -11,7 +11,7 @@ ANSWER_BYTES = 32
 STOPPED_ANSWER = b"stopped\n"
 STOP_FIELD = "stop"
 START_FIELD = "command"
-QUIET_FIELD = "quiet"
+IDLE_FIELD = "quiet"
 REFUSED_TRIES = 3
 REFUSED_PAUSE_SECONDS = 0.1
 
@@ -29,17 +29,17 @@ class LauncherLink:
         return self.home.socket(LAUNCHER_SOCKET).exists()
 
     def stop(self, agent_id: int) -> bool:
-        return self.sent({"agent_id": agent_id, STOP_FIELD: True}, ANSWER_BYTES) == STOPPED_ANSWER
+        return self.request_launcher({"agent_id": agent_id, STOP_FIELD: True}, ANSWER_BYTES) == STOPPED_ANSWER
 
-    def quiet_seconds(self, agent_id: int) -> int | None:
-        answer = self.sent({"agent_id": agent_id, QUIET_FIELD: True}, ANSWER_BYTES)
-        words = answer.split() if answer else []
-        return int(words[1]) if len(words) == 2 and words[0] == b"quiet" and words[1].isdigit() else None
+    def idle_seconds(self, agent_id: int) -> int | None:
+        answer = self.request_launcher({"agent_id": agent_id, IDLE_FIELD: True}, ANSWER_BYTES)
+        fields = answer.split() if answer else []
+        return int(fields[1]) if len(fields) == 2 and fields[0] == b"quiet" and fields[1].isdigit() else None
 
     def request_stop(self, agent_id: int) -> None:
-        self.sent({"agent_id": agent_id, STOP_FIELD: True})
+        self.request_launcher({"agent_id": agent_id, STOP_FIELD: True})
 
-    def sent(self, request: Mapping[str, object], answer_bytes: int = 0) -> bytes | None:
+    def request_launcher(self, request: Mapping[str, object], answer_bytes: int = 0) -> bytes | None:
         path = self.home.socket(LAUNCHER_SOCKET)
         if not path.exists():
             return None

@@ -30,7 +30,7 @@ class ForeignHooksRule(DriverRule):
         rewritten = next((answer for answer in answers if answer.updated_input), None)
         lines = [line for answer in answers for line in self.new_lines(hook, answer.name, answer.lines)]
         commands = [RecordAgentNotice(hook.agent_id, line, self.name) for line in lines]
-        nudges = [MANAGED_HOOK_LINE.nudge(words=line) for line in lines] if hook.event.event in provider.line_events else []
+        nudges = [MANAGED_HOOK_LINE.nudge(line=line) for line in lines] if hook.event.event in provider.line_events else []
         if hook.event.event not in provider.line_events:
             commands = []
         if refusal:
@@ -43,8 +43,8 @@ class ForeignHooksRule(DriverRule):
                           dropped_lines=len(lines) if hook.event.event not in provider.line_events else 0,
                           terminal="\n".join(answer.terminal for answer in answers if answer.terminal))
 
-    def new_lines(self, hook: AgentHook, name: str, said: list[str]) -> list[str]:
+    def new_lines(self, hook: AgentHook, name: str, reported: list[str]) -> list[str]:
         prefix = f"{name}: "
         last = self.queries.query(HookCall).filter(session_agent_id=hook.agent_id).matching(ContainsSome(["lines"], [prefix])).newest().first()
-        before = last.lines.splitlines() if last is not None else []
-        return [line for line in (f"{prefix}{words}" for words in said) if line not in before]
+        previous_lines = last.lines.splitlines() if last is not None else []
+        return [line for line in (f"{prefix}{text}" for text in reported) if line not in previous_lines]

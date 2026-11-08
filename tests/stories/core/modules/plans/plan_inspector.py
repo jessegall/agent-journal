@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.base.viewer.panel_words import PanelWords
+from core.base.viewer.panel_words import PanelLabels
 from core.modules.plans.models.plan import Plan
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
@@ -40,7 +40,7 @@ def test_a_completed_plan_offers_nothing(new_story):
 def test_no_plan_action_is_called_close(new_story):
     registry, declaration = declaration_of(new_story(fixture=MainEnvironment))
     labels = [button.declaration.label for button in registry.buttons if any(slot in ("row.plan", "dock.plans.waiting") for slot in button.declaration.slots)]
-    expect_value(bool(labels and not any(PanelWords.begins(label) for label in labels)), True)
+    expect_value(bool(labels and not any(PanelLabels.begins(label) for label in labels)), True)
 
 
 def test_the_plan_inspector_declares_its_components_and_links(new_story):

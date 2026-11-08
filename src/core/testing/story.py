@@ -90,7 +90,7 @@ class Story:
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
-        line = self.in_environment(line)
+        line = self.scope_line(line)
         caller = Caller(actor or Actor.core(), environment_id)
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
         with self.repeated_work.request():
@@ -98,7 +98,7 @@ class Story:
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
-    def in_environment(self, line: str) -> str:
+    def scope_line(self, line: str) -> str:
         if self.environment is None or "--environment" in shlex.split(line):
             return line
         return f"{line} --environment {shlex.quote(self.environment)}"
@@ -135,7 +135,7 @@ class Story:
 
     @property
     def repeated_work(self) -> RepeatedWork:
-        return cast(RepeatedWork, self.container.get(Database).tally)
+        return cast(RepeatedWork, self.container.get(Database).repeated_work)
 
     def run_listeners(self) -> None:
         self.steps.append("listeners")
@@ -251,7 +251,7 @@ class Story:
         code, output_text = self.synced_with(module)
         assert code == 0, f"module sync with {module} gave {code}: {output_text}"
 
-    def expect_shipped_sync_refusal(self, module: type[Module], text: str) -> None:
+    def expect_sync_refusal(self, module: type[Module], text: str) -> None:
         with patch("core.modules.DEFAULT_MODULES", (*DEFAULT_MODULES, module)):
             code, output_text = self.synced()
         assert code != 0 and text in output_text, f"module sync with the shipped {module.name} gave {code}: {output_text}"
@@ -269,7 +269,7 @@ class Story:
         assert [provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}"
 
     def expect_logged_event(self, name: str) -> None:
-        names = [event.event for event in self.container.get(EventLog).events_past(0)]
+        names = [event.event for event in self.container.get(EventLog).events_after(0)]
         assert name in names, f"no {name} event among {names}"
 
     def synced_with(self, module: str) -> tuple[int, str]:
@@ -301,6 +301,6 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(MainAgentSkills, StoryMainAgentSkills())
     container.bind(LoginPath, StoryLoginPath(home))
     database = container.get(Database)
-    database.tally = RepeatedWork(database)
+    database.repeated_work = RepeatedWork(database)
     container.bind(TaskBriefRequirement, StoryTaskBriefRequirement())
     return container

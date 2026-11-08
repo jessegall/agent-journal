@@ -11,7 +11,7 @@ class SettingRuleText:
     writes a rule as text and checks a value against the rule in a text."""
 
     @staticmethod
-    def to_text(rule: SettingRule | None) -> str:
+    def rule_text(rule: SettingRule | None) -> str:
         return "" if rule is None else json.dumps({RULE_NAME: rule.name, **asdict(rule)})
 
     def problems(self, text: str, key: str, value: object) -> Iterator[str]:

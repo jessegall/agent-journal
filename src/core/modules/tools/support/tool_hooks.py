@@ -6,7 +6,7 @@ from core.base.provider.providers import Providers
 from core.modules.tools.support.tool_definition import ToolDefinition
 
 HOOK_TIMEOUT_SECONDS = 20
-NO_SOURCE = ""
+EMPTY_SOURCE = ""
 
 
 class ToolHooks:
@@ -28,8 +28,8 @@ class ToolHooks:
 
     def add(self, tool: ToolDefinition) -> None:
         entry = {"type": "command", "command": self.command(tool), "timeout": HOOK_TIMEOUT_SECONDS}
-        self.managed.added([ManagedHook.found(provider.name, event, "", entry, NO_SOURCE, False)
+        self.managed.added([ManagedHook.found(provider.name, event, "", entry, EMPTY_SOURCE, False)
                             for provider in self.providers.all() for event, name in provider.hook_events.items() if name is HookEventName.PROMPT])
 
     def remove(self, tool: ToolDefinition) -> None:
-        self.managed.removed_by_stamp(self.stamp(tool))
+        self.managed.drop_stamped(self.stamp(tool))

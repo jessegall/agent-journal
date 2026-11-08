@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class PanelWords(StrEnum):
+class PanelLabels(StrEnum):
     """The words the viewer keeps for its own panel actions: no label of an action on a model may start with
     one."""
 
@@ -9,9 +9,9 @@ class PanelWords(StrEnum):
     OPEN = "open"
     HIDE = "hide"
     DISMISS = "dismiss"
-    BACK = "back"
+    PREVIOUS = "back"
 
     @classmethod
     def begins(cls, label: str) -> bool:
-        words = label.split()
-        return bool(words) and words[0].lower() in {word.value for word in cls}
+        parts = label.split()
+        return bool(parts) and parts[0].lower() in {word.value for word in cls}

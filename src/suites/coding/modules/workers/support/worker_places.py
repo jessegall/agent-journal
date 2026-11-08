@@ -17,7 +17,7 @@ from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.agents.support.agent_rows import AgentRows
 
 AGENT_LINES_TABLE = "agent_lines"
@@ -34,19 +34,19 @@ class WorkerPlaces:
         self.agents, self.queries, self.limits, self.kept, self.clock, self.scopes = agents, queries, limits, kept, clock, scopes
 
     def running(self) -> tuple[Agent, ...]:
-        running = self.agents.running(CodingHelperKind.WORKER)
+        running = self.agents.running(CodingHelperRole.WORKER)
         pending_ids = tuple(self.work.pending())
         pending = self.kept.scoped_current(lambda: tuple(self.queries.query(Agent).find_many(pending_ids)), name=f"workers.pending_agents:{pending_ids}")
         return tuple({worker.id: worker for worker in (*running, *pending)}.values())
 
     def kept_workers(self) -> tuple[Agent, ...]:
-        return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingHelperKind.WORKER.value], name="workers.kept")
+        return self.kept.scoped_read(AGENTS_TABLE, self.kept_rows, "role = ?", [CodingHelperRole.WORKER.value], name="workers.kept")
 
     def kept_rows(self) -> tuple[Agent, ...]:
-        return tuple(self.queries.query(Agent).filter(role=CodingHelperKind.WORKER).matching(IsNull("retired_at")).newest().all_rows())
+        return tuple(self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest().all_rows())
 
     def kept_limit(self) -> int:
-        return self.limits.lookup(CodingHelperKind.WORKER).kept
+        return self.limits.lookup(CodingHelperRole.WORKER).kept
 
     def can_start_new(self) -> bool:
         workers = self.kept_workers()
@@ -64,10 +64,10 @@ class WorkerPlaces:
         workers = self.kept_workers()
         if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
             names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", self.use.retire_suggestion(CodingHelperKind.WORKER) or TypeLimits.retirement_instruction(workers))
+            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", self.use.retire_suggestion(CodingHelperRole.WORKER) or TypeLimits.retirement_instruction(workers))
 
     def run_limit(self) -> int:
-        return self.limits.lookup(CodingHelperKind.WORKER).run
+        return self.limits.lookup(CodingHelperRole.WORKER).run
 
     def resuming_lines(self) -> tuple[AgentLine, ...]:
         cutoff_value_at = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)

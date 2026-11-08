@@ -17,12 +17,12 @@ class ReminderPasses:
 
     def round(self, agent_id: int, reminder: ReminderDeclaration, due: Sequence[ReminderSubject]) -> ReminderRound:
         row = self.queries.query(ReminderPass).filter(session_agent_id=agent_id, key=reminder.key).first()
-        earlier = row.subject_counts() if row is not None else {}
+        previous = row.subject_counts() if row is not None else {}
         reminded: list[str] = []
         blocking: list[str] = []
         counts: list[tuple[str, int]] = []
         for item in due:
-            last = earlier.get(item.subject)
+            last = previous.get(item.subject)
             passes = 1 if last is None or item.moved_at > last[1] else last[0] + 1
             exceeded = passes > reminder.allowed_passes
             (blocking if exceeded else reminded).append(item.subject)

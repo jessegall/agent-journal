@@ -24,7 +24,7 @@ class Database:
         self.connection = connection
         self.identity = identity
         self.nested: list[str] = []
-        self.tally = PointTally()
+        self.repeated_work = PointTally()
         self.read_actor_id: int | None = None
         self.write_rollback_count = 0
         self.row_owner: RowOwner | None = None
@@ -112,11 +112,11 @@ class Database:
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
         if statement.is_read:
-            self.tally.take_read_mark()
+            self.repeated_work.mark_read()
         else:
-            self.tally.count_write(statement.sql)
+            self.repeated_work.count_write(statement.sql)
         rows = statement.result(self.connection).fetchall()
-        self.tally.loaded(rows, statement)
+        self.repeated_work.loaded(rows, statement)
         return rows
 
     def query_plan(self, statement: Statement) -> tuple[str, ...]:
@@ -127,14 +127,14 @@ class Database:
         return row is not None and bool(row[0])
 
     def insert(self, statement: Statement) -> int:
-        self.tally.count_write(statement.sql)
+        self.repeated_work.count_write(statement.sql)
         row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
         return row_id
 
     def update(self, statement: Statement) -> int:
-        self.tally.count_write(statement.sql)
+        self.repeated_work.count_write(statement.sql)
         return statement.result(self.connection).rowcount
 
     def close(self) -> None:

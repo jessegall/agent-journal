@@ -9,7 +9,7 @@ from tests.stories.core.modules.helpers.start_helper import START
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, BuilderWithUser, OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, in_environment
+from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors, scope_line
 from tests.stories.support.story_checks import expect_value
 
 AUTO = "journal.suites.coding.auto-mode"

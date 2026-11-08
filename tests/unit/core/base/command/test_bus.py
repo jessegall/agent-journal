@@ -9,7 +9,7 @@ from core.base.command.bus import Bus
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError
 from core.base.command.command import Command
-from core.base.command.outside_runs import MAX_ROUNDS, OutsideRuns
+from core.base.command.external_runs import MAX_ROUNDS, OutsideRuns
 from core.base.command.outside_turn import OutsideTurn
 from core.base.command.script_policy import ScriptPolicy
 from core.base.database.kept_rows import KeptRows
@@ -134,11 +134,11 @@ class CreateItemWithOutsideWorkHandler(Handler[CreateItemWithOutsideWork, Item])
         self.repository = repository
 
     def handle(self, command: CreateItemWithOutsideWork, context: Context) -> Item:
-        ROUNDS.append(context.outside_runs.rounds)
+        ROUNDS.append(context.external_runs.rounds)
         item = self.repository.save(Item(title=command.title), context)
-        turn = context.outside_runs.turn("guard", "item.create")
-        if not turn.has_answers and not context.outside_runs.closed:
-            raise context.outside_runs.rollback(OutsideTestWork(turn))
+        turn = context.external_runs.turn("guard", "item.create")
+        if not turn.has_answers and not context.external_runs.closed:
+            raise context.external_runs.rollback(OutsideTestWork(turn))
         return item
 
 
@@ -156,10 +156,10 @@ class EndlessItemHandler(Handler[EndlessItem, Item]):
         self.repository = repository
 
     def handle(self, command: EndlessItem, context: Context) -> Item:
-        ROUNDS.append(context.outside_runs.rounds)
+        ROUNDS.append(context.external_runs.rounds)
         item = self.repository.save(Item(title=command.title), context)
-        if not context.outside_runs.closed:
-            raise context.outside_runs.rollback(EndlessWork())
+        if not context.external_runs.closed:
+            raise context.external_runs.rollback(EndlessWork())
         return item
 
 
@@ -290,10 +290,10 @@ class CreateItemAfterNestedHandler(Handler[CreateItemAfterNested, Item]):
         self.bus = bus
 
     def handle(self, command: CreateItemAfterNested, context: Context) -> Item:
-        ROUNDS.append(context.outside_runs.rounds)
+        ROUNDS.append(context.external_runs.rounds)
         item = self.bus.dispatch(CreateNestedSingleItem(command.title), context)
-        if not context.outside_runs.closed:
-            raise context.outside_runs.rollback(EndlessWork())
+        if not context.external_runs.closed:
+            raise context.external_runs.rollback(EndlessWork())
         return item
 
 
@@ -412,7 +412,7 @@ def test_a_locked_command_inside_an_unlocked_one_runs_as_it_does_at_the_top(outs
 def test_a_nested_command_keeps_the_skipped_guards_and_the_plugin_script(outside_container):
     outside_container.get(Bus).run(PassedOn(), AGENT, frozenset({"plugins.event-guard"}), plugin_script="see.sh")
     context = RECORDED_CONTEXTS[0]
-    assert context.skipped_guards == {"plugins.event-guard"} and context.outside_runs.is_plugin_script
+    assert context.skipped_guards == {"plugins.event-guard"} and context.external_runs.is_plugin_script
 
 
 def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(outside_container):

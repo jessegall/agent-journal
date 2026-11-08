@@ -20,19 +20,19 @@ class FileFingerprints:
         self.file = home.folder / FINGERPRINT_FILE
 
     def changed(self, pass_name: str, files: Sequence[Path]) -> list[Path]:
-        known = self.known(pass_name)
-        return [file for file in files if known.get(str(file)) != self.fingerprint(file)]
+        stored = self.pass_fingerprints(pass_name)
+        return [file for file in files if stored.get(str(file)) != self.fingerprint(file)]
 
-    def done(self, pass_name: str, files: Sequence[Path]) -> None:
+    def record_finished(self, pass_name: str, files: Sequence[Path]) -> None:
         if not files:
             return
-        everything = self.stored()
-        known = everything.setdefault(pass_name, {})
+        all_passes = self.stored()
+        stored = all_passes.setdefault(pass_name, {})
         for file in files:
-            known[str(file)] = self.fingerprint(file)
-        FileAccess.shared().write(self.file, json.dumps(everything))
+            stored[str(file)] = self.fingerprint(file)
+        FileAccess.shared().write(self.file, json.dumps(all_passes))
 
-    def known(self, pass_name: str) -> dict[str, str]:
+    def pass_fingerprints(self, pass_name: str) -> dict[str, str]:
         return self.stored().get(pass_name, {})
 
     def stored(self) -> dict[str, dict[str, str]]:

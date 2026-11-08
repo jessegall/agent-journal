@@ -10,7 +10,7 @@ from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, Manif
 from core.modules.plugins.support.plugin_event_row import PluginEventRow
 from core.modules.plugins.support.plugin_event_state import PluginEventState
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_declared_event import CEILING_SETTING
+from core.modules.plugins.support.plugin_event_entry import CEILING_SETTING
 from core.modules.plugins.support.plugins_module_name import MODULE_NAME
 from core.modules.settings.bindings.support.setting_values import SettingValues
 

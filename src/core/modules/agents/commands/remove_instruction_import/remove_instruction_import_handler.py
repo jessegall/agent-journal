@@ -9,7 +9,7 @@ from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import import RemoveInstructionImport
 from core.modules.agents.commands.remove_instruction_import.instruction_import_question import InstructionImportQuestion
 
-COMMAND_WORDS = ("instruction-import", "remove")
+COMMAND_NAME_PARTS = ("instruction-import", "remove")
 
 
 class RemoveInstructionImportHandler(Handler[RemoveInstructionImport, str]):

@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
@@ -18,7 +18,7 @@ class WorkerTestCountRule(DriverRule):
     priority = -1
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
-    roles = [CodingHelperKind.WORKER]
+    roles = [CodingHelperRole.WORKER]
 
     def __init__(self, listings: WorkerTestListings, settings: SettingValues) -> None:
         self.listings, self.settings = listings, settings

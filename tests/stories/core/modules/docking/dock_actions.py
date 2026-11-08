@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.base.viewer.panel_words import PanelWords
+from core.base.viewer.panel_words import PanelLabels
 from core.base.viewer.window_icon import WindowIcon
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_value
@@ -24,4 +24,4 @@ def test_every_dock_button_has_an_icon_in_the_set_and_a_short_plain_label(new_st
 
 def test_no_dock_button_starts_with_a_panel_word(new_story):
     actions = dock_actions(new_story(fixture=MainEnvironment))
-    expect_value([action for action in actions if PanelWords.begins(action[2])], [])
+    expect_value([action for action in actions if PanelLabels.begins(action[2])], [])

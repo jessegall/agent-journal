@@ -28,5 +28,5 @@ class AcceptCoveredApprovalHandler(Handler[AcceptCoveredApproval, str | None]):
         if request is None or request.standing_id is None:
             return None
         standing = self.queries.query(StandingApproval).find(request.standing_id)
-        result = self.bus.run(AnswerApproval(request.id, ApprovalDecision.ACCEPT), Actor(standing.creator_id, ActorType.USER), environment_id=request.environment_id)
-        return f"standing yes {standing.id} accepted approval {request.id}\n{result.output}".rstrip()
+        outcome = self.bus.run(AnswerApproval(request.id, ApprovalDecision.ACCEPT), Actor(standing.creator_id, ActorType.USER), environment_id=request.environment_id)
+        return f"standing yes {standing.id} accepted approval {request.id}\n{outcome.output}".rstrip()

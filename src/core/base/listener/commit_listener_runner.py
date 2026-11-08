@@ -100,7 +100,7 @@ class CommitListenerRunner:
     def run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool:
         positions = self.known_positions(entries)
         entries = [entry for entry in entries if entry.name in positions]
-        events = self.log.events_past(min(positions[entry.name] for entry in entries)) if entries else []
+        events = self.log.events_after(min(positions[entry.name] for entry in entries)) if entries else []
         if not events:
             return False
         due_entries = [entry for entry in entries if any(event.id > positions[entry.name] and entry.event.matches(event.event) for event in events)]
@@ -124,7 +124,7 @@ class CommitListenerRunner:
     def run_urgent_events(self, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> None:
         if self.log.newest_id() == events[-1].id:
             return
-        newer_events = self.log.events_past(events[-1].id)
+        newer_events = self.log.events_after(events[-1].id)
         for listener in urgent_entries:
             self.run_listener(listener, newer_events)
 

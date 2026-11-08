@@ -10,9 +10,9 @@ class PerformanceCosts:
         self.database, self.state = database, state
 
     def begin(self) -> Points | None:
-        return self.database.tally.points() if self.state.can_measure else None
+        return self.database.repeated_work.points() if self.state.can_measure else None
 
     def cost(self, start_points: Points | None) -> Points | None:
         if start_points is None or not self.state.can_measure:
             return None
-        return self.database.tally.points().minus(start_points)
+        return self.database.repeated_work.points().minus(start_points)

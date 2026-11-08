@@ -21,7 +21,7 @@ class TemplateAdaptation:
     def __init__(self, checkout: Path) -> None:
         self.checkout = str(checkout)
 
-    def built_in(self, folder: Path) -> str:
+    def builder_name(self, folder: Path) -> str:
         file = folder / CHECKOUT_FILE
         return FileAccess.shared().read(file) if file.is_file() else self.checkout
 
@@ -29,7 +29,7 @@ class TemplateAdaptation:
         FileAccess.shared().write(folder / CHECKOUT_FILE, self.checkout)
 
     def adapted(self, template: Path, adapted: Path) -> None:
-        builder = self.built_in(template)
+        builder = self.builder_name(template)
         shutil.rmtree(adapted, ignore_errors=True)
         shutil.copytree(template, adapted)
         for database in adapted.rglob("*.db"):
@@ -66,9 +66,9 @@ class TemplateAdaptation:
     @staticmethod
     def text_columns(connection: sqlite3.Connection) -> list[tuple[str, list[str]]]:
         tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND sql NOT LIKE 'CREATE VIRTUAL%' AND name NOT LIKE 'sqlite_%'")]
-        found = []
+        tables = []
         for table in tables:
             columns = [row[1] for row in connection.execute(f'PRAGMA table_info("{table}")') if re.search("CHAR|TEXT|CLOB|JSON", row[2].upper() or "TEXT")]
             if columns:
-                found.append((table, columns))
-        return found
+                tables.append((table, columns))
+        return tables

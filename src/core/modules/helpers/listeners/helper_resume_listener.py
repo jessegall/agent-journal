@@ -1,6 +1,6 @@
 from core.base.change.changed import Changed
 from core.base.change.logged_event import LoggedEvent
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
@@ -24,7 +24,7 @@ class HelperResumeListener(CommitListener[Changed[Agent]]):
     def handle(self, event: Changed[Agent], logged: LoggedEvent) -> None:
         if event.old_row is None or event.old_row.paused_at is None or event.row.paused_at is not None:
             return
-        helpers = self.queries.query(Agent).filter(parent_id=event.row.id, role=HelperKind.READ_ONLY).matching(Greater("ended_at", "")).all_rows()
+        helpers = self.queries.query(Agent).filter(parent_id=event.row.id, role=HelperRole.HELPER).matching(Greater("ended_at", "")).all_rows()
         for helper in tuple(helpers):
             if self.jobs.open_job(helper.id) is not None:
                 self.resume.resume(helper, RESUME_JOB_TEXT)

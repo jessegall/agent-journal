@@ -64,7 +64,7 @@ def test_a_disabled_hook_log_loads_no_agent_rows(recording_server, monkeypatch):
     record_hook = HookRequestLog.record_hook
 
     def record_counted(log, *args):
-        points_counter = log.queries.database.tally
+        points_counter = log.queries.database.repeated_work
         first_points = points_counter.points()
         recorded = record_hook(log, *args)
         costs.append(points_counter.points().minus(first_points))

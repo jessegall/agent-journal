@@ -25,12 +25,12 @@ def test_a_template_built_in_another_checkout_gets_this_checkouts_paths(tmp_path
     rows = sqlite3.connect(adapted / "version-5.db").execute("SELECT path, count FROM skills ORDER BY id").fetchall()
     assert rows == [(f"{tmp_path / 'worktree'}/src/core/skills/one/SKILL.md", 3), ("elsewhere/SKILL.md", 4)]
     assert (adapted / "module_list").read_text() == f'["{tmp_path / "worktree"}/modules"]'
-    assert TemplateAdaptation(tmp_path / "worktree").built_in(adapted) == str(tmp_path / "worktree")
+    assert TemplateAdaptation(tmp_path / "worktree").builder_name(adapted) == str(tmp_path / "worktree")
 
 
 def test_the_builders_own_template_is_left_as_it_is(tmp_path):
     template = built_template(tmp_path, tmp_path / "project")
-    assert TemplateAdaptation(tmp_path / "project").built_in(template) == str(tmp_path / "project")
+    assert TemplateAdaptation(tmp_path / "project").builder_name(template) == str(tmp_path / "project")
     rows = sqlite3.connect(template / "version-5.db").execute("SELECT path FROM skills WHERE id = 1").fetchall()
     assert rows == [tuple([f"{tmp_path / 'project'}/src/core/skills/one/SKILL.md"])]
 

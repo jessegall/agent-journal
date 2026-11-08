@@ -7,7 +7,7 @@ from core.modules.setting_requests.listeners.approved_setting_listener import Ap
 from core.modules.setting_requests.listeners.outdated_setting_approval_listener import OutdatedSettingApprovalListener
 from core.modules.setting_requests.listeners.pending_setting_approval_listener import PendingSettingApprovalListener
 from core.modules.setting_requests.migrations.m001_setting_requests import SettingRequestsTableMigration
-from core.modules.setting_requests.migrations.m002_read_only_helper_keys import ReadOnlyHelperKeysMigration
+from core.modules.setting_requests.migrations.m002_read_only_helper_keys import HelperKeysMigration
 from core.modules.setting_requests.models.setting_request import SettingRequest
 
 
@@ -20,7 +20,7 @@ class SettingRequestsModule(Module):
     seed_reason = "the demo shows no setting requests"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.questions"]
     models = [ModelDeclaration(SettingRequest, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [SettingRequestsTableMigration, ReadOnlyHelperKeysMigration]
+    migrations = [SettingRequestsTableMigration, HelperKeysMigration]
     handlers = [RequestSettingHandler]
     subcommands = [RequestSettingSubcommand]
     guards = [RequestQuestionGuard]

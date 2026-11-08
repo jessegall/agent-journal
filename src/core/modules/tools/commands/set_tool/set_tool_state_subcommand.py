@@ -6,7 +6,7 @@ from core.modules.tools.commands.set_tool.set_tool import SetTool
 from core.modules.tools.support.tool_card import ToolCard
 
 
-class SetToolOnSubcommand(Subcommand[SetTool, ToolCard]):
+class SetToolStateSubcommand(Subcommand[SetTool, ToolCard]):
     """`journal tool on <name>`: turns a supported tool on."""
 
     cli_name = "tool"

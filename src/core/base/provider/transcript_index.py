@@ -24,7 +24,7 @@ class TranscriptIndex:
             rows = tuple(self.row(provider, transcript, indexed.lines[position], position + 1) for position in range(start, end))
         return Page(rows, number, size, len(indexed.lines))
 
-    def before(self, provider: Provider, path: Path, row_id: int, size: int) -> Page[TranscriptRow]:
+    def older_rows(self, provider: Provider, path: Path, row_id: int, size: int) -> Page[TranscriptRow]:
         indexed = self.indexed(provider, path)
         end = min(max(row_id - 1, 0), len(indexed.lines))
         start = max(end - size, 0)

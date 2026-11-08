@@ -7,7 +7,7 @@ from core.modules.drivers.commands.answer_refusal_skip.answer_refusal_skip impor
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 
 
-class WithdrawRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, RefusalSkip]):
+class CancelRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, RefusalSkip]):
     """`journal refusal withdraw <skip>`: withdraws a held skip, so the refusal stays in force."""
 
     cli_name = "refusal"

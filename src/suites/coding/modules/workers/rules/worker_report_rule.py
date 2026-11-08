@@ -1,4 +1,4 @@
-from suites.coding.support.coding_helper_kind import CodingHelperKind
+from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -20,7 +20,7 @@ class WorkerReportRule(DriverRule):
     name = "workers.report"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = [CodingHelperKind.WORKER]
+    roles = [CodingHelperRole.WORKER]
 
     def __init__(self, agents: AgentRows, tasks: TaskQuery, settings: SettingValues, next_task: WorkerNextTask) -> None:
         self.next_task = next_task

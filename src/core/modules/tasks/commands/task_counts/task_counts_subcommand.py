@@ -27,16 +27,16 @@ class TaskCountsSubcommand(ReadSubcommand[TaskCounts]):
         self.cards, self.clock = cards, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
-        range_of_completed = parser.add_mutually_exclusive_group()
-        range_of_completed.add_argument("--hours", type=float, default=DEFAULT_HOURS, help="count the tasks completed in the last hours")
-        range_of_completed.add_argument("--since", default=None, help="count the tasks completed after this time")
+        range_group = parser.add_mutually_exclusive_group()
+        range_group.add_argument("--hours", type=float, default=DEFAULT_HOURS, help="count the tasks completed in the last hours")
+        range_group.add_argument("--since", default=None, help="count the tasks completed after this time")
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskCounts:
         since = Timestamp.parsed(arguments.since) if arguments.since else Timestamp(self.clock.timestamp().value - timedelta(hours=arguments.hours))
         completed = self.cards.cards(TaskState.COMPLETED, []).matching(Greater("closed_at", since.text)).count()
-        return TaskCounts(self.cards.every(TaskState.STARTED, TaskState.TESTING).count(), self.cards.every(TaskState.BLOCKED).count(), self.cards.every(TaskState.OPEN).count(), completed, since.text)
+        return TaskCounts(self.cards.matching_states(TaskState.STARTED, TaskState.TESTING).count(), self.cards.matching_states(TaskState.BLOCKED).count(), self.cards.matching_states(TaskState.OPEN).count(), completed, since.text)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskCounts):
-            output.write(f"in progress: {value.in_progress}\nblocked: {value.blocked}\nopen: {value.open}\ncompleted: {value.completed} since {value.since}",
-                         {"in_progress": value.in_progress, "blocked": value.blocked, "open": value.open, "completed": value.completed, "since": value.since})
+            output.write(f"in progress: {value.started}\nblocked: {value.blocked}\nopen: {value.open}\ncompleted: {value.completed} since {value.since}",
+                         {"in_progress": value.started, "blocked": value.blocked, "open": value.open, "completed": value.completed, "since": value.since})

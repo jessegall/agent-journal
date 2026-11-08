@@ -61,7 +61,7 @@ def person_viewer(story: Story) -> Iterator[PersonViewer]:
 
 
 @contextmanager
-def in_environment(story: Story, environment_id: int = 1) -> Iterator[None]:
+def scope_line(story: Story, environment_id: int = 1) -> Iterator[None]:
     database = story.container.get(Database)
     previous = database.row_owner
     database.row_owner = RowOwner(None, environment_id)

@@ -8,7 +8,7 @@ from core.base.command.request_user_approval import RequestUserApproval
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.guard.guard import Guard
 from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_not_null import IsNotNull
+from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
@@ -64,7 +64,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         return skip
 
     def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> RefusalSkip:
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, withdrawn_at=None, waits_for_approval=False).matching(IsNotNull("confirmed_at")).newest().first()
+        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, withdrawn_at=None, waits_for_approval=False).matching(HasValue("confirmed_at")).newest().first()
         if skip is None:
             raise Refusal(f"{name} has no confirmed skip of yours: a skip is held until you confirm it with what you tried",
                           f"journal refusal skip {name} --reason '<why it is wrong here>', then confirm it")

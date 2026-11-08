@@ -1,5 +1,5 @@
 from core.base.agent_role import AgentRole
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
@@ -27,7 +27,7 @@ class NewMainHelpersListener(SaveListener[Created[Agent]]):
         agent = event.row
         if agent.role != AgentRole.MAIN:
             return
-        for helper in self.agents.running(HelperKind.READ_ONLY):
+        for helper in self.agents.running(HelperRole.HELPER):
             if helper.parent_id is not None and self.has_ended(helper.parent_id):
                 self.repository.save(helper.changed(parent_id=agent.id), context)
         for line in tuple(self.queries.query(AgentLine).filter(source=PARENT_REPORT_SOURCE, state=AgentLineState.WAITING).all_rows()):

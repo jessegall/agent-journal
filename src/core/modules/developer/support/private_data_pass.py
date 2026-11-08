@@ -22,7 +22,7 @@ class PrivateDataPass:
         folder = self.files.folder
         slice_ = self.changes.changed(PASS_NAME, self.files.listed())[:SLICE_FILES]
         findings = [finding for file in slice_ if self.is_text(file) for finding in self.scan.scan(file.relative_to(folder), self.text(file))]
-        self.changes.done(PASS_NAME, slice_)
+        self.changes.record_finished(PASS_NAME, slice_)
         return findings
 
     @staticmethod

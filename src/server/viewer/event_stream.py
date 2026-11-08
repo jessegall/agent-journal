@@ -35,7 +35,7 @@ class EventStream:
             if request.patterns is not None and not output(f"event: cursor\ndata: {json.dumps({'id': cursor_id})}\n\n"):
                 return
             while True:
-                events = log.events_past(cursor_id)
+                events = log.events_after(cursor_id)
                 followed = [event for event in events if request.matches(event.event)]
                 visible = followed if shared is None else ShareEvents(container, shared).admitted(followed)
                 for event in visible:

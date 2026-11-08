@@ -37,7 +37,7 @@ class PluginEventScripts:
     def answers(self, form: EventForm, event: Changed[Model], context: Context) -> Sequence[PluginEventAnswer]:
         if isinstance(context.command, FAULT_WRITES):
             return ()
-        runs, change = context.outside_runs, Change.event_change(event, context)
+        runs, change = context.external_runs, Change.event_change(event, context)
         subscriptions = self.subscriptions.scripts(change.event, form)
         if form is EventForm.GUARD:
             subscriptions = tuple(subscription for subscription in subscriptions if not (subscription.allows_skip and f"{GUARD_NAME}:{subscription.plugin}" in context.skipped_guards))

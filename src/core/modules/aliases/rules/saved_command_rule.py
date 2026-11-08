@@ -1,4 +1,4 @@
-from core.base.helper_kind import HelperKind
+from core.base.helper_role import HelperRole
 from core.base.duration import Duration
 from core.base.duration_error import DurationError
 from core.base.driver.agent_hook import AgentHook
@@ -71,7 +71,7 @@ class SavedCommandRule(DriverRule):
             return SAVED_COMMAND_DIRECT.nudge(name=exact.name)
         if saved:
             return SAVED_COMMAND_CHOICES.nudge(category=category.value)
-        if role == HelperKind.READ_ONLY:
+        if role == HelperRole.HELPER:
             return SAVED_COMMAND_HELPER.nudge(category=category.value)
         return SAVED_COMMAND_UNKNOWN.nudge(command=part.text, category=category.value)
 
@@ -83,4 +83,4 @@ class SavedCommandRule(DriverRule):
         if not part.read_flag:
             return SAVED_COMMAND_UNREAD.nudge(name=part.saved_command)
         alias = self.aliases.saved(part.saved_command)
-        return SAVED_COMMAND_SILENT.nudge(name=alias.name) if alias is not None and alias.is_held else None
+        return SAVED_COMMAND_SILENT.nudge(name=alias.name) if alias is not None and alias.is_claimed else None

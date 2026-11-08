@@ -16,7 +16,7 @@ class SilentRuns:
     def __init__(self, folder: OutputFolder, parts: ProcessPartQuery) -> None:
         self.folder, self.parts = folder, parts
 
-    def quiet_part(self, process: Process, timestamp: Timestamp) -> ProcessPart | None:
+    def silent_part(self, process: Process, timestamp: Timestamp) -> ProcessPart | None:
         if process.creation_timestamp().elapsed_seconds(timestamp) < SILENT_SECONDS:
             return None
         if self.folder.total_bytes(process.id) and self.folder.run_silent_seconds(process.id, timestamp) < SILENT_SECONDS:
@@ -24,7 +24,7 @@ class SilentRuns:
         part = next((part for part in self.parts.process(process.id).all_rows() if part.ended_at is None), None)
         return part if part is not None and self.is_watched(part) else None
 
-    def printed_nothing(self, part: ProcessPart) -> bool:
+    def is_empty_output(self, part: ProcessPart) -> bool:
         return not self.folder.part_bytes(part.process_id, part.position)
 
     @staticmethod

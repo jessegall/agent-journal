@@ -10,7 +10,7 @@ from tests.stories.core.modules.helpers.helper_reports import enforced, helper_r
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.support.main_controls_fixture import in_environment
+from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, exit_program, expect_program, new_task, split_story, split_viewer
 from tests.stories.support.story_checks import expect_absent_value, expect_value
 
@@ -23,15 +23,15 @@ def set_options(story, *lines: str, scope: str = "--environment main") -> None:
 
 
 def new_reasons(story, agent_type: str, profile: str = "") -> list[str]:
-    with in_environment(story):
+    with scope_line(story):
         return story.container.get(AgentAdmission).new_reasons(agent_type, profile)
 
 
 def test_s11_inheritance_without_options_allows_every_type_and_profile(new_story):
     story = new_story(fixture=BuilderWithUser)
-    with in_environment(story):
-        reading = story.container.get(AgentOptions).reading("worker", "journal-worker")
-    expect_value((reading.source, reading.problems, reading.options.allow_new, reading.options.allowed_profiles), ("default", (), True, None))
+    with scope_line(story):
+        resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
+    expect_value((resolved.source, resolved.problems, resolved.options.allow_new, resolved.options.allowed_profiles), ("default", (), True, None))
     expect_absent_value(new_reasons(story, "worker", "journal-worker") + new_reasons(story, "helper", "journal-merger"))
 
 
@@ -57,16 +57,16 @@ def test_s12_inheritance_the_environment_list_replaces_the_project_list_and_name
     set_options(story, "helper allow_new=off", scope="--project")
     expect_value(new_reasons(story, "helper", "journal-researcher"), ["new helper sessions are switched off"])
     set_options(story, "worker allow_resume=off")
-    with in_environment(story):
-        reading = story.container.get(AgentOptions).reading("helper", "journal-researcher")
-    expect_value((reading.source, reading.options.allow_new), ("environment", True))
+    with scope_line(story):
+        resolved = story.container.get(AgentOptions).resolved("helper", "journal-researcher")
+    expect_value((resolved.source, resolved.options.allow_new), ("environment", True))
 
 
 def test_s52_inheritance_provider_and_model_restrictions_intersect_and_never_widen(new_story):
     story = new_story(fixture=BuilderWithUser)
     story.expect_success(f"setting set {ALLOWED_MODELS} {shlex.quote(json.dumps(['claude opus', 'codex gpt']))} --environment main", actor=story.user)
     set_options(story, "worker allowed_providers=claude", "worker allowed_models=claude:opus")
-    with in_environment(story):
+    with scope_line(story):
         admission = story.container.get(AgentAdmission)
         reasons = [admission.model_reasons("worker", "journal-worker", provider, model) for provider, model in [("claude", "opus"), ("claude", "haiku"), ("codex", "gpt")]]
     expect_value(reasons[0], [])
@@ -77,10 +77,10 @@ def test_s52_inheritance_provider_and_model_restrictions_intersect_and_never_wid
 def test_s61_invalid_legacy_policy_is_readable_and_repairable_inheritance(new_story):
     story = new_story(fixture=BuilderWithUser)
     set_options(story, "worker allow_new=maybe")
-    with in_environment(story):
-        reading = story.container.get(AgentOptions).reading("worker", "journal-worker")
+    with scope_line(story):
+        resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
         resume = story.container.get(AgentAdmission).resume_reasons("helper", "journal-researcher")
-    expect_value((len(reading.problems), reading.options.allow_new, len(resume)), (1, False, 2))
+    expect_value((len(resolved.problems), resolved.options.allow_new, len(resume)), (1, False, 2))
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 3 --environment main", actor=story.user)
     set_options(story, "worker allow_new=on")
     expect_absent_value(new_reasons(story, "worker", "journal-worker"))

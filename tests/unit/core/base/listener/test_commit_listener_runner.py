@@ -109,7 +109,7 @@ def test_a_listener_writes_one_claim_for_the_event_it_hears_and_one_move_over_th
     bus.run(ItemPause(row_id=1), AGENT)
     for number in range(20):
         bus.run(MakeItem(title=f"Arrakis {number}"), AGENT)
-    counter = container.get(Database).tally
+    counter = container.get(Database).repeated_work
     first_points = counter.points()
     container.get(CommitListenerRunner).run()
     cursor_statements = counter.points().minus(first_points).update_statements

@@ -16,7 +16,7 @@ from core.modules.agents.commands.manage_program.manage_program_handler import M
 from core.modules.agents.commands.restore_hooks.restore_hooks_handler import RestoreHooksHandler
 from core.modules.agents.commands.restore_hooks.restore_hooks_subcommand import RestoreHooksSubcommand
 from core.modules.agents.commands.bind_agent_session.bind_agent_session_handler import BindAgentSessionHandler
-from core.modules.agents.commands.renew_agent_session.renew_agent_session_handler import RenewAgentSessionHandler
+from core.modules.agents.commands.replace_agent_session.replace_agent_session_handler import ReplaceAgentSessionHandler
 from core.modules.agents.commands.agent_terminal.agent_terminal_subcommand import AgentTerminalSubcommand
 from core.modules.agents.commands.choose_agent_control.choose_agent_control_subcommand import ChooseAgentControlSubcommand
 from core.modules.agents.commands.agent_controls.agent_controls_subcommand import AgentControlsSubcommand
@@ -55,7 +55,7 @@ from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.ended_agent_program_listener import EndedAgentProgramListener
 from core.modules.agents.listeners.menu_answer_mark_listener import MenuAnswerMarkListener
-from core.modules.agents.commands.running_main_agents.running_main_agents_subcommand import RunningMainAgentsSubcommand
+from core.modules.agents.commands.show_main_agents.show_main_agents_subcommand import ShowMainAgentsSubcommand
 from core.modules.agents.commands.main_sessions.main_sessions_subcommand import MainSessionsSubcommand
 from core.modules.agents.commands.end_replaced_main.end_replaced_main_handler import EndReplacedMainHandler
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_handler import RecordMenuAnswerHandler
@@ -125,8 +125,8 @@ class AgentsModule(Module):
     migrations = [AgentInterruptMigration, AgentUsageLimitMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [*LAUNCH_FAILURE_NUDGES, *REPORT_NUDGES]
     guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard]
-    handlers = [RenewAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
-    subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, RunningMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
+    handlers = [ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]
+    subcommands = [RemoveInstructionImportSubcommand, RecordAgentInterruptSubcommand, RetireAgentSubcommand, ShowMainAgentsSubcommand, MainSessionsSubcommand, ActiveAgentListSubcommand, AgentEnvironmentsSubcommand, AgentMainSubcommand, RecordMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, AgentPeopleSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand, ManageProgramSubcommand, RestoreHooksSubcommand]
     bindings = {CallerResolver: AgentCallerResolver, AgentCheckouts: AgentProjectCheckouts, AgentRoleReader: AgentRoleRows}
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, skeleton=AGENTS_AGENTS_SKELETON, search=WindowSearch(AgentSearcher, "Search the agents"), icon=WindowIcon.AGENT, reads=["agent show", *CARD_READS], runs=["setting set", "message send", "helper send", "agent retire"], events=CARD_EVENTS, tabs=CARD_TABS, keys=CARD_KEYS),
                WindowDeclaration("agents.helpers", "Helpers", "helpers.js", WindowLoading.COMPONENT, skeleton=AGENTS_HELPERS_SKELETON, icon=WindowIcon.SUBAGENT, shows=WindowShows.SELECTED_AGENT, search=WindowSearch(AgentSearcher, "Search the agents"), reads=CARD_READS, runs=["setting set", "message send", "helper send", "helper stop", "agent retire"],

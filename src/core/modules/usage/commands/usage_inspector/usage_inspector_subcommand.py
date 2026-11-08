@@ -37,7 +37,7 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
                                     ToolFacts() if agent.ended_at else self.tool.read(Namespace(agent=agent.id), caller),
                                     self.queries.query(Agent).filter(parent_id=agent.id).count(),
                                     self.queries.query(AgentSkill).filter(session_agent_id=agent.id, state=AgentSkillState.LOADED).count(),
-                                    self.points.of(agent.id), self.programs.read(Namespace(), caller))
+                                    self.points.brief_points(agent.id), self.programs.read(Namespace(), caller))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspectorAnswer):

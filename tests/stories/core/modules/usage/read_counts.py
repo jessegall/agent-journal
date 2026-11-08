@@ -31,7 +31,7 @@ def selects_of(story, line: str) -> list[str]:
 
 def rows_loaded(story, line: str) -> int:
     story.container.get(ActorTable).row_owner(story.agent.id)
-    database_counts = story.container.get(Database).tally
+    database_counts = story.container.get(Database).repeated_work
     previous_count = database_counts.rows
     story.run(line, actor=story.agent)
     return database_counts.rows - previous_count

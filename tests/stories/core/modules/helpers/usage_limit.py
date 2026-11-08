@@ -12,7 +12,7 @@ from core.modules.drivers.commands.record_agent_notice.record_agent_notice impor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.helpers.support.program_states import ProgramStates
-from core.modules.helpers.ticks.usage_limit_marks import UsageLimitMarks
+from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
@@ -50,13 +50,13 @@ def test_agents_of_a_program_at_its_usage_limit_are_marked_and_get_no_lines_unti
     try:
         story.hook("s-1", HookSamples.session_start())
         report_window(story, 100)
-        UsageLimitMarks()(story.container)
+        UsageLimitMarker()(story.container)
         limited = agent_of(story)
-        story.expect_rows(limited.limited_until is not None, limited.activity is AgentActivity.AT_USAGE_LIMIT, detail=str(limited.limited_until))
+        story.expect_rows(limited.limited_until is not None, limited.activity is AgentActivity.USAGE_LIMITED, detail=str(limited.limited_until))
         line = waiting_line(story)
         story.expect_rows(story.row(AgentLine, line.id).state is AgentLineState.WAITING)
         story.advance(timedelta(seconds=LIMIT_SECONDS + 10))
-        UsageLimitMarks()(story.container)
+        UsageLimitMarker()(story.container)
         story.expect_rows(agent_of(story).limited_until is None, agent_of(story).activity is AgentActivity.WORKING)
         story.expect_rows(story.row(AgentLine, line.id).state is AgentLineState.ENTERED)
     finally:
@@ -66,14 +66,14 @@ def test_agents_of_a_program_at_its_usage_limit_are_marked_and_get_no_lines_unti
 def test_a_window_below_its_limit_marks_no_agent(new_story):
     story = limited_story(new_story)
     report_window(story, 98)
-    UsageLimitMarks()(story.container)
+    UsageLimitMarker()(story.container)
     story.expect_rows(agent_of(story).limited_until is None)
 
 
 def test_the_agent_card_says_it_is_at_the_usage_limit_and_when_the_allowance_starts_again(new_story):
     story = limited_story(new_story)
     report_window(story, 100)
-    UsageLimitMarks()(story.container)
+    UsageLimitMarker()(story.container)
     card = json.loads(story.run("agent cards --include-main --json", actor=story.agent).output_text)["rows"][0]
     story.expect_rows(card["facts"]["state"] == "at usage limit", card["facts"]["limited_until"] == agent_of(story).limited_until.text, detail=str(card["facts"]))
 

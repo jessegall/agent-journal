@@ -5,7 +5,7 @@ from core.modules.processes.models.reader_request import ReaderRequest
 
 
 @dataclass(frozen=True)
-class AskForReader(Command[ReaderRequest]):
+class RequestReader(Command[ReaderRequest]):
     """A person asks the agent that ran a run, whose box is empty, to draw a reader for it."""
 
     process_id: int

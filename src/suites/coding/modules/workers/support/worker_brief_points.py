@@ -12,5 +12,5 @@ class WorkerBriefPoints(AgentBriefPoints):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def of(self, agent_id: int) -> Sequence[Mapping[str, object]]:
+    def brief_points(self, agent_id: int) -> Sequence[Mapping[str, object]]:
         return WorkerPointList(self.queries.query(WorkerPoints).filter(session_agent_id=agent_id).descending("worktree_id").first()).points()

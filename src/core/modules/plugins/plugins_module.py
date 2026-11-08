@@ -12,7 +12,7 @@ from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveri
 from core.modules.plugins.ticks.delivery_pruning import DeliveryPruning
 from core.modules.plugins.ticks.plugin_config_reading import PluginConfigReading
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_handler import RefreshPluginConfigHandler
-from core.modules.plugins.commands.refresh_plugin_config.plugin_config_subcommand import PluginConfigSubcommand
+from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_subcommand import RefreshPluginConfigSubcommand
 from core.modules.plugins.listeners.plugin_event_listener import PluginEventListener
 from core.modules.plugins.listeners.plugin_wrong_key_mark_listener import PluginWrongKeyMarkListener
 from core.modules.plugins.listeners.system_event_delivery_listener import SystemEventDeliveryListener
@@ -142,5 +142,5 @@ class PluginsModule(Module):
                      TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]
     guards = [PluginEventGuard]
     listeners = [PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
-    subcommands = [PostPluginCardSubcommand, PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginPathSubcommand, PluginConfigSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, PluginServiceLogSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
+    subcommands = [PostPluginCardSubcommand, PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginPathSubcommand, RefreshPluginConfigSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, PluginServiceLogSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]

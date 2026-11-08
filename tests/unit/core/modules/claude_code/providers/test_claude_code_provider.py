@@ -75,7 +75,7 @@ def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared
 def test_a_line_for_a_session_with_no_registry_entry_under_the_config_folder_waits(provider, tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
     (tmp_path / "claude" / "sessions").mkdir(parents=True)
-    assert provider.line_sent(SessionLine("s-1", "the journal", "log your task")) is False
+    assert provider.delivered_line(SessionLine("s-1", "the journal", "log your task")) is False
 
 
 def test_the_context_percent_is_read_from_the_file_the_status_line_keeps_for_the_session(provider, tmp_path):
