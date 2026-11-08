@@ -83,7 +83,7 @@ def test_split_setting_must_add_to_100_empty_means_today(helper_split_story, hel
     story.expect_text(f'agent show {helper_id}', 'program: claude')
 
 
-@pytest.mark.parametrize('shares,reason', [('claude -1,codex 101', 'whole'), ('claude 50.5,codex 49.5', 'whole'), ('claude 100,codex 0,claude 0', 'twice'), ('claude', 'whole')])
+@pytest.mark.parametrize('shares,reason', [('claude -1,codex 101', 'does not follow'), ('claude 50.5,codex 49.5', 'does not follow'), ('claude 100,codex 0,claude 0', 'twice'), ('claude', 'does not follow')])
 def test_split_setting_must_add_to_100_invalid_lines_are_refused(helper_split_story, helper_viewer, shares, reason):
     story = helper_split_story
     helper_viewer.refusal('settings.settings', ['setting', 'set', SPLIT, shares, '--project'], reason)

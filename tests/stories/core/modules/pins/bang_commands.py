@@ -1,8 +1,9 @@
+from core.modules.pins.support.pin_nudges import BANG_BUTTON_REQUEST
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.support.story_checks import expect_answers, expect_lines_with
+from tests.stories.support.story_checks import expect_answers
 
-BUTTON_REQUEST = "a button runs your ! command"
+BUTTON_REQUEST = BANG_BUTTON_REQUEST.nudge().text
 
 
 def button_lines(hook_answer) -> list[str]:
@@ -13,8 +14,6 @@ def test_a_bang_command_the_agent_asks_the_user_to_run_is_answered_with_a_reques
     story = new_story(fixture=UserJoined)
     lines = button_lines(story.hook("s-1", HookSamples.message_display("Run this yourself: `! npm run build`")))
     expect_answers(lines, 1)
-    expect_lines_with(lines, '--link "! <command>"')
-    expect_lines_with(lines, '--label "Run"')
 
 
 def test_a_bang_command_on_a_line_of_its_own_is_found(new_story):

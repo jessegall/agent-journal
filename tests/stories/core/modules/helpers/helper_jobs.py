@@ -93,7 +93,7 @@ def test_another_agent_may_not_send_to_a_helper_and_the_parent_is_named(new_stor
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
     second_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    story.expect_refusal(f'helper send {helper.id} "{JOB}"', "A person was asked in the dock", actor=second_worker)
+    story.expect_refusal(f'helper send {helper.id} "{JOB}"', "The main agent was asked to review this request", actor=second_worker)
 
 
 def test_a_person_may_send_to_a_helper(new_story):
@@ -113,7 +113,7 @@ def test_a_stop_ends_the_helper_and_its_job(new_story):
 def test_another_agent_may_not_stop_a_helper(new_story):
     story = new_story(fixture=StartedHelper)
     second_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    story.expect_refusal(f"helper stop {helper_agent(story).id}", "A person was asked in the dock", actor=second_worker)
+    story.expect_refusal(f"helper stop {helper_agent(story).id}", "The main agent was asked to review this request", actor=second_worker)
 
 
 def test_a_helper_that_ends_closes_its_job(new_story):

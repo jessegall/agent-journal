@@ -22,6 +22,8 @@ and then it is followed.
 - `journal plan ready <n>` when every phase has its tasks. A phase with one task is refused until you give the reason one
   task is enough: `--skip-guard plans.one-task-phase --skip-reason "<why>"`. Only the user approves; `journal plan start <n>`
   begins it.
+- `journal plan assign <n> --worker <w>` gives a plan and its open tasks to a worker, `journal plan assign <n>` to the main
+  agent; a person or the main agent runs it, also before the plan starts, and a later assign moves the open tasks again.
 - A helper that makes a plan may also run `plan edit`, `phase edit`, `task edit` and `plan ready` on it.
 - `journal plan outline <n>` lists its phases and tasks, `journal plan progress <n>` its counts,
   `journal plan inspect <n>` both, and `journal plan list` every plan.

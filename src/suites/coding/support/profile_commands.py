@@ -29,7 +29,7 @@ PLAN_COMMANDS = (
     "place it with journal phase place <task> --phase <phase>. "
     "The plan actions are journal plan make, journal plan edit, journal plan list, journal plan show, journal plan context, "
     "journal plan outline, journal plan progress, journal plan inspect, journal plan rounds, journal plan board, journal plan timeline, "
-    "journal plan place, journal plan places, journal plan ready, journal plan review, journal plan reviewed, journal plan rework, journal plan start, journal plan block, journal plan unblock, "
+    "journal plan place, journal plan places, journal plan assign, journal plan ready, journal plan review, journal plan review-tip, journal plan reviewed, journal plan rework, journal plan start, journal plan block, journal plan unblock, "
     "journal plan cancel, journal plan close, journal plan delete, journal plan comment and journal plan comments. "
     "Write the plan thoroughly: split each phase into its real steps and file one task per step a person could check, "
     "with a brief that can be carried out alone: the files, what to reuse, the stories to write, the tests by name and the proof. "
