@@ -4,6 +4,7 @@ from typing import TypeVar, cast
 
 from core.base.database.kept_rows import KEPT_ROW_COUNT
 from core.base.model.model import Model
+from core.base.model.view_model import ViewModel
 from core.base.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
@@ -22,7 +23,8 @@ class CachedEventRow:
 
 
 class EventRows:
-    """Shares repository rows between listeners and checks external changes and rollbacks in batches."""
+    """Shares repository rows between listeners and checks external changes and rollbacks in batches; a view has no
+    version to check, so its rows are read again in each new generation."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -49,7 +51,10 @@ class EventRows:
         name = self.cache_name(model)
         stale = [row_id for row_id in dict.fromkeys(row_ids)
                  if name in self.known.get((model, row_id), {}) and self.known[(model, row_id)][name].generation != generation]
-        if stale:
+        if stale and issubclass(model, ViewModel):
+            for row_id in stale:
+                self.known[(model, row_id)].pop(name)
+        elif stale:
             query = self.queries.query(model).with_removed().matching(Among("id", stale))
             select = query.scoped(query.select).column("id, version")
             versions = {row[0]: row[1] for row in self.queries.database.rows(select.statement())}
