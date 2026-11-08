@@ -20,9 +20,14 @@ class PrivateDataPass:
     def run(self) -> list[PrivateDataFinding]:
         folder = self.files.folder
         slice_ = self.changes.changed(PASS_NAME, self.files.listed())[:SLICE_FILES]
-        findings = [finding for file in slice_ for finding in self.scan.scan(file.relative_to(folder), self.text(file))]
+        findings = [finding for file in slice_ if self.is_text(file) for finding in self.scan.scan(file.relative_to(folder), self.text(file))]
         self.changes.done(PASS_NAME, slice_)
         return findings
+
+    @staticmethod
+    def is_text(file: Path) -> bool:
+        """A file with a null byte is a database or a picture, not text a person wrote."""
+        return b"\0" not in FileAccess.shared().binary(file)
 
     @staticmethod
     def text(file: Path) -> str:

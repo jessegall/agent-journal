@@ -20,7 +20,7 @@ class PrivateDataTick:
         if not (settings.flag(TOOLS_SETTING) and settings.flag(PRIVATE_DATA_SETTING)):
             return
         findings = container.get(PrivateDataPass).run()
-        actor = container.get(ModuleActors).actor("journal.core.developer")
+        actor = container.get(ModuleActors).actor("journal.core.chat")
         for environment in container.get(Queries).query(Environment).all_rows():
             for finding in findings:
                 container.get(Bus).run(ShowMark(ChatMarkType.PRIVATE_DATA, PrivateDataMarkVariant.FOUND, finding.key, finding.text), actor, environment_id=environment.id)
