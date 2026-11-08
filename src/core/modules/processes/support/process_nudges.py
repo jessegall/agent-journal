@@ -14,7 +14,7 @@ READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "read
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader')
 
 READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}")
-OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended')
+OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'output {output} ended', turn_limited=False, wakes_agent=True)
 OUTPUT_TIMEOUT = NudgeDeclaration("processes.output_timed_out", NudgeType.STEERING,
                                   'output {output} timed out after {seconds} seconds and was stopped', wakes_agent=True)
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet', required_command="journal reader add {name}")
