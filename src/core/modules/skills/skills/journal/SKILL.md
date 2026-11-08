@@ -22,7 +22,7 @@ task 12, plan 3, message 7: write both, so the chat links it.
 
 When the journal holds you, its line says why and names the way out: reading and journal commands still go through.
 Only a refusal that is wrong for the case in hand is skipped, never to get on faster. `journal refusal skip <rule> --reason "<why>"`
-holds a skip; `journal refusal confirm <n> --tried "<what you tried>"` lets it pass the next attempt once, and
+holds a skip; `journal refusal confirm <n> --tried "<what you tried>"` lets it pass the next attempt once (a helper's or worker's waits until its main agent runs `journal refusal approve <n>` or `journal refusal decline <n>`), and
 `journal refusal withdraw <n>` gives it up. Either answer is final. A `--skip-guard` flag only spends a confirmed skip.
 Obey when you can: five skips in a row lose it. A safety refusal has no skip.
 After a compaction or a new start, run `journal overview` before anything else: until you do, nothing else passes but

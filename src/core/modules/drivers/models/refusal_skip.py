@@ -23,6 +23,8 @@ class RefusalSkip(Model):
     confirmed_at: Timestamp | None = None
     withdrawn_at: Timestamp | None = None
     tried: str = ""
+    waits_for_approval: bool = False
+    approved_at: Timestamp | None = None
 
     @property
     def is_answered(self) -> bool:
