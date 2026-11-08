@@ -1,4 +1,4 @@
-import {createApp, h} from "vue";
+import {createApp, h, ref} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import MarkBody from "../src/chat/MarkBody.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
@@ -68,4 +68,33 @@ test("a mark that is not opened reads no output, and one that ended is not read 
     await vi.advanceTimersByTimeAsync(20000);
     expect(closed.asked).toHaveLength(0);
     expect(ended.asked).toHaveLength(1);
+});
+
+test("a running mark in a hidden pane or chat reads nothing, and reads once when it is shown again", async () => {
+    const visible = ref(true);
+    const context = keyWindow(OUTPUT_PAGE, {visible});
+    const mark = {id: 1, type: "processes.command", target_model: "process", target_id: 7, ended_at: null};
+    const app = mountedWith(MarkBody, {declaration: {}, mark, shown: true}, context);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(context.asked).toHaveLength(1);
+    visible.value = false;
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(context.asked).toHaveLength(1);
+    visible.value = true;
+    await vi.advanceTimersByTimeAsync(0);
+    expect(context.asked).toHaveLength(2);
+    app.unmount();
+});
+
+test("a running mark drawn in a hidden pane makes its first read only when the pane is shown", async () => {
+    const visible = ref(false);
+    const context = keyWindow(OUTPUT_PAGE, {visible});
+    const mark = {id: 1, type: "processes.command", target_model: "process", target_id: 7, ended_at: null};
+    const app = mountedWith(MarkBody, {declaration: {}, mark, shown: true}, context);
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(context.asked).toHaveLength(0);
+    visible.value = true;
+    await vi.advanceTimersByTimeAsync(0);
+    expect(context.asked).toHaveLength(1);
+    app.unmount();
 });

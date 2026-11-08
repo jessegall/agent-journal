@@ -11,7 +11,7 @@ vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal(
 afterEach(() => vi.unstubAllGlobals());
 
 // the process body is drawn inside a dock card, which gives it the card's data, its reload and the way to read its output
-async function mounted(component, window) {
+function drawnAtOnce(component, window) {
     const element = document.createElement("div");
     const app = createApp({render: () => h(component)});
     const data = ref(null);
@@ -22,6 +22,11 @@ async function mounted(component, window) {
         readOutput: async (line) => window.read(line.join(" ")),
     });
     app.mount(element);
+    return element;
+}
+
+async function mounted(component, window) {
+    const element = drawnAtOnce(component, window);
     await settle();
     return element;
 }
@@ -315,4 +320,22 @@ test("a run whose reader was asked for already offers no button", async () => {
 test("a run whose reader gives progress, or one that ended, offers no reader button", async () => {
     expect((await emptyBox({reads_progress: true}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
     expect((await emptyBox({state: "finished", ended_at: "2026-11-02T10:00:05Z"}, [])).querySelector("[data-output-reader-ask]")).toBeNull();
+});
+
+test("a running dock in a hidden pane or chat makes no read, and reads once when it is shown again", async () => {
+    vi.useFakeTimers();
+    const window = context({"process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", created_at: "2026-11-02T10:00:00Z"}}, "output peek 3": {ok: true, value: {lines: []}}});
+    window.visible = ref(true);
+    window.option = (key) => ({head: ref(null), foot: ref(null), time: ref(null), folded: ref(true), collapsed: ref(true), row: ref({id: 7, target_id: 3})})[key];
+    drawnAtOnce(OutputDock, window);
+    await vi.advanceTimersByTimeAsync(0);
+    window.visible.value = false;
+    await vi.advanceTimersByTimeAsync(0);
+    const before = window.reads.length;
+    await vi.advanceTimersByTimeAsync(30000);
+    expect(window.reads).toHaveLength(before);
+    window.visible.value = true;
+    await vi.advanceTimersByTimeAsync(0);
+    expect(window.reads.length).toBeGreaterThan(before);
+    vi.useRealTimers();
 });
