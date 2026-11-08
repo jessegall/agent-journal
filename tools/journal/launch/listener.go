@@ -24,6 +24,7 @@ const (
 	FailedAnswer  = "failed"
 	RunningAnswer = "running"
 	StoppedAnswer = "stopped"
+	QuietAnswer   = "quiet"
 )
 
 // ErrProgramRunning is the refusal of a second program for an agent whose program still runs.
@@ -46,6 +47,7 @@ type WorkerRequest struct {
 	Running     bool              `json:"running"`
 	AnyProgram  bool              `json:"any_program"`
 	LocalOnly   bool              `json:"local_only"`
+	Quiet       bool              `json:"quiet"`
 }
 
 // ProgramStart is one program the launcher starts: its agent row, its folder, its command line and the variables it
@@ -76,8 +78,18 @@ type ProcessStarter struct {
 	Inputs        *TerminalInputs
 	OnAnswer      func(agentID int, question, explanation string)
 	OnExit        func(agentID, exitCode, pid int)
+	OnInterrupt   func(agentID int)
 	openLog       func(string) (*TerminalLog, error)
 	startTerminal func(*exec.Cmd, io.Reader, io.Writer, io.Writer) (func() error, error)
+}
+
+// interruptWatcher reads the program's output for its interrupt notice, and tells the journal of each.
+func (starter ProcessStarter) interruptWatcher(agentID int) *InterruptWatcher {
+	return &InterruptWatcher{OnInterrupt: func() {
+		if starter.OnInterrupt != nil {
+			starter.OnInterrupt(agentID)
+		}
+	}}
 }
 
 // Start starts the program and leaves it running.
@@ -112,7 +124,7 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	if startTerminal == nil {
 		startTerminal = StartInTerminal
 	}
-	wait, err := startTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher, NewProgramStatus(starter.Home)))
+	wait, err := startTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher, NewProgramStatus(starter.Home), starter.interruptWatcher(start.AgentID)))
 	if err != nil {
 		_, _ = fmt.Fprintln(log, "could not start agent program:", err)
 		_ = log.Close()
@@ -290,6 +302,14 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, prev
 	}
 	if request.Routes {
 		_ = json.NewEncoder(connection).Encode(previous)
+		return
+	}
+	if request.Quiet {
+		if inputs.IsOpen(request.AgentID) {
+			_, _ = io.WriteString(connection, QuietAnswer+" "+strconv.Itoa(inputs.QuietSeconds(request.AgentID))+"\n")
+			return
+		}
+		forwarded(connection, request, previous)
 		return
 	}
 	if request.Running || request.AnyProgram {

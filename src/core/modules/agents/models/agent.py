@@ -45,6 +45,8 @@ class Agent(EnvironmentScoped, Model):
     retired_at: Timestamp | None = None
     retirement_reason: str = ""
     retiring_actor_id: int | None = None
+    limited_until: Timestamp | None = None
+    interrupted_at: Timestamp | None = None
 
     def change_name(self, old_row: "Agent | None") -> str | None:
         newly_ended = old_row is not None and old_row.ended_at is None and self.ended_at is not None
@@ -58,10 +60,13 @@ class Agent(EnvironmentScoped, Model):
 
     @property
     def activity(self) -> AgentActivity:
-        """Ended when its session ended, otherwise paused while it is held, otherwise working."""
+        """Ended when its session ended, otherwise paused while it is held, at the usage limit while its program's plan
+        allowance is used up, otherwise working."""
         if self.ended_at is not None:
             return AgentActivity.ENDED
-        return AgentActivity.PAUSED if self.paused_at is not None else AgentActivity.WORKING
+        if self.paused_at is not None:
+            return AgentActivity.PAUSED
+        return AgentActivity.AT_USAGE_LIMIT if self.limited_until is not None else AgentActivity.WORKING
 
     @property
     def working_role(self) -> str:

@@ -16,3 +16,4 @@ SAVED_COMMAND_HELPER = NudgeDeclaration("aliases.saved_command_helper", NudgeTyp
 SAVED_COMMAND_DIRECT = NudgeDeclaration("aliases.saved_command_direct", NudgeType.REFUSAL, "this runs through a saved command: journal {name} --tail 20")
 SAVED_COMMAND_PIPED = NudgeDeclaration("aliases.saved_command_piped", NudgeType.REFUSAL, "journal {name} takes no pipe: use --tail, --head or --cut A-B, its whole output is kept")
 SAVED_COMMAND_UNREAD = NudgeDeclaration("aliases.saved_command_unread", NudgeType.REFUSAL, "journal {name} needs --tail, --head or --cut A-B, since its whole output is too much to read")
+SAVED_COMMAND_SILENT = NudgeDeclaration("aliases.saved_command_silent", NudgeType.REFUSAL, "alias {name} printed nothing for 30 seconds on its last run: edit it to print each step, then run it again")

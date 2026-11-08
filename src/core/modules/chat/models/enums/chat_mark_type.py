@@ -6,3 +6,4 @@ class ChatMarkType(StrEnum):
 
     EXCEPTION = "chat.exception"
     UPGRADE = "chat.upgrade"
+    PRIVATE_DATA = "chat.private-data"

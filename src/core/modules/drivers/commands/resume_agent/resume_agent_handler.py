@@ -30,8 +30,8 @@ class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
         if agent.paused_at is None:
             raise Refusal(f"agent {agent.id} is not paused")
         helpers = self.queries.query(Agent).filter(parent_id=agent.id).all_rows()
-        if context.actor.id in (agent.id, *(helper.id for helper in helpers)):
-            raise UserApprovalRefusal(f"Resume the paused agent {agent.id}?")
+        if context.approval_id is None and context.actor.id in (agent.id, *(helper.id for helper in helpers)):
+            raise UserApprovalRefusal(f"Resume the paused agent {agent.id}?", command=command)
         resumed =self.repository.save(replace(agent, paused_at=None), context)
         self.nudger.send(agent.id, AGENT_RESUMED, RESUME_SOURCE, context)
         return resumed

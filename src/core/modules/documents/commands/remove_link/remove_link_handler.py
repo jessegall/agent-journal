@@ -56,4 +56,4 @@ class RemoveLinkHandler(Handler[RemoveLink, None]):
 
     def authorize(self, creator_id: int, context: Context) -> None:
         if context.actor.type is ActorType.AGENT and context.actor.id != creator_id:
-            raise UserApprovalRefusal("Correct another agent's request attribution?")
+            raise UserApprovalRefusal("Correct another agent's request attribution?", command=context.command)

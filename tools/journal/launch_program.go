@@ -45,7 +45,8 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	_ = launch.SaveAnswers(home, choice.Answers)
 	prepareProgramHooks(journal, request.Program, choice.Folder, stderr)
 	inputs := launch.NewTerminalInputs()
-	if listener, err := launch.ListenVersioned(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs)}, inputs, version.Digest); err == nil {
+	inputs.OnLogin(journal.TellInterrupt)
+	if listener, err := launch.ListenVersioned(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, OnAnswer: journal.TellMenuAnswer, OnExit: programExitReporter(journal, inputs), OnInterrupt: journal.TellInterrupt}, inputs, version.Digest); err == nil {
 		defer listener.Close()
 		defer inputs.StopAll()
 	}
@@ -87,7 +88,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	defer close(stopWatching)
 	go watcher.Watch(stopWatching)
 	restoreProgram := terminal.Raw()
-	programLog := io.MultiWriter(log, watcher)
+	programLog := io.MultiWriter(log, watcher, &launch.InterruptWatcher{OnInterrupt: func() { journal.TellInterrupt(agentID) }})
 	stopReplacement := make(chan struct{})
 	defer close(stopReplacement)
 	err = runMainProgram(inputs, agentID, command, os.Stdin, func(input io.Reader, started func()) error {

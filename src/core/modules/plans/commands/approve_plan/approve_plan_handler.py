@@ -22,7 +22,7 @@ class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
 
     def handle(self, command: ApprovePlan, context: Context) -> Plan:
         if context.actor.type is not ActorType.USER:
-            raise UserApprovalRefusal(f"Approve plan {command.row_id}?")
+            raise UserApprovalRefusal(f"Approve plan {command.row_id}?", command=command)
         plan = self.queries.query(Plan).find(command.row_id)
         if plan.environment_id != context.environment_id:
             raise Refusal(f"plan {plan.id} belongs to another environment", "approve it there")
