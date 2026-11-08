@@ -232,7 +232,7 @@ class ProcessesModule(Module):
     nudges = PROCESS_NUDGES
     tick_handlers = [TickHandler(TickInterval(seconds=1), OutputReading(), "read running outputs"), TickHandler(TickInterval(seconds=2), RunSlotGrant(), "run slots"),
                      TickHandler(TickInterval(seconds=1), RunTimeouts(), "run timeouts"), TickHandler(TickInterval(seconds=15), HangWatch(), "hang watch"), TickHandler(TickInterval(seconds=15), OutputChecks(), "output checks"),
-                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery"),
+                     TickHandler(TickInterval(seconds=15), RunEndRecovery(), "run end recovery", starts_immediately=True),
                      TickHandler(TickInterval(seconds=15 * 60), ProcessPruning(), "process pruning")]
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
