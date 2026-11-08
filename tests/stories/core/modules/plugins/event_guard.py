@@ -3,13 +3,16 @@ import sys
 
 import pytest
 
+from core.base.agent_role import AgentRole
 from core.base.model.event_form import EventForm
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
+from core.base.scope.scopes import Scopes
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
+from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.service_processes import ServiceProcesses
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, REMOVAL_SAMPLE
 from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTE_CREATED, NOTES, REFUSED_TITLE
@@ -70,6 +73,14 @@ def test_s22_a_guard_that_prints_nothing_saves_the_row_once_with_one_event(new_s
 
 def agent_lines_containing(story, text: str) -> list[AgentLine]:
     return [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if text in line.text]
+
+
+def test_s22_a_plugin_reads_the_agent_granted_a_test_environment_from_inside_it(new_story):
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
+    story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
+    with story.container.get(Scopes).opened(None, 2):
+        facts = story.container.get(PluginProgram).facts(story.agent.id, None)
+    story.expect_rows(facts.role == AgentRole.MAIN)
 
 
 def test_s22_an_allowing_guard_tells_the_agent_and_shows_its_card_once(new_story):
