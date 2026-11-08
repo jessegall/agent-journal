@@ -26,6 +26,7 @@ class ApprovalRequest(EnvironmentScoped, Model):
     source_version: int | None = None
     returns_output: bool = False
     text: str
+    why: str = ""
     arguments: tuple[str, ...]
     refused_arguments: tuple[str, ...] = ()
     continued_arguments: tuple[str, ...] = ()
