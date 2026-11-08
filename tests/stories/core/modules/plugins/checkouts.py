@@ -296,3 +296,22 @@ def test_s62_changes_since_a_commit_names_what_differs_with_files_not_yet_commit
 def test_s62_changes_since_a_commit_git_does_not_know_says_so(new_story):
     story = checkout_story(new_story)
     story.expect_refusal(f"plugin changes --agent {story.worker.id} --since {UNKNOWN_COMMIT}", "does not know", actor=story.user)
+
+
+def test_s62_changes_since_base_reads_the_commit_the_worktree_was_cut_from(new_story):
+    story = checkout_story(new_story)
+    story.repository.changed(story.worker.id, ORDER, CHANGED_ORDER_TEXT)
+    story.expect_text(f"plugin changes --agent {story.worker.id} --since base --json", f'"relative": "{ORDER}"', actor=story.user)
+
+
+def test_a_path_in_a_worktree_or_in_the_project_names_its_relative_name_and_checkout(new_story):
+    story = checkout_story(new_story)
+    story.expect_text(f"plugin path {story.worktree.resolve() / ORDER} --agent {story.worker.id}", f"relative: {ORDER}", "kind: worktree", actor=story.user)
+    story.expect_text(f"plugin path {story.repository.folder.resolve() / ORDER} --agent {story.worker.id}", f"relative: {ORDER}", "kind: main", actor=story.user)
+    story.expect_refusal(f"plugin path /tmp/elsewhere.py --agent {story.worker.id}", "is in no checkout of this project", actor=story.user)
+
+
+def test_an_alias_run_by_a_worker_is_told_its_checkout(new_story):
+    story = checkout_story(new_story)
+    story.expect_success('alias add checkout-facts "printenv" --category check --agents --environment main', actor=story.user)
+    story.expect_text("checkout-facts", "worktree", story.repository.tip(ENVIRONMENT_BRANCH), str(story.repository.folder.resolve()), actor=story.worker)
