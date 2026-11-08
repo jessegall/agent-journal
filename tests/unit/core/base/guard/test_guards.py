@@ -78,7 +78,7 @@ def test_guards_are_asked_in_order_and_the_first_refusal_stops_the_rest():
     with pytest.raises(GuardRefusal) as raised:
         guards().ask(change())
     assert GUARD_CALLS == ["core.lifecycle", "items.no-second-item"]
-    assert raised.value.text == "refused by items.no-second-item: an item titled Dune is open already: close it first (to pass it: --confirm --skip-reason '<why>')"
+    assert raised.value.text == "refused by items.no-second-item: an item titled Dune is open already: close it first (only if this refusal is wrong for the case in hand, never to get on faster: --confirm --skip-reason '<why it is wrong here>')"
 
 
 def test_a_guard_asked_to_be_skipped_is_passed_over_and_recorded():

@@ -1,4 +1,5 @@
 from core.base.change.changed import Changed
+from core.base.guard.guard_refusal import SKIP_ONLY_WHEN
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.model.event_form import EventForm
@@ -21,7 +22,7 @@ class PluginEventGuard(Guard[Changed[Model]]):
         answers = self.scripts.answers(EventForm.GUARD, event, context)
         for answered in answers:
             if answered.answer.is_refusal():
-                skip = f"; to pass it: --skip-guard {GUARD_NAME}:{answered.plugin} --skip-reason <why>" if answered.allows_skip else ""
+                skip = f"; {SKIP_ONLY_WHEN}: --skip-guard {GUARD_NAME}:{answered.plugin} --skip-reason <why it is wrong here>" if answered.allows_skip else ""
                 raise Refusal(f"[plugin {answered.plugin}] {answered.answer.reason} (journal plugin disable {answered.plugin} lets it through{skip})")
         for answered in answers:
             self.scripts.apply(answered, context)

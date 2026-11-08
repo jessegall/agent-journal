@@ -2,6 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 
 
 class PlanWithOneTaskPhase(StoryFixture):
@@ -26,7 +27,8 @@ def test_a_plan_with_a_one_task_phase_is_not_made_ready_until_a_reason_is_given(
 
 def test_a_reason_lets_a_plan_with_a_one_task_phase_be_made_ready(new_story):
     story = new_story(fixture=PlanWithOneTaskPhase)
-    story.expect_refusal("plan ready 1", "to pass it: --skip-guard plans.one-task-phase", actor=story.agent)
+    story.expect_refusal("plan ready 1", "only if this refusal is wrong for the case in hand, never to get on faster: --skip-guard plans.one-task-phase", actor=story.agent)
+    confirmed_skip(story, "plans.one-task-phase", story.agent)
     story.expect_success('plan ready 1 --skip-guard plans.one-task-phase --skip-reason "the phase is one command"', "state: ready", actor=story.agent)
 
 

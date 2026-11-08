@@ -2,6 +2,7 @@ from dataclasses import replace
 from time import perf_counter
 
 from core.base.container import Container
+from core.base.guard.guard_refusal import SKIP_ONLY_WHEN
 from core.base.driver.rule_call import RuleCall
 from core.base.driver.rule_record import RuleRecord
 from core.base.driver.stop_check import StopCheck
@@ -110,7 +111,7 @@ class DriverRules:
             return RuleAnswer.allowed().running(skip)
         if hook.hook_name != HookEventName.PRE_TOOL_USE or not self.skips.has_refused(hook.agent_id, entry.name):
             return answer
-        return replace(answer, refusal=f"{answer.refusal} (to pass it: journal refusal skip {entry.name} --reason '<why>')")
+        return replace(answer, refusal=f"{answer.refusal} ({SKIP_ONLY_WHEN}: journal refusal skip {entry.name} --reason '<why it is wrong here>')")
 
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         started_at = perf_counter()

@@ -1,5 +1,7 @@
 from core.base.refusal import Refusal
 
+SKIP_ONLY_WHEN = "only if this refusal is wrong for the case in hand, never to get on faster"
+
 
 class GuardRefusal(Refusal):
     """A refusal from a guard, naming the guard and the flag that lets a person pass it."""
@@ -19,5 +21,5 @@ class GuardRefusal(Refusal):
 
     @property
     def text(self) -> str:
-        skip = f" (to pass it: {self.skip_flag})" if self.skip_flag else ""
+        skip = f" ({SKIP_ONLY_WHEN}: {self.skip_flag})" if self.skip_flag else ""
         return f"refused by {self.guard}: {super().text}{skip}"

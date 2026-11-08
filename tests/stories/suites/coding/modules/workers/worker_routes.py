@@ -1,3 +1,4 @@
+from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 import json
 from typing import NamedTuple
 from unittest.mock import patch
@@ -264,6 +265,7 @@ def test_agent_naming_another_program_is_refused_before_git(protected_route_stor
 def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(protected_route_story):
     story, route = protected_route_story
     story.expect_refusal('worker dispatch 1 --program claude', 'route 1', actor=story.agent)
+    confirmed_skip(story, "workers.route-holds", story.agent, "The person asked for a comparison")
     worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The person asked for a comparison"')
     expect_program(story, worker, 'claude')
     story.expect_text('worker-worktree list', 'cut')
@@ -332,6 +334,7 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     story.expect_hook_refusal('s-1', HookSamples.shell(f'journal worker dispatch {task_id} --model sonnet', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='worker')),
                               f'journal worker send {worker.id}')
     story.expect_refusal(f'worker send {worker.id} --wait --task {task_id}', 'route 1', actor=story.agent)
+    confirmed_skip(story, "workers.route-holds", story.agent, "Keep the existing worker for this comparison")
     story.expect_success(f'worker send {worker.id} --wait --task {task_id} --skip-guard workers.route-holds '
                          '--skip-reason "Keep the existing worker for this comparison"', actor=story.agent)
     expect_program(story, worker, 'claude')
