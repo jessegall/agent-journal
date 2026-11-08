@@ -14,12 +14,12 @@ const DOCK_LINE = "dock add";
 const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}, docked: Boolean});
 const declaration = computed(() => markDeclaration(props.mark.type));
 const look = computed(() => markLook(props.mark, declaration.value));
-// a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
-const opens = computed(() => Boolean(props.mark.lines || look.value.detail || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
+// a mark with lines, an output or a body of its module's own, or one that names a row, opens in place on a click, and folds on the next; the
+// row it names is opened by the small action link on the mark, never by the click on its line
+const hasBody = computed(() => Boolean(props.mark.lines || look.value.detail || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
+const opens = computed(() => hasBody.value || Boolean(look.value.handlers.onAct));
 const opened = ref(false);
-// a click on the line of a mark that names a row opens that row, as its declaration says; its fold sign still unfolds what the mark holds
-function clicked(event) {
-    if (look.value.handlers.onAct && !event.target.closest(".fold")) return look.value.handlers.onAct();
+function clicked() {
     opened.value = !opened.value;
 }
 // a row in the dock has no Dock button left, and its mark steps back in opacity
@@ -37,7 +37,7 @@ const buttons = computed(() => (declaration.value?.buttons || []).filter((button
         <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked, 'user-side': USER_SIDE_VARIANTS.has(mark.variant)}]" :data-ref="`chat_mark:${mark.id}`">
             <span class="mark-row">
                 <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="clicked">
-                    <template v-if="opens" #default="{shown}">
+                    <template v-if="hasBody" #default="{shown}">
                         <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
                     </template>
                 </ChatMark>
