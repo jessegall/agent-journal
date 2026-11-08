@@ -46,9 +46,9 @@ class RecordingReading(OutputReading):
 
 def test_a_tick_reads_its_outputs_with_the_setting_rows_kept():
     settings = KeptSettings()
-    reading = RecordingReading(settings)
+    output_reading = RecordingReading(settings)
 
-    assert reading(FixedContainer(settings)) is True
+    assert output_reading(FixedContainer(settings)) is True
 
-    assert reading.kept_while_reading is True
+    assert output_reading.kept_while_reading is True
     assert settings.is_kept is False
