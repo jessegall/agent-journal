@@ -3,7 +3,7 @@ import shlex
 from pathlib import Path
 
 from core.modules.processes.support.foreground_run import ForegroundRun
-from core.modules.processes.support.runner_line import FILE_COMMANDS_VARIABLE, MOST_OUTPUT_VARIABLE, READ_FLAGS_VARIABLE, READ_FOLDERS_VARIABLE, RunnerLine
+from core.modules.processes.support.runner_line import MOST_OUTPUT_VARIABLE, READ_FLAGS_VARIABLE, READ_FOLDERS_VARIABLE, RunnerLine
 
 
 def built(run: ForegroundRun) -> list[str]:
@@ -48,6 +48,3 @@ def test_the_line_stays_as_the_agent_wrote_it():
     assert built(ForegroundRun(15, False))[-1] == "npm test"
 
 
-def test_file_command_classification_goes_to_the_runner():
-    assert variable(built(ForegroundRun(15, False, file_commands=True)), FILE_COMMANDS_VARIABLE) == "1"
-    assert variable(built(ForegroundRun(15, False)), FILE_COMMANDS_VARIABLE) is None

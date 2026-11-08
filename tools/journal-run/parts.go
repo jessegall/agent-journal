@@ -94,19 +94,6 @@ func joinsSources(commands []shell.Command) bool {
 	return false
 }
 
-// LastJournal is the position of the last part of a line that is a journal command, 0 when none is; an alias runs a
-// shell line of its own, so it counts as none.
-func LastJournal(parts []Part, aliases []string) int {
-	last := 0
-	for _, part := range parts {
-		arguments := strings.Fields(part.Text)
-		if len(arguments) > 0 && arguments[0] == "journal" && !(len(arguments) > 1 && slices.Contains(aliases, arguments[1])) {
-			last = part.Position
-		}
-	}
-	return last
-}
-
 // PartCount is the highest position of a line's parts: the positions between its parts are commands of a pipe.
 func PartCount(parts []Part) int {
 	return parts[len(parts)-1].Position

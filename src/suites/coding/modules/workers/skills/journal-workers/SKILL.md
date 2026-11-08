@@ -57,6 +57,9 @@ stays kept on the same agent number and session until retired.
   failed its hand-ins or a test failed over and over in the worker's own runs. A merge with such lines needs your
   answer: `journal worker merge <worker> --read-important "<what you make of them>"`.
 - Take the work in with `journal worker merge <worker>` once every point is checked; nothing else adds a worker's work.
+  Merging a worker's work is the main agent's own decision, never a question for the person: when the merge command
+  cannot reach finished work (a branch kept after its worktree was removed), run its tasks' tests and merge that branch
+  yourself.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
 - `journal worker release <worker> "<why>"` puts its task back to open.

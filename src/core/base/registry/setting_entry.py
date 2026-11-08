@@ -30,11 +30,12 @@ class SettingEntry:
     target: str = ""
     person_set: bool = False
     rule: str = ""
+    main_agent_only: bool = False
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SettingEntry":
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
-                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""))
+                   stored["secret"], stored["scope"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"], stored.get("target", ""), stored.get("person_set", False), stored.get("rule", ""), stored.get("main_agent_only", False))
 
     def problems(self, value: object) -> list[str]:
         return list(SettingRuleText().problems(self.rule, self.key, value))

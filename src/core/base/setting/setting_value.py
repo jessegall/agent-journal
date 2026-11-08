@@ -28,6 +28,7 @@ class SettingValue:
     choices: Sequence[str] = ()
     person_set: bool = False
     rule: SettingRule | None = None
+    main_agent_only: bool = False
 
     def accepts(self, value: object) -> bool:
         match self.type:
@@ -49,7 +50,7 @@ class SettingValue:
 
     def declaration(self) -> SettingDeclaration:
         return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
-                                  tuple(self.choices), False, True, person_set=self.person_set, rule=SettingRuleText.to_text(self.rule))
+                                  tuple(self.choices), False, True, person_set=self.person_set, rule=SettingRuleText.to_text(self.rule), main_agent_only=self.main_agent_only)
 
     def members(self) -> Sequence[SettingNode]:
         return ()

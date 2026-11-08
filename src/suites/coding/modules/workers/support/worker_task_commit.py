@@ -11,6 +11,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.brief_points import brief_point_count
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 
 
 class WorkerTaskCommit:
@@ -18,8 +19,9 @@ class WorkerTaskCommit:
     the task's brief has a proof; a clash stops the hand-in with the conflict markers in the worktree. It
     runs before the hand-in's transaction opens, so git's wait holds no write lock."""
 
-    def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus) -> None:
+    def __init__(self, proofs: ProofQuery, git: WorktreeGit, queries: Queries, bus: Bus, protected: ProtectedFolders) -> None:
         self.proofs, self.git, self.queries, self.bus = proofs, git, queries, bus
+        self.protected = protected
 
     def check_proofs(self, worktree: Worktree, task: Task) -> None:
         proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
@@ -27,6 +29,10 @@ class WorkerTaskCommit:
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
     def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
+        for path in self.git.changed_files(worktree):
+            folder = self.protected.match(worktree.folder, path)
+            if folder:
+                raise Refusal(f"{folder} is protected", "report the change to the main agent")
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:

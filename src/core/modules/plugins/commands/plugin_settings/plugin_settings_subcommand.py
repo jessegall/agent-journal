@@ -25,5 +25,8 @@ class PluginSettingsSubcommand(ReadSubcommand[PluginSettingLines]):
 
     def read(self, arguments: Namespace, caller: Caller) -> PluginSettingLines:
         plugin = self.plugins.find_name(arguments.plugin)
-        values = {row.key: row.value for row in self.queries.query(PluginSetting).filter(plugin_id=plugin.id).all_rows()}
+        rows = tuple(self.queries.query(PluginSetting).filter(plugin_id=plugin.id).all_rows())
+        values = {row.key: row.value for row in rows if row.environment_id is None}
+        if caller.environment_id is not None:
+            values.update({row.key: row.value for row in rows if row.environment_id == caller.environment_id})
         return PluginSettingLines(PluginManifest.read(self.folders.code(plugin.name)), values)

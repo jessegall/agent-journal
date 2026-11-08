@@ -7,6 +7,7 @@ from core.base.project_reads import ProjectReads
 from core.modules.plugins.guards.plugin_event_guard import PluginEventGuard
 from core.modules.plugins.migrations.m006_plugin_output_environment import PluginOutputEnvironmentMigration
 from core.modules.plugins.migrations.m007_plugin_config import PluginConfigMigration
+from core.modules.plugins.migrations.m008_plugin_setting_environments import PluginSettingEnvironmentsMigration
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries_handler import PrunePluginDeliveriesHandler
 from core.modules.plugins.ticks.delivery_pruning import DeliveryPruning
 from core.modules.plugins.ticks.plugin_config_reading import PluginConfigReading
@@ -120,7 +121,7 @@ class PluginsModule(Module):
                                        WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
                                        WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
-    migrations = [PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration]
+    migrations = [PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration]
     handlers = [RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]

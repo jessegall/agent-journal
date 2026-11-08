@@ -14,7 +14,6 @@ const (
 	reportAttempts      = 60
 	reportRetryInterval = time.Second
 	keepCuttingInterval = time.Second
-	fileCommandLimit    = 10 * time.Minute
 	// lateOutputWait gives a part with & that ends the line a moment to print before the agent is answered.
 	lateOutputWait = 100 * time.Millisecond
 )
@@ -22,24 +21,25 @@ const (
 // Tracker reads a run's folder as the shell fills it: it shows what the agent sees as each part ends, reports each
 // part and the end through the journal client, and moves the run to the background past its limit.
 type Tracker struct {
-	Options     Options
-	Client      Client
-	Folder      Folder
-	Parts       int
-	LastJournal int
-	Reported    map[int]bool
-	Started     map[int]bool
-	Shown       int
+	Options  Options
+	Client   Client
+	Folder   Folder
+	Parts    int
+	Reported map[int]bool
+	Started  map[int]bool
+	Shown    int
 	// Positions are the positions of the line's parts; the others are commands inside a pipe.
 	Positions map[int]bool
 	// Background holds the parts that ended with &, which go on writing after their status, and ShownBytes how much
 	// of each part the agent has seen.
 	Background []int
 	ShownBytes map[int]int
+	Now        func() time.Time
+	Wait       func()
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
-	started := time.Now()
+	started := tracker.now()
 	queueStarted := started
 	for {
 		tracker.reportParts(stdout)
@@ -50,28 +50,17 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 			return tracker.orphan(stdout)
 		}
 		if tracker.waitsForSlot() {
-			if time.Since(queueStarted) >= tracker.Options.QueueWait {
+			if tracker.now().Sub(queueStarted) >= tracker.Options.QueueWait {
 				return tracker.move(stdout)
 			}
-			time.Sleep(pollInterval)
-			started = time.Now()
-			continue
-		}
-		if tracker.Options.FileCommands {
-			limit := tracker.Options.FileCommandLimit
-			if limit == 0 {
-				limit = fileCommandLimit
-			}
-			if time.Since(started) >= limit {
-				return tracker.stopFileCommands(stdout)
-			}
-			time.Sleep(pollInterval)
+			tracker.wait()
+			started = tracker.now()
 			continue
 		}
 		if tracker.mayMove(started) {
 			return tracker.move(stdout)
 		}
-		time.Sleep(pollInterval)
+		tracker.wait()
 	}
 }
 
@@ -83,27 +72,25 @@ func (tracker *Tracker) waitsForSlot() bool {
 	return os.IsNotExist(err)
 }
 
-// mayMove says whether the run may go to the background: never before the line's last journal command has finished.
+// mayMove says whether the run reached its foreground limit or was asked to move.
 func (tracker *Tracker) mayMove(started time.Time) bool {
-	for position := 1; position <= tracker.LastJournal; position++ {
-		if !tracker.Positions[position] {
-			continue
-		}
-		if _, ended := tracker.Folder.Status(position); !ended {
-			return false
-		}
-	}
 	limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
-	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && time.Since(started) >= limit)
+	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && tracker.now().Sub(started) >= limit)
 }
 
-func (tracker *Tracker) stopFileCommands(stdout io.Writer) int {
-	if pid, recorded := tracker.Folder.Pid(); recorded {
-		_ = syscall.Kill(-pid, syscall.SIGKILL)
+func (tracker *Tracker) now() time.Time {
+	if tracker.Now != nil {
+		return tracker.Now()
 	}
-	fmt.Fprintln(stdout, "file commands exceeded their time limit and were stopped")
-	_ = tracker.Folder.WriteEnd(124)
-	return tracker.finish(stdout, 124)
+	return time.Now()
+}
+
+func (tracker *Tracker) wait() {
+	if tracker.Wait != nil {
+		tracker.Wait()
+	} else {
+		time.Sleep(pollInterval)
+	}
 }
 
 // Watch follows a moved run as a program of its own until the run ends or its folder has been pruned.

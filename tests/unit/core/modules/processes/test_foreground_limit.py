@@ -6,7 +6,6 @@ from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit
-from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.part_command import PartCommand
 
 
@@ -85,12 +84,12 @@ def limit(over_limit: bool = False, waiting: bool = False, journal_commands: boo
     return ForegroundLimit(Settings(), Background(journal_commands), Rows(over_limit), Messages(waiting))  # type: ignore[arg-type]
 
 
-def test_a_journal_only_line_has_no_limit_to_move_at():
-    assert limit().decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
+def test_a_journal_only_line_has_a_foreground_limit():
+    assert limit().decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).seconds == 15
 
 
-def test_a_journal_line_never_goes_to_the_background():
-    assert limit(journal_commands=True).decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1) == ForegroundRun(0, False, part_commands=tuple([PartCommand("journal", CommandCategory.JOURNAL)]), most_output_bytes=10 << 20)
+def test_a_journal_line_marked_for_the_background_moves_at_once():
+    assert limit(journal_commands=True).decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).background
 
 
 def test_a_test_run_and_a_build_run_in_line_up_to_the_foreground_seconds():
@@ -115,11 +114,9 @@ def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_backgro
     assert not decided.background
 
 
-def test_file_commands_stay_in_the_foreground_even_after_a_long_run():
+def test_file_commands_move_at_once_after_a_long_run():
     decided = limit(over_limit=True).decide(line(part("grep", CommandCategory.SEARCH), part("cut", CommandCategory.READ), part("sed", CommandCategory.EDIT)), 1)
-    assert decided.file_commands
-    assert not decided.background
-    assert not limit().decide(line(part("grep", CommandCategory.SEARCH), part("pytest", CommandCategory.TEST_RUN)), 1).file_commands
+    assert decided.background
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():

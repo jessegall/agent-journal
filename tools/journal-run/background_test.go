@@ -7,6 +7,55 @@ import (
 	"time"
 )
 
+func TestEveryCommandMovesAfterFifteenSeconds(t *testing.T) {
+	for _, test := range []struct {
+		name string
+		line string
+	}{
+		{"read", "cat file"},
+		{"write", "edit file"},
+		{"unknown", "custom command"},
+		{"journal", "journal task list"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			setup := options(t, test.line)
+			setup.LimitSeconds = 15
+			setup.ShellAlive = func() bool { return true }
+			detached := false
+			setup.Detach = func(Options) { detached = true }
+			folder := NewFolder(setup.Home, setup.Process)
+			if err := folder.Start(test.line, Parts(test.line), ""); err != nil {
+				t.Fatal(err)
+			}
+			now := time.Unix(0, 0)
+			tracker := Tracker{Options: setup, Client: newClient(), Folder: folder,
+				Reported: map[int]bool{}, Positions: map[int]bool{1: true}, Now: func() time.Time { return now },
+				Wait: func() { now = now.Add(time.Second) }}
+			var output strings.Builder
+			if code := tracker.Run(&output); code != 0 || !detached || now.Sub(time.Unix(0, 0)) != 15*time.Second || !strings.Contains(output.String(), "moved to the background: output 4") {
+				t.Fatalf("code %d, detached %t, at %s: %s", code, detached, now, output.String())
+			}
+		})
+	}
+}
+
+func TestACommandFinishingBeforeTheLimitStaysInTheForeground(t *testing.T) {
+	setup := options(t, "read")
+	setup.LimitSeconds = 15
+	setup.ShellAlive = func() bool { return true }
+	folder := NewFolder(setup.Home, setup.Process)
+	if err := folder.Start(setup.Line, Parts(setup.Line), ""); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Unix(0, 0)
+	tracker := Tracker{Options: setup, Client: newClient(), Folder: folder, Reported: map[int]bool{},
+		Now: func() time.Time { return now }, Wait: func() { now = now.Add(time.Second); _ = folder.WriteEnd(0) }}
+	var output strings.Builder
+	if code := tracker.Run(&output); code != 0 || strings.Contains(output.String(), "background") {
+		t.Fatalf("code %d: %s", code, output.String())
+	}
+}
+
 func TestARunPastTheLimitMovesToTheBackgroundAndExitsWithTheShellStillRunning(t *testing.T) {
 	setup := options(t, "echo first; sleep 3; echo later")
 	setup.LimitSeconds = 1
@@ -66,28 +115,6 @@ func TestALimitOf0NeverMoves(t *testing.T) {
 	}
 }
 
-func TestAJournalCommandInALineFinishesBeforeTheRunMoves(t *testing.T) {
-	bin := t.TempDir()
-	if err := os.WriteFile(bin+"/journal", []byte("#!/bin/sh\nsleep 1\necho answered\n"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
-	setup := options(t, "echo first; journal task show 1; sleep 3")
-	setup.Background = true
-	output, _ := run(t, setup, newClient())
-	if !strings.Contains(output, "answered") || !strings.Contains(output, "moved to the background") {
-		t.Fatalf("printed %q", output)
-	}
-	waitFor(t, 10*time.Second, "the end of the moved run", func() bool { return exists(folderOf(setup) + "/end") })
-}
-
-func TestAnAliasIsNoJournalCommandToTheRunner(t *testing.T) {
-	parts := []Part{{Text: "journal task show 1", Position: 1}, {Text: "journal tests --all", Position: 2}}
-	if actual := LastJournal(parts, []string{"tests"}); actual != 1 {
-		t.Fatalf("the last journal part is %d", actual)
-	}
-}
-
 func TestAFollowerEndsWhenItsFolderIsGone(t *testing.T) {
 	setup := options(t, "sleep 5")
 	tracker := Tracker{Options: setup, Client: newClient(), Folder: NewFolder(setup.Home, setup.Process), Parts: 1, Reported: map[int]bool{}}
@@ -108,31 +135,6 @@ func TestAFollowerKeepsWritingTheHeartbeatOfARunThatMoved(t *testing.T) {
 	waitFor(t, 5*time.Second, "the heartbeat of the moved run", func() bool { return exists(folderOf(setup) + "/heartbeat") })
 	if err := folder.WriteEnd(0); err != nil {
 		t.Fatal(err)
-	}
-}
-
-func TestSlowFileCommandsStayInTheForeground(t *testing.T) {
-	bin := t.TempDir()
-	if err := os.WriteFile(bin+"/cat", []byte("#!/bin/sh\nsleep 2\nprintf 'found\n'\n"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
-	setup := options(t, "cat file | cut -c1-; cat file")
-	setup.LimitSeconds = 1
-	setup.FileCommands = true
-	output, code := run(t, setup, newClient())
-	if code != 0 || strings.Count(output, "found") != 2 || strings.Contains(output, "moved to the background") {
-		t.Fatalf("printed %q with code %d", output, code)
-	}
-}
-
-func TestStuckFileCommandsAreStopped(t *testing.T) {
-	setup := options(t, "sleep 5")
-	setup.FileCommands = true
-	setup.FileCommandLimit = 100 * time.Millisecond
-	output, code := run(t, setup, newClient())
-	if code != 124 || !strings.Contains(output, "time limit") || strings.Contains(output, "moved to the background") {
-		t.Fatalf("printed %q with code %d", output, code)
 	}
 }
 

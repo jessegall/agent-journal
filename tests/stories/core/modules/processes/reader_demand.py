@@ -91,7 +91,7 @@ def test_a_summary_cannot_claim_more_tests_than_the_count(new_story):
     process = start_process(story, "overcount-tests run", category=CommandCategory.TEST_RUN)
     end_run(story, process, "collected 3\n4 passed\n")
     story.expect_refusal('reader add overcount --commands "overcount-tests*" --lines "passed" --summary "([0-9]+ passed)" --count "collected ([0-9]+)"',
-                         f"output {process.id}: --summary exceeds --count", actor=story.agent)
+                         f"output {process.id}: --summary names 4 tests but --count found 3", actor=story.agent)
 
 
 def test_a_reader_that_misses_its_first_run_stays_unproved(new_story):
@@ -196,3 +196,11 @@ def test_a_test_reader_title_cannot_contain_a_path_or_flag(new_story):
 def expect_misses_judge(judge, reader, text, expected) -> None:
     actual = judge.misses(reader, CommandCategory.TEST_RUN, text)
     assert actual == expected, actual
+
+
+def test_a_number_in_the_summary_that_is_no_test_count_is_not_compared(new_story):
+    story = new_story(fixture=BuilderStarted)
+    process = start_process(story, "go-stories run", category=CommandCategory.TEST_RUN)
+    end_run(story, process, "--- PASS: TestOne\n--- FAIL: TestTwo\nFAIL\tgithub.com/example/stories/workers 41.2s\n")
+    story.expect_success('reader add go-stories --commands "go-stories*" --lines "^--- " --summary "^(?:ok|FAIL)\\s.*" --count "^--- (?:PASS|FAIL): Test"',
+                         f"proved_on: {process.id}", actor=story.agent)

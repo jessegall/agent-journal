@@ -1,6 +1,7 @@
 from core.base.file_access import FileAccess
 from pathlib import Path
 import json
+import hashlib
 import os
 import signal
 import subprocess
@@ -51,7 +52,7 @@ class PluginProgram:
     def run(self, call: PluginCall, limit_ms: int | None, wait_callback: Callable[[], None] | None = None) -> PluginAnswer:
         manifest = call.manifest
         folder = self.folders.code(manifest.name)
-        self.write_settings(manifest.name, call.settings)
+        self.write_settings(manifest.name, call.settings, call.environment)
         line = self.line(call, limit_ms)
         if call.form is not EventForm.COMMIT:
             self.scripts.keep_line(manifest.name, line)
@@ -130,7 +131,7 @@ class PluginProgram:
         facts = call.facts if call.facts is not None else self.facts(call.agent_id, call.file_checkout)
         checkout = call.file_checkout or facts.checkout
         fields = {"v": LINE_VERSION, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "agent": call.agent_id, "role": facts.role, "window_ms": limit_ms,
-                  "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "data": dict(call.event.data)}
+                  "skills": list(facts.skills), "checkout": checkout.values() if checkout is not None else {}, "settings": dict(call.settings), "data": dict(call.event.data)}
         if call.manifest.config is not None:
             fields["config"] = {"version": self.plugins.find_name(call.manifest.name).config_version}
         return json.dumps(fields)
@@ -149,12 +150,17 @@ class PluginProgram:
                     if pipe is not None:
                         pipe.close()
 
-    def write_settings(self, plugin_name: str, settings: Mapping[str, object]) -> None:
+    def settings_path(self, plugin_name: str, environment: str) -> Path:
         data = self.folders.data(plugin_name)
-        file, text = data / SETTINGS_FILE, json.dumps(dict(settings))
+        if environment:
+            data = data / "environments" / hashlib.sha256(environment.encode()).hexdigest()
+        return data / SETTINGS_FILE
+
+    def write_settings(self, plugin_name: str, settings: Mapping[str, object], environment: str = "") -> None:
+        file, text = self.settings_path(plugin_name, environment), json.dumps(dict(settings))
         if self.written_settings.get(file) == text and file.is_file():
             return
-        data.mkdir(parents=True, exist_ok=True)
+        file.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(file, text)
         self.written_settings[file] = text
 
@@ -162,4 +168,4 @@ class PluginProgram:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}
         code, data, journal = self.folders.code(plugin_name).resolve(), self.folders.data(plugin_name).resolve(), self.home.folder.resolve()
         return {**passed, "PATH": f"{journal / 'bin'}:{LoginPath(self.home).value()}", "JOURNAL_ROOT": str(journal.parent), "JOURNAL_ENV": environment, "JOURNAL_PLUGIN": plugin_name,
-                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_SETTINGS": str(data / SETTINGS_FILE)}
+                "JOURNAL_PLUGIN_DIR": str(code), "JOURNAL_PLUGIN_DATA": str(data), "JOURNAL_SETTINGS": str(self.settings_path(plugin_name, environment))}

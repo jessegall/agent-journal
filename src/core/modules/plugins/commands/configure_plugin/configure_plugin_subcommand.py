@@ -21,7 +21,7 @@ class ConfigurePluginSubcommand(Subcommand[ConfigurePlugin, PluginSetting]):
 
     def command(self, arguments: Namespace, caller: Caller) -> ConfigurePlugin:
         self.plugin_name = arguments.plugin
-        return ConfigurePlugin(arguments.plugin, arguments.key, arguments.value)
+        return ConfigurePlugin(arguments.plugin, arguments.key, arguments.value, caller.environment_id if arguments.environment else None)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginSetting):

@@ -16,3 +16,4 @@ class PluginSetting(Model):
     creator_id: int
     key: str
     value: str
+    environment_id: int | None = None
