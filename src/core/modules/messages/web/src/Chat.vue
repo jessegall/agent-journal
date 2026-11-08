@@ -3,13 +3,15 @@ import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch}
 import {useComposerHeight} from "./composerHeight.js";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FeedPaginator, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
 
 const view = useWindow();
 const {rows: messages, failure, loaded, load, loadLatest, older, act} = view.props.messages;
+const messageFeed = view.props.messages;
 const settingOf = (key) => view.props[key].data.value?.value;
 view.markMotion = computed(() => settingOf("mark-motion") === true);
-const {rows: allMarks, older: olderMarks, loadLatest: latestMarks} = view.props.marks;
+const {rows: allMarks, loaded: marksLoaded, older: olderMarks, loadLatest: latestMarks} = view.props.marks;
+const markFeed = view.props.marks;
 const {rows: docked} = view.props.docks;
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
 const {rows: pins, act: runOnPin} = view.props.pins;
@@ -87,6 +89,8 @@ const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
 const chat = ref(null);
 const docksOpen = ref(true);
+// after half a quiet second of scrolling up, the insides of the docked cards fold and the Newest button shows; scrolling down to the foot undoes both
+const scrolledUp = ref(false);
 const short = ref(false);
 let lastTop = 0;
 let atFoot = true;
@@ -299,6 +303,7 @@ function send() {
     // a sent message takes the reader to the foot at once, also one who had scrolled up, so the rows watch below sets the scroll with no glide
     atFoot = true;
     awayFromFoot.value = false;
+    scrolledUp.value = false;
     arrived.value = 0;
     text.value = "";
     attached.value = [];
@@ -342,17 +347,17 @@ text.value = readDraft();
 watch(text, (words) => !editing.value && keepDraft(words));
 // the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
 const paging = ref(false);
-// scrolled to the top, the page of older messages is read and added, and the view stays on the message it showed
+// scrolled to the top, the page of older messages and the page of older marks beside it are read and added, and the view stays on the message it showed
+const paginator = new FeedPaginator("chat", {loaded: () => loaded.value, count: () => messages.value.length, pageSize: messageFeed.pageSize,
+    more: () => messageFeed.more.value || markFeed.more.value, previous: async () => (await Promise.all([older(), olderMarks()])).some(Boolean)});
 async function pageOlder() {
     if (returning || paging.value || !loaded.value) return;
     paging.value = true;
-    const before = scroller.value.scrollHeight;
-    const [more, moreMarks] = await Promise.all([older(), olderMarks()]);
-    if (more || moreMarks) {
-        await nextTick();
-        scroller.value.scrollTop += scroller.value.scrollHeight - before;
+    try {
+        await paginator.scrollUp(scroller.value);
+    } finally {
+        paging.value = false;
     }
-    paging.value = false;
 }
 function followScroll() {
     atTop.value = !scroller.value || scroller.value.scrollTop < 8;
@@ -361,14 +366,19 @@ function followScroll() {
     const {scrollTop, scrollHeight, clientHeight} = scroller.value;
     atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS || (atFoot && scrollTop >= lastTop);
     awayFromFoot.value = !atFoot;
-    if (atFoot) arrived.value = 0;
+    if (atFoot) {
+        arrived.value = 0;
+        scrolledUp.value = false;
+    }
     const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
     lastTop = scrollTop;
     if (opening === null && !folding) return;
     clearTimeout(folding);
     folding = 0;
-    if (opening) docksOpen.value = true;
-    else folding = setTimeout(() => { docksOpen.value = false; folding = 0; }, FOLD_AFTER_MS);
+    if (opening) {
+        docksOpen.value = true;
+        scrolledUp.value = false;
+    } else folding = setTimeout(() => { docksOpen.value = false; scrolledUp.value = !atFoot; folding = 0; }, FOLD_AFTER_MS);
 }
 // the newest message and mark are at the foot: a chat that was at its foot stays there as rows land, one scrolled up is left where it is
 watch(() => messages.value[0]?.id, (newest, before) => {
@@ -377,6 +387,7 @@ watch(() => messages.value[0]?.id, (newest, before) => {
 watch([rows, loaded], async () => {
     await nextTick();
     if (atFoot && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
+    if (scroller.value) paginator.drawn(scroller.value);
 });
 // a row that lands while the reader follows the foot comes in as version 4's did: the chat glides up, then the row fades in; the first rows and a page of older ones just appear
 const SETTLE_MS = 1500;
@@ -395,15 +406,23 @@ const arrival = {
     },
     leave: (element, done) => (returning || !atFoot || !element.querySelector("[data-message]") || element.dataset.row.startsWith("message:sending-") ? done() : depart(element, done)),
 };
+const reachBack = () => reachMessages(() => messages.value, () => allMarks.value, olderMarks);
+const stopWaiting = watch([loaded, marksLoaded], ([messagesReady, marksReady]) => {
+    if (!messagesReady || !marksReady) return;
+    stopWaiting();
+    reachBack();
+});
 async function refreshChat() {
     comeIn.flush();
     if (document.hidden || returning) return;
     returning = true;
     atFoot = true;
     awayFromFoot.value = false;
+    scrolledUp.value = false;
     arrived.value = 0;
     try {
         await Promise.all([loadLatest(), latestMarks()]);
+        await reachBack();
         await nextTick();
         if (scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
     } finally {
@@ -473,7 +492,7 @@ async function runCommand(pin) {
         </div>
         <div class="jump-holder">
             <Transition name="rise">
-                <button v-show="awayFromFoot" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Jump to latest'" @click="scrollToFoot">
+                <button v-show="awayFromFoot && scrolledUp" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Jump to latest'" @click="scrollToFoot">
                     <Icon name="down" />
                     {{ arrived ? `${arrived} new` : "Newest" }}
                 </button>
@@ -484,7 +503,7 @@ async function runCommand(pin) {
         </template>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
         <div data-figure-chat-foot class="chat-foot">
-            <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :data-figure-docked-bars="dockedRows.size ? '' : null" />
+            <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :insides-folded="scrolledUp" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
         <template v-if="dumping">
             <DumpForm :run="view.run" @made="dumping = false" @close="dumping = false" />

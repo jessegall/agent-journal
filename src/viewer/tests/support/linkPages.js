@@ -1,7 +1,16 @@
 const TABLES = {task: "tasks", plan: "plans", doc: "docs", report: "reports", message: "messages", agent: "agents"};
 
+// the answer of `link receipts --messages <ids>`: for each message the named page and the sent page the same rows give
+function receiptsPage(rows, words) {
+    const ids = words[words.indexOf("--messages") + 1].split(",");
+    const named = linkPage(rows, "link list --type about --type edited --group-counterparts").value;
+    const sent = linkPage(rows, "link list --type sent_to").value;
+    return {ok: true, value: {messages: Object.fromEntries(ids.map((id) => [id, {named, sent}]))}};
+}
+
 export function linkPage(rows, line) {
     const words = Array.isArray(line) ? line : line.split(" ");
+    if (words.includes("receipts")) return receiptsPage(rows, words);
     const types = words.flatMap((word, at) => word === "--type" ? [words[at + 1]] : []);
     const filtered = rows.filter((row) => !types.length || types.includes(row.link_type));
     const resolved = filtered.map((row) => ({...row, target: row.target ?? {model: row.target_model, id: row.target_id,

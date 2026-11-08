@@ -1,24 +1,20 @@
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_history_key import RuleHistoryKey
-from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.drivers.models.rule_history import RuleHistory
 from core.modules.drivers.models.enums.rule_due_outcome import RuleDueOutcome
+from core.modules.drivers.support.hook_rule_histories import HookRuleHistories
 
 
 class TableHookHistory(HookHistory):
     """Reads the rule history table: whether a rule with history was silenced for a layer the last time it was
-    due, and when it last answered; an agent's rows of a layer are read once, and kept until the hook's
-    histories are written."""
+    due, and when it last answered; an agent's rows are read once, and kept until the hook's histories are written."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
-        self.kept: dict[RuleHistoryKey, RuleHistory] = {}
-        self.layers_read: set[tuple[int, str]] = set()
+    def __init__(self, histories: HookRuleHistories) -> None:
+        self.histories = histories
 
     def clear(self) -> None:
-        self.kept.clear()
-        self.layers_read.clear()
+        self.histories.clear()
 
     def control_return(self, key: RuleHistoryKey) -> bool:
         history = self.history(key)
@@ -32,8 +28,4 @@ class TableHookHistory(HookHistory):
         return self.history(key)
 
     def history(self, key: RuleHistoryKey) -> RuleHistory | None:
-        if (key.agent_id, key.layer) not in self.layers_read:
-            self.layers_read.add((key.agent_id, key.layer))
-            rows = self.queries.query(RuleHistory).filter(session_agent_id=key.agent_id, layer=key.layer).all_rows()
-            self.kept.update({RuleHistoryKey(key.agent_id, row.rule, key.layer): row for row in rows})
-        return self.kept.get(key)
+        return self.histories.of(key.agent_id).get((key.rule, key.layer))

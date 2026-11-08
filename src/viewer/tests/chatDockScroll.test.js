@@ -12,7 +12,7 @@ import {dockWindow} from "./support/dockWindow.js";
 vi.mock("@journal/window-kit", async (original) => {
     const kit = await original();
     const {h} = await import("vue");
-    return {...kit, DockStack: {props: ["collapsed"], render() { return h("div", {"data-test-docks": "", "data-collapsed": String(this.collapsed)}); }}};
+    return {...kit, DockStack: {props: ["collapsed", "insidesFolded"], render() { return h("div", {"data-test-docks": "", "data-collapsed": String(this.collapsed), "data-insides-folded": String(this.insidesFolded)}); }}};
 });
 
 afterEach(() => { vi.useRealTimers(); });
@@ -188,5 +188,62 @@ test("a lone card docks unfolded, the last card left unfolds, and two or more ca
     await nextTick();
     expect(folded().at(-1)).toBe(false);
     stack.app.unmount();
+    localStorage.clear();
+});
+
+async function scrolledChat() {
+    const element = await mounted(Chat, context({"message feed": page([])}));
+    const history = element.querySelector(".history");
+    Object.defineProperty(history, "scrollHeight", {value: 2000});
+    Object.defineProperty(history, "clientHeight", {value: 500});
+    Object.defineProperty(history, "scrollTop", {value: 1500, writable: true});
+    return {element, history};
+}
+
+test("scrolling up folds the insides of the cards and shows the Newest button only after half a second, and the foot undoes both at once", async () => {
+    const {element, history} = await scrolledChat();
+    const docks = () => element.querySelector("[data-test-docks]").dataset;
+    const newest = () => {
+        const button = element.querySelector("[data-scroll-foot]");
+        return button.style.display === "none" || button.classList.contains("rise-leave-active") ? "hidden" : "shown";
+    };
+    vi.useFakeTimers();
+    history.dispatchEvent(new Event("scroll"));
+    history.scrollTop = 500;
+    history.dispatchEvent(new Event("scroll"));
+    await vi.advanceTimersByTimeAsync(499);
+    expect([docks().insidesFolded, newest()]).toEqual(["false", "hidden"]);
+    await vi.advanceTimersByTimeAsync(1);
+    await nextTick();
+    expect([docks().insidesFolded, newest()]).toEqual(["true", "shown"]);
+    history.scrollTop = 1500;
+    history.dispatchEvent(new Event("scroll"));
+    await vi.advanceTimersByTimeAsync(0);
+    await nextTick();
+    expect([docks().insidesFolded, newest()]).toEqual(["false", "hidden"]);
+});
+
+const foldingDocument = (id) => ({...item(id), type: "documents.folding-doc"});
+
+test("while the chat is scrolled up the insides of a card fold whatever the hand chose, and the hand's choice shows again at the foot", async () => {
+    localStorage.clear();
+    loadDockDeclarations([{type: "documents.folding-doc", icon: "document", title: "Document", buttons: [], reads: [], folds: true}]);
+    const host = document.createElement("div");
+    document.body.append(host);
+    const away = ref(false);
+    const app = createApp({render: () => h(DockStack, {items: [foldingDocument(1)], insidesFolded: away.value})});
+    app.provide(WINDOW_CONTEXT, dockWindow());
+    app.mount(host);
+    await nextTick();
+    const body = () => host.querySelector(".chat-dock-body").classList.contains("folded");
+    expect(body()).toBe(false);
+    away.value = true;
+    await nextTick();
+    expect(body()).toBe(true);
+    expect(host.querySelector(".chat-dock").classList.contains("collapsed")).toBe(false);
+    away.value = false;
+    await nextTick();
+    expect(body()).toBe(false);
+    app.unmount();
     localStorage.clear();
 });

@@ -59,3 +59,23 @@ def test_a_message_sent_to_another_agent_shows_in_the_chat_naming_who_it_went_to
     listed = story.run("message list --json", actor=story.user)
     listed.expect_text('"recipient": "Dijkstra"')
     listed.expect_text("Look at the merge")
+
+
+KNOWN_ADDRESS = "uds:/tmp/cc-socks/88554.sock"
+ADDRESSED_ENVELOPE = f'<cross-session-message from="{KNOWN_ADDRESS}" from-name="code-commandments-de" from-mode="bypass">\nThe rules are on\n</cross-session-message>'
+
+
+def sent_to(story, transcript: str, address: str) -> None:
+    sample = HookSamples.tool_use("SendMessage", ToolType.UNCATEGORISED, [], None).with_raw({"transcript_path": transcript, "tool_input": {"to": address, "message": f"Hello {address}"}}).with_fields(event="post_tool_use")
+    story.hook("s-1", sample)
+
+
+def test_a_message_sent_to_a_known_address_names_the_session_and_one_to_an_unknown_address_names_the_address(new_story, tmp_path):
+    story = new_story(fixture=BuilderWithUser)
+    transcript = transcript_with(tmp_path, queued(ADDRESSED_ENVELOPE))
+    sent_to(story, transcript, KNOWN_ADDRESS)
+    sent_to(story, transcript, "uds:/tmp/cc-socks/1.sock")
+    listed = story.run("message list --json", actor=story.user)
+    listed.expect_text('"recipient": "code-commandments-de"')
+    listed.expect_text('"recipient": "uds:/tmp/cc-socks/1.sock"')
+    listed.expect_text('"peer": "code-commandments-de"')

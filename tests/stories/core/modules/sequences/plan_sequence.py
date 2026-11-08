@@ -59,8 +59,8 @@ def test_the_review_sequence_sends_the_agent_to_the_review_applying_skill(new_st
 
 
 def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
-    story = new_story(fixture=StandardSequences)
-    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    story = new_story(fixture=StandardSequences, environment="main")
+    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"), ActorType.AGENT)
     story.run(lines.NEW_PLAN, actor=helper)
     story.run_listeners()
     expect_run_agents(story, [helper.id])

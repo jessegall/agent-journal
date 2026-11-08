@@ -9,7 +9,7 @@ from core.modules.agents.models.enums.agent_activity import AgentActivity
 AGENT_INSPECTOR = InspectorDeclaration(
     Agent,
     reads="agent show {row_id}",
-    label="Agent {id}",
+    label="Agent · {activity}",
     title="{display_name}",
     width=InspectorWidth.MEDIUM,
     events=("agent.*",),

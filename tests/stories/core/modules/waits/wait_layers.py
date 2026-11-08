@@ -29,8 +29,8 @@ def test_a_stuck_agent_is_told_nothing_and_its_stop_goes_through(new_story):
 
 
 def test_a_newer_wait_is_the_newer_layer_and_a_resumed_one_is_newest_again(new_story):
-    story = new_story(SAMPLES, fixture=LeadWaiting)
-    story.run('task make "The deploy" --environment main')
+    story = new_story(SAMPLES, fixture=LeadWaiting, environment="main")
+    story.run('task make "The deploy"')
     story.run("wait on 'the deploy' --target tasks:2", actor=story.agent)
     story.hook("s-1", HookSamples.stop())
     story.expect_text(lines.SECOND_HOOK_CALL, "layers: wait:2, wait:1")

@@ -1,3 +1,6 @@
+from core.modules.processes.listeners.ended_run_line_listener import EndedRunLineListener
+from core.modules.processes.support.process_wait_targets import ProcessWaitTargets
+from core.modules.waits.support.wait_targets import WaitTargets
 from core.modules.processes.listeners.full_output_read_listener import FullOutputReadListener
 from core.modules.processes.migrations.m057_output_full_read import OutputFullReadMigration
 from core.modules.processes.migrations.m058_process_plugin import ProcessPluginMigration
@@ -240,9 +243,9 @@ class ProcessesModule(Module):
     subcommands = [ConfirmOutputSubcommand, RecordSandboxSubcommand, SetOutputTimeoutSubcommand, PageOutputSubcommand, HookOutputPageSubcommand, InspectRunQueueSubcommand,MakeReaderDraftSubcommand, SkipReaderRequestSubcommand, ListRunQueueSubcommand, ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, StartProcessPartSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand, HaltRunQueueSubcommand, ResumeRunQueueSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
     driver_rules = [FailedFullRunRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
-    listeners = [FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
+    listeners = [EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     marks = PROCESS_MARKS
-    bindings = {WatchedRuns: MonitoredRuns}
+    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets}
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
                                  keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS)], runs=WINDOW_RUNS, events=WINDOW_EVENTS),

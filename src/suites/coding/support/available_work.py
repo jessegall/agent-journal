@@ -7,11 +7,13 @@ from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.support.coding_main_options import CodingMainOptions
 from suites.coding.support.next_task import NextTask
 
+MOST_LISTED_TASKS = 5
+
 
 @dataclass(frozen=True)
 class AvailableWorkAnswer:
-    """What the main agent can do next: the task it is handed to work on, the open task ids it can send to a worker,
-    and whether it may stop. It may stop when neither is possible, so no setting leaves it stuck."""
+    """What the main agent can do next: the task it is handed to work on, the oldest open task ids it can send to a worker
+    (at most five are read), and whether it may stop. It may stop when neither is possible, so no setting leaves it stuck."""
 
     own_task: Task | None
     delegatable: tuple[int, ...]
@@ -39,4 +41,4 @@ class AvailableWork:
         if not may_send or not self.places.can_start_new():
             return ()
         waiting = self.tasks.delegation_candidates([worktree.session_agent_id for worktree in self.worktrees.open_worktrees()])
-        return tuple(task.id for task in waiting.oldest().page().rows)
+        return tuple(task.id for task in waiting.oldest().limited(MOST_LISTED_TASKS))

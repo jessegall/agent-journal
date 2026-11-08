@@ -10,6 +10,7 @@ export default windowBuild({
         "task-details": here("./src/task-details.js"),
         "task-chain": here("./src/task-chain.js"),
         "task-log": here("./src/task-log.js"),
+        "task-counts": here("./src/task-counts.js"),
     },
     outDir: here("./dist"),
 });

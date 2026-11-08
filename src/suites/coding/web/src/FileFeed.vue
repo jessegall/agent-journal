@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {AutoScrollPane, Btn, DiffCard, EmptyState, Skeleton, useWindow} from "@journal/window-kit";
+import {AutoScrollPane, Btn, DiffCard, EmptyState, FeedPaginator, Skeleton, useWindow} from "@journal/window-kit";
 import FeedBar from "./FeedBar.vue";
 import {cardsOf} from "./fileCards.js";
 
@@ -15,7 +15,8 @@ const AGENT_VIEW = {lines: 5, flush: true};
 
 const view = useWindow();
 if (view.agent != null) view.state["edits.agent"] = String(view.agent);
-const {rows, failure, loaded, more, older} = view.props.edits;
+const {rows, failure, loaded, more} = view.props.edits;
+const paginator = FeedPaginator.ofRows("file-feed", view.props.edits);
 const {data: savedView} = view.props.view;
 const kept = view.option(SETTING_KEY);
 const startView = (own) => ({...DEFAULTS, ...(view.page === AGENT_PAGE ? AGENT_VIEW : {}), ...own});
@@ -59,7 +60,7 @@ watch([kept, savedView], () => { options.value = startView(kept.value ?? savedVi
 <template>
     <div :class="['file-feed', {flush: options.flush}]" :style="sizing" data-file-feed>
         <FeedBar :options="options" :filter="filter" @options="setOptions" @filter="filter = $event" @expand="expand" />
-        <AutoScrollPane :row-count="rows.length">
+        <AutoScrollPane :row-count="rows.length" :feed="paginator">
             <template v-if="failure">
                 <p class="file-feed-failure" role="alert">{{ failure }}</p>
             </template>
@@ -72,7 +73,7 @@ watch([kept, savedView], () => { options.value = startView(kept.value ?? savedVi
             <template v-else>
             <div class="file-feed-flow">
                 <template v-if="more && !filter">
-                    <Btn small data-feed-older @click="older">Show older edits</Btn>
+                    <Btn small data-feed-older @click="paginator.scrollUp()">Show older edits</Btn>
                 </template>
                 <template v-for="card in listed" :key="card.id">
                     <DiffCard

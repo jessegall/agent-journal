@@ -20,4 +20,5 @@ QUESTION_INSPECTOR = InspectorDeclaration(
                           confirm="Leave this question without an answer? The agent is told it was closed."),
     ),
     components=(InspectorComponent("questions.question-options"),),
+    lists_fields=True,
 )

@@ -25,6 +25,7 @@ def text_inspector(model: type[Doc] | type[Report], noun: str, closing_line: str
                                    fields=(TextField("why", "Why does it need no action?"),)),),
         components=(InspectorComponent("documents.document-body"),),
         links=InspectorLinks(),
+        draws_text=True,
     )
 
 

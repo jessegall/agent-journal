@@ -90,7 +90,7 @@ test("a waiting card is described without a badge and its refusal stays outside 
     expect(host.querySelector("section").classList.contains("waiting")).toBe(true);
     expect(host.textContent).not.toContain("Needs you");
 });
-test("a kept run has flush controls before its duration and Kept on the bottom line", async () => {
+test("a kept run has a pressed pin before its duration and no Kept text", async () => {
     const host = await draw(
         {folds: "Output", leaves_after_seconds: 5, buttons: [{icon: "stop", label: "Stop", runs: "output stop {row_id}"}]},
         {kept: true}
@@ -99,7 +99,7 @@ test("a kept run has flush controls before its duration and Kept on the bottom l
     expect(pin.getAttribute("aria-pressed")).toBe("true");
     expect(pin.getAttribute("aria-label")).toBe("Let this card close");
     expect(host.querySelector(".chat-dock-head .dock-controls")).toContain(pin);
-    expect(host.querySelector(".chat-dock-head").textContent).toContain("Kept");
+    expect(host.textContent).not.toContain("Kept");
     expect(host.querySelector("[data-dock-fold]").textContent).toContain("Output");
 });
 

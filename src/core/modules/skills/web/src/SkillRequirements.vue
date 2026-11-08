@@ -22,7 +22,7 @@ p { margin:6px 0 0; color:var(--text-3); font-size:12px; line-height:1.6; }
 .switch-label { display:flex; align-items:center; gap:7px; flex:none; color:var(--text-3); font-size:11px; }
 .choices { margin-top:16px; padding-left:16px; border-left:2px solid var(--border); }
 label { display:flex; flex-direction:column; gap:8px; font-size:12px; color:var(--text-2); }
-select { align-self:flex-start; max-width:100%; padding:6px 10px; border:1px solid var(--border-2); border-radius:6px; background:var(--bg); color:var(--text); font:inherit; }
+select { align-self:flex-start; max-width:100%; }
 .again { flex-direction:row; align-items:center; justify-content:space-between; margin-top:16px; line-height:1.6; }
 small { display:block; color:var(--text-3); font-size:11px; }
 @media(max-width:700px) { .block-head { flex-wrap:wrap; } }

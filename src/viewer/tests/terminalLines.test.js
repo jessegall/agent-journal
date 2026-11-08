@@ -5,7 +5,7 @@ import {AGENT_TERMINAL_KEYS, terminalWindowContext} from "./support/terminalWind
 import Terminal from "../../suites/coding/web/src/Terminal.vue";
 
 const FOOT = 1000;
-const OPENING = 100;
+const NEWEST_PAGE = 50;
 const CALLS = 700;
 
 // every fourth hook call is a Bash command and the others are reads, as a long run of an agent leaves them: 175 commands in 700 calls
@@ -47,24 +47,25 @@ async function opened() {
 
 const lines = (element) => [...element.querySelectorAll("[data-terminal-command]")].map((line) => line.textContent.trim());
 
-test("the terminal opens with the last 100 lines, reading older pages until it has them", async () => {
-    const {element} = await opened();
+test("the terminal opens with the commands of the newest page only", async () => {
+    const {element, window} = await opened();
     const shown = lines(element);
-    expect(shown).toHaveLength(OPENING);
-    expect(shown[0]).toBe("$call 304");
+    expect(shown).toHaveLength(NEWEST_PAGE);
+    expect(shown[0]).toBe("$call 504");
     expect(shown.at(-1)).toBe("$call 700");
+    expect(window.reads.filter((line) => line.startsWith("hook-call feed") && line.includes("--before-id"))).toEqual([]);
 });
 
 test("scrolled to the top, the terminal reads an older page and adds its lines above", async () => {
     const {element} = await opened();
-    expect(lines(element)).toHaveLength(OPENING);
+    expect(lines(element)).toHaveLength(NEWEST_PAGE);
     const pane = element.querySelector(".auto-scroll-pane");
     pane.scrollTop = 0;
     pane.dispatchEvent(new Event("scroll"));
     await settle();
     const after = lines(element);
-    expect(after).toHaveLength(OPENING + 50);
-    expect(after[0]).toBe("$call 104");
+    expect(after).toHaveLength(NEWEST_PAGE * 2);
+    expect(after[0]).toBe("$call 304");
     expect(after.at(-1)).toBe("$call 700");
 });
 
@@ -78,7 +79,7 @@ test("an embedded terminal loads its agent key and stops following when closed",
     const shown = ref(true);
     const element = await mounted({render: () => shown.value ? h(Terminal, {agent: 7}) : null}, window);
     await settle();
-    expect(lines(element)).toHaveLength(OPENING);
+    expect(lines(element)).toHaveLength(NEWEST_PAGE);
     expect(requests.mock.calls.filter(([request]) => request.only.length).every(([request]) => request.only.join() === "terminal-calls.7")).toBe(true);
     expect(window.follow).toHaveBeenCalledWith(["hook_call.*"], expect.any(Function));
     shown.value = false;
@@ -87,7 +88,7 @@ test("an embedded terminal loads its agent key and stops following when closed",
 });
 
 test("opening a command reads one output page and closing it hides the output", async () => {
-    const window = terminalWindowContext({"output hook-page 304": {ok: true, value: {lines: ["a result"], first_byte: 0, last_byte: 8, total: 8, cut_bytes: 0, command: "full command\nwith another line"}}}, 7);
+    const window = terminalWindowContext({"output hook-page 504": {ok: true, value: {lines: ["a result"], first_byte: 0, last_byte: 8, total: 8, cut_bytes: 0, command: "full command\nwith another line"}}}, 7);
     const read = window.read;
     window.read = async (line) => line.startsWith("hook-call feed") ? feed(line) : read(line);
     const requests = vi.spyOn(window, "readKeys");
@@ -95,17 +96,17 @@ test("opening a command reads one output page and closing it hides the output", 
     const element = await mounted(Terminal, window);
     await settle();
     const command = element.querySelector("[data-terminal-command] .terminal-text");
-    expect(window.reads).not.toContain("output hook-page 304");
+    expect(window.reads).not.toContain("output hook-page 504");
     command.click();
     await settle();
     expect(command.classList.contains("open")).toBe(true);
     expect(command.textContent).toBe("full command\nwith another line");
     expect(element.querySelector("[data-terminal-output]").textContent).toContain("a result");
-    expect(requests.mock.calls.filter(([request]) => request.only.includes("terminal-output.304"))).toHaveLength(1);
+    expect(requests.mock.calls.filter(([request]) => request.only.includes("terminal-output.504"))).toHaveLength(1);
     command.click();
     await settle();
     expect(command.classList.contains("open")).toBe(false);
-    expect(command.textContent).toBe("call 304");
+    expect(command.textContent).toBe("call 504");
     expect(element.querySelector("[data-terminal-output]")).toBeNull();
-    expect(window.reads).toEqual(["output hook-page 304"]);
+    expect(window.reads).toEqual(["output hook-page 504"]);
 });

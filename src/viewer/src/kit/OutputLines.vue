@@ -5,14 +5,18 @@ import {withoutColourCodes} from "../format/colourCodes.js";
 
 // an output's terminal lines, opened to read: following, the newest line stays in view as lines arrive; a scroll up by hand
 // stops the following, and the follow button starts it again and goes to the end
-const props = defineProps({lines: {type: Array, required: true}, empty: {type: String, default: "No output yet."}});
+// `feed` is the FeedPaginator of the output's pages, which checks the lines opened at the bottom
+const props = defineProps({lines: {type: Array, required: true}, empty: {type: String, default: "No output yet."}, feed: {type: Object, default: null}});
 const emit = defineEmits(["older"]);
 const box = ref(null);
 const {away, scrolled, arrived, toBottom} = useFollowing(box);
 
 watch(
     () => props.lines.length,
-    () => nextTick(() => arrived()),
+    () => nextTick(() => {
+        arrived();
+        if (box.value) props.feed?.drawn(box.value);
+    }),
     {immediate: true}
 );
 

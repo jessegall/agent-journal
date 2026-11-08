@@ -95,7 +95,6 @@ watch([() => props.profile, program], load, {immediate: true});
 h3 { margin: 0; font-size: 14px; font-weight: 600; }
 .field { display: grid; gap: 4px; }
 .field > span { color: var(--text-2); font-size: 12px; font-weight: 500; }
-select { padding: 6px 9px; border: 1px solid var(--border-2); border-radius: 7px; background: var(--bg); color: var(--text); font: inherit; }
 .reason, .notice { margin: 0; color: var(--text-3); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .idle-helper { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 </style>

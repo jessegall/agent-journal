@@ -104,6 +104,38 @@ textarea {
     font: inherit;
     color: inherit;
 }
+/* every select in the viewer: the other controls' background, border and radius, an arrow drawn in the text colour, and the focus ring */
+select {
+    appearance: none;
+    padding: 6px 28px 6px 9px;
+    border: 1px solid var(--border-2);
+    border-radius: 7px;
+    background-color: var(--bg);
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-3) 50%), linear-gradient(135deg, var(--text-3) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 50%, calc(100% - 10px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+select[multiple] {
+    padding-right: 9px;
+    background-image: none;
+}
+select:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-dim);
+}
+select:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+option {
+    background: var(--raised);
+    color: var(--text);
+}
 .ico {
     width: var(--icon-size, 16px);
     height: var(--icon-size, 16px);

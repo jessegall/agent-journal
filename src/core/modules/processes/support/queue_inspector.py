@@ -21,5 +21,4 @@ QUEUE_INSPECTOR = InspectorDeclaration(
     components=(InspectorComponent("processes.queue-body"),),
     links=None,
     named="test-queue",
-    lists_fields=False,
 )

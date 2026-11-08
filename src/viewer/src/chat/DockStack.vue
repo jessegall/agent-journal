@@ -17,7 +17,7 @@ import {rememberedRef} from "../windows/rememberedState.js";
 
 // the items docked at the bottom of the chat, above the composer: a card eases in when it docks and out when it leaves (kit/ChatDock.vue), a leaving item runs a countdown down its top edge, pointing at it holds it,
 // and from three runs they share one row, which dissolves into single cards once fewer than two are still going
-const props = defineProps({items: {type: Array, required: true}, folded: Boolean, collapsed: Boolean});
+const props = defineProps({items: {type: Array, required: true}, folded: Boolean, collapsed: Boolean, insidesFolded: Boolean});
 const now = useNow(500);
 const held = ref(new Set());
 const grouped = ref(false);
@@ -85,10 +85,11 @@ function openCard(item) {
     sizeChoice.value = {collapsed: true, opened: [...opened, item.id]};
 }
 
-// a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
+// a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll; while the chat is scrolled up the insides of every card fold, and the
+// hand's choice, which is not touched, shows again at the foot
 const byHand = rememberedRef(`dock-folded:${store.identity?.root || location.host}`, {});
 const foldedFor = (item) =>
-    Boolean(dockDeclaration(item.type)?.folds) && dockFolded(byHand.value[item.id], isRunItem(item, dockDeclaration) || props.folded);
+    Boolean(dockDeclaration(item.type)?.folds) && (props.insidesFolded || dockFolded(byHand.value[item.id], isRunItem(item, dockDeclaration) || props.folded));
 function fold(item) {
     byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
 }

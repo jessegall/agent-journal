@@ -1,15 +1,11 @@
 <script setup>
-import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
-import {AutoScrollPane, EmptyState, Skeleton, useWindow} from "@journal/window-kit";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {AutoScrollPane, EmptyState, FeedPaginator, Skeleton, useWindow} from "@journal/window-kit";
 import TerminalOutput from "./TerminalOutput.vue";
 
 // Commands are listed oldest first and open to their full text; a line typed here goes to the agent's terminal.
 const COMMAND_TOOLS = new Set(["Bash", "Monitor", "shell", "exec_command"]);
 const JOURNAL_LINE = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/;
-
-// the terminal opens with at least this many lines, reading older pages of the agent's hook calls until it has them or the record ends, and reads one more page each time it is scrolled to the top
-const OPENING_LINES = 100;
-const TOP_PIXELS = 8;
 
 const view = useWindow();
 const props = defineProps({agent: {type: Number, default: null}});
@@ -17,7 +13,8 @@ const agent = props.agent ?? view.agent;
 const embedded = props.agent !== null;
 if (!embedded) view.state["calls.session-agent-id"] = String(agent);
 const feed = view.props[embedded ? `terminal-calls.${agent}` : "calls"];
-const {rows, failure, loaded, older} = feed;
+const {rows, failure, loaded, more} = feed;
+const paginator = FeedPaginator.ofRows("terminal", feed);
 if (embedded) {
     onMounted(() => feed.loadLatest());
     const stop = view.follow(["hook_call.*"], feed.heard);
@@ -28,9 +25,6 @@ const refusal = ref("");
 const input = ref(null);
 const opened = ref(new Set());
 const fullCommands = ref({});
-const log = ref(null);
-const paging = ref(false);
-const recordEnds = ref(false);
 
 // the pane menu's detail level: commands alone, with the journal's lines too, or every tool the agent used
 const isShown = {
@@ -43,32 +37,11 @@ const level = view.option("verbosity");
 const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && row.summary && isShown[level.value ?? "everything"](row)).sort((one, two) => one.id - two.id));
 const markOf = (row) => (isJournalLine(row) ? "#" : COMMAND_TOOLS.has(row.tool) ? "$" : ">");
 
-// reads the page of calls before the oldest held, and when the view is at the top keeps it on the line it showed; false when no page was read
-async function pageOlder() {
-    if (paging.value || recordEnds.value) return false;
-    paging.value = true;
-    const pane = log.value?.pane;
-    const atTop = pane?.scrollTop < TOP_PIXELS;
-    const before = pane?.scrollHeight;
-    recordEnds.value = !(await older());
-    if (atTop) {
-        await nextTick();
-        pane.scrollTop += pane.scrollHeight - before;
-    }
-    paging.value = false;
-    return !recordEnds.value;
+// the newest page may hold no command to show: earlier pages are read, one at a time, until a command is on screen or the record ends
+async function reachCommand() {
+    while (loaded.value && !commands.value.length && more.value && await paginator.scrollUp());
 }
-
-async function fillOpening() {
-    let reading = true;
-    while (reading && commands.value.length < OPENING_LINES) reading = await pageOlder();
-}
-
-function followScroll(event) {
-    if (event.target.scrollTop < TOP_PIXELS) pageOlder();
-}
-
-watch(() => loaded.value && commands.value.length < OPENING_LINES, (short) => short && fillOpening(), {immediate: true});
+watch(() => loaded.value && !commands.value.length, reachCommand, {immediate: true});
 
 function toggle(row) {
     const next = new Set(opened.value);
@@ -103,7 +76,7 @@ function focusInput(event) {
             <EmptyState title="No commands from this agent yet" />
         </template>
         <template v-else>
-            <AutoScrollPane ref="log" :row-count="commands.length" pane-class="terminal-body" data-terminal-log @scroll.capture="followScroll">
+            <AutoScrollPane :row-count="commands.length" :feed="paginator" pane-class="terminal-body" data-terminal-log>
                 <template v-for="row in commands" :key="row.id">
                     <div :class="['terminal-row', {refused: row.refusal}]" data-terminal-command :title="row.refusal ? `The journal refused this before it ran: ${row.refusal}` : null">
                         <span class="terminal-mark">{{ markOf(row) }}</span>
