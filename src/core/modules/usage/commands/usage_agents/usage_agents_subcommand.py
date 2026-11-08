@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from argparse import ArgumentParser, Namespace
 
 from core.base.agent_sandbox_choice import AgentSandboxChoice
+from core.base.agent_type_book import AgentTypeBook
 from core.base.caller.caller import Caller
 from core.base.clock import Clock
 from core.base.query.conditions.excluding import Excluding
@@ -43,8 +44,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     name = "agents"
     environment_refusal = "the agents are shown for one environment"
 
-    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice) -> None:
-        self.activity, self.sandbox = activity, sandbox
+    def __init__(self, queries: Queries, files: StatusFiles, providers: Providers, home: JournalHome, suites: SuiteChoice, profiles: ProfileFiles, settings: SettingValues, clock: Clock, activity: AgentActivity, sandbox: AgentSandboxChoice, types: AgentTypeBook) -> None:
+        self.activity, self.sandbox, self.types = activity, sandbox, types
         self.queries, self.files, self.providers, self.home, self.suites, self.profiles = queries, files, providers, home, suites, profiles
         self.settings, self.clock = settings, clock
 
@@ -65,8 +66,12 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         cards_read = (*running, *ended)
         statuses = self.statuses(cards_read)
         account = self.files.plan_windows(statuses)
-        sandboxes = self.sandbox.sandboxed_among(self.queries.query(Agent).find_many([card.id for card in cards_read]))
-        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes[card.id]) for card in cards_read))
+        sandboxes = self.sandboxes(cards_read)
+        return AgentFactsList(tuple(self.facts(card, policy, titles, pending.get(card.id), statuses[card.session], account, sandboxes.get(card.id, True)) for card in cards_read))
+
+    def sandboxes(self, cards: Sequence[AgentCard]) -> dict[int, bool]:
+        own_folder = [card.id for card in cards if self.types.find(card.role).separate_folder]
+        return self.sandbox.sandboxed_among(self.queries.query(Agent).find_many(own_folder)) if own_folder else {}
 
     def statuses(self, cards: Sequence[AgentCard]) -> Mapping[str, SessionStatus]:
         return {card.session: self.files.status(card.session) for card in cards}
