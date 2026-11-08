@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 
 from core.base.actor_type import ActorType
 from core.base.caller.caller import Caller
@@ -11,18 +10,10 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
+from core.modules.messages.commands.unread_reports.unread_reports import UnreadReports
 
 SHOWN_REPORTS = 20
 TITLE_CHARACTERS = 100
-
-
-@dataclass(frozen=True)
-class UnreadReports:
-    """One page of unread reports, newest page first and oldest first on a page, and how many there are in all."""
-
-    reports: tuple[Message, ...]
-    total: int
-    page: int
 
 
 class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):

@@ -8,8 +8,9 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import SILENT_START_FIXED, SILENT_START_READY, SILENT_START_REFUSED, SILENT_START_TAUGHT
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
-from core.modules.processes.support.run_shape import RunShapes
-from core.modules.processes.support.silent_start_runs import SilentRun, SilentStartRuns
+from core.modules.processes.support.run_shapes import RunShapes
+from core.modules.processes.support.silent_start_runs import SilentStartRuns
+from core.modules.processes.support.silent_run import SilentRun
 
 NO_SHAPE = "none of the known ones"
 NO_TOTAL = "states no total, so the command must print one first"

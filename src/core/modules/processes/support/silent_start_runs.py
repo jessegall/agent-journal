@@ -1,30 +1,13 @@
-from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import JOURNAL_PROGRAM
 from core.base.query.conditions.prefix import Prefix
-from core.modules.processes.models.process import Process
-from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.queries.process_query import ProcessQuery
+from core.modules.processes.support.silent_run import SilentRun
 
-SILENT_RUN_SECONDS = 60
 RUNS_READ = 6
-
-
-@dataclass(frozen=True)
-class SilentRun:
-    """One ended run of an alias or a command, how long it lasted, and whether it showed a percent in the chat."""
-
-    process: Process
-    part: ProcessPart
-    seconds: int
-    shows_percent: bool
-
-    @property
-    def is_silent(self) -> bool:
-        return self.seconds > SILENT_RUN_SECONDS and not self.shows_percent
 
 
 class SilentStartRuns:

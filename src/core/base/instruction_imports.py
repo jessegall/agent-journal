@@ -1,25 +1,15 @@
 import re
 from collections import Counter
 from collections.abc import Iterator
-from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.file_access import FileAccess
+from core.base.instruction_import import InstructionImport
 
 INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")
 JOURNAL_FILE = "JOURNAL.md"
 SKIPPED_FOLDERS = frozenset((".git", ".journal", "node_modules", ".venv", "dist", "vendor"))
 IMPORT_LINE = re.compile(r"^@(\S+\.md)\s*$", re.MULTILINE)
-
-
-@dataclass(frozen=True)
-class InstructionImport:
-    """One file an instruction file imports, how many times it names it, and whether that file imports it back."""
-
-    file: str
-    imported: str
-    count: int
-    imports_back: bool
 
 
 class InstructionImports:

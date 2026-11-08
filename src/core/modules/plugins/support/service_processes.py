@@ -4,7 +4,8 @@ from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 from core.base.leftover_process import STOP_LIMIT_SECONDS
-from core.modules.plugins.support.plugin_place import PluginPlace, PluginPlaceRows
+from core.modules.plugins.support.plugin_place import PluginPlace
+from core.modules.plugins.support.plugin_place_rows import PluginPlaceRows
 
 
 class ServiceProcesses:

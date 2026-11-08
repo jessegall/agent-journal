@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.file_access import FileAccess
@@ -18,22 +17,12 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.instruction_injection import InstructionInjection
 
 JOURNAL_KEY = "journal"
 JOURNAL_TITLE = "Inject the journal briefing"
 WORKER_DRIVER = "coding.worker"
 ORIGINAL_SUFFIX = ".original"
-
-
-@dataclass(frozen=True)
-class InstructionInjection:
-    """One block of text a profile can have in its instruction files: its key, the title of its switch, its text and
-    whether it is on for the profile."""
-
-    key: str
-    title: str
-    text: str
-    is_on: bool
 
 
 class WorkerInstructionFiles:
