@@ -30,7 +30,8 @@ class WorkerStartedWork:
     def is_stranded(self, worker: Agent) -> bool:
         if worker.role != AgentRole.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
             return False
-        return not self.was_told_to_go_on(worker) and not self.stop.was_stopped(worker) and self.told_count(worker) < RESUME_LIMIT_COUNT
+        return (not self.was_told_to_go_on(worker) and not self.stop.was_stopped(worker) and self.told_count(worker) < RESUME_LIMIT_COUNT
+                and bool(self.unfinished.rows(worker.id)))
 
     def was_told_to_go_on(self, worker: Agent) -> bool:
         """Whether a job waits for it, or one was handed to it since it stopped, so a start of its program is on its way."""

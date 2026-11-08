@@ -39,7 +39,6 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
         if new.role != AgentRole.WORKER or new.parent_id is None:
             return
         unfinished = self.unfinished.rows(new.id)
-        open("/Users/jessegall/projects/agent-journal/.journal/worktrees/development/worker-707/debug_listener.txt", "a").write(repr((new.id, [(t.id, t.state.value, t.holder_id, t.delegated_to) for t in unfinished], context.actor.id)) + "\n")
         if not unfinished:
             return
         delegated = any(task.delegated_to == new.id for task in unfinished)

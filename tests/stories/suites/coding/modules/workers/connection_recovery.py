@@ -297,6 +297,7 @@ def test_a_second_wake_during_a_session_launch_does_not_start_another_process(ne
 
 def test_a_silent_main_agent_with_open_tasks_is_woken_under_auto_mode(recovery):
     story = recovery.story
+    story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=story.user)
     story.expect_success('task make "For later" --environment main', actor=story.agent)
     recovery.advance(SILENT_SECONDS + 1)
     recovery.tick()
@@ -348,32 +349,9 @@ def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
     story.expect_success("proof check 1", actor=story.agent)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.container.get(Database).update(Statement("UPDATE worker_worktrees SET tests_passed_at = NULL WHERE session_agent_id = ?", [worker.id]))
-    trail = []
-    from core.modules.agents.models.agent import Agent as A0
-    from core.modules.drivers.models.agent_line import AgentLine as L0
-    from core.base.query.queries import Queries as Q0
-    def snap(name):
-        trail.append((name, story.row(A0, worker.id).ended_at, [x for x in story.run("task show 1").output_text.splitlines() if "state" in x], len(recovery.launches), [(x.source, x.state.value) for x in story.container.get(Q0).query(L0).filter(session_agent_id=worker.id).all_rows()]))
-    snap("delivered")
-    from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks as U0
-    from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask as N0
-    from core.modules.tasks.models.task import Task as T0
-    trail.append(("rows", [(t.id, t.state.value) for t in story.container.get(U0).rows(worker.id)], story.container.get(N0).following(worker.id), [(t.id, t.state.value, t.holder_id, t.delegated_to) for t in story.container.get(Q0).query(T0).all_rows()]))
     story.expect_success(f"agent end {worker.id}", actor=worker)
-    snap("ended")
     recovery.advance(20 * 60)
-    snap("advanced")
     story.tick("s-1")
-    snap("ticked")
-    before = trail
-    from core.modules.agents.models.agent import Agent as A
-    from core.modules.waits.models.wait import Wait as W
-    from core.base.query.queries import Queries as Q
-    from core.modules.drivers.models.agent_line import AgentLine as L
-    from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES as R
-    row = story.row(A, worker.id)
-    lines = [(x.source, x.state) for x in story.container.get(Q).query(L).filter(session_agent_id=worker.id).all_rows()]
-    open("/Users/jessegall/projects/agent-journal/.journal/worktrees/development/worker-707/debug_7578.txt", "w").write(repr((before, len(recovery.launches), row.ended_at, row.paused_at, lines, [w.state for w in story.container.get(Q).query(W).all_rows()], str(R))))
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
 
 
