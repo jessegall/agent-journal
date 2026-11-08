@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 
 from core.base.command.command import Command
 from core.modules.helpers.support.helper_started import HelperStarted

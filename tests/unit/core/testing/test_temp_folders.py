@@ -44,7 +44,7 @@ def test_only_the_newest_failed_runs_are_kept(tmp_path):
     for name in names:
         filled(tmp_path / name, 1)
 
-    TempFolders(tmp_path).drop_expired()
+    TempFolders(tmp_path).remove_old()
 
     assert sorted(folder.name for folder in tmp_path.iterdir()) == names[-KEPT_FAILED_RUNS:]
 
@@ -55,7 +55,7 @@ def test_a_run_still_going_is_left_and_an_old_leftover_is_removed(tmp_path):
     old = os.stat(leftover).st_mtime - RUNNING_FOLDER_SECONDS - 1
     os.utime(leftover, (old, old))
 
-    TempFolders(tmp_path).drop_expired()
+    TempFolders(tmp_path).remove_old()
 
     assert going.is_dir() and not leftover.exists()
 

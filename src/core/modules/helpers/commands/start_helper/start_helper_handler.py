@@ -24,7 +24,7 @@ from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.profile_models import ProfileModels
 from core.modules.helpers.support.helper_program import HelperProgram
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.base.provider.providers import Providers
 from core.modules.profiles.commands.count_profile_use.count_profile_use import CountProfileUse

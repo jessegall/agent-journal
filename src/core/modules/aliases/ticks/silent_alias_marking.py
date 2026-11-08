@@ -1,6 +1,6 @@
 from core.base.clock import Clock
 from core.base.container import Container
-from core.modules.aliases.support.alias_silence import AliasSilence
+from core.modules.aliases.commands.set_alias_silence.support.alias_silence import AliasSilence
 from core.modules.processes.queries.process_query import ProcessQuery
 
 

@@ -1,7 +1,7 @@
 from core.base.clock import Clock
 from core.base.container import Container
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.support.interrupted_agents import InterruptedAgents
+from core.modules.drivers.commands.wake_interrupted_agent.support.interrupted_agents import InterruptedAgents
 
 
 class InterruptedAgentWake:

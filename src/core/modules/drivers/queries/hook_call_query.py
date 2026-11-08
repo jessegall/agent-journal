@@ -16,7 +16,7 @@ from core.base.query.query import Query
 from core.modules.drivers.models.support.views import tool_use_counts_select
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.support.search_category import CODE, GRAPHIFY
+from core.base.driver.search_category import CODE, GRAPHIFY
 
 STOPS_READ = 20
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
@@ -48,6 +48,12 @@ class HookCallQuery(Query[HookCall]):
     def latest_turn_call(self, agent_id: int) -> HookCall | None:
         return self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,
                                      "session_agent_id = ? AND hook IN (?, ?, ?, ?, ?, ?)", [agent_id, *TURN_HOOKS], name="drivers.latest_turn")
+
+    def latest_session_end(self, agent_id: int) -> HookCall | None:
+        return self.agent(agent_id).filter(hook=HookEventName.SESSION_END).newest().first()
+
+    def latest_compaction(self, agent_id: int) -> HookCall | None:
+        return self.agent(agent_id).filter(hook=HookEventName.COMPACT).newest().first()
 
     def display_calls_after_turn(self, agent_id: int) -> Sequence[HookCall]:
         latest = self.latest_turn_call(agent_id)

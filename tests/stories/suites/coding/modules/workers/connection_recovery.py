@@ -89,7 +89,7 @@ def recovery(new_story, monkeypatch):
     session = worker_session(story, worker)
     case = RecoveryCase(story, worker, session)
     monkeypatch.setattr(ConnectionProbe, "is_online", lambda probe: case.online)
-    monkeypatch.setattr(LauncherLink, "sent", lambda link, request, answer_bytes=0: case.request(link, request, answer_bytes))
+    monkeypatch.setattr(LauncherLink, "request_launcher", lambda link, request, answer_bytes=0: case.request(link, request, answer_bytes))
     monkeypatch.setattr(TerminalTyping, "type_line", lambda typing, agent_id, line: case.terminal_lines.append((agent_id, line)))
     monkeypatch.setattr(LeftoverProcess, "command_line", case.command_line)
     monkeypatch.setattr(LeftoverProcess, "stop", case.stop)

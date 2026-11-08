@@ -99,7 +99,7 @@ def test_a_dead_holder_frees_the_gate(tmp_path):
 
 def test_runners_start_under_nice(tmp_path):
     nice_file = tmp_path / "nice-value"
-    run = started(tmp_path, project(tmp_path, "nice", "test_nice.py", NICE_TEST), "tests", "-n", "2", "-o", "tests_per_runner=1", "-o", "most_runners=2", extra={"NICE_FILE": str(nice_file)})
+    run = started(tmp_path, project(tmp_path, "nice", "test_nice.py", NICE_TEST), "tests", "-n", "2", "-o", "one_runner_below=1", "-o", "runners=2", extra={"NICE_FILE": str(nice_file)})
     output, errors = run.communicate(timeout=300)
     expect_value(run.returncode, 0)
     expect_value(int(nice_file.read_text()) > 0, True)

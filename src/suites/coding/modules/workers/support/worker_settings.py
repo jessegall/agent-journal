@@ -1,4 +1,5 @@
 from core.base.setting.ruled_settings import ruled_settings
+from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
@@ -15,6 +16,7 @@ MERGE_COMMANDS_NAME = "merge-commands"
 MERGE_COMMANDS = f"{MODULE_KEY}.{MERGE_COMMANDS_NAME}"
 WORKER_RUN_LIMIT = f"{MODULE_KEY}.worker-run-limit"
 WORKER_KEPT_LIMIT = f"{MODULE_KEY}.worker-kept-limit"
+WORKER_INSTRUCTION_FILES_SETTING = f"{MODULE_KEY}.worker-instruction-files"
 DEFAULT_WORKER_COUNT = 2
 SILENT_AGENT_MINUTES = f"{MODULE_KEY}.silent-agent-minutes"
 IDLE_WORKER_MINUTES = f"{MODULE_KEY}.idle-worker-minutes"
@@ -62,6 +64,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("protected-folders", "Protected folders", "Paths or globs workers may not change.", SettingType.LIST, default=(), person_set=True, main_agent_only=True),
     SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
     SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
+    SettingValue("worker-instruction-files", "Instruction files for a worker's profile", "A worker's worktree gets CLAUDE.md and AGENTS.md written for its profile, not the project's copies.", SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
     SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6, person_set=True),
     SettingValue("worker-batch-size", "Worker batch size", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("quiet-helper-grace-minutes", "Quiet helper grace minutes", "Minutes without tool use, or with work that has not started, before the main agent first hears of a helper.", SettingType.NUMBER, default=15, person_set=True),

@@ -6,7 +6,7 @@ from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.settings.support.context_share import ContextShare
+from core.modules.settings.bindings.support.context_share import ContextShare
 
 COMPACTION_PENDING = "compaction_to_settle"
 
@@ -34,8 +34,7 @@ class CompactionEndPercent:
         if percent is None or percent >= start.context_percent:
             return
         self.mark(agent, False, context)
-        part = {**start.metadata.module_part(DRIVERS_MODULE), "context_percent": percent}
-        self.repository.save_metadata(start, Metadata({**start.metadata.values, DRIVERS_MODULE: part}), context)
+        self.repository.save_metadata(start, start.metadata_with_context_percent(percent), context)
 
     def mark(self, agent: Agent, pending: bool, context: Context) -> None:
         part = {**agent.metadata.module_part(DRIVERS_MODULE), COMPACTION_PENDING: pending}

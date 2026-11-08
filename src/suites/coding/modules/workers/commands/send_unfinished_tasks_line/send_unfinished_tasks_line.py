@@ -1,7 +1,12 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
+from core.base.driver.nudge_declaration import NudgeDeclaration
+from core.base.driver.nudge_type import NudgeType
 from core.modules.drivers.models.agent_line import AgentLine
+
+UNFINISHED_TASKS_SOURCE = "workers.unfinished-tasks"
+WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.STEERING, 'you ended with tasks left: go on with the next one, deliver after the last, and stop only then')
 
 
 @dataclass(frozen=True)

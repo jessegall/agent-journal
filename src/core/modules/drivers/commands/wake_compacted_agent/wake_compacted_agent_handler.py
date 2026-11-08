@@ -3,9 +3,7 @@ from core.base.command.handler import Handler
 from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent import WakeCompactedAgent
 from core.modules.drivers.support.driver_nudges import AGENT_COMPACTED
 from core.modules.drivers.support.nudger import Nudger
-from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
-
-WAKE_SOURCE = "drivers.compacted"
+from core.modules.drivers.support.waiting_line_typing import COMPACTED_WAKE_SOURCE, WaitingLineTyping
 
 
 class WakeCompactedAgentHandler(Handler[WakeCompactedAgent, None]):
@@ -17,5 +15,5 @@ class WakeCompactedAgentHandler(Handler[WakeCompactedAgent, None]):
         self.nudger, self.typing = nudger, typing
 
     def handle(self, command: WakeCompactedAgent, context: Context) -> None:
-        self.nudger.send(command.agent_id, AGENT_COMPACTED, WAKE_SOURCE, context)
+        self.nudger.send(command.agent_id, AGENT_COMPACTED, COMPACTED_WAKE_SOURCE, context)
         self.typing.release(command.agent_id, context.actor.id, context.timestamp)

@@ -7,7 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_countdown import SkillCountdown
-from core.modules.skills.support.kept_skills import KeptSkills
+from core.modules.skills.commands.load_skill.support.kept_skills import KeptSkills
 from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_requirement import SkillRequirement

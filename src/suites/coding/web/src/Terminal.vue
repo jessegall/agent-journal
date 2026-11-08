@@ -86,7 +86,7 @@ function focusInput(event) {
                             <span class="terminal-state" data-terminal-refused>refused</span>
                         </template>
                     </div>
-                    <template v-if="opened.has(row.id)"><TerminalOutput :call="row.id" @command="fullCommands[row.id] = $event" /></template>
+                    <template v-if="opened.has(row.id)"><TerminalOutput :call="row.id" :empty-text="row.refusal || undefined" @command="fullCommands[row.id] = $event" /></template>
                 </template>
             </AutoScrollPane>
         </template>

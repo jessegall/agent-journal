@@ -11,7 +11,6 @@ from core.modules.processes.support.output_folder import OutputFolder
 
 
 FLAGS = "--summary, --all, --lines, --tail or --reader"
-ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "is running", ProcessState.STOPPED: "was stopped", ProcessState.ORPHANED: "was lost"}
 
 
 class OutputTexts:
@@ -58,9 +57,7 @@ class OutputTexts:
         return self.folder.reader_lines(process.id)
 
     def summary(self, process: Process, command: ReadOutput) -> list[str]:
-        outcome = ENDING_PHRASES.get(process.state, f"{process.state.value} with exit code {process.exit_code}")
-        if process.expired_at is not None:
-            outcome = "timed out"
+        outcome = process.ending_phrase()
         kept = self.outputs.process_output(process.id)
         bytes_kept, lines_kept = (kept.byte_count, kept.line_count) if kept is not None and kept.ended_at is not None else self.folder.sizes(process.id)
         size = f"{lines_kept} lines, {bytes_kept} bytes"

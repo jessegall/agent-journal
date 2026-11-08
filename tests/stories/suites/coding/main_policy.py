@@ -1,6 +1,6 @@
 import shlex
 
-from suites.coding.support.coding_main_options import CodingMainOptions
+from suites.coding.modules.workers.support.coding_main_options import CodingMainOptions
 from suites.coding.support.main_options import BUILDER, ORCHESTRATOR
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line

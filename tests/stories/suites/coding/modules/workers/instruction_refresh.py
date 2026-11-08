@@ -52,7 +52,7 @@ def test_an_instruction_file_that_already_says_the_same_is_not_written_again(new
 def test_with_the_setting_off_the_tick_leaves_the_project_s_instruction_files_alone(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)
-    story.expect_success("setting set journal.core.profiles.worker-instruction-files false --project", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.workers.worker-instruction-files false --project", actor=story.user)
     worker = dispatched_worker(story)
     story.expect_success(CHANGE_PROFILE, actor=story.user)
     instruction_tick(story)

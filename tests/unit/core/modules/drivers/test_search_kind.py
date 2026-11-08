@@ -4,7 +4,7 @@ import pytest
 
 from core.base.driver.tool import Tool
 from core.base.driver.tool_type import ToolType
-from core.modules.drivers.support.search_category import CODE, SearchCategory
+from core.base.driver.search_category import CODE, SearchCategory
 
 PROJECT = Path("/work/project")
 

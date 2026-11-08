@@ -11,6 +11,7 @@ class Environment(Model):
 
     model_name = "environment"
     cli_name = "environment"
+    shared_rows = True
 
     name: str
     folder: str

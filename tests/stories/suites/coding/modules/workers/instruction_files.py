@@ -55,7 +55,7 @@ def test_a_profile_keeps_the_project_s_files_beside_its_own_when_it_says_so(new_
 def test_a_person_turns_the_instruction_files_off_and_the_worktree_keeps_the_project_s(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = project_with_instructions(story)
-    story.expect_success("setting set journal.core.profiles.worker-instruction-files false --project", actor=story.user)
+    story.expect_success("setting set journal.suites.coding.workers.worker-instruction-files false --project", actor=story.user)
     worker = dispatched_worker(story)
     expect_value(worktree_file_text(repository, worker, "CLAUDE.md"), PROJECT_TEXT)
 

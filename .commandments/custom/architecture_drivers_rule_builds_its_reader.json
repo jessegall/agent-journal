@@ -50,6 +50,27 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "child": {
+                    "all": [
+                        {
+                            "field": "func"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "FileAccess"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
             }
         ]
     },

@@ -1,4 +1,4 @@
-from core.modules.settings.support.context_share import ContextShare
+from core.modules.settings.bindings.support.context_share import ContextShare
 from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
 from dataclasses import replace

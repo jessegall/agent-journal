@@ -6,7 +6,7 @@ from core.modules.developer.support.private_data_finding import PrivateDataFindi
 from core.modules.developer.support.private_data_category import PrivateDataCategory
 
 PLACEHOLDER_NAMES = frozenset({"user", "username", "you", "name", "me", "example", "someone", "person", "runner", "yourname", "your-name", "shared", "home", "a", "ada", "alice", "bob", "carol", "ci", "test",
-                               "processes", "coding.builder", "marketing.lead"})
+                               "processes"})
 EMAIL_ENDINGS = frozenset({"com", "org", "net", "edu", "gov", "io", "co", "dev", "ai", "app", "me", "info"})
 FILE_ENDINGS = frozenset({"md", "py", "js", "ts", "sh", "go", "rs", "rb", "cs"})
 SKIPPED_PATHS = ("/web/dist/", "tools/journal-hook/testdata/", "tools/journal-hook/programs/testdata/", "tools/journal-hook/anonymise/")

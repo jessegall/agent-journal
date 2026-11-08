@@ -8,7 +8,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.models.enums.mark_state import MarkState
 from core.modules.memories.models.memory_mark import MemoryMark
-from core.modules.settings.support.context_share import PERCENT_FULL
+from core.modules.settings.bindings.support.context_share import PERCENT_FULL
 
 
 

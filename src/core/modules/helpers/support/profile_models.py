@@ -1,5 +1,5 @@
 from core.base.profile.agent_profile import AgentProfile
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.base.provider.provider import Provider
 from core.modules.helpers.support.agent_options import AgentOptions
 from core.modules.helpers.support.allowed_models import AllowedModels

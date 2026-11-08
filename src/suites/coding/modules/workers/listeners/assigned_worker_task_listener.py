@@ -5,7 +5,7 @@ from core.base.scope.actor_scope import ActorScope
 from core.base.tasks.tasks_changed_together import TasksChangedTogether
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
-from suites.coding.modules.workers.support.inactive_worker_send import InactiveWorkerSend
+from suites.coding.modules.workers.commands.send_worker.support.inactive_worker_send import InactiveWorkerSend
 
 
 class AssignedWorkerTaskListener(SaveListener[Updated[Task]]):

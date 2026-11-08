@@ -13,7 +13,7 @@ from core.base.journal_home import JournalHome
 from core.base.module.module import Module
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms

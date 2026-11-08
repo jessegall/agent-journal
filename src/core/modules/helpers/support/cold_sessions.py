@@ -1,5 +1,5 @@
 from core.modules.processes.support.output_check_schedule import MINUTE_SECONDS
-from core.modules.settings.support.context_share import ContextShare
+from core.modules.settings.bindings.support.context_share import ContextShare
 from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus

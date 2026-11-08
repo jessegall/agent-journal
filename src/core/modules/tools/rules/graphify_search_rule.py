@@ -5,7 +5,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.journal_home import JournalHome
 from core.base.role_group import RoleGroup
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.drivers.support.search_category import CODE, SearchCategory
+from core.base.driver.search_category import CODE, SearchCategory
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tools.support.tool_catalogue import GRAPHIFY
 from core.modules.tools.support.tool_nudges import GRAPHIFY_FIRST, USE_GRAPHIFY

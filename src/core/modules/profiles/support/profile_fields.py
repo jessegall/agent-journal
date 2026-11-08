@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from core.base.access import Access
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 
 
 class ProfileFields(TypedDict, total=False):

@@ -12,8 +12,8 @@ TEST_FUNCTION = re.compile(r"^\s*(?:async\s+)?def test_", re.MULTILINE)
 
 class RunSize:
     """Counts the tests a run names from its files, without importing them, and stops counting at the limit,
-    to choose how many test runners it starts: one for every started block of tests, up to the most, since
-    starting a runner costs more time than it saves on a few tests."""
+    to choose how many test runners it starts: one for a few tests, since starting a runner costs more time
+    than it saves on them, the most for a large run or the whole suite, and the usual number between."""
 
     def __init__(self, targets: Iterable[str], limit: int) -> None:
         self.targets, self.limit = tuple(targets), limit
@@ -33,10 +33,13 @@ class RunSize:
     def limited_count(self, limit: int) -> int:
         return RunSize(self.targets, limit).counted()
 
-    def runner_count(self, runner_block: int, most_runners: int) -> int:
+    def runner_count(self, single_runner_limit: int, runners: int, highest_count_start: int, most_runners: int) -> int:
         if not self.targets:
             return most_runners
-        return max(1, min(most_runners, -(-self.counted() // runner_block)))
+        count = self.counted()
+        if count < single_runner_limit:
+            return 1
+        return most_runners if count >= highest_count_start else runners
 
     def counted(self) -> int:
         count = 0

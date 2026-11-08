@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
 
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.modules.tasks.models.support.task_complexity import TaskComplexity
 
 

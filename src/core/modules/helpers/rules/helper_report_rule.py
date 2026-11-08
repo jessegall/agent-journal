@@ -16,7 +16,7 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
 class HelperReportRule(DriverRule):
     """What a read-only helper says as it stops is its report to its parent; with nothing said, the parent hears that
-    too, so no parent waits on a helper that left no word. A worker reports through its own hand-in."""
+    too, so no parent waits on a helper that left no word."""
 
     name = "helpers.report"
     hook = HookEventName.STOP

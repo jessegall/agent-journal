@@ -16,7 +16,7 @@ from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
 from suites.coding.modules.workers.commands.record_worktree_merge.record_worktree_merge import RecordWorktreeMerge
 from suites.coding.modules.workers.commands.record_worktree_removal.record_worktree_removal import RecordWorktreeRemoval
-from suites.coding.modules.workers.support.merge_followups import MergeFollowups
+from suites.coding.modules.workers.commands.support.merge_followups import MergeFollowups
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
@@ -24,7 +24,7 @@ from suites.coding.modules.workers.models.merge_followup import MergeFollowup
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
-from suites.coding.modules.workers.support.worker_queued_start import WorkerQueuedStart
+from suites.coding.modules.workers.commands.send_worker.support.worker_queued_start import WorkerQueuedStart
 from suites.coding.modules.workers.commands.record_merge_request.record_merge_request import RecordMergeRequest
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 

@@ -1,6 +1,7 @@
 import pytest
 
 from core.base.database.database import Database
+from core.base.database.kept_rows import KeptRows
 from core.base.database.shared_tables import SharedTables
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
@@ -26,10 +27,14 @@ def home(tmp_path):
     return JournalHome(tmp_path)
 
 
+def signature_of(database):
+    return tuple(tuple(row) for row in database.rows(KeptRows.signature_read("notes", "1 = 1", ())))
+
+
 def read_table(home, tables, loader):
     database = Database.opened(home)
     try:
-        return tables.read(database, "notes", loader)
+        return tables.read(database, "notes", signature_of(database), loader)
     finally:
         database.close()
 
@@ -53,7 +58,7 @@ def test_a_table_read_inside_a_transaction_is_not_kept(home):
     database = Database.opened(home)
     with database.transaction():
         database.update(Statement("UPDATE notes SET version = 2, updated_at = '2027'"))
-        tables.read(database, "notes", loader)
+        tables.read(database, "notes", signature_of(database), loader)
     database.close()
     assert (read_table(home, tables, loader), loader.loads) == ("load 2", 2)
 

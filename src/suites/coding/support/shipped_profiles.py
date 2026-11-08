@@ -1,4 +1,4 @@
-from core.base.provider.model_tier import ModelTier
+from core.base.profile.model_tier import ModelTier
 from core.base.profile.agent_profile import AgentProfile
 from suites.coding.support.profile_commands import READ_COMMANDS, DOCUMENT_COMMANDS, PLAN_COMMANDS, PLAN_REVIEW_COMMANDS, WORKER_COMMANDS
 

@@ -31,7 +31,9 @@ RUN_CPU = pytest.StashKey[RunCpu]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
-RUNNER_BLOCK_OPTION = "tests_per_runner"
+SINGLE_RUNNER_LIMIT_OPTION = "one_runner_below"
+RUNNERS_OPTION = "runners"
+HIGHEST_COUNT_START_OPTION = "most_runners_from"
 MOST_RUNNERS_OPTION = "most_runners"
 RUNNER_NICENESS = 10
 GATE_LOCK_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
@@ -41,8 +43,10 @@ LISTING_OPTIONS = ("collectonly", "help", "version")
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
-    parser.addini(RUNNER_BLOCK_OPTION, "a run with -n starts one test runner for every started block of this many tests", default="250")
-    parser.addini(MOST_RUNNERS_OPTION, "the most test runners a run with -n starts", default="4")
+    parser.addini(SINGLE_RUNNER_LIMIT_OPTION, "a run with -n of fewer tests than this runs in one test runner", default="50")
+    parser.addini(RUNNERS_OPTION, "the test runners a run with -n starts", default="4")
+    parser.addini(HIGHEST_COUNT_START_OPTION, "a run with -n of this many tests or more starts the most test runners", default="1000")
+    parser.addini(MOST_RUNNERS_OPTION, "the most test runners a run with -n starts", default="8")
 
 
 @pytest.hookimpl(tryfirst=True)
@@ -57,9 +61,9 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
     if not config.getoption("numprocesses", None):
         return
     os.nice(RUNNER_NICENESS)
-    runner_block, most = int(config.getini(RUNNER_BLOCK_OPTION)), int(config.getini(MOST_RUNNERS_OPTION))
-    runners = RunSize(config.args, runner_block * most).runner_count(runner_block, most)
-    config.option.numprocesses = 0 if runners == 1 else runners
+    highest_count_start = int(config.getini(HIGHEST_COUNT_START_OPTION))
+    runner_total = RunSize(config.args, highest_count_start).runner_count(int(config.getini(SINGLE_RUNNER_LIMIT_OPTION)), int(config.getini(RUNNERS_OPTION)), highest_count_start, int(config.getini(MOST_RUNNERS_OPTION)))
+    config.option.numprocesses = 0 if runner_total == 1 else runner_total
 
 
 def is_template_build_due(config: pytest.Config) -> bool:

@@ -1,6 +1,6 @@
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from suites.coding.support.available_work import AvailableWork
+from suites.coding.modules.workers.support.available_work import AvailableWork
 from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.support.story_checks import expect_value
