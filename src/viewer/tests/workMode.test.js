@@ -18,7 +18,7 @@ const LIMIT_ON = "journal.core.helpers.context-limit-on";
 const LIMIT_TOKENS = "journal.core.helpers.context-limit-tokens";
 const WORK = {workflow: "orchestrator", revision: "r1", controls: Object.fromEntries(CONTROL_KEYS.map((key) => [`journal.suites.coding.${key}`, true])),
     fields: [{key: LIMIT_ON, group: "advanced", title: "Compact agents", description: "", type: "flag", value: false, source: "default"},
-        {key: LIMIT_TOKENS, group: "advanced", title: "Size", description: "", type: "number", value: 400000, source: "default", choices: Array.from({length: 10}, (_, place) => (place + 1) * 100000)}],
+        {key: LIMIT_TOKENS, group: "advanced", title: "Size", description: "", type: "number", value: 400000, source: "default", badge: "Capped amount", choices: Array.from({length: 10}, (_, place) => (place + 1) * 100000)}],
     depends: {[KEEP_GOING]: [WRITES], [LIMIT_TOKENS]: [LIMIT_ON], "journal.suites.coding.workers.merger-on": [SENDS], "journal.suites.coding.workers.main-agent-may-merge": [SENDS]}};
 
 const mounted = [];
@@ -125,5 +125,6 @@ test("the context size is a dropdown in steps of 100k that shows only while its 
     expect(options).toHaveLength(10);
     expect(options[0]).toBe("100k");
     expect(options[9]).toBe("1000k");
+    expect(document.querySelector(`[data-field-badge="${LIMIT_TOKENS}"]`).textContent).toBe("Capped amount");
 });
 

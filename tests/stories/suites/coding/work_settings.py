@@ -57,6 +57,14 @@ def test_s45_an_agent_cannot_apply_a_preset_or_a_change_and_nothing_changes(new_
     story.expect_text("work-settings show --environment main", "workflow: builder", actor=story.agent)
 
 
+def test_the_work_settings_badge_the_context_size_as_the_capped_amount(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
+    badges = {row["key"]: row["badge"] for row in shown["fields"]}
+    assert badges["journal.core.helpers.context-limit-tokens"] == "Capped amount", badges
+    assert badges["journal.core.helpers.context-limit-on"] == "", badges
+
+
 def test_the_work_settings_name_the_settings_each_control_depends_on(new_story):
     story = new_story(fixture=BuilderWithUser)
     shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)

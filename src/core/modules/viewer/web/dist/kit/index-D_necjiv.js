@@ -7889,7 +7889,7 @@ const Ob = ["data-incoming", "data-ref"], Tb = ["data-figure-mark", "data-figure
       }, null, 8, ["links", "total", "more", "loading", "failure", "onMore"])) : b("", !0)
     ], 8, Tb));
   }
-}, HS = /* @__PURE__ */ U(Zb, [["__scopeId", "data-v-0293091f"]]), na = [
+}, HS = /* @__PURE__ */ U(Zb, [["__scopeId", "data-v-d064e828"]]), na = [
   { key: 100, label: "Low" },
   { key: 200, label: "Normal" },
   { key: 300, label: "High" },
@@ -14102,7 +14102,7 @@ function cC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const dC = su(() => import("./VoiceFigure-CIp0VR26.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
+const dC = su(() => import("./VoiceFigure-Drj2m6-5.js").then((e) => e.V)), fC = "1.2.0", hC = "3.5";
 export {
   Tf as $,
   Ee as A,

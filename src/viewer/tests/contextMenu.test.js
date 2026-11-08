@@ -16,8 +16,8 @@ const AT = "2026-11-06T21:03:11.000000+00:00";
 const EXACT = new Date(AT).toLocaleString("en-GB", {dateStyle: "medium", timeStyle: "medium"});
 const GROUPS = [{key: "context", label: "Context window", choices: [{value: "compact", label: "Compact context"}, {value: "clear", label: "Clear context"}]}];
 
-async function menu(last_compaction) {
-    const usage = {agents: [{id: 7, model: "sonnet", effort: "low", context_percent: 95, last_compaction}], windows: []};
+async function menu(last_compaction, extra = {}) {
+    const usage = {agents: [{id: 7, model: "sonnet", effort: "low", context_percent: 95, last_compaction, ...extra}], windows: []};
     const run = async (line) => (line[1] === "controls" ? {ok: true, value: {groups: GROUPS}} : {ok: true, value: {rows: []}});
     const element = document.createElement("div");
     document.body.append(element);
@@ -35,6 +35,17 @@ test("the context menu shows how full the context is as a bar and the exact time
     expect(page.querySelector("[data-context-menu-compaction]").textContent).toBe(`Last compacted ${EXACT}, from 92% to 18%, 74% taken off`);
     expect(page.querySelector("[data-context-menu-compaction]").nextElementSibling).toBe(page.querySelector("[data-context-menu-meter]"));
     expect(page.body.textContent).toContain("Compact context");
+});
+
+test("the context menu shows the tokens out of the limit and a Capped badge while a limit caps the agent", async () => {
+    const page = await menu(null, {context_tokens: 248000, context_limit_tokens: 400000});
+    expect(page.querySelector("[data-context-menu-cap]").textContent.replace(/\s+/g, " ").trim()).toBe("248k of 400k Capped");
+});
+
+test("the context menu shows no limit when none caps the agent", async () => {
+    const page = await menu(null, {context_tokens: 248000, context_limit_tokens: null});
+    expect(page.querySelector("[data-context-menu-cap]")).toBeNull();
+    expect(page.querySelector("[data-context-menu-meter] .context-used").textContent).toBe("95%");
 });
 
 test("the context menu says none yet for a session never compacted", async () => {
