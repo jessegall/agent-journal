@@ -31,7 +31,7 @@ def test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was
     with pytest.raises(RepeatedCallsError) as raised, story.repeated_work.request():
         first_place_that_reads(database)
         second_place_that_reads(database)
-    first_read, repeated_read = str(raised.value).split("first read:\n")[1].split("\nrepeated read:\n")
+    first_read, repeated_read = str(raised.value).split("first read: ")[1].split("\nrepeated read:\n")
     expect_value(places_named(first_read), ["test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was", "first_place_that_reads"])
     expect_value(places_named(repeated_read), ["test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was", "second_place_that_reads"])
 
