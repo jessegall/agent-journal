@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
+import {Btn, MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 import RequestDetails from "./RequestDetails.vue";
 import {toggleFeedPause} from "./toggleFeedPause.js";
@@ -53,9 +53,9 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
         <div class="requests" data-hook-requests>
             <section class="list" aria-label="Recorded requests">
                 <div class="toolbar">
-                    <button type="button" data-filter-open @click="filterAnchor = $event.currentTarget">Filters<template v-if="count"><span data-filter-count> ({{ count }})</span></template></button>
-                    <button type="button" data-feed-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</button>
-                    <button type="button" data-request-queue-open @click="queueOpen = true">Request queue</button>
+                    <Btn small data-filter-open @click="filterAnchor = $event.currentTarget">Filters<template v-if="count"><span data-filter-count> ({{ count }})</span></template></Btn>
+                    <Btn small data-feed-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</Btn>
+                    <Btn small data-request-queue-open @click="queueOpen = true">Request queue</Btn>
                     <template v-if="filterAnchor"><MenuPanel :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
                         <MenuLabel>Type</MenuLabel>
                         <template v-for="kind in ['hook', 'viewer', 'command line']" :key="kind"><MenuItem :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.kind.includes(kind)" :aria-checked="filters.kind.includes(kind)" @click="toggle('kind', kind)">{{ kind }}</MenuItem></template>

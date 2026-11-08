@@ -41,7 +41,7 @@ SMALL_TABLES = {
     "templates": "Task and document templates form a small catalogue read together.",
     "readers": "Output readers are a small configuration catalogue read together.",
     "aliases": "Saved commands are a small configuration catalogue read together.",
-    "command_kinds": "The kinds agents gave unknown commands are a small configuration catalogue read together.",
+    "command_types": "The types agents gave unknown commands are a small configuration catalogue read together.",
     "environments": "A project has a small set of environments listed together.",
     "registry": "The registry has one row.",
     "rules": "Standing project instructions are a small set delivered together.",

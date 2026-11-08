@@ -131,3 +131,8 @@ test("an agent sender links to its card without opening request details", async 
     sender.click();
     expect(element.querySelector("[data-hook-request-detail]")).toBeNull();
 });
+
+test("the buttons of the request log are the kit's", async () => {
+    const element = await mounted(HookRequests, requestLogWindowContext());
+    for (const marker of ["data-filter-open", "data-feed-pause", "data-request-queue-open"]) expect(element.querySelector(`button[${marker}]`).classList.contains("btn")).toBe(true);
+});

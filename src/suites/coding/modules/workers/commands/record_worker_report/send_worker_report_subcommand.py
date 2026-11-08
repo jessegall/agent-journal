@@ -1,3 +1,4 @@
+import re
 from argparse import ArgumentParser, Namespace
 
 from suites.coding.support.coding_agent_role import CodingAgentRole as AgentRole
@@ -12,6 +13,10 @@ from core.modules.messages.models.message import Message
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.send_merger_input.send_merger_input import SendMergerInput
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+
+
+PROGRESS_WORDS = re.compile(r"\b(tests? (queued|passed|running)|nothing left|stopping|handed in|delivered|no more tasks?|moving on)\b", re.IGNORECASE)
+PROGRESS_LOG = "where it stands"
 
 
 class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
@@ -31,6 +36,8 @@ class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
         worker = self.queries.query(Agent).filter(id=caller.actor.id, role=AgentRole.WORKER).first()
         if worker is None:
             raise Refusal("only a worker reports to its main agent", "journal message send writes a main agent's message")
+        if PROGRESS_WORDS.search(arguments.text):
+            raise Refusal("a report is for what the main agent must act on; this is progress", f'journal task log <n> "{PROGRESS_LOG}"')
         if worker.parent_id is None:
             raise Refusal("the worker has no main agent", f"journal agent show {worker.id}")
         if self.settings.flag(MERGER_ENABLED):

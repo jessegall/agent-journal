@@ -26,6 +26,8 @@ from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_handle
 from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks_subcommand import ScanManagedHooksSubcommand
 from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_handler import RestoreManagedHooksHandler
 from core.modules.settings.commands.restore_managed_hooks.restore_managed_hooks_subcommand import RestoreManagedHooksSubcommand
+from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks_handler import RemoveManagedHooksHandler
+from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks_subcommand import RemoveManagedHooksSubcommand
 from core.modules.settings.commands.list_managed_hooks.list_managed_hooks_subcommand import ListManagedHooksSubcommand
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
 from core.modules.settings.commands.switch_setting_group.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
@@ -48,12 +50,12 @@ class SettingsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
     migrations = [HelperDriverKeyMigration, SettingsTableMigration, SecretSettingsTableMigration]
-    handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
+    handlers = [SetSettingHandler, SwitchSettingGroupHandler, SetManagedHookHandler, RemoveManagedHooksHandler, ScanManagedHooksHandler, RestoreManagedHooksHandler]
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, skeleton=SETTINGS_SETTINGS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, search=WindowReadSearch("setting tree", "Find a setting", ("title", "description", "key")),
                                  reads=["setting tree", "environment list", "environment cards", "alias saved"], keys=[WindowKey("settings", "setting tree", tab="settings", events=["setting.*"]), WindowKey("environments", "environment cards", tab="environments", events=["environment.*"]), WindowKey("commands", "alias saved --limit 1000", events=["alias.*"], loading=KeyLoading.REQUESTED)], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*", "alias.*"]),
                WindowDeclaration("settings.project-hooks", "Project hooks", "project_hooks.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU, skeleton=PROJECT_HOOKS_SKELETON,
                                  reads=["managed-hook list", "hook-call feed"], keys=[WindowKey("hooks", "managed-hook list", events=["managed-hook.*"])], runs=["managed-hook set", "managed-hook scan", "managed-hook give-back"], events=["managed-hook.*", "hook_call.*"])]
-    subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
+    subcommands = [SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand, ListManagedHooksSubcommand, SetManagedHookSubcommand, RemoveManagedHooksSubcommand, ScanManagedHooksSubcommand, RestoreManagedHooksSubcommand]
     bindings = {GuardSwitches: SettingGuardSwitches, SyncNotes: UndeclaredSettingNotes}
     guards = [PersonSetSettingGuard]
     listeners = [SettingRowsListener]

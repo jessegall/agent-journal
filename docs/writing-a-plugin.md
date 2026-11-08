@@ -27,6 +27,7 @@ command refers to the plugin.
 | `aliases` | The commands it provides under short names. |
 | `dashboard` | A page it writes, with a name, a title and `events`, the keys of the events that make the viewer read it again while it is open. With no `events` an open page reads once a minute. |
 | `description` | What it is for. |
+| `hook_stamp` | The text its own project hooks carry in their command. When the plugin is installed, switched on or upgraded, the managed hooks carrying it are removed, since the plugin runs them itself. `journal managed-hook remove --stamp <text>` removes them by hand. |
 | `project_reads` | Folders of the project a worker's shell line may read for it. |
 | `files` | Other files that count as what it runs. Changing one switches the plugin off until a person has read the change. A folder counts every file in it, and a big folder costs time at every step of an agent. |
 

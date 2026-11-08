@@ -1,9 +1,13 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {READ_RATES, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
+import {Btn, DropList, READ_RATES, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
 import {toggleFeedPause} from "./toggleFeedPause.js";
 import {usePausedProp} from "./usePausedProp.js";
 
+const choices = (all, names) => [{key: "", label: all}, ...names.map((name) => ({key: name, label: name}))];
+const SOURCES = choices("All sources", ["server", "journal", "bypass"]);
+const LEVELS = choices("All levels", ["debug", "info", "warning", "error", "critical"]);
+const labelOf = (items, key) => items.find((item) => item.key === key).label;
 const view = useWindow();
 const source = ref("");
 const level = ref("");
@@ -38,9 +42,9 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value,
     <WindowRoom padding="0">
         <section class="logs" data-system-logs aria-label="System logs">
             <div class="toolbar">
-                <label>Source <select v-model="source" data-log-source><option value="">All sources</option><template v-for="name in ['server', 'journal', 'bypass']" :key="name"><option :value="name">{{ name }}</option></template></select></label>
-                <label>Level <select v-model="level" data-log-level><option value="">All levels</option><template v-for="name in ['debug', 'info', 'warning', 'error', 'critical']" :key="name"><option :value="name">{{ name }}</option></template></select></label>
-                <button type="button" data-log-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</button>
+                <span class="field">Source <DropList :label="labelOf(SOURCES, source)" :items="SOURCES" :picked="source" data-log-source @pick="source = $event.key" /></span>
+                <span class="field">Level <DropList :label="labelOf(LEVELS, level)" :items="LEVELS" :picked="level" data-log-level @pick="level = $event.key" /></span>
+                <Btn small data-log-pause :aria-pressed="paused" @click="togglePause">{{ paused ? 'Resume' : 'Pause' }}</Btn>
             </div>
             <template v-if="failure"><p role="alert">{{ failure }}</p></template>
             <div class="scroll">
@@ -50,7 +54,7 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value,
                 </table>
                 <template v-if="!listing.rows.length && !failure"><p class="empty">No log lines found.</p></template>
             </div>
-            <nav aria-label="Log pages"><button type="button" data-log-previous :disabled="page <= 1 || paused" @click="page--">Previous</button><span>Page {{ page }} of {{ pages }}</span><button type="button" data-log-next :disabled="page >= pages || paused" @click="page++">Next</button></nav>
+            <nav aria-label="Log pages"><Btn small data-log-previous :disabled="page <= 1 || paused" @click="page--">Previous</Btn><span>Page {{ page }} of {{ pages }}</span><Btn small data-log-next :disabled="page >= pages || paused" @click="page++">Next</Btn></nav>
         </section>
     </WindowRoom>
 </template>

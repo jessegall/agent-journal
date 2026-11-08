@@ -89,8 +89,23 @@ func TestManagedHooksStartTogetherAndKeepListOrder(t *testing.T) {
 		{ID: "first", Command: fmt.Sprintf("printf ready > '%s'; cat '%s'; printf first", requestPipe, responsePipe), Timeout: 5},
 		{ID: "second", Command: fmt.Sprintf("cat '%s'; printf second > '%s'", requestPipe, responsePipe), Timeout: 5},
 	}
-	runs := runManaged(hooks, nil)
+	runs := runManaged(hooks, nil, "claude", "/checkout")
 	if len(runs) != 2 || runs[0].ID != "first" || runs[1].ID != "second" || runs[0].ExitCode != 0 || runs[1].ExitCode != 0 || runs[0].Stdout != "secondfirst" || runs[1].Stdout != "ready" {
 		t.Fatalf("runs = %+v", runs)
+	}
+}
+
+func TestManagedHookGetsTheProgramsProjectDirectoryOfTheCheckout(t *testing.T) {
+	t.Setenv("CLAUDE_PROJECT_DIR", "")
+	checkout := t.TempDir()
+	run := runOne(ManagedHook{ID: "project", Command: "printf '%s' \"$CLAUDE_PROJECT_DIR\"", Timeout: 5}, nil, managedVariables("claude", checkout)...)
+	if run.ExitCode != 0 || run.Stdout != checkout {
+		t.Fatalf("run = %+v, want the checkout %s", run, checkout)
+	}
+}
+
+func TestManagedVariablesOfAProgramWithNone(t *testing.T) {
+	if variables := managedVariables("unknown", "/checkout"); len(variables) != 0 {
+		t.Fatalf("variables = %v", variables)
 	}
 }

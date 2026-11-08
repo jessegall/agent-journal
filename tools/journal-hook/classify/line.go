@@ -66,8 +66,8 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		target := command.PipedInto
 		prepared.PipedInto = &target
 	}
-	if kind := classifier.commandKind(command.Text); kind != "" && prepared.Classification.Category == unknown {
-		prepared.Classification.Category = kind
+	if commandType := classifier.commandType(command.Text); commandType != "" && prepared.Classification.Category == unknown {
+		prepared.Classification.Category = commandType
 	}
 	for _, run := range classifier.categorisedRuns {
 		if run.line == strings.TrimSpace(command.Text) && prepared.Classification.Category == unknown {
