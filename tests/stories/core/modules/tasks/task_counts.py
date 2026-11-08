@@ -7,7 +7,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 
 
 class TasksInFourStates(StoryFixture):
-    """Counted task 1 is started, 2 blocked, 3 delegated to a worker, 4 completed and 5 open; task 1 of the fixture is delegated to the worker too."""
+    """Counted task 1 is started, 2 blocked, 3 delegated to a worker, 4 completed and 5 open; the fixture's own task is started and delegated to the worker."""
 
     parent = OrchestratorWithOpenTask
 
@@ -36,7 +36,7 @@ def counts(story, arguments=""):
 def test_the_counts_show_what_stands_now_and_the_tasks_completed_in_the_last_day(new_story):
     story = new_story(fixture=TasksInFourStates)
     answer = counts(story)
-    story.expect_rows((answer["started"], answer["blocked"], answer["open"], answer["completed"]) == (1, 1, 2, 1), detail=str(answer))
+    story.expect_rows((answer["in_progress"], answer["blocked"], answer["open"], answer["completed"]) == (2, 1, 2, 1), detail=str(answer))
 
 
 def test_the_completed_count_follows_the_last_hours_a_time_and_a_reset(new_story):
