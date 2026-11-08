@@ -4,6 +4,7 @@ from pathlib import Path
 from core.base.file_access import FileAccess
 from core.base.instruction_imports import INSTRUCTION_FILES
 from core.base.profile.agent_profile import AgentProfile
+from core.base.file_version import FileVersion
 from core.base.registry.registry import Registry
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.plugins.queries.plugin_query import PluginQuery
@@ -45,6 +46,7 @@ class WorkerInstructionFiles:
                  agents: AgentRows) -> None:
         self.settings, self.profiles, self.registry, self.plugins, self.folders, self.git, self.libraries = settings, profiles, registry, plugins, folders, git, libraries
         self.agents = agents
+        self.block_texts: dict[Path, tuple[FileVersion, str]] = {}
 
     def injections(self, profile: AgentProfile) -> tuple[InstructionInjection, ...]:
         driver = self.registry.driver(WORKER_DRIVER)
@@ -55,9 +57,19 @@ class WorkerInstructionFiles:
             for block in PluginManifest.read(folder).instruction_blocks:
                 key = f"{plugin.name}.{block.key}"
                 path = folder / block.file
-                text = FileAccess.shared().read(path).strip() if ManifestListener.is_contained_path(block.file, folder) and path.is_file() else ""
+                text = self.block_text(folder, block.file, path)
                 found.append(InstructionInjection(key, block.title, text, profile.injections.get(key, block.default)))
         return tuple(found)
+
+    def block_text(self, folder: Path, file: str, path: Path) -> str:
+        if not ManifestListener.is_contained_path(file, folder) or not path.is_file():
+            return ""
+        version = FileAccess.shared().version(path)
+        kept = self.block_texts.get(path)
+        if kept is None or kept[0] != version:
+            kept = (version, FileAccess.shared().read(path).strip())
+            self.block_texts[path] = kept
+        return kept[1]
 
     def profile(self, name: str) -> AgentProfile | None:
         row = self.profiles.row(name) if name else None
