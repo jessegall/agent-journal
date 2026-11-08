@@ -1,3 +1,5 @@
+import pytest
+
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.core.base.upgrade.upgrade import content, count, expect_count
 from tests.stories.fixtures.version_four import version_four_fixture, with_message_rows, with_unknown_table, strip_release_columns
@@ -23,6 +25,7 @@ def test_an_empty_version_4_journal_upgrades_and_moves_nothing(new_story):
     expect_count(story, "version_four_map", 0)
 
 
+@pytest.mark.story_budget(cpu_seconds=8)
 def test_a_very_large_version_4_journal_upgrades(new_story):
     story = new_story()
     with_message_rows(version_four_fixture(story.home.folder / "journal.db"), MESSAGE_COUNT)

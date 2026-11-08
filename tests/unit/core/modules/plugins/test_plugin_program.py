@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from types import SimpleNamespace
 import json
 import time
@@ -67,7 +68,7 @@ def program_at(tmp_path: Path, body: str, script: str = "") -> tuple[PluginProgr
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "late", "title": "Late", "version": "1", "program": "run.sh"}))
     (folder / "run.sh").write_text(body)
     (folder / "run.sh").chmod(0o755)
-    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), PluginScriptProcesses(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(role="main")), SimpleNamespace(), UNQUEUED_PLACES)
+    program = PluginProgram(home, folders, PluginSocketPaths(home), SimpleNamespace(names=lambda agent_id: ()), AgentCheckouts(), PluginScriptProcesses(), SimpleNamespace(find=lambda agent_id: SimpleNamespace(role="main")), SimpleNamespace(), UNQUEUED_PLACES, SimpleNamespace(opened=lambda *args, **kwargs: nullcontext()), SimpleNamespace(all=lambda: ()))
     return program, PluginCall(PluginManifest.read(folder), PluginEvent("idle", {}), "main", Timestamp.parsed("2026-10-31T09:00:00+00:00"), {}, script=script)
 
 
