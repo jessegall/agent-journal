@@ -1,0 +1,317 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(.+/)?[^/]*(error|refusal)\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)errors/[^/]+\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)(dist|node_modules|vendor)/"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/base/block_refusal.py"
+            },
+            {
+                "file": "src/core/base/caller/caller_request_error.py"
+            },
+            {
+                "file": "src/core/base/change/event_pattern_error.py"
+            },
+            {
+                "file": "src/core/base/change/missing_row_error.py"
+            },
+            {
+                "file": "src/core/base/cli/usage_error.py"
+            },
+            {
+                "file": "src/core/base/code_version_missing_error.py"
+            },
+            {
+                "file": "src/core/base/command/command_error.py"
+            },
+            {
+                "file": "src/core/base/command/completed_command_error.py"
+            },
+            {
+                "file": "src/core/base/command/explanation_rollback_error.py"
+            },
+            {
+                "file": "src/core/base/command/handlers/move_method_error.py"
+            },
+            {
+                "file": "src/core/base/command/missing_handler_error.py"
+            },
+            {
+                "file": "src/core/base/command/outside_run_rollback_error.py"
+            },
+            {
+                "file": "src/core/base/command/server_stopping_error.py"
+            },
+            {
+                "file": "src/core/base/command/transaction_error.py"
+            },
+            {
+                "file": "src/core/base/database/foreign_key_error.py"
+            },
+            {
+                "file": "src/core/base/database/nesting_error.py"
+            },
+            {
+                "file": "src/core/base/database/repeated_calls_error.py"
+            },
+            {
+                "file": "src/core/base/database/schema_mismatch_error.py"
+            },
+            {
+                "file": "src/core/base/deadline_passed_error.py"
+            },
+            {
+                "file": "src/core/base/dotted_path/dotted_path_error.py"
+            },
+            {
+                "file": "src/core/base/dotted_path/wrong_base_error.py"
+            },
+            {
+                "file": "src/core/base/driver/hook_event_error.py"
+            },
+            {
+                "file": "src/core/base/driver/hook_event_version_error.py"
+            },
+            {
+                "file": "src/core/base/driver/old_hook_runner_error.py"
+            },
+            {
+                "file": "src/core/base/duration_error.py"
+            },
+            {
+                "file": "src/core/base/guard/guard_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/hosted_file_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/local_journal_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/missing_cgroup_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/missing_systemd_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/shared_user_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/unsupported_kernel_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/writable_hosted_file_refusal.py"
+            },
+            {
+                "file": "src/core/base/hosting/wrong_socket_mode_refusal.py"
+            },
+            {
+                "file": "src/core/base/listener/commit_listener_error.py"
+            },
+            {
+                "file": "src/core/base/listener/listener_class_error.py"
+            },
+            {
+                "file": "src/core/base/missing_file_refusal.py"
+            },
+            {
+                "file": "src/core/base/missing_hint_error.py"
+            },
+            {
+                "file": "src/core/base/missing_rows_error.py"
+            },
+            {
+                "file": "src/core/base/model/model_error.py"
+            },
+            {
+                "file": "src/core/base/model/unknown_state_error.py"
+            },
+            {
+                "file": "src/core/base/model/unsupported_column_type_error.py"
+            },
+            {
+                "file": "src/core/base/module/module_error.py"
+            },
+            {
+                "file": "src/core/base/provider/unknown_program_error.py"
+            },
+            {
+                "file": "src/core/base/query/conditions/metadata_key_error.py"
+            },
+            {
+                "file": "src/core/base/query/unknown_column_error.py"
+            },
+            {
+                "file": "src/core/base/recorded_refusal.py"
+            },
+            {
+                "file": "src/core/base/refusal.py"
+            },
+            {
+                "file": "src/core/base/registry/lazy_load_error.py"
+            },
+            {
+                "file": "src/core/base/registry/stale_registry_error.py"
+            },
+            {
+                "file": "src/core/base/registry/unscanned_event_error.py"
+            },
+            {
+                "file": "src/core/base/repository/stale_row_error.py"
+            },
+            {
+                "file": "src/core/base/seed/demo_error.py"
+            },
+            {
+                "file": "src/core/base/unbound_value_error.py"
+            },
+            {
+                "file": "src/core/base/upgrade/dry_run_end_error.py"
+            },
+            {
+                "file": "src/core/base/upgrade/upgrade_failed_error.py"
+            },
+            {
+                "file": "src/core/base/user_approval_refusal.py"
+            },
+            {
+                "file": "src/core/base/wrong_instance_error.py"
+            },
+            {
+                "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"
+            },
+            {
+                "file": "src/core/modules/helpers/support/stale_session_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_denied_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_failure_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_item_removed_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_rejected_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_stale_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_stopped_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_unchanged_error.py"
+            },
+            {
+                "file": "src/core/modules/library/support/library_unreachable_error.py"
+            },
+            {
+                "file": "src/core/modules/phone/support/infinite_point_error.py"
+            },
+            {
+                "file": "src/core/modules/plans/support/plan_approval_error.py"
+            },
+            {
+                "file": "src/core/modules/plugins/support/plugin_fault_error.py"
+            },
+            {
+                "file": "src/core/modules/plugins/support/plugin_late_error.py"
+            },
+            {
+                "file": "src/core/modules/plugins/support/plugin_service_closed_error.py"
+            },
+            {
+                "file": "src/core/modules/plugins/support/plugin_stopped_error.py"
+            },
+            {
+                "file": "src/core/modules/processes/support/missing_runner_error.py"
+            },
+            {
+                "file": "src/core/modules/processes/support/reader_save_refusal.py"
+            },
+            {
+                "file": "src/core/modules/settings/support/setting_type_error.py"
+            },
+            {
+                "file": "src/core/modules/updates/support/missing_release_download_error.py"
+            },
+            {
+                "file": "src/core/modules/viewer/commands/support/window_refusal.py"
+            },
+            {
+                "file": "src/install/backup_mismatch_error.py"
+            },
+            {
+                "file": "src/install/backup_write_error.py"
+            },
+            {
+                "file": "src/install/server_wont_stop_error.py"
+            },
+            {
+                "file": "src/install/stray_version_four_error.py"
+            },
+            {
+                "file": "src/server/endpoints/cli_request_error.py"
+            },
+            {
+                "file": "src/server/hook/hook_database_busy_error.py"
+            },
+            {
+                "file": "src/server/server_files_error.py"
+            },
+            {
+                "file": "src/server/viewer/door_refusal.py"
+            },
+            {
+                "file": "src/server/viewer/missing_module_file_error.py"
+            },
+            {
+                "file": "src/server/viewer/phone_module_error.py"
+            },
+            {
+                "file": "src/server/viewer/share_refusal.py"
+            },
+            {
+                "file": "src/server/viewer/share_session_error.py"
+            },
+            {
+                "file": "src/server/viewer/unknown_environment_error.py"
+            },
+            {
+                "file": "src/server/viewer/unknown_login_key_error.py"
+            },
+            {
+                "file": "src/server/viewer/viewer_request_error.py"
+            },
+            {
+                "file": "src/suites/coding/modules/workers/commands/record_worker_refusal/record_worker_refusal.py"
+            },
+            {
+                "file": "src/suites/coding/modules/workers/support/retired_worker_refusal.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "error-outside-errors",
+        "description": "An error or refusal file sits outside an errors folder.",
+        "rule": "Move x_error.py to the errors folder beside it, directly in that folder.",
+        "skill": "plain-code-words"
+    }
+}

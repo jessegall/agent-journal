@@ -1,0 +1,329 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core/base|engine)/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)__init__\\.py$"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/base/access.py"
+            },
+            {
+                "file": "src/core/base/actor.py"
+            },
+            {
+                "file": "src/core/base/actor_type.py"
+            },
+            {
+                "file": "src/core/base/adopted_process.py"
+            },
+            {
+                "file": "src/core/base/agent_brief_points.py"
+            },
+            {
+                "file": "src/core/base/agent_checkouts.py"
+            },
+            {
+                "file": "src/core/base/agent_group.py"
+            },
+            {
+                "file": "src/core/base/agent_group_book.py"
+            },
+            {
+                "file": "src/core/base/agent_policy.py"
+            },
+            {
+                "file": "src/core/base/agent_role.py"
+            },
+            {
+                "file": "src/core/base/agent_role_reader.py"
+            },
+            {
+                "file": "src/core/base/agent_roster.py"
+            },
+            {
+                "file": "src/core/base/agent_sandbox_choice.py"
+            },
+            {
+                "file": "src/core/base/agent_work.py"
+            },
+            {
+                "file": "src/core/base/agent_write_folder.py"
+            },
+            {
+                "file": "src/core/base/block_refusal.py"
+            },
+            {
+                "file": "src/core/base/checkout.py"
+            },
+            {
+                "file": "src/core/base/checkout_file.py"
+            },
+            {
+                "file": "src/core/base/checkout_type.py"
+            },
+            {
+                "file": "src/core/base/child_process.py"
+            },
+            {
+                "file": "src/core/base/clock.py"
+            },
+            {
+                "file": "src/core/base/code_copy.py"
+            },
+            {
+                "file": "src/core/base/code_version_missing_error.py"
+            },
+            {
+                "file": "src/core/base/code_versions.py"
+            },
+            {
+                "file": "src/core/base/conflict_files.py"
+            },
+            {
+                "file": "src/core/base/connection_probe.py"
+            },
+            {
+                "file": "src/core/base/connection_status.py"
+            },
+            {
+                "file": "src/core/base/container.py"
+            },
+            {
+                "file": "src/core/base/deadline.py"
+            },
+            {
+                "file": "src/core/base/deadline_passed_error.py"
+            },
+            {
+                "file": "src/core/base/declaration_names.py"
+            },
+            {
+                "file": "src/core/base/duration.py"
+            },
+            {
+                "file": "src/core/base/duration_error.py"
+            },
+            {
+                "file": "src/core/base/duration_unit.py"
+            },
+            {
+                "file": "src/core/base/environment_names.py"
+            },
+            {
+                "file": "src/core/base/error_log.py"
+            },
+            {
+                "file": "src/core/base/event_listeners.py"
+            },
+            {
+                "file": "src/core/base/exception_sink.py"
+            },
+            {
+                "file": "src/core/base/explanation.py"
+            },
+            {
+                "file": "src/core/base/file_access.py"
+            },
+            {
+                "file": "src/core/base/file_changes.py"
+            },
+            {
+                "file": "src/core/base/file_contents.py"
+            },
+            {
+                "file": "src/core/base/file_fingerprints.py"
+            },
+            {
+                "file": "src/core/base/file_state.py"
+            },
+            {
+                "file": "src/core/base/file_status.py"
+            },
+            {
+                "file": "src/core/base/file_version.py"
+            },
+            {
+                "file": "src/core/base/helper_role.py"
+            },
+            {
+                "file": "src/core/base/helper_type.py"
+            },
+            {
+                "file": "src/core/base/helper_type_book.py"
+            },
+            {
+                "file": "src/core/base/instruction_import.py"
+            },
+            {
+                "file": "src/core/base/instruction_imports.py"
+            },
+            {
+                "file": "src/core/base/internet_connection.py"
+            },
+            {
+                "file": "src/core/base/journal.py"
+            },
+            {
+                "file": "src/core/base/journal_home.py"
+            },
+            {
+                "file": "src/core/base/json_pointer.py"
+            },
+            {
+                "file": "src/core/base/json_schema.py"
+            },
+            {
+                "file": "src/core/base/json_settings.py"
+            },
+            {
+                "file": "src/core/base/kept_file_text.py"
+            },
+            {
+                "file": "src/core/base/leftover_process.py"
+            },
+            {
+                "file": "src/core/base/log_level.py"
+            },
+            {
+                "file": "src/core/base/log_source.py"
+            },
+            {
+                "file": "src/core/base/metadata.py"
+            },
+            {
+                "file": "src/core/base/missing_file_refusal.py"
+            },
+            {
+                "file": "src/core/base/missing_hint_error.py"
+            },
+            {
+                "file": "src/core/base/missing_rows_error.py"
+            },
+            {
+                "file": "src/core/base/page.py"
+            },
+            {
+                "file": "src/core/base/periodic_checks.py"
+            },
+            {
+                "file": "src/core/base/plan_authors.py"
+            },
+            {
+                "file": "src/core/base/plugin_script_process.py"
+            },
+            {
+                "file": "src/core/base/plugin_script_processes.py"
+            },
+            {
+                "file": "src/core/base/process_ids.py"
+            },
+            {
+                "file": "src/core/base/project_reads.py"
+            },
+            {
+                "file": "src/core/base/recorded_refusal.py"
+            },
+            {
+                "file": "src/core/base/refusal.py"
+            },
+            {
+                "file": "src/core/base/refusal_log.py"
+            },
+            {
+                "file": "src/core/base/request_queue.py"
+            },
+            {
+                "file": "src/core/base/request_queue_entry.py"
+            },
+            {
+                "file": "src/core/base/request_queue_status.py"
+            },
+            {
+                "file": "src/core/base/request_values.py"
+            },
+            {
+                "file": "src/core/base/role_group.py"
+            },
+            {
+                "file": "src/core/base/rotated_file.py"
+            },
+            {
+                "file": "src/core/base/row_owner.py"
+            },
+            {
+                "file": "src/core/base/sandbox_level.py"
+            },
+            {
+                "file": "src/core/base/sandboxed_agent.py"
+            },
+            {
+                "file": "src/core/base/script_skip.py"
+            },
+            {
+                "file": "src/core/base/script_stop.py"
+            },
+            {
+                "file": "src/core/base/search_term.py"
+            },
+            {
+                "file": "src/core/base/server_restart_state.py"
+            },
+            {
+                "file": "src/core/base/shell_sandbox.py"
+            },
+            {
+                "file": "src/core/base/step_checks.py"
+            },
+            {
+                "file": "src/core/base/step_condition.py"
+            },
+            {
+                "file": "src/core/base/system_log_writer.py"
+            },
+            {
+                "file": "src/core/base/text_digest.py"
+            },
+            {
+                "file": "src/core/base/timestamp.py"
+            },
+            {
+                "file": "src/core/base/timing.py"
+            },
+            {
+                "file": "src/core/base/timing_log.py"
+            },
+            {
+                "file": "src/core/base/unbound_value_error.py"
+            },
+            {
+                "file": "src/core/base/unix_connection.py"
+            },
+            {
+                "file": "src/core/base/user_approval_refusal.py"
+            },
+            {
+                "file": "src/core/base/version_numbers.py"
+            },
+            {
+                "file": "src/core/base/wrong_instance_error.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "base-loose-class",
+        "description": "A class sits loose directly in the engine folder, so it belongs to no folder.",
+        "rule": "Move it into the folder of its area under the engine folder. Every class, function and value sits in a folder named for its sort: errors, enums, models, support or the folder of its area.",
+        "skill": "plain-code-words"
+    }
+}
