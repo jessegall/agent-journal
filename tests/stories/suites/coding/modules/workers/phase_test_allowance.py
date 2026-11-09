@@ -29,7 +29,7 @@ def spent(worker):
 
 def test_three_runs_count_down_and_the_fourth_is_refused_with_the_hand_in_reason(spent):
     expect_reply_refusal(spent.run_test(), "--ask-main")
-    expect_reply_refusal(spent.run_test(), "returns failures")
+    expect_reply_refusal(spent.run_test(), "No test runs left")
     spent.story.expect_rows(spent.main_agent_lines() == ())
 
 
@@ -102,5 +102,5 @@ def test_help_and_collection_do_not_use_the_allowance(worker):
 
 
 def test_another_rules_refusal_does_not_spend_a_run(worker):
-    expect_reply_refusal(worker.run_test_with_saved_commands_known(), "alias")
+    expect_reply_refusal(worker.run_test_with_saved_commands_known(), "runs through a saved command")
     expect_counted(worker, 2)

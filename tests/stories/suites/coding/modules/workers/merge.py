@@ -1,3 +1,4 @@
+from core.modules.agents.support.agent_conversations import AgentConversations
 import pytest
 
 from core.base.actor import Actor
@@ -36,6 +37,12 @@ pytestmark = pytest.mark.real_git
 
 MAIN_SESSION = "s-1"
 BUILT_FILE = "app/web/dist/chat.js"
+
+
+
+@pytest.fixture(autouse=True)
+def workers_have_conversations(monkeypatch):
+    monkeypatch.setattr(AgentConversations, "exists", lambda conversations, agent: True)
 
 
 def test_a_checked_worktree_merges_into_the_base_branch_in_the_environments_folder(new_story):

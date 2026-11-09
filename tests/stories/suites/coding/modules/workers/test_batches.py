@@ -106,7 +106,7 @@ def test_a_batch_has_three_own_runs_and_the_next_batch_starts_a_new_count(batch)
     for remaining in (2, 1, 0):
         reply = batch.run_test()
         expect_reply_allowed(reply)
-        expect_reply_line(reply, f"Test runs left: {remaining}")
+        expect_reply_line(reply, f"left here: {remaining}")
     for _ in range(3):
         batch.prove_advance(TEST_LINE)
     expect_reply_refusal(batch.run_test(), "--ask-main")
@@ -114,7 +114,7 @@ def test_a_batch_has_three_own_runs_and_the_next_batch_starts_a_new_count(batch)
     batch.end_all_tests()
     reply = batch.run_test()
     expect_reply_allowed(reply)
-    expect_reply_line(reply, "Test runs left: 2")
+    expect_reply_line(reply, "left here: 2")
 
 
 def test_the_default_batch_size_keeps_testing_each_task(new_story, monkeypatch):
