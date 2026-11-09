@@ -6,7 +6,7 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, 
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.suites.coding.modules.workers.worker_context_limit import JOB, LIMIT, compacting_worker, ended_worker, has_context, launched
+from tests.stories.suites.coding.modules.workers.worker_context_limit import JOB, LIMIT, compacting_worker, ended_worker, has_context
 from tests.stories.suites.coding.modules.workers.context_limit import typing_recorded
 
 CODEX_SESSION = "codex-limit"
@@ -31,7 +31,8 @@ def test_h3_a_worker_compacted_before_its_job_is_not_compacted_a_second_time_aft
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     following.drain_requests()
-    command = launched(following, 0) if following.requests else ""
+    commands = [json.dumps(start["command"]) for start in following.starts if "--resume" in json.dumps(start["command"])]
+    command = commands[0] if commands else ""
     story.expect_rows("/compact" not in command, JOB in command, detail=command or "the worker was not sent on after the restart")
 
 
