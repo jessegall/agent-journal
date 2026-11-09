@@ -15,6 +15,7 @@ class ProtectedFolderRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
+    refuses_one_action = "Stops worker edits to the project's protected folders"
 
     def __init__(self, worktrees: WorktreeQuery, protected: ProtectedFolders) -> None:
         self.worktrees, self.protected = worktrees, protected

@@ -24,6 +24,7 @@ class ContextHardStopRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
     disabled_scopes = [ActorScope]
+    refuses_one_action = "An agent past the second context limit may run no more tools, so it must stop"
 
     def __init__(self, history: HookHistory, limit_check: ContextLimitCheck) -> None:
         self.history, self.limit_check = history, limit_check

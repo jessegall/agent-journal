@@ -19,6 +19,7 @@ class WorkerTestLineRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
+    refuses_one_action = "A worker runs a test only through its named test commands"
 
     def __init__(self, commands: BackgroundCommands, names: WorkerTestNames) -> None:
         self.commands, self.names = commands, names

@@ -23,6 +23,7 @@ class WorkerJudgeScopeRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.*"]
     roles = [CodingHelperRole.WORKER]
+    refuses_one_action = "A worker judges only its own changes"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

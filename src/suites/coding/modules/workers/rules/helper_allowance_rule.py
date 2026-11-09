@@ -19,6 +19,7 @@ class HelperAllowanceRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "The main agent starts no read-only helpers while the setting main-starts-read-only-helpers is off"
 
     def __init__(self, settings: SettingValues, guidance: AutoAdvice) -> None:
         self.settings, self.guidance = settings, guidance

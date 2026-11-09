@@ -38,6 +38,7 @@ class AccessRule(ReadonlyRule):
     drivers = ["*"]
     overlay_proof = True
     allowed_tools = (ToolType.READ, ToolType.SEARCH, ToolType.SHELL)
+    refuses_one_action = "An agent with read-only access reads, searches and runs journal commands, on every program and under every"
 
     def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors, folders: AgentFolders) -> None:
         self.registry, self.providers, self.profiles, self.queries, self.lookup = registry, providers, profiles, queries, lookup

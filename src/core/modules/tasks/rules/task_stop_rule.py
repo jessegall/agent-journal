@@ -18,6 +18,7 @@ class TaskStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "A stop with tasks in hand is refused, naming them all"
 
     def __init__(self, current_tasks: CurrentTasks, runs: WatchedRuns, assigners: SuiteTaskAssigners) -> None:
         self.current_tasks, self.runs, self.assigners = current_tasks, runs, assigners

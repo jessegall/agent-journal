@@ -15,6 +15,7 @@ class UnreadSkillStopRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
+    refuses_one_action = "A stop while a skill is due is refused, naming the unread skills"
 
     def __init__(self, unread_skills: UnreadSkills, requirement: SkillRequirement) -> None:
         self.unread_skills, self.requirement = unread_skills, requirement

@@ -19,6 +19,7 @@ class UnreadMessageStopRule(DriverRule):
     drivers = ["*"]
     overlay_proof = True
     is_notice = True
+    refuses_one_action = "The main agent's stop is refused while a message of the person is unread, naming the oldest"
 
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages

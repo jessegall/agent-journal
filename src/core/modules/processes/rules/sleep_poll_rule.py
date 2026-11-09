@@ -22,6 +22,7 @@ class SleepPollRule(DriverRule):
     name = "processes.sleep-poll-refusal"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "A line that only sleeps, sleeps in a loop to check again, or a sleep tool of the agent's program, is refused"
 
     def __init__(self, processes: ProcessQuery) -> None:
         self.processes = processes

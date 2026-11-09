@@ -18,6 +18,7 @@ class RedirectedRunRule(DriverRule):
     name = "processes.redirected-run"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "Refuses a tool call that sends a test run, a build or a check to a file or to /dev/null, which no reader"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

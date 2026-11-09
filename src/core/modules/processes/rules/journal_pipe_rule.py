@@ -14,6 +14,7 @@ class JournalPipeRule(DriverRule):
     name = "processes.journal-pipe"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "Refuses a journal command piped into a program that cuts its output"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

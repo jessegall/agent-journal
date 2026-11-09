@@ -23,6 +23,7 @@ class SavedCommandRule(DriverRule):
     name = "aliases.saved-command"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "Requires tests and builds to use saved commands with valid reading and timeout options"
 
     def __init__(self, aliases: AliasQuery, suites: SuiteChoice) -> None:
         self.aliases, self.suites = aliases, suites
