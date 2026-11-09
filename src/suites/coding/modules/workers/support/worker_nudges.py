@@ -36,8 +36,8 @@ WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass', turn_limited=False,
                                      plural_text='the tests of workers {worker} all pass', id_field="worker")
-WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed, output {outputs}: fix them, then hand in again', turn_limited=False)
-WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: fix them, then hand in again', turn_limited=False, id_field="outputs")
+WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed, output {outputs}: you can now test as much as you need until you hand in; fix them, then hand in again', turn_limited=False)
+WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: you can now test as much as you need until you hand in; fix them, then hand in again', turn_limited=False, id_field="outputs")
 WORKER_TEST_REQUESTED = NudgeDeclaration("workers.test_requested", NudgeType.STEERING, 'worker:{worker} asks to run a command for task:{task}, request:{request}', turn_limited=False, wakes_agent=True, id_field="request", plural_text="worker:{worker} asks for task:{task}, requests {request}")
 WORKER_TEST_ALLOWED = NudgeDeclaration("workers.test_allowed", NudgeType.STEERING, 'request {request} is allowed: run it once without the flag', turn_limited=False, wakes_agent=True, id_field="request", plural_text="requests {request} are allowed: run each once")
 TEST_REQUEST_FORWARDED = NudgeDeclaration("workers.test_request_sent", NudgeType.SAFETY_REFUSAL, 'your request went to your main agent: go on working, you hear when it is allowed', turn_limited=False)
@@ -45,8 +45,8 @@ TEST_REQUEST_WAITING = NudgeDeclaration("workers.test_request_waiting", NudgeTyp
 TEST_REQUEST_ALLOWED = NudgeDeclaration("workers.test_request_allowed", NudgeType.SAFETY_REFUSAL, 'request {request} is allowed: run this command once, without the flag', turn_limited=False)
 TEST_REQUEST_REASON_MISSING = NudgeDeclaration("workers.test_request_no_reason", NudgeType.SAFETY_REFUSAL, 'the flag needs a reason: run it again with --ask-main "<why>"', turn_limited=False)
 TEST_REQUEST_UNNEEDED = NudgeDeclaration("workers.test_needs_no_request", NudgeType.SAFETY_REFUSAL, 'you need not ask: run the command without the flag', turn_limited=False)
-PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "Test runs left: {remaining}. Proof tests run at hand-in. Run tests only when needed.", turn_limited=False)
-PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'The journal runs proof tests at hand-in and returns failures. No runs left; only if needed, --ask-main "<why>".', turn_limited=False)
+PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "Do not test in the middle of a phase or batch: at its end the journal runs every proof's test and sends you the failures. Test runs left here: {remaining}; use one only when you cannot go on without it.", turn_limited=False)
+PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'No test runs left in this phase or batch: at its end the journal runs every proof\'s test and sends you the failures, so hand in and go on. Only if you cannot go on without a run, --ask-main "<why>".', turn_limited=False)
 WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: read it, then go on',
                                    plural_text='your runs {output} ended: read each, then go on', id_field="output")
 READER_SAMPLE_READY = NudgeDeclaration("workers.reader_sample_ready", NudgeType.STEERING, "read the sample of output {output} with reader {reader}", wakes_agent=True)
