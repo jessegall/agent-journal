@@ -3,13 +3,15 @@ from datetime import timedelta
 
 import pytest
 
+from core.base.refusal import Refusal
+from core.modules.agents.support.terminal_typing import LAUNCHER_MISSING, TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import keep_status_file, rewrite_status_file
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT, PRE_COMPACT, SESSION, LimitEnabled, has_context, set_value, stops, typing_recorded
+from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT, PRE_COMPACT, SESSION, LimitEnabled, RecordedTyping, has_context, set_value, stops, typing_recorded
 
 TOO_LONG = timedelta(seconds=601)
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
@@ -210,3 +212,23 @@ def test_e5_after_a_compaction_left_the_context_over_the_limit_one_is_due_only_o
     settled_reading(agent, SETTLED_TOKENS + GROWTH_TOKENS)
     stops(agent)
     expect_compactions_typed(agent, 1)
+
+
+STOPS_WITHOUT_LAUNCHER = 5
+
+
+class MissingLauncherTyping(RecordedTyping):
+    def type_line(self, agent_id: int, line: str) -> None:
+        super().type_line(agent_id, line)
+        raise Refusal(LAUNCHER_MISSING, "start the agent with journal launch")
+
+
+def test_f2_a_missing_launcher_is_tried_once_and_not_again_at_every_stop(new_story):
+    story = new_story(fixture=LimitEnabled)
+    story.typing = MissingLauncherTyping()
+    story.container.bind(TerminalTyping, story.typing)
+    has_context(story, LIMIT)
+    for _ in range(STOPS_WITHOUT_LAUNCHER):
+        stops(story)
+        story.advance(TOO_LONG)
+    story.expect_rows(len(story.typing.typed) <= 1, len(story.refusals()) <= 1, detail=f"{len(story.typing.typed)} attempts, {len(story.refusals())} refusals")
