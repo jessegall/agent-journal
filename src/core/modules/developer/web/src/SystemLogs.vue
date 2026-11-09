@@ -1,10 +1,10 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, DropList, READ_RATES, WindowRoom, usePoll, useWindow} from "@journal/window-kit";
+import {Btn, DropList, READ_RATES, WindowRoom, dated, usePoll, useWindow, wordLabel} from "@journal/window-kit";
 import {toggleFeedPause} from "./toggleFeedPause.js";
 import {usePausedProp} from "./usePausedProp.js";
 
-const choices = (all, names) => [{key: "", label: all}, ...names.map((name) => ({key: name, label: name}))];
+const choices = (all, names) => [{key: "", label: all}, ...names.map((name) => ({key: name, label: wordLabel(name)}))];
 const SOURCES = choices("All sources", ["server", "journal", "bypass"]);
 const LEVELS = choices("All levels", ["debug", "info", "warning", "error", "critical"]);
 const labelOf = (items, key) => items.find((item) => item.key === key).label;
@@ -49,8 +49,8 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value,
             <template v-if="failure"><p role="alert">{{ failure }}</p></template>
             <div class="scroll">
                 <table>
-                    <thead><tr><template v-for="column in ['Time (UTC)', 'Source', 'Level', 'Message']" :key="column"><th>{{ column }}</th></template></tr></thead>
-                    <tbody><template v-for="line in listing.rows" :key="line.id"><tr data-log-line :data-level="line.level"><td><time :datetime="line.recorded_at" title="Lines without a time use the preceding line's time, or the file's modified time.">{{ line.recorded_at }}</time></td><td>{{ line.source }}</td><td>{{ line.level }}</td><td class="message">{{ line.text }}</td></tr></template></tbody>
+                    <thead><tr><template v-for="column in ['Time', 'Source', 'Level', 'Message']" :key="column"><th>{{ column }}</th></template></tr></thead>
+                    <tbody><template v-for="line in listing.rows" :key="line.id"><tr data-log-line :data-level="line.level"><td><time :datetime="line.recorded_at" title="Lines without a time use the preceding line's time, or the file's modified time.">{{ dated(line.recorded_at) }}</time></td><td>{{ labelOf(SOURCES, line.source) }}</td><td>{{ labelOf(LEVELS, line.level) }}</td><td class="message">{{ line.text }}</td></tr></template></tbody>
                 </table>
                 <template v-if="!listing.rows.length && !failure"><p class="empty">No log lines found.</p></template>
             </div>

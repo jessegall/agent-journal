@@ -72,11 +72,12 @@ test("managed entries keep list order and show controls, effects and recent outc
         "Can refuse",
         "Can rewrite",
         "Refused",
-        "4 ms",
+        "Ended with code 2 after 4 ms",
         "Refusals: 1",
     ]) {
         expect(row.textContent).toContain(text);
     }
+    expect(row.textContent).not.toContain("2026-11-03T12:00:00Z");
     expect(row.querySelector('input[type="number"]').value).toBe("30");
     expect(row.querySelectorAll("input")).toHaveLength(1);
     expect(element.textContent).toContain("pending-check");

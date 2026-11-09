@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Interpolation",
+        "where": [
+            {"all": [
+                {"kind": "PropertyAccessExpression", "of": "child:value"},
+                {"nameIn": ["rule", "outcome", "row_model", "recorded_at", "last_at", "level"], "of": "child:value"}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "(^|/)src/viewer/src/tasks/TaskSections\\.vue$"}
+        ]
+    },
+    "sin": {
+        "name": "raw-field-in-template",
+        "description": "A template prints a stored rule id, outcome, model name, level or ISO time as it is kept.",
+        "rule": "Say a rule through ruleLabel, an outcome through its label table, a model through its noun and a time through TimeAgo or dated. Keep stored words for comparisons and styling. A task's outcome is written text, so the task sections show it as it is.",
+        "skill": "plain-viewer-text"
+    }
+}

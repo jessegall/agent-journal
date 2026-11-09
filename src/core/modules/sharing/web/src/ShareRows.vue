@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, InfoTip, ListTools, RowList, Segmented, Switch, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
+import {Btn, InfoTip, ListTools, RowList, Segmented, Switch, WindowRoom, dated, useListTools, useWindow} from "@journal/window-kit";
+import {endsLabel, rowModelLabel} from "./shareLabels.js";
 
 const ENDS = [
     {key: "1d", label: "1 day"},
@@ -13,7 +14,7 @@ const view = useWindow();
 const {rows, failure, loaded} = view.props.shares;
 const waiting = computed(() => rows.value.filter((row) => row.state === "waiting"));
 const active = computed(() => rows.value.filter((row) => row.state === "active"));
-const tools = useListTools(active, {title: (row) => `${row.row_model} ${row.row_id}`});
+const tools = useListTools(active, {title: (row) => `${rowModelLabel(row.row_model)} ${row.row_id}`});
 const target = ref(new URLSearchParams(globalThis.location.search).get("share") ?? "");
 const ends = ref("7d");
 const password = ref("");
@@ -23,7 +24,6 @@ const made = ref(null);
 const refusal = ref("");
 const commentRows = ref({});
 const stoppingAll = ref(false);
-const when = (row) => (row.expires_at ? `ends ${row.expires_at}` : "never ends");
 
 async function run(line) {
     const answer = await view.run(line);
@@ -110,7 +110,7 @@ async function toggleComments(row) {
             </form>
             <template v-if="made">
                 <p class="shares-link" data-share-address>{{ made.address }}</p>
-                <p class="shares-hint">This link is shown once. Anyone who has it can read it{{ made.expires_at ? ` until ${made.expires_at}` : "" }}.</p>
+                <p class="shares-hint">This link is shown once. Anyone who has it can read it{{ made.expires_at ? ` until ${dated(made.expires_at)}` : "" }}.</p>
                 <template v-if="!made.outside">
                     <p class="shares-hint" data-share-inside>No tunnel is connected, so this address works only from this computer.</p>
                 </template>
@@ -123,7 +123,7 @@ async function toggleComments(row) {
                     <h3 class="shares-label">Pending requests</h3>
                     <template v-for="row in waiting" :key="row.id">
                         <div class="shares-row" :data-share-row="row.id">
-                            <span class="shares-name">An agent asks to share {{ row.row_model }} {{ row.row_id }}, {{ when(row) }}{{ row.locked ? ", with a password" : "" }}{{ row.comments ? ", with comments" : "" }}</span>
+                            <span class="shares-name">An agent asks to share {{ rowModelLabel(row.row_model) }} {{ row.row_id }}, {{ endsLabel(row.expires_at) }}{{ row.locked ? ", with a password" : "" }}{{ row.comments ? ", with comments" : "" }}</span>
                             <Btn small variant="primary" data-share-accept @click="accept(row)">Accept</Btn>
                             <Btn small data-share-deny @click="run(['share', 'deny', String(row.id)])">Deny</Btn>
                         </div>
@@ -135,7 +135,7 @@ async function toggleComments(row) {
                 <template #default="{row}">
                     <div class="shares-open" :data-share-row="row.id">
                         <div class="shares-row">
-                            <span class="shares-name">{{ row.row_model }} {{ row.row_id }}, {{ when(row) }}, {{ row.view_count }} {{ row.view_count === 1 ? "view" : "views" }}{{ row.locked ? ", with a password" : "" }}</span>
+                            <span class="shares-name">{{ rowModelLabel(row.row_model) }} {{ row.row_id }}, {{ endsLabel(row.expires_at) }}, {{ row.view_count }} {{ row.view_count === 1 ? "view" : "views" }}{{ row.locked ? ", with a password" : "" }}</span>
                             <template v-if="row.comments">
                                 <Btn small data-share-comments-open @click="toggleComments(row)">Comments</Btn>
                             </template>

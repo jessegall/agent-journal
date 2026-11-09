@@ -24,6 +24,7 @@ test("opening a hook request shows its headers and its body", async () => {
     expect(body.textContent).toContain('"event": "stop"');
     expect(body.querySelector(".tok-property").textContent).toBe('"event"');
     expect(body.querySelector(".tok-string").textContent).toBe('"stop"');
+    expect(element.querySelector("[data-hook-request-detail] .detail-head span").textContent).toContain(" · Allowed · ");
 });
 
 test("request filters are sent to the server and remembered", async () => {
