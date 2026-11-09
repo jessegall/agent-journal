@@ -1,3 +1,5 @@
+from collections.abc import Mapping, Sequence
+
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 
@@ -11,16 +13,20 @@ class ModuleOrder:
             missing = [name for name in module.dependencies if name not in module_index]
             if missing:
                 raise ModuleError(f"module {module.name} depends on {', '.join(missing)}, which is not installed")
-        placed: list[type[Module]] = []
-        for module in sorted(modules, key=lambda module: module.name):
-            self.place(module, module_index, placed, ())
-        return tuple(placed)
+        names = self.ordered_names({module.name: module.dependencies for module in modules})
+        return tuple(module_index[name] for name in names)
 
-    def place(self, module: type[Module], module_index: dict[str, type[Module]], placed: list[type[Module]], path: tuple[str, ...]) -> None:
-        if module in placed:
+    def ordered_names(self, dependencies: Mapping[str, Sequence[str]]) -> list[str]:
+        placed: list[str] = []
+        for name in sorted(dependencies):
+            self.place(name, dependencies, placed, ())
+        return placed
+
+    def place(self, name: str, dependencies: Mapping[str, Sequence[str]], placed: list[str], path: tuple[str, ...]) -> None:
+        if name in placed:
             return
-        if module.name in path:
-            raise ModuleError(f"modules depend on one another in a loop: {' > '.join((*path, module.name))}")
-        for name in sorted(module.dependencies):
-            self.place(module_index[name], module_index, placed, (*path, module.name))
-        placed.append(module)
+        if name in path:
+            raise ModuleError(f"modules depend on one another in a loop: {' > '.join((*path, name))}")
+        for dependency in sorted(dependencies[name]):
+            self.place(dependency, dependencies, placed, (*path, name))
+        placed.append(name)
