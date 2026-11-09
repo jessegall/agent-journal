@@ -91,12 +91,19 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         group = self.phases.group(worktree, tested)
         if group is not None:
             if self.phases.continues_group(group, following):
-                return self.start_following(worktree, following, context)
+                return self.continue_group(worktree, following, context)
             return self.submit_group(worktree, tested, group, context)
         if self.proof_queue.queue(worktree, context):
             return tested
         self.close_checked(tested, context)
         return self.start_following(worktree, following, context)
+
+    def continue_group(self, worktree: Worktree, following: Task, context: Context) -> Task:
+        returned_task = self.tasks.holder(context.actor.id).started().first()
+        if returned_task is None:
+            return self.start_following(worktree, following, context)
+        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=returned_task.id), context)
+        return returned_task
 
     def submit_group(self, worktree: Worktree, task: Task, group: WorkerTestGroup, context: Context) -> Task:
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):

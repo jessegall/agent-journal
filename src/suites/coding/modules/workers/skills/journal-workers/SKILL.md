@@ -137,8 +137,9 @@ never starts is retired after the idle time.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
 - Never run the judge on your own work, with `journal sins` or the judge's own command. The journal judges your work when
   you hand it in and when it is merged, and what it finds comes back to you to fix at its source.
-- At each hand-in, say what you did differently from the task or left out: `journal worker next --differences "<what>"`,
-  or `--differences none`; the same goes for `journal worker deliver`.
+- At each hand-in, say only what you did other than the task's brief asked or left out of it, never what you did:
+  `journal worker next --differences "<what>"`. When you followed the brief, `--differences none`. The same goes for
+  `journal worker deliver`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
   right; the journal commits and runs its proofs' tests in turn, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your

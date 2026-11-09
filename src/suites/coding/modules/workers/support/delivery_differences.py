@@ -6,11 +6,11 @@ from core.base.refusal import Refusal
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 
 NONE_ANSWER = "none"
-QUESTION = 'what did you do differently from the task, or leave out? Say so with --differences "<what>", or --differences none'
+QUESTION = 'did you do anything other than the task brief asked, or leave part of it out? Say only that with --differences "<what>", never what you did; if you followed the brief, --differences none'
 
 
 def differences_flag(parser: ArgumentParser) -> None:
-    parser.add_argument("--differences", default="", help="what differs from the task or was left out, or none")
+    parser.add_argument("--differences", default="", help="only what differs from the task brief or was left out, never a report of the work; none when you followed the brief")
 
 
 def required_differences(arguments: Namespace) -> str:
