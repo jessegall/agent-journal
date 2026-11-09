@@ -95,9 +95,9 @@ def test_a_stopped_worker_with_only_blocked_tasks_is_left_alone(two_task_worker)
     two_task_worker.expect_rows(launcher.requests == [], detail=str(launcher.requests))
 
 
-def test_a_worker_a_person_stopped_with_open_tasks_stays_stopped(two_task_worker):
+def test_a_worker_another_agent_stopped_with_open_tasks_stays_stopped(two_task_worker):
     two_task_worker.expect_success('task block 1 --reason "waits on a person"', actor=two_task_worker.agent)
-    two_task_worker.expect_success(f"agent end {two_task_worker.worker.id}", actor=two_task_worker.user)
+    two_task_worker.expect_success(f"agent end {two_task_worker.worker.id}", actor=two_task_worker.agent)
     two_task_worker.advance(timedelta(minutes=1))
     launcher = retried(two_task_worker)
     two_task_worker.expect_rows(launcher.requests == [], detail=str(launcher.requests))

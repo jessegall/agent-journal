@@ -39,6 +39,9 @@ class WorkerStartedWork:
             return False
         return not self.has_waiting_job(worker) and not self.stop.was_stopped(worker) and self.resume_count(worker) < worker_job.RESUME_LIMIT_COUNT
 
+    def reached_restart_limit(self, worker: Agent) -> bool:
+        return self.resume_count(worker) >= worker_job.RESUME_LIMIT_COUNT
+
     def has_waiting_job(self, worker: Agent) -> bool:
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).exists()
 
