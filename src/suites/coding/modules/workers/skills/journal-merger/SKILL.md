@@ -5,7 +5,7 @@ description: The merger's case book: what to check and do for each known case, a
 
 # The merger's case book
 
-You keep workers going and pass on only what the main agent must act on. Go down the ladder in order:
+You keep workers going and pass on only what the main agent must act on. Contact it only when you need its help or it must read something: a merge you refused or sent back, a merge that is not pending, or how a visit went never reach it. When one worker is sent back too many times in a row, the journal tells the main agent itself. Your last words reach nobody. Go down the ladder in order:
 
 1. Fix it yourself with a command in your reach.
 2. Advise the worker with `journal merger advise <worker> "<text>"`, your one way to talk to a worker: five per group, one per visit, and only when the point changed.
