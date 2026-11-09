@@ -9,13 +9,13 @@ from core.base.module.module import Module
 
 
 def declared(name, folder, dependencies=()):
-    class DeclaredModule(Module):
+    class SampleModule(Module):
         pass
 
-    DeclaredModule.name = f"journal.{name}"
-    DeclaredModule.dependencies = [f"journal.{dependency}" for dependency in dependencies]
-    DeclaredModule.__module__ = f"{folder}.{name}_module"
-    return DeclaredModule
+    SampleModule.name = f"journal.{name}"
+    SampleModule.dependencies = [f"journal.{dependency}" for dependency in dependencies]
+    SampleModule.__module__ = f"{folder}.{name}_module"
+    return SampleModule
 
 
 def module_folder(project, folder, name, source=""):
@@ -24,8 +24,8 @@ def module_folder(project, folder, name, source=""):
     (target / f"{name}_module.py").write_text(source)
 
 
-def failures(project, *modules):
-    return LayerCheck(project, LayerTable(), modules).failures()
+def failures(project, *modules, allow_list=()):
+    return LayerCheck(project, LayerTable(), modules, allow_list).failures()
 
 
 @pytest.mark.parametrize("path,layer", [
@@ -112,3 +112,34 @@ def test_a_core_module_that_depends_on_a_suite_fails(tmp_path):
     module_folder(tmp_path, "suites.coding", "coding")
     plans, coding = declared("plans", "core.modules.plans", ["coding"]), declared("coding", "suites.coding")
     assert "journal.plans depends on journal.coding, which is above it" in failures(tmp_path, plans, coding)
+
+
+TASKS_IMPORT = "src/core/modules/plans/plans_module.py imports core module tasks, which core module plans may not use"
+
+
+def undeclared_import(project):
+    module_folder(project, "core.modules.tasks", "tasks")
+    module_folder(project, "core.modules.plans", "plans", "from core.modules.tasks.models.task import Task\n")
+    return declared("tasks", "core.modules.tasks"), declared("plans", "core.modules.plans")
+
+
+def test_a_violation_on_the_allow_list_is_accepted(tmp_path):
+    assert failures(tmp_path, *undeclared_import(tmp_path), allow_list=[TASKS_IMPORT]) == []
+
+
+def test_a_new_violation_fails_beside_a_listed_one(tmp_path):
+    modules = undeclared_import(tmp_path)
+    module_folder(tmp_path, "core.modules.orders", "orders", "from core.modules.tasks.models.task import Task\n")
+    orders = declared("orders", "core.modules.orders")
+    assert failures(tmp_path, *modules, orders, allow_list=[TASKS_IMPORT]) == ["src/core/modules/orders/orders_module.py imports core module tasks, which core module orders may not use"]
+
+
+def test_a_line_on_the_allow_list_that_no_longer_happens_fails(tmp_path):
+    assert failures(tmp_path, allow_list=[TASKS_IMPORT]) == [f"{TASKS_IMPORT}: is on the allow-list but no longer happens"]
+
+
+def test_a_listed_import_does_not_count_towards_a_loop(tmp_path):
+    module_folder(tmp_path, "core.modules.tasks", "tasks", "from core.modules.plans.models.plan import Plan\n")
+    module_folder(tmp_path, "core.modules.plans", "plans")
+    listed = "src/core/modules/tasks/tasks_module.py imports core module plans, which core module tasks may not use"
+    assert failures(tmp_path, declared("tasks", "core.modules.tasks"), declared("plans", "core.modules.plans", ["tasks"]), allow_list=[listed]) == []
