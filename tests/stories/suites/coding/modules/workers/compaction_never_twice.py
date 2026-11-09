@@ -232,3 +232,15 @@ def test_f2_a_missing_launcher_is_tried_once_and_not_again_at_every_stop(new_sto
         stops(story)
         story.advance(TOO_LONG)
     story.expect_rows(len(story.typing.typed) <= 1, len(story.refusals()) <= 1, detail=f"{len(story.typing.typed)} attempts, {len(story.refusals())} refusals")
+
+
+def wake_lines(story):
+    return [line for line in story.typing.typed if "compacted" in line]
+
+
+def test_g3_a_slow_wake_after_a_typed_compaction_is_typed_once_not_again_by_the_tick(agent):
+    compacted(agent, "manual")
+    agent.expect_rows(len(wake_lines(agent)) == 1, detail=str(agent.typing.typed))
+    agent.advance(TOO_LONG)
+    agent.tick(SESSION)
+    agent.expect_rows(len(wake_lines(agent)) == 1, detail=str(agent.typing.typed))
