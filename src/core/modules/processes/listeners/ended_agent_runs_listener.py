@@ -8,8 +8,6 @@ from core.base.query.queries import Queries
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.agent import Agent
 
 
 class EndedAgentRunsListener(CommitListener[AgentEnded]):

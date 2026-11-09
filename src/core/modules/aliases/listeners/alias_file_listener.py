@@ -3,7 +3,6 @@ from core.base.database.kept_rows import KeptRows
 import json
 import shlex
 
-from core.base.change.event_log import FILE_PUBLISHING_EVENTS
 from core.base.change.logged_event import LoggedEvent
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener

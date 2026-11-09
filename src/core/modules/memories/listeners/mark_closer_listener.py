@@ -1,5 +1,4 @@
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.modules.memories.support.mark_closer import MarkCloser
 from core.base.change.changed import Changed
 from core.base.command.context import Context

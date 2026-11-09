@@ -1,7 +1,6 @@
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.drivers.events.stop_denied import StopDenied
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent

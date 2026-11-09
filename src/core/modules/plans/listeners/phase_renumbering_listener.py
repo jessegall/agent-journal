@@ -1,5 +1,4 @@
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.support.positions import Positions
 from core.base.change.deleted import Deleted

@@ -4,12 +4,11 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
-from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
-from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
+from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree

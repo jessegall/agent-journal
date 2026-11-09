@@ -3,7 +3,6 @@ from dataclasses import replace
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope

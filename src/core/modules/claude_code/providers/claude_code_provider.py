@@ -9,7 +9,6 @@ import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
 from core.base.journal_home import JournalHome

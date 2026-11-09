@@ -1,4 +1,3 @@
-from core.base.change.event_log import FILE_PUBLISHING_EVENTS
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.modules.plugins.support.login_path import LoginPath

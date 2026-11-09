@@ -21,7 +21,6 @@ from core.base.database.repeated_lines import RepeatedLines
 from core.base.change.event_pattern_error import EventPatternError
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
-from server.viewer.line_route import REFUSED_CODE
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.window_data_request import KEYS_HEADER, WINDOW_HEADER, WindowDataRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest

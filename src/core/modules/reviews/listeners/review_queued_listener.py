@@ -1,6 +1,5 @@
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer
 from core.modules.reviews.commands.assign_next_review.assign_next_review import AssignNextReview
 from core.modules.reviews.models.review import Review

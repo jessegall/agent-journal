@@ -3,12 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
 from core.modules.messages.queries.message_query import MessageQuery
-from core.base.query.conditions.among import Among
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from core.modules.messages.models.message import Message
 
 
 class UnreadMessageStopRule(DriverRule):

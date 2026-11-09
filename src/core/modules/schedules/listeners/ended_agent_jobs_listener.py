@@ -1,8 +1,6 @@
 from core.modules.agents.events.agent_ended import AgentEnded
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
-from core.modules.agents.models.agent import Agent
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job import EndScheduledJob
 from core.base.command.context import Context
 

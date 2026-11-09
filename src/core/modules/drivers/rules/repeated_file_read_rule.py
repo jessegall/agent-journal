@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule

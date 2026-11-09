@@ -1,4 +1,3 @@
-from core.modules.processes.models.output import Output
 from core.modules.processes.support.run_counts import RunCounts
 from dataclasses import replace
 

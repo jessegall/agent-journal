@@ -11,8 +11,6 @@ from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.messages.commands.record_message_delivery.record_message_delivery import RecordMessageDelivery
-from core.base.query.conditions.among import Among
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE
 

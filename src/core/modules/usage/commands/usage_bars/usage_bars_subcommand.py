@@ -4,7 +4,6 @@ from core.base.agent_role import AgentRole
 from core.base.caller.caller import Caller
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output

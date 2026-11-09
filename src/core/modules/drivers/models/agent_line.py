@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.model.session_private import SessionPrivate

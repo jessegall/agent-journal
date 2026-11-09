@@ -16,7 +16,6 @@ from core.base.journal_home import JournalHome
 from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand

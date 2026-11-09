@@ -1,7 +1,6 @@
 from dataclasses import replace
 
 from core.base.listener.deletion_listener import DeletionListener
-from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.processes.models.process import Process

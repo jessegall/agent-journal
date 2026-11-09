@@ -2,7 +2,6 @@ import json
 
 from core.modules.library.support.library_denied_error import LibraryDeniedError
 from core.modules.library.support.library_failure_error import LibraryFailureError
-from core.base.library.library_item import LibraryItem
 from core.modules.library.support.library_item_body import LibraryItemBody
 from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError
 from core.modules.library.support.library_rejected_error import LibraryRejectedError
