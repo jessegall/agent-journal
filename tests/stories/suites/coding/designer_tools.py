@@ -15,8 +15,9 @@ class StartedDesigner(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
+        story.expect_success("setting set journal.suites.coding.designer-enabled true --project", actor=story.user)
         launcher = FakeLauncher(story.home.socket("launcher"))
-        story.run('helper start journal-designer --brief "Design the settings page" --environment main', actor=story.agent)
+        story.expect_success('helper start journal-designer --brief "Design the settings page" --environment main', actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
         launcher.server.close()
