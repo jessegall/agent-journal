@@ -203,10 +203,10 @@ class WorktreeGit:
 
     def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
         name = self.built_name(path)
-        if name is None:
-            return False
-        siblings = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
-        return name in {self.built_name(sibling) for sibling in siblings}
+        return name is not None and name in {self.built_name(sibling) for sibling in self.siblings(worktree, path)}
+
+    def siblings(self, worktree: Worktree, path: str) -> list[str]:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
 
     @staticmethod
     def built_name(path: str) -> str | None:
@@ -253,16 +253,17 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        original_texts = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
-        texts = {name: FileAccess.shared().read(Path(folder) / name) for name in original_texts}
-        for name in original_texts:
+        written = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        kept = {name: self.git_folder(folder) / f"{name}.kept" for name in written}
+        for name in written:
+            FileAccess.shared().replace(Path(folder) / name, kept[name])
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", name)
         try:
             yield
         finally:
-            for name in original_texts:
-                FileAccess.shared().write(Path(folder) / name, texts[name])
+            for name in written:
+                FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 
     def rebase(self, worktree: Worktree) -> bool:
@@ -311,13 +312,20 @@ class WorktreeGit:
     def unstash(self, worktree: Worktree, stash: str) -> None:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
-        if not applied and not has_markers:
+        if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
             raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.session_agent_id}", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):
                 if entry[0] == stash:
                     self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
+
+    def head_contains(self, folder: str, stash: str) -> bool:
+        parts = [(stash, self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{stash}^1", stash).stdout.splitlines())]
+        untracked = f"{stash}^3"
+        if self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", untracked).returncode == 0:
+            parts.append((untracked, self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "-r", "--name-only", untracked).stdout.splitlines()))
+        return all(self.git(folder, GIT_LIMIT_SECONDS, "diff", "--quiet", tree, "HEAD", "--", *names).returncode == 0 for tree, names in parts if names)
 
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())

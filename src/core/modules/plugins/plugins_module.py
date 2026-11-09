@@ -121,7 +121,6 @@ class PluginsModule(Module):
                                        WindowKey("dashboards", "plugin dashboards", events=["plugin.*"]),
                                        WindowKey("descriptions", "plugin descriptions", events=["plugin.*"]),
                                        WindowKey("services", "plugin services", events=["plugin.*"], reload_seconds=15),
-                                       WindowKey("events", "plugin events", events=["plugin.*"], reload_seconds=15),
                                        WindowKey("preview", "plugin preview {source}", loading=KeyLoading.REQUESTED),
                                        WindowKey("latest.*", "plugin latest {id}", name_ids=True, loading=KeyLoading.REQUESTED),
                                        WindowKey("settings.*", "plugin settings {id}", name_ids=True, loading=KeyLoading.REQUESTED),

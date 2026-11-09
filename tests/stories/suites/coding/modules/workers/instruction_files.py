@@ -7,7 +7,7 @@ from core.testing.story import Story
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.support.story_checks import expect_value
 
 PROJECT_TEXT = "The project's own briefing.\n"
@@ -122,6 +122,19 @@ def test_a_send_reads_each_instruction_file_of_the_worktree_once(new_story):
     project_with_instructions(story)
     worker = dispatched_worker(story)
     story.expect_success(f'worker send --wait {worker.id} "Go on with the job"', actor=story.agent)
+
+
+@pytest.mark.real_git
+def test_a_send_that_cuts_a_worktree_where_one_file_already_holds_the_profile_s_text_reads_each_file_once(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = project_with_instructions(story)
+    worker = checked_worker(story, repository)
+    briefing = worktree_file_text(repository, worker, "AGENTS.md")
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("AGENTS.md", briefing, "the project's agent file is the worker's briefing")
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    task_id = story.new_row_id('task make "A second task" --brief "Add tax"', actor=story.agent)
+    story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
 
 
 @pytest.fixture

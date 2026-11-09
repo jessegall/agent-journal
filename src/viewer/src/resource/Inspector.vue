@@ -66,6 +66,10 @@ const tabNames = computed(() => [...new Set(listing.value.components.map((compon
 const tabs = computed(() => (tabNames.value.length || commentsTab.value
     ? [{key: "details", label: "Details"}, ...tabNames.value.map((name) => ({key: name, label: name})), ...(commentsTab.value ? [{key: "comments", label: "Comments"}] : [])]
     : []));
+const linkOptions = computed(() => {
+    const links = listing.value.links;
+    return links ? {categories: links.categories, open: links.open, outsidePlan: links.excludes_plan, pageSize: links.page_size} : null;
+});
 const textComments = useTextComments(() => (listing.value.comments && row.value ? {term: props.term, id: props.id, title: row.value.title} : {}), (line) => props.read(line));
 
 async function load() {
@@ -163,17 +167,8 @@ onUnmounted(() => watcher?.disconnect());
                                 <InspectorSections :names="partsOf(tab)" :row="{...row, id, term}" />
                             </template>
                         </SwitchCase>
-                        <template v-if="listing.links">
-                            <InspectorLinks
-                                :model="term"
-                                :id="id"
-                                :read="read"
-                                :categories="listing.links.categories"
-                                :open="listing.links.open"
-                                :outside-plan="listing.links.excludes_plan"
-                                :page-size="listing.links.page_size"
-                                @open="emit('open', $event)"
-                            />
+                        <template v-if="linkOptions">
+                            <InspectorLinks :model="term" :id="id" :read="read" v-bind="linkOptions" @open="emit('open', $event)" />
                         </template>
                     </div>
                     <template v-if="listing.comments">

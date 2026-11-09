@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from typing import cast
 
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
@@ -32,13 +33,13 @@ class CheckShowSubcommand(LibraryAwareShow, ReadSubcommand[Check | LibraryReadin
         if isinstance(value, LibraryReading):
             self.write_library(value, output)
             return
-        if isinstance(value, Check):
-            values = {**output.values(value), "state": value.state}
-            output.write("\n".join(f"{column}: {shown}" for column, shown in values.items() if shown not in (None, {}, "")), values)
-        else:
-            super().write_output(value, output)
-        if isinstance(value, Check) and not output.json_output:
-            for line in self.links.lines(value.model_name, value.id):
+        self.write_check(cast(Check, value), output)
+
+    def write_check(self, check: Check, output: Output) -> None:
+        values = {**output.values(check), "state": check.state}
+        output.write("\n".join(f"{column}: {shown}" for column, shown in values.items() if shown not in (None, {}, "")), values)
+        if not output.json_output:
+            for line in self.links.lines(check.model_name, check.id):
                 output.line(line)
 
     @staticmethod

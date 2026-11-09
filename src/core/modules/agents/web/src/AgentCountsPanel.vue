@@ -35,7 +35,8 @@ const models = computed(() => {
 });
 const width = (count, limit) => limit ? `${Math.min(count / Math.max(count, limit) * 100, 100)}%` : "0%";
 const overflow = (count, limit) => limit && count > limit ? `${(count - limit) / count * 100}%` : "0%";
-watch(() => (editing.value ? "Change the maximums" : chosen.value?.label || "Agent counts"), (value) => { title.value = value; }, {immediate: true});
+const screen = computed(() => (editing.value ? "edit" : chosen.value?.key ?? "counts"));
+watch(() => (editing.value ? "Edit" : chosen.value?.label || "Agent counts"), (value) => { title.value = value; }, {immediate: true});
 async function readAgents(row, page = 1) {
     view.state["count-agents.role"] = row.type;
     if (row.profile) view.state["count-agents.profile"] = row.profile;
@@ -74,7 +75,7 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
 
 <template>
     <div class="counts-panel">
-        <div class="counts">
+        <div :key="screen" class="counts" data-counts-screen>
             <template v-if="editing || chosen"><button class="back" type="button" @click="back">‹ Back to the counts</button></template>
             <template v-if="readFailure"><strong>The counts could not be read</strong><p>The journal did not answer.</p><Btn small @click="view.reload('limits')">Try again</Btn></template>
             <template v-else-if="editing">
@@ -99,16 +100,18 @@ function openAgent(agent) { close(); emit("open-agent", agent); }
             </template>
             <template v-if="failure"><p role="alert">{{ failure }}</p></template><template v-else-if="notice"><p role="status">{{ notice }}</p></template>
         </div>
-        <div class="foot"><template v-if="editing"><span class="foot-note">{{ notice || `Changes apply to ${view.environment}.` }}</span><Btn @click="back">Done</Btn></template><template v-else-if="!chosen"><Btn :disabled="view.readOnly" data-agent-limits-edit @click="editing = true">Change the maximums</Btn></template></div>
+        <div class="foot"><template v-if="editing"><span class="foot-note">{{ notice || `Changes apply to ${view.environment}.` }}</span><Btn @click="back">Done</Btn></template><template v-else-if="!chosen"><Btn :disabled="view.readOnly" data-agent-limits-edit @click="editing = true">Edit</Btn></template></div>
     </div>
 </template>
 
 <style scoped>
-.counts { width: min(570px, 100%); font-size: 12px; }
+.counts { width: 100%; font-size: 12px; animation: counts-screen-in 180ms ease-out; }
+@keyframes counts-screen-in { from { opacity: 0; transform: translateX(16px); } }
 p { color: var(--text-3); margin: 0 0 12px; }
 .back { border: 0; background: none; color: var(--accent-text); cursor: pointer; margin-bottom: 12px; }
 .columns, .count-row { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(90px, 1fr) minmax(90px, 1fr) 12px; gap: 12px; align-items: center; }
 .columns, .helper-head { color: var(--text-3); padding: 8px 0; }
+.columns { position: sticky; top: var(--settings-bar-height, 0); z-index: 1; background: var(--raised, var(--bg)); }
 .helper-head { display: flex; justify-content: space-between; }
 .count-row { width: 100%; padding: 9px 0; background: none; border: 0; border-top: 1px solid var(--border); color: var(--text); text-align: left; cursor: pointer; }
 .count-row:hover { background: var(--hover); }

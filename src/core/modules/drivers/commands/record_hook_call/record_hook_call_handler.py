@@ -87,7 +87,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             metadata[DISPLAYED_TEXT] = command.event.displayed_text
         if tool is not None and command.event.event == HookEventName.PRE_TOOL_USE:
             metadata.update({"journal_commands": list(tool.journal_commands), "program": command.event.program, "transcript_path": command.event.transcript.text})
-        if tool is not None and tool.category is ToolType.MONITOR:
+        if self.is_monitoring(command):
             metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
@@ -142,9 +142,14 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return answers.updated_input
         return build([command_value for rule, _, command_value in outcomes if rule == rewriter.name])
 
+    @staticmethod
+    def is_monitoring(command: RecordHookCall) -> bool:
+        tool = command.event.tool
+        return tool is not None and tool.category is ToolType.MONITOR
+
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool
-        if tool is not None and tool.category is ToolType.MONITOR:
+        if self.is_monitoring(command):
             return str(command.event.tool_input().get("command", ""))[:SUMMARY_CHARACTERS]
         if tool is not None and tool.shell is not None:
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]

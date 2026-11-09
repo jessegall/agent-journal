@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from collections.abc import Sequence
+from typing import Any
 
 from core.base.model.model import Model
 from core.base.search_term import SearchTerm
@@ -30,6 +31,13 @@ class SearchHit:
         end = start + EXCERPT_CHARACTERS
         excerpt = (CUT_MARK if start else "") + text[start:end] + (CUT_MARK if end < len(text) else "")
         return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.count_matching_terms(terms), row.search_rank)
+
+    @classmethod
+    def restored(cls, stored: dict[str, Any]) -> "SearchHit":
+        return cls(stored["cli_name"], stored["row_id"], Timestamp.parsed(stored["created_at"]), stored["excerpt"], stored["matched_terms"], stored["rank"])
+
+    def stored(self) -> dict[str, object]:
+        return {"cli_name": self.cli_name, "row_id": self.row_id, "created_at": self.created_at.text, "excerpt": self.excerpt, "matched_terms": self.matched_terms, "rank": self.rank}
 
     def line(self) -> str:
         return f"{self.cli_name} {self.row_id}: {self.excerpt}"

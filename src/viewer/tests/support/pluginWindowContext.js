@@ -5,7 +5,6 @@ export const pluginWindowContext = (answers) => context(answers, null, {
     dashboards: {line: "plugin dashboards", events: ["plugin.*"]},
     descriptions: {line: "plugin descriptions", events: ["plugin.*"]},
     services: {line: "plugin services", events: ["plugin.*"]},
-    events: {line: "plugin events", events: ["plugin.*"]},
     preview: {line: "plugin preview {source}", loading: "requested"},
     "latest.*": {line: "plugin latest {id}", loading: "requested"},
     "settings.*": {line: "plugin settings {id}", loading: "requested"},
