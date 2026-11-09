@@ -150,13 +150,14 @@ class ReadMeasurement:
     file_bytes: int
     points: Points
     statement_count: int
+    statement_texts: tuple[str, ...]
     plans: tuple[QueryPlan, ...]
     duration_ms: float
     measurement_overhead_ms: float
 
     def report(self) -> dict[str, object]:
         value = asdict(self)
-        del value["answers"]
+        del value["answers"], value["statement_texts"]
         value["points"] = {"rows": self.points.rows, "writes": self.points.writes, "bytes": self.points.bytes,
                            "tables": dict(self.points.tables), "statements": dict(self.points.statements),
                            "update_statements": dict(self.points.update_statements)}
@@ -306,7 +307,7 @@ class WorkloadServer:
         for database in databases:
             point_counts.add(database.repeated_work.points())
         return ReadMeasurement(tuple(json.loads(text)["answers"]), len(databases), len(text.encode()),
-                               sum(file_sizes), point_counts.points(), len(statements), tuple(plans), duration_ms, sum(overhead) * 1000)
+                               sum(file_sizes), point_counts.points(), len(statements), tuple(statements), tuple(plans), duration_ms, sum(overhead) * 1000)
 
 
 @contextmanager
@@ -609,3 +610,4 @@ def test_canonical_visible_and_hidden_schedule(scheduled_sample, tmp_path):
     expect_value(bool(sample_data["log_status"]["dropped"] or sample_data["log_status"]["receipt_dropped"]), True)
     with pytest.raises(IncompleteViewerSample):
         validate_workload_sample(sample_data)
+
