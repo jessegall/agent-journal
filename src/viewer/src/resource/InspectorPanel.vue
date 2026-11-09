@@ -53,7 +53,7 @@ defineExpose({focus: () => root.value?.focus()});
         </template>
         <template v-else>
             <InspectorHead :title="term" :backed="backed" :opened="{table, id}" @close="emit('close')" @back="emit('back')" />
-            <p class="missing" role="alert" data-resource-failure>This row has no inspector.</p>
+            <p class="missing" role="alert" data-resource-failure>Nothing to show for this item.</p>
         </template>
     </aside>
 </template>

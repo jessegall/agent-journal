@@ -10,7 +10,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 @pytest.fixture(autouse=True)
-def listeners_run_before_each_hook(monkeypatch):
+def listeners_run_at_hook(monkeypatch):
     original = Story.hook
 
     def hook_after_listeners(story, *arguments, **options):

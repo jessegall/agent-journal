@@ -53,7 +53,7 @@ def test_own_files_leave_out_merged_in_files(tmp_path):
     repository.git("merge", "--no-edit", ENVIRONMENT_BRANCH, folder=folder)
     repository.committed("second.py", "SECOND = 1\n", "The second move")
     repository.git("merge", "--no-edit", ENVIRONMENT_BRANCH, folder=folder)
-    assert WorktreeGit(None).worker_files(worktree_row(repository, folder, base_commit)) == ("own.py",)
+    assert list(WorktreeGit(None).worker_files(worktree_row(repository, folder, base_commit))) == ["own.py"]
 
 
 def test_own_files_keep_a_renamed_file(tmp_path):
@@ -68,7 +68,7 @@ def test_own_files_keep_a_name_with_a_space(tmp_path):
     repository, folder = worker_checkout(tmp_path)
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     own_commit(repository, folder, "my notes.py", "NOTE = 1\n")
-    assert WorktreeGit(None).worker_files(worktree_row(repository, folder, base_commit)) == ("my notes.py",)
+    assert list(WorktreeGit(None).worker_files(worktree_row(repository, folder, base_commit))) == ["my notes.py"]
 
 
 def test_own_files_hold_uncommitted_and_untracked_files_once(tmp_path):

@@ -75,14 +75,14 @@ def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_cl
 def test_the_board_has_no_delegated_group(new_story):
     story = new_story(fixture=UserJoined)
     states = [group["state"] for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]]
-    assert "delegated" not in states
+    expect_value_without(states, "delegated")
     expect_index(states, "testing", "blocked", "open")
 
 
 def test_a_delegated_task_is_in_the_group_of_its_state(new_story):
     story = new_story(fixture=FourStatesTasks)
     groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
-    assert counted_task(story, 3) in [row["id"] for row in groups["open"]["rows"]]
+    expect_value_with([row["id"] for row in groups["open"]["rows"]], counted_task(story, 3))
 
 
 def test_a_group_can_leave_out_the_tasks_of_a_plan_in_its_rows_and_its_count(new_story):

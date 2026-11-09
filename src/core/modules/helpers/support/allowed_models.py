@@ -18,7 +18,7 @@ class AllowedModels:
         listed = self.setting_values.texts(ALLOWED_MODELS)
         return [name for name in names if f"{provider.name} {name}" in listed] if listed else names
 
-    def allowed_for(self, provider: Provider, agent_type: str, profile: str) -> list[str]:
+    def models_allowed(self, provider: Provider, agent_type: str, profile: str) -> list[str]:
         names = self.allowed(provider)
         options = self.options.resolved(agent_type, profile).options
         if options.allowed_providers is not None and provider.name not in options.allowed_providers:

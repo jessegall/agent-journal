@@ -66,7 +66,7 @@ test("a rule opens in the shared layout with its own buttons", async () => {
 
 test("a row whose term has no inspector shows the failure line, never a blank panel", async () => {
     const panel = await opened("#?open=secret:1", {}, {});
-    expect(panel.querySelector("[data-resource-failure]").textContent).toBe("This row has no inspector.");
+    expect(panel.querySelector("[data-resource-failure]").textContent).toBe("Nothing to show for this item.");
     expect(panel.querySelector("[data-resource-close]")).not.toBeNull();
 });
 

@@ -86,7 +86,7 @@ class HelperLimits:
     def checked_profile_model(self, program: str, model: str, profile: str) -> str:
         self.require_model(program, model)
         self.admission.checked_provider("helper", profile, program)
-        return self.listed_model(program, model, self.models.allowed_for(self.providers.provider(program), "helper", profile))
+        return self.listed_model(program, model, self.models.models_allowed(self.providers.provider(program), "helper", profile))
 
     def listed_model(self, program: str, model: str, names: list[str]) -> str:
         self.require_model(program, model)

@@ -13,7 +13,7 @@ class ProfileModels:
         self.allowed, self.options = allowed, options
 
     def model(self, profile: AgentProfile, provider: Provider, tier: ModelTier | None, agent_type: str = "") -> str:
-        allowed = self.allowed.allowed_for(provider, agent_type, profile.name)
+        allowed = self.allowed.models_allowed(provider, agent_type, profile.name)
         if tier is not None:
             return provider.nearest_model(tier, allowed)
         default = self.option_default(profile, provider, agent_type)

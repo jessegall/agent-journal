@@ -24,9 +24,9 @@ from core.testing.working_journal import WorkingJournal
 
 
 class TemplateDatabases:
-    """Migrated databases shared by test processes and kept for later runs: a template is built the first time a
-    story uses it and saved. A story runs on a working journal of its template that rolls back at its end, so only
-    a runner's first story of a template copies it."""
+    """Migrated databases shared by test processes and kept for later runs: a template is built the first
+    time a story uses it and saved. A story runs on a working journal of its template that rolls back at
+    its end, so only a runner's first story of a template copies it."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder

@@ -9,6 +9,7 @@ from suites.coding.support.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
+from tests.stories.support.story_checks import expect_value
 
 SKILLS_FOLDER = ".claude/skills"
 LISTED = "journal,journal-etiquette,journal-tasks"
@@ -62,4 +63,4 @@ def test_the_worker_skill_says_how_to_ask_and_what_to_do_for_each_topic(new_stor
 
 def test_the_merger_profile_carries_the_case_book_skill():
     merger = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
-    assert "journal-merger" in merger.skills and "journal-workers" in merger.skills
+    expect_value("journal-merger" in merger.skills and "journal-workers" in merger.skills, True)

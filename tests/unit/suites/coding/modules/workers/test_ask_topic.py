@@ -18,9 +18,9 @@ def test_each_meanwhile_line_is_its_own():
 
 @pytest.mark.parametrize("topic", list(AskTopic))
 def test_every_topic_builds_the_ask_line(topic):
-    assert topic.ask_line() == f'If you cannot go on: journal worker ask "<what>" --about {topic.value}'
+    assert topic.question_line() == f'If you cannot go on: journal worker ask "<what>" --about {topic.value}'
 
 
 @pytest.mark.parametrize("topic", list(AskTopic))
 def test_a_hint_gets_the_ask_line_after_the_fix(topic):
-    assert topic.hint("run the fix") == f"run the fix. {topic.ask_line()}"
+    assert topic.hint("run the fix") == f"run the fix. {topic.question_line()}"

@@ -32,7 +32,7 @@ DEVELOPER_SETTINGS = [
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
                            SettingValue("repeated-work", "Errors for repeated work", "Shows an error in the chat when a request or agent call repeats a query, queries per list item or repeats a file read.",
                                         SettingType.FLAG, default=False, scope=SettingScope.PROJECT),
-                           SettingValue("prevent-lazy-loading", "Prevent lazy loading", "Stops with an error when the engine builds its registry or event lookup again instead of sharing the one loaded.",
+                           SettingValue("prevent-lazy-loading", "Prevent lazy loading", "Stops with an error when the journal loads its modules or events a second time instead of sharing them.",
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
                            SettingValue("private-data", "Scan for private data", "Looks through new or changed project files for private data and shows a card for each finding.",
                                         SettingType.FLAG, default=True, scope=SettingScope.PROJECT),

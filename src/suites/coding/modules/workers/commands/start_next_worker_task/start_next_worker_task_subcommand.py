@@ -17,9 +17,9 @@ from suites.coding.modules.workers.commands.support.worker_step_check import DEL
 
 
 class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
-    """`journal worker next`: the worker's task is done, with a proof for every point of its brief. Inside a phase or
-    batch it goes straight on to its next task; at the end the plugins judge all its tasks together, and once their
-    tests pass, or at once with none, the next task in its queue starts."""
+    """`journal worker next`: the worker's task is done, with a proof for every point of its brief. Inside
+    a phase or batch it goes straight on to its next task; at the end the plugins judge all its tasks
+    together, and once their tests pass, or at once with none, the next task in its queue starts."""
 
     cli_name = "worker"
     name = "next"

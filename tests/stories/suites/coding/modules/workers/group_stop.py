@@ -17,7 +17,7 @@ MERGER_OFF = "setting set journal.suites.coding.workers.merger-on false --projec
 
 
 @pytest.fixture(autouse=True)
-def workers_ran_long_enough(monkeypatch):
+def long_running_workers(monkeypatch):
     monkeypatch.setattr(WorkerLaunchFailures, "has_failed", lambda failures, worker: False)
 
 
@@ -26,7 +26,7 @@ def unfinished_lines(worker) -> tuple[AgentLine, ...]:
     return tuple(worker.story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.worker.id, source=UNFINISHED_TASKS_SOURCE).all_rows())
 
 
-def expect_quiet_stop(worker) -> None:
+def expect_silent_stop(worker) -> None:
     lines = worker.main_agent_lines()
     worker.story.expect_rows(not unfinished_lines(worker), not any("stopped with" in line or "ended with" in line for line in lines),
                              not any("tasks left" in line for line in worker.worker_lines()), detail=str(lines))
@@ -34,7 +34,7 @@ def expect_quiet_stop(worker) -> None:
 
 def expect_refused_with_status(worker) -> None:
     reply = worker.stop()
-    worker.story.expect_rows(bool(reply.refusal), worker.status_line() in reply.refusal, AskTopic.GENERAL.ask_line() in reply.refusal, detail=reply.refusal)
+    worker.story.expect_rows(bool(reply.refusal), worker.status_line() in reply.refusal, AskTopic.GENERAL.question_line() in reply.refusal, detail=reply.refusal)
 
 
 @pytest.fixture
@@ -91,13 +91,13 @@ def failed_group(handed_in):
 def test_a_worker_that_handed_in_its_group_and_stops_hears_no_unfinished_line(handed_in):
     handed_in.story.expect_hook_allowed(handed_in.session, HookSamples.stop())
     handed_in.program_ended()
-    expect_quiet_stop(handed_in)
+    expect_silent_stop(handed_in)
 
 
 def test_a_worker_that_handed_in_at_a_phase_boundary_with_a_next_phase_queued_is_quiet_too(boundary_handed_in):
     boundary_handed_in.story.expect_hook_allowed(boundary_handed_in.session, HookSamples.stop())
     boundary_handed_in.program_ended()
-    expect_quiet_stop(boundary_handed_in)
+    expect_silent_stop(boundary_handed_in)
 
 
 def test_a_batch_handed_in_stops_quietly(new_story, monkeypatch):
@@ -108,7 +108,7 @@ def test_a_batch_handed_in_stops_quietly(new_story, monkeypatch):
     worker.story.run("worker deliver --wait --differences none", actor=worker.worker)
     worker.story.expect_hook_allowed(worker.session, HookSamples.stop())
     worker.program_ended()
-    expect_quiet_stop(worker)
+    expect_silent_stop(worker)
 
 
 def test_a_single_task_handed_in_with_its_next_queued_stops_quietly(new_story, monkeypatch):
@@ -117,14 +117,14 @@ def test_a_single_task_handed_in_with_its_next_queued_stops_quietly(new_story, m
     worker.story.run("worker next --wait --differences none", actor=worker.worker)
     worker.story.expect_hook_allowed(worker.session, HookSamples.stop())
     worker.program_ended()
-    expect_quiet_stop(worker)
+    expect_silent_stop(worker)
 
 
 def test_a_group_whose_tests_passed_and_waits_for_its_merge_stops_quietly(handed_in):
     handed_in.end_all_tests()
     handed_in.story.expect_hook_allowed(handed_in.session, HookSamples.stop())
     handed_in.program_ended()
-    expect_quiet_stop(handed_in)
+    expect_silent_stop(handed_in)
 
 
 def test_a_worker_that_stops_mid_group_is_refused_with_the_status_line(phase_worker):

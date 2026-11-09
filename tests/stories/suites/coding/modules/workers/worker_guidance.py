@@ -70,7 +70,7 @@ def advanced(phase_worker):
 
 
 @pytest.fixture
-def tested_once(phase_worker):
+def single_test_run(phase_worker):
     phase_worker.run_test()
     return phase_worker
 
@@ -196,8 +196,8 @@ def test_worker_status_counts_its_own_test_runs_left(phase_worker):
     phase_worker.story.expect_text("worker status", "Own test runs left: 3", actor=phase_worker.worker)
 
 
-def test_the_count_of_test_runs_left_goes_down_with_each_run(tested_once):
-    tested_once.story.expect_text("worker status", "Own test runs left: 2", actor=tested_once.worker)
+def test_the_count_of_test_runs_left_goes_down_with_each_run(single_test_run):
+    single_test_run.story.expect_text("worker status", "Own test runs left: 2", actor=single_test_run.worker)
 
 
 def test_the_run_allowance_follows_its_setting(phase_worker):

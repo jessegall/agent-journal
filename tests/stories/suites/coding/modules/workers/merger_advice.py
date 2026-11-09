@@ -19,6 +19,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start
 from tests.stories.suites.coding.modules.workers.support.phase_steps import StoryWorker, start_planned_worker
+from tests.stories.support.story_checks import expect_value, expect_value_without
 
 ADVICES = (
     "Check the rounding rule in the cart",
@@ -28,12 +29,12 @@ ADVICES = (
     "Keep the currency symbol out of the model",
     "Stop and wait for the base branch to settle",
 )
-ONLY_THE_MERGER = "only the merger runs this"
-ADVICE_LIMIT_LINE = "5 of 5 used in this group"
-ASK_LIMIT_LINE = "5 of 5 asks used in this group"
-ONE_VISIT_LINE = "already advised"
-SAME_POINT_LINE = "has not changed"
-NO_WORK_LINE = "has no open work"
+MERGER_ROLE_REFUSAL = "only the merger runs this"
+MERGER_MESSAGE_LIMIT_LINE = "5 of 5 used in this group"
+QUESTION_LIMIT_LINE = "5 of 5 asks used in this group"
+VISIT_LIMIT_LINE = "already advised"
+UNCHANGED_POINT_LINE = "has not changed"
+IDLE_WORKER_LINE = "has no open work"
 ADVISE_COMMAND = "journal merger advise"
 READ_OF_A_FILE = HookSamples.tool_use("Read", ToolType.READ, ["cart.py"], None)
 SECOND_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 2"
@@ -70,7 +71,7 @@ class AdvisedWorker:
     def ask(self, number: int) -> LineOutcome:
         return self.story.run(f'worker ask "Question {number}"', actor=self.worker)
 
-    def asked(self, number: int) -> None:
+    def post_questions(self, number: int) -> None:
         outcome = self.ask(number)
         assert outcome.code == 0, outcome.output_text
 
@@ -79,7 +80,7 @@ class AdvisedWorker:
 
     def moved(self, number: int) -> None:
         if number % 2 == 0:
-            self.asked(number)
+            self.post_questions(number)
         else:
             self.worked_on()
 
@@ -92,16 +93,16 @@ class AdvisedWorker:
 
     def with_five_asks(self) -> "AdvisedWorker":
         for number in range(1, 6):
-            self.asked(number)
+            self.post_questions(number)
         return self
 
-    def advice_rows(self) -> tuple[MergerAdvice, ...]:
+    def merger_message_rows(self) -> tuple[MergerAdvice, ...]:
         return tuple(self.story.container.get(Queries).query(MergerAdvice).filter(worker_id=self.worker.id).oldest().all_rows())
 
     def messages(self) -> tuple[Message, ...]:
         return tuple(self.story.container.get(Queries).query(Message).filter(session_agent_id=self.merger.id, target_agent_id=self.worker.id).oldest().all_rows())
 
-    def ask_lines(self) -> tuple[MergerLine, ...]:
+    def question_lines(self) -> tuple[MergerLine, ...]:
         rows = self.story.container.get(Queries).query(MergerLine).oldest().all_rows()
         return tuple(row for row in rows if row.topic is not None)
 
@@ -177,42 +178,42 @@ def merged_worker(advising):
 
 
 @pytest.fixture
-def five_asked(advising):
+def five_questions(advising):
     return advising.with_five_asks()
 
 
 @pytest.fixture
-def merged_after_five_asks(five_asked):
-    five_asked.delivered()
-    five_asked.merged()
-    return five_asked
+def merged_after_five_asks(five_questions):
+    five_questions.delivered()
+    five_questions.merged()
+    return five_questions
 
 
 @pytest.fixture
 def planned_with_three_asks(planned):
     worker, advised = planned
     for number in range(1, 4):
-        advised.asked(number)
+        advised.post_questions(number)
     return worker, advised
 
 
 def test_advise_still_reaches_the_worker_as_a_message_from_the_merger(advising):
     advising.advised()
-    advising.story.expect_rows([row.text for row in advising.messages()] == [ADVICES[0]], len(advising.advice_rows()) == 1, detail=str(advising.messages()))
+    advising.story.expect_rows([row.text for row in advising.messages()] == [ADVICES[0]], len(advising.merger_message_rows()) == 1, detail=str(advising.messages()))
     advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", f"agent:{advising.merger.id} reports in message:", actor=advising.worker)
 
 
 def test_an_advice_records_the_worker_its_group_its_point_and_its_words(advising):
     advising.advised()
-    row = advising.advice_rows()[0]
+    row = advising.merger_message_rows()[0]
     advising.story.expect_rows(row.worker_id == advising.worker.id, row.group_key != "", row.step == "build", row.task_id == 1, row.text == ADVICES[0], detail=str(row))
 
 
 def test_five_advices_go_out_and_the_sixth_is_refused_with_the_next_step(five_advised):
     five_advised.moved(6)
     five_advised.visit()
-    expect_refused_with(five_advised.story, f'merger advise {five_advised.worker.id} "{ADVICES[5]}"', ADVICE_LIMIT_LINE, "wait for the merge", "journal merger tell", actor=five_advised.merger)
-    five_advised.story.expect_rows(len(five_advised.messages()) == 5, len(five_advised.advice_rows()) == 5, detail=str(five_advised.messages()))
+    expect_refused_with(five_advised.story, f'merger advise {five_advised.worker.id} "{ADVICES[5]}"', MERGER_MESSAGE_LIMIT_LINE, "wait for the merge", "journal merger tell", actor=five_advised.merger)
+    five_advised.story.expect_rows(len(five_advised.messages()) == 5, len(five_advised.merger_message_rows()) == 5, detail=str(five_advised.messages()))
 
 
 def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):
@@ -220,12 +221,12 @@ def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):
         advising.story.expect_success(f'worker report "{line}"', actor=advising.worker)
     advising.visit()
     advising.advised(ADVICES[0], 1)
-    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', ONE_VISIT_LINE, "one", actor=advising.merger)
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, "one", actor=advising.merger)
     advising.story.expect_rows(len(advising.messages()) == 1, detail=str(advising.messages()))
 
 
 def test_a_merger_that_has_not_read_its_lines_yet_gives_one_advice_too(advised_and_moved):
-    expect_refused_with(advised_and_moved.story, f'merger advise {advised_and_moved.worker.id} "{ADVICES[1]}"', ONE_VISIT_LINE, actor=advised_and_moved.merger)
+    expect_refused_with(advised_and_moved.story, f'merger advise {advised_and_moved.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, actor=advised_and_moved.merger)
 
 
 def test_a_new_visit_at_a_new_point_may_advise_again(advised_and_moved):
@@ -245,7 +246,7 @@ def test_a_visit_with_nothing_waiting_is_still_a_new_visit(advising):
 def test_an_advice_at_an_unchanged_point_is_refused(advising):
     advising.advised(ADVICES[0], 1)
     advising.visit()
-    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', SAME_POINT_LINE, actor=advising.merger)
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', UNCHANGED_POINT_LINE, actor=advising.merger)
     advising.story.expect_rows(len(advising.messages()) == 1, detail=str(advising.messages()))
 
 
@@ -253,10 +254,10 @@ def test_the_same_step_on_the_next_task_is_a_new_point(planned):
     worker, advised = planned
     advised.advised(ADVICES[0], 1)
     outcome = worker.prove_advance()
-    assert outcome.code == 0, outcome.output_text
+    expect_value(outcome.code, 0)
     advised.visit()
     advised.advised(ADVICES[1], 2)
-    advised.story.expect_rows([row.task_id for row in advised.advice_rows()] == [1, 2], [row.step for row in advised.advice_rows()] == ["build", "build"], detail=str(advised.advice_rows()))
+    advised.story.expect_rows([row.task_id for row in advised.merger_message_rows()] == [1, 2], [row.step for row in advised.merger_message_rows()] == ["build", "build"], detail=str(advised.merger_message_rows()))
 
 
 def test_the_first_advice_of_a_new_group_is_counted_from_one_at_an_unchanged_point(planned):
@@ -278,21 +279,21 @@ def test_each_worker_has_its_own_count_and_its_own_advice_in_a_visit(advising):
 @pytest.mark.parametrize("sender", ["worker", "main"])
 def test_only_the_merger_advises(advising, sender):
     actor = advising.worker if sender == "worker" else advising.story.agent
-    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[0]}"', ONLY_THE_MERGER, actor=actor)
-    advising.story.expect_rows(advising.advice_rows() == (), detail=str(advising.advice_rows()))
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[0]}"', MERGER_ROLE_REFUSAL, actor=actor)
+    advising.story.expect_rows(advising.merger_message_rows() == (), detail=str(advising.merger_message_rows()))
 
 
 def test_an_advice_with_no_words_is_refused(advising):
     expect_refused_with(advising.story, f'merger advise {advising.worker.id} "  "', "no words", actor=advising.merger)
-    advising.story.expect_rows(advising.advice_rows() == (), advising.messages() == (), detail=str(advising.messages()))
+    advising.story.expect_rows(advising.merger_message_rows() == (), advising.messages() == (), detail=str(advising.messages()))
 
 
 def test_an_agent_that_is_no_worker_cannot_be_advised(advising):
-    expect_refused_with(advising.story, f'merger advise {advising.story.agent.id} "{ADVICES[0]}"', NO_WORK_LINE, actor=advising.merger)
+    expect_refused_with(advising.story, f'merger advise {advising.story.agent.id} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=advising.merger)
 
 
 def test_a_merged_worker_cannot_be_advised_until_it_has_new_work(merged_worker):
-    expect_refused_with(merged_worker.story, f'merger advise {merged_worker.worker.id} "{ADVICES[0]}"', NO_WORK_LINE, actor=merged_worker.merger)
+    expect_refused_with(merged_worker.story, f'merger advise {merged_worker.worker.id} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=merged_worker.merger)
 
 
 def test_the_count_resets_when_the_group_is_merged(twice_advised_and_delivered):
@@ -314,7 +315,7 @@ def test_the_journal_own_lines_do_not_count(advising):
     advising.visit()
     advising.story.expect_success(f'merger findings {advising.worker.id} "The total is off by one"', actor=advising.merger)
     advising.story.run_listeners()
-    advising.story.expect_rows(advising.advice_rows() == (), detail=str(advising.advice_rows()))
+    advising.story.expect_rows(advising.merger_message_rows() == (), detail=str(advising.merger_message_rows()))
     advising.advised(ADVICES[0], 1)
 
 
@@ -337,64 +338,64 @@ def test_the_main_agent_can_still_message_a_worker(advising):
 
 def test_a_refused_advice_tells_no_message_to_the_worker_and_spends_nothing(advising):
     advising.advised(ADVICES[0], 1)
-    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', ONE_VISIT_LINE, actor=advising.merger)
-    advising.story.expect_rows(len(advising.advice_rows()) == 1, len(advising.messages()) == 1, detail=str(advising.advice_rows()))
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, actor=advising.merger)
+    advising.story.expect_rows(len(advising.merger_message_rows()) == 1, len(advising.messages()) == 1, detail=str(advising.merger_message_rows()))
 
 
 def test_the_sixth_ask_in_a_group_is_refused_and_the_first_of_the_next_group_goes_through(planned_with_three_asks):
     _, advised = planned_with_three_asks
-    advised.asked(4)
-    advised.asked(5)
-    expect_refused_with(advised.story, 'worker ask "Question 6"', ASK_LIMIT_LINE, "wait for the merge", actor=advised.worker)
-    advised.story.expect_rows(len(advised.ask_lines()) == 5, detail=str(advised.ask_lines()))
+    advised.post_questions(4)
+    advised.post_questions(5)
+    expect_refused_with(advised.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, "wait for the merge", actor=advised.worker)
+    advised.story.expect_rows(len(advised.question_lines()) == 5, detail=str(advised.question_lines()))
     advised.story.expect_success("phase place 1 --phase 2", actor=advised.story.agent)
-    advised.asked(7)
-    advised.story.expect_rows(len(advised.ask_lines()) == 6, detail=str(advised.ask_lines()))
+    advised.post_questions(7)
+    advised.story.expect_rows(len(advised.question_lines()) == 6, detail=str(advised.question_lines()))
 
 
 def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):
     merged_after_five_asks.given_new_work()
-    merged_after_five_asks.asked(6)
-    merged_after_five_asks.story.expect_rows(len(merged_after_five_asks.ask_lines()) == 6, detail=str(merged_after_five_asks.ask_lines()))
+    merged_after_five_asks.post_questions(6)
+    merged_after_five_asks.story.expect_rows(len(merged_after_five_asks.question_lines()) == 6, detail=str(merged_after_five_asks.question_lines()))
 
 
 def test_the_same_open_question_asked_twice_spends_one_ask(advising):
     for _ in range(6):
-        advising.asked(1)
-    advising.story.expect_rows(len(advising.ask_lines()) == 1, detail=str(advising.ask_lines()))
+        advising.post_questions(1)
+    advising.story.expect_rows(len(advising.question_lines()) == 1, detail=str(advising.question_lines()))
     for number in range(2, 6):
-        advising.asked(number)
-    advising.story.expect_rows(len(advising.ask_lines()) == 5, detail=str(advising.ask_lines()))
+        advising.post_questions(number)
+    advising.story.expect_rows(len(advising.question_lines()) == 5, detail=str(advising.question_lines()))
 
 
-def test_a_refused_ask_writes_no_line_and_opens_no_wait(five_asked):
-    expect_refused_with(five_asked.story, 'worker ask "Question 6"', ASK_LIMIT_LINE, actor=five_asked.worker)
-    five_asked.story.expect_no_text("task-log list --task 1", "Question 6")
-    five_asked.story.expect_no_text(f"wait list --agent {five_asked.worker.id}", "Question 6")
+def test_a_refused_ask_writes_no_line_and_opens_no_wait(five_questions):
+    expect_refused_with(five_questions.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=five_questions.worker)
+    five_questions.story.expect_no_text("task-log list --task 1", "Question 6")
+    five_questions.story.expect_no_text(f"wait list --agent {five_questions.worker.id}", "Question 6")
 
 
-def test_the_asks_and_the_advice_are_counted_apart(five_asked):
-    five_asked.advised(ADVICES[0], 1)
-    five_asked.story.expect_rows(len(five_asked.ask_lines()) == 5, len(five_asked.advice_rows()) == 1, detail=str(five_asked.ask_lines()))
+def test_the_asks_and_the_advice_are_counted_apart(five_questions):
+    five_questions.advised(ADVICES[0], 1)
+    five_questions.story.expect_rows(len(five_questions.question_lines()) == 5, len(five_questions.merger_message_rows()) == 1, detail=str(five_questions.question_lines()))
 
 
 def test_the_ask_limit_holds_with_the_merger_off(with_merger_off):
-    expect_refused_with(with_merger_off.story, 'worker ask "Question 6"', ASK_LIMIT_LINE, actor=with_merger_off.worker)
+    expect_refused_with(with_merger_off.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=with_merger_off.worker)
 
 
 def test_a_worker_that_answers_to_a_group_of_tasks_counts_asks_for_the_group_not_per_task(planned_with_three_asks):
     worker, advised = planned_with_three_asks
     advised.worked_on()
     outcome = worker.prove_advance()
-    assert outcome.code == 0, outcome.output_text
-    advised.asked(4)
-    advised.asked(5)
-    expect_refused_with(advised.story, 'worker ask "Question 6"', ASK_LIMIT_LINE, actor=advised.worker)
+    expect_value(outcome.code, 0)
+    advised.post_questions(4)
+    advised.post_questions(5)
+    expect_refused_with(advised.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=advised.worker)
 
 
 def test_the_merger_profile_and_skill_name_advise_and_its_limits():
     profile = next(row.body for row in HELPER_PROFILES if row.name == "journal-merger")
     skill = (Path(workers_package.__file__).parent / "skills" / "journal-merger" / "SKILL.md").read_text()
     for text in (profile, skill):
-        assert ADVISE_COMMAND in text and "five per group" in text and "one per visit" in text and "the point changed" in text, text
-        assert "journal message send" not in text, text
+        expect_value(ADVISE_COMMAND in text and "five per group" in text and "one per visit" in text and "the point changed" in text, True)
+        expect_value_without(text, "journal message send")

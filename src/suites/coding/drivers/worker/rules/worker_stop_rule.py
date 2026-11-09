@@ -15,7 +15,7 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOC
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 
-HELP_COMMAND_TEXT = AskTopic.GENERAL.ask_line()
+HELP_COMMAND_TEXT = AskTopic.GENERAL.question_line()
 
 
 class WorkerStopRule(DriverRule):

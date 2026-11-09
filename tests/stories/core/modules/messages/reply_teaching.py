@@ -18,7 +18,7 @@ from tests.stories.support.story_checks import expect_lines_reply_line
 
 
 @pytest.fixture(autouse=True)
-def listeners_run_before_each_hook(monkeypatch):
+def listeners_run_at_hook(monkeypatch):
     original = Story.hook
 
     def hook_after_listeners(story, *arguments, **options):

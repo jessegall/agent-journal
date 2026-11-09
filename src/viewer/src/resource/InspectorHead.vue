@@ -41,7 +41,7 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
                     <Btn variant="icon" title="Open in the inspector" aria-label="Open in the inspector" data-inspector-open @click="peekRef(address)"><Icon name="open" :size="13" /></Btn>
                 </template>
                 <template v-if="canShare">
-                    <a class="inspector-share" title="Share this row" aria-label="Share this row" data-resource-share :href="shareAddress(address)"><Icon name="share" :size="13" /></a>
+                    <a class="inspector-share" title="Share this link" aria-label="Share this link" data-resource-share :href="shareAddress(address)"><Icon name="share" :size="13" /></a>
                 </template>
                 <template v-if="!embedded">
                     <Btn variant="icon" :title="closing" :aria-label="closing" data-resource-close @click="emit('close')"><Icon name="close" :size="13" /></Btn>

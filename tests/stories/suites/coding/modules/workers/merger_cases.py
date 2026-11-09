@@ -23,11 +23,12 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
+from tests.stories.support.story_checks import expect_value, expect_value_with
 
-ONLY_THE_MERGER = "only the merger runs this"
+MERGER_ROLE_REFUSAL = "only the merger runs this"
 FULL_SUITE = "pytest"
 WHY = "the rounding only shows in a real run"
-TELL = 'merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"'
+MERGER_QUESTION = 'merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"'
 LINKED_LINE = "the libraries of your worktree are linked"
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
@@ -119,7 +120,7 @@ def requested(new_story, monkeypatch):
     return MergerCase(worker.story, worker.repository, worker.worker, running_merger(worker.story, worker.worker))
 
 
-def asked_to_run(case: MergerCase, line: str = TEST_LINE) -> None:
+def requests_test_run(case: MergerCase, line: str = TEST_LINE) -> None:
     case.story.container.get(Bus).run(AskWorkerTest(case.worker.id, 1, line, WHY), Actor.core(), environment_id=1)
 
 
@@ -144,8 +145,8 @@ def test_merger_scope_of_a_worker_with_no_worktree_is_refused(case):
 
 
 def test_only_the_merger_runs_merger_scope(case):
-    case.story.expect_refusal(f"merger scope {case.worker.id}", ONLY_THE_MERGER, actor=case.worker)
-    case.story.expect_refusal(f"merger scope {case.worker.id}", ONLY_THE_MERGER, actor=case.story.agent)
+    case.story.expect_refusal(f"merger scope {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"merger scope {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
 
 
 @pytest.mark.real_git
@@ -165,7 +166,7 @@ def test_merger_repair_relinks_missing_libraries_and_tells_the_worker_once(linke
     library = linked.repository.worktree_folder(linked.worker.id) / "node_modules"
     library.unlink()
     linked.story.expect_text(f"merger repair {linked.worker.id}", "node_modules", actor=linked.merger)
-    assert library.is_symlink() and (library / LIBRARY_FILE).read_text() == LIBRARY_TEXT
+    expect_value(library.is_symlink() and (library / LIBRARY_FILE).read_text() == LIBRARY_TEXT, True)
     linked.story.expect_rows(linked.worker_lines().count(LINKED_LINE) == 1, detail=linked.worker_lines())
 
 
@@ -186,7 +187,7 @@ def test_repair_copies_a_missing_copied_library_back(copied):
     library = copied.repository.worktree_folder(copied.worker.id) / "vendor"
     shutil.rmtree(library)
     copied.story.expect_text(f"merger repair {copied.worker.id}", "vendor", actor=copied.merger)
-    assert not library.is_symlink() and (library / LIBRARY_FILE).read_text() == LIBRARY_TEXT
+    expect_value(not library.is_symlink() and (library / LIBRARY_FILE).read_text() == LIBRARY_TEXT, True)
 
 
 def test_repair_of_a_worker_with_no_worktree_is_refused(case):
@@ -194,68 +195,68 @@ def test_repair_of_a_worker_with_no_worktree_is_refused(case):
 
 
 def test_only_the_merger_runs_merger_repair(case):
-    case.story.expect_refusal(f"merger repair {case.worker.id}", ONLY_THE_MERGER, actor=case.worker)
-    case.story.expect_refusal(f"merger repair {case.worker.id}", ONLY_THE_MERGER, actor=case.story.agent)
+    case.story.expect_refusal(f"merger repair {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.worker)
+    case.story.expect_refusal(f"merger repair {case.worker.id}", MERGER_ROLE_REFUSAL, actor=case.story.agent)
 
 
 def test_a_named_test_run_with_a_library_missing_says_the_merger_can_relink(linked):
     (linked.repository.worktree_folder(linked.worker.id) / "node_modules").unlink()
-    expect_refused_with(linked.story, "worker test python tests/cart.py", "node_modules", "the merger can relink", AskTopic.TOOL.ask_line(), actor=linked.worker)
+    expect_refused_with(linked.story, "worker test python tests/cart.py", "node_modules", "the merger can relink", AskTopic.TOOL.question_line(), actor=linked.worker)
 
 
 def test_the_merger_allows_a_needed_test_run(requested):
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_text("merger allow 1", "state: allowed", actor=requested.merger)
     requested.story.expect_rows("request 1 is allowed" in requested.worker_lines(), detail=requested.worker_lines())
 
 
 def test_the_merger_refuses_a_full_suite_with_one_line(requested):
-    asked_to_run(requested, FULL_SUITE)
+    requests_test_run(requested, FULL_SUITE)
     requested.story.expect_text("merger allow 1", "state: refused", actor=requested.merger)
     requested.story.expect_text("worker-test-request show 1", "state: refused", actor=requested.story.agent)
     requested.story.expect_rows(requested.worker_lines().count("request 1 is refused") == 1, detail=requested.worker_lines())
 
 
 def test_the_merger_refuses_a_request_with_its_own_line_kept_on_the_task(requested):
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_text(f'merger allow 1 --refuse "{WHY}"', "state: refused", actor=requested.merger)
     requested.story.expect_text("task-log list --task 1", "refused the run of request 1", WHY, actor=requested.story.agent)
     requested.story.expect_rows(WHY not in requested.worker_lines(), "request 1 is refused" in requested.worker_lines(), detail=requested.worker_lines())
 
 
 def test_a_refused_request_can_be_asked_again_as_a_new_request(requested):
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_success(f'merger allow 1 --refuse "{WHY}"', actor=requested.merger)
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_text("worker-test-request show 2", "state: requested", actor=requested.story.agent)
 
 
 def test_a_request_decided_twice_is_refused(requested):
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_success("merger allow 1", actor=requested.merger)
     requested.story.expect_refusal("merger allow 1", "already allowed", actor=requested.merger)
 
 
 def test_the_main_agent_hears_nothing_of_a_request_the_merger_decides(requested):
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_success("merger allow 1", actor=requested.merger)
     requested.story.expect_rows("request" not in requested.main_lines(), detail=requested.main_lines())
 
 
 def test_the_main_agent_cannot_allow_a_full_suite_either(requested):
-    asked_to_run(requested, FULL_SUITE)
+    requests_test_run(requested, FULL_SUITE)
     requested.story.expect_refusal("worker allow-test 1", "name each test file", actor=requested.story.agent)
 
 
 def test_the_main_agent_can_still_allow_a_needed_run(requested):
-    asked_to_run(requested)
+    requests_test_run(requested)
     requested.story.expect_text("worker allow-test 1", "state: allowed", actor=requested.story.agent)
 
 
 def test_only_the_merger_runs_merger_allow(requested):
-    asked_to_run(requested)
-    requested.story.expect_refusal("merger allow 1", ONLY_THE_MERGER, actor=requested.worker)
-    requested.story.expect_refusal("merger allow 1", ONLY_THE_MERGER, actor=requested.story.agent)
+    requests_test_run(requested)
+    requested.story.expect_refusal("merger allow 1", MERGER_ROLE_REFUSAL, actor=requested.worker)
+    requested.story.expect_refusal("merger allow 1", MERGER_ROLE_REFUSAL, actor=requested.story.agent)
 
 
 @pytest.mark.parametrize("line", [
@@ -271,30 +272,30 @@ def test_a_tell_without_every_part_is_refused_with_the_shape(case, line):
 
 
 def test_a_tell_reaches_the_main_agent_as_one_message_with_four_parts(case):
-    case.story.expect_success(TELL, actor=case.merger)
+    case.story.expect_success(MERGER_QUESTION, actor=case.merger)
     messages = case.main_messages()
     case.story.expect_rows(len(messages) == 1, detail=str(messages))
     case.story.expect_rows(messages[0].text == "What: Which tax applies?\nTried: Read the brief\nOptions: 1) Dutch tax 2) No tax\nRecommendation: Dutch tax", messages[0].target_agent_id is None, detail=messages[0].text)
 
 
 def test_a_case_no_command_covers_ends_at_the_main_agent_with_the_facts_of_the_worker(own_files):
-    own_files.story.expect_success(f"{TELL} --worker {own_files.worker.id}", actor=own_files.merger)
+    own_files.story.expect_success(f"{MERGER_QUESTION} --worker {own_files.worker.id}", actor=own_files.merger)
     text = own_files.main_messages()[0].text
     own_files.story.expect_rows("Recommendation: Dutch tax" in text, "point build, task 1" in text, "cart.py, rate.py" in text, detail=text)
 
 
 def test_a_tell_naming_a_worker_with_no_work_leaves_the_facts_out(case):
-    case.story.expect_success(f"{TELL} --worker {case.merger.id}", actor=case.merger)
+    case.story.expect_success(f"{MERGER_QUESTION} --worker {case.merger.id}", actor=case.merger)
     case.story.expect_rows("point" not in case.main_messages()[0].text, detail=case.main_messages()[0].text)
 
 
 def test_only_the_merger_tells(case):
-    case.story.expect_refusal(TELL, ONLY_THE_MERGER, actor=case.story.agent)
-    case.story.expect_refusal(TELL, ONLY_THE_MERGER, actor=case.worker)
+    case.story.expect_refusal(MERGER_QUESTION, MERGER_ROLE_REFUSAL, actor=case.story.agent)
+    case.story.expect_refusal(MERGER_QUESTION, MERGER_ROLE_REFUSAL, actor=case.worker)
 
 
 def test_a_tell_shows_a_mark_in_the_chat(case):
-    case.story.expect_success(TELL, actor=case.merger)
+    case.story.expect_success(MERGER_QUESTION, actor=case.merger)
     case.story.expect_rows("The merger asks" in case.marks(), detail=case.marks())
 
 
@@ -327,7 +328,7 @@ def test_the_merger_text_names_the_ladder_and_the_case_book(case):
 
 @pytest.mark.parametrize("words", ["journal merger scope", "journal merger repair", "journal merger allow", "already built", "add the case to this file"])
 def test_the_case_book_holds_each_known_case(words):
-    assert words in merger_skill_text()
+    expect_value_with(merger_skill_text(), words)
 
 
 def test_the_branch_of_the_environment_is_not_touched_by_a_scope(own_files):

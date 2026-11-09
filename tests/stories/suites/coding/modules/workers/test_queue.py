@@ -20,7 +20,7 @@ from tests.stories.core.modules.chat.support.mark_samples import marks_text, exp
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value_with
+from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value, expect_value_with
 
 PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py"'
 PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py | tail -3"'
@@ -329,9 +329,9 @@ def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_s
         repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
         story.expect_success("worker deliver --wait --differences none", actor=worker)
         story.run_listeners()
-    assert review_lines(story) == []
+    expect_value(review_lines(story), [])
     ended(story, started[2], 1)
-    assert review_lines(story) == [f"worker:{worker.id} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"]
+    expect_value(review_lines(story), [f"worker:{worker.id} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"])
 
 
 def review_lines(story) -> list[str]:

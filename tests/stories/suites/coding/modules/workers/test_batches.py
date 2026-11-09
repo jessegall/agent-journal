@@ -53,7 +53,7 @@ def test_a_batch_waits_for_the_fourth_task_then_runs_all_its_proofs(submitted):
 
 
 @pytest.fixture
-def batch_of_checked_proofs(batch):
+def checked_proof_batch(batch):
     for _ in range(4):
         batch.edit_prove(TEST_LINE)
         task = batch.current_task()
@@ -62,8 +62,8 @@ def batch_of_checked_proofs(batch):
     return batch
 
 
-def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch_of_checked_proofs):
-    batch = batch_of_checked_proofs
+def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(checked_proof_batch):
+    batch = checked_proof_batch
     batch.story.expect_rows(batch.current_task() == 5, not batch.started)
 
 

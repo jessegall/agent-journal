@@ -31,7 +31,7 @@ const toggle = () => (open.value ? hide() : show());
                 <template v-if="failure">
                   <span class="tip-failure">{{ failure }}</span>
                 </template>
-                <template v-for="(line, place) in lines" :key="place">
+                <template v-for="line in lines" :key="line">
                   <span class="tip-line">{{ line }}</span>
                 </template>
             </span>

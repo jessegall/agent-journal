@@ -14,11 +14,11 @@ class AskTopic(StrEnum):
     def waiting_work(self) -> str:
         return WAITING_WORK_LINES[self]
 
-    def ask_line(self) -> str:
+    def question_line(self) -> str:
         return f'If you cannot go on: journal worker ask "<what>" --about {self.value}'
 
     def hint(self, fix: str) -> str:
-        return f"{fix}. {self.ask_line()}"
+        return f"{fix}. {self.question_line()}"
 
 
 WAITING_WORK_LINES = {

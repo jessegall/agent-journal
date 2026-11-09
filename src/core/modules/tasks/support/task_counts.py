@@ -12,4 +12,4 @@ class TaskCounts:
     blocked: int
     open: int
     completed: int
-    counted_from_at: str
+    window_start_at: str

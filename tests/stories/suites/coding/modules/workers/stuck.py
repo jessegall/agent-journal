@@ -25,7 +25,7 @@ PROCESS_START = "2026-10-31T09:00:00+00:00"
 
 
 @pytest.fixture(autouse=True)
-def workers_ran_long_enough(monkeypatch):
+def long_running_workers(monkeypatch):
     monkeypatch.setattr(WorkerLaunchFailures, "has_failed", lambda failures, worker: False)
 
 
@@ -47,7 +47,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     for _ in range(STOP_REFUSAL_COUNT + 2):
-        story.expect_hook_refusal(session, HookSamples.stop(), AskTopic.GENERAL.ask_line())
+        story.expect_hook_refusal(session, HookSamples.stop(), AskTopic.GENERAL.question_line())
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 

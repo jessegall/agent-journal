@@ -45,8 +45,8 @@ class CodeFingerprint:
         source_hash = os.environ.get(PINNED_CODE_VARIABLE)
         if source_hash is None:
             return SourceHash.text(folders)
-        other_folders = tuple(folder for folder in folders if not folder.is_relative_to(SOURCE_FOLDER))
-        return source_hash + SourceHash.text(other_folders) if other_folders else source_hash
+        extra_folders = tuple(folder for folder in folders if not folder.is_relative_to(SOURCE_FOLDER))
+        return source_hash + SourceHash.text(extra_folders) if extra_folders else source_hash
 
     @staticmethod
     def selected_text(code_text: str, modules: Sequence[type[Module]]) -> str:

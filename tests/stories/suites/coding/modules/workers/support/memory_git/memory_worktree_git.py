@@ -253,9 +253,9 @@ class MemoryWorktreeGit(WorktreeGit):
             return None
         prefix = f"{PurePosixPath(worktree.branch).parent}/"
         base_tip = self.history.branches[worktree.base_branch]
-        found = [(commit.id, name) for name, tip in self.history.branches.items() if name.startswith(prefix) for commit in self.history.new_commits(base_tip, tip)
+        branch_commits = [(commit.id, name) for name, tip in self.history.branches.items() if name.startswith(prefix) for commit in self.history.new_commits(base_tip, tip)
                  if len(commit.parents) == 1 and TaskBranchCommit.parsed(commit.id[:10], commit.message).has_task_subject(task_ids)]
-        return max(found)[1] if found else None
+        return max(branch_commits)[1] if branch_commits else None
 
     def dependency_folders(self, folder: str) -> tuple[str, ...]:
         return ()

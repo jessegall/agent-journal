@@ -5,6 +5,7 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.support.story_checks import expect_value
 
 
 pytestmark = pytest.mark.real_git
@@ -32,18 +33,18 @@ def detected_worktree(new_story):
 
 def test_a_nested_node_modules_and_a_venv_are_linked_in_a_new_worktree(detected_worktree):
     story, repository, folder = detected_worktree
-    assert (folder / ".venv").is_symlink() and (folder / ".venv/library.txt").read_text() == "library\n"
-    assert (folder / "src/viewer/node_modules").is_symlink()
+    expect_value((folder / ".venv").is_symlink() and (folder / ".venv/library.txt").read_text() == "library\n", True)
+    expect_value((folder / "src/viewer/node_modules").is_symlink(), True)
 
 
 def test_an_ignored_folder_with_another_name_is_not_linked(detected_worktree):
     story, repository, folder = detected_worktree
-    assert not (folder / "built").exists()
+    expect_value((folder / "built").exists(), False)
 
 
 def test_the_linked_folders_stay_out_of_git(detected_worktree):
     story, repository, folder = detected_worktree
-    assert repository.git("status", "--porcelain", folder=folder).stdout == ""
+    expect_value(repository.git("status", "--porcelain", folder=folder).stdout, "")
 
 
 def test_a_tracked_folder_with_a_dependency_name_is_not_linked(new_story):
@@ -53,10 +54,10 @@ def test_a_tracked_folder_with_a_dependency_name_is_not_linked(new_story):
     (repository.folder / "vendor").mkdir()
     repository.committed("vendor/own.py", "OWN = 1\n", "Own vendored code")
     worker = dispatched_worker(story, DISPATCH)
-    assert not (repository.worktree_folder(worker.id) / "vendor").is_symlink()
+    expect_value((repository.worktree_folder(worker.id) / "vendor").is_symlink(), False)
 
 
 def test_the_test_checkout_gets_the_detected_folders_too(detected_worktree):
     story, repository, folder = detected_worktree
     worktree = story.container.get(WorktreeQuery).open_worktrees()[0]
-    assert {".venv", "src/viewer/node_modules"} <= set(story.container.get(WorktreeGit).library_names(worktree))
+    expect_value({".venv", "src/viewer/node_modules"} <= set(story.container.get(WorktreeGit).library_names(worktree)), True)

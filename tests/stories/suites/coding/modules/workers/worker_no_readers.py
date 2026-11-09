@@ -15,19 +15,20 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.suites.coding.modules.workers.support.phase_steps import unplanned_worker
+from tests.stories.support.story_checks import expect_value
 
 RAW_TEST = HookSamples.shell("pytest tests/one.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]))
 WORKER = "s-reader"
 MAIN = "s-1"
 
 
-def expect_no_hold(story) -> None:
+def expect_unblocked(story) -> None:
     worker = reader_worker(story)
     story.expect_rows(not story.container.get(ReaderRequestQuery).open().filter(creator_id=worker.id).exists(),
                       not story.container.get(Queries).query(AgentBlock).filter(session_agent_id=worker.id, closed_at=None).exists())
 
 
-def expect_held(story) -> None:
+def expect_blocked(story) -> None:
     worker = reader_worker(story)
     story.expect_rows(story.container.get(ReaderRequestQuery).open().filter(creator_id=worker.id).exists())
 
@@ -53,7 +54,7 @@ def limited(forced):
 
 
 @pytest.fixture
-def no_limit(forced):
+def unlimited_runs(forced):
     forced.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=forced.user)
     return forced
 
@@ -73,42 +74,42 @@ def busy_worker(readers_off):
 
 def test_a_worker_build_with_no_reader_opens_no_request_and_holds_nothing(forced):
     process = worker_run(forced, "custom-build run", CommandCategory.BUILD)
-    expect_no_hold(forced)
+    expect_unblocked(forced)
     forced.expect_rows(forced.container.get(OutputFolder).has_slot(process.id))
 
 
-def test_a_worker_test_with_no_reader_and_no_limit_opens_no_request(no_limit):
-    worker_run(no_limit, "custom-test run", CommandCategory.TEST_RUN)
-    expect_no_hold(no_limit)
+def test_a_worker_test_with_no_reader_and_no_limit_opens_no_request(unlimited_runs):
+    worker_run(unlimited_runs, "custom-test run", CommandCategory.TEST_RUN)
+    expect_unblocked(unlimited_runs)
 
 
 def test_a_worker_test_of_a_known_tool_under_a_limit_opens_no_request(limited):
     worker_run(limited, "pytest tests/one.py", CommandCategory.TEST_RUN)
-    expect_no_hold(limited)
+    expect_unblocked(limited)
 
 
 def test_a_worker_test_of_an_unknown_tool_under_a_limit_asks_for_the_count_reader(limited):
     worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_held(limited)
+    expect_blocked(limited)
     request = limited.container.get(ReaderRequestQuery).open().first()
     limited.expect_rows("count" in request.reason, detail=request.reason)
 
 
 def test_a_worker_build_under_a_limit_opens_no_request(limited):
     worker_run(limited, "custom-build run", CommandCategory.BUILD)
-    expect_no_hold(limited)
+    expect_unblocked(limited)
 
 
 def test_a_reader_with_a_count_command_lifts_the_count_request(limited):
     limited.expect_success('reader add counted --commands "custom-test*" --title Testing --lines "done" --summary "done" --count-command "custom-test --list"', actor=limited.agent)
     worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_no_hold(limited)
+    expect_unblocked(limited)
 
 
 def test_a_reader_without_a_count_command_still_asks_for_the_count(limited):
     limited.expect_success('reader add plain --commands "custom-test*" --title Testing --lines "done" --summary "done"', actor=limited.agent)
     worker_run(limited, "custom-test run", CommandCategory.TEST_RUN)
-    expect_held(limited)
+    expect_blocked(limited)
 
 
 def test_a_worker_is_not_told_about_a_reader_request_it_does_not_have(forced):
@@ -140,7 +141,7 @@ def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_off):
     process = worker_run(readers_off, "custom-build run", CommandCategory.BUILD)
     readers_off.advance(timedelta(seconds=10))
     readers_off.expect_rows(not any(f"output {process.id}" in line for line in hook_lines(readers_off, WORKER, HookSamples.prompt("go on"))))
-    expect_no_hold(readers_off)
+    expect_unblocked(readers_off)
 
 
 def test_a_silent_run_of_a_worker_says_nothing_about_its_output(readers_off):
@@ -151,4 +152,4 @@ def test_a_silent_run_of_a_worker_says_nothing_about_its_output(readers_off):
 
 
 def test_only_the_main_agent_hears_the_shorter_read_of_a_reader():
-    assert ReaderHintRule.roles == [AgentRole.MAIN]
+    expect_value(ReaderHintRule.roles, [AgentRole.MAIN])

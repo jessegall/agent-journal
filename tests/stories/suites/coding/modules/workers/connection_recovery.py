@@ -410,7 +410,7 @@ def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_fr
 
 
 @pytest.fixture
-def stopped_by_person(recovery):
+def person_stopped_worker(recovery):
     story, worker = recovery.story, recovery.worker
     recovery.launches.clear()
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -418,8 +418,8 @@ def stopped_by_person(recovery):
     return recovery
 
 
-def test_a_message_to_a_stopped_worker_starts_it(stopped_by_person):
-    recovery = stopped_by_person
+def test_a_message_to_a_stopped_worker_starts_it(person_stopped_worker):
+    recovery = person_stopped_worker
     story, worker = recovery.story, recovery.worker
     recovery.launches.clear()
     recovery.advance(1)
@@ -430,8 +430,8 @@ def test_a_message_to_a_stopped_worker_starts_it(stopped_by_person):
     story.expect_rows(len(recovery.launches) > 0)
 
 
-def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_frees(stopped_by_person):
-    recovery = stopped_by_person
+def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_frees(person_stopped_worker):
+    recovery = person_stopped_worker
     story, worker = recovery.story, recovery.worker
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
     recovery.launches.clear()
@@ -445,8 +445,8 @@ def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_fre
     story.expect_rows(len(recovery.launches) > 0)
 
 
-def test_a_worker_stopped_by_a_person_is_not_restarted_for_its_old_job(stopped_by_person):
-    recovery = stopped_by_person
+def test_a_worker_stopped_by_a_person_is_not_restarted_for_its_old_job(person_stopped_worker):
+    recovery = person_stopped_worker
     story, worker = recovery.story, recovery.worker
     recovery.advance(20 * 60)
     WorkerResumeRetry()(story.container)

@@ -49,7 +49,7 @@ test("a stepped inspector adds Previous and Next after Back", () => {
 
 test("Share shows only for a shareable row outside a read-only view", () => {
     const shared = head({shareable: true});
-    expect(titles(shared)).toEqual(["Share this row", "Close"]);
+    expect(titles(shared)).toEqual(["Share this link", "Close"]);
     expect(shared.querySelector("[data-resource-share]").href).toContain("share=plans%3A12");
     expect(titles(head({shareable: true, readOnly: true}))).toEqual(["Close"]);
     expect(titles(head({shareable: false}))).toEqual(["Close"]);
