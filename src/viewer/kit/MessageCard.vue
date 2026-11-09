@@ -155,7 +155,7 @@ function pick(face) {
                 <div class="message-sent-to" data-message-sent-to>
                     <Icon name="send" :size="12" />
                     <template v-for="target in sentTo" :key="target.id">
-                        <button type="button" class="message-sent-worker" :disabled="target.unavailable || !target.open_ref" :data-sent-worker="target.id" :title="`Open worker ${target.id}`" @click.stop="target.open_ref && peekRef(target.open_ref)">Also sent to worker {{ target.id }}<template v-if="target.unavailable"> (unavailable)</template></button>
+                        <AgentTip as="button" :agent-id="target.id" :label="`Worker ${target.id}`" class="message-sent-worker" :disabled="target.unavailable || !target.open_ref" :data-sent-worker="target.id" @click.stop="target.open_ref && peekRef(target.open_ref)">Also sent to worker {{ target.id }}<template v-if="target.unavailable"> (unavailable)</template></AgentTip>
                     </template>
                 </div>
             </template>

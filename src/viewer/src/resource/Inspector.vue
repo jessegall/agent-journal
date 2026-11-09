@@ -1,5 +1,6 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {INSPECTOR_ACTIONS} from "../../kit/windowContextKey.js";
 import ButtonSlot from "../kit/ButtonSlot.vue";
 import InspectorActions from "../kit/InspectorActions.vue";
 import InspectorLinks from "../kit/InspectorLinks.vue";
@@ -34,6 +35,8 @@ const props = defineProps({
     embedded: Boolean,
 });
 const emit = defineEmits(["close", "back", "step", "open"]);
+const actionBar = ref(null);
+provide(INSPECTOR_ACTIONS, computed(() => actionBar.value?.$el ?? null));
 
 const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
 const listing = computed(() => props.catalogue.inspector(props.term) ?? {
@@ -130,7 +133,7 @@ onUnmounted(() => watcher?.disconnect());
             <div class="inspector-wait"><Skeleton /></div>
         </template>
         <template v-else>
-            <InspectorActions>
+            <InspectorActions ref="actionBar">
                 <ButtonSlot :name="`row.${term}`" :row="{...row, id, term}" :environment="environment" :read-only="readOnly" @done="load" />
             </InspectorActions>
             <div class="inspector-main">

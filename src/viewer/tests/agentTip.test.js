@@ -12,9 +12,10 @@ const WORKING = {id: 734, title: "Worker", name: "Mary Anning", program: "claude
 const IDLE = {...WORKING, activity: "ended", since: new Date(Date.now() - 60 * MINUTE).toISOString(), last_seen: new Date(Date.now() - 55 * MINUTE).toISOString()};
 const RETIRED = {...IDLE, retired: true};
 
-async function shown(tip) {
-    const window = context({"agent tip 734": {ok: true, value: tip}});
-    const element = await mounted({render: () => h(AgentTip, {agentId: 734, label: "Worker 734"}, () => "icon")}, window);
+// each test asks for an agent of its own, since the tip's read is shared for a few seconds
+async function shown(tip, id) {
+    const window = context({[`agent tip ${id}`]: {ok: true, value: {...tip, id, role_label: `worker ${id}`}}});
+    const element = await mounted({render: () => h(AgentTip, {agentId: id, label: `Worker ${id}`}, () => "icon")}, window);
     const tipped = element.querySelector("[data-agent-tip]");
     tipped.dispatchEvent(new Event("mouseenter"));
     await settle();
@@ -23,7 +24,7 @@ async function shown(tip) {
 const text = (element, name) => element.querySelector(`[data-agent-tip-${name}]`)?.textContent.trim();
 
 test("the tip of a working agent shows its type and name, its program line, a working dot, since when and last seen", async () => {
-    const {element} = await shown(WORKING);
+    const {element} = await shown(WORKING, 734);
     expect(text(element, "head")).toBe("Worker Mary Anning");
     expect(text(element, "identity")).toBe("claude, sonnet, high, worker 734");
     expect(text(element, "status")).toBe("Working");
@@ -33,9 +34,9 @@ test("the tip of a working agent shows its type and name, its program line, a wo
 });
 
 test("the tip of an idle agent shows an idle dot with the same fields", async () => {
-    const {element} = await shown(IDLE);
+    const {element} = await shown(IDLE, 735);
     expect(text(element, "head")).toBe("Worker Mary Anning");
-    expect(text(element, "identity")).toBe("claude, sonnet, high, worker 734");
+    expect(text(element, "identity")).toBe("claude, sonnet, high, worker 735");
     expect(text(element, "status")).toBe("Idle");
     expect(element.querySelector("[data-agent-tip-status] i").dataset.state).toBe("idle");
     expect(text(element, "since")).toMatch(/, 1h ago$/);
@@ -43,14 +44,14 @@ test("the tip of an idle agent shows an idle dot with the same fields", async ()
 });
 
 test("the tip of a retired agent shows a ring", async () => {
-    const {element} = await shown(RETIRED);
+    const {element} = await shown(RETIRED, 736);
     expect(text(element, "status")).toBe("Retired");
     expect(element.querySelector("[data-agent-tip-status] i").dataset.state).toBe("retired");
 });
 
 test("an agent is read when it is first hovered, never when it is drawn, and a second hover reads nothing more", async () => {
-    const window = context({"agent tip 734": {ok: true, value: WORKING}});
-    const element = await mounted({render: () => h("div", [h(AgentTip, {agentId: 734, label: "A"}, () => "a"), h(AgentTip, {agentId: 734, label: "B"}, () => "b")])}, window);
+    const window = context({"agent tip 737": {ok: true, value: WORKING}});
+    const element = await mounted({render: () => h("div", [h(AgentTip, {agentId: 737, label: "A"}, () => "a"), h(AgentTip, {agentId: 737, label: "B"}, () => "b")])}, window);
     expect(window.reads).toEqual([]);
     const [first, second] = element.querySelectorAll("[data-agent-tip]");
     first.dispatchEvent(new Event("mouseenter"));
@@ -58,7 +59,7 @@ test("an agent is read when it is first hovered, never when it is drawn, and a s
     await settle();
     first.dispatchEvent(new Event("mouseenter"));
     await settle();
-    expect(window.reads).toEqual(["agent tip 734"]);
+    expect(window.reads).toEqual(["agent tip 737"]);
 });
 
 test("a tip whose read failed says the agent's label and why", async () => {

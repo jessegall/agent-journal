@@ -33,7 +33,7 @@ async function load() {
         <slot />
         <template v-if="armed" #tip>
             <template v-if="tip">
-                <span class="line head" data-agent-tip-head><b>{{ tip.title }}</b><template v-if="tip.name"> {{ tip.name }}</template></span>
+                <span class="line head" data-agent-tip-head><b>{{ tip.title }}</b> <template v-if="tip.name"><span>{{ tip.name }}</span></template></span>
                 <span class="line" data-agent-tip-identity>{{ agentIdentity(tip) }}</span>
                 <span class="line status" data-agent-tip-status><i :data-state="look.state" />{{ look.words }}</span>
                 <template v-if="since"><span class="line" data-agent-tip-since>{{ since }}</span></template>

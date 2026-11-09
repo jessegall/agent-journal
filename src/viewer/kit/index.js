@@ -88,7 +88,7 @@ export {default as TabBody} from "./TabBody.vue";
 export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
-export {OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
+export {INSPECTOR_ACTIONS, OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
 export {eventAboutRows, eventChildOf, eventMayBeChildOf} from "./eventRows.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
