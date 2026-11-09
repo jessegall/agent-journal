@@ -87,7 +87,7 @@ test("with nothing recorded it says which option turns the log on", async () => 
 test("pausing keeps the list and resuming reads again", async () => {
     const window = requestLogWindowContext();
     let reads = 0;
-    window.read = async () => ({ok: true, value: {rows: [{id: ++reads, event: "stop", sender: "Main agent", duration_ms: 1}]}});
+    window.read = async () => ({ok: true, value: {rows: [{id: ++reads, event: "stop", sender: "Main agent", duration_ms: 1, outcome: "allowed"}]}});
     const element = await mounted(HookRequests, window);
     await settle();
     const button = element.querySelector("[data-feed-pause]");
@@ -105,7 +105,7 @@ test("a read answered after pausing leaves the shown requests in place", async (
     const window = requestLogWindowContext();
     let reads = 0;
     let finish;
-    const answer = (id) => ({ok: true, value: {rows: [{id, event: "stop", sender: "Main agent", duration_ms: 1}]}});
+    const answer = (id) => ({ok: true, value: {rows: [{id, event: "stop", sender: "Main agent", duration_ms: 1, outcome: "allowed"}]}});
     window.read = async () => ++reads === 2 ? new Promise((resolve) => (finish = resolve)) : answer(reads);
     const element = await mounted(HookRequests, window);
     const loading = window.reload("requests");
@@ -124,7 +124,7 @@ test("a read answered after pausing leaves the shown requests in place", async (
 
 test("an agent sender links to its card without opening request details", async () => {
     const window = requestLogWindowContext();
-    window.read = async () => ({ok: true, value: {rows: [{id: 1, agent_id: 42, sender: "Worker 42", event: "stop", duration_ms: 1}]}});
+    window.read = async () => ({ok: true, value: {rows: [{id: 1, agent_id: 42, sender: "Worker 42", event: "stop", duration_ms: 1, outcome: "allowed"}]}});
     const element = await mounted(HookRequests, window);
     await settle();
     const sender = element.querySelector('[data-peek="agents:42"]');
