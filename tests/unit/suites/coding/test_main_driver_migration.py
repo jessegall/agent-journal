@@ -25,7 +25,7 @@ def run(connection: sqlite3.Connection) -> None:
         connection.execute(statement)
 
 
-def add_driver(connection: sqlite3.Connection, environment_id: int, name: str) -> None:
+def register_driver(connection: sqlite3.Connection, environment_id: int, name: str) -> None:
     connection.execute("INSERT INTO settings (environment_id, creator_id, key, value, created_at, updated_at) VALUES (?, 7, ?, ?, ?, ?)",
                        (environment_id, DRIVER, json.dumps(name), STAMP, STAMP))
 
@@ -36,8 +36,8 @@ def drivers(connection: sqlite3.Connection) -> dict[int, str]:
 
 def test_builder_and_orchestrator_environments_move_to_the_main_driver_and_the_orchestrator_keeps_going():
     connection = database()
-    add_driver(connection, 1, "coding.builder")
-    add_driver(connection, 2, "coding.orchestrator")
+    register_driver(connection, 1, "coding.builder")
+    register_driver(connection, 2, "coding.orchestrator")
     run(connection)
     assert drivers(connection) == {1: "coding.main", 2: "coding.main"}
     assert connection.execute("SELECT environment_id FROM settings WHERE key = ?", tuple([CONTINUE_SETTING])).fetchall() == [tuple([2])]
@@ -66,7 +66,7 @@ def test_an_orchestrator_layout_is_copied_for_the_main_driver_and_the_old_row_st
 
 def test_a_second_run_changes_nothing():
     connection = database()
-    add_driver(connection, 2, "coding.orchestrator")
+    register_driver(connection, 2, "coding.orchestrator")
     connection.execute("INSERT INTO refusal_skips (name) VALUES ('coding.builder-next-task-at-stop')")
     run(connection)
     first = [connection.execute(f"SELECT * FROM {table} ORDER BY id").fetchall() for table in ("settings", "refusal_skips", "hook_calls", "viewer_layouts")]

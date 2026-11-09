@@ -115,23 +115,23 @@ def test_the_sources_are_read_only_once_in_a_process(tmp_path, monkeypatch):
 
 def test_a_folder_a_running_process_holds_is_never_removed_by_age_or_size(tmp_path):
     cache = TemplateCache(tmp_path / "cache", limit_bytes=1)
-    held = cache.root / "held"
-    held.mkdir(parents=True)
-    (held / "data").write_bytes(b"x" * 500)
-    (held / f".in-use-{os.getpid()}").touch()
+    retained = cache.root / "held"
+    retained.mkdir(parents=True)
+    (retained / "data").write_bytes(b"x" * 500)
+    (retained / f".in-use-{os.getpid()}").touch()
     expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
-    os.utime(held, (expired_at, expired_at))
+    os.utime(retained, (expired_at, expired_at))
     cache.drop_expired()
-    assert held.is_dir()
+    assert retained.is_dir()
 
 
 def test_a_lease_of_a_process_that_is_gone_holds_nothing(tmp_path):
     cache = TemplateCache(tmp_path / "cache", limit_bytes=1)
-    left = cache.root / "left"
-    left.mkdir(parents=True)
-    (left / "data").write_bytes(b"x" * 500)
-    (left / ".in-use-999999").touch()
+    remaining = cache.root / "left"
+    remaining.mkdir(parents=True)
+    (remaining / "data").write_bytes(b"x" * 500)
+    (remaining / ".in-use-999999").touch()
     expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
-    os.utime(left, (expired_at, expired_at))
+    os.utime(remaining, (expired_at, expired_at))
     cache.drop_expired()
-    assert not left.exists()
+    assert not remaining.exists()

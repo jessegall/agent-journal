@@ -30,11 +30,11 @@ class ExplicitEditedRequest(StoryFixture):
 
 def test_a_viewer_answer_saves_no_message_of_the_person(scenario):
     scenario.command('question ask "Which rounding rule?" --context "A story asks this so its card and answer can be checked." --options "Up" "Nearest" --recommend "Nearest"')
-    before = scenario.person("messages.chat", "message", "feed")["rows"]
+    previous = scenario.person("messages.chat", "message", "feed")["rows"]
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Nearest")
     question = json.loads(scenario.command("question show 1 --json").output_text)
     feature(question["state"] == "answered" and question["answer"] == "Nearest" and question["message_id"] is None, json.dumps(question))
-    scenario.story.expect_rows(len(scenario.person("messages.chat", "message", "feed")["rows"]) == len(before))
+    scenario.story.expect_rows(len(scenario.person("messages.chat", "message", "feed")["rows"]) == len(previous))
 
 
 def test_an_answered_question_tells_the_agent_once_and_names_no_message(scenario):

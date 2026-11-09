@@ -149,9 +149,9 @@ def test_the_template_cache_drops_folders_unused_for_a_day_but_never_the_one_in_
     old = filled(tmp_path / "old", 1)
     recent = filled(tmp_path / "recent", 1)
     current = filled(tmp_path / "current", 1)
-    day_ago = os.stat(old).st_mtime - 24 * 3600 - 1
-    os.utime(old, (day_ago, day_ago))
-    os.utime(current, (day_ago, day_ago))
+    yesterday = os.stat(old).st_mtime - 24 * 3600 - 1
+    os.utime(old, (yesterday, yesterday))
+    os.utime(current, (yesterday, yesterday))
 
     cache.drop_expired(current)
 

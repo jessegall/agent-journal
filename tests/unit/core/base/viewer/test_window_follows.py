@@ -45,7 +45,7 @@ def test_a_follow_its_window_lists_is_not_reported():
 def test_every_follow_in_shipped_window_code_is_listed_by_a_window_of_its_module(tmp_path):
     modules = ModuleFinder(JournalHome(tmp_path)).default_modules()
     events = listed_events(modules)
-    found = {}
+    matched = {}
     for module in modules:
         names = [*(window.name for window in module.windows), *(extension.window for extension in module.window_extensions)]
         declared = set().union(*(events.get(name, set()) for name in names))
@@ -53,5 +53,5 @@ def test_every_follow_in_shipped_window_code_is_listed_by_a_window_of_its_module
             if path.suffix in (".vue", ".js") and path.stem.lower() not in body_stems(module):
                 missing = undeclared_successors(path.read_text(), declared)
                 if missing:
-                    found[str(path)] = missing
-    assert not found, f"these follows are filtered out because no window lists their events: {found}"
+                    matched[str(path)] = missing
+    assert not matched, f"these follows are filtered out because no window lists their events: {matched}"

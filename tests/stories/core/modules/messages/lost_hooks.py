@@ -241,7 +241,7 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
                 writer.rollback()
                 reset_attempted.set()
 
-    monkeypatch.setattr(HookEndpoint, "answer_lost", busy_answer_dropped)
+    monkeypatch.setattr(HookEndpoint, "dropped_answer", busy_answer_dropped)
     server.post_hook_disconnect(hook_body("left-while-busy"))
     server.story.expect_rows(reset_attempted.wait(10), detail="the lost hook answer never attempted to reset its deliveries")
     folder = server.story.home.folder / "runtime" / "lost-hook-answers"
@@ -253,7 +253,7 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
     server.story.expect_rows("new message 1" not in str(delivered_lines))
 
 
-def lost_answers_folder(story) -> Path:
+def dropped_answers_folder(story) -> Path:
     folder = story.home.folder / "runtime" / "lost-hook-answers"
     folder.mkdir(parents=True, exist_ok=True)
     return folder
@@ -261,7 +261,7 @@ def lost_answers_folder(story) -> Path:
 
 @pytest.mark.parametrize("file_name", ["999999", "not-a-number"])
 def test_a_lost_answer_file_that_cannot_be_retried_is_logged_and_removed_and_the_hook_is_answered(server, file_name):
-    answers_folder = lost_answers_folder(server.story)
+    answers_folder = dropped_answers_folder(server.story)
     (answers_folder / file_name).touch()
     server.expect_hook_answer("/hook", hook_body(f"after-{file_name}"), 200, "new message 1")
     server.story.expect_rows(not list(answers_folder.iterdir()), f"lost hook answer {file_name} cannot be retried and is removed" in server.story.system_log_text())
@@ -276,7 +276,7 @@ def test_a_retry_that_finds_the_database_busy_fails_nothing_and_keeps_its_file(b
         writer.execute("BEGIN IMMEDIATE")
         retries.retry(builder.container)
         writer.rollback()
-    answers_folder = lost_answers_folder(builder)
+    answers_folder = dropped_answers_folder(builder)
     builder.expect_rows(list(answers_folder.iterdir()), "will retry at the next hook" in builder.system_log_text())
     retries.retry(builder.container)
     builder.expect_rows(not list(answers_folder.iterdir()))

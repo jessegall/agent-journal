@@ -90,15 +90,15 @@ class ServerStory:
         hook that gave up at its limit does, and waits until the server has answered it."""
         data = json.dumps(body).encode()
         finished = Event()
-        answer_lost = HookEndpoint.answer_lost
+        dropped_answer = HookEndpoint.answer_lost
 
-        def record_lost(endpoint, reply):
+        def drop_record(endpoint, reply):
             try:
-                answer_lost(endpoint, reply)
+                dropped_answer(endpoint, reply)
             finally:
                 finished.set()
 
-        with patch.object(HookEndpoint, "answer_lost", record_lost):
+        with patch.object(HookEndpoint, "answer_lost", drop_record):
             with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS), socket.socket(socket.AF_UNIX) as connection:
                 connection.connect(str(self.socket_path))
                 connection.sendall(f"POST /hook HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)

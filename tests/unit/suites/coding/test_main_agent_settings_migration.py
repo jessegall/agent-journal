@@ -27,10 +27,10 @@ def test_an_orchestrator_environment_with_no_auto_value_gets_auto_off():
 
 
 def test_values_already_set_and_builder_environments_are_left_alone():
-    before = [(1, DRIVER, '"coding.orchestrator"'), (1, AUTO, "true"), (2, DRIVER, '"coding.builder"'), (2, AUTO, "false"), (3, DRIVER, '"coding.builder"'),
+    previous = [(1, DRIVER, '"coding.orchestrator"'), (1, AUTO, "true"), (2, DRIVER, '"coding.builder"'), (2, AUTO, "false"), (3, DRIVER, '"coding.builder"'),
               (None, "journal.core.helpers.read-only-helper-profile-limits", '["journal-merger:1:2"]'), (1, "journal.suites.coding.workers.worker-run-limit", "3"),
               (None, "journal.suites.coding.workers.merge-commands", '["git push"]')]
-    assert migrate(connection_with(before)) == before
+    assert migrate(connection_with(previous)) == previous
 
 
 def test_a_second_run_changes_nothing():

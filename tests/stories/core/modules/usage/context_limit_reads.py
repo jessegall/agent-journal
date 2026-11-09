@@ -52,18 +52,18 @@ def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_nu
     path = story.home.status_file("s-1")
     modified = path.stat().st_mtime_ns
     original = JournalHome.status_file
-    asked = []
+    requested = []
 
     def status_file_race(home, session):
-        asked.append(session)
-        found = original(home, session)
-        if len(asked) > 1:
-            found.write_text(json.dumps({"context_window": {"used_percentage": 90, "total_input_tokens": 1_000_000_000}}))
-            os.utime(found, ns=(modified, modified))
-        return found
+        requested.append(session)
+        matched = original(home, session)
+        if len(requested) > 1:
+            matched.write_text(json.dumps({"context_window": {"used_percentage": 90, "total_input_tokens": 1_000_000_000}}))
+            os.utime(matched, ns=(modified, modified))
+        return matched
 
     monkeypatch.setattr(JournalHome, "status_file", status_file_race)
     with story.repeated_work.request():
         usage = story.container.get(ContextShare).usage("claude", "s-1")
     expect_value((usage.percent, usage.used_tokens), (WINDOW_PERCENT, USED_TOKENS))
-    expect_value(len(asked), 1)
+    expect_value(len(requested), 1)

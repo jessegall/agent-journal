@@ -38,7 +38,7 @@ def expect_line(story: Story, sample, text: str) -> None:
     assert any(text in line for line in lines), lines
 
 
-def expect_no_line(story: Story, sample, text: str) -> None:
+def expect_line_absent(story: Story, sample, text: str) -> None:
     lines = read_lines(story, sample)
     assert not any(text in line for line in lines), lines
 
@@ -146,7 +146,7 @@ def test_a_run_that_printed_lines_with_no_percent_counts_silent(new_story):
 def test_a_short_run_is_never_silent(new_story):
     story = new_story(fixture=BuildStarted)
     finish_build(story, 1, GOLANG_OUTPUT, seconds=50)
-    expect_no_line(story, ALIAS_START, "showed no percent")
+    expect_line_absent(story, ALIAS_START, "showed no percent")
 
 
 def test_a_run_that_shows_a_percent_is_told_once_that_progress_shows(new_story):
@@ -156,7 +156,7 @@ def test_a_run_that_shows_a_percent_is_told_once_that_progress_shows(new_story):
     story.advance(timedelta(seconds=70))
     end_run(story, story.container.get(ProcessQuery).find(process.id), PERCENT_OUTPUT)
     expect_line(story, ALIAS_START, "journal build-npm now shows its progress in the chat")
-    again = started_run(story, ALIAS, CommandCategory.BUILD)
+    repeated = started_run(story, ALIAS, CommandCategory.BUILD)
     story.advance(timedelta(seconds=70))
-    end_run(story, story.container.get(ProcessQuery).find(again.id), PERCENT_OUTPUT)
-    expect_no_line(story, ALIAS_START, "now shows its progress")
+    end_run(story, story.container.get(ProcessQuery).find(repeated.id), PERCENT_OUTPUT)
+    expect_line_absent(story, ALIAS_START, "now shows its progress")

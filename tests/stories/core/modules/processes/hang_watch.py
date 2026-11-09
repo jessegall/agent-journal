@@ -9,7 +9,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-NO_SUCH_GROUP = 999999
+MISSING_GROUP = 999999
 HANG_SECONDS = 300
 
 
@@ -41,7 +41,7 @@ def watch_tick(story: Story) -> None:
 def started_tree(story: Story, used: float | None) -> FakeGroupCpuTime:
     tree = FakeGroupCpuTime(used)
     story.container.bind(GroupCpuTime, tree)
-    story.container.get(OutputFolder).write_pid(1, NO_SUCH_GROUP)
+    story.container.get(OutputFolder).write_pid(1, MISSING_GROUP)
     watch_tick(story)
     return tree
 
@@ -72,8 +72,8 @@ def test_an_idle_run_that_printed_lately_is_left_alone(new_story):
     folder = story.container.get(OutputFolder)
     folder.write_start(1, "make build", ["make build"])
     folder.write_output(1, 1, "still alive\n")
-    printed_at = story.clock.timestamp().value.timestamp() - 5
-    os.utime(folder.home.folder / "processes" / "1" / "1.out", (printed_at, printed_at))
+    shown_at = story.clock.timestamp().value.timestamp() - 5
+    os.utime(folder.home.folder / "processes" / "1" / "1.out", (shown_at, shown_at))
     watch_tick(story)
     story.expect_text("process show 1", "state: background", actor=story.agent)
 

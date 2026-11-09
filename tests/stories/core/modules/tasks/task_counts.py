@@ -15,12 +15,12 @@ class FourStatesTasks(StoryFixture):
     def steps(self, story):
         repository_environment(story)
         worker = dispatched_worker(story).id
-        started, blocked, delegated, done, _ = (story.new_row_id(f'task make "Counted task {number}" --environment main', actor=story.agent) for number in range(1, 6))
+        started, blocked, delegated, finished, _ = (story.new_row_id(f'task make "Counted task {number}" --environment main', actor=story.agent) for number in range(1, 6))
         story.expect_success(f"task start {started} --environment main", actor=story.agent)
         story.expect_success(f'task block {blocked} --reason "Waiting for a review" --environment main', actor=story.agent)
         story.expect_success(f"task assign {delegated} --to {worker} --environment main", actor=story.agent)
-        story.expect_success(f"task start {done} --environment main", actor=story.agent)
-        story.expect_success(f'task close {done} --outcome "Done" --environment main', actor=story.agent)
+        story.expect_success(f"task start {finished} --environment main", actor=story.agent)
+        story.expect_success(f'task close {finished} --outcome "Done" --environment main', actor=story.agent)
 
 
 def counted_task(story, number):
@@ -46,8 +46,8 @@ def test_the_completed_count_follows_the_last_hours_a_time_and_a_reset(new_story
     story.expect_rows(counts(story, "--hours 2")["completed"] == 0, counts(story, "--hours 4")["completed"] == 1, counts(story)["completed"] == 1)
     story.advance(timedelta(hours=22))
     story.expect_rows(counts(story)["completed"] == 0, counts(story, "--hours 48")["completed"] == 1)
-    since = counts(story, "--hours 48")["since"]
-    story.expect_rows(counts(story, f"--since {since}")["completed"] == 1)
+    start_time = counts(story, "--hours 48")["since"]
+    story.expect_rows(counts(story, f"--since {start_time}")["completed"] == 1)
     reset = counts(story, "--hours 1")["since"]
     last = counted_task(story, 5)
     story.expect_success(f"task start {last} --environment main", actor=story.agent)

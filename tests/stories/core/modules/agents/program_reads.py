@@ -49,8 +49,8 @@ def test_a_new_or_resumed_main_agent_starts_with_the_journals_first_prompt_last(
     folder = project_folder(story)
     for line in (f"program command claude {folder} --launch launch-1", f"program command claude {folder} --launch launch-1 --resume s-1",
                  f"program command codex {folder} --launch launch-1", f"program command codex {folder} --launch launch-1 --resume t-1"):
-        printed = story.run(line).output_text.splitlines()
-        expect_value(printed[-1], FIRST_PROMPT)
+        output_text = story.run(line).output_text.splitlines()
+        expect_value(output_text[-1], FIRST_PROMPT)
 
 
 def test_a_person_who_gave_arguments_gets_no_first_prompt(new_story):

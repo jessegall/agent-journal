@@ -38,9 +38,9 @@ def test_an_inactive_module_lists_no_inspector(new_story):
 
 def test_the_windows_list_is_unchanged(new_story):
     story = new_story(fixture=MainEnvironment)
-    before = sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name)
+    previous = sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name)
     story.expect_sync_success(f"{PLAIN_PATH}:InspectorModule")
-    expect_value(sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name), before)
+    expect_value(sorted(WindowsRoute(story.home).windows("main"), key=lambda window: window.name), previous)
 
 
 def test_an_inspector_lists_the_fields_of_its_row_only_when_it_declares_so(new_story):

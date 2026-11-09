@@ -44,10 +44,10 @@ def test_each_shipped_profile_gets_the_skills_of_its_job_and_not_those_of_anothe
 
 def test_every_skill_a_shipped_profile_names_exists_and_every_profile_names_some(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
-    known = {skill.folder for skill in story.container.get(SkillCatalogue).skills()}
-    unknown = {profile.name: set(profile.skills) - known for profile in SHIPPED_PROFILES if set(profile.skills) - known}
-    unnamed = [profile.name for profile in SHIPPED_PROFILES if not profile.skills]
-    story.expect_rows(not unknown, not unnamed, detail=f"{unknown} {unnamed}")
+    recorded = {skill.folder for skill in story.container.get(SkillCatalogue).skills()}
+    unknown = {profile.name: set(profile.skills) - recorded for profile in SHIPPED_PROFILES if set(profile.skills) - recorded}
+    anonymous = [profile.name for profile in SHIPPED_PROFILES if not profile.skills]
+    story.expect_rows(not unknown, not anonymous, detail=f"{unknown} {anonymous}")
 
 
 def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skill(new_story):

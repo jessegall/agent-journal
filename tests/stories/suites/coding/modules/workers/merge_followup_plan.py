@@ -41,8 +41,8 @@ def test_s57_restart_retains_successful_steps(new_story):
     Path(repository.folder, "marker.txt").write_text("")
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
-    ran = Path(repository.folder, "ran.txt").read_text().splitlines()
-    expect_value(ran, ["ran"])
+    executed = Path(repository.folder, "ran.txt").read_text().splitlines()
+    expect_value(executed, ["ran"])
 
 
 def test_s57_uncertain_command_needs_reconciliation(new_story, monkeypatch):

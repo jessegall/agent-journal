@@ -16,9 +16,9 @@ def conditions(registry) -> dict[str, tuple[str, tuple[str, ...]]]:
 
 def test_a_working_agent_offers_pause_and_stop(new_story):
     registry, declaration = read_registry(new_story(fixture=MainEnvironment))
-    found = conditions(registry)
-    expect_value(found["agents.pause"], ("activity", tuple(["working"])))
-    expect_value(found["agents.stop"], ("activity", ("working", "paused", "at usage limit")))
+    matched = conditions(registry)
+    expect_value(matched["agents.pause"], ("activity", tuple(["working"])))
+    expect_value(matched["agents.stop"], ("activity", ("working", "paused", "at usage limit")))
     expect_value({action.name: action.confirm for action in declaration.actions}["agents.stop"], "Stop the agent? It stops what it is doing.")
 
 
@@ -30,9 +30,9 @@ def test_a_paused_agent_offers_resume(new_story):
 
 def test_an_ended_agent_offers_nothing(new_story):
     registry, declaration = read_registry(new_story(fixture=MainEnvironment))
-    found = conditions(registry)
-    expect_value(bool(all("ended" not in values for _, values in found.values())), True)
-    expect_value(found["workers.merge"], ("working_role", tuple(["worker"])))
+    matched = conditions(registry)
+    expect_value(bool(all("ended" not in values for _, values in matched.values())), True)
+    expect_value(matched["workers.merge"], ("working_role", tuple(["worker"])))
 
 
 def test_a_worker_offers_send_merge_and_release(new_story):

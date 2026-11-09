@@ -16,9 +16,9 @@ def test_a_fractional_cost_cap_is_a_share_of_a_fraction():
 
 
 def test_s59_unknown_or_reset_cost_is_not_zero():
-    for reading, baseline in ((None, 0.0), (0.4, None), (0.4, 3.0)):
-        result = spend(reading, baseline)
-        assert result.cost_spent is None and result.cost_uncertain and result.cost_share == 0.0
+    for read_row, baseline in ((None, 0.0), (0.4, None), (0.4, 3.0)):
+        outcome = spend(read_row, baseline)
+        assert outcome.cost_spent is None and outcome.cost_uncertain and outcome.cost_share == 0.0
 
 
 def test_a_cost_limit_of_zero_is_unlimited_and_never_uncertain():

@@ -8,7 +8,7 @@ def test_the_tasks_window_reads_its_visible_tab_and_requests_plan_places_on_dema
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         status, listed = window_data(server, cookie, window="tasks.tasks", query="environment=main&tab=list&board.limit=1")
-        story.expect_rows(status == 200, set(listed["keys"]) == {"board", "tags"}, all(result["code"] == 0 for result in listed["keys"].values()))
+        story.expect_rows(status == 200, set(listed["keys"]) == {"board", "tags"}, all(outcome["code"] == 0 for outcome in listed["keys"].values()))
         status, graph = window_data(server, cookie, window="tasks.tasks", query="environment=main&tab=graph")
         story.expect_rows(status == 200, set(graph["keys"]) == {"graph"}, graph["keys"]["graph"]["code"] == 0)
         status, places = window_data(server, cookie, keys="places", window="tasks.tasks")

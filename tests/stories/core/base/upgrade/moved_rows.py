@@ -38,6 +38,6 @@ def test_a_version_4_subagent_arrives_as_an_ended_read_only_helper(new_story):
 
 def test_at_most_one_main_agent_of_each_environment_stays_open_so_continue_resumes_it(new_story):
     story = upgraded_story(new_story)
-    open_mains = [row for row in story.container.get(Queries).query(Agent).all_rows() if row.role == AgentRole.MAIN and row.ended_at is None]
-    environments = [row.environment_id for row in open_mains]
+    active_mains = [row for row in story.container.get(Queries).query(Agent).all_rows() if row.role == AgentRole.MAIN and row.ended_at is None]
+    environments = [row.environment_id for row in active_mains]
     story.expect_rows(len(environments) == len(set(environments)))

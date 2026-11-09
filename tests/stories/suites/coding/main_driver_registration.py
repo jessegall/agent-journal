@@ -18,11 +18,11 @@ from tests.stories.support.story_checks import expect_absent_value
 
 ELEVEN_RULES = [SmallBatchRule, UnstartedWorkerRule, StoppedWorkerRunRule, ApprovedPlanStopRule, DeliveredWorkStopRule, WorkerFileRule, MergeCheckoutRule,
                 OrphanWorktreeRule, WorkersOutRule, UnmergedWorkerRule, InactiveWorkerStopRule]
-OTHER_MAIN_RULES = [DispatchAllowanceRule, HelperAllowanceRule, MainFileWriteRule]
+SECOND_MAIN_RULES = [DispatchAllowanceRule, HelperAllowanceRule, MainFileWriteRule]
 
 
 def test_main_driver_keeps_all_eleven_rules():
-    expect_absent_value([rule.name for rule in [*ELEVEN_RULES, *OTHER_MAIN_RULES]
+    expect_absent_value([rule.name for rule in [*ELEVEN_RULES, *SECOND_MAIN_RULES]
                          if list(rule.drivers) != ["coding.main"]])
 
 

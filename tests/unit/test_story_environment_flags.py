@@ -95,5 +95,5 @@ def test_two_stories(new_story):
                        modules=("x",))
     first.run("task list --environment main")
 '''
-    result = flags.swept(source)
-    assert result.count('environment="main"') == 2 and "--environment" not in result
+    outcome = flags.swept(source)
+    assert outcome.count('environment="main"') == 2 and "--environment" not in outcome

@@ -11,7 +11,7 @@ from tests.stories.support.story_checks import expect_value
 FIRST = "Merges are blocked until you accept approval card 15 or switch Auto on"
 REWORDED = "Merges stay blocked until you accept approval card 15 or turn Auto on"
 DIFFERENT = "Worker 697 is building the browser login and installs it tonight"
-ONE_SUBJECT = "The skills came back attached after the compaction, the overview printed old reports, and the hold stopped a read of the fixtures"
+SINGLE_SUBJECT = "The skills came back attached after the compaction, the overview printed old reports, and the hold stopped a read of the fixtures"
 DUPLICATE_SUBJECT = "The fixtures read and the hold came first, then old reports from the overview, and the compaction attached the skills last"
 FILLERS = ("The login cookie now carries a name of its own per journal", "Plan 1099 is merged with its declared inspectors and docked cards",
            "Worker 701 added the update path for a project installed from source", "The sandbox switch lets a person run one worker without it",
@@ -50,7 +50,7 @@ def test_a_different_message_and_a_short_one_pass(new_story):
 
 def test_a_message_on_the_same_subject_with_its_points_elsewhere_in_the_text_passes(new_story):
     story = new_story(fixture=UserJoined, environment="main")
-    sent(story, ONE_SUBJECT)
+    sent(story, SINGLE_SUBJECT)
     sent(story, DUPLICATE_SUBJECT)
 
 

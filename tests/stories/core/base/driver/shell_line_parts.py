@@ -137,6 +137,6 @@ def test_an_old_hook_sends_no_doubt_so_its_parts_count_as_uncertain_and_the_line
 
 def test_a_line_naming_the_same_task_twice_names_it_once():
     block = ShellPart("journal", CommandCategory.JOURNAL, ["task", "block", "12", "--reason", "waits"])
-    other = ShellPart("journal", CommandCategory.JOURNAL, ["task", "close", "9"])
-    line = read_line("journal task block 12 --reason waits && journal task block 12 --reason waits && journal task close 9", block, block, other)
+    second = ShellPart("journal", CommandCategory.JOURNAL, ["task", "close", "9"])
+    line = read_line("journal task block 12 --reason waits && journal task block 12 --reason waits && journal task close 9", block, block, second)
     expect_value(line.journal_command_numbers("task block", "task close"), (12, 9))

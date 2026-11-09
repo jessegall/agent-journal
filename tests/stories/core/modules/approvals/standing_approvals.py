@@ -14,7 +14,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 SHAPE = '{"tabs":["notes.board"],"active":"notes.board","width":"full"}'
-ASKED = "A person was asked in the dock"
+REQUESTED = "A person was asked in the dock"
 
 
 def save_preset(name: str) -> str:
@@ -36,7 +36,7 @@ def permanent_acceptance(story: Story, request: ApprovalRequest, scope: str) -> 
 
 def resume_request(story: Story) -> None:
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent resume {story.agent.id} --reason needed", ASKED, actor=story.agent)
+    story.expect_refusal(f"agent resume {story.agent.id} --reason needed", REQUESTED, actor=story.agent)
 
 
 def resume_approved(story: Story) -> None:
@@ -78,7 +78,7 @@ def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_s
     resume_approved(story)
     covered = requests(story)[1]
     story.expect_rows(covered.state is ApprovalState.ACCEPTED, covered.standing_id == standing[0].id, story.row(Agent, story.agent.id).paused_at is None, detail=str(covered))
-    story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
+    story.expect_refusal(save_preset("Mine"), REQUESTED, actor=story.agent)
     story.expect_rows(requests(story)[2].state is ApprovalState.OPEN, len(requests(story)) == 3)
 
 
@@ -95,7 +95,7 @@ def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_stor
 
 def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever_follows(new_story):
     story = new_story(NOTES, fixture=UserJoined)
-    story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
+    story.expect_refusal(save_preset("Mine"), REQUESTED, actor=story.agent)
     permanent_acceptance(story, requests(story)[0], "like")
     story.expect_rows(standing_yeses(story)[0].scope is StandingScope.LIKE)
     story.expect_text(save_preset("Other"), "accepted approval", actor=story.agent)

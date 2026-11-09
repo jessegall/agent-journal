@@ -11,8 +11,8 @@ def test_the_links_of_several_messages_are_read_with_one_line(new_story):
     story.run_listeners()
     receipts = json.loads(story.run(f"link receipts --messages {first},{second} --json").output_text)["messages"]
     story.expect_rows(set(receipts) == {str(first), str(second)}, all(set(receipt) == {"named", "sent"} for receipt in receipts.values()))
-    named = json.loads(story.run(f"link list --source message:{first} --type about --type edited --group-counterparts --page-size 10 --json").output_text)
-    story.expect_rows(receipts[str(first)]["named"]["total"] == named["total"], receipts[str(second)]["named"]["total"] == 0,
+    labelled = json.loads(story.run(f"link list --source message:{first} --type about --type edited --group-counterparts --page-size 10 --json").output_text)
+    story.expect_rows(receipts[str(first)]["named"]["total"] == labelled["total"], receipts[str(second)]["named"]["total"] == 0,
                       receipts[str(first)]["sent"]["total"] == receipts[str(second)]["sent"]["total"])
 
 

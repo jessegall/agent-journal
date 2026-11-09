@@ -53,8 +53,8 @@ def test_three_hook_timeouts_in_ten_minutes_tell_the_main_agent_once_with_the_ag
         late_hook(story, 6)
         story.advance(timedelta(seconds=30))
     reply = story.hook("s-1", HookSamples.prompt("and on"))
-    told = [line for line in reply.lines if "hook timeouts" in line]
-    story.expect_rows(len(told) == 1, f"agent {story.agent.id} had 3 hook timeouts" in told[0], slow[0] not in told[0], detail=str(told))
+    notified = [line for line in reply.lines if "hook timeouts" in line]
+    story.expect_rows(len(notified) == 1, f"agent {story.agent.id} had 3 hook timeouts" in notified[0], slow[0] not in notified[0], detail=str(notified))
     story.expect_text("chat-mark list --environment main", slow[0], actor=story.user)
     late_hook(story, 6)
     story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "hook timeouts")

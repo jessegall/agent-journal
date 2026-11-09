@@ -73,7 +73,7 @@ def test_many_docked_approvals_use_one_read_through_the_viewer_route(pending_req
     monkeypatch.setattr(LineRoute, "run_line", recorded)
     status, answer = window_data(pending_viewer.server, pending_viewer.cookie, keys=",".join(f"dock.{item.id}" for item in items))
     story.expect_rows(status == 200, len(answer["keys"]) == 12, reads == [["approval", "pending"]],
-                      all(len(result["value"]["rows"]) == 12 for result in answer["keys"].values()))
+                      all(len(outcome["value"]["rows"]) == 12 for outcome in answer["keys"].values()))
 
 
 def test_a_registry_refresh_removes_a_stale_closed_approval_card(phone_request, phone_viewer):
