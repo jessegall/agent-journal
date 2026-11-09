@@ -20,6 +20,7 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.server.support.browser_story import expect_browser
+from core.base.provider.context_window import ContextWindow
 from core.modules.helpers.support.profile_model import ProfileModel
 import json
 
@@ -250,7 +251,7 @@ def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
     resumable_session(story, helper, monkeypatch)
     kept = story.container.get(KeptHelpers)
     story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"))[0].id == helper.id)
-    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: (80, 1000))
+    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: ContextWindow(80, 1000))
     story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher")) == ())
 
 
