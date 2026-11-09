@@ -41,7 +41,7 @@ const (
 
 // skippedFolders hold what no agent writes by hand, in any project.
 var skippedFolders = map[string]bool{".git": true, ".journal": true, ".venv": true, "venv": true, "node_modules": true, "__pycache__": true,
-	"dist": true, "vendor": true, ".idea": true, ".cache": true, ".pytest_cache": true, ".mypy_cache": true}
+	"dist": true, "vendor": true, ".idea": true, ".cache": true, ".pytest_cache": true, ".mypy_cache": true, "graphify-out": true}
 
 // Fingerprint tells whether a file may have changed without reading it.
 type Fingerprint struct {

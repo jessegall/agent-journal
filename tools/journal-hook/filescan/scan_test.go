@@ -121,6 +121,7 @@ func TestLeftOutFoldersAndIgnoredFilesAreNotRead(t *testing.T) {
 	writeFile(t, root, "build/out.txt", "a\n")
 	writeFile(t, root, "node_modules/a.js", "a\n")
 	writeFile(t, root, "web/dist/a.js", "a\n")
+	writeFile(t, root, "graphify-out/graph.json", "{}\n")
 	if changes := scanned(t, root, state); len(changes) != 0 {
 		t.Fatalf("these are no edits: %v", changes)
 	}
