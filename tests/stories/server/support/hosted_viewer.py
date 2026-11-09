@@ -17,12 +17,22 @@ def group_name() -> str:
     return grp.getgrgid(os.getgid()).gr_name
 
 
-def socket_answer(socket_path: Path, method: str, route: str, host: str = PUBLIC_HOST, headers: dict[str, str] | None = None, body: str = "",
-                  declared_bytes: int | None = None):
+def socket_raw(socket_path: Path, method: str, route: str, host: str = PUBLIC_HOST, headers: dict[str, str] | None = None, body: str = "",
+               declared_bytes: int | None = None) -> bytes:
     header_lines = "".join(f"{name}: {value}\r\n" for name, value in (headers or {}).items())
     length = len(body) if declared_bytes is None else declared_bytes
     head = f"{method} {route} HTTP/1.1\r\nHost: {host}\r\n{header_lines}Content-Length: {length}\r\nConnection: close\r\n\r\n"
-    return parsed_answer(raw_answer(socket_path, (head + body).encode()))
+    return raw_answer(socket_path, (head + body).encode())
+
+
+def socket_answer(socket_path: Path, method: str, route: str, host: str = PUBLIC_HOST, headers: dict[str, str] | None = None, body: str = "",
+                  declared_bytes: int | None = None):
+    return parsed_answer(socket_raw(socket_path, method, route, host, headers, body, declared_bytes))
+
+
+def reply_headers(raw: bytes) -> dict[str, str]:
+    lines = raw.partition(b"\r\n\r\n")[0].decode().split("\r\n")[1:]
+    return {name: value.strip() for name, _, value in (line.partition(":") for line in lines)}
 
 
 @pytest.fixture
