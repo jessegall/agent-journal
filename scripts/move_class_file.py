@@ -10,6 +10,9 @@ from pathlib import Path
 
 SOURCE_FOLDERS = ("src", "tests", "scripts")
 SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
+TEXT_FILE_PATTERNS = (".commandments/**/*", "tests/snapshots/**/*.json", "docs/writing-a-module.md", "pyrightconfig.json")
+RECORDING_FILE_PATTERNS = ("tools/journal-hook/**/testdata/*.jsonl",)
+PLUGIN_FILE_PATTERNS = (".journal/plugins/*/journal-plugin.json",)
 
 
 class MoveRefused(Exception):
@@ -54,6 +57,15 @@ def text_nodes_outside_docstrings(tree: ast.Module) -> Iterator[ast.Constant]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in skipped:
             yield node
+
+
+def dotted_string_edit(line: str, node: ast.Constant, previous: str, moved: str) -> tuple[int, int, int, str] | None:
+    if node.value != previous and not node.value.startswith(f"{previous}:"):
+        return None
+    start = node.col_offset + 1
+    if line.encode()[start: start + len(previous.encode())] != previous.encode():
+        return None
+    return node.lineno, start, start + len(previous.encode()), moved
 
 
 def attribute_text(node: ast.expr) -> str | None:
@@ -112,8 +124,44 @@ def import_edits(path: Path, label: str, file_module: str, previous: str, moved:
             if isinstance(node, ast.Attribute) and attribute_text(node) == previous:
                 edits.append((node.lineno, node.col_offset, node.end_col_offset or node.col_offset, moved))
     pattern = re.compile(rf"(?<![\w.]){re.escape(previous)}(?!\w)")
-    unplaced.extend(f"{label}:{node.lineno}: names the file in a string" for node in text_nodes_outside_docstrings(tree) if pattern.search(node.value))
+    for node in text_nodes_outside_docstrings(tree):
+        if pattern.search(node.value) is None:
+            continue
+        edit = dotted_string_edit(lines[node.lineno - 1], node, previous, moved)
+        if edit is None:
+            unplaced.append(f"{label}:{node.lineno}: names the file in a string the tool cannot rewrite")
+        else:
+            edits.append(edit)
     return edits, unplaced, import_lines
+
+
+def files_matching(root: Path, patterns: tuple[str, ...]) -> Iterator[Path]:
+    for pattern in patterns:
+        yield from (path for path in sorted(root.glob(pattern)) if path.is_file())
+
+
+def file_text(path: Path) -> str | None:
+    try:
+        return path.read_text()
+    except UnicodeDecodeError:
+        return None
+
+
+def names_module(text: str, dotted: str, relative_path: str) -> bool:
+    return re.search(rf"(?<![\w.]){re.escape(dotted)}(?!\w)", text) is not None or relative_path in text
+
+
+def rewritten_text(text: str, previous: str, moved: str, source_path: str, target_path: str) -> str:
+    return re.sub(rf"(?<![\w.]){re.escape(previous)}(?!\w)", moved, text).replace(source_path, target_path)
+
+
+def unknown_path_pattern(previous: str) -> re.Pattern[str]:
+    words = [re.escape(word) for word in previous.split(".")]
+    return re.compile(r"(?<!\w)" + r"(?:/|\\+\.|\.)".join(words) + r"(?!\w)")
+
+
+def listed_files(root: Path, patterns: tuple[str, ...], previous: str, source_path: str, title: str) -> list[str]:
+    return [f"{title} {path.relative_to(root).as_posix()}" for path in files_matching(root, patterns) if (text := file_text(path)) is not None and names_module(text, previous, source_path)]
 
 
 def planned_files(root: Path, source: Path, target: Path) -> dict[Path, str]:
@@ -132,6 +180,16 @@ def planned_files(root: Path, source: Path, target: Path) -> dict[Path, str]:
             raise MoveRefused(f"{label}: the move would change a line of the moved file that is not an import")
         if edits:
             changed[path] = replaced_lines(path.read_text(), edits)
+    source_path, target_path = source.relative_to(root).as_posix(), target.relative_to(root).as_posix()
+    for path in files_matching(root, TEXT_FILE_PATTERNS):
+        text = file_text(path)
+        if text is None:
+            continue
+        rewritten = rewritten_text(text, previous, moved, source_path, target_path)
+        if unknown_path_pattern(previous).search(rewritten) is not None:
+            unplaced.append(f"{path.relative_to(root).as_posix()}: names the file in a form the tool cannot rewrite")
+        if rewritten != text:
+            changed[path] = rewritten
     if unplaced:
         raise MoveRefused("references the tool cannot rewrite:\n" + "\n".join(unplaced))
     return changed
@@ -146,7 +204,12 @@ def move_file(root: Path, source: Path, target: Path, leave_alias: bool = False,
     if leave_alias:
         raise MoveRefused(f"{source.relative_to(root)}: a move leaves no alias at the old path")
     changed = planned_files(root, source, target)
+    previous, source_path = module_name(root, source), source.relative_to(root).as_posix()
     report = [f"change {path.relative_to(root).as_posix()}" for path in changed]
+    report += listed_files(root, RECORDING_FILE_PATTERNS, previous, source_path, "not rewritten, a recording:")
+    report += listed_files(root, PLUGIN_FILE_PATTERNS, previous, source_path, "not rewritten, a plugin:")
+    python_count = sum(path.suffix == ".py" for path in changed)
+    report.append(f"{python_count} Python files and {len(changed) - python_count} other files change")
     if dry_run:
         return report
     for path, text in changed.items():

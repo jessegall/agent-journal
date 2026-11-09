@@ -67,11 +67,12 @@ def test_a_longer_module_name_is_not_rewritten(tmp_path):
     assert importer.read_text() == "from core.base.sample_error_list import Row\n"
 
 
-def test_a_name_in_a_string_stops_the_move_and_is_named(tmp_path):
-    importer = project(tmp_path, 'PATH = "core.base.sample_error:SampleError"\n')
+def test_a_name_inside_a_longer_string_stops_the_move_and_is_named(tmp_path):
+    text = 'PATH = "see core.base.sample_error for more"\n'
+    importer = project(tmp_path, text)
     with pytest.raises(script.MoveRefused, match="src/core/user.py:1"):
         moved(tmp_path)
-    assert (tmp_path / SOURCE).is_file() and importer.read_text() == 'PATH = "core.base.sample_error:SampleError"\n'
+    assert (tmp_path / SOURCE).is_file() and importer.read_text() == text
 
 
 def test_a_relative_import_stops_the_move(tmp_path):
@@ -118,5 +119,5 @@ def test_missing_packages_are_created_below_the_source_root(tmp_path):
 def test_a_dry_run_names_the_files_and_changes_nothing(tmp_path):
     importer = project(tmp_path, "from core.base.sample_error import SampleError\n")
     report = script.move_file(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, dry_run=True)
-    assert report == ["change src/core/user.py"]
+    assert report == ["change src/core/user.py", "1 Python files and 0 other files change"]
     assert importer.read_text() == "from core.base.sample_error import SampleError\n" and (tmp_path / SOURCE).is_file()
