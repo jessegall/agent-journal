@@ -9,6 +9,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, asking_main, dispatched_story_worker, shell_test_part, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
+from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
 
 PYTHON = "--test-command python=pytest"
@@ -57,6 +58,14 @@ def worker_runs(worker):
 
 def started_lines(worker):
     return [process.line for process in worker_runs(worker)]
+
+
+def test_a_named_test_run_is_launched_in_the_worktree_once_it_is_saved(worker_with_commands, monkeypatch):
+    launched = []
+    monkeypatch.setattr(WorkerTestLaunch, "start", lambda _launch, _process_id, line, folder, _session: launched.append((line, folder)))
+    worker_with_commands.story.expect_success(PYTHON_RUN, actor=worker_with_commands.worker)
+    worker_with_commands.story.run_listeners()
+    expect_value(launched, [("pytest tests/cart.py", str(worker_with_commands.repository.worktree_folder(worker_with_commands.worker.id)))])
 
 
 def test_dispatch_with_no_test_command_is_refused(task_story):
