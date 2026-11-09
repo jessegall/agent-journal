@@ -38,8 +38,10 @@ from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
+from server.viewer.door_request import DoorRequest
 from server.viewer.viewer_server import ViewerServer
 
+UNKNOWN_PEER_UID = -1
 COOKIE_NAME = "journal_viewer"
 SHARE_COOKIE_NAME = "journal_share"
 SHARE_ROUTE = "/viewer/share/"
@@ -117,8 +119,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_get(self) -> None:
         viewer = self.viewer()
-        if self.headers.get("Host") != viewer.host:
-            self.answer(403, {"error": "this listener answers only its own address"})
+        if self.door_refuses(is_change=False):
             return
         route = urlsplit(self.path)
         key = parse_qs(route.query).get("key", [""])[0]
@@ -237,10 +238,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_post(self) -> None:
         viewer = self.viewer()
-        body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
-        if self.headers.get("Host") != viewer.host:
-            self.answer(403, {"error": "this listener answers only its own address"})
+        if self.door_refuses(is_change=True):
             return
+        body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         if urlsplit(self.path).path == PAIRING_ROUTE:
             self.answer_pairing(viewer, body)
             return
@@ -534,6 +534,22 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def viewer(self) -> ViewerServer:
         return server_instance(self.server, ViewerServer)
+
+    @property
+    def peer_uid(self) -> int:
+        return UNKNOWN_PEER_UID
+
+    def door_request(self, is_change: bool) -> DoorRequest:
+        return DoorRequest(self.peer_uid, self.headers.get("Host", ""), self.headers.get("Origin", ""), self.headers.get("Sec-Fetch-Site", ""), is_change,
+                           self.viewer().login.has_session(self.cookie_token()), int(self.headers.get("Content-Length", "0") or "0"))
+
+    def door_refuses(self, is_change: bool) -> bool:
+        refusal = self.viewer().door.refusal(self.door_request(is_change))
+        if refusal is None:
+            return False
+        self.close_connection = True
+        self.answer(refusal.status, {"error": refusal.reason}, {"Connection": "close"})
+        return True
 
     def answer(self, status: int, value: dict[str, object], headers: Mapping[str, str] = MappingProxyType({})) -> None:
         body = json.dumps(value).encode()

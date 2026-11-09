@@ -2,6 +2,7 @@ import threading
 
 from server.listener_thread import STOP_LIMIT_SECONDS
 from server.tracked_requests import TrackedRequests
+from server.viewer.door import Door
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 
@@ -14,9 +15,10 @@ class ViewerEndpoint(TrackedRequests):
 
     login: ViewerLogin
     routes: ViewerRoutes
+    door: Door
 
-    def attach(self, login: ViewerLogin, routes: ViewerRoutes) -> None:
-        self.login, self.routes = login, routes
+    def attach(self, login: ViewerLogin, routes: ViewerRoutes, door: Door) -> None:
+        self.login, self.routes, self.door = login, routes, door
         self.thread = threading.Thread(target=self.serve, name="viewer", daemon=True)
 
     @property

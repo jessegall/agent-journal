@@ -3,6 +3,7 @@ import time
 from http.server import HTTPServer
 
 from server.handover_descriptors import QUEUED_CONNECTIONS
+from server.viewer.local_door import LocalDoor
 from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_handler import ViewerRequestHandler
@@ -35,7 +36,7 @@ class ViewerListener(ViewerEndpoint, HTTPServer):
                     super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
                     break
                 time.sleep(PORT_POLL_SECONDS)
-        self.attach(login, routes)
+        self.attach(login, routes, LocalDoor(self.host))
 
     @property
     def port(self) -> int:

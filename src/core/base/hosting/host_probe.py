@@ -17,6 +17,9 @@ class HostProbe:
     def journal_user_name(self) -> str:
         return pwd.getpwuid(os.getuid()).pw_name
 
+    def user_id(self, user: str) -> int:
+        return pwd.getpwnam(user).pw_uid
+
     def owner_id(self, path: Path) -> int:
         return path.stat().st_uid
 

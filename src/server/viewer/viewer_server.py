@@ -1,5 +1,6 @@
 from typing import Protocol, runtime_checkable
 
+from server.viewer.door import Door
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 
@@ -12,5 +13,6 @@ class ViewerServer(Protocol):
     login: ViewerLogin
     routes: ViewerRoutes
     host: str
+    door: Door
 
     def untrack_request(self) -> None: ...

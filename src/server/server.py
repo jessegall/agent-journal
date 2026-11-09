@@ -142,7 +142,7 @@ def main(argv: list[str]) -> int:
     routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
     if hosting.is_hosted:
-        viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, inherited_viewer)
+        viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, HostProbe().user_id(hosting.mode.proxy_user), inherited_viewer)
         try:
             start_check.check_socket(files.viewer_socket)
         except Refusal as refusal:

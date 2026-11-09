@@ -10,5 +10,9 @@ class ViewerSocketRequestHandler(ViewerRequestHandler):
         super().setup()
         self.peer = socket_peer(self.connection)
 
+    @property
+    def peer_uid(self) -> int:
+        return self.peer.uid
+
     def address_string(self) -> str:
         return f"pid {self.peer.pid} uid {self.peer.uid}"
