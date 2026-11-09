@@ -66,9 +66,6 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.reservations.check([command.task_id, *command.delegated_ids])
         read = self.queries.query(Task).find_many([command.task_id, *command.delegated_ids])
         tasks = AssignableTasks.checked(self.release.released(read, context.actor, context.environment_id))
-        if not AssignableTasks.has_open(tasks):
-            raise Refusal("every task here is blocked, and a new worker starts on an open one",
-                          "assign blocked tasks to an existing worker with journal worker send <n> --task, or dispatch once one opens")
         with self.scopes.row_scope(tasks[0]):
             return self.dispatched(command, tasks, replace(context, environment_id=tasks[0].environment_id))
 
@@ -88,7 +85,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
         source = self.sources.source_copy(replace(context, environment_id=task.environment_id))
         task_sources = self.copies.copies(tasks, source)
-        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program), context)
+        opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program and AssignableTasks.has_open(tasks)), context)
         try:
             start = self.git.start(environment.folder, opened.worktree, tuple(listed.id for listed in tasks))
             self.git.cut(environment.folder, opened.worktree, start.point)
