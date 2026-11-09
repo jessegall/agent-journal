@@ -21,10 +21,11 @@ class PersonRowGuard(Guard[E]):
         raise NotImplementedError(f"{type(self).__name__} names no person")
 
     def check(self, event: E, context: Context) -> None:
+        person_id = self.person_id(event)
         if isinstance(event, Deleted) and context.actor.type in (ActorType.CORE, ActorType.MODULE):
             return
         actor = context.actor
         if actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal(self.question, required_person_id=self.person_id(event), command=context.command)
-        if actor.type is not ActorType.USER or actor.id != self.person_id(event):
+            raise UserApprovalRefusal(self.question, required_person_id=person_id, command=context.command)
+        if actor.type is not ActorType.USER or actor.id != person_id:
             raise self.refusal

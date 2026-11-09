@@ -19,7 +19,6 @@ class ReviewQueuedListener(SaveListener[Created[Review]]):
         self.bus, self.reviewers, self.settings = bus, reviewers, settings
 
     def handle(self, event: Created[Review], context: Context) -> None:
-        review = event.row
         reviewers = self.reviewers
         slots_available = reviewers.active().count() < self.settings.limit()
         needs_reviewer = self.settings.enabled() and not reviewers.idle().exists()

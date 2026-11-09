@@ -18,5 +18,6 @@ class SkillRequirements:
 
     @classmethod
     def read(cls, reader: SettingReader) -> "SkillRequirements":
-        return cls(*(SettingValues(reader).project.texts(key) for key in SKILL_LIST_KEYS),
+        project = SettingValues(reader).project
+        return cls(project.texts(SESSION_START_KEY), project.texts(AFTER_COMPACTION_KEY), project.texts(MAIN_AGENT_KEY),
                    any(reader.current(key).source == ENVIRONMENT_SOURCE for key in SKILL_LIST_KEYS))

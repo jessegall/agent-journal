@@ -11,4 +11,4 @@ class SendTemplate(Command[Message]):
 
     template_id: int
     target: str
-    values: Mapping[str, str] = field(default_factory=dict)
+    values: Mapping[str, str] = field(default_factory=dict[str, str])

@@ -32,8 +32,7 @@ from core.base.viewer.window_extension import WindowExtension
 from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.library.library_share import LibraryShare
-from core.base.model.model import Model
+from core.base.library.library_share_class import LibraryShareClass
 from core.base.query.shared_rows import SharedRows
 from core.base.setting.setting_node import SettingNode
 from core.base.ticker.tick_handler import TickHandler
@@ -96,7 +95,7 @@ class Module:
     settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []
-    library_shares: ClassVar[list[type[LibraryShare[Model]]]] = []
+    library_shares: ClassVar[list[type[LibraryShareClass]]] = []
     skills: ClassVar[list[SkillDeclaration]] = []
     seeders: ClassVar[list[type[Seeder]]] = []
     moves: ClassVar[list[type[VersionFourMove]]] = []
