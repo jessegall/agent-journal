@@ -60,6 +60,7 @@ from core.modules.plugins.commands.plugin_list.plugin_list_subcommand import Plu
 from core.modules.plugins.commands.plugin_settings.plugin_settings_subcommand import PluginSettingsSubcommand
 from core.modules.plugins.commands.plugin_services.plugin_services_subcommand import PluginServicesSubcommand
 from core.modules.plugins.listeners.plugin_services_upgrade_listener import PluginServicesUpgradeListener
+from core.modules.plugins.listeners.plugin_services_removal_listener import PluginServicesRemovalListener
 from core.modules.plugins.commands.plugin_service_log.plugin_service_log_subcommand import PluginServiceLogSubcommand
 from core.modules.plugins.commands.change_plugin_service.change_plugin_service_handler import ChangePluginServiceHandler
 from core.modules.plugins.commands.change_plugin_service.change_plugin_service_subcommand import ChangePluginServiceSubcommand
@@ -147,6 +148,6 @@ class PluginsModule(Module):
                      TickHandler(TickInterval(seconds=60), OrphanServiceStopping(), "orphan plugin service stopping"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]
     guards = [PluginEventGuard]
-    listeners = [PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
+    listeners = [PluginServicesRemovalListener, PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
     subcommands = [ChangePluginServiceSubcommand, LogPluginLineSubcommand, PostPluginCardSubcommand, PluginTrySubcommand, PluginEventsSubcommand, RunPluginCommandSubcommand, PluginCheckoutSubcommand, PluginPathSubcommand, RefreshPluginConfigSubcommand, PluginChangesSubcommand, PluginFileSubcommand, PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, PluginServicesSubcommand, PluginServiceLogSubcommand, UpgradePluginSubcommand, PluginPreviewSubcommand, PluginLatestSubcommand, PluginDashboardSubcommand, PluginDashboardsSubcommand, PluginDescriptionsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand]
