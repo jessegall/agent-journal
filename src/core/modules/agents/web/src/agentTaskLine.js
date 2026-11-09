@@ -19,6 +19,7 @@ export function taskLine({tasks, inHand, perHour}) {
         taskTip: `${done} of its ${all.length} tasks done${stage ? `. This one is ${stage.words}.` : "."}`,
         countTip: finished ? `All ${all.length} tasks done` : `${done} done, 1 in hand, ${left} to go`,
         paceTip: !finished && perHour ? `About ${perHour} an hour.` : "",
+        rate: !finished && perHour ? `${Math.round(perHour)}/hour` : "",
         bar: {total: all.length, done, testing: inState(all, "testing")},
     };
 }
