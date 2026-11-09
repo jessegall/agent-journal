@@ -19,15 +19,15 @@ var terminalTexts = map[string]string{
 func TestAnInterruptNoticeOfEachProgramIsToldOnceEvenWhenItsWordsComeInTwoWrites(t *testing.T) {
 	for name, notice := range terminalTexts {
 		t.Run(name, func(t *testing.T) {
-			told := 0
-			watcher := &InterruptWatcher{OnInterrupt: func() { told++ }}
+			notified := 0
+			watcher := &InterruptWatcher{OnInterrupt: func() { notified++ }}
 			_, _ = watcher.Write([]byte("working...\r\n"))
 			middle := len(notice) / 2
 			_, _ = watcher.Write([]byte(notice[:middle]))
 			_, _ = watcher.Write([]byte(notice[middle:] + "\r\n> "))
 			_, _ = watcher.Write([]byte("typing more output\r\n"))
-			if told != 1 {
-				t.Fatalf("the interrupt was told %d times", told)
+			if notified != 1 {
+				t.Fatalf("the interrupt was told %d times", notified)
 			}
 		})
 	}
@@ -39,35 +39,35 @@ func TestOutputWithNoInterruptNoticeTellsNothing(t *testing.T) {
 }
 
 // keyboardInput feeds the keyboard of an agent's terminal and gives what the program reads of it.
-func keyboardInput(t *testing.T, inputs *TerminalInputs, agentID int, typed string) io.Reader {
+func keyboardInput(t *testing.T, inputs *TerminalInputs, agentID int, entered string) io.Reader {
 	t.Helper()
 	keyboard, keys := io.Pipe()
 	read := inputs.Open(agentID, keyboard)
-	go func() { _, _ = io.WriteString(keys, typed) }()
+	go func() { _, _ = io.WriteString(keys, entered) }()
 	return read
 }
 
 // typedInBackground types a line as the launcher does while the program reads, since the input holds no more than the
 // program has read.
 func typedInBackground(inputs *TerminalInputs, agentID int, line string) <-chan bool {
-	typed := make(chan bool, 1)
-	go func() { typed <- inputs.TypeLine(agentID, line) }()
-	return typed
+	entered := make(chan bool, 1)
+	go func() { entered <- inputs.TypeLine(agentID, line) }()
+	return entered
 }
 
 func readUntil(t *testing.T, read io.Reader, length int) string {
 	t.Helper()
-	result := make([]byte, 0, length)
+	outcome := make([]byte, 0, length)
 	buffer := make([]byte, 64)
 	deadline := time.Now().Add(5 * time.Second)
-	for len(result) < length && time.Now().Before(deadline) {
+	for len(outcome) < length && time.Now().Before(deadline) {
 		count, err := read.Read(buffer)
-		result = append(result, buffer[:count]...)
+		outcome = append(outcome, buffer[:count]...)
 		if err != nil {
 			break
 		}
 	}
-	return string(result)
+	return string(outcome)
 }
 
 func TestAWakeLineClearsTheUnsentTextWithBackspacesAndTypesItAgainAfterTheLine(t *testing.T) {
@@ -79,12 +79,12 @@ func TestAWakeLineClearsTheUnsentTextWithBackspacesAndTypesItAgainAfterTheLine(t
 			if inputs.Pending(7) != "fix the t" {
 				t.Fatalf("the unsent text is %q", inputs.Pending(7))
 			}
-			typed := typedInBackground(inputs, 7, "you were interrupted")
+			entered := typedInBackground(inputs, 7, "you were interrupted")
 			want := strings.Repeat("\x7f", len("fix the t")) + "you were interrupted" + "\r" + "fix the t"
-			if got := readUntil(t, read, len(want)); got != want {
-				t.Fatalf("the program read %q, not %q", got, want)
+			if actual := readUntil(t, read, len(want)); actual != want {
+				t.Fatalf("the program read %q, not %q", actual, want)
 			}
-			if !<-typed {
+			if !<-entered {
 				t.Fatal("the line was not typed")
 			}
 			if strings.ContainsAny(want, "\x03\x1b") {
@@ -100,11 +100,11 @@ func TestAWakeLineClearsTheUnsentTextWithBackspacesAndTypesItAgainAfterTheLine(t
 func TestALineTypedWhereNothingIsUnsentIsTypedAsItWas(t *testing.T) {
 	inputs := NewTerminalInputs()
 	read := keyboardInput(t, inputs, 7, "")
-	typed := typedInBackground(inputs, 7, "go on")
-	if got := readUntil(t, read, len("go on\r")); got != "go on\r" {
-		t.Fatalf("the program read %q", got)
+	entered := typedInBackground(inputs, 7, "go on")
+	if actual := readUntil(t, read, len("go on\r")); actual != "go on\r" {
+		t.Fatalf("the program read %q", actual)
 	}
-	if !<-typed {
+	if !<-entered {
 		t.Fatal("the line was not typed")
 	}
 }
@@ -120,12 +120,12 @@ func TestTextTheLineDroppedByBackspaceOrEnterIsNotRemembered(t *testing.T) {
 
 func TestTheLoginCommandEnteredAtTheKeyboardIsToldAsAnInterrupt(t *testing.T) {
 	inputs := NewTerminalInputs()
-	told := make(chan int, 1)
-	inputs.OnLogin(func(agentID int) { told <- agentID })
+	notified := make(chan int, 1)
+	inputs.OnLogin(func(agentID int) { notified <- agentID })
 	read := keyboardInput(t, inputs, 7, "/login\r")
 	readUntil(t, read, len("/login\r"))
 	select {
-	case agentID := <-told:
+	case agentID := <-notified:
 		if agentID != 7 {
 			t.Fatalf("agent %d was told", agentID)
 		}

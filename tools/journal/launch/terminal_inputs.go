@@ -194,12 +194,12 @@ func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	turn.Lock()
 	defer turn.Unlock()
 	defer time.Sleep(keyPause)
-	remembered := inputs.Pending(agentID)
+	stored := inputs.Pending(agentID)
 	inputs.mutex.Lock()
 	inputs.typedAt[agentID] = time.Now()
 	inputs.mutex.Unlock()
-	if remembered != "" {
-		if _, err := io.WriteString(writer, strings.Repeat(backspace, utf8.RuneCountInString(remembered))); err != nil {
+	if stored != "" {
+		if _, err := io.WriteString(writer, strings.Repeat(backspace, utf8.RuneCountInString(stored))); err != nil {
 			return false
 		}
 	}
@@ -210,10 +210,10 @@ func (inputs *TerminalInputs) TypeLine(agentID int, line string) bool {
 	if _, err := io.WriteString(writer, "\r"); err != nil {
 		return false
 	}
-	if remembered == "" {
+	if stored == "" {
 		return true
 	}
-	_, err := io.WriteString(writer, remembered)
+	_, err := io.WriteString(writer, stored)
 	return err == nil
 }
 

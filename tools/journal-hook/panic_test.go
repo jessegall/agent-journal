@@ -62,14 +62,14 @@ func TestEachPanicCheckCountsDownFromTenAndTheEleventhMakesTheAgentResume(t *tes
 	claude := programs.LoadTable("").Programs["claude"]
 	for round := 0; round < 2; round++ {
 		for remaining := PanicCountStart; remaining >= 0; remaining-- {
-			if got := NextPanicCount(root); got != remaining {
-				t.Fatalf("round %d: the check counted %d left, not %d", round, got, remaining)
+			if actual := NextPanicCount(root); actual != remaining {
+				t.Fatalf("round %d: the check counted %d left, not %d", round, actual, remaining)
 			}
 		}
 	}
 	ClearPanicCount(root)
-	if got := NextPanicCount(root); got != PanicCountStart {
-		t.Fatalf("a new panic counted %d, not %d", got, PanicCountStart)
+	if actual := NextPanicCount(root); actual != PanicCountStart {
+		t.Fatalf("a new panic counted %d, not %d", actual, PanicCountStart)
 	}
 	counting := PanicReply(claude, "pre_tool_use", 7)
 	if counting.Refusal != "" || len(counting.Lines) != 1 || !strings.Contains(counting.Lines[0], "panic mode is on: 7 checks left") {

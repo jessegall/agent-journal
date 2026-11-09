@@ -22,20 +22,20 @@ type InterruptWatcher struct {
 func (watcher *InterruptWatcher) Write(output []byte) (int, error) {
 	watcher.mutex.Lock()
 	text := strings.ToLower(watcher.tail + string(output))
-	told := 0
+	notified := 0
 	for _, notice := range interruptNotices {
 		for {
 			index := strings.Index(text, notice)
 			if index < 0 {
 				break
 			}
-			told++
+			notified++
 			text = text[index+len(notice):]
 		}
 	}
 	watcher.tail = text[max(0, len(text)-longestNotice()):]
 	watcher.mutex.Unlock()
-	for range told {
+	for range notified {
 		if watcher.OnInterrupt != nil {
 			watcher.OnInterrupt()
 		}
