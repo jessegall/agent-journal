@@ -41,7 +41,8 @@ class WorkerCompaction:
         self.finished_task_ids.discard(worker.id)
         tokens = self.limit_check.tokens(worker.id)
         provider = self.providers.provider(worker.program)
-        if tokens is None or not provider.compacts_headless or self.attempted_tokens.get(worker.session) == tokens:
+        skips_compaction = tokens is None or not provider.compacts_headless or self.attempted_tokens.get(worker.session) == tokens
+        if skips_compaction:
             return None
         self.attempted_tokens[worker.session] = tokens
         return next(choice.line for group in provider.controls if group.key == CONTROL_KEY for choice in group.choices if choice.value == CONTROL_VALUE)

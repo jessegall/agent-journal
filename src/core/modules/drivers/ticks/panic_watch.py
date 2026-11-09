@@ -35,7 +35,8 @@ class PanicWatch:
             log.write(LogLevel.WARNING, f"panic file written: {text.strip()}", LogSource.BYPASS)
             self.show(bus, actor, environments, ShowMark(BypassMarkType.BYPASS, BypassMarkVariant.PANIC_STARTED, f"panic:{announced.stat().st_mtime_ns}", f"Panic: the main agent works around the journal. {reason}",
                              detail=text.strip(), outcome=MarkOutcome.FAILED))
-        if announced.is_file() and home.panic_file.is_file() and home.bypass_log.is_file():
+        has_unresolved_panic = announced.is_file() and home.panic_file.is_file() and home.bypass_log.is_file()
+        if has_unresolved_panic:
             claimed = home.bypass_log.with_suffix(".taken")
             home.bypass_log.replace(claimed)
             lines = [line for line in FileAccess.shared().read(claimed, errors="replace").splitlines() if line.strip()]

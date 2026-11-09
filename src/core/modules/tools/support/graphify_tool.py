@@ -85,7 +85,8 @@ class GraphifyTool:
     def tick(self, folder: Path) -> GraphStatus:
         self.checked_folder(folder)
         status = self.status(folder)
-        if not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder):
+        skips_refresh = not self.is_installed() or not status.commit or status.is_current or status.is_running or self.is_failed(folder)
+        if skips_refresh:
             return status
         return self.after_start(folder, status)
 

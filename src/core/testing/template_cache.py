@@ -67,7 +67,8 @@ class TemplateCache:
     def drop_expired(self, kept: Path | None = None) -> None:
         limit = time.time() - UNUSED_FOLDER_SECONDS
         for folder in self.root.iterdir() if self.root.is_dir() else ():
-            if folder.is_dir() and folder != kept and FolderStat.modified_time(folder) < limit and not self.is_leased(folder):
+            is_expired = folder.is_dir() and folder != kept and FolderStat.modified_time(folder) < limit and not self.is_leased(folder)
+            if is_expired:
                 shutil.rmtree(folder, ignore_errors=True)
         self.drop_oldest_templates(kept)
 

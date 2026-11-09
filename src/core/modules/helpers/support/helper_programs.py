@@ -30,6 +30,7 @@ class HelperPrograms:
         provider = self.providers.provider(program)
         hooks = ProgramHooks.hooks(type(provider), folder)
         provider.folder_trusted(folder)
-        if hooks.is_complete() and hooks.names_root(self.home.project_folder) and provider.hook_trust(folder) is HookTrust.READY:
+        hooks_ready = hooks.is_complete() and hooks.names_root(self.home.project_folder) and provider.hook_trust(folder) is HookTrust.READY
+        if hooks_ready:
             return
         hooks.write(f'"{self.home.folder / HOOK_RUNNER}"', self.home.project_folder, self.managed.all())

@@ -32,7 +32,8 @@ class ShareLinkRowGuard(Guard[Changed[ShareLink]]):
             if actor.type is ActorType.AGENT:
                 raise UserApprovalRefusal(f"Decide this share request {row.id}?", command=context.command)
         is_owner_change = is_new or isinstance(event, Deleted) or event.move is ShareLinkLifecycle.revoke
-        if is_owner_change and actor.type is ActorType.USER and actor.id == row.creator_id:
+        is_creator_owner_change = is_owner_change and actor.type is ActorType.USER and actor.id == row.creator_id
+        if is_creator_owner_change:
             return
         if actor.type is ActorType.AGENT and is_owner_change:
             raise UserApprovalRefusal(f"Change shared link {row.id}?", required_person_id=row.creator_id, command=context.command)

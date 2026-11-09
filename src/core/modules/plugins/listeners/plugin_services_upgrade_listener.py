@@ -19,5 +19,6 @@ class PluginServicesUpgradeListener(CommitListener[Changed[Plugin]]):
 
     def handle(self, event: Changed[Plugin], logged: LoggedEvent) -> None:
         processes = ServiceProcesses.shared(self.home)
-        if processes.serving and event.old_row is not None and event.old_row.files_digest != event.row.files_digest:
+        files_differ = processes.serving and event.old_row is not None and event.old_row.files_digest != event.row.files_digest
+        if files_differ:
             self.round.run(processes)
