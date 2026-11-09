@@ -10,4 +10,4 @@ class HookFile:
 
     path: Path
     entry_values: Mapping[str, object]
-    event_values: Mapping[str, Mapping[str, object]] = field(default_factory=dict)
+    event_values: Mapping[str, Mapping[str, object]] = field(default_factory=dict[str, Mapping[str, object]])

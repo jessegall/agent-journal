@@ -18,7 +18,7 @@ class ForeignRun:
     stderr: str
     milliseconds: int
     timed_out: bool
-    answer: Mapping[str, object] = field(default_factory=dict)
+    answer: Mapping[str, object] = field(default_factory=dict[str, object])
 
     @classmethod
     def parsed(cls, data: object) -> "ForeignRun":

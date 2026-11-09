@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from core.base.model.event_form import EventForm
 from core.base.model.table import indefinite_article
+from core.base.type_guards import is_list
 
 MODULE_NAME_PREFIX = "journal."
 CHANGE_EVENT_SUFFIXES = {"create": "created", "update": "updated", "delete": "deleted"}
@@ -41,7 +42,10 @@ class EventKeyEntry:
 
     @classmethod
     def restored(cls, entry: Mapping[str, object]) -> "EventKeyEntry":
-        return cls(str(entry["key"]), str(entry["event"]), str(entry["module"]), tuple(EventForm(str(form)) for form in entry["forms"]), str(entry.get("description", "")))
+        forms = entry["forms"]
+        if not is_list(forms):
+            raise TypeError(f"the forms of an event key are a list, not {forms!r}")
+        return cls(str(entry["key"]), str(entry["event"]), str(entry["module"]), tuple(EventForm(str(form)) for form in forms), str(entry.get("description", "")))
 
     @staticmethod
     def past_tense(change: str) -> str:

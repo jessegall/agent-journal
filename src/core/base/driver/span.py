@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Protocol
+from typing import ClassVar, Protocol
 
 from core.base.driver.span_queries import SpanQueries
 from core.base.timestamp import Timestamp
@@ -8,8 +8,8 @@ from core.base.timestamp import Timestamp
 class Span(Protocol):
     """One thing an interval waits for, counted from the moment the interval last fired, in its unit."""
 
-    @property
-    def unit(self) -> str: ...
+    unit: ClassVar[str]
+    count: int
 
     def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool: ...
 
