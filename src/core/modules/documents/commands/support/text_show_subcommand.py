@@ -37,9 +37,6 @@ class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
     def reading(self, arguments: Namespace) -> TextReading:
         return TextReading(self.queries.query(self.model).find(arguments.id), arguments)
 
-    def read(self, arguments: Namespace, caller: Caller) -> TextReading | LibraryReading:
-        return self.text_reading(arguments)
-
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, TextReading):
             return
