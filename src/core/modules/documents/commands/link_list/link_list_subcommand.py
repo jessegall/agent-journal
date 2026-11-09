@@ -27,7 +27,7 @@ class LinkListSubcommand(ReadSubcommand[LinkPage]):
         parser.add_argument("--type", type=LinkType, choices=tuple(LinkType), action="append", default=[])
         parser.add_argument("--group-counterparts", action="store_true")
         parser.add_argument("--first-counterpart")
-        parser.add_argument("--outside-plan", action="store_true")
+        parser.add_argument("--outside-plan", dest="excludes_plan", action="store_true")
         parser.add_argument("--kind", dest="target_model")
 
     def read(self, arguments: Namespace, caller: Caller) -> LinkPage:

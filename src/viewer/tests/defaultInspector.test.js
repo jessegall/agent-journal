@@ -32,7 +32,7 @@ afterEach(async () => {
 
 async function opened(hash, listings, answers) {
     await startButtons("main", new AllowancePrompts(async () => ({ok: true}))).load();
-    const catalogue = {inspector: (term) => listings[noun] ?? null, window: () => null, sectionsAt: () => []};
+    const catalogue = {inspector: (term) => listings[term] ?? null, window: () => null, sectionsAt: () => []};
     const read = async (line) => answers[line.join(" ")] ?? {ok: true, value: {rows: [], total: 0, categories: {}, counterparts: []}};
     location.hash = hash;
     await later();

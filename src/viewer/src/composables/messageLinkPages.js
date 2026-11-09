@@ -91,7 +91,7 @@ function pagesFor(context) {
         const sources = event.sources ?? (event.source_model && Number.isInteger(event.source_id) ? [{model: event.source_model, id: event.source_id}] : []);
         const types = event.link_types ?? (event.link_type ? [event.link_type] : []);
         const categories = types.length ? [WORK, SENT].filter((kind) => kind === WORK ? types.some((type) => ["about", "edited"].includes(type)) : types.includes("sent_to")) : [WORK, SENT];
-        if (!kinds.length) return;
+        if (!categories.length) return;
         const states = sources.length
             ? [...new Set(sources.filter((source) => source.model === "message").map((source) => source.id))].map((id) => entries.get(id)).filter(Boolean)
             : [...entries.values()].filter(visible).slice(0, VISIBLE_PAGE);

@@ -13,7 +13,7 @@ class AbandonSequenceSubcommand(RunMoveSubcommand):
     name = "abandon"
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--why", required=True)
+        parser.add_argument("--why", dest="justification", required=True)
         parser.add_argument("--sure", action="store_true")
 
     def command(self, arguments: Namespace, caller: Caller) -> MoveSequenceRun:

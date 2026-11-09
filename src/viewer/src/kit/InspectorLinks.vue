@@ -60,7 +60,7 @@ useResourceEvents(["link.*", "phase.*", "phase_task.*"], load);
                             :changes="changes"
                             :outside-plan="outsidePlan"
                             :page-size="pageSize"
-                            :only-kinds="kinds"
+                            :only-kinds="categories"
                             link-attribute="data-inspector-link"
                             @open="$emit('open', $event)"
                         />

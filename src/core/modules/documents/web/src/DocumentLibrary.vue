@@ -71,7 +71,7 @@ function open(row) {
 async function create() {
     const {title, abstract, body} = draft.value;
     if (!title.trim() || !abstract.trim()) return;
-    const answer = await view.run([noun.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
+    const answer = await view.run([term.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     drafting.value = false;
@@ -95,7 +95,7 @@ function closeOrClear() {
     else words.value = "";
 }
 
-watch([noun, state], () => {
+watch([term, state], () => {
     chosen.value = null;
     rows.value = [];
     loaded.value = false;
@@ -108,7 +108,7 @@ onUnmounted(() => stopFollowing?.());
 <template>
     <div class="library">
         <SearchBar v-model="words" class="library-bar">
-            <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />
+            <Segmented :options="LIBRARIES" :value="term" @pick="term = $event" />
             <Segmented :options="STATES" :value="state" data-library-state @pick="state = $event" />
             <Segmented :options="ORDERS" :value="order" @pick="order = $event" />
             <Btn small bordered data-library-new @click="drafting = !drafting">New {{ label.toLowerCase() }}</Btn>

@@ -132,7 +132,7 @@ watch(notesMode, () => {
             <template v-if="narrow">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'comments'}]" data-document-tab="comments" @click="tab = 'comments'">{{ notesMode === 'questions' ? 'Questions' : 'Comments' }} <em>{{ annotationTotal || "" }}</em></button>
             </template>
-            <template v-if="noun === 'doc'">
+            <template v-if="term === 'doc'">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'revisions'}]" data-document-tab="revisions" @click="tab = 'revisions'">Revisions <em>{{ revisions.length || "" }}</em></button>
             </template>
             <span class="document-tabs-space" />
@@ -179,7 +179,7 @@ watch(notesMode, () => {
             <CommentComposer ref="composer" v-model:draft="draft" :selection="selection" :send="send" :narrow="narrow" @clear="selection = null" />
         </template>
         <template v-if="editing">
-            <DocumentEditDialog :term="noun" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
+            <DocumentEditDialog :term="term" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
         </template>
     </div>
 </template>

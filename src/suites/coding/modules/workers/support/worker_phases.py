@@ -53,6 +53,10 @@ class WorkerPhases:
             return self.phase(following) == group.phase
         return len(group.tasks) < self.settings.number(TEST_BATCH_SIZE) and self.plans.find(following.id) is None
 
+    def continues_with(self, worktree: Worktree, following: Task | None) -> bool:
+        group = self.group(worktree, self.queries.query(Task).find(worktree.task_id))
+        return following is not None and group is not None and self.continues_group(group, following)
+
     def is_grouped(self, task: Task) -> bool:
         plan = self.plans.find(task.id)
         if plan is not None:

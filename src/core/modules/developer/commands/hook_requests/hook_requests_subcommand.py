@@ -19,7 +19,7 @@ class HookRequestsSubcommand(ReadSubcommand[tuple[HookRequest, ...]]):
         self.log = log
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--kind", action="append", default=[])
+        parser.add_argument("--kind", dest="category", action="append", default=[])
         parser.add_argument("--family", action="append", default=[])
         parser.add_argument("--sender", action="append", default=[])
         for name in ("categories", "families", "senders"):

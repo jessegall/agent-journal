@@ -165,7 +165,7 @@ onUnmounted(() => watcher?.disconnect());
                         </SwitchCase>
                         <template v-if="listing.links">
                             <InspectorLinks
-                                :model="noun"
+                                :model="term"
                                 :id="id"
                                 :read="read"
                                 :categories="listing.links.categories"

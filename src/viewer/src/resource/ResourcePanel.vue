@@ -36,7 +36,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             <div v-if="opened" :class="['veil', {fades: term === 'test-queue'}]" @click.self="close">
                 <InspectorPanel
                     ref="panel"
-                    :term="noun"
+                    :term="term"
                     :id="opened.id"
                     :table="opened.table"
                     :read="read"

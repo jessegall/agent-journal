@@ -140,7 +140,8 @@ never starts is retired after the idle time.
 - At each hand-in, say only what you did other than the task's brief asked or left out of it, never what you did:
   `journal worker next --differences "<what>"`. When you followed the brief, `--differences none`. The same goes for
   `journal worker deliver`.
-- `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
+- `journal worker next` inside a phase or batch only commits your task and gives you the next one: no judge, no tests.
+  At the end of the phase or batch it hands them all over: the plugins judge your changes together, a refusal says what to put
   right; the journal commits and puts all its proofs' tests on the run queue at once, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests, all on the run queue at once; those that fail come back to you to fix and deliver again.

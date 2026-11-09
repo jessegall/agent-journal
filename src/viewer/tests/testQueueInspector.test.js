@@ -42,7 +42,7 @@ const SNAPSHOT = {
     used_slots: 1,
     waiting_count: 2,
     halted: false,
-    halt_reason: "",
+    halt_cause: "",
     halt_reason: "",
     running: [RUN],
     waiting: [
@@ -247,7 +247,7 @@ test("a held empty queue shows the reason and empty messages", async () => {
 test("a queue held by an update says the update waits for the running commands and the others keep their order", async () => {
     await panel(async () => ({
         ok: true,
-        value: {...SNAPSHOT, halted: true, halt_reason: "update", halt_reason: "An update waits for the running commands to end"},
+        value: {...SNAPSHOT, halted: true, halt_cause: "update", halt_reason: "An update waits for the running commands to end"},
     }));
     const note = document.body.querySelector("[data-queue-update-waits]").textContent;
     expect(note).toContain("An update waits for the running commands to end.");

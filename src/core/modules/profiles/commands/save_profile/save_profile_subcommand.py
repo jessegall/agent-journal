@@ -36,10 +36,10 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--body")
         parser.add_argument("--access", type=Access, choices=list(Access))
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
-        parser.add_argument("--keeps-project-instructions", action=BooleanOptionalAction, default=None, help="a helper's own checkout keeps the project's instruction files beside the ones written for this profile")
+        parser.add_argument("--keeps-project-instructions", dest="uses_project_instructions", action=BooleanOptionalAction, default=None, help="a helper's own checkout keeps the project's instruction files beside the ones written for this profile")
         parser.add_argument("--skills", help="the skill folders the profile's agents get, a comma list or a JSON list; blank takes the skills of the profile's type")
         parser.add_argument("--injections", help='JSON naming each injection into the instruction files with true or false, such as {"journal": false}')
-        parser.add_argument("--program-if-possible", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
+        parser.add_argument("--program-if-possible", dest="preferred_program", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveProfile:
         if self.files.has(arguments.profile_name):

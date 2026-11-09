@@ -85,7 +85,7 @@ export class WindowCatalogue {
 
     // the listed inspector of a term, or null while the registry lists none
     inspector(term) {
-        return this.inspectors.value[noun] ?? null;
+        return this.inspectors.value[term] ?? null;
     }
 
     dropdown(name) {

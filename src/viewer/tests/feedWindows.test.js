@@ -89,7 +89,7 @@ test("the whole output reads the newest page on open and one earlier page when s
 });
 
 // every window that scrolls a feed passes the paginator to the pane that shows it; the panes that are not a feed are named here with justification
-const NOT_A_FEED = {"core/modules/processes/web/src/Output.vue": 1};
+const NOT_A_FEED = {"core/modules/processes/web/src/Output.vue": 1, "core/modules/plugins/web/src/PluginServiceTerminal.vue": 1};
 const SOURCE_ROOTS = ["../../core/modules", "../../suites", "../src"];
 const sourcesUnder = (folder) => readdirSync(folder).flatMap((name) => {
     if (name === "node_modules" || name === "dist" || name === "tests") return [];

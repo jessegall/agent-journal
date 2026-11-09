@@ -16,7 +16,7 @@ class CloseTextSubcommand(Subcommand[CloseText, TextRow]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
-        parser.add_argument("--why", required=True)
+        parser.add_argument("--why", dest="justification", required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> CloseText:
         return CloseText(self.model, arguments.id, arguments.justification)

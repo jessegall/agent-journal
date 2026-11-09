@@ -38,7 +38,7 @@ defineExpose({focus: () => root.value?.focus()});
         </template>
         <template v-if="listing">
             <Inspector
-                :term="noun"
+                :term="term"
                 :id="id"
                 :table="table"
                 :read="read"
@@ -52,7 +52,7 @@ defineExpose({focus: () => root.value?.focus()});
             />
         </template>
         <template v-else>
-            <InspectorHead :title="noun" :backed="backed" :opened="{table, id}" @close="emit('close')" @back="emit('back')" />
+            <InspectorHead :title="term" :backed="backed" :opened="{table, id}" @close="emit('close')" @back="emit('back')" />
             <p class="missing" role="alert" data-resource-failure>This row has no inspector.</p>
         </template>
     </aside>

@@ -18,7 +18,7 @@ const options = ref({family: ["process bookkeeping"], sender: []});
 const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
 const view = useWindow();
 const {data: requests, failure, loaded, reload: load} = usePausedProp(view, "requests", paused);
-const filterArguments = {category: "kinds", family: "families", sender: "senders"};
+const filterArguments = {category: "categories", family: "families", sender: "senders"};
 function setFilters(value) {
     for (const [name, values] of Object.entries(value)) view.state[`requests.${filterArguments[name]}`] = JSON.stringify(values);
 }

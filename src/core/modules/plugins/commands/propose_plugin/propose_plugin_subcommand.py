@@ -17,7 +17,7 @@ class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("source")
-        parser.add_argument("--why", required=True)
+        parser.add_argument("--why", dest="justification", required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> PluginManifest:
         manifest = PluginManifest.read(Path(arguments.source))

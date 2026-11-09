@@ -24,7 +24,7 @@ export function useTextComments(source, read) {
         loading.value = true;
         failure.value = "";
         try {
-            const answer = await read([noun, "comments", String(id), "--page", String(page), "--page-size", "25"]);
+            const answer = await read([term, "comments", String(id), "--page", String(page), "--page-size", "25"]);
             if (turn !== reading) return;
             if (!answer.ok) {
                 failure.value = answer.error;
@@ -49,7 +49,7 @@ export function useTextComments(source, read) {
         comments.value = [...comments.value, shown];
         total.value++;
         open.value = true;
-        const answer = await read([noun, "comment", String(id), text]);
+        const answer = await read([term, "comment", String(id), text]);
         if (selected !== `${source().term}:${source().id}`) return;
         if (!answer.ok) {
             comments.value = comments.value.filter((row) => row.id !== shown.id);

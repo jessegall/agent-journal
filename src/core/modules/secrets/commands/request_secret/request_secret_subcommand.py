@@ -18,7 +18,7 @@ class RequestSecretSubcommand(Subcommand[MakeSecret, Secret]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")
-        parser.add_argument("--why", required=True)
+        parser.add_argument("--why", dest="justification", required=True)
         parser.add_argument("--type", default=SecretType.API_KEY.value)
         parser.add_argument("--field", action="append", default=[])
         parser.add_argument("--brief", default="")
