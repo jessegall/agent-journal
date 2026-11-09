@@ -21,7 +21,7 @@ def test_a_person_saves_and_reads_a_profile_title_through_the_viewer(new_story):
 def test_agent_facts_and_filter_options_show_profile_titles_through_the_viewer(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     story.run('actor make user "Ada"')
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run('helper start journal-researcher --model sonnet --name "Madame Curie" --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()
     with server_story(story) as server:

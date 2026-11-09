@@ -143,7 +143,7 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
     worker = delivered_worker(story, repository)
     story.run_listeners()
     stopped(story, worker)

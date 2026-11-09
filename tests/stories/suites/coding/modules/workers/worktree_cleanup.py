@@ -144,7 +144,7 @@ def test_the_idle_stop_asks_the_launcher_to_stop_the_program(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.advance(hours(DEFAULT_HOURS))
     story.tick(MAIN_SESSION)
     story.run_listeners()

@@ -293,7 +293,7 @@ def test_an_agents_facts_carry_the_effort_it_runs_at(new_story):
 
 def test_a_helpers_facts_carry_its_profile_given_name_and_instruction(new_story):
     story = new_story(fixture=StartedTaskBuilder)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run('helper start journal-researcher --model sonnet --name "Madame Curie" --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()
     story.expect_text("usage agents --environment main --json", '"profile": "journal-researcher"', '"given_name": "Madame Curie"', '"instruction": "Read the cart"')

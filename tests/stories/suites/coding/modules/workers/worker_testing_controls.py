@@ -114,7 +114,7 @@ def merged_work(new_story, monkeypatch):
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story, repository, worker, started = queued_story(new_story, monkeypatch)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
     finally:

@@ -6,7 +6,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 def dispatched_brief(new_story, line):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(line, actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
