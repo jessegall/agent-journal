@@ -24,12 +24,12 @@ class PanicFileRule(DriverRule):
         self.home = home
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not self.names_panic_file(hook) or self.server_unreachable():
+        if not self.is_panic_file_named(hook) or self.server_unreachable():
             return RuleAnswer.allowed()
         return RuleAnswer.refused(PANIC_FILE.nudge())
 
     @staticmethod
-    def names_panic_file(hook: AgentHook) -> bool:
+    def is_panic_file_named(hook: AgentHook) -> bool:
         tool = hook.event.tool
         if tool is None:
             return False
