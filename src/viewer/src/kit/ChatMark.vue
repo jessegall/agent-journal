@@ -96,6 +96,8 @@ const sign = computed(() => {
 const status = computed(() =>
     Boolean(props.mark.figure || took.value || props.mark.docked || props.mark.stopping || sign.value || props.mark.settled || props.mark.news)
 );
+// a figure that is a duration with a decimal, such as 10.5 s, shows the decimal on its own so it can be drawn smaller
+const figureParts = computed(() => /^(\d+)(\.\d+)(.*)$/.exec(props.mark.figure ?? ""));
 const hover = computed(() => [props.mark.title, props.mark.time ? clock(props.mark.time) : ""].filter(Boolean).join(" · "));
 const tint = computed(() => ({
     ...(shade.value ? {"--mark": shade.value} : {}),
@@ -159,7 +161,7 @@ const tint = computed(() => ({
             <template v-if="status">
                 <span class="status">
                     <template v-if="mark.figure">
-                        <span class="figure">{{ mark.figure }}</span>
+                        <span class="figure"><template v-if="figureParts">{{ figureParts[1] }}<span class="figure-decimal" data-figure-decimal>{{ figureParts[2] }}</span>{{ figureParts[3] }}</template><template v-else>{{ mark.figure }}</template></span>
                     </template>
                     <template v-if="took">
                         <span class="ran-for">{{ took }}</span>
@@ -477,6 +479,11 @@ const tint = computed(() => ({
     font-size: 10.5px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+}
+
+.status .figure-decimal {
+    color: color-mix(in srgb, currentColor 55%, transparent);
+    font-size: 0.8em;
 }
 
 .status .sign {

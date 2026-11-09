@@ -10,4 +10,4 @@ class MainCaller:
         self.queries = queries
 
     def is_main(self, context: Context) -> bool:
-        return context.actor.id in MainAgentFinder.main_ids(self.queries, (context.actor.id,))
+        return MainAgentFinder.is_main(self.queries, context.actor.id)

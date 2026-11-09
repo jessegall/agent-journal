@@ -109,6 +109,7 @@ def test_resumed_worker_does_not_keep_the_old_job_source(assigned_worker):
     scenario.story.expect_success("task overview 1", actor=worker)
     scenario.story.expect_success('task make "First sourced worker output" --environment main', actor=worker)
     scenario.expect_link("message:2", "task:2", "about")
+    scenario.story.container.get(TaskBriefRequirement).is_required = True
     scenario.command(f"agent end {worker.id}")
     scenario.command("message clear-work-source")
     launcher = FakeLauncher(scenario.story.home.socket("launcher"))

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, InnerTabs, Skeleton, StateBadge, TabBody, WindowRoom, afterSkeletonMinimum, peekRef, stateLook, useWindow} from "@journal/window-kit";
+import {Btn, Icon, InnerTabs, Skeleton, StateBadge, TabBody, TaskBar, WindowRoom, afterSkeletonMinimum, peekRef, stateLook, useWindow} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
@@ -46,7 +46,6 @@ const choose = (chosen) => {
 };
 const shown = computed(() => board.value.plans);
 const total = computed(() => board.value[tab.value?.count_field]);
-const share = (row, count) => (row.task_count ? Math.round((count / row.task_count) * 100) : 0);
 if (view.shared) {
     view.reload(key.value);
     view.follow(["plan.*", "phase.*", "task.*"], () => view.reload(key.value));
@@ -73,7 +72,7 @@ if (view.shared) {
                         <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
                             <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<StateBadge type="plan" :state="row.state" :row-id="row.id" :class="['plan-state', stateLook('plan', row.state)]" data-plan-state /></span>
                             <span class="plan-title" :title="row.title">{{ row.title }}</span>
-                            <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row, row.completed_count)}%`}" /><span class="plan-bar-testing" data-plan-testing :style="{width: `${share(row, row.testing_count)}%`}" /></span>
+                            <TaskBar class="plan-bar" :total="row.task_count" :done="row.completed_count" :testing="row.testing_count" />
                             <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done<template v-if="row.current_phase"> · phase {{ row.current_phase }}</template></span>
                             <PlanAgents :plan-id="row.id" :agents="row.agents" />
                         </div>
@@ -149,26 +148,6 @@ if (view.shared) {
     font-weight: 500;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.plan-bar {
-    display: flex;
-    height: 4px;
-    overflow: hidden;
-    border-radius: 2px;
-    background: var(--chip);
-}
-
-.plan-bar-fill {
-    display: block;
-    height: 100%;
-    background: var(--accent);
-}
-
-.plan-bar-testing {
-    display: block;
-    height: 100%;
-    background: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .plan-foot,

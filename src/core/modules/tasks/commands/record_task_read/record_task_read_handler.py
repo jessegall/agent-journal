@@ -1,9 +1,9 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.tasks.commands.record_task_read.record_task_read import RecordTaskRead
 from core.modules.tasks.models.task_read import TaskRead
+from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 
 class RecordTaskReadHandler(Handler[RecordTaskRead, None]):
@@ -11,11 +11,11 @@ class RecordTaskReadHandler(Handler[RecordTaskRead, None]):
 
     command = RecordTaskRead
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, tasks: CurrentTasks, repository: Repository) -> None:
+        self.tasks, self.repository = tasks, repository
 
     def handle(self, command: RecordTaskRead, context: Context) -> None:
         agent_id = context.actor.id
-        if self.queries.query(TaskRead).filter(task_id=command.task_id, session_agent_id=agent_id).exists():
+        if self.tasks.has_brief_read(command.task_id, agent_id):
             return
         self.repository.save(TaskRead(task_id=command.task_id, session_agent_id=agent_id, creator_id=agent_id), context)

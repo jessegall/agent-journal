@@ -29,3 +29,7 @@ class MainAgentFinder:
     @staticmethod
     def main_ids(queries: Queries, agent_ids: tuple[int, ...]) -> set[int]:
         return {agent.id for agent in queries.query(Agent).filter(role=AgentRole.MAIN).matching(Among("id", agent_ids)).all_rows()}
+
+    @staticmethod
+    def is_main(queries: Queries, agent_id: int) -> bool:
+        return queries.query(Agent).filter(id=agent_id, role=AgentRole.MAIN).exists()

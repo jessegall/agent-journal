@@ -1,17 +1,10 @@
-import {readFileSync} from "node:fs";
-import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
 import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import WorkMode from "../../suites/coding/web/src/WorkMode.vue";
 import {settle as settled} from "./support/windowContext.js";
 import {context as windowContext} from "./support/windowContext.js";
-
-// the rule of the shared tabs that draws their border, read from the component's own style
-function sharedTabsStyle() {
-    const style = readFileSync(resolve(__dirname, "..", "kit/InnerTabs.vue"), "utf8").split("<style")[1].replace(/^[^>]*>/, "");
-    return style.split("}").find((block) => block.split("{")[0].trim() === ".inner-tabs").split("{")[1];
-}
+import {styleDeclarations} from "./support/styleDeclarations.js";
 
 const KEYS = {
     work: {line: "work-settings show", events: ["setting.*"]},
@@ -101,7 +94,7 @@ test("the agent settings tabs are the viewer's shared tabs, which have a border 
     expect(bar.querySelector("[data-inner-tabs]")).not.toBeNull();
     expect(bar.querySelector(".segmented")).toBeNull();
     expect([...bar.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim())).toEqual(["Work", "Agents", "Tests", "Advanced"]);
-    expect(sharedTabsStyle()).toMatch(/border-bottom:\s*1px solid/);
+    expect(styleDeclarations("kit/InnerTabs.vue", ".inner-tabs")).toMatch(/border-bottom:\s*1px solid/);
     bar.querySelector("[data-tab=tests]").click();
     await settled();
     expect(document.querySelector("[data-agent-settings-tests]")).not.toBeNull();

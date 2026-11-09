@@ -28,7 +28,7 @@ class ViewerKeyRoute:
             caller = container.get(CallerResolver).caller(request)
             queries = container.get(Queries)
             environment = queries.query(Environment).find(caller.environment_id).name if caller.environment_id is not None else ""
-            is_main_agent = caller.actor.type is ActorType.AGENT and bool(MainAgentFinder.main_ids(queries, tuple([caller.actor.id])))
+            is_main_agent = caller.actor.type is ActorType.AGENT and MainAgentFinder.is_main(queries, caller.actor.id)
         finally:
             container.get(Database).close()
         if is_main_agent:

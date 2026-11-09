@@ -32,7 +32,8 @@ An empty score means nobody scored it; only a route that needs a score stops dis
 - `journal task start <n>` takes a task in hand; `journal task list` shows the tasks here, `--state open` narrows it.
 - `journal task overview <n>` prints a task's title, brief, recent comments and logs with counts, and a bounded
   conversation with its original request, plan comments and report/design references. A task handed to you blocks your writes until you
-  have run it, and again after each compaction.
+  have run it, and again after each compaction. A second overview of the same task in one context window is refused
+  until a compaction or clear.
 - `journal task context <n>` reads the same authorized conversation without selecting a request. The default page
   contains at most five messages and 8,000 characters of body and attachment metadata. Follow the exact returned
   page, message-text and ancestry commands to read everything omitted. `--newest` selects recent messages while
