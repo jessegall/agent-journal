@@ -38,8 +38,12 @@ from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
+from server.viewer.door_refusal import DoorRefusal
+from server.viewer.door_request import DoorRequest
 from server.viewer.viewer_server import ViewerServer
 
+UNKNOWN_PEER_UID = -1
+CLOSED_DOOR_REASON = "not available on a hosted journal yet"
 COOKIE_NAME = "journal_viewer"
 SHARE_COOKIE_NAME = "journal_share"
 SHARE_ROUTE = "/viewer/share/"
@@ -117,8 +121,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_get(self) -> None:
         viewer = self.viewer()
-        if self.headers.get("Host") != viewer.host:
-            self.answer(403, {"error": "this listener answers only its own address"})
+        if self.door_refuses(is_change=False):
             return
         route = urlsplit(self.path)
         key = parse_qs(route.query).get("key", [""])[0]
@@ -132,7 +135,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                     return
                 self.answer_redirect(kept_query, {})
                 return
-            self.answer_redirect(kept_query, {"Set-Cookie": f"{self.cookie_name(COOKIE_NAME)}={token}; HttpOnly; SameSite=Strict; Path=/"})
+            self.answer_redirect(kept_query, {"Set-Cookie": viewer.answer_headers.cookie(self.cookie_name(COOKIE_NAME), token)})
             return
         if route.path == SERVER_STATE_ROUTE:
             self.answer(200, asdict(viewer.routes.server_state_route.state()))
@@ -237,10 +240,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_post(self) -> None:
         viewer = self.viewer()
-        body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
-        if self.headers.get("Host") != viewer.host:
-            self.answer(403, {"error": "this listener answers only its own address"})
+        if self.door_refuses(is_change=True):
             return
+        body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         if urlsplit(self.path).path == PAIRING_ROUTE:
             self.answer_pairing(viewer, body)
             return
@@ -413,8 +415,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if status == PASSWORD_TRY_LIMIT_STATUS:
             self.answer(status, {"error": "too many wrong passwords: try again later"})
             return
-        kept = f"{share_cookie}={opening.cookie}; HttpOnly; SameSite=Strict; Path=/"
-        ended = f"{share_cookie}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"
+        kept = viewer.answer_headers.cookie(share_cookie, opening.cookie)
+        ended = f"{viewer.answer_headers.cookie(share_cookie, '')}; Max-Age=0"
         cookie = {"Set-Cookie": kept if status == OPEN else ended}
         self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE, cookie, status, ENDED_LINK_MARK if status != OPEN else b"")
 
@@ -441,8 +443,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("ETag", caching.etag)
         self.send_header("Access-Control-Allow-Origin", "*")
         if module_file.frame:
-            self.send_header("Content-Security-Policy", FRAME_POLICY.format(listener=f"http://{viewer.host}"))
-        for name, value in headers.items():
+            self.send_header("Content-Security-Policy", FRAME_POLICY.format(listener=viewer.answer_headers.listener_origin(viewer.host)))
+        for name, value in {**(viewer.answer_headers.shell_page() if path == SHELL_PAGE else {}), **headers}.items():
             self.send_header(name, value)
         self.end_headers()
         self.wfile.write(content)
@@ -482,7 +484,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if session.type is not SessionType.PERSON or session.person_id is None:
             self.answer(403, {"error": "only a person's own viewer can log in another browser"})
             return
-        self.answer(200, {"link": f"http://{viewer.host}/?key={viewer.login.new_key(session.person_id)}"})
+        self.answer(200, {"link": f"{viewer.answer_headers.listener_origin(viewer.host)}/?key={viewer.login.new_key(session.person_id)}"})
 
     def answer_login_page(self, reason: str) -> None:
         body = LOGIN_PAGE.format(reason=html.escape(reason)).encode()
@@ -515,7 +517,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         payload = json.dumps({"paired": True}).encode()
         self.send_response(200)
-        self.send_header("Set-Cookie", f"{self.cookie_name(COOKIE_NAME)}={token}; HttpOnly; SameSite=Strict; Path=/")
+        self.send_header("Set-Cookie", viewer.answer_headers.cookie(self.cookie_name(COOKIE_NAME), token))
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(payload)))
         self.end_headers()
@@ -525,7 +527,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         return self.session_cookie(self.cookie_name(COOKIE_NAME), self.cookie_name(SHARE_COOKIE_NAME))
 
     def cookie_name(self, base: str) -> str:
-        return self.viewer().login.cookie_name(base)
+        return self.viewer().answer_headers.cookie_prefix + self.viewer().login.cookie_name(base)
 
     def session_cookie(self, *names: str) -> str:
         cookie, login = SimpleCookie(self.headers.get("Cookie", "")), self.viewer().login
@@ -534,6 +536,40 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def viewer(self) -> ViewerServer:
         return server_instance(self.server, ViewerServer)
+
+    def send_response(self, code: int, message: str | None = None) -> None:
+        self.sent_header_names: set[str] = set()
+        super().send_response(code, message)
+
+    def send_header(self, keyword: str, value: str) -> None:
+        super().send_header(keyword, value)
+        self.sent_header_names.add(keyword.lower())
+
+    def end_headers(self) -> None:
+        for name, value in self.viewer().answer_headers.common_headers().items():
+            if name.lower() not in self.sent_header_names:
+                self.send_header(name, value)
+        super().end_headers()
+
+    @property
+    def peer_uid(self) -> int:
+        return UNKNOWN_PEER_UID
+
+    def door_request(self, is_change: bool) -> DoorRequest:
+        return DoorRequest(self.peer_uid, self.headers.get("Host", ""), self.headers.get("Origin", ""), self.headers.get("Sec-Fetch-Site", ""), is_change,
+                           self.viewer().login.has_session(self.cookie_token()), int(self.headers.get("Content-Length", "0") or "0"))
+
+    def door_refuses(self, is_change: bool) -> bool:
+        viewer = self.viewer()
+        refusal = viewer.door.refusal(self.door_request(is_change))
+        route = urlsplit(self.path)
+        if refusal is None and viewer.closed_doors.closes_route(route.path, parse_qs(route.query)):
+            refusal = DoorRefusal(404, CLOSED_DOOR_REASON)
+        if refusal is None:
+            return False
+        self.close_connection = True
+        self.answer(refusal.status, {"error": refusal.reason}, {"Connection": "close"})
+        return True
 
     def answer(self, status: int, value: dict[str, object], headers: Mapping[str, str] = MappingProxyType({})) -> None:
         body = json.dumps(value).encode()

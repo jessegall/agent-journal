@@ -1,0 +1,9 @@
+@@PUBLIC_HOST@@ {
+	request_body {
+		max_size @@UPLOAD_LIMIT_MEGABYTES@@MB
+	}
+	reverse_proxy unix/@@VIEWER_SOCKET@@ {
+		flush_interval -1
+		header_up X-Forwarded-For {remote_host}
+	}
+}
