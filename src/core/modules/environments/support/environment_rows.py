@@ -1,5 +1,5 @@
 from core.base.database.kept_rows import KeptRows
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 

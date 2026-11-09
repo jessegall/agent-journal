@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.table_statements import TableStatements
 from core.base.journal_home import JournalHome
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from core.base.query.conditions.greater import Greater

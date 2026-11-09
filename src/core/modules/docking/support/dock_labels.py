@@ -1,4 +1,4 @@
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.model import Model
 from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry

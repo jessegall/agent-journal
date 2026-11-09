@@ -4,7 +4,7 @@ from typing import TypeVar
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.page import Page
 
 T = TypeVar("T")

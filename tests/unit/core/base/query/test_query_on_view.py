@@ -6,7 +6,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.listener.event_rows import EventRows
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.model.view_model import ViewModel
 from core.base.query.queries import Queries

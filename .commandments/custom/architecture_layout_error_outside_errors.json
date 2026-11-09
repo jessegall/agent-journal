@@ -70,9 +70,6 @@
                 "file": "src/core/base/database/schema_mismatch_error.py"
             },
             {
-                "file": "src/core/base/deadline_passed_error.py"
-            },
-            {
                 "file": "src/core/base/dotted_path/dotted_path_error.py"
             },
             {
@@ -86,9 +83,6 @@
             },
             {
                 "file": "src/core/base/driver/old_hook_runner_error.py"
-            },
-            {
-                "file": "src/core/base/duration_error.py"
             },
             {
                 "file": "src/core/base/guard/guard_refusal.py"
@@ -122,15 +116,6 @@
             },
             {
                 "file": "src/core/base/listener/listener_class_error.py"
-            },
-            {
-                "file": "src/core/base/missing_file_refusal.py"
-            },
-            {
-                "file": "src/core/base/missing_hint_error.py"
-            },
-            {
-                "file": "src/core/base/missing_rows_error.py"
             },
             {
                 "file": "src/core/base/model/model_error.py"
@@ -175,9 +160,6 @@
                 "file": "src/core/base/seed/demo_error.py"
             },
             {
-                "file": "src/core/base/unbound_value_error.py"
-            },
-            {
                 "file": "src/core/base/upgrade/dry_run_end_error.py"
             },
             {
@@ -185,9 +167,6 @@
             },
             {
                 "file": "src/core/base/user_approval_refusal.py"
-            },
-            {
-                "file": "src/core/base/wrong_instance_error.py"
             },
             {
                 "file": "src/core/modules/drivers/commands/skip_refusal/skip_refusal.py"
