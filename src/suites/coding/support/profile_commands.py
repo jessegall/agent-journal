@@ -41,7 +41,7 @@ PLAN_COMMANDS = (
     "journal phase move, journal phase place and journal phase delete. "
     "The task actions are journal task make, journal task edit, journal task list, journal task show, "
     "journal task overview, journal task context, journal task info, journal task inspect, journal task board, journal task graph, journal task assign, "
-    "journal task release, journal task start, journal task log, journal task comment, journal task comments, "
+    "journal task release, journal task start, journal task next, journal task log, journal task comment, journal task comments, "
     "journal task depend, journal task waits-on-nothing, journal task remove-dependency, journal task block, journal task unblock, "
     "journal task tag, journal task tags, journal task untag, journal task counts, journal task test, journal task retest, journal task close, journal task reopen, journal task cancel "
     "and journal task delete. Use journal plan --help, journal phase --help and journal task --help "
