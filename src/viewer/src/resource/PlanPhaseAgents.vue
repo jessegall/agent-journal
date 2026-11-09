@@ -1,5 +1,7 @@
 <script setup>
 import {computed} from "vue";
+import AgentBadge from "../kit/AgentBadge.vue";
+import {agentLabel} from "../domain/agentLabel.js";
 import {peekRef} from "../route.js";
 
 // the agents holding or queued for the tasks of one phase not yet closed, each once, with whether it works on one now or has them waiting
@@ -10,7 +12,7 @@ const agents = computed(() => {
     const byId = new Map();
     for (const task of props.tasks.filter((one) => one.helper_id && !CLOSED_STATES.has(one.state))) {
         const held = byId.get(task.helper_id)?.held || HELD_STATES.has(task.state);
-        byId.set(task.helper_id, {id: task.helper_id, name: task.helper_name, held});
+        byId.set(task.helper_id, {id: task.helper_id, name: task.helper_name, main: task.helper_main, held});
     }
     return [...byId.values()];
 });
@@ -20,9 +22,9 @@ const agents = computed(() => {
     <template v-if="agents.length">
         <div class="phase-agents" data-plan-phase-agents>
             <template v-for="agent in agents" :key="agent.id">
-                <button type="button" class="phase-agent" :title="`Open ${agent.name}`" data-plan-phase-agent @click="peekRef(`agents:${agent.id}`)">
+                <button type="button" class="phase-agent" :title="`Open ${agentLabel(agent.name, agent.main)}`" data-plan-phase-agent @click="peekRef(`agents:${agent.id}`)">
                     <span :class="['agent-dot', {held: agent.held}]" />
-                    {{ agent.name }}
+                    <AgentBadge :name="agent.name" :main="agent.main" />
                     <span class="agent-word">{{ agent.held ? "Working" : "Queued" }}</span>
                 </button>
             </template>

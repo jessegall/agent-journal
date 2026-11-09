@@ -83,7 +83,7 @@ def test_a_plan_card_follows_where_the_plan_stands(new_story):
     story.run(lines.NEW_PLAN)
     story.run("plan ready 1")
     story.run_listeners()
-    story.expect_text("dock-item list", "approvals.request", "Approve the plan", "docked")
+    story.expect_text("dock-item list", "plans.waiting", "docked")
     story.run("plan approve 1 --environment main", actor=story.user)
     story.run("plan start 1", actor=story.agent)
     story.run_listeners()

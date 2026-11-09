@@ -39,7 +39,7 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
         return self.repository.save(AgentBlock(session_agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text, grace_tool_uses=self.tool_uses(command.after),
                                                grace_seconds=command.after.seconds if command.after is not None else 0, countdown_key=command.countdown.key if command.countdown else "",
-                                               countdown_text=command.countdown.text if command.countdown else "", blocks_stop=command.blocks_stop, strict=command.strict, is_skippable=command.is_skippable, countdown_from=command.countdown_from), context)
+                                               countdown_text=command.countdown.text if command.countdown else "", blocks_stop=command.blocks_stop, strict=command.strict, is_skippable=command.is_skippable, countdown_limit=command.countdown_limit), context)
 
     @staticmethod
     def tool_uses(after: Interval | None) -> int:

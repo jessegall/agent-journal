@@ -30,7 +30,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         if context.environment_id is None:
             raise Refusal("an item is docked in an environment", "name it with --environment")
         title, text = self.labels.read(command.type, command.row_model, command.row_id)
-        title = f"{title}: {command.title_detail}" if command.title_detail is not None else title
+        text = text if command.text is None else command.text
         dock = self.docks.find()
         dock = dock or self.repository.save(Dock(creator_id=context.actor.id), context)
         self.docks.remember(dock)

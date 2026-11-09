@@ -71,7 +71,7 @@ from core.modules.plans.commands.plan_comments.plan_comments_subcommand import P
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
-from core.modules.plans.listeners.plan_approval_listener import PlanApprovalListener
+from core.modules.plans.listeners.ready_plan_sync_listener import ReadyPlanSyncListener
 from core.modules.plans.commands.plan_timeline.plan_timeline_subcommand import PlanTimelineSubcommand
 from core.modules.plans.rules.plan_order_rule import PlanOrderRule
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
@@ -114,7 +114,7 @@ class PlansModule(Module):
     guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
     step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
     listeners = [TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, PlanApprovalListener]
+                 FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, ReadyPlanSyncListener]
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]

@@ -6,5 +6,6 @@ class PlanAgentJsonRecord(TypedDict):
 
     id: int
     name: str
+    main: bool
     task_id: int
     task_title: str

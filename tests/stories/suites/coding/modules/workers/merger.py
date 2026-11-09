@@ -32,7 +32,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, UserBuilder
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
@@ -424,6 +424,41 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     story.expect_text(f"merger merge {worker.id}", f"worker {worker.id} merged into", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
     story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
+
+
+def test_explaining_a_merge_runs_the_merge_inside_the_explanation_without_the_transaction_error(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    actor = Actor(merger_agent(story).id, ActorType.AGENT)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_text("merger next", f"worker {worker.id}", actor=actor)
+    story.expect_success(f"merger merge {worker.id} --explain", actor=actor)
+    story.expect_rows(len(merged_worker_lines(story, worker)) == 0)
+
+
+def test_a_planner_helper_ending_starts_no_merger(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success("setting set journal.suites.coding.workers.merger-on true --project", actor=story.user)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.run('helper start journal-planner --brief "Plan the change" --environment main', actor=story.agent)
+    story.run_listeners()
+    launcher.drain_requests()
+    launcher.server.close()
+    story.home.socket("launcher").unlink()
+    planner = next(story.container.get(Queries).query(Agent).filter(profile="journal-planner").all_rows())
+    story.expect_success(f"agent end {planner.id}", actor=story.user)
+    story.run_listeners()
+    MergerRetry()(story.container)
+    story.run_listeners()
+    story.expect_rows(merger_agent(story) is None, story.container.get(Queries).query(MergerLine).count() == 0)
 
 
 def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story, monkeypatch):

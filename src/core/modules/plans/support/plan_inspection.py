@@ -28,7 +28,7 @@ class PlanInspection:
         if self.assignee is None:
             return None
         name = "main" if self.assignee.role == AgentRole.MAIN else self.assignee.given_name or f"Agent {self.assignee.id}"
-        return {"id": self.assignee.id, "name": name, "is_main": self.assignee.role == AgentRole.MAIN}
+        return {"id": self.assignee.id, "name": name, "main": self.assignee.role == AgentRole.MAIN}
 
     def json(self) -> PlanInspectionJsonRecord:
         tasks = [task for phase in self.outline.phases for task in phase.tasks]

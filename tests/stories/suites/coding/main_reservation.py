@@ -52,8 +52,11 @@ def test_a_main_agent_claims_a_whole_plan_and_the_plan_shows_it(new_story):
     for task in (*BUILD_PHASE_TASKS, SHIP_PHASE_TASK):
         expect_reserved(story, task)
     inspection = json.loads(story.run("plan inspect 1 --json", actor=story.user).output_text)
-    expect_value((inspection["assignee"]["is_main"], inspection["delegated"]), (True, True))
+    expect_value((inspection["assignee"]["main"], inspection["delegated"]), (True, True))
     expect_value(plan_tasks(story)[1]["helper_id"], story.agent.id)
+    expect_value((plan_tasks(story)[1]["helper_main"], {agent["main"] for agent in inspection["agents"]}), (True, {True}))
+    board = json.loads(story.run("plan board --environment main --json", actor=story.user).output_text)["plans"][0]
+    expect_value({agent["main"] for agent in board["agents"]}, {True})
 
 
 def test_a_person_assigns_one_phase_to_the_main_agent_and_the_plan_keeps_no_agent(new_story):

@@ -165,7 +165,7 @@ def test_a_worker_whose_end_hook_was_lost_is_ended_at_a_tick(ended_worker):
     ended_worker.expect_text(f"agent show {ended_worker.worker.id}", "ended_at: 2026")
 
 
-def test_a_running_worker_is_not_ended_at_a_tick(running_worker):
+def test_a_running_worker_is_condition_unmet_at_a_tick(running_worker):
     running_worker.tick(MAIN_SESSION)
     running_worker.expect_no_text(f"agent show {running_worker.worker.id}", "ended_at:")
 

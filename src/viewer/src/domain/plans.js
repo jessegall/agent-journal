@@ -22,6 +22,6 @@ export const PLAN_STATES = {
 // the agents queued for or holding the open tasks of a plan, each named once
 export const agentNames = (plan) => [...new Set(plan.agents.map((agent) => agent.name))];
 
-// the plan bar's button: the agent's name when one agent has the plan, Delegated when several do
-export const delegationWord = (plan) => (agentNames(plan).length === 1 ? `Worker: ${agentNames(plan)[0]}` : "Delegated");
+// the one agent that has the plan, or nothing when several do
+export const soleAgent = (plan) => (new Set(plan.agents.map((agent) => agent.id)).size === 1 ? plan.agents[0] : null);
 

@@ -22,7 +22,7 @@ class PlanOutline:
         return phases
 
     def agents(self) -> tuple[PlanAgent, ...]:
-        return tuple(PlanAgent(task.helper_id, task.helper_name, task.id, task.title) for phase in self.phases for task in phase.tasks
+        return tuple(PlanAgent(task.helper_id, task.helper_name, task.helper_main, task.id, task.title) for phase in self.phases for task in phase.tasks
                      if task.helper_id is not None and task.helper_name is not None and not task.is_closed())
 
     def json(self) -> PlanOutlineJsonRecord:

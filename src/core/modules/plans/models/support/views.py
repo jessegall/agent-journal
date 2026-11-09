@@ -21,7 +21,7 @@ PLAN_PROGRESS_SELECT = (
 PLAN_CARDS_SELECT = (
     "SELECT plans.id, plans.environment_id, plans.title, plans.state,"
     " plan_progress.task_count, plan_progress.completed_count, plan_progress.testing_count, plan_progress.current_phase,"
-    " (SELECT json_group_array(json_object('id', helper.id, 'name', coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id), 'task_id', tasks.id, 'task_title', tasks.title))"
+    " (SELECT json_group_array(json_object('id', helper.id, 'name', coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id), 'main', helper.role = 'main', 'task_id', tasks.id, 'task_title', tasks.title))"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
     f" JOIN agents AS helper ON {TASK_HELPER_MATCH}"
@@ -49,7 +49,8 @@ PLAN_OUTLINE_TASKS_SELECT = (
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic,"
     " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS main_delegate,"
-    " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
+    " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name,"
+    " coalesce(helper.role = 'main', 0) AS helper_main"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
     f" LEFT JOIN agents AS helper ON {TASK_HELPER_MATCH}"

@@ -18,7 +18,7 @@ from core.base.query.conditions.among import Among
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 
 ENDING_MOVES = ("close", "cancel")
-DOCKING_MOVES = {"create": PlanDockType.DRAFT, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
+DOCKING_MOVES = {"create": PlanDockType.DRAFT, "ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
 
 
 class StartedPlanDockListener(CommitListener[Created[Plan] | Moved[Plan]]):
