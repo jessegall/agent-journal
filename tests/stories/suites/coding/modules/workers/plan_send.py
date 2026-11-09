@@ -124,9 +124,9 @@ def test_a_task_blocked_for_a_reason_goes_to_a_busy_worker_and_waits_for_its_tur
                       story.container.get(Queries).query(WorkerOperation).count() == 0)
 
 
-def test_a_new_worker_is_not_started_on_blocked_tasks_alone(idle_plan):
+def test_a_new_worker_on_blocked_tasks_alone_is_made_and_not_started(idle_plan):
     story, _worker = idle_plan
-    story.expect_refusal("worker dispatch --test-command python=pytest --fresh 'A second worker' --model sonnet 3", "every task here is blocked", actor=story.agent)
+    story.expect_success("worker dispatch --test-command python=pytest --fresh 'A second worker' --model sonnet 3", actor=story.agent)
 
 
 def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(new_story):
