@@ -1,7 +1,6 @@
 from core.modules.drivers.commands.support.agent_wake_handler import AgentWakeHandler
 from core.modules.drivers.commands.wake_interrupted_agent.wake_interrupted_agent import WakeInterruptedAgent
 from core.modules.drivers.support.driver_nudges import AGENT_INTERRUPTED
-from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 
 WAKE_SOURCE = "drivers.interrupted"
 
