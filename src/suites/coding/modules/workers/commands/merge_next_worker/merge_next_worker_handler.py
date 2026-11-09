@@ -22,4 +22,4 @@ class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
         require_merger(self.agents, context)
         self.visits.close_newest(context)
         self.operations.check_available(command.worker_id)
-        return self.bus.run(MergeWorker(command.worker_id, command.read_important), context.actor, environment_id=context.environment_id)
+        return self.bus.dispatch(MergeWorker(command.worker_id, command.read_important), context)
