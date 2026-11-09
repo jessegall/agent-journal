@@ -6,10 +6,9 @@ from core.base.profile.agent_profile import AgentProfile
 from core.base.file_version import FileVersion
 from core.base.registry.registry import Registry
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.manifest_listener import ManifestListener
 from core.modules.plugins.support.plugin_folders import PluginFolders
-from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_problem import ProfileProblem
 from suites.coding.modules.workers.support.worker_settings import WORKER_INSTRUCTION_FILES_SETTING
@@ -31,7 +30,7 @@ class WorkerInstructionFiles:
     block. The project's originals stay beside them when the profile says so, and the written files stay
     out of the worker's commits. A person can turn it off with the setting."""
 
-    def __init__(self, settings: SettingValues, profiles: ProfileFiles, registry: Registry, plugins: PluginQuery, folders: PluginFolders, git: WorktreeGit, libraries: LibraryFolders,
+    def __init__(self, settings: SettingValues, profiles: ProfileFiles, registry: Registry, plugins: RunnablePlugins, folders: PluginFolders, git: WorktreeGit, libraries: LibraryFolders,
                  agents: AgentRows) -> None:
         self.settings, self.profiles, self.registry, self.plugins, self.folders, self.git, self.libraries = settings, profiles, registry, plugins, folders, git, libraries
         self.agents = agents
@@ -41,12 +40,10 @@ class WorkerInstructionFiles:
         driver = self.registry.driver(WORKER_DRIVER)
         journal_text = "\n".join(driver.opening_lines) if driver is not None else ""
         injections = [InstructionInjection(JOURNAL_KEY, JOURNAL_TITLE, journal_text, profile.injections.get(JOURNAL_KEY, True))]
-        for plugin in self.plugins.enabled_plugins():
-            if self.folders.is_upgrading(plugin.name):
-                continue
-            folder = self.folders.code(plugin.name)
-            for block in PluginManifest.read(folder).instruction_blocks:
-                key = f"{plugin.name}.{block.key}"
+        for runnable in self.plugins.running():
+            folder = self.folders.code(runnable.plugin.name)
+            for block in runnable.manifest.instruction_blocks:
+                key = f"{runnable.plugin.name}.{block.key}"
                 path = folder / block.file
                 text = self.block_text(folder, block.file, path)
                 injections.append(InstructionInjection(key, block.title, text, profile.injections.get(key, block.default)))

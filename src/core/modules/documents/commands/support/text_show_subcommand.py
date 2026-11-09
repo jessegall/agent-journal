@@ -3,7 +3,7 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from core.base.caller.caller import Caller
-from core.base.cli.row_links import RowLinks
+from core.base.cli.row_links import LINKS_SHOWN, RowLinks
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -11,6 +11,9 @@ from core.base.library.library_reading import LibraryReading
 from core.modules.documents.commands.support.text_reading import TextReading
 from core.modules.documents.models.text_row import TextRow
 from core.modules.documents.support.text_lines import TextLines
+
+
+OUTLINE_LINKS_SHOWN = 10
 
 
 class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
@@ -39,5 +42,10 @@ class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
             return
         text_row = value.text_row
         TextLines.write(f"{text_row.cli_name} {text_row.id}: {text_row.title}", text_row.abstract, text_row.body, value.arguments, output)
-        for line in self.links.lines(text_row.model_name, text_row.id):
+        for line in self.link_lines(text_row, value.arguments):
             output.line(line)
+
+    def link_lines(self, text_row: TextRow, arguments: Namespace) -> list[str]:
+        if TextLines.is_part_read(arguments):
+            return []
+        return self.links.lines(text_row.model_name, text_row.id, limit=LINKS_SHOWN if arguments.all else OUTLINE_LINKS_SHOWN)

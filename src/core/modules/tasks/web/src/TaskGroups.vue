@@ -27,17 +27,24 @@ const extended = ref(new Set());
 const query = ref("");
 const tag = ref(view.state["board.tag"] || "");
 const tags = computed(() => view.props.tags.rows.value);
-// each section can leave out the tasks that belong to a plan; the sections that do are kept on the pane, as their states in one word with commas
-const keptHidden = view.state["board.hide-plan-tasks"];
-const hidingPlanTasks = ref(new Set(keptHidden === "true" ? ["open"] : (keptHidden || "").split(",").filter(Boolean)));
+// each section can leave out the tasks that belong to a plan, which the server does so the pages and the count follow; the sections that do are kept on the pane, as their states in one word with commas
+const hidingPlanTasks = ref(new Set((view.state["board.hide-plan-tasks"] || "").split(",").filter(Boolean)));
 function showPlanTasks(state, shown) {
     const next = new Set(hidingPlanTasks.value);
     if (shown) next.delete(state);
     else next.add(state);
     hidingPlanTasks.value = next;
+    extended.value = new Set();
+    if (next.size) view.state["board.hide-plan-tasks"] = [...next].join(",");
+    else delete view.state["board.hide-plan-tasks"];
+    view.reload("board");
 }
-const plannedIds = computed(() => new Set(places.value.flatMap((place) => place.taskIds)));
-const leavesOutPlanTask = (group, row) => hidingPlanTasks.value.has(group.state) && props.display.grouping !== "plan" && plannedIds.value.has(row.id);
+function groupFlags(state) {
+    const flags = {state};
+    if (tag.value) flags.tag = tag.value;
+    if (hidingPlanTasks.value.size) flags["hide-plan-tasks"] = [...hidingPlanTasks.value].join(",");
+    return flags;
+}
 // the rows each group shows on a page, chosen in the window's menu and kept on the pane
 const pageRows = view.option("rows");
 const pageLimit = computed(() => (Number(pageRows.value) > 0 ? String(Number(pageRows.value)) : undefined));
@@ -75,25 +82,18 @@ async function readBoard(answer) {
 }
 watch(() => view.props.board.data.value, readBoard, {immediate: true});
 
-const isOpen = (row) => row.state === "open";
-
 // a group shown past its first page reads again as many rows as it shows, so a task that moved leaves it
 async function withHeldRows(group, held) {
     if (!extended.value.has(group.state) || !held?.rows.length) return group;
-    const flags = {state: group.state, limit: String(Math.max(1, (group.state === "delegated" ? held.rows.filter(isOpen) : held.rows).length))};
-    if (tag.value) flags.tag = tag.value;
-    const answer = await view.readKey("group", flags);
+    const answer = await view.readKey("group", {...groupFlags(group.state), limit: String(Math.max(1, held.rows.length))});
     return answer.ok ? answer.value.groups[0] : group;
 }
 
 async function more(group) {
-    const flags = {state: group.state};
-    if (tag.value) flags.tag = tag.value;
+    const flags = groupFlags(group.state);
     if (pageLimit.value) flags.limit = pageLimit.value;
-    // the delegated tasks in progress, in testing and blocked come whole, so a page past them holds open tasks only
-    const paged = group.state === "delegated" ? group.rows.filter(isOpen) : group.rows;
-    if (paged.length) {
-        flags["before-id"] = String(FINISHED.has(group.state) ? paged.at(-1).id : Math.min(...paged.map((row) => row.id)));
+    if (group.rows.length) {
+        flags["before-id"] = String(FINISHED.has(group.state) ? group.rows.at(-1).id : Math.min(...group.rows.map((row) => row.id)));
         if (FINISHED.has(group.state)) flags["before-closed-at"] = group.rows.at(-1).closed_at;
     }
     const answer = await view.readKey("group", flags);
@@ -108,14 +108,11 @@ async function more(group) {
 const shownGroup = (group) => group.total && (props.states.length ? props.states.includes(group.state) : props.display.showDone || !FINISHED.has(group.state));
 const places = ref([]);
 const NOT_PLACED = "Not in a plan";
-// the delegated tasks in the order of the groups above them, with no heads between
-const DELEGATED_ORDER = ["started", "testing", "blocked", "open"];
-const orderedRows = (group) => (group.state === "delegated" ? [...group.rows].sort((one, two) => DELEGATED_ORDER.indexOf(one.state) - DELEGATED_ORDER.indexOf(two.state)) : group.rows);
 const stateGroups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
     return board.value
         .filter(shownGroup)
-        .map((group) => ({group, tasks: orderedRows(group).filter((row) => !leavesOutPlanTask(group, row) && (!wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted)))}))
+        .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}))
         .filter(({tasks}) => !wanted || tasks.length);
 });
 // the tasks held, under the plan and phase each is placed in; the tasks of no plan come last
@@ -130,10 +127,8 @@ const planGroups = computed(() => {
     return ordered.map((label) => ({group: {state: label, label, total: byLabel.get(label).length, rows: byLabel.get(label)}, tasks: byLabel.get(label)}));
 });
 const groups = computed(() => (props.display.grouping === "plan" ? planGroups.value : stateGroups.value));
-watch([() => props.display.grouping, hidingPlanTasks], async ([grouping, hiding]) => {
-    if (grouping === "plan" || hiding.size) places.value = await readPlanPlaces(view);
-    if (hiding.size) view.state["board.hide-plan-tasks"] = [...hiding].join(",");
-    else delete view.state["board.hide-plan-tasks"];
+watch(() => props.display.grouping, async (grouping) => {
+    if (grouping === "plan") places.value = await readPlanPlaces(view);
 }, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const setPriority = (row, priority) => view.run(["task", "edit", String(row.id), "--priority", String(priority)]);
@@ -189,14 +184,13 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                                 {{ group.label ?? name(group.state) }} <span class="tasks-count">{{ group.total }}</span>
                             </button>
                             <template v-if="display.grouping !== 'plan'">
-                                <Switch class="tasks-plan-switch" :on="!hidingPlanTasks.has(group.state)" word="Show tasks in plans" title="Show the tasks of this section that belong to a plan" :data-plan-switch="group.state" @change="showPlanTasks(group.state, $event)" />
+                                <Switch class="tasks-plan-switch" small :on="!hidingPlanTasks.has(group.state)" word="Show tasks in plans" title="Show the tasks of this section that belong to a plan" :data-plan-switch="group.state" @change="showPlanTasks(group.state, $event)" />
                             </template>
                         </h3>
                     </template>
                     <template v-for="row in folded.has(group.state) ? [] : tasks" :key="row.id">
                         <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">
                             <TaskStatusIcon :status="row.state" />
-                            <template v-if="row.state === 'blocked' && !row.automatic"><MarkIcon name="warning" class="task-warning" data-task-warning title="Does not open by itself: needs a person" /></template>
                             <template v-if="display.number">
                                 <span class="task-id">{{ row.id }}</span>
                             </template>
@@ -209,6 +203,7 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                             <template v-if="display.reason && row.reason">
                                 <span class="task-reason" data-task-reason>{{ row.reason }}</span>
                             </template>
+                            <template v-if="row.state === 'blocked' && !row.automatic"><MarkIcon name="warning" class="task-warning" data-task-warning title="Does not open by itself: needs a person" /></template>
                             <TaskRowIcons :row="row" @priority="setPriority(row, $event)" />
                         </div>
                     </template>
@@ -288,6 +283,8 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
 }
 
 .tasks-group-head {
+    display: flex;
+    align-items: center;
     margin: 0 0 4px;
     color: var(--text-3);
     font-size: 11px;
@@ -301,7 +298,10 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
 }
 
 .tasks-plan-switch {
-    margin-left: 12px;
+    flex-direction: row-reverse;
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 400;
     text-transform: none;
     letter-spacing: 0;
 }

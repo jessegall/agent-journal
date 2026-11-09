@@ -1,5 +1,5 @@
 <script setup>
-defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean, labelled: Boolean, large: Boolean, beside: Boolean});
+defineProps({on: Boolean, word: {type: String, default: ""}, title: {type: String, default: ""}, framed: Boolean, labelled: Boolean, large: Boolean, small: Boolean, beside: Boolean});
 const emit = defineEmits(["change"]);
 </script>
 
@@ -13,7 +13,7 @@ const emit = defineEmits(["change"]);
         :title="beside ? '' : title"
         @click="emit('change', !on)"
     >
-        <span :class="['switch', {on, labelled, large}]">
+        <span :class="['switch', {on, labelled, large, small}]">
             <template v-if="labelled">
                 <span class="switch-inner">{{ word }}</span>
             </template>
@@ -96,6 +96,21 @@ const emit = defineEmits(["change"]);
 
 .switch.large.on .knob {
     transform: translateX(16px);
+}
+
+.switch.small {
+    width: 22px;
+    height: 12px;
+    border-radius: 6px;
+}
+
+.switch.small .knob {
+    width: 8px;
+    height: 8px;
+}
+
+.switch.small.on .knob {
+    transform: translateX(10px);
 }
 
 .switch.labelled {

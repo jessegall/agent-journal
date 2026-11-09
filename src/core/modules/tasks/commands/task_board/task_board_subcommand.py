@@ -1,7 +1,7 @@
-from core.base.query.conditions.among import Among
 from core.base.query.conditions.less import Less
 from core.base.query.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
+from core.modules.tasks.conditions.outside_a_plan import OutsideAPlan
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -14,7 +14,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.support.task_board import TaskBoard
 from core.modules.tasks.support.task_group import TaskGroup
-from core.modules.tasks.support.task_board_cards import DELEGATED, FINISHED_STATES, TaskBoardCards
+from core.modules.tasks.support.task_board_cards import FINISHED_STATES, TaskBoardCards
 
 FINISHED_PAGE_ROWS = 10
 WORKING_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED)
@@ -25,8 +25,9 @@ def board_group(text: str) -> TaskState | str:
 
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
-    """Reads task board groups with state counts and delegated tasks. The tasks in progress, in testing
-    and blocked come whole on the first read, so a page holds only open and finished tasks past them."""
+    """Reads task board groups with state counts. The tasks in progress, in testing and blocked come whole on
+    the first read, so a page holds only open and finished tasks past them. A group named in hide-plan-tasks
+    leaves out the tasks of a plan, in its rows and its count."""
 
     cli_name = "task"
     name = "board"
@@ -45,36 +46,30 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         parser.add_argument("--before-closed-at", default=None, help="the finished rows closed before this time")
         parser.add_argument("--limit", type=int, default=None)
         parser.add_argument("--tag", action="append", default=[], help="show tasks with every named tag")
+        parser.add_argument("--hide-plan-tasks", default="", help="the groups, with commas, that leave out the tasks of a plan")
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
         if arguments.state is not None:
             if arguments.state in FINISHED_STATES:
                 return TaskBoard(tuple([self.finished_group(arguments.state, arguments)]))
             return TaskBoard(tuple([self.group(arguments.state, arguments)]))
-        active_groups = tuple(self.group(state, arguments) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, DELEGATED, TaskState.OPEN, *self.added_states()))
+        active_groups = tuple(self.group(state, arguments) for state in (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN, *self.added_states()))
         finished = tuple(self.finished_group(state, arguments) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 
-    def group(self, state: TaskState | str, arguments: Namespace) -> TaskGroup:
+    def shown_cards(self, state: TaskState | str, arguments: Namespace) -> Query[TaskCard]:
         cards = self.cards.cards(state, arguments.tag)
+        return cards.matching(OutsideAPlan()) if str(state) in arguments.hide_plan_tasks.split(",") else cards
+
+    def group(self, state: TaskState | str, arguments: Namespace) -> TaskGroup:
+        cards = self.shown_cards(state, arguments)
         previous_id = arguments.before_id if arguments.state is not None else None
         limit = arguments.limit or PAGE_SIZE_ROWS
         if state in WORKING_STATES:
             rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
             return TaskGroup(str(state), cards.count(), tuple(rows.newest().all_rows()))
-        if state == DELEGATED:
-            return TaskGroup(str(state), cards.count(), self.delegated_rows(cards, previous_id, limit))
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
         return TaskGroup(str(state), cards.count(), tuple(rows.newest().limited(limit)))
-
-    @staticmethod
-    def delegated_rows(cards: Query[TaskCard], previous_id: int | None, limit: int) -> tuple[TaskCard, ...]:
-        # the delegated tasks in progress, in testing and blocked on the first read, then the open ones a page at a time
-        waiting = cards.filter(state=TaskState.OPEN)
-        if previous_id is not None:
-            return tuple(waiting.matching(Less("id", previous_id)).newest().limited(limit))
-        working = tuple(cards.matching(Among("state", [state.value for state in WORKING_STATES])).newest().all_rows())
-        return (*working, *waiting.newest().limited(limit))
 
     @staticmethod
     def finished_cursor(arguments: Namespace) -> Condition | None:
@@ -85,7 +80,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         return ClosedTaskCursor(arguments.before_closed_at, arguments.before_id)
 
     def finished_group(self, state: TaskState, arguments: Namespace) -> TaskGroup:
-        cards = self.cards.cards(state, arguments.tag)
+        cards = self.shown_cards(state, arguments)
         cursor = self.finished_cursor(arguments) if arguments.state is not None else None
         rows = cards.matching(cursor) if cursor is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at", "id").limited(arguments.limit or FINISHED_PAGE_ROWS)))

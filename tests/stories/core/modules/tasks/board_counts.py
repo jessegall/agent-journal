@@ -25,7 +25,6 @@ def test_the_board_counts_each_group_once_including_added_states_and_cursor_page
     expect_value([row["id"] for row in state_groups["open"]["rows"]], [6])
     expect_value(state_groups["legal-hold"]["total"], 1)
     expect_value([row["id"] for row in state_groups["legal-hold"]["rows"]], [3])
-    expect_value(state_groups["delegated"]["total"], 0)
     expect_value(state_groups["cancelled"]["total"], 2)
     expect_value([row["id"] for row in state_groups["cancelled"]["rows"]], [5])
 

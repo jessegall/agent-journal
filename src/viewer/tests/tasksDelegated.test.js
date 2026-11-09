@@ -9,22 +9,18 @@ afterEach(() => (document.body.innerHTML = ""));
 
 const task = (id, title, state, delegatedTo = null) => ({id, title, state, priority: 200, delegated_to: delegatedTo, delegated_name: delegatedTo ? "Lady Lovelace" : null});
 const BOARD = {groups: [
-    {state: "started", total: 1, rows: [task(3, "Mine", "started")]},
+    {state: "started", total: 2, rows: [task(3, "Mine", "started"), task(1, "First job", "started", 12)]},
     {state: "testing", total: 1, rows: [task(4, "Being tested", "testing")]},
-    {state: "open", total: 0, rows: []},
-    {state: "delegated", total: 2, rows: [task(2, "Second job", "open", 12), task(1, "First job", "started", 12)]},
+    {state: "open", total: 1, rows: [task(2, "Second job", "open", 12)]},
 ]};
 const read = (name) => readFileSync(resolve(__dirname, name), "utf8");
 
-test("tasks delegated to a worker are listed in a section of their own, with the worker each is delegated to, apart from the agent's own", async () => {
+test("a task delegated to a worker stays in the section of its state with the worker's icon, and there is no delegated section", async () => {
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: BOARD}}));
-    const delegated = element.querySelector('[data-state="delegated"]');
-    expect(delegated.querySelector("[data-group-head]").textContent).toContain("Delegated");
-    expect([...delegated.querySelectorAll("[data-row]")].map((row) => row.dataset.row)).toEqual(["1", "2"]);
-    expect([...delegated.querySelectorAll("[data-task-agent] [role='tooltip'] b")].map((tip) => tip.textContent)).toEqual(["Lady Lovelace works on it", "Waiting for Lady Lovelace"]);
+    expect(element.querySelector('[data-state="delegated"]')).toBeNull();
+    expect(element.querySelector('[data-state="started"] [data-row="1"] [data-task-agent] [role=\'tooltip\'] b').textContent).toBe("Lady Lovelace works on it");
+    expect(element.querySelector('[data-state="open"] [data-row="2"] [data-task-agent] [role=\'tooltip\'] b').textContent).toBe("Waiting for Lady Lovelace");
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
-    expect(element.querySelector('[data-state="started"] [data-row="1"]')).toBeNull();
-    expect(element.querySelector('[data-state="open"]')).toBeNull();
 });
 
 test("while searching, a group with no match is hidden", async () => {
@@ -36,8 +32,8 @@ test("while searching, a group with no match is hidden", async () => {
     expect([...element.querySelectorAll("section[data-state]")].map((group) => group.dataset.state)).toEqual(["started"]);
 });
 
-test("the filter of the tasks dialog offers the delegated section", () => {
-    expect(read("../../core/modules/tasks/web/src/TasksMenus.vue")).toMatch(/const STATES = \[[^\]]*"delegated"/);
+test("the filter of the tasks dialog offers no delegated section", () => {
+    expect(read("../../core/modules/tasks/web/src/TasksMenus.vue")).not.toMatch(/const STATES = \[[^\]]*"delegated"/);
 });
 
 test("the Testing section uses the shared half-filled icon and the testing colour in both themes", async () => {

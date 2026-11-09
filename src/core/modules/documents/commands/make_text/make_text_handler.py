@@ -28,7 +28,6 @@ class MakeTextHandler(Handler[MakeText, NewText]):
                                                      abstract=command.abstract, body=command.body), context)
         if isinstance(text_row, Doc):
             self.revisions.record_standalone(text_row, context)
-        for ref in subject_refs:
-            self.links.save(Link(creator_id=context.actor.id, source_model=text_row.model_name, source_id=text_row.id, target_model=ref.model, target_id=ref.row_id,
-                                      link_type=LinkType.SUBJECT), context)
+        self.links.save_many([Link(creator_id=context.actor.id, source_model=text_row.model_name, source_id=text_row.id, target_model=ref.model, target_id=ref.row_id,
+                                   link_type=LinkType.SUBJECT) for ref in subject_refs], context)
         return NewText(text_row, tuple(ref.text for ref in subject_refs))

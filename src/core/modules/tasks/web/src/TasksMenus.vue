@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {Btn, MenuItem, MenuLabel, MenuPanel, SwitchCase, useWindow} from "@journal/window-kit";
 
-const STATES = ["started", "open", "delegated", "blocked", "testing", "completed", "cancelled"];
+const STATES = ["started", "open", "blocked", "testing", "completed", "cancelled"];
 const GROUPINGS = [
     {key: "state", label: "Status"},
     {key: "plan", label: "Plan and phase"},
