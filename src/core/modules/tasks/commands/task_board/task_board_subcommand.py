@@ -1,7 +1,7 @@
 from core.base.query.conditions.less import Less
 from core.base.query.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
-from core.modules.tasks.conditions.outside_a_plan import PlanlessTask
+from core.modules.tasks.conditions.planless_task import PlanlessTask
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller

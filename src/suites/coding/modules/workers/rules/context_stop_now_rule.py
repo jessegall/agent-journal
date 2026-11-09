@@ -10,7 +10,7 @@ from suites.coding.modules.workers.support.worker_nudges import CONTEXT_STOP_AFT
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
-from suites.coding.modules.workers.rules.context_limit_rule import RETRY_SECONDS
+from suites.coding.modules.workers.rules.context_size_rule import RETRY_SECONDS
 
 
 class ContextStopNowRule(DriverRule):

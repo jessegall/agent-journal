@@ -90,7 +90,7 @@ from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import 
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.commands.claim_agent_line.claim_agent_line import ClaimAgentLine
 from core.modules.drivers.commands.release_agent_line.release_agent_line import ReleaseAgentLine
-from core.modules.drivers.commands.drop_agent_line.drop_agent_line import RemoveAgentLine
+from core.modules.drivers.commands.drop_agent_line.remove_agent_line import RemoveAgentLine
 from core.modules.drivers.commands.record_agent_notice.record_agent_notice_handler import RecordAgentNoticeHandler
 from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge_handler import RecordAgentNudgeHandler
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line_handler import SendJournalStartedLineHandler

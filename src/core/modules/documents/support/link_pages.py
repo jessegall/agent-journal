@@ -13,7 +13,7 @@ from core.modules.documents.conditions.link_scope import LinkScope
 from core.modules.documents.conditions.link_side import LinkSide
 from core.modules.documents.conditions.link_target import LinkTarget
 from core.modules.documents.conditions.link_target_counts import LinkTargetCounts
-from core.modules.documents.conditions.excludes_plan import OutsidePlan
+from core.modules.documents.conditions.excludes_plan import ExcludesPlan
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.references.row_ref import RowRef
@@ -45,7 +45,7 @@ class LinkPages:
         if types:
             query = query.matching(Among("link_type", types))
         if arguments.excludes_plan:
-            query = query.matching(OutsidePlan(reference))
+            query = query.matching(ExcludesPlan(reference))
         counts = LinkTargetCounts(query.scoped(query.select), reference).statement()
         target_counts = {str(row[0]): int(row[1]) for row in query.database.rows(counts)}
         if arguments.target_model:

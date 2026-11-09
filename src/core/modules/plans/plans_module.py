@@ -6,7 +6,7 @@ from core.modules.plans.support.block_conditions.plan_context_read import PlanCo
 from core.modules.plans.rules.plan_context_rule import PlanContextRule
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, TextField
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
-from core.modules.plans.commands.rework_plan.rework_plan import ReturnPlan
+from core.modules.plans.commands.rework_plan.return_plan import ReturnPlan
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
 from core.modules.plans.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan

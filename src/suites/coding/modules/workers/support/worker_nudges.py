@@ -30,15 +30,15 @@ SMALL_BATCH =NudgeDeclaration("workers.small_batch", NudgeType.STEERING, 'batch 
 WORKER_IDLE_STOPPED = NudgeDeclaration("workers.worker_idle_stopped", NudgeType.STEERING, 'worker:{worker} was idle too long: its process stopped, task:{task} stays with it', turn_limited=False)
 
 WORKER_JUDGE_SCOPE = NudgeDeclaration("workers.judge_scope", NudgeType.REFUSAL, 'a worker judges only its own changes or its branch', turn_limited=False)
-WORKER_OUTSIDE_LINK = NudgeDeclaration("workers.outside_link", NudgeType.REFUSAL, "a link from outside your worktree is refused: the journal links the shared libraries, so report what is missing to your main agent", turn_limited=False)
+WORKER_OUTSIDE_LINK = NudgeDeclaration("workers.outside_link", NudgeType.REFUSAL, "a link from outside your worktree is refused: report what is missing to your main agent", turn_limited=False)
 WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL, "that file is in worker {worker}'s worktree: send the worker a job, or wait for its delivery", turn_limited=False)
 PROTECTED_FOLDER = NudgeDeclaration("workers.protected_folder", NudgeType.REFUSAL, "{folder} is protected: report the change to the main agent", turn_limited=False)
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 'you logged nothing for {minutes} min: log where you stand', interval=Interval(Seconds(1800)), turn_limited=False)
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass', turn_limited=False,
                                      plural_text='the tests of workers {worker} all pass', id_field="worker")
-WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed, output {outputs}: you can now test as much as you need until you hand in; fix them, then hand in again', turn_limited=False)
-WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: you can now test as much as you need until you hand in; fix them, then hand in again', turn_limited=False, id_field="outputs")
+WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed, output {outputs}: test freely until you hand in; fix them, then hand in again', turn_limited=False)
+WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: test freely until you hand in; fix them, then hand in again', turn_limited=False, id_field="outputs")
 WORKER_TEST_REQUESTED = NudgeDeclaration("workers.test_requested", NudgeType.STEERING, 'worker:{worker} asks to run a command for task:{task}, request:{request}', turn_limited=False, wakes_agent=True, id_field="request", plural_text="worker:{worker} asks for task:{task}, requests {request}")
 WORKER_TEST_ALLOWED = NudgeDeclaration("workers.test_allowed", NudgeType.STEERING, 'request {request} is allowed: run it once without the flag', turn_limited=False, wakes_agent=True, id_field="request", plural_text="requests {request} are allowed: run each once")
 TEST_REQUEST_FORWARDED = NudgeDeclaration("workers.test_request_sent", NudgeType.SAFETY_REFUSAL, 'your request went to your main agent: go on working, you hear when it is allowed', turn_limited=False)
@@ -46,8 +46,8 @@ TEST_REQUEST_WAITING = NudgeDeclaration("workers.test_request_waiting", NudgeTyp
 TEST_REQUEST_ALLOWED = NudgeDeclaration("workers.test_request_allowed", NudgeType.SAFETY_REFUSAL, 'request {request} is allowed: run this command once, without the flag', turn_limited=False)
 TEST_REQUEST_REASON_MISSING = NudgeDeclaration("workers.test_request_no_reason", NudgeType.SAFETY_REFUSAL, 'the flag needs a reason: run it again with --ask-main "<why>"', turn_limited=False)
 TEST_REQUEST_UNNEEDED = NudgeDeclaration("workers.test_needs_no_request", NudgeType.SAFETY_REFUSAL, 'you need not ask: run the command without the flag', turn_limited=False)
-PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "Do not test in the middle of a phase or batch: at its end the journal runs every proof's test and sends you the failures. Test runs left here: {remaining}; use one only when you cannot go on without it.", turn_limited=False)
-PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'No test runs left in this phase or batch: at its end the journal runs every proof\'s test and sends you the failures, so hand in and go on. Only if you cannot go on without a run, --ask-main "<why>".', turn_limited=False)
+PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "Do not test in the middle of a phase or batch: the journal tests at its end. Test runs left here: {remaining}", turn_limited=False)
+PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'No test runs left in this phase or batch: hand in and go on. Only if you must run one, --ask-main "<why>".', turn_limited=False)
 WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: read it, then go on',
                                    plural_text='your runs {output} ended: read each, then go on', id_field="output")
 READER_SAMPLE_READY = NudgeDeclaration("workers.reader_sample_ready", NudgeType.STEERING, "read the sample of output {output} with reader {reader}", wakes_agent=True)

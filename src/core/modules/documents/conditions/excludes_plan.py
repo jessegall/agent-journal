@@ -5,7 +5,7 @@ from core.modules.documents.references.row_ref import RowRef
 
 
 @dataclass(frozen=True)
-class OutsidePlan:
+class ExcludesPlan:
     """Excludes the tasks and phases belonging to a plan."""
 
     reference: RowRef

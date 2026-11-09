@@ -189,9 +189,9 @@ from suites.coding.modules.workers.models.todo_item import TodoItem
 from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodoListRule
 from suites.coding.modules.workers.rules.cache_refresh_rule import CacheRefreshRule
 from suites.coding.modules.workers.rules.compaction_wake_rule import CompactionWakeRule
-from suites.coding.modules.workers.rules.context_limit_rule import ContextSizeRule
-from suites.coding.modules.workers.rules.context_limit_stop_now_rule import ContextStopNowRule
-from suites.coding.modules.workers.rules.context_limit_hard_stop_rule import ContextHardStopRule
+from suites.coding.modules.workers.rules.context_size_rule import ContextSizeRule
+from suites.coding.modules.workers.rules.context_stop_now_rule import ContextStopNowRule
+from suites.coding.modules.workers.rules.context_hard_stop_rule import ContextHardStopRule
 from suites.coding.modules.workers.rules.inactive_helper_rule import InactiveHelperRule
 from suites.coding.modules.workers.rules.unstarted_worker_rule import UnstartedWorkerRule
 from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule

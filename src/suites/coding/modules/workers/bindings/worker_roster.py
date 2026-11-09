@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.tasks.clear_delegated_tasks import ClearDelegatedTasks
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.commands.drop_agent_line.drop_agent_line import RemoveAgentLine
+from core.modules.drivers.commands.drop_agent_line.remove_agent_line import RemoveAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.environments.models.environment import Environment

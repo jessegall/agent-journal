@@ -43,7 +43,7 @@ from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.modules.helpers.migrations.m006_usage_limits import UsageLimitsMigration
 from core.modules.helpers.migrations.m007_read_only_helper_setting_keys import HelperSettingKeysMigration
 from core.modules.helpers.models.usage_limit import UsageLimit
-from core.modules.helpers.guards.usage_limit_guard import UsageCapGuard
+from core.modules.helpers.guards.usage_cap_guard import UsageCapGuard
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_handler import SetUsageLimitHandler
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_subcommand import SetUsageLimitSubcommand
 from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits_handler import RefreshHourlyLimitsHandler
