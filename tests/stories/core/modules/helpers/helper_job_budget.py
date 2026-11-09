@@ -23,7 +23,7 @@ def test_s59_kept_session_new_job_has_new_cost_baseline(new_story, monkeypatch):
     helper = helper_agent(story)
     report_cost(story, 3)
     story.expect_success(f"setting set {HELPER_MAX_COST} 1 --project", actor=story.user)
-    launcher = FakeLauncher(story.home.socket("launcher")).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     resumable_session(story, helper, monkeypatch)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()

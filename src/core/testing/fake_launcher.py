@@ -20,7 +20,13 @@ class FakeLauncher:
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.thread = threading.Thread(target=self.accepted, daemon=True)
 
-    def serve(self) -> "FakeLauncher":
+    @classmethod
+    def listening(cls, path: Path, answer: bytes = b"", request_count: int = 1, answers: tuple[bytes, ...] = ()) -> "FakeLauncher":
+        launcher = cls(path, answer, request_count, answers)
+        launcher.listen()
+        return launcher
+
+    def listen(self) -> None:
         self.path.unlink(missing_ok=True)
         self.server.bind(str(self.path))
         self.server.listen(1)

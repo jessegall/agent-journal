@@ -24,7 +24,7 @@ class StartedLauncherService:
         monkeypatch.setattr(LauncherService, "start", lambda service: self.start())
 
     def start(self) -> bool:
-        self.launcher = FakeLauncher(self.story.home.socket(LAUNCHER_SOCKET), answer=f"started {WORKER_PID}\n".encode()).serve()
+        self.launcher = FakeLauncher.listening(self.story.home.socket(LAUNCHER_SOCKET), answer=f"started {WORKER_PID}\n".encode())
         return True
 
 

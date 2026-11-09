@@ -14,7 +14,7 @@ def worker_with_helper(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
-    launcher = FakeLauncher(story.home.socket("launcher")).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run(START, actor=worker)
     story.run_listeners()
     launcher.drain_requests()

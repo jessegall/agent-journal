@@ -120,7 +120,7 @@ def stale_launcher_socket(story) -> None:
 
 
 def different_program_launcher(story) -> None:
-    FakeLauncher(story.home.socket("launcher")).serve()
+    FakeLauncher.listening(story.home.socket("launcher"))
 
 
 @pytest.fixture(params=[missing_launcher, stale_launcher_socket, different_program_launcher])
@@ -143,7 +143,7 @@ def test_stopping_an_ended_agent_is_refused(new_story):
 
 def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story):
     story = new_story(fixture=UserJoined)
-    launcher = FakeLauncher(story.home.socket("launcher")).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_text("agent launch claude --environment main", "started agent", actor=story.user)
     launcher.drain_requests()
     request = launcher.requests[0]

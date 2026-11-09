@@ -21,7 +21,7 @@ class StartedHelper(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        launcher = FakeLauncher(story.home.socket("launcher")).serve()
+        launcher = FakeLauncher.listening(story.home.socket("launcher"))
         story.run(START, actor=story.agent)
         story.run_listeners()
         launcher.drain_requests()
@@ -68,7 +68,7 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
 def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, monkeypatch):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    launcher = FakeLauncher(story.home.socket("launcher")).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     resumable_session(story, helper_agent(story), monkeypatch)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
@@ -123,19 +123,19 @@ def test_a_helper_that_ends_closes_its_job(new_story):
 
 def test_a_job_naming_files_an_ended_helper_knows_goes_to_that_helper(new_story):
     story = new_story(fixture=EndedHelper)
-    FakeLauncher(story.home.socket("launcher")).serve()
+    FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_refusal(START, f"journal helper send {helper_agent(story).id}", actor=story.agent)
 
 
 def test_fresh_starts_a_new_helper_on_files_an_ended_one_knows(new_story):
     story = new_story(fixture=EndedHelper)
-    FakeLauncher(story.home.socket("launcher")).serve()
+    FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(f"{START} --fresh 'A second reader'", actor=story.agent)
 
 
 def test_a_job_on_other_files_starts_a_new_helper(new_story):
     story = new_story(fixture=EndedHelper)
-    FakeLauncher(story.home.socket("launcher")).serve()
+    FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success('helper start journal-researcher --brief "Read src/queue.py" --environment main', actor=story.agent)
 
 

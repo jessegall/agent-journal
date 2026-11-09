@@ -65,7 +65,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
         return original_hand(launcher, agent, environment, command)
 
     monkeypatch.setattr(AgentLauncher, "hand", start_once)
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=answer, request_count=1).serve()
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=answer, request_count=1)
     try:
         story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
         story.run_listeners()
@@ -105,7 +105,7 @@ def test_an_entered_line_without_a_process_does_not_block_a_new_task_start(new_s
     story = new_story(fixture=OpenTaskOrchestrator)
     worker = stopped_worker_with_entered_job(story)
     task_id = story.new_row_id('task make "Another task" --brief "Read the totals"', actor=story.agent)
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n").serve()
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")
     try:
         story.expect_success(f"worker send --wait {worker.id} --task {task_id}", actor=story.agent)
         story.run_listeners()

@@ -5,7 +5,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 
 def test_an_agent_name_with_a_description_is_refused(new_story):
     story = new_story(fixture=UserBuilder)
-    launcher = FakeLauncher(story.home.socket("launcher")).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
         story.expect_refusal('helper start journal-researcher --name "Mary Shelley, window converter" --brief "Read src/till.py" --environment main',
                              "an agent's name is only the name", actor=story.agent)

@@ -34,7 +34,7 @@ def merger_delivery(story, monkeypatch):
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(PROOF, actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    launcher = FakeLauncher(story.home.socket("launcher")).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
         story.expect_success("worker deliver --wait --differences none", actor=worker)
         story.run_listeners()
@@ -55,7 +55,7 @@ def test_s05_the_merger_takes_in_workers_while_ordinary_helpers_are_off(new_stor
 
 def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_without_writing(new_story):
     story = new_story(fixture=UserBuilder)
-    launcher = FakeLauncher(story.home.socket("launcher"), request_count=1).serve()
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=1)
     story.expect_refusal(START_DESIGNER, "starts no designer", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()

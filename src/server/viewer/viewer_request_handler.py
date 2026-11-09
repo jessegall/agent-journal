@@ -297,7 +297,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session = viewer.login.session(token)
-        received_at, request_id = viewer.routes.clock.timestamp().text, str(uuid4())
+        received_at, request_id = self.stamped()
         started_at = perf_counter()
         try:
             turn = nullcontext() if viewer.routes.priorities.is_unqueued(request.line) else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
@@ -346,7 +346,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def parsed_request[Parsed](self, parse: Callable[[], Parsed]) -> Parsed | None:
         try:
-            return parse()
+            request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query)
+            started_at, (received_at, request_id) = perf_counter(), self.stamped()
+            answer = viewer.routes.window_data.answer(request, person_id, session.shared)
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
             return None
@@ -356,7 +358,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         answer = self.parsed_request(lambda: viewer.routes.window_data.answer(WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query), person_id, session.shared))
         if answer is None:
             return
-        http = ViewerHttpRequest(request_id, received_at, request_id, (perf_counter() - started_at) * 1000, 0, person_id)
+        http = self.http_request(request_id, received_at, (perf_counter() - started_at) * 1000, 0, person_id)
         self.finish_request(viewer, asdict(answer.body()), request_id, [ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
                                                                             for index, (line, timed) in enumerate(zip(answer.lines, answer.answers, strict=True))])
 
@@ -365,7 +367,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if request is None:
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
-        received_at, request_id = viewer.routes.clock.timestamp().text, str(uuid4())
+        received_at, request_id = self.stamped()
         started_at = perf_counter()
         inspections = [(index, line) for index, line in enumerate(request.lines) if viewer.routes.priorities.is_unqueued(line.line)]
         command_lines = [(index, line) for index, line in enumerate(request.lines) if not viewer.routes.priorities.is_unqueued(line.line)]
@@ -379,7 +381,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 queued_ms = (perf_counter() - started_at) * 1000
                 command_answers = viewer.routes.line_route.timed_answers(ViewerLinesRequest([line for _, line in command_lines]), person_id, session.shared)
             duration_ms = (perf_counter() - started_at) * 1000
-            http = ViewerHttpRequest(request_id, received_at, request_id, duration_ms, self.payload_bytes(body), person_id)
+            http = self.http_request(request_id, received_at, duration_ms, self.payload_bytes(body), person_id)
             for (index, line), timed in zip(command_lines, command_answers, strict=True):
                 answers[index] = timed.answer
                 records.append(ViewerRequestRecord(http, line, index, timed.duration_ms, queued_ms, timed.answer.code, timed.points))
@@ -389,6 +391,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.answer(200, body, {"X-Journal-Request-Id": request_id})
         self.wfile.flush()
         viewer.routes.request_log.record_viewers(records)
+
+    @staticmethod
+    def stamped() -> tuple[str, str]:
+        return datetime.now(timezone.utc).isoformat(), str(uuid4())
+
+    @staticmethod
+    def http_request(request_id: str, received_at: str, duration_ms: float, body_bytes: int, person_id: int) -> ViewerHttpRequest:
+        return ViewerHttpRequest(request_id, received_at, request_id, duration_ms, body_bytes, person_id)
 
     @staticmethod
     def payload_bytes(body: bytes | None) -> int:

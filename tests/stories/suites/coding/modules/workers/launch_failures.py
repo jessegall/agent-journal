@@ -14,7 +14,7 @@ from tests.stories.support.story_checks import expect_count_shown, expect_reques
 def test_a_failed_launch_tells_the_main_agent(new_story, answer):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=answer).serve() if answer is not None else None
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=answer) if answer is not None else None
     worker = dispatched_worker(story)
     story.run_listeners()
     if launcher is not None:
@@ -26,7 +26,7 @@ def test_a_failed_resume_tells_the_main_agent_once_while_the_retries_go_on(new_s
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project")
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=5).serve()
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answers=(b"started\n", b"failed\n"), request_count=5)
     worker = checked_worker(story, repository)
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "could not start")

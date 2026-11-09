@@ -42,7 +42,7 @@ class SilentRunRule(DriverRule):
         command = part.command or part.text
         if self.silent_runs.is_empty_output(part):
             if part.saved_command:
-                declaration = SILENT_SAVED_PACKAGES if StreamingHints.is_serial_package_run(command) else SILENT_SAVED_RUN
+                declaration = SILENT_SAVED_PACKAGES if StreamingHints.is_serial_packages_run(command) else SILENT_SAVED_RUN
                 return declaration.nudge(name=part.saved_command, seconds=SILENT_SECONDS)
             return SILENT_RUN.nudge(output=process.id, seconds=SILENT_SECONDS, hint=StreamingHints.hint(command))
         if self.folder.silent_seconds(process.id, part.position, timestamp) >= STALLED_SECONDS:
