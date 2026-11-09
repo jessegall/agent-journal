@@ -21,7 +21,7 @@ class ContextShare:
         if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return ContextReading(window_percent, tokens, None)
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
-        window_tokens = tokens * PERCENT_FULL // window_percent if window_percent else None
+        window_tokens = None if window_percent is None or window_percent == 0 else tokens * PERCENT_FULL // window_percent
         limit_percent = tokens * PERCENT_FULL // limit
         percent = limit_percent if window_percent is None else max(limit_percent, window_percent)
         return ContextReading(min(PERCENT_FULL, percent), tokens, limit if window_tokens is None or limit < window_tokens else None)
