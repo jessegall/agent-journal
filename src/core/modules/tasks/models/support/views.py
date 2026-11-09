@@ -43,7 +43,8 @@ TASK_INSPECTIONS_SELECT = (
     " WHERE task_waits.task_id = tasks.id AND task_waits.ended_at IS NULL) AS openers,"
     " (SELECT json_group_array(json_object('id', renewal.id, 'reason', renewal.reason, 'created_at', renewal.created_at))"
     " FROM (SELECT id, reason, created_at FROM task_block_renewals WHERE task_id = tasks.id ORDER BY id) AS renewal) AS block_renewals,"
-    " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
+    " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name,"
+    " coalesce(helper.role = 'main', 0) AS helper_main"
     " FROM tasks"
     f" LEFT JOIN agents AS helper ON {TASK_HELPER_MATCH}"
 )

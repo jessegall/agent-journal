@@ -50,7 +50,7 @@ def test_letting_the_agent_pick_gives_the_plan_to_the_main_agent(new_story):
     story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
     story.expect_success("plan assign 1", actor=story.agent)
     expect_task_holder(story, None)
-    expect_value(assignee(story), {"id": story.agent.id, "name": "main", "is_main": True})
+    expect_value(assignee(story), {"id": story.agent.id, "name": "main", "main": True})
 
 
 def test_an_assigned_plan_keeps_its_worker_when_it_starts(new_story):

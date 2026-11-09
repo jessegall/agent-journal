@@ -31,3 +31,4 @@ class PlanOutlineTask(ViewModel):
     main_delegate: bool
     helper_id: int | None
     helper_name: str | None
+    helper_main: bool

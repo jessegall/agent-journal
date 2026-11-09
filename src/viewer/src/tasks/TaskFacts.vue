@@ -1,6 +1,8 @@
 <script setup>
+import AgentBadge from "../kit/AgentBadge.vue";
 import InfoTip from "../kit/InfoTip.vue";
 import Segmented from "../kit/Segmented.vue";
+import {agentLabel} from "../domain/agentLabel.js";
 import {peekRef} from "../route.js";
 import {SCORE_MEANINGS} from "../domain/taskComplexity.js";
 import {PRIORITY_LEVELS, namedPriority} from "../domain/taskPriority.js";
@@ -33,13 +35,13 @@ const HELD_STATES = new Set(["started", "testing", "blocked"]);
         <template v-if="task.helper_id">
             <div class="fact">
                 <span class="fact-label">{{ task.state === "open" ? "Queued for" : "Delegated to" }}</span>
-                <button type="button" class="fact-value agent-link" :title="`Open ${task.helper_name}`" data-task-agent @click="peekRef(`agents:${task.helper_id}`)">{{ task.helper_name }}</button>
+                <button type="button" class="fact-value agent-link" :title="`Open ${agentLabel(task.helper_name, task.helper_main)}`" data-task-agent @click="peekRef(`agents:${task.helper_id}`)"><AgentBadge :name="task.helper_name" :main="task.helper_main" /></button>
             </div>
             <template v-if="HELD_STATES.has(task.state) && task.holder_id">
-                <p class="held-note" data-task-held-by>{{ task.helper_name }} holds it: merging its work finishes it, and releasing the worker opens it again.</p>
+                <p class="held-note" data-task-held-by><AgentBadge :name="task.helper_name" :main="task.helper_main" /> holds it: merging its work finishes it, and releasing the worker opens it again.</p>
             </template>
             <template v-else-if="task.state === 'open'">
-                <p class="held-note" data-task-held-by>{{ task.helper_name }} takes it after the task it is on.</p>
+                <p class="held-note" data-task-held-by><AgentBadge :name="task.helper_name" :main="task.helper_main" /> takes it after the task it is on.</p>
             </template>
         </template>
         <template v-else-if="task.state === 'started' && task.holder_id">

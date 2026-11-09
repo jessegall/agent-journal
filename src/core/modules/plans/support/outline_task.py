@@ -20,6 +20,7 @@ class OutlineTask:
     main_delegate: bool
     helper_id: int | None = None
     helper_name: str | None = None
+    helper_main: bool = False
 
     def is_closed(self) -> bool:
         return self.state in CLOSED_STATES
