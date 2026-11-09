@@ -19,12 +19,14 @@ from core.base.query.conditions.minimum import Minimum
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PASSED, MERGER_PROFILE, MERGER_SOURCE, NO_WORKER_WAITING
+from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 
 
 class StartMergerHandler(Handler[StartMerger, None]):
-    """Gives the merger the job: a new one, or the kept one, resumed or told. With none able to start, the main
-    agent hears as it did before."""
+    """Gives the merger the job: a new one, or the kept one, resumed or told. A kept merger its profile no longer
+    fits is retired and replaced, since it could never start again. With none able to start, the main agent
+    hears as it did before."""
 
     command = StartMerger
     disabled_scopes = [ActorScope]
@@ -56,8 +58,8 @@ class StartMergerHandler(Handler[StartMerger, None]):
     def assign_job(self, actor: Actor, context: Context) -> None:
         kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
         if kept is not None and kept.ended_at is not None and not self.fits_profile(kept):
-            raise Refusal(f"the merger agent:{kept.id} runs {kept.program} {kept.program_model}, which its profile no longer lists",
-                          f"retire it with journal agent retire {kept.id} --reason \"<why>\", or restore the profile")
+            self.bus.run(RetireAgent(kept.id, f"runs {kept.program} {kept.program_model}, which its profile no longer lists"), actor, environment_id=context.environment_id)
+            kept = None
         if kept is None:
             self.bus.run(StartHelper(MERGER_PROFILE, MERGER_JOB), actor, environment_id=context.environment_id)
             return
