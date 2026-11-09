@@ -3,7 +3,9 @@ import pytest
 from server.hosted_journal_door import OWNER_REASON
 from server.viewer import viewer_request_handler
 from server.viewer.viewer_request_handler import CLOSED_DOOR_REASON, EVENTS_ROUTE, SERVER_STATE_ROUTE
-from server.viewer.viewer_route_rules import VIEWER_ROUTE_RULES, Audience, ViewerRouteRule
+from server.viewer.route_audience import RouteAudience
+from server.viewer.viewer_route_rule import ViewerRouteRule
+from server.viewer.viewer_route_rules import VIEWER_ROUTE_RULES
 from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, agent_server, hosted_server, session_cookie, socket_answer, socket_path
 from tests.stories.server.support.server_client import request_answer
 from tests.stories.support.story_checks import expect_value
@@ -12,7 +14,7 @@ ORIGIN_HEADERS = {"Origin": PUBLIC_ORIGIN, "Sec-Fetch-Site": "same-origin"}
 STREAMS = {EVENTS_ROUTE}
 
 
-def rules_of(audience: Audience) -> list[ViewerRouteRule]:
+def rules_of(audience: RouteAudience) -> list[ViewerRouteRule]:
     return [rule for rule in VIEWER_ROUTE_RULES if rule.audience is audience]
 
 
@@ -37,28 +39,28 @@ def test_every_path_the_viewer_handler_names_has_a_rule_that_states_who_may_reac
     expect_value([path for path in path_constants() if path not in ruled], [])
 
 
-@pytest.mark.parametrize("rule", rules_of(Audience.PUBLIC_FILES), ids=ids_of(rules_of(Audience.PUBLIC_FILES)))
+@pytest.mark.parametrize("rule", rules_of(RouteAudience.PUBLIC_FILES), ids=ids_of(rules_of(RouteAudience.PUBLIC_FILES)))
 def test_a_public_file_is_answered_to_a_caller_who_is_not_logged_in(hosted_server, rule):
     expect_value(hosted_answer(hosted_server, rule, logged_in=False).status != 401, True)
 
 
-@pytest.mark.parametrize("rule", rules_of(Audience.LOGGED_IN), ids=ids_of(rules_of(Audience.LOGGED_IN)))
+@pytest.mark.parametrize("rule", rules_of(RouteAudience.SESSION), ids=ids_of(rules_of(RouteAudience.SESSION)))
 def test_a_logged_in_route_answers_401_without_a_login(hosted_server, rule):
     expect_value(hosted_answer(hosted_server, rule, logged_in=False).status, 401)
 
 
-@pytest.mark.parametrize("rule", [rule for rule in rules_of(Audience.LOGGED_IN) if rule.path not in STREAMS], ids=lambda rule: f"{rule.method} {rule.path}")
+@pytest.mark.parametrize("rule", [rule for rule in rules_of(RouteAudience.SESSION) if rule.path not in STREAMS], ids=lambda rule: f"{rule.method} {rule.path}")
 def test_a_logged_in_route_does_not_answer_401_with_a_login(hosted_server, rule):
     expect_value(hosted_answer(hosted_server, rule, logged_in=True).status != 401, True)
 
 
-@pytest.mark.parametrize("rule", rules_of(Audience.CLOSED_HOSTED), ids=ids_of(rules_of(Audience.CLOSED_HOSTED)))
+@pytest.mark.parametrize("rule", rules_of(RouteAudience.NOT_OPEN), ids=ids_of(rules_of(RouteAudience.NOT_OPEN)))
 def test_a_closed_route_answers_404_even_with_a_login(hosted_server, rule):
     answer = hosted_answer(hosted_server, rule, logged_in=True)
     expect_value((answer.status, CLOSED_DOOR_REASON in answer.text), (404, True))
 
 
-@pytest.mark.parametrize("rule", rules_of(Audience.JOURNAL_UID_ONLY), ids=ids_of(rules_of(Audience.JOURNAL_UID_ONLY)))
+@pytest.mark.parametrize("rule", rules_of(RouteAudience.JOURNAL_USER), ids=ids_of(rules_of(RouteAudience.JOURNAL_USER)))
 def test_a_route_of_the_journal_user_answers_403_to_another_user(agent_server, rule):
     answer = request_answer(agent_server.socket_path, rule.method, rule.example_path, {})
     expect_value((answer.status, OWNER_REASON in answer.text), (403, True))

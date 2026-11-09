@@ -30,7 +30,6 @@ pytestmark = pytest.mark.install_job
 
 SOURCE = Path(__file__).resolve().parents[3] / "src"
 START_LIMIT_SECONDS = 60
-LISTEN_POLL_SECONDS = 0.2
 
 
 def health_status(home: JournalHome) -> int:
@@ -152,7 +151,6 @@ def wait_for_template_list(home: JournalHome, folder: Path, title: str):
                                 {"argv": ["template", "list", "--target", "plan", "--purpose", "critique"], "variables": {}, "folder": str(folder)})
         if title in listed.text or time.monotonic() > deadline:
             return listed
-        time.sleep(LISTEN_POLL_SECONDS)
 
 
 def publish_release(home, folder, source):
