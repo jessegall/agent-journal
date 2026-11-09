@@ -24,8 +24,8 @@ TEST_LIMIT_SECONDS = 3600
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
     """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it reads
-    their output; a later listener starts them once this is committed. They run on the commit handed in, in a
-    checkout of its own, so the worker can go on working in its worktree."""
+    their output; a later listener starts them once this is committed. They all go on the run queue at once and run
+    on the commit handed in, in a checkout of its own, so the worker can go on working in its worktree."""
 
     command = StartWorkerTests
 
@@ -37,10 +37,11 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         worktrees = {worktree.id: worktree for worktree in self.worktrees.all_worktrees()}
         proofs = [proof for proof in self.proofs.test_rows() if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
-        for proof in proofs:
-            if proof.state is not ProofState.QUEUED or proof.worktree_id in running:
-                continue
-            self.start(proof, worktrees[proof.worktree_id], context)
+        queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]
+        folders = {worktree_id: self.git.test_folder(worktrees[worktree_id]) if worktree_id in running else self.git.test_checkout(worktrees[worktree_id])
+                   for worktree_id in {proof.worktree_id for proof in queued}}
+        for proof in queued:
+            self.start(proof, worktrees[proof.worktree_id], folders[proof.worktree_id], context)
             running.add(proof.worktree_id)
         for first_answer in self.affected.queued():
             if first_answer.worktree_id not in worktrees or first_answer.worktree_id in running:
@@ -53,8 +54,8 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
                 continue
             self.start_picker(first_answer, worktree, context)
 
-    def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, proof.test_command, self.git.test_checkout(worktree), CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+    def start(self, proof: Proof, worktree: Worktree, folder: str, context: Context) -> None:
+        start = StartProcess.single_part(worktree.session_agent_id, proof.test_command, folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=proof.task_id), context)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
