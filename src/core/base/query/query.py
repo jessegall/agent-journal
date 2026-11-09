@@ -3,7 +3,7 @@ from copy import copy
 from typing import Generic, Self, TypeVar
 from core.base.database.constraint_refusals import ENVIRONMENT_COLUMN
 from core.base.database.database import Database
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.agent_scoped import AgentScoped
 from core.base.model.removable import Removable
 from core.base.model.environment_scoped import EnvironmentScoped

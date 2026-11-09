@@ -1,7 +1,16 @@
 import os
 from datetime import timedelta
 
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
+from core.modules.processes.commands.move_process.move_process import MoveProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
+from core.modules.processes.commands.support.part_spec import PartSpec
+from core.testing.expect_reply import expect_reply_allowed
+from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
@@ -77,3 +86,19 @@ def test_a_run_that_prints_is_never_held(new_story):
         story.advance(timedelta(seconds=200))
         print_line(story, f"step {number}\n")
         story.expect_hook_allowed("s-1", OTHER_TOOL_USE)
+
+
+def test_a_held_read_only_helper_may_stop_and_read_its_own_run(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = helper_agent(story)
+    actor = Actor(helper.id, ActorType.AGENT)
+    parts = (PartSpec("grep cart a", "grep", False, CommandCategory.SEARCH),)
+    bus = story.container.get(Bus)
+    process = bus.run(StartProcess(helper.id, None, "grep cart a", "/work/helper", "zsh", CommandCategory.SEARCH, 15, parts), actor, environment_id=1)
+    bus.run(StartProcessPart(process.id, 1), actor, environment_id=1)
+    bus.run(MoveProcess(process.id), actor, environment_id=1)
+    story.advance(timedelta(seconds=HANG_SECONDS + 1))
+    read = HookSamples.shell(f"journal output read {process.id} --tail 5", ShellPart("journal", CommandCategory.JOURNAL, ["output", "read", str(process.id), "--tail", "5"]))
+    stop = HookSamples.shell(f"journal output stop {process.id}", ShellPart("journal", CommandCategory.JOURNAL, ["output", "stop", str(process.id)]))
+    expect_reply_allowed(story.hook(helper.session, read))
+    expect_reply_allowed(story.hook(helper.session, stop))

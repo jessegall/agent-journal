@@ -4,7 +4,7 @@ from typing import TypeVar, cast
 from core.base.database.kept_rows import KEPT_ROW_COUNT
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.base.listener.cached_event_row import CachedEventRow

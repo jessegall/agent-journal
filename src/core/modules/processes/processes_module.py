@@ -1,4 +1,6 @@
 from core.modules.processes.listeners.ended_run_line_listener import EndedRunLineListener
+from core.base.run_owners import RunOwners
+from core.modules.processes.support.process_run_owners import ProcessRunOwners
 from core.modules.processes.support.process_wait_targets import ProcessWaitTargets
 from core.modules.waits.support.wait_targets import WaitTargets
 from core.modules.processes.listeners.full_output_read_listener import FullOutputReadListener
@@ -254,7 +256,7 @@ class ProcessesModule(Module):
     driver_rules = [FailedFullRunRule, RetryLoopRule, ReaderRequestRule, LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, LargeOutputReadRule, RunTitleRule, SleepPollRule, JournalChainRule, ReadCommandOutputRule, JournalPipeRule, RedirectedRunRule, SilentStartRule, SilentRunRule, SilentRunHoldRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, RunQueueHaltedRule]
     listeners = [EndedRunLineListener, FullOutputReadListener, StockReadersPublishListener, StartReadersListener, ReaderFailureListener, ReaderBlockListener, ReaderRequestCompleteListener, ProcessFolderRemovalListener, RunSlotListener, TestRunMarkerListener, WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, ReaderProofListener, ProcessPruneListener, ProcessRemovalListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, ProcessPartStartMarkListener, ProcessOutputMarkListener, ProcessOutputListener]
     marks = PROCESS_MARKS
-    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets}
+    bindings = {WatchedRuns: MonitoredRuns, WaitTargets: ProcessWaitTargets, RunOwners: ProcessRunOwners}
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, skeleton=PROCESSES_OUTPUTS_SKELETON, search=WindowSearch(ProcessSearcher, "Search the commands"), icon=WindowIcon.TERMINAL, reads=WINDOW_READS,
                                  keys=[WindowKey("runs", "process feed", arguments=["session-agent-id"], events=WINDOW_EVENTS)], runs=WINDOW_RUNS, events=WINDOW_EVENTS),

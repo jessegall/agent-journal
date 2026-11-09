@@ -13,7 +13,7 @@ from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.journal_home import JournalHome
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.command.test_commands import MakeItem

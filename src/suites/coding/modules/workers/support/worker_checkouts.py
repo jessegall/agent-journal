@@ -4,7 +4,7 @@ from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
 from core.base.file_state import FileState
 from core.base.file_status import FileStatus
-from core.base.missing_file_refusal import MissingFileRefusal
+from engine.errors.missing_file_refusal import MissingFileRefusal
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
