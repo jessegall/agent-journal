@@ -21,7 +21,7 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
         self.texts, self.outputs, self.repository, self.repeats, self.delivery = texts, outputs, repository, repeats, delivery
 
     def handle(self, command: ReadOutput, context: Context) -> OutputLines:
-        self.repeats.check(command, context.actor)
+        self.repeats.check(command, context)
         lines = self.texts.lines(context.actor, command)
         self.repeats.note(command, context.actor, context.timestamp.text)
         kept = self.outputs.process_output(command.process_id)

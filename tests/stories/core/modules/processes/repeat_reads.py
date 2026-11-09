@@ -3,6 +3,9 @@ from datetime import timedelta
 import pytest
 
 from core.base.driver.command_category import CommandCategory
+from core.base.query.queries import Queries
+from core.modules.drivers.models.countdown import Countdown
+from core.modules.processes.commands.read_output.support.repeat_reads import RUNNING_OUTPUT_READS
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -57,11 +60,19 @@ def test_a_person_reads_an_output_as_often_as_they_like(ended_run):
         story.expect_success(f"output read {process.id} --tail 3")
 
 
-def test_a_run_still_going_is_read_again_as_it_grows(new_story):
+def kept_reads(story):
+    return story.container.get(Queries).query(Countdown).filter(actor_id=story.agent.id, key=RUNNING_OUTPUT_READS.key).first()
+
+
+def test_a_run_still_going_is_read_again_as_it_grows_and_each_read_is_counted_in_a_row_that_outlives_the_command_line(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build", category=CommandCategory.BUILD)
     for _ in range(2):
         story.expect_success(f"output read {process.id} --tail 3", actor=story.agent)
+    story.expect_rows(kept_reads(story).subject == str(process.id), kept_reads(story).used_count == 2)
+    end_run(story, process, LONG_OUTPUT)
+    story.expect_success(f"output read {process.id} --tail 3", actor=story.agent)
+    story.expect_rows(kept_reads(story) is None)
 
 
 def test_a_compaction_clears_what_was_read(ended_run):
