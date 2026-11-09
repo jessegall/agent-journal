@@ -60,7 +60,7 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         message = Message(session_agent_id=actor.id if actor.type is ActorType.AGENT else None,
                           target_agent_id=self.targets.stored_id(target, target_id),
                           parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.commented_row and message_type is MessageType.USER else message_type,
-                          text=command.text, files=names, metadata=metadata, is_chat_visible=command.is_chat_visible)
+                          text=command.text, files=names, metadata=metadata, is_chat_visible=command.is_chat_visible, is_agent_text=command.is_agent_text)
         saved = self.repository.save(message, context)
         self.files.attach(saved.id, command.files)
         return saved

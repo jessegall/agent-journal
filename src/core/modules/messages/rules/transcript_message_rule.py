@@ -66,7 +66,7 @@ class TranscriptMessageRule(DriverRule):
             return [EditMessageText(message.id, text)]
         if self.is_filtered(hook, text, row.created_at):
             return []
-        return [SendMessage(text)]
+        return [SendMessage(text, is_agent_text=True)]
 
     def is_filtered(self, hook: AgentHook, text: str, created_at: Timestamp) -> bool:
         is_closing = self.texts.is_closing(hook, created_at)

@@ -37,7 +37,7 @@ class AgentTextRule(DriverRule):
         repeated =self.repeats.repeated(hook.agent_id, text)
         if repeated is not None:
             return RuleAnswer.with_nudges(REPEATED_CLOSING.nudge(message=repeated.id))
-        return RuleAnswer.allowed().running(SendMessage(text))
+        return RuleAnswer.allowed().running(SendMessage(text, is_agent_text=True))
 
     def complete_text(self, hook: AgentHook) -> str:
         text = hook.event.displayed_text
