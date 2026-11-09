@@ -27,6 +27,14 @@ test("the far right says how many tasks are done, and its tooltip says what is d
     expect(tip(element, "[data-agent-task]").querySelector("span").textContent).toBe("4 of its 6 tasks done. This one is being tested.");
 });
 
+test("above the bar the row shows the hourly rate as a rounded number", async () => {
+    const tasks = tasksOf(4, "started", 6);
+    expect(taskLine({tasks, inHand: tasks[4], perHour: 3.6}).rate).toBe("4/hour");
+    expect(taskLine({tasks, inHand: tasks[4], perHour: 0}).rate).toBe("");
+    const element = await card(worker(), {tasks});
+    expect(element.querySelector("[data-agent-rate]").textContent).toMatch(/^\d+\/hour$/);
+});
+
 test("the bar draws the finished tasks, then those in testing, out of all the tasks given", async () => {
     const tasks = [{id: 1, state: "completed"}, {id: 2, state: "completed"}, {id: 3, state: "testing"}, {id: 4, state: "open"}, {id: 5, state: "started"}];
     const element = await card(worker(), {tasks});
