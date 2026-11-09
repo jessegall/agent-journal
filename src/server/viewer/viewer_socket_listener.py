@@ -6,6 +6,7 @@ from socketserver import UnixStreamServer
 from urllib.parse import urlparse
 
 from server.handover_descriptors import QUEUED_CONNECTIONS
+from server.viewer.hosted_closed_doors import HostedClosedDoors
 from server.viewer.hosted_door import HostedDoor
 from server.viewer.hosted_headers import HostedHeaders
 from server.viewer.viewer_endpoint import ViewerEndpoint
@@ -28,7 +29,7 @@ class ViewerSocketListener(ViewerEndpoint, UnixStreamServer):
                  inherited_socket: socket.socket | None = None) -> None:
         self.group, self.public_host = group, urlparse(public_origin).netloc
         super().__init__(str(socket_path), ViewerSocketRequestHandler, inherited_socket=inherited_socket)
-        self.attach(login, routes, HostedDoor(public_origin, proxy_uid), HostedHeaders(public_origin))
+        self.attach(login, routes, HostedDoor(public_origin, proxy_uid), HostedHeaders(public_origin), HostedClosedDoors())
 
     def server_bind(self) -> None:
         if self.inherited_socket is None:

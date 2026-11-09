@@ -3,6 +3,7 @@ import threading
 from server.listener_thread import STOP_LIMIT_SECONDS
 from server.tracked_requests import TrackedRequests
 from server.viewer.answer_headers import AnswerHeaders
+from server.viewer.closed_doors import ClosedDoors
 from server.viewer.door import Door
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
@@ -18,9 +19,10 @@ class ViewerEndpoint(TrackedRequests):
     routes: ViewerRoutes
     door: Door
     answer_headers: AnswerHeaders
+    closed_doors: ClosedDoors
 
-    def attach(self, login: ViewerLogin, routes: ViewerRoutes, door: Door, answer_headers: AnswerHeaders) -> None:
-        self.login, self.routes, self.door, self.answer_headers = login, routes, door, answer_headers
+    def attach(self, login: ViewerLogin, routes: ViewerRoutes, door: Door, answer_headers: AnswerHeaders, closed_doors: ClosedDoors) -> None:
+        self.login, self.routes, self.door, self.answer_headers, self.closed_doors = login, routes, door, answer_headers, closed_doors
         self.thread = threading.Thread(target=self.serve, name="viewer", daemon=True)
 
     @property

@@ -38,10 +38,12 @@ from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
+from server.viewer.door_refusal import DoorRefusal
 from server.viewer.door_request import DoorRequest
 from server.viewer.viewer_server import ViewerServer
 
 UNKNOWN_PEER_UID = -1
+CLOSED_DOOR_REASON = "not available on a hosted journal yet"
 COOKIE_NAME = "journal_viewer"
 SHARE_COOKIE_NAME = "journal_share"
 SHARE_ROUTE = "/viewer/share/"
@@ -558,7 +560,11 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                            self.viewer().login.has_session(self.cookie_token()), int(self.headers.get("Content-Length", "0") or "0"))
 
     def door_refuses(self, is_change: bool) -> bool:
-        refusal = self.viewer().door.refusal(self.door_request(is_change))
+        viewer = self.viewer()
+        refusal = viewer.door.refusal(self.door_request(is_change))
+        route = urlsplit(self.path)
+        if refusal is None and viewer.closed_doors.closes_route(route.path, parse_qs(route.query)):
+            refusal = DoorRefusal(404, CLOSED_DOOR_REASON)
         if refusal is None:
             return False
         self.close_connection = True

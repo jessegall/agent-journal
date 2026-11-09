@@ -48,6 +48,7 @@ from server.program_stop_listener_work import ProgramStopListenerWork
 from server.urgent_listener_work import UrgentListenerWork
 from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
+from server.viewer.closed_service import ClosedService
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_socket_listener import ViewerSocketListener
 from server.viewer.phone_sessions import PhoneSessions
@@ -161,10 +162,11 @@ def main(argv: list[str]) -> int:
 
     ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
     ticker.register(TickHandler(TickInterval(seconds=CHECK_PERIOD_SECONDS), lambda container: container.get(PeriodicChecks).run(), "checks"))
-    if not hosting.is_hosted:
+    if not viewer.closed_doors.closes_service(ClosedService.TUNNEL):
         ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
-    ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
-    ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
+    if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SERVICES):
+        ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
+        ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel, reported_findings),
                            waiting_server.journal_socket() if waiting_server else None)
@@ -183,15 +185,17 @@ def main(argv: list[str]) -> int:
             starting_round.run()
         except Exception as error:
             starting_round.report(error)
-    try:
-        plugin_services.follow()
-    except Exception as error:
-        files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
+    if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SERVICES):
+        try:
+            plugin_services.follow()
+        except Exception as error:
+            files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
     server.context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
-    plugin_thread.start()
+    if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SCRIPTS):
+        plugin_thread.start()
     stop_thread.start()
     ticker_thread.start()
     viewer.start()
