@@ -192,7 +192,7 @@ usePoll(load, isRunning, () =>
     <template v-if="unref(time)"
       ><Teleport :to="unref(time)"
         ><template v-if="percent">
-  <span class="output-dock-percent" data-output-percent role="img" :title="percent" :aria-label="percent"><i :style="{ width: percent }" /></span
+  <span class="output-dock-percent" data-output-percent role="img" :title="percent" :aria-label="percent"><i :style="{ width: percent, background: TONES.running }" /></span
           >
 </template><template v-else>
   <span class="output-dock-figure">{{ ranFor }}</span>
@@ -322,7 +322,6 @@ usePoll(load, isRunning, () =>
 .output-dock-percent i {
   display: block;
   height: 100%;
-  background: var(--text-3);
 }
 
 .output-dock-terminal {
