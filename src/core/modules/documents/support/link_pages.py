@@ -102,7 +102,7 @@ class LinkPages:
         if not arguments.first_counterpart:
             return query.oldest().page(arguments.page, size)
         first = self.row_refs.parsed(arguments.first_counterpart)
-        priority = query.matching(LinkCounterparts(reference, [first])).oldest().first()
+        priority = query.matching(LinkCounterparts(reference, (first,))).oldest().first()
         if priority is None:
             return query.oldest().page(arguments.page, size)
         total = query.count()

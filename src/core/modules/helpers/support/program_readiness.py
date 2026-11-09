@@ -16,8 +16,8 @@ class ProgramReadiness:
 
     @property
     def earliest_line(self) -> str:
-        timed = [state for state in self.states.values() if state.ends_at is not None]
+        timed = [(state.ends_at, state) for state in self.states.values() if state.ends_at is not None]
         if timed:
-            earliest = min(timed, key=lambda state: state.ends_at)
-            return f"{earliest.line}, until {earliest.ends_at.text}"
+            ends_at, earliest = min(timed, key=lambda pair: pair[0])
+            return f"{earliest.line}, until {ends_at.text}"
         return "; ".join(state.line for state in self.states.values())

@@ -4,6 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
@@ -22,6 +23,6 @@ class ShowMainAgentsSubcommand(ReadSubcommand[tuple[Agent, ...]]):
         return MainAgentFinder.all_running(self.queries)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, tuple):
+        if is_tuple(value):
             ids = [agent.id for agent in value if isinstance(agent, Agent)]
             output.write("\n".join(f"agent {agent_id}" for agent_id in ids), {"rows": [{"id": agent_id} for agent_id in ids]})

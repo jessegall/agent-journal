@@ -33,6 +33,10 @@ class DocRevisionsSubcommand(ReadSubcommand[Sequence[DocRevision]]):
         actors = {actor.id: actor.name for actor in self.queries.query(ActorRecord).find_many(author_ids)}
         agents = {agent.id: agent.given_name for agent in self.queries.query(Agent).matching(Among("id", author_ids)).all_rows() if agent.given_name}
         names = {**actors, **agents}
-        rows = [{**output.values(row), "author_name": names.get(row.author_id, "Unknown")} for row in revisions]
-        output.write("\n".join(f"{row.number}  {row.creation_timestamp().text[:16]}  {names.get(row.author_id, 'Unknown')}  {row.change}" for row in revisions),
+
+        def author_name(author_id: int | None) -> str:
+            return names.get(author_id, "Unknown") if author_id is not None else "Unknown"
+
+        rows = [{**output.values(row), "author_name": author_name(row.author_id)} for row in revisions]
+        output.write("\n".join(f"{row.number}  {row.creation_timestamp().text[:16]}  {author_name(row.author_id)}  {row.change}" for row in revisions),
                      {"rows": rows})

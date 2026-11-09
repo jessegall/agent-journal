@@ -4,6 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
@@ -26,6 +27,6 @@ class MainSessionsSubcommand(ReadSubcommand[tuple[Agent, ...]]):
         return MainAgentFinder.sessions(self.queries, arguments.program)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, tuple):
+        if is_tuple(value):
             sessions = [agent.session for agent in value if isinstance(agent, Agent)]
             output.write("\n".join(sessions), {"rows": [{"session": session} for session in sessions]})

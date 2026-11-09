@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.skill.skill_digest import SkillDigest
-from core.base.type_guards import is_list, is_mapping
+from core.base.type_guards import is_list, is_mapping, is_text_mapping
 
 KEPT_SKILLS_TYPE = "invoked_skills"
 COMPACT_BOUNDARY = "compact_boundary"
@@ -35,7 +35,7 @@ class ClaudeKeptSkills:
             fields: object = json.loads(line)
         except ValueError:
             return {}
-        return fields if is_mapping(fields) else {}
+        return fields if is_text_mapping(fields) else {}
 
     @staticmethod
     def skill_digests(skills: object) -> Mapping[str, str]:

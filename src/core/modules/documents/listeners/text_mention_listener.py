@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from core.base.change.changed import RowChange
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.deleted import Deleted
 from core.base.command.bus import Bus
@@ -12,12 +13,11 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.mention_refs import MentionRefs
-from core.base.change.event_subscriber import E
 
 MODULE_NAME = "journal.core.documents"
 
 
-class TextMentionListener(CommitListener[E]):
+class TextMentionListener(CommitListener[RowChange]):
     """After a row's text is saved, on the deferred queue, links it to every row its text fields name. A save
     that changes no text field has nothing to link, and a row that follows an item of a team library is
     skipped, since its numbers mean something else in another journal."""
@@ -28,7 +28,7 @@ class TextMentionListener(CommitListener[E]):
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, library: LibraryLookup, registry: Registry) -> None:
         self.bus, self.actors, self.queries, self.library, self.registry = bus, actors, queries, library, registry
 
-    def handle(self, event: E, logged: LoggedEvent) -> None:
+    def handle(self, event: RowChange, logged: LoggedEvent) -> None:
         if isinstance(event, Deleted) or not (logged.is_creation or any(field in logged.data for field in self.text_fields)):
             return
         row = event.row

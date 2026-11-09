@@ -38,7 +38,7 @@ class Model:
     updated_at: Timestamp | None = None
     move: Move | None = field(default=None, compare=False)
 
-    def change_name(self, old_row: Self | None) -> str | None:
+    def change_name(self, old_row: "Model | None") -> str | None:
         return None
 
     def creation_timestamp(self) -> Timestamp:

@@ -18,10 +18,14 @@ class PendingDockItems:
         return [item for item in items if item.target_model == model_name and item.target_id == row_id]
 
     def remove(self, scheduled: DockItem) -> None:
-        self.kept.update("dock_items", lambda items: tuple(item for item in items if item.id != scheduled.id), WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")
+        def without_scheduled(items: tuple[DockItem, ...]) -> tuple[DockItem, ...]:
+            return tuple(item for item in items if item.id != scheduled.id)
+
+        self.kept.update("dock_items", without_scheduled, WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")
 
     def remember(self, saved: DockItem) -> None:
-        self.kept.update("dock_items", lambda items: (*[item for item in items if item.id != saved.id], saved)
-                         if saved.state is DockItemState.DOCKED and not saved.kept and saved.leaves_at is None
-                         else tuple(item for item in items if item.id != saved.id),
-                         WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")
+        def with_saved(items: tuple[DockItem, ...]) -> tuple[DockItem, ...]:
+            others = tuple(item for item in items if item.id != saved.id)
+            return (*others, saved) if saved.state is DockItemState.DOCKED and not saved.kept and saved.leaves_at is None else others
+
+        self.kept.update("dock_items", with_saved, WAITING_CONDITION, WAITING_PARAMETERS, name="docking.pending_items")

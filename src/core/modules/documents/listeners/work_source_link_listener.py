@@ -50,7 +50,7 @@ class WorkSourceLinkListener(SaveListener[Created[Task] | Updated[Task] | Create
         self.sources.use_copy(selected, context)
 
     def is_direct(self, row: Model, context: Context) -> bool:
-        if isinstance(context.command, (MakeCommand, EditCommand)):
+        if issubclass(type(context.command), (MakeCommand, EditCommand)):
             return context.command.model() is type(row)
         if isinstance(context.command, (MakeText, EditText)):
             return context.command.text_model is type(row)

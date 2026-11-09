@@ -11,13 +11,17 @@ Fields = Mapping[str, object]
 M = TypeVar("M", bound=Model)
 
 
-class LibraryShare(Generic[M]):
-    """How the rows of one model are shared with a team: their name on the server, the model they are kept as here,
-    the fields that travel, and how a row is made or changed from what the server sends. A module declares its
-    own, so the library module knows no model by name."""
+class LibraryShareDeclaration:
+    """What a module declares of a share: its name on the server and the model it is kept as here."""
 
     name: ClassVar[str]
     model: ClassVar[type[Model]]
+
+
+class LibraryShare(LibraryShareDeclaration, Generic[M]):
+    """How the rows of one model are shared with a team: their name on the server, the model they are kept as here,
+    the fields that travel, and how a row is made or changed from what the server sends. A module declares its
+    own, so the library module knows no model by name."""
 
     def fields(self, row: M) -> Fields:
         raise NotImplementedError

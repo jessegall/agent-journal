@@ -62,7 +62,7 @@ class CheckApprovalWorksHandler(Handler[CheckApprovalWorks, None]):
         self.explain(subcommand.command(parsed, caller), caller.actor, context)
 
     def explain(self, command: Command[object], person: Actor, context: Context) -> None:
-        if type(self.bus.handler(command)).prepare is not Handler.prepare:
+        if self.bus.handler(command).has_prepare_step:
             return None
         try:
             self.bus.explain(command, person, frozenset(), context.environment_id)

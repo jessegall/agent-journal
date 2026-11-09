@@ -1,5 +1,4 @@
 from core.base.change.changed import Changed
-from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
@@ -25,7 +24,7 @@ class StandingApprovalDockListener(CommitListener[Changed[ApprovalRequest]]):
 
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
-        if isinstance(event, Created) or request.standing_id is None or request.state is not ApprovalState.ACCEPTED or event.old_row.state is ApprovalState.ACCEPTED:
+        if event.old_row is None or request.standing_id is None or request.state is not ApprovalState.ACCEPTED or event.old_row.state is ApprovalState.ACCEPTED:
             return
         self.bus.run(AddDockItem(ApprovalDockType.STANDING_USED.value, StandingApproval.cli_name, request.standing_id, text=request.text.splitlines()[0]), self.actors.actor("journal.core.approvals"),
                      cause_id=logged.id, environment_id=request.environment_id)
