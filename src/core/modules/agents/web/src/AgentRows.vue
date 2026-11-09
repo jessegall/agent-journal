@@ -69,7 +69,7 @@ watch(rows, (current) => {
 const searching = computed(() => Boolean(words.value.trim()) || filterCount.value > 0);
 const emptyText = computed(() => props.texts[show.value] ?? {title: props.empty, hint: ""});
 
-// one card is open at a time and takes the whole window until it closes or a search starts
+// one card is open at a time and takes the whole window, search bar included, until it closes
 const openId = ref(null);
 const openedRow = ref(null);
 const agents = ref(null);
@@ -148,7 +148,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 
 <template>
     <div ref="agents" :class="['agents', {focused: openRow, 'card-changing': changing}]">
-        <SearchBar v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
+        <SearchBar v-if="!openRow" v-model="words" placeholder="Search agents" :menu-count="filterCount" data-agents-search>
                 <template #menu>
                     <MenuLabel>Type</MenuLabel>
                     <template v-for="role in filterOptions.roles" :key="role"><MenuItem role="menuitemcheckbox" :aria-checked="filters.roles.includes(role)" :checked="filters.roles.includes(role)" :data-filter-role="role" @click="updateFilter('roles', role)">{{ label(role) }}</MenuItem></template>
