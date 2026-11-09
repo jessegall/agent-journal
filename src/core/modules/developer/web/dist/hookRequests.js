@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-072e5d462dc5")) { const style = document.createElement("style"); style.id = "window-styles-072e5d462dc5"; style.textContent = ".band[data-v-1758914f]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-1758914f]{color:var(--text-3)}.band span[data-v-1758914f]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-913d1fb1]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-913d1fb1]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-913d1fb1]{flex:1;margin:0;font-size:14px}.limits[data-v-913d1fb1],.empty[data-v-913d1fb1]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-913d1fb1]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-913d1fb1]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-913d1fb1]:last-child{text-align:right;font-variant-numeric:tabular-nums}.detail-head[data-v-3da1c12c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-3da1c12c]{margin:0;color:var(--text);font-size:14px}.slow[data-v-3da1c12c]{color:#c58b35}.refused[data-v-3da1c12c]{color:#d76b6b}.heading[data-v-3da1c12c]{margin:0 0 8px;font-size:12px}pre[data-v-3da1c12c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-3da1c12c]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-3da1c12c]{padding:16px;line-height:1.6}.toolbar[data-v-b9c99463]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-b9c99463]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-b9c99463]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-b9c99463]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-b9c99463]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-b9c99463]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-b9c99463],.row[data-v-b9c99463]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-b9c99463]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-b9c99463]>:last-child,.duration[data-v-b9c99463],.queued[data-v-b9c99463],.parts[data-v-b9c99463]{text-align:right}.parts[data-v-b9c99463]{padding-right:12px;color:var(--text-3);font-variant-numeric:tabular-nums}.sender[data-v-b9c99463]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.sender[data-v-b9c99463]:hover{color:var(--accent);text-decoration:underline}.day[data-v-b9c99463]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-b9c99463]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-b9c99463]:hover,.row.open[data-v-b9c99463]{background:var(--surface-2, var(--border))}.event[data-v-b9c99463]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-b9c99463]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-b9c99463],.duration[data-v-b9c99463],.queued[data-v-b9c99463]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-b9c99463],.detail-head .slow[data-v-b9c99463]{color:#c58b35}.refused .event[data-v-b9c99463],.refused .duration[data-v-b9c99463],.detail-head .refused[data-v-b9c99463]{color:#d76b6b}.note[data-v-b9c99463]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-b9c99463]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-b9c99463]{background:var(--border)}.message[data-v-b9c99463]{padding:16px;line-height:1.6}.detail-head[data-v-b9c99463]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-b9c99463]{margin:0;color:var(--text);font-size:14px}.heading[data-v-b9c99463]{margin:0 0 8px;font-size:12px}pre[data-v-b9c99463]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-b9c99463]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-b9c99463]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-b9c99463]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-b9c99463]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.request-rows[data-v-b9c99463]{display:contents}.request-row-move[data-v-b9c99463]{transition:transform .32s cubic-bezier(.2,.9,.25,1)}.request-row-enter-active[data-v-b9c99463]{transition:opacity .2s ease-out}.request-row-enter-from[data-v-b9c99463]{opacity:0}.request-row-leave-active[data-v-b9c99463]{display:none}@media(prefers-reduced-motion:reduce){.request-row-move[data-v-b9c99463],.request-row-enter-active[data-v-b9c99463]{transition:none}}.numbers-tools[data-v-ff8267e1]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-ff8267e1]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-ff8267e1]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-ff8267e1],.numbers-table td[data-v-ff8267e1]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-ff8267e1]{color:var(--text-3);font-weight:500}.logs[data-v-800fc0fb]{display:flex;flex-direction:column;height:100%;min-height:0}.toolbar[data-v-800fc0fb],nav[data-v-800fc0fb]{display:flex;align-items:center;gap:12px;padding:10px 12px;flex:none}.toolbar[data-v-800fc0fb]{border-bottom:1px solid var(--border)}.toolbar label[data-v-800fc0fb]{display:flex;align-items:center;gap:6px}.toolbar button[data-v-800fc0fb]{margin-left:auto}.scroll[data-v-800fc0fb]{flex:1;min-height:0;overflow:auto}table[data-v-800fc0fb]{width:100%;border-collapse:collapse;font-size:12px}th[data-v-800fc0fb]{position:sticky;top:0;background:var(--surface);text-align:left;color:var(--text-3)}th[data-v-800fc0fb],td[data-v-800fc0fb]{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}time[data-v-800fc0fb]{white-space:nowrap}.message[data-v-800fc0fb]{white-space:pre-wrap;overflow-wrap:anywhere;width:100%;font-family:monospace}[data-level=error][data-v-800fc0fb],[data-level=critical][data-v-800fc0fb]{color:var(--danger, #c53a3a)}[data-level=warning][data-v-800fc0fb]{color:var(--warning, #a76a13)}.empty[data-v-800fc0fb]{padding:12px;color:var(--text-3)}nav[data-v-800fc0fb]{justify-content:center;border-top:1px solid var(--border)}\n"; document.head.appendChild(style); }
-import { openBlock as s, createElementBlock as n, normalizeStyle as Y, createVNode as v, renderSlot as ee, toDisplayString as r, createCommentVNode as k, createElementVNode as t, unref as l, Fragment as g, withCtx as M, createTextVNode as u, renderList as w, normalizeClass as Q, ref as _, computed as A, watch as Z, createBlock as $, TransitionGroup as te, withKeys as ae, withModifiers as j } from "vue";
+if (!document.getElementById("window-styles-589dbb22691a")) { const style = document.createElement("style"); style.id = "window-styles-589dbb22691a"; style.textContent = ".band[data-v-1758914f]{display:flex;align-items:center;gap:7px;height:28px;margin:0;padding:0 14px;background:var(--side);border-bottom:1px solid var(--border);color:var(--text-2);font-size:11.5px;font-weight:500;letter-spacing:.03em}.band svg[data-v-1758914f]{color:var(--text-3)}.band span[data-v-1758914f]{margin-left:auto;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.inspector[data-v-913d1fb1]{display:flex;flex-direction:column;min-height:0;height:100%;background:var(--bg)}header[data-v-913d1fb1]{display:flex;align-items:center;gap:8px;padding:14px;border-bottom:1px solid var(--border)}header h1[data-v-913d1fb1]{flex:1;margin:0;font-size:14px}.limits[data-v-913d1fb1],.empty[data-v-913d1fb1]{margin:0;padding:14px;color:var(--text-3);font-size:12px}.entry[data-v-913d1fb1]{display:grid;grid-template-columns:110px minmax(0,1fr) 70px;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border);font-size:12px}.entry strong[data-v-913d1fb1]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.entry span[data-v-913d1fb1]:last-child{text-align:right;font-variant-numeric:tabular-nums}.detail-head[data-v-3da1c12c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-3da1c12c]{margin:0;color:var(--text);font-size:14px}.slow[data-v-3da1c12c]{color:#c58b35}.refused[data-v-3da1c12c]{color:#d76b6b}.heading[data-v-3da1c12c]{margin:0 0 8px;font-size:12px}pre[data-v-3da1c12c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}.note[data-v-3da1c12c]{margin:0;color:var(--text-3);font-size:12px}.message[data-v-3da1c12c]{padding:16px;line-height:1.6}.toolbar[data-v-bb97ba6c]{display:flex;justify-content:space-between;padding:8px 12px}.queue-veil[data-v-bb97ba6c]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-bb97ba6c]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-bb97ba6c]{position:relative;display:grid;grid-template-columns:minmax(360px,46%) 1px minmax(0,1fr);height:100%;min-height:0;overflow:hidden}.list[data-v-bb97ba6c]{display:flex;flex-direction:column;min-height:0;min-width:0}.list-scroll[data-v-bb97ba6c]{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}.columns[data-v-bb97ba6c],.row[data-v-bb97ba6c]{display:grid;grid-template-columns:minmax(80px,1.4fr) minmax(40px,.7fr) 32px 88px minmax(72px,1fr) 55px 60px;align-items:center;gap:5px;padding:10px;font-size:12px}.columns[data-v-bb97ba6c]{flex:none;border-bottom:1px solid var(--border);color:var(--text-3)}.columns[data-v-bb97ba6c]>:last-child,.duration[data-v-bb97ba6c],.queued[data-v-bb97ba6c],.parts[data-v-bb97ba6c]{text-align:right}.parts[data-v-bb97ba6c]{padding-right:12px;color:var(--text-3);font-variant-numeric:tabular-nums}.sender[data-v-bb97ba6c]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.sender[data-v-bb97ba6c]:hover{color:var(--accent);text-decoration:underline}.day[data-v-bb97ba6c]{display:flex;justify-content:space-between;padding:9px 16px;border-bottom:1px solid var(--border);background:var(--side);color:var(--text-3);font-size:11px}.row[data-v-bb97ba6c]{width:100%;border:0;border-bottom:1px solid var(--border);background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}.row[data-v-bb97ba6c]:hover,.row.open[data-v-bb97ba6c]{background:var(--surface-2, var(--border))}.event[data-v-bb97ba6c]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}.tool[data-v-bb97ba6c]{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-3)}time[data-v-bb97ba6c],.duration[data-v-bb97ba6c],.queued[data-v-bb97ba6c]{font-variant-numeric:tabular-nums;white-space:nowrap}.slow .duration[data-v-bb97ba6c],.detail-head .slow[data-v-bb97ba6c]{color:#c58b35}.refused .event[data-v-bb97ba6c],.refused .duration[data-v-bb97ba6c],.detail-head .refused[data-v-bb97ba6c]{color:#d76b6b}.note[data-v-bb97ba6c]{margin:0;color:var(--text-3);font-size:12px}.detail[data-v-bb97ba6c]{padding:20px;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain}.divider[data-v-bb97ba6c]{background:var(--border)}.message[data-v-bb97ba6c]{padding:16px;line-height:1.6}.detail-head[data-v-bb97ba6c]{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:12px;color:var(--text-3)}.detail-head h2[data-v-bb97ba6c]{margin:0;color:var(--text);font-size:14px}.heading[data-v-bb97ba6c]{margin:0 0 8px;font-size:12px}pre[data-v-bb97ba6c]{margin:0 0 24px;padding:12px;overflow:auto;border:1px solid var(--border);border-radius:6px;font-size:12px;line-height:1.6}@media(max-width:760px){.queue-button[data-v-bb97ba6c]{align-self:flex-end;margin:8px 12px}.queue-veil[data-v-bb97ba6c]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;justify-content:flex-end;background:#0005;z-index:3}.queue-veil[data-v-bb97ba6c]>*{width:min(560px,100%);box-shadow:0 0 24px #0003}.requests[data-v-bb97ba6c]{position:relative;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(140px,45%) 1px minmax(0,1fr)}}.request-rows[data-v-bb97ba6c]{display:contents}.request-row-move[data-v-bb97ba6c]{transition:transform .32s cubic-bezier(.2,.9,.25,1)}.request-row-enter-active[data-v-bb97ba6c]{transition:opacity .2s ease-out}.request-row-enter-from[data-v-bb97ba6c]{opacity:0}.request-row-leave-active[data-v-bb97ba6c]{display:none}@media(prefers-reduced-motion:reduce){.request-row-move[data-v-bb97ba6c],.request-row-enter-active[data-v-bb97ba6c]{transition:none}}.numbers-tools[data-v-ff8267e1]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-ff8267e1]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-ff8267e1]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-ff8267e1],.numbers-table td[data-v-ff8267e1]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-ff8267e1]{color:var(--text-3);font-weight:500}.logs[data-v-800fc0fb]{display:flex;flex-direction:column;height:100%;min-height:0}.toolbar[data-v-800fc0fb],nav[data-v-800fc0fb]{display:flex;align-items:center;gap:12px;padding:10px 12px;flex:none}.toolbar[data-v-800fc0fb]{border-bottom:1px solid var(--border)}.toolbar label[data-v-800fc0fb]{display:flex;align-items:center;gap:6px}.toolbar button[data-v-800fc0fb]{margin-left:auto}.scroll[data-v-800fc0fb]{flex:1;min-height:0;overflow:auto}table[data-v-800fc0fb]{width:100%;border-collapse:collapse;font-size:12px}th[data-v-800fc0fb]{position:sticky;top:0;background:var(--surface);text-align:left;color:var(--text-3)}th[data-v-800fc0fb],td[data-v-800fc0fb]{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}time[data-v-800fc0fb]{white-space:nowrap}.message[data-v-800fc0fb]{white-space:pre-wrap;overflow-wrap:anywhere;width:100%;font-family:monospace}[data-level=error][data-v-800fc0fb],[data-level=critical][data-v-800fc0fb]{color:var(--danger, #c53a3a)}[data-level=warning][data-v-800fc0fb]{color:var(--warning, #a76a13)}.empty[data-v-800fc0fb]{padding:12px;color:var(--text-3)}nav[data-v-800fc0fb]{justify-content:center;border-top:1px solid var(--border)}\n"; document.head.appendChild(style); }
+import { openBlock as s, createElementBlock as n, normalizeStyle as Y, createVNode as v, renderSlot as ee, toDisplayString as r, createCommentVNode as k, createElementVNode as t, unref as l, Fragment as x, withCtx as M, createTextVNode as u, renderList as w, normalizeClass as Q, ref as _, computed as A, watch as Z, createBlock as $, TransitionGroup as te, withKeys as ae, withModifiers as j } from "vue";
 import { useWindow as D, usePoll as J, Icon as re, CloseButton as se, highlight as le, WindowRoom as ne, Btn as I, MenuPanel as oe, MenuLabel as O, MenuItem as L, peekRef as ie, toggleFilter as de } from "@journal/window-kit";
 import { _ as S } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 import { u as ce, t as he } from "./usePausedProp-C5dSctRP.js";
@@ -181,11 +181,11 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
 }, F = /* @__PURE__ */ S(me, [["__scopeId", "data-v-1758914f"]]), ke = {
   class: "inspector",
   "data-request-queue": ""
-}, xe = {
+}, ge = {
   key: 0,
   class: "empty",
   role: "alert"
-}, ge = { class: "limits" }, fe = {
+}, xe = { class: "limits" }, fe = {
   key: 0,
   class: "empty",
   "data-request-queue-empty": ""
@@ -199,38 +199,38 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
     const f = y, c = D(), { data: d, failure: h } = c.props.queue;
     J(() => c.reload("queue"), () => c.visible.value);
     const m = (q) => `${Math.round(q.waited_ms)} ms`;
-    return (q, x) => (s(), n("aside", ke, [
+    return (q, g) => (s(), n("aside", ke, [
       t("header", null, [
         v(l(re), {
           name: "terminal",
           size: 13
         }),
-        x[1] || (x[1] = t("h1", null, "Request queue", -1)),
+        g[1] || (g[1] = t("h1", null, "Request queue", -1)),
         v(l(se), {
           title: "Close the request queue",
-          onClick: x[0] || (x[0] = (p) => f("close"))
+          onClick: g[0] || (g[0] = (p) => f("close"))
         })
       ]),
-      l(h) ? (s(), n("p", xe, r(l(h)), 1)) : l(d) ? (s(), n(g, { key: 1 }, [
-        t("div", ge, "Hooks at once: " + r(l(d).hook_limit) + " · Main agent wait: " + r(l(d).main_hook_seconds) + " s · Other agent wait: " + r(l(d).agent_hook_seconds) + " s · Viewer wait: " + r(l(d).viewer_wait_seconds) + " s", 1),
+      l(h) ? (s(), n("p", ge, r(l(h)), 1)) : l(d) ? (s(), n(x, { key: 1 }, [
+        t("div", xe, "Hooks at once: " + r(l(d).hook_limit) + " · Main agent wait: " + r(l(d).main_hook_seconds) + " s · Other agent wait: " + r(l(d).agent_hook_seconds) + " s · Viewer wait: " + r(l(d).viewer_wait_seconds) + " s", 1),
         v(F, {
           icon: "start",
           count: l(d).running.length
         }, {
-          default: M(() => [...x[2] || (x[2] = [
+          default: M(() => [...g[2] || (g[2] = [
             u("Running", -1)
           ])]),
           _: 1
         }, 8, ["count"]),
         l(d).running.length ? k("", !0) : (s(), n("p", fe, "No running requests.")),
-        (s(!0), n(g, null, w(l(d).running, (p, b) => (s(), n("div", {
+        (s(!0), n(x, null, w(l(d).running, (p, b) => (s(), n("div", {
           key: `running-${b}`,
           class: "entry",
           "data-request-queue-running": ""
         }, [
           t("span", null, [
             u(r(p.sender), 1),
-            p.priority ? (s(), n(g, { key: 0 }, [
+            p.priority ? (s(), n(x, { key: 0 }, [
               u(" · " + r(p.priority), 1)
             ], 64)) : k("", !0)
           ]),
@@ -241,20 +241,20 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
           icon: "clock",
           count: l(d).waiting.length
         }, {
-          default: M(() => [...x[3] || (x[3] = [
+          default: M(() => [...g[3] || (g[3] = [
             u("Waiting", -1)
           ])]),
           _: 1
         }, 8, ["count"]),
         l(d).waiting.length ? k("", !0) : (s(), n("p", qe, "No waiting requests.")),
-        (s(!0), n(g, null, w(l(d).waiting, (p, b) => (s(), n("div", {
+        (s(!0), n(x, null, w(l(d).waiting, (p, b) => (s(), n("div", {
           key: `waiting-${b}`,
           class: "entry",
           "data-request-queue-waiting": ""
         }, [
           t("span", null, [
             u(r(p.sender), 1),
-            p.priority ? (s(), n(g, { key: 0 }, [
+            p.priority ? (s(), n(x, { key: 0 }, [
               u(" · " + r(p.priority), 1)
             ], 64)) : k("", !0)
           ]),
@@ -328,7 +328,7 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
 }, E = "journal.hook-requests.filters", Ge = {
   __name: "HookRequests",
   setup(o) {
-    const y = () => ({ kind: [], family: [], sender: [] });
+    const y = () => ({ category: [], family: [], sender: [] });
     function f() {
       try {
         return { ...y(), ...JSON.parse(localStorage.getItem(E) || "{}") };
@@ -336,16 +336,16 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
         return y();
       }
     }
-    const c = _(f()), d = _(!1), h = _({ family: ["process bookkeeping"], sender: [] }), m = A(() => Object.values(c.value).reduce((i, a) => i + a.length, 0)), q = D(), { data: x, failure: p, loaded: b, reload: R } = ce(q, "requests", d), K = { kind: "kinds", family: "families", sender: "senders" };
+    const c = _(f()), d = _(!1), h = _({ family: ["process bookkeeping"], sender: [] }), m = A(() => Object.values(c.value).reduce((i, a) => i + a.length, 0)), q = D(), { data: g, failure: p, loaded: b, reload: R } = ce(q, "requests", d), K = { category: "categories", family: "families", sender: "senders" };
     function B(i) {
       for (const [a, e] of Object.entries(i)) q.state[`requests.${K[a]}`] = JSON.stringify(e);
     }
     B(c.value);
     const N = A(() => {
       var i;
-      return ((i = x.value) == null ? void 0 : i.rows) ?? [];
+      return ((i = g.value) == null ? void 0 : i.rows) ?? [];
     });
-    Z(x, (i) => {
+    Z(g, (i) => {
       h.value.family = [.../* @__PURE__ */ new Set(["process bookkeeping", ...i.families || [], ...c.value.family])].sort(), h.value.sender = [.../* @__PURE__ */ new Set([...i.senders || [], ...c.value.sender])].sort();
     }), Z(c, (i) => {
       try {
@@ -413,26 +413,26 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
                     ])]),
                     _: 1
                   }),
-                  (s(), n(g, null, w(["hook", "viewer", "command line"], (e) => v(l(L), {
+                  (s(), n(x, null, w(["hook", "viewer", "command line"], (e) => v(l(L), {
                     key: e,
-                    "data-filter-kind": e,
+                    "data-filter-category": e,
                     role: "menuitemcheckbox",
-                    checked: c.value.kind.includes(e),
-                    "aria-checked": c.value.kind.includes(e),
-                    onClick: (C) => T("kind", e)
+                    checked: c.value.category.includes(e),
+                    "aria-checked": c.value.category.includes(e),
+                    onClick: (C) => T("category", e)
                   }, {
                     default: M(() => [
                       u(r(e), 1)
                     ]),
                     _: 2
-                  }, 1032, ["data-filter-kind", "checked", "aria-checked", "onClick"])), 64)),
+                  }, 1032, ["data-filter-category", "checked", "aria-checked", "onClick"])), 64)),
                   v(l(O), null, {
                     default: M(() => [...a[9] || (a[9] = [
                       u("Event or command", -1)
                     ])]),
                     _: 1
                   }),
-                  (s(!0), n(g, null, w(h.value.family, (e) => (s(), $(l(L), {
+                  (s(!0), n(x, null, w(h.value.family, (e) => (s(), $(l(L), {
                     key: e,
                     "data-filter-family": e,
                     role: "menuitemcheckbox",
@@ -451,7 +451,7 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
                     ])]),
                     _: 1
                   }),
-                  (s(!0), n(g, null, w(h.value.sender, (e) => (s(), $(l(L), {
+                  (s(!0), n(x, null, w(h.value.sender, (e) => (s(), $(l(L), {
                     key: e,
                     role: "menuitemcheckbox",
                     checked: c.value.sender.includes(e),
@@ -497,7 +497,7 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
                 class: "request-rows"
               }, {
                 default: M(() => [
-                  (s(!0), n(g, null, w(N.value, (e) => (s(), n(g, {
+                  (s(!0), n(x, null, w(N.value, (e) => (s(), n(x, {
                     key: e.id
                   }, [
                     e.day_start ? (s(), n("div", Be, [
@@ -559,7 +559,7 @@ const ue = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.
       _: 1
     }));
   }
-}, tt = /* @__PURE__ */ S(Ge, [["__scopeId", "data-v-b9c99463"]]);
+}, tt = /* @__PURE__ */ S(Ge, [["__scopeId", "data-v-bb97ba6c"]]);
 export {
   tt as default
 };

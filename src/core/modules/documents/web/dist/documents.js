@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-8223e8f86d0a")) { const style = document.createElement("style"); style.id = "window-styles-8223e8f86d0a"; style.textContent = ".library-draft[data-v-89dedbc2]{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.library-draft-foot[data-v-89dedbc2]{display:flex;gap:6px;justify-content:flex-end}.library[data-v-89dedbc2]{display:flex;flex-direction:column;height:100%;min-height:0}.library-bar[data-v-89dedbc2]{gap:10px}.library-body[data-v-89dedbc2]{display:grid;flex:1;grid-template-columns:minmax(240px,2fr) 3fr;min-height:0}.library-list[data-v-89dedbc2]{overflow-y:auto;padding:6px 10px;border-right:1px solid var(--border)}.library-group[data-v-89dedbc2]{margin:12px 20px 6px;font-size:13px;font-weight:500;color:var(--text-2)}.library-row[data-v-89dedbc2]{display:flex;gap:12px;align-items:flex-start;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:inherit;text-align:left;cursor:pointer}.library-row[data-v-89dedbc2]:hover,.library-row.chosen[data-v-89dedbc2]{background:var(--hover)}.library-icon[data-v-89dedbc2]{flex:none;width:28px;height:34px;color:var(--text-3)}.library-text[data-v-89dedbc2]{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}.library-title[data-v-89dedbc2]{font-weight:600}.library-abstract[data-v-89dedbc2]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;color:var(--text-2);font-size:13px}.library-ref[data-v-89dedbc2],.library-age[data-v-89dedbc2]{color:var(--text-3);font-size:12px}.library-reader[data-v-89dedbc2]{overflow-y:auto;padding:20px 28px}.reader-title[data-v-89dedbc2]{margin:0 0 6px;font-size:20px}.reader-abstract[data-v-89dedbc2]{margin:0 0 18px;color:var(--text-2)}.reader-empty[data-v-89dedbc2]{margin-top:120px;text-align:center}.reader-empty-title[data-v-89dedbc2]{margin:0 0 6px;font-weight:500}.reader-empty-text[data-v-89dedbc2],.library-more[data-v-89dedbc2]{margin:8px 12px;color:var(--muted);background:none;border:0;cursor:pointer}.library-note[data-v-89dedbc2]{margin:0;color:var(--text-2)}.library-note[data-v-89dedbc2]{padding:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-ad49b4c38aa8")) { const style = document.createElement("style"); style.id = "window-styles-ad49b4c38aa8"; style.textContent = ".library-draft[data-v-f3669d2d]{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px}.library-draft-foot[data-v-f3669d2d]{display:flex;gap:6px;justify-content:flex-end}.library[data-v-f3669d2d]{display:flex;flex-direction:column;height:100%;min-height:0}.library-bar[data-v-f3669d2d]{gap:10px}.library-body[data-v-f3669d2d]{display:grid;flex:1;grid-template-columns:minmax(240px,2fr) 3fr;min-height:0}.library-list[data-v-f3669d2d]{overflow-y:auto;padding:6px 10px;border-right:1px solid var(--border)}.library-group[data-v-f3669d2d]{margin:12px 20px 6px;font-size:13px;font-weight:500;color:var(--text-2)}.library-row[data-v-f3669d2d]{display:flex;gap:12px;align-items:flex-start;width:100%;padding:10px 12px;border:0;border-radius:8px;background:none;color:inherit;text-align:left;cursor:pointer}.library-row[data-v-f3669d2d]:hover,.library-row.chosen[data-v-f3669d2d]{background:var(--hover)}.library-icon[data-v-f3669d2d]{flex:none;width:28px;height:34px;color:var(--text-3)}.library-text[data-v-f3669d2d]{display:flex;flex:1;flex-direction:column;gap:4px;min-width:0}.library-title[data-v-f3669d2d]{font-weight:600}.library-abstract[data-v-f3669d2d]{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;color:var(--text-2);font-size:13px}.library-ref[data-v-f3669d2d],.library-age[data-v-f3669d2d]{color:var(--text-3);font-size:12px}.library-reader[data-v-f3669d2d]{overflow-y:auto;padding:20px 28px}.reader-title[data-v-f3669d2d]{margin:0 0 6px;font-size:20px}.reader-abstract[data-v-f3669d2d]{margin:0 0 18px;color:var(--text-2)}.reader-empty[data-v-f3669d2d]{margin-top:120px;text-align:center}.reader-empty-title[data-v-f3669d2d]{margin:0 0 6px;font-weight:500}.reader-empty-text[data-v-f3669d2d],.library-more[data-v-f3669d2d]{margin:8px 12px;color:var(--muted);background:none;border:0;cursor:pointer}.library-note[data-v-f3669d2d]{margin:0;color:var(--text-2)}.library-note[data-v-f3669d2d]{padding:12px}\n"; document.head.appendChild(style); }
 import { ref as f, watch as j, computed as P, onUnmounted as ee, openBlock as n, createElementBlock as v, createVNode as m, unref as r, withCtx as D, createTextVNode as T, toDisplayString as k, withModifiers as V, withDirectives as K, createElementVNode as c, vModelText as z, createCommentVNode as g, withKeys as R, createBlock as q, Fragment as N, renderList as F, normalizeClass as te } from "vue";
 import { useWindow as ae, SearchBar as le, Segmented as G, Btn as A, Skeleton as re, Icon as oe, TimeAgo as se, steppedItem as ne, peekRef as ie } from "@journal/window-kit";
 const ue = 1440 * 60 * 1e3, de = [
@@ -61,15 +61,15 @@ const be = (i, y) => {
     const $ = f(!1), p = f({ title: "", abstract: "", body: "" }), I = f(""), O = P(() => ye(ce(ve(C.value, w.value), _.value), _.value)), W = P(() => a.value === "doc" ? "Document" : "Report");
     async function U() {
       const l = a.value, e = b.value;
-      d.state["library.type"] = l, d.state["library.state"] = e, delete d.state["library.after"];
+      d.state["library.type"] = l, d.state["library.state"] = e, delete d.state["library.before"];
       const t = await d.reload("library");
       l !== a.value || e !== b.value || (C.value = t && !x.value ? S.data.value.rows : [], B.value = t && !x.value ? S.data.value.total : 0, L.value = !0);
     }
     async function H() {
       const l = a.value, e = b.value;
-      d.state["library.after"] = String(Math.max(...C.value.map((o) => o.id)));
+      d.state["library.before"] = String(Math.min(...C.value.map((o) => o.id)));
       const t = await d.reload("library");
-      delete d.state["library.after"], !(!t || x.value) && l === a.value && e === b.value && (C.value = [...C.value, ...S.data.value.rows]);
+      delete d.state["library.before"], !(!t || x.value) && l === a.value && e === b.value && (C.value = [...C.value, ...S.data.value.rows]);
     }
     function Y(l) {
       h.value = l.id, ie(`${a.value === "doc" ? "docs" : "reports"}:${l.id}`);
@@ -249,7 +249,7 @@ const be = (i, y) => {
       ])
     ]));
   }
-}, Ne = /* @__PURE__ */ be(Le, [["__scopeId", "data-v-89dedbc2"]]);
+}, Ne = /* @__PURE__ */ be(Le, [["__scopeId", "data-v-f3669d2d"]]);
 export {
   Ne as default
 };

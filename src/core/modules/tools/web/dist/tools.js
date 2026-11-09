@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-e907f1e2388e")) { const style = document.createElement("style"); style.id = "window-styles-e907f1e2388e"; style.textContent = ".tool[data-v-4683a112]{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.head[data-v-4683a112]{display:flex;align-items:baseline;gap:10px}.title[data-v-4683a112]{flex:1;font-weight:600}.state[data-v-4683a112],.detail[data-v-4683a112]{margin:0;color:var(--text-3);font-size:12px}.actions[data-v-4683a112]{display:flex;gap:8px}.failure[data-v-4683a112]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-de40da1445fd")) { const style = document.createElement("style"); style.id = "window-styles-de40da1445fd"; style.textContent = ".tool[data-v-ae806d06]{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;padding:12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.head[data-v-ae806d06]{display:flex;align-items:baseline;gap:10px}.title[data-v-ae806d06]{flex:1;font-weight:600}.state[data-v-ae806d06],.detail[data-v-ae806d06]{margin:0;color:var(--text-3);font-size:12px}.actions[data-v-ae806d06]{display:flex;gap:8px}.failure[data-v-ae806d06]{margin:0;color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
 import { computed as k, ref as C, openBlock as r, createBlock as L, unref as o, withCtx as f, createElementBlock as v, toDisplayString as s, createCommentVNode as y, Fragment as I, renderList as B, createElementVNode as n, createTextVNode as b, createVNode as N } from "vue";
 import { useWindow as P, usePoll as R, WindowRoom as S, Btn as x } from "@journal/window-kit";
 const V = (m, a) => {
@@ -30,18 +30,18 @@ const V = (m, a) => {
     const a = P(), { data: c, failure: u } = a.props.tools, _ = k(() => {
       var t;
       return ((t = c.value) == null ? void 0 : t.tools) ?? [];
-    }), i = C(""), d = C({ name: "", text: "" }), p = k(() => a.face === "phone" || a.readOnly === !0), g = k(() => _.value.some((t) => t.is_running));
+    }), d = C(""), i = C({ name: "", text: "" }), p = k(() => a.face === "phone" || a.readOnly === !0), g = k(() => _.value.some((t) => t.is_running));
     R(() => g.value && a.reload("tools"), () => g.value, G);
     async function h(t, l) {
-      i.value = t.name, d.value = { name: "", text: "" };
+      d.value = t.name, i.value = { name: "", text: "" };
       try {
         const e = await a.run(l);
-        d.value = { name: t.name, text: e.ok ? "" : e.error }, await a.reload("tools");
+        i.value = { name: t.name, text: e.ok ? "" : e.error }, await a.reload("tools");
       } finally {
-        i.value = "";
+        d.value = "";
       }
     }
-    const O = (t) => t.refreshed_at ? `Last refresh ${new Date(t.refreshed_at).toLocaleString()}` : "Never refreshed", T = (t) => t.is_running ? "Refreshing" : t.is_failed ? "The last refresh failed" : t.is_on ? "On" : "Off";
+    const O = (t) => t.refreshed_at ? `Last refresh ${new Date(t.refreshed_at).toLocaleString()}` : "Never refreshed", T = (t) => t.is_running ? "Refreshing" : t.is_failed ? "The last refresh failed" : t.enabled ? "On" : "Off";
     return (t, l) => (r(), L(o(S), null, {
       default: f(() => [
         o(u) ? (r(), v("p", $, s(o(u)), 1)) : y("", !0),
@@ -61,7 +61,7 @@ const V = (m, a) => {
             e.is_installed ? y("", !0) : (r(), L(o(x), {
               key: 0,
               bordered: "",
-              disabled: p.value || i.value !== "",
+              disabled: p.value || d.value !== "",
               "data-tool-install": "",
               onClick: (w) => h(e, ["tool", "install", e.name])
             }, {
@@ -72,18 +72,18 @@ const V = (m, a) => {
             }, 8, ["disabled", "onClick"])),
             N(o(x), {
               bordered: "",
-              disabled: p.value || i.value !== "",
+              disabled: p.value || d.value !== "",
               "data-tool-switch": "",
-              onClick: (w) => h(e, ["tool", e.is_on ? "off" : "on", e.name])
+              onClick: (w) => h(e, ["tool", e.enabled ? "off" : "on", e.name])
             }, {
               default: f(() => [
-                b(s(e.is_on ? "Turn off" : "Turn on"), 1)
+                b(s(e.enabled ? "Turn off" : "Turn on"), 1)
               ]),
               _: 2
             }, 1032, ["disabled", "onClick"]),
             N(o(x), {
               bordered: "",
-              disabled: p.value || i.value !== "" || !e.is_installed || e.is_running,
+              disabled: p.value || d.value !== "" || !e.is_installed || e.is_running,
               "data-tool-refresh": "",
               onClick: (w) => h(e, ["tool", "refresh", e.name])
             }, {
@@ -93,13 +93,13 @@ const V = (m, a) => {
               _: 1
             }, 8, ["disabled", "onClick"])
           ]),
-          d.value.name === e.name && d.value.text ? (r(), v("p", A, s(d.value.text), 1)) : y("", !0)
+          i.value.name === e.name && i.value.text ? (r(), v("p", A, s(i.value.text), 1)) : y("", !0)
         ], 8, D))), 128))
       ]),
       _: 1
     }));
   }
-}, Q = /* @__PURE__ */ V(H, [["__scopeId", "data-v-4683a112"]]);
+}, Q = /* @__PURE__ */ V(H, [["__scopeId", "data-v-ae806d06"]]);
 export {
   Q as default
 };

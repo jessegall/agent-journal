@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-70b001e79ad9")) { const style = document.createElement("style"); style.id = "window-styles-70b001e79ad9"; style.textContent = ".helper-start[data-v-6827197a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-6827197a]{margin:0;font-size:14px;font-weight:600}.field[data-v-6827197a]{display:grid;gap:4px}.field>span[data-v-6827197a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-6827197a],.notice[data-v-6827197a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-6827197a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-skills[data-v-915d5f21]{display:flex;flex-direction:column;gap:8px}.profile-skill[data-v-915d5f21]{display:flex;gap:10px;align-items:flex-start}.profile-skill-text[data-v-915d5f21]{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:13px}.profile-skill-own[data-v-915d5f21]{color:var(--accent);font-size:11.5px}.profile-skill-about[data-v-915d5f21],.profile-skills-note[data-v-915d5f21]{margin:0;color:var(--text-3);font-size:12px}.profile-panel[data-v-ec210444]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-ec210444]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-ec210444]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-ec210444]{flex:1}.profiles[data-v-9fa54c80]{padding:0 0 40px}.bar[data-v-9fa54c80]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-9fa54c80]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-9fa54c80]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-9fa54c80]{color:var(--danger)}.empty[data-v-9fa54c80]{margin:40px auto;max-width:480px}.rows[data-v-9fa54c80]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-9fa54c80]{text-align:left}.profile-meta[data-v-9fa54c80]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-9fa54c80]{color:var(--text-2)}.profile-used[data-v-9fa54c80]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-9fa54c80]{color:var(--tone-warn)}.profile-used.never[data-v-9fa54c80]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-9fa54c80]{flex:1 1 100%}.profile-meta[data-v-9fa54c80]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-454d052c3bd2")) { const style = document.createElement("style"); style.id = "window-styles-454d052c3bd2"; style.textContent = ".helper-start[data-v-6827197a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-6827197a]{margin:0;font-size:14px;font-weight:600}.field[data-v-6827197a]{display:grid;gap:4px}.field>span[data-v-6827197a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-6827197a],.notice[data-v-6827197a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-6827197a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-skills[data-v-915d5f21]{display:flex;flex-direction:column;gap:8px}.profile-skill[data-v-915d5f21]{display:flex;gap:10px;align-items:flex-start}.profile-skill-text[data-v-915d5f21]{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:13px}.profile-skill-own[data-v-915d5f21]{color:var(--accent);font-size:11.5px}.profile-skill-about[data-v-915d5f21],.profile-skills-note[data-v-915d5f21]{margin:0;color:var(--text-3);font-size:12px}.profile-panel[data-v-830fab69]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-830fab69]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-830fab69]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-830fab69]{flex:1}.profiles[data-v-9ff2dc75]{padding:0 0 40px}.bar[data-v-9ff2dc75]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-9ff2dc75]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-9ff2dc75]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-9ff2dc75]{color:var(--danger)}.empty[data-v-9ff2dc75]{margin:40px auto;max-width:480px}.rows[data-v-9ff2dc75]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-9ff2dc75]{text-align:left}.profile-meta[data-v-9ff2dc75]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-9ff2dc75]{color:var(--text-2)}.profile-used[data-v-9ff2dc75]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-9ff2dc75]{color:var(--tone-warn)}.profile-used.never[data-v-9ff2dc75]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-9ff2dc75]{flex:1 1 100%}.profile-meta[data-v-9ff2dc75]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as C, computed as S, watch as G, openBlock as s, createElementBlock as d, withModifiers as oe, createElementVNode as g, createVNode as u, unref as t, withDirectives as Z, Fragment as O, renderList as q, toDisplayString as k, vModelSelect as se, withCtx as p, createTextVNode as B, createCommentVNode as h, createBlock as x, renderSlot as re, vModelCheckbox as ne, normalizeClass as ie } from "vue";
 import { useWindow as K, TextArea as Y, Btn as M, TextInput as D, Switch as ue, SidePanel as pe, FormField as I, Segmented as U, ModelPicker as de, DiffCard as fe, matchesSearch as ve, SearchBar as me, EmptyState as z, ListRow as ce, ago as ye } from "@journal/window-kit";
 const H = (v, R) => {
@@ -187,7 +187,7 @@ const H = (v, R) => {
   props: { profile: { type: Object, required: !0 }, used: { type: String, default: "" }, types: { type: Array, default: () => [] }, programs: { type: Array, required: !0 } },
   emits: ["close", "save", "reset"],
   setup(v, { emit: R }) {
-    const n = v, w = R, f = [{ key: "", label: "Profile models" }, { key: "fast", label: "Fast" }, { key: "general", label: "General" }, { key: "strongest", label: "Strongest" }], _ = [{ key: "always", label: "Always this program" }, { key: "possible", label: "This program if possible" }], b = S(() => [{ key: "", label: "The parent program" }, ...n.programs.map((l) => ({ key: l.name, label: l.title }))]), P = S(() => n.types.map((l) => ({ key: l.key, label: l.label }))), T = ["title", "description", "agent_type", "access", "program", "program_if_possible", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"], o = C({});
+    const n = v, w = R, f = [{ key: "", label: "Profile models" }, { key: "fast", label: "Fast" }, { key: "general", label: "General" }, { key: "strongest", label: "Strongest" }], _ = [{ key: "always", label: "Always this program" }, { key: "possible", label: "This program if possible" }], b = S(() => [{ key: "", label: "The parent program" }, ...n.programs.map((l) => ({ key: l.name, label: l.title }))]), P = S(() => n.types.map((l) => ({ key: l.key, label: l.label }))), T = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"], o = C({});
     G(
       () => n.profile.name,
       () => {
@@ -357,13 +357,13 @@ const H = (v, R) => {
                 u(t(U), {
                   "data-profile-program-choice": "",
                   options: _,
-                  value: o.value.program_if_possible ? "possible" : "always",
-                  onPick: e[6] || (e[6] = (a) => o.value.program_if_possible = a === "possible")
+                  value: o.value.preferred_program ? "possible" : "always",
+                  onPick: e[6] || (e[6] = (a) => o.value.preferred_program = a === "possible")
                 }, null, 8, ["value"])
               ]),
               _: 1
             }),
-            o.value.program_if_possible ? (s(), x(t(I), {
+            o.value.preferred_program ? (s(), x(t(I), {
               key: 0,
               label: "Programs to try instead",
               for: "profile-fallbacks",
@@ -496,7 +496,7 @@ const H = (v, R) => {
       _: 3
     }, 8, ["title", "abstract"]));
   }
-}, Ue = /* @__PURE__ */ H(qe, [["__scopeId", "data-v-ec210444"]]), De = {
+}, Ue = /* @__PURE__ */ H(qe, [["__scopeId", "data-v-830fab69"]]), De = {
   class: "profiles",
   "data-profiles": ""
 }, Ge = {
@@ -548,7 +548,7 @@ const H = (v, R) => {
     async function ae(i, r) {
       j.value = "";
       const m = i.name || r.name;
-      (await T(["profile", "save", m, ...r.title ? ["--title", r.title] : [], "--description", r.description, "--type", r.agent_type, "--access", r.access, "--program", r.program, r.program_if_possible ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", r.fallback_programs, "--tier", r.tier || "", ...y.value.flatMap((Q) => [Q.model_option, r.program_models[Q.name] || ""]), "--mcp-tools", r.mcp_tools, r.independent ? "--independent" : "--no-independent", "--body", r.body, ...r.skills ? ["--skills", r.skills.join(",")] : []])).ok && (V.value = !1, c.value = m, j.value = `${m} saved. The agent will use it the next time it starts a helper with this profile.`);
+      (await T(["profile", "save", m, ...r.title ? ["--title", r.title] : [], "--description", r.description, "--type", r.agent_type, "--access", r.access, "--program", r.program, r.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", r.fallback_programs, "--tier", r.tier || "", ...y.value.flatMap((Q) => [Q.model_option, r.program_models[Q.name] || ""]), "--mcp-tools", r.mcp_tools, r.independent ? "--independent" : "--no-independent", "--body", r.body, ...r.skills ? ["--skills", r.skills.join(",")] : []])).ok && (V.value = !1, c.value = m, j.value = `${m} saved. The agent will use it the next time it starts a helper with this profile.`);
     }
     return (i, r) => (s(), d("section", De, [
       u(t(me), {
@@ -659,7 +659,7 @@ const H = (v, R) => {
       }, 8, ["programs", "types", "profile", "used"])) : h("", !0)
     ]));
   }
-}, ll = /* @__PURE__ */ H(Xe, [["__scopeId", "data-v-9fa54c80"]]);
+}, ll = /* @__PURE__ */ H(Xe, [["__scopeId", "data-v-9ff2dc75"]]);
 export {
   ll as default
 };
