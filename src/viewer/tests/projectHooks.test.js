@@ -33,6 +33,10 @@ const DATA = {
         {hook: hook("first"), history},
         {hook: hook("second", {program: "codex", state: "off"}), history},
     ],
+    journal: [
+        {program: "claude", event: "SessionStart", source: ".claude/settings.json", timeout: 90},
+        {program: "codex", event: "Stop", source: ".codex/hooks.json", timeout: 90},
+    ],
     pending: [hook("pending", {command: "pending-check"})],
     unmanaged: [
         {
@@ -57,6 +61,20 @@ async function drawn({data = DATA, answer = {ok: true, value: {}}, face = "perso
     };
     return {element: await mounted(ProjectHooks, window), ran, window};
 }
+
+test("the journal's own hooks are listed with their program, event, file and time limit", async () => {
+    const {element} = await drawn();
+    const rows = [...element.querySelectorAll("[data-journal-hook]")];
+    expect(rows.map((row) => row.dataset.journalHook)).toEqual(["claude:SessionStart", "codex:Stop"]);
+    for (const text of ["claude", "SessionStart", ".claude/settings.json", "Time limit 90 seconds"]) {
+        expect(rows[0].textContent).toContain(text);
+    }
+});
+
+test("a project with no journal hooks says so", async () => {
+    const {element} = await drawn({data: {...DATA, journal: []}});
+    expect(element.textContent).toContain("No journal hooks");
+});
 
 test("managed entries keep list order and show controls, effects and recent outcomes", async () => {
     const {element} = await drawn();

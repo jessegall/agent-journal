@@ -9,6 +9,7 @@ from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.provider import Provider
 from core.base.provider.providers import Providers
 from core.base.type_guards import is_list, is_mapping
+from core.modules.settings.support.journal_hook import JournalHook
 from core.modules.settings.support.managed_hook_item import ManagedHookItem
 from core.modules.settings.support.project_hook_list import ProjectHookList
 from core.modules.settings.support.unmanaged_hook import UnmanagedHook
@@ -26,9 +27,16 @@ class ProjectHooks:
         rules = [entry.path.checked_class(DriverRule) for entry in self.providers.registry.rules]
         manager = HookManager(root, self.managed, rules)
         return ProjectHookList(tuple(ManagedHookItem(hook, self.history.read(hook)) for hook in self.managed.all()),
+                               tuple(entry for provider in providers for entry in self.journal_entries(provider)),
                                tuple(hook for provider in providers for hook in manager.unmanaged(type(provider), root)),
                                tuple(entry for provider in providers for entry in self.excluded(provider)),
                                any(ProgramHooks.hooks(type(provider), root).uses_shell_runner for provider in providers))
+
+    def journal_entries(self, provider: Provider) -> list[JournalHook]:
+        program_hooks = ProgramHooks.hooks(type(provider), self.home.project_folder)
+        written = ProgramHooks.partitioned(program_hooks.settings().get("hooks")).journal
+        managed = self.managed.all()
+        return [JournalHook(provider.name, event, str(provider.hook_file.path), program_hooks.entry_timeout(event, managed)) for event in written]
 
     def excluded(self, provider: Provider) -> list[UnmanagedHook]:
         native = [entry for name in provider.hook_files for entry in self.excluded_file(provider.name, name)]
