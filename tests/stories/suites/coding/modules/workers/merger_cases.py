@@ -18,7 +18,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, merger_can_start, running_launcher
@@ -26,6 +26,8 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
 MERGER_ROLE_REFUSAL = "only the merger runs this"
+LOG_REVIEW_REFUSAL = "reviews a worker's logs"
+LOG_LINE = "The cart total rounds down"
 FULL_SUITE = "pytest"
 WHY = "the rounding only shows in a real run"
 MERGER_QUESTION = 'merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"'
@@ -336,3 +338,35 @@ def test_the_branch_of_the_environment_is_not_touched_by_a_scope(own_files):
     tip = own_files.repository.tip(ENVIRONMENT_BRANCH)
     own_files.scope()
     own_files.story.expect_rows(own_files.repository.tip(ENVIRONMENT_BRANCH) == tip)
+
+
+def logs_read_at(story: Story, worker: Actor) -> str | None:
+    return story.container.get(Queries).query(Worktree).filter(session_agent_id=worker.id).first().logs_read_at
+
+
+def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_read(new_story, monkeypatch):
+    merger_can_start(monkeypatch)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    worker = delivered_worker(story, repository_environment(story))
+    story.expect_success(f'task log 1 "{LOG_LINE}"', actor=worker)
+    merger = running_merger(story, worker)
+    story.expect_success(f"worker logs {worker.id}", actor=merger)
+    expect_value(logs_read_at(story, worker) is None, False)
+
+
+def test_the_merger_reads_the_logs_of_a_worker_whose_hand_ins_keep_failing(case):
+    case.story.expect_success(f'task log 1 "{LOG_LINE}"', actor=case.worker)
+    case.story.expect_text(f"worker logs {case.worker.id} --task 1", LOG_LINE, actor=case.merger)
+
+
+def test_reading_logs_before_a_delivery_does_not_count_for_the_merge(case):
+    case.story.expect_success(f"worker logs {case.worker.id}", actor=case.merger)
+    expect_value(logs_read_at(case.story, case.worker), None)
+
+
+def test_a_worker_may_not_read_the_logs_of_a_worker(case):
+    case.story.expect_refusal(f"worker logs {case.worker.id}", LOG_REVIEW_REFUSAL, actor=case.worker)
+
+
+def test_the_main_agent_still_needs_a_delivery_to_review(case):
+    case.story.expect_refusal(f"worker logs {case.worker.id}", "has delivered nothing to review", actor=case.story.agent)
