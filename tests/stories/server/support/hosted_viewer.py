@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from server.journal_door import OwnerOnlyJournalDoor
 from server.viewer.viewer_socket_listener import ViewerSocketListener
 from tests.stories.server.support.server_client import answer_from as parsed_answer, raw_answer, server_story
 
@@ -63,3 +64,15 @@ def stale_file_server(new_story, socket_path):
     socket_path.write_text("left by a server that died")
     with server_story(new_story(), viewer_factory=hosted_viewer_factory(socket_path, os.getuid())):
         yield socket_path
+
+
+@pytest.fixture
+def agent_server(new_story):
+    with server_story(new_story(), journal_door=OwnerOnlyJournalDoor(os.getuid() + 1)) as server:
+        yield server
+
+
+@pytest.fixture
+def owner_server(new_story):
+    with server_story(new_story(), journal_door=OwnerOnlyJournalDoor(os.getuid())) as server:
+        yield server

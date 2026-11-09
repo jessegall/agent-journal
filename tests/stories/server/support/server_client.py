@@ -37,6 +37,7 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
+from server.journal_door import JournalDoor, OpenJournalDoor
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
@@ -343,21 +344,21 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = OpenJournalDoor()):
     without_start_skills(story)
     story.run("setting make journal.core.voices.avatar false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer):
-    with running_server(home, code_folders, listener_thread_started, viewer_factory) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = OpenJournalDoor()):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = OpenJournalDoor()):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
@@ -369,7 +370,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         login = ViewerLogin(phones, ShareSessions(phones.journal_output))
         reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
+                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
         context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_log.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue

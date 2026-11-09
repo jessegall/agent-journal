@@ -121,6 +121,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.answer_json(404, {"error": f"no route {self.path}"})
 
     def answer_post(self) -> None:
+        refusal = self.journal_server().context.door.refusal(self.path.partition("?")[0], self.peer)
+        if refusal is not None:
+            self.close_with_json(refusal.status, {"error": refusal.reason})
+            return
         body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         self.timing.stamp("body_read")
         stale = self.journal_server().context.code_version.is_stale()
