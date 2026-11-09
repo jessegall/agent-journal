@@ -123,3 +123,47 @@ def test_b8_a_memory_mark_does_not_open_at_the_old_percent_after_a_compaction(ne
     keep_status_file(story, SESSION)
     reply = story.hook(SESSION, EDITED)
     story.expect_rows(not any("tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
+
+
+class LimitedMemory(StoryFixture):
+    parent = LimitEnabled
+
+    def steps(self, story):
+        story.expect_success('memory make "The cart total is in cents" --environment main', "created: memory:1", actor=story.agent)
+
+
+def test_c8_a_post_tool_use_while_the_reading_is_unsettled_says_no_stop_now_and_opens_no_mark(new_story):
+    story = typing_recorded(new_story(fixture=LimitedMemory))
+    has_context(story, LIMIT)
+    compacted(story, "auto")
+    keep_status_file(story, SESSION)
+    reply = story.hook(SESSION, EDITED)
+    story.expect_rows(not any("stop now" in line or "tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
+
+
+def test_c9_a_stop_while_the_compaction_is_sent_types_nothing_more(agent):
+    has_context(agent, LIMIT)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+    agent.advance(TOO_LONG)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+
+
+def test_c9_a_stop_while_the_compaction_is_started_types_nothing_more(agent):
+    has_context(agent, LIMIT)
+    stops(agent)
+    agent.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
+    agent.advance(TOO_LONG)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+
+
+def test_c9_a_stop_when_the_compaction_ended_and_the_reading_is_unsettled_types_nothing_more(agent):
+    has_context(agent, LIMIT)
+    stops(agent)
+    compacted(agent, "manual")
+    keep_status_file(agent, SESSION)
+    agent.advance(TOO_LONG)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
