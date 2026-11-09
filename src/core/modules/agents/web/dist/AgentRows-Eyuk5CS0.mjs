@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
 import { openBlock as n, createElementBlock as s, withModifiers as te, unref as r, createTextVNode as m, toDisplayString as p, createVNode as f, createBlock as D, withCtx as b, Fragment as P, renderList as ae, createElementVNode as A, createCommentVNode as k, computed as i, ref as H, watch as ie, onUnmounted as be, defineAsyncComponent as _e, createSlots as et, resolveDynamicComponent as tt, normalizeClass as le, normalizeStyle as Ce, renderSlot as ye, onMounted as at, Teleport as nt, mergeProps as ot, toRef as je, withKeys as Ee, nextTick as Ne } from "vue";
 import { peekRef as Ae, Icon as Re, RunningCommand as lt, FoldGroup as Ue, TaskStatusIcon as st, useWindow as Te, loadWindowComponent as rt, coalesced as it, READ_RATES as dt, eventMayBeChildOf as ut, InnerTabs as ct, TabBody as gt, SwitchCase as Je, EmptyState as Le, Btn as de, TextArea as vt, TextInput as pt, HoverTip as Se, TaskBar as ht, useNow as Ge, age as ft, perHour as mt, ago as We, TimeAgo as qe, SearchBar as kt, Segmented as bt, MenuLabel as Be, MenuItem as xe, RowList as yt, toggleFilter as wt } from "@journal/window-kit";
-import { _ as X, T as Mt } from "./TranscriptRows-BL93hPr8.js";
+import { _ as X, T as Mt } from "./TranscriptRows-htoQnyg3.mjs";
 const xt = {
   class: "agent-command",
   "data-agent-command": ""
@@ -33,7 +33,7 @@ const xt = {
       }, null, 8, ["text", "idle"]))
     ]));
   }
-}, Ct = /* @__PURE__ */ X(St, [["__scopeId", "data-v-1b371fb5"]]), At = ["data-agent-delegated", "onClick"], Tt = { class: "agent-task-number" }, jt = { class: "agent-task-title" }, Bt = ["title"], Rt = {
+}, Ct = /* @__PURE__ */ X(St, [["__scopeId", "data-v-bb905922"]]), At = ["data-agent-delegated", "onClick"], Tt = { class: "agent-task-number" }, jt = { class: "agent-task-title" }, Bt = ["title"], Rt = {
   __name: "AgentTaskGroup",
   props: { section: { type: Object, required: !0 }, open: Boolean },
   emits: ["toggle"],
@@ -70,7 +70,7 @@ const xt = {
       _: 1
     }, 8, ["label", "count", "open", "data-agent-section"]));
   }
-}, Lt = /* @__PURE__ */ X(Rt, [["__scopeId", "data-v-ea4ccd6b"]]), It = {
+}, Lt = /* @__PURE__ */ X(Rt, [["__scopeId", "data-v-dbdcae3e"]]), It = {
   key: 0,
   class: "agent-summary",
   "data-agent-retirement-reason": ""
@@ -251,7 +251,7 @@ const xt = {
       ]);
     };
   }
-}, Ft = /* @__PURE__ */ X(Dt, [["__scopeId", "data-v-492142fe"]]), Pt = { class: "action-field" }, Ut = ["value", "disabled"], Jt = ["value"], Gt = { key: 1 }, Kt = {
+}, Ft = /* @__PURE__ */ X(Dt, [["__scopeId", "data-v-96a7a3fa"]]), Pt = { class: "action-field" }, Ut = ["value", "disabled"], Jt = ["value"], Gt = { key: 1 }, Kt = {
   key: 1,
   class: "action-field"
 }, Zt = { class: "action-buttons" }, Yt = {
@@ -325,7 +325,7 @@ const xt = {
       ])
     ], 32));
   }
-}, Qt = /* @__PURE__ */ X(Yt, [["__scopeId", "data-v-adde4158"]]), Xt = { class: "action-buttons" }, _t = {
+}, Qt = /* @__PURE__ */ X(Yt, [["__scopeId", "data-v-356a2712"]]), Xt = { class: "action-buttons" }, _t = {
   __name: "AgentRetireForm",
   props: { reason: String, pending: Boolean },
   emits: ["submit", "cancel", "update:reason"],
@@ -367,7 +367,7 @@ const xt = {
       ])
     ], 32));
   }
-}, ea = /* @__PURE__ */ X(_t, [["__scopeId", "data-v-23a905c0"]]), ta = { class: "action-buttons" }, aa = {
+}, ea = /* @__PURE__ */ X(_t, [["__scopeId", "data-v-bbe4e841"]]), ta = { class: "action-buttons" }, aa = {
   key: 0,
   role: "alert"
 }, na = {
@@ -492,7 +492,7 @@ const xt = {
       ], 32));
     };
   }
-}, la = /* @__PURE__ */ X(oa, [["__scopeId", "data-v-4cb32275"]]), sa = { class: "line" }, ra = {
+}, la = /* @__PURE__ */ X(oa, [["__scopeId", "data-v-58e13d12"]]), sa = { class: "line" }, ra = {
   key: 0,
   class: "line",
   "data-agent-since": ""
@@ -526,7 +526,7 @@ const xt = {
       _: 1
     }, 8, ["class", "data-state", "aria-label"]));
   }
-}, ua = /* @__PURE__ */ X(da, [["__scopeId", "data-v-1a0bc478"]]), ca = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, ga = (e) => e.filter((o) => o.state !== "cancelled"), De = (e, o) => e.filter((a) => a.state === o).length;
+}, ua = /* @__PURE__ */ X(da, [["__scopeId", "data-v-a51f28ad"]]), ca = { started: { words: "started" }, testing: { words: "being tested" }, blocked: { words: "blocked" } }, ga = (e) => e.filter((o) => o.state !== "cancelled"), De = (e, o) => e.filter((a) => a.state === o).length;
 function va({ tasks: e, inHand: o, perHour: a }) {
   const l = ga(e), t = De(l, "completed"), c = ca[o == null ? void 0 : o.state], h = l.length - t - (o && o.state !== "completed" ? 1 : 0), $ = t === l.length;
   return {
@@ -610,7 +610,7 @@ const pa = {
       }, null, 8, ["total", "done", "testing"])
     ], 64)) : k("", !0);
   }
-}, ka = /* @__PURE__ */ X(ma, [["__scopeId", "data-v-82722c25"]]), ba = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', ya = ["data-icon", "stroke-width", "innerHTML"], _ = {
+}, ka = /* @__PURE__ */ X(ma, [["__scopeId", "data-v-6a9fcb51"]]), ba = '<circle cx="8" cy="5.3" r="2.5"/><path d="M3 13.5c0-2.8 2.2-4.6 5-4.6s5 1.8 5 4.6"/>', ya = ["data-icon", "stroke-width", "innerHTML"], _ = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -795,13 +795,13 @@ const pa = {
       ])) : ye(o.$slots, "default", {}, void 0, !0, 2)
     ], 2));
   }
-}, me = /* @__PURE__ */ X(xa, [["__scopeId", "data-v-fec99974"]]), $a = {}, Sa = { class: "menu-label" };
+}, me = /* @__PURE__ */ X(xa, [["__scopeId", "data-v-9c67fe37"]]), $a = {}, Sa = { class: "menu-label" };
 function Ca(e, o) {
   return n(), s("span", Sa, [
     ye(e.$slots, "default", {}, void 0, !0)
   ]);
 }
-const ke = /* @__PURE__ */ X($a, [["render", Ca], ["__scopeId", "data-v-aa955b3e"]]), Aa = {
+const ke = /* @__PURE__ */ X($a, [["render", Ca], ["__scopeId", "data-v-71c11156"]]), Aa = {
   class: "skills-menu",
   "data-agent-skills-menu": ""
 }, Ta = {
@@ -862,7 +862,7 @@ const ke = /* @__PURE__ */ X($a, [["render", Ca], ["__scopeId", "data-v-aa955b3e
       })
     ]));
   }
-}, Ba = /* @__PURE__ */ X(ja, [["__scopeId", "data-v-be514d47"]]), Ra = ["disabled", "title"], La = { class: "gauge usage" }, Ia = {
+}, Ba = /* @__PURE__ */ X(ja, [["__scopeId", "data-v-27140adf"]]), Ra = ["disabled", "title"], La = { class: "gauge usage" }, Ia = {
   __name: "AllowanceBar",
   props: { windows: { type: Array, default: () => [] }, disabled: Boolean },
   emits: ["open"],
@@ -893,7 +893,7 @@ const ke = /* @__PURE__ */ X($a, [["render", Ca], ["__scopeId", "data-v-aa955b3e
       m(" " + p(h.value ? "At usage limit" : `${c.value}%`), 1)
     ], 8, Ra)) : k("", !0);
   }
-}, Va = /* @__PURE__ */ X(Ia, [["__scopeId", "data-v-a36f09dc"]]), Oa = {
+}, Va = /* @__PURE__ */ X(Ia, [["__scopeId", "data-v-82d641a0"]]), Oa = {
   __name: "DashboardBadge",
   props: { text: { type: String, required: !0 }, tone: { type: String, default: "" } },
   setup(e) {
@@ -901,7 +901,7 @@ const ke = /* @__PURE__ */ X($a, [["render", Ca], ["__scopeId", "data-v-aa955b3e
       class: le(["badge", e.tone])
     }, p(e.text), 3));
   }
-}, za = /* @__PURE__ */ X(Oa, [["__scopeId", "data-v-9e7e1157"]]), Ha = (e, o, a) => Math.max(o, Math.min(a, e)), Ke = /* @__PURE__ */ new WeakMap(), Ea = (e, o) => Ke.set(e, o);
+}, za = /* @__PURE__ */ X(Oa, [["__scopeId", "data-v-6ef74765"]]), Ha = (e, o, a) => Math.max(o, Math.min(a, e)), Ke = /* @__PURE__ */ new WeakMap(), Ea = (e, o) => Ke.set(e, o);
 function Na(e, o) {
   for (let a = o; a; a = Ke.get(a) ?? a.parentElement) if (a === e) return !0;
   return !1;
@@ -998,7 +998,7 @@ const fe = 8, qa = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 16)
     ], 8, ["disabled"]));
   }
-}), Da = /* @__PURE__ */ X(qa, [["__scopeId", "data-v-3d203970"]]);
+}), Da = /* @__PURE__ */ X(qa, [["__scopeId", "data-v-7f046e0d"]]);
 async function Fa(e, o, a) {
   if (!e) return a(o);
   const { target: l, fields: t } = e, c = Object.fromEntries(Object.keys(t).map((M) => [M, l[M]])), h = () => Object.assign(l, c);
@@ -1369,7 +1369,7 @@ const Ja = ["disabled", "title"], Ga = ["disabled", "title"], Ka = { class: "gau
       ], 2);
     };
   }
-}, rn = /* @__PURE__ */ X(sn, [["__scopeId", "data-v-dc15ff96"]]), dn = ["data-agent-open", "aria-expanded", "role", "tabindex"], un = { class: "agent-head" }, cn = {
+}, rn = /* @__PURE__ */ X(sn, [["__scopeId", "data-v-da990f3f"]]), dn = ["data-agent-open", "aria-expanded", "role", "tabindex"], un = { class: "agent-head" }, cn = {
   class: "agent-title",
   "data-agent-title": "",
   "data-agent-motion": ""
@@ -1561,7 +1561,7 @@ const Ja = ["disabled", "title"], Ga = ["disabled", "title"], Ka = { class: "gau
       ], 42, dn);
     };
   }
-}, yn = /* @__PURE__ */ X(bn, [["__scopeId", "data-v-7484d415"]]), wn = {
+}, yn = /* @__PURE__ */ X(bn, [["__scopeId", "data-v-a75f0af5"]]), wn = {
   key: 0,
   class: "agents-upgrade",
   "data-agents-upgrade": ""
@@ -1791,7 +1791,7 @@ const Ja = ["disabled", "title"], Ga = ["disabled", "title"], Ka = { class: "gau
       ], 2)
     ], 2));
   }
-}, An = /* @__PURE__ */ X(xn, [["__scopeId", "data-v-2cc349bb"]]);
+}, An = /* @__PURE__ */ X(xn, [["__scopeId", "data-v-c2eab303"]]);
 export {
   An as A
 };
