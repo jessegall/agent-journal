@@ -69,7 +69,7 @@ func isJournalLine(parts []Part, aliases []string) bool {
 
 const CountLimitSeconds = 120
 
-// CountWait runs a test listing before the run waits for its queue slot.
+// CountWait runs a test listing once the run has its queue slot, before its first part starts, so the run holds its place while it counts.
 func CountWait(folder string, line string, values ...ListingOptions) string {
 	if line == "" {
 		return ""
