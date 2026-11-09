@@ -1,3 +1,6 @@
+import pytest
+
+from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
 import json
 
 from core.base.actor import Actor
@@ -14,6 +17,12 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
+
+
+
+@pytest.fixture(autouse=True)
+def workers_ran_long_enough(monkeypatch):
+    monkeypatch.setattr(WorkerLaunchFailures, "has_failed", lambda failures, worker: False)
 
 
 def last_reply(tmp_path, session, text):

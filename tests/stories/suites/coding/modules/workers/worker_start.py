@@ -22,7 +22,7 @@ def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_it
         expected = f"load this first with the Skill tool: {skill}" if program == "claude" else f"read this first: {repository.worktree_folder(worker_id) / skills_folder / skill / 'SKILL.md'}"
         story.expect_rows(expected in brief)
     story.expect_rows("Load these skills before your first write" in brief, "journal overview" in brief,
-                      "Run only tests of the code you change" in brief, "no Monitor" in brief)
+                      "only your new tests or the tests your change affects" in brief, "no Monitor" in brief)
 
 
 def test_a_dispatch_with_no_launcher_prints_the_command_line_that_starts_the_worker(new_story):

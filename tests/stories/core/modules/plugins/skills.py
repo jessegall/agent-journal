@@ -53,7 +53,7 @@ def test_the_skills_due_when_a_plugins_answer_requires_a_skill_count_down_from_t
     story.container.bind(SkillRequirement, SkillRequirement())
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
-    for remaining in (2, 1):
+    for remaining in (2, 1, 0):
         expect_countdown(story, HookSamples.edit("src/cart.py"), "journal", remaining)
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first")
 

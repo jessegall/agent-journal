@@ -48,14 +48,20 @@ def expect_skills_absent(story, *folders: str) -> None:
 
 
 def expect_countdown(story, sample, skill: str, remaining: int, session: str = "s-1") -> None:
+    story.run_listeners()
     story.advance(timedelta(seconds=1))
     reply = story.hook(session, sample)
     line = f"load skill {skill} due: {remaining} tool uses"
     assert line in reply.lines and not reply.refusal, f"{line!r} not in {reply.lines!r}, refusal {reply.refusal!r}"
 
 
+def start_countdown(story, sample, session: str = "s-1") -> None:
+    story.hook(session, sample)
+
+
 def drain_countdown(story, sample, skill: str, session: str = "s-1") -> None:
-    for remaining in (3, 2, 1):
+    start_countdown(story, sample, session)
+    for remaining in (2, 1, 0):
         expect_countdown(story, sample, skill, remaining, session)
 
 
@@ -121,8 +127,9 @@ def test_a_phrase_trigger_names_its_skill_for_three_tool_uses_and_then_holds_unt
 
 def test_loading_the_skill_during_the_countdown_ends_it(defaults_loaded):
     story = defaults_loaded
-    expect_countdown(story, MEMORY_LIST, "journal-memory", 3)
+    start_countdown(story, MEMORY_LIST)
     expect_countdown(story, MEMORY_LIST, "journal-memory", 2)
+    expect_countdown(story, MEMORY_LIST, "journal-memory", 1)
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", read_digest(story, "journal-memory")), story.agent)
     for _ in range(4):
         story.expect_hook_allowed("s-1", MEMORY_LIST)
