@@ -9,44 +9,40 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.enums.task_state import TaskState
-from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
-from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
+
+HELP_COMMAND_TEXT = 'If you cannot go on: journal wait stuck "<why>"'
 
 
 class WorkerStopRule(DriverRule):
-    """A worker may stop with no task, while proof tests wait, while a run or a helper of its own continues,
-    while a reader is needed, or between tasks to be compacted. Its run, tests or helper's report restart
-    it; otherwise it delivers or says it is stuck."""
+    """A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own
+    continues, while a reader is needed, or between tasks to be compacted. Otherwise it hears what to do now."""
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, next_task: WorkerNextTask, compaction: WorkerCompaction) -> None:
-        self.next_task = next_task
-        self.compaction = compaction
-        self.tasks, self.worktrees, self.proofs, self.processes = tasks, worktrees, proofs, processes
-        self.requests, self.clock, self.agents = requests, clock, agents
+    def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance) -> None:
+        self.compaction, self.guidance = compaction, guidance
+        self.tasks, self.processes, self.requests, self.clock, self.agents = tasks, processes, requests, clock, agents
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.compaction.is_after_task(hook.agent_id):
             return RuleAnswer.allowed()
-        started = self.tasks.holder(hook.agent_id).started().first()
-        task = started if started is not None else self.next_task.following(hook.agent_id)
-        worktree = self.worktrees.worker_worktree(hook.agent_id)
+        worker_point = self.guidance.point(hook.agent_id)
+        task = worker_point.round.started[0] if worker_point.round.started else worker_point.round.following
         if self.requests.has_active_requests(hook.agent_id, self.clock.timestamp()):
             return RuleAnswer.allowed()
         if task is None:
             blocked = self.tasks.filter(delegated_to=hook.agent_id, state=TaskState.BLOCKED).all_rows()
             return RuleAnswer.with_nudges(*(WORKER_TASK_BLOCKED.nudge(worker=hook.agent_id, task=row.id) for row in blocked))
-        if started is None and worktree is not None and self.proofs.tests_waiting(worktree.id):
+        if worker_point.step.may_stop():
             return RuleAnswer.allowed()
         if self.processes.agent(hook.agent_id).running().exists() or self.has_running_helper(hook.agent_id):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=task.id))
+        return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(line=f"{worker_point.line} {HELP_COMMAND_TEXT}"))
 
     def has_running_helper(self, agent_id: int) -> bool:
         return bool(self.agents.running(CodingHelperRole.HELPER, agent_id))

@@ -47,7 +47,7 @@ def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_ove
     story.expect_success("task depend 2 --on 1", actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
-    story.expect_text("worker next --wait --differences none", "the tests of task 1 are queued", actor=worker)
+    story.expect_text("worker next --wait --differences none", "tests of task 1 are queued", actor=worker)
     story.run_listeners()
     ended(story, started[0], 0)
     expect_states(story, task1="completed", task2="started")
@@ -99,7 +99,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     # the first task: delivering is refused while tasks are queued; next commits it and queues its test
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_refusal("worker deliver --wait --differences none", "task 2 is still in your queue", actor=worker)
-    story.expect_text("worker next --wait --differences none", "the tests of task 1 are queued", actor=worker)
+    story.expect_text("worker next --wait --differences none", "tests of task 1 are queued", actor=worker)
     story.run_listeners()
     expect_states(story, task1="testing", task2="open", task3="open")
     expect_absent_marks_text(story, "handed in")
@@ -113,7 +113,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
 
     # the worker fixes it: next again, and this time its test passes, which starts the second task with its brief
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
-    story.expect_text("worker next --wait --differences none", "the tests of task 1 are queued", actor=worker)
+    story.expect_text("worker next --wait --differences none", "tests of task 1 are queued", actor=worker)
     story.run_listeners()
     ended(story, started[1], 0)
     expect_states(story, task1="completed", task2="started", task3="open")

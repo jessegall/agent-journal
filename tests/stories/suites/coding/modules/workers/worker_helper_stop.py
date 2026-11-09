@@ -35,7 +35,7 @@ def test_a_worker_may_stop_while_its_helper_works(new_story):
 def test_a_worker_with_no_helper_running_is_held_to_its_task(new_story):
     story, worker = worker_with_helper(new_story)
     story.expect_success(f"helper stop {read_helper(story, worker).id}", actor=worker)
-    story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task:1")
+    story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "Task 1")
 
 
 def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):

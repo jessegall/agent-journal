@@ -37,8 +37,8 @@ WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.STEERING, 
 
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.STEERING, 'the tests of worker:{worker} all pass', turn_limited=False,
                                      plural_text='the tests of workers {worker} all pass', id_field="worker")
-WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed, output {outputs}: test freely until you hand in; fix them, then hand in again', turn_limited=False)
-WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: test freely until you hand in; fix them, then hand in again', turn_limited=False, id_field="outputs")
+WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERING, 'your tests failed, output {outputs}: {line}', turn_limited=False, path_fields=["line"])
+WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: {line}', turn_limited=False, id_field="outputs", path_fields=["line"])
 WORKER_TEST_REQUESTED = NudgeDeclaration("workers.test_requested", NudgeType.STEERING, 'worker:{worker} asks to run a command for task:{task}, request:{request}', turn_limited=False, wakes_agent=True, id_field="request", plural_text="worker:{worker} asks for task:{task}, requests {request}")
 WORKER_TEST_ALLOWED = NudgeDeclaration("workers.test_allowed", NudgeType.STEERING, 'request {request} is allowed: run it once without the flag', turn_limited=False, wakes_agent=True, id_field="request", plural_text="requests {request} are allowed: run each once")
 TEST_REQUEST_FORWARDED = NudgeDeclaration("workers.test_request_sent", NudgeType.SAFETY_REFUSAL, 'your request went to your main agent: go on working, you hear when it is allowed', turn_limited=False)
@@ -54,12 +54,12 @@ READER_SAMPLE_READY = NudgeDeclaration("workers.reader_sample_ready", NudgeType.
 WORKER_COMMENT_COPY = NudgeDeclaration("workers.comment_copy", NudgeType.STEERING, 'worker:{worker} was also told message:{message}: act on it yourself, or leave it to the worker', turn_limited=False, wakes_agent=True)
 WORKER_TASK_COMMENT = NudgeDeclaration("workers.task_comment", NudgeType.STEERING, 'the user commented on task:{task}', turn_limited=False,
                                       plural_text='the user commented on tasks {task}', id_field="task")
-WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.STEERING, 'your tests passed. Your next task is task:{task}', turn_limited=False)
+WORKER_NEXT_TASK = NudgeDeclaration("workers.next_task", NudgeType.STEERING, 'your tests passed. Your next task is task:{task}. {line}', turn_limited=False, path_fields=["line"])
 WORKER_TASK_REASSIGNED = NudgeDeclaration("workers.task_taken", NudgeType.STEERING, 'task:{task} was taken from you: leave it', turn_limited=False)
 WORKER_TASK_AFTER_REASSIGNED = NudgeDeclaration("workers.task_after_taken", NudgeType.STEERING, 'your next task is task:{task}', turn_limited=False)
 WORKER_REUSE = NudgeDeclaration("workers.reuse", NudgeType.REFUSAL, 'worker:{worker} changed these files: send it the job, or name a reason for a new worker', turn_limited=False)
 WORKER_ENDED_WITH_TASKS = NudgeDeclaration("workers.ended_with_tasks", NudgeType.STEERING, 'worker:{worker} ended with {tasks} left: send it a job, or release it', turn_limited=False, wakes_agent=True)
-WORKER_MERGE_CONFLICT = NudgeDeclaration("workers.merge_clash", NudgeType.STEERING, '{branch} is merged into your worktree and clashes on {lines}: settle the markers there, then deliver', turn_limited=False, path_fields=["lines"])
+WORKER_MERGE_CONFLICT = NudgeDeclaration("workers.merge_clash", NudgeType.STEERING, '{branch} is merged into your worktree and clashes on {lines}: {line}', turn_limited=False, path_fields=["lines", "line"])
 WORKER_PROOF_SHORT = NudgeDeclaration("workers.proof_short", NudgeType.STEERING, 'proof:{proof} of task:{task} is short: read it, fix it, then deliver', turn_limited=False)
 WORKER_TASK_BLOCKED = NudgeDeclaration("workers.task_blocked", NudgeType.STEERING, 'worker:{worker} blocked task:{task}', turn_limited=False)
 

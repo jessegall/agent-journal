@@ -1,3 +1,4 @@
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
@@ -21,6 +22,7 @@ class SilentRunRule(DriverRule):
     It checks the agent's newest runs only, so a hook's read stays small however many are going."""
 
     name = "processes.silent-run"
+    roles = [AgentRole.MAIN]
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
 

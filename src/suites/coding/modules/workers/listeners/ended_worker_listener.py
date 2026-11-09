@@ -13,6 +13,7 @@ from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support import worker_job
 from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_ENDED_WITH_TASKS, WORKER_LAUNCH_FAILED, WORKER_RESTARTED, WORKER_UNFINISHED_TASKS
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_handoff import WorkerHandoff
 from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
 from suites.coding.modules.workers.support.worker_stop import WorkerStop
@@ -38,7 +39,8 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures) -> None:
+    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance) -> None:
+        self.guidance = guidance
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
         self.resume, self.waits, self.inbox, self.scopes = resume, waits, inbox, scopes
         self.handoff, self.launches = handoff, launches
@@ -47,7 +49,8 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
         new = event.row
         if new.role != CodingHelperRole.WORKER or new.parent_id is None or self.resume.compaction.is_running(new.id):
             return
-        unfinished = self.unfinished.rows(new.id)
+        worker_round = self.unfinished.steps.round(new.id)
+        unfinished = self.unfinished.round_rows(worker_round)
         if not unfinished:
             return
         is_final = self.stop.is_final(new, context.actor.id)
@@ -58,13 +61,13 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
             return
         delegated = any(task.delegated_to == new.id for task in unfinished)
         tasks = self.unfinished.names(unfinished)
-        help_requested = self.stop.has_open_help_request(new.id)
+        help_requested = worker_round.is_asking
         progress = Minimum("created_at", self.unfinished.last_progress_text(new.id))
         resume_count = self.queries.query(AgentLine).filter(session_agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).matching(progress).count()
         should_resume = delegated and not is_final and resume_count < worker_job.RESUME_LIMIT_COUNT
         if should_resume:
             if not help_requested:
-                self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context)
+                self.nudger.send(new.id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context, line=self.guidance.round_point(worker_round).line)
                 state = self.resume.program_state(new)
                 if not state.is_ready:
                     self.waits.notify_wait(new, context)

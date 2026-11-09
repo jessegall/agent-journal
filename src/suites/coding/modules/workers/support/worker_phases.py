@@ -10,7 +10,6 @@ from core.modules.plans.support.task_plans import TaskPlans
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -73,7 +72,7 @@ class WorkerPhases:
         return plan.state is PlanState.STARTED and self.settings.flag(PHASE_TESTS_ENABLED)
 
     def has_open_failure(self, worktree: Worktree) -> bool:
-        if self.proofs.worktree_proofs(worktree.id).filter(state=ProofState.SHORT).exists():
+        if self.proofs.has_short_proof(worktree.id):
             return True
         first_answer = self.queries.query(AffectedTest).filter(worktree_id=worktree.id).newest().first()
         return first_answer is not None and first_answer.state is AffectedTestState.FAILED

@@ -18,7 +18,7 @@ class ForcedReaders(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.run("setting set journal.core.processes.readers-forced on --environment main")
-        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
+        story.run("setting set journal.suites.coding.workers.worker-run-most-tests 25 --environment main", actor=story.user)
         story.run("agent start s-reader claude worker --environment main")
 
 
@@ -27,6 +27,6 @@ def reader_worker(story: Story) -> Actor:
     return Actor(worker.id, ActorType.AGENT)
 
 
-def worker_run(story: Story, line: str = "custom-build run", category: CommandCategory = CommandCategory.BUILD) -> Process:
+def worker_run(story: Story, line: str = "custom-build run", category: CommandCategory = CommandCategory.TEST_RUN) -> Process:
     worker = reader_worker(story)
     return story.container.get(Bus).run(StartProcess.single_part(worker.id, line, "/work/main", category, 30), worker, environment_id=1)

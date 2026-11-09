@@ -8,7 +8,6 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_wait_targets import TaskWaitTargets
 from core.modules.tasks.support.task_waits import TaskWaits
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -44,7 +43,7 @@ class WorkerTaskWaitTargets(TaskWaitTargets):
         worktree = self.worktrees.worker_worktree(worker.id)
         if worktree is None or worktree.state in (WorktreeState.MERGED, WorktreeState.ABANDONED, WorktreeState.REMOVED):
             return True
-        if self.proofs.tests_waiting(worktree.id) or self.proofs.worktree_proofs(worktree.id).filter(state=ProofState.SHORT).exists():
+        if self.proofs.tests_waiting(worktree.id) or self.proofs.has_short_proof(worktree.id):
             return False
         if worker.ended_at is None or self.queries.query(Task).filter(delegated_to=worker.id, state=TaskState.OPEN).exists():
             return False

@@ -15,6 +15,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_MERGE_CONFLICT
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 
 
@@ -26,8 +27,8 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
     runs_once = True
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: Nudger, advance: WorkerTaskAdvance) -> None:
-        self.queries, self.rows, self.repository, self.nudger, self.advance = queries, rows, repository, nudger, advance
+    def __init__(self, queries: Queries, rows: EventRows, repository: Repository, nudger: Nudger, advance: WorkerTaskAdvance, guidance: WorkerGuidance) -> None:
+        self.queries, self.rows, self.repository, self.nudger, self.advance, self.guidance = queries, rows, repository, nudger, advance, guidance
 
     def handle(self, command: RecordWorktreeMerge, context: Context) -> MergeOutcome:
         worktree = self.rows.required(Worktree, command.worktree_id)
@@ -47,5 +48,6 @@ class RecordWorktreeMergeHandler(Handler[RecordWorktreeMerge, MergeOutcome]):
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
         self.advance.restart_task(worktree, task, context)
-        self.nudger.send(worktree.session_agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=", ".join(conflicts))
+        files = ", ".join(conflicts)
+        self.nudger.send(worktree.session_agent_id, WORKER_MERGE_CONFLICT, MERGE_CONFLICT_SOURCE, context, branch=worktree.base_branch, lines=files, line=self.guidance.conflict_line(task, files))
         return self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)

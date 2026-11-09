@@ -33,7 +33,7 @@ def exhausted_worker_reader(worker_reader_sample):
 
 def test_a_worker_saves_a_reader_with_the_same_output_proof(worker_reader_sample):
     story = worker_reader_sample
-    story.expect_success('reader add own-build --commands "custom-build*" --title Building --lines done --summary done',
+    story.expect_success('reader add own-build --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"',
                          "name: own-build", actor=reader_worker(story))
     reader = story.container.get(Queries).query(Reader).filter(name="own-build").page(1, 1).rows[0]
     story.expect_rows(reader.proved_on == 1, not story.container.get(ReaderRequestQuery).open().exists())
@@ -59,13 +59,13 @@ def test_failed_saves_leave_no_reader_or_output_proof(worker_reader_sample):
                          "missed", actor=reader_worker(story))
     story.expect_rows(not story.container.get(Queries).query(Reader).filter(name="broken").exists(),
                       story.container.get(ReaderRequestQuery).open().exists())
-    story.expect_success('reader add repaired --commands "custom-build*" --title Building --lines done --summary done',
+    story.expect_success('reader add repaired --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"',
                          "name: repaired", actor=reader_worker(story))
 
 
 def test_the_worker_stops_saving_after_three_failures(exhausted_worker_reader):
     story = exhausted_worker_reader
-    story.expect_refusal('reader add fourth --commands "custom-build*" --title Building --lines done --summary done --skip-guard processes.reader-owner',
+    story.expect_refusal('reader add fourth --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list" --skip-guard processes.reader-owner',
                          "has no skip", actor=reader_worker(story))
     story.expect_refusal("reader draft 1 --save", "main agent", actor=reader_worker(story))
     story.expect_rows(not story.container.get(Queries).query(Reader).filter(name="fourth").exists())
@@ -77,12 +77,6 @@ def test_an_idle_main_agent_is_asked_to_help_after_failed_saves(exhausted_worker
     story.tick("s-1")
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(source="processes.reader-request.1").all_rows())
     story.expect_rows(len(lines) == 1, lines[0].wakes_agent, "reader request 1" in lines[0].text)
-
-
-def test_the_main_agent_can_save_after_the_worker_exhausts_its_tries(exhausted_worker_reader):
-    story = exhausted_worker_reader
-    story.expect_text("reader draft 1 --save", "saved reader custom-build-reader", actor=story.agent)
-    story.expect_rows(not story.container.get(ReaderRequestQuery).open().exists())
 
 
 def test_the_failed_save_limit_can_be_configured(worker_reader_sample):
@@ -107,7 +101,7 @@ def test_an_exhausted_request_does_not_use_another_requests_tries(exhausted_work
     story = exhausted_worker_reader
     process = worker_run(story, "another-build run")
     end_run(story, process, "compiling\n" * 12 + "done\n")
-    story.expect_success('reader add another --commands "another-build*" --title Building --lines done --summary done',
+    story.expect_success('reader add another --commands "another-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"',
                          "name: another", actor=reader_worker(story))
     story.expect_rows(story.container.get(ReaderRequestQuery).find(1).completed_at is None,
                       story.container.get(ReaderRequestQuery).find(2).completed_at is not None)

@@ -26,6 +26,7 @@ from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK, WOR
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 LINE_SOURCE = "workers"
@@ -38,8 +39,8 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     command = RecordWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask) -> None:
-        self.next_task = next_task
+    def __init__(self, queries: Queries, repository: Repository, main_agent_line: MergerInbox, tasks: TaskQuery, advance: WorkerTaskAdvance, nudger: Nudger, rows: EventRows, phases: WorkerPhases, failures: WorkerTestFailures, settings: SettingValues, next_task: WorkerNextTask, guidance: WorkerGuidance) -> None:
+        self.next_task, self.guidance = next_task, guidance
         self.failures, self.settings = failures, settings
         self.queries, self.repository, self.main_agent_line, self.tasks, self.advance, self.nudger = queries, repository, main_agent_line, tasks, advance, nudger
         self.rows, self.phases = rows, phases
@@ -117,10 +118,10 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
             current = self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=first_task_id), context)
         if phase is None:
             outputs = ", ".join(str(row.process_id) for row in failed)
-            self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs)
+            self.nudger.send(current.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=outputs, line=self.guidance.line(current.session_agent_id))
             return
         outputs = ", ".join(str(row.process_id) for row in failed)
         self.send_phase_failures(current, phase, outputs, context)
 
     def send_phase_failures(self, worktree: Worktree, phase: Phase, outputs: str, context: Context) -> None:
-        self.nudger.send(worktree.session_agent_id, WORKER_PHASE_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, phase=phase.id, outputs=outputs)
+        self.nudger.send(worktree.session_agent_id, WORKER_PHASE_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, phase=phase.id, outputs=outputs, line=self.guidance.line(worktree.session_agent_id))

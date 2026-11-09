@@ -19,4 +19,4 @@ def test_a_merge_conflict_names_three_long_paths_whole_to_the_worker(new_story):
         repository.changed(worker.id, path, "TOTAL = 1\n")
         repository.committed(path, "TOTAL = 2\n", "Change a reader")
     story.expect_text(f"worker merge --wait {worker.id}", "clashed on", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {worker.id}", *paths, "then deliver")
+    story.expect_text(f"agent-line list --agent {worker.id}", *paths, "journal worker deliver")

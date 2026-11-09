@@ -16,19 +16,21 @@ from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TASK_AFTER_REASSIGNED, WORKER_TASK_REASSIGNED
 
 
 class WorkerTaskAdvance:
     """Starts a worker's next task on its worktree and tells the worker which one it is and how to read it."""
 
-    def __init__(self, bus: Bus, repository: Repository, nudger: Nudger, blocks: TaskBriefBlocks, rows: EventRows) -> None:
+    def __init__(self, bus: Bus, repository: Repository, nudger: Nudger, blocks: TaskBriefBlocks, rows: EventRows, guidance: WorkerGuidance) -> None:
+        self.guidance = guidance
         self.bus, self.repository, self.nudger = bus, repository, nudger
         self.blocks, self.rows = blocks, rows
 
     def next_task(self, worktree: Worktree, following: Task, context: Context) -> None:
         self.start(worktree, following, context)
-        self.nudger.send(worktree.session_agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id)
+        self.nudger.send(worktree.session_agent_id, WORKER_NEXT_TASK, WORKER_JOB_SOURCE, context, task=following.id, line=self.guidance.line(worktree.session_agent_id))
 
     def after_reassigned_task(self, worktree: Worktree, reassigned: Task, following: Task, context: Context) -> None:
         self.start(worktree, following, context)

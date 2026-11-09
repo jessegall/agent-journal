@@ -1,3 +1,4 @@
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -12,6 +13,7 @@ class ReaderHintRule(DriverRule):
     """Reading all of an output a reader already reads names the shorter read."""
 
     name = "processes.reader-hint"
+    roles = [AgentRole.MAIN]
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
 

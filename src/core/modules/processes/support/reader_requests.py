@@ -22,13 +22,15 @@ from core.modules.processes.queries.conditions.reader_sample_scope import Reader
 from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.reader_demands import ReaderDemands
 from core.modules.processes.support.reader_judge import ReaderJudge
+from core.modules.processes.support.run_counts import RunCounts
 
 
 class ReaderRequests:
     """Opens an agent's request for each command without a proper reader."""
 
     def __init__(self, queries: Queries, requests: ReaderRequestQuery, parts: ProcessPartQuery, repository: Repository,
-                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge) -> None:
+                 demands: ReaderDemands, settings: ProcessSettings, clock: Clock, suites: SuiteChoice, judge: ReaderJudge, counts: RunCounts) -> None:
+        self.counts = counts
         self.queries, self.requests, self.parts, self.repository = queries, requests, parts, repository
         self.demands, self.settings, self.clock = demands, settings, clock
         self.suites = suites
@@ -42,7 +44,7 @@ class ReaderRequests:
         if not self.demands.needs_reader(spec):
             return None
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
-        reason = self.demands.reason(spec, reader, scope)
+        reason = self.counts.reader_reason(process, spec, reader, self.demands.reason(spec, reader, scope))
         if not reason:
             return None
         existing = self.open_row(scope)
@@ -70,7 +72,7 @@ class ReaderRequests:
         if not self.demands.needs_reader(spec):
             return
         scope = ReaderSampleScope(process.session_agent_id, spec.command or spec.text)
-        reason = self.demands.reason(spec, reader, scope)
+        reason = self.counts.reader_reason(process, spec, reader, self.demands.reason(spec, reader, scope))
         if reason:
             self.open_request(process, spec, reason, process.id, context)
 

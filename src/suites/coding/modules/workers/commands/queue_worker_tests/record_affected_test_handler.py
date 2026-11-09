@@ -13,6 +13,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.commands.queue_worker_tests.record_affected_test import RecordAffectedTest
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test_handler import RecordWorkerTestHandler
 from suites.coding.modules.workers.models.affected_test import AffectedTest, AffectedTestState
@@ -29,7 +30,8 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
 
     command = RecordAffectedTest
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, output: OutputFolder, results: RecordWorkerTestHandler, nudger: Nudger, phases: WorkerPhases) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, output: OutputFolder, results: RecordWorkerTestHandler, nudger: Nudger, phases: WorkerPhases, guidance: WorkerGuidance) -> None:
+        self.guidance = guidance
         self.queries, self.repository, self.bus, self.output, self.results, self.nudger, self.phases = queries, repository, bus, output, results, nudger, phases
 
     def handle(self, command: RecordAffectedTest, context: Context) -> None:
@@ -58,6 +60,6 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.rework), context)
         phase = self.phases.phase(task)
         if phase is None:
-            self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id))
+            self.nudger.send(worktree.session_agent_id, WORKER_TESTS_FAILED, MERGE_CONFLICT_SOURCE, context, outputs=str(process_id), line=self.guidance.line(worktree.session_agent_id))
             return
         self.results.send_phase_failures(worktree, phase, str(process_id), context)

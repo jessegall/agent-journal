@@ -1,6 +1,7 @@
 import json
 import shlex
 from dataclasses import dataclass, replace
+from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.driver.command_category import CommandCategory
@@ -127,6 +128,24 @@ class StoryWorker:
     def end_tests(self, *codes: int) -> None:
         for process_id, code in zip(self.started, codes):
             self.end_test(process_id, code)
+
+    def status(self) -> str:
+        return self.story.run("worker status", actor=self.worker).output_text
+
+    def status_line(self) -> str:
+        return self.status().splitlines()[0]
+
+    def status_json(self) -> dict[str, object]:
+        return json.loads(self.story.run("worker status --json", actor=self.worker).output_text)
+
+    def stop(self) -> HookReply:
+        return self.story.hook(self.session, HookSamples.stop())
+
+    def program_ended(self) -> None:
+        self.story.advance(timedelta(minutes=5))
+        self.story.run(f"agent edit {self.worker.id} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00")
+        self.story.use_processes()
+        self.story.tick("s-1")
 
     def worktree_task(self) -> int:
         rows = json.loads(self.story.run("worker-worktree list --json", actor=self.story.agent).output_text)["rows"]

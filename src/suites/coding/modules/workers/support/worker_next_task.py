@@ -11,5 +11,7 @@ class WorkerNextTask:
         self.tasks, self.plan_order = tasks, plan_order
 
     def following(self, worker_id: int) -> Task | None:
-        started_task_ids = tuple(task.id for task in self.tasks.started_tasks(worker_id))
-        return self.plan_order.first(self.tasks.ready_delegated(worker_id), started_task_ids)
+        return self.first_ready(tuple(self.tasks.ready_delegated(worker_id)), tuple(self.tasks.started_tasks(worker_id)))
+
+    def first_ready(self, ready: tuple[Task, ...], started: tuple[Task, ...]) -> Task | None:
+        return self.plan_order.first(ready, tuple(task.id for task in started))

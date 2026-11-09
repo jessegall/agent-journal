@@ -99,8 +99,3 @@ def test_help_and_collection_do_not_use_the_allowance(worker):
     expect_reply_allowed(worker.run_test(f"{TEST_LINE} --help"))
     expect_reply_allowed(worker.run_test(f"{TEST_LINE} --collect-only"))
     expect_counted(worker, 2)
-
-
-def test_another_rules_refusal_does_not_spend_a_run(worker):
-    expect_reply_refusal(worker.run_test_with_saved_commands_known(), "runs through a saved command")
-    expect_counted(worker, 2)

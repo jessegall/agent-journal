@@ -130,10 +130,10 @@ def test_a_run_with_no_sample_runs_as_the_sample_while_its_worker_is_held(new_st
 def test_a_saved_proper_reader_frees_the_worker_and_starts_its_run_with_that_reader(kept_reader_sample):
     story = kept_reader_sample
     process = worker_run(story)
-    reader = story.new_row_id('reader add proper --commands "custom-build*" --title Building --lines "done" --summary "done"', actor=reader_worker(story))
+    reader = story.new_row_id('reader add proper --commands "custom-build*" --title "Custom tests" --lines "done" --summary "done" --step "PASSED" --count "collected ([0-9]+)" --count-command "{part} --list"', actor=reader_worker(story))
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
-    story.expect_rows(output.reader_id == reader, output.read_offset == 0, story.container.get(OutputFolder).has_slot(process.id))
+    story.expect_rows(output.reader_id == reader, output.read_offset == 0)
     story.expect_text(f"agent-line list --agent {reader_worker(story).id}", "read the sample of output 1 with reader proper")
 
 
@@ -187,15 +187,15 @@ def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
 def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
     story = new_story(fixture=ForcedReaders)
     process = worker_run(story, "running-build run")
-    reader = story.new_row_id('reader add running --commands "running-build*" --title Building --lines done --summary done', actor=story.agent)
+    reader = story.new_row_id('reader add running --commands "running-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"', actor=story.agent)
     output = story.container.get(OutputQuery).process(process.id).page(1, 1).rows[0]
-    story.expect_rows(output.reader_id == reader, output.read_offset == 0, output.title == "Building")
+    story.expect_rows(output.reader_id == reader, output.read_offset == 0, output.title == "Custom tests")
 
 
 def test_the_main_agent_gets_one_line_and_no_chat_mark_for_two_workers_on_one_command(requested_reader_story):
     story = requested_reader_story
     second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
-    story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.BUILD, 30), second, environment_id=1)
+    story.container.get(Bus).run(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.TEST_RUN, 30), second, environment_id=1)
     reply = story.hook("s-1", HookSamples.prompt("continue"))
     story.expect_rows(sum("reader request" in line for line in reply.lines) == 2)
     story.run_listeners()
@@ -283,16 +283,13 @@ def test_a_run_with_no_test_results_does_not_fail_the_reader_or_hold_the_next_wo
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
-def test_a_reader_that_stops_matching_on_a_worker_run_asks_the_main_agent_and_holds_the_next_run(new_story):
+def test_a_reader_that_stops_matching_on_a_worker_build_holds_nothing(new_story):
     story = new_story(fixture=ForcedReaders)
     story.run('reader add changing --commands "changing-build*" --title Building --lines done --summary done', actor=story.agent)
-    first = worker_run(story, "changing-build first")
+    first = worker_run(story, "changing-build first", CommandCategory.BUILD)
     end_run(story, first, "done\n")
-    second = worker_run(story, "changing-build second")
+    second = worker_run(story, "changing-build second", CommandCategory.BUILD)
     end_run(story, second, "new output\n" * 8)
-    request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
-    story.expect_rows("changing" in request.reason, request.sample_process_id == second.id)
-    story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
-    following = worker_run(story, "changing-build second")
-    story.expect_rows(not story.container.get(OutputFolder).has_slot(following.id))
-    story.expect_rows(story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    following = worker_run(story, "changing-build second", CommandCategory.BUILD)
+    story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
+    story.expect_rows(story.container.get(OutputFolder).has_slot(following.id))

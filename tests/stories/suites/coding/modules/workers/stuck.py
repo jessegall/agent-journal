@@ -43,7 +43,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     for _ in range(STOP_REFUSAL_COUNT + 2):
-        story.expect_hook_refusal(session, HookSamples.stop(), "if you cannot go on, say you are stuck and why")
+        story.expect_hook_refusal(session, HookSamples.stop(), "If you cannot go on: journal wait stuck")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 
@@ -54,7 +54,7 @@ def test_a_worker_with_a_task_queued_and_none_started_is_refused_its_stop(new_st
     worker = dispatched_worker(story, f"{DISPATCH} 2")
     session = worker_session(story, worker)
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)
-    story.expect_hook_refusal(session, HookSamples.stop(), "task:2 is not finished")
+    story.expect_hook_refusal(session, HookSamples.stop(), "Task 2 is not finished")
 
 
 def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothing_when_it_stops(new_story):

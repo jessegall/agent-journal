@@ -1,3 +1,4 @@
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -24,6 +25,7 @@ class SilentStartRule(DriverRule):
     and says once that progress shows when a later run does."""
 
     name = "processes.silent-start"
+    roles = [AgentRole.MAIN]
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 

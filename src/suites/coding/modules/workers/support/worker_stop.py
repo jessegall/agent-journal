@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from core.base.actor_type import ActorType
 from core.base.change.event_log import EventLog
+from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
@@ -19,8 +20,8 @@ class WorkerStop:
     """Whether a worker was stopped on purpose: ended by a person or by another agent, and not by itself or the
     journal, so the journal does not start it again."""
 
-    def __init__(self, queries: Queries, log: EventLog, tables: Tables) -> None:
-        self.queries, self.log, self.tables = queries, log, tables
+    def __init__(self, queries: Queries, log: EventLog, tables: Tables, kept: KeptRows) -> None:
+        self.queries, self.log, self.tables, self.kept = queries, log, tables, kept
 
     def is_final(self, worker: Agent, actor_id: int) -> bool:
         return actor_id != worker.id and self.queries.query(ActorRecord).find(actor_id).type in STOPPING_ACTOR_TYPES
@@ -36,4 +37,5 @@ class WorkerStop:
         return not self.was_stopped(worker)
 
     def has_open_help_request(self, worker_id: int) -> bool:
-        return self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists()
+        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists,
+                              "session_agent_id = ? AND state = ? AND type = ?", [worker_id, WaitState.OPEN, WaitType.HELP_REQUEST], name="workers.open_help_request")

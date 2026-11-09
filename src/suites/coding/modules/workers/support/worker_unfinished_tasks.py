@@ -3,10 +3,9 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
-from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
+from suites.coding.modules.workers.support.worker_round import WorkerRound
+from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 
 
 class WorkerUnfinishedTasks:
@@ -16,18 +15,18 @@ class WorkerUnfinishedTasks:
     progress when a task of it started or closed, or when it last used a tool, so only a worker that does
     nothing runs out of restarts."""
 
-    def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, phases: WorkerPhases, next_task: WorkerNextTask, hook_calls: HookCallQuery) -> None:
-        self.next_task, self.hook_calls = next_task, hook_calls
-        self.tasks, self.worktrees, self.proofs, self.processes, self.phases = tasks, worktrees, proofs, processes, phases
+    def __init__(self, tasks: TaskQuery, processes: ProcessQuery, phases: WorkerPhases, hook_calls: HookCallQuery, steps: WorkerSteps) -> None:
+        self.hook_calls, self.steps = hook_calls, steps
+        self.tasks, self.processes, self.phases = tasks, processes, phases
 
     def rows(self, worker_id: int) -> tuple[Task, ...]:
-        started = self.tasks.started_tasks(worker_id)
-        queued = self.next_task.following(worker_id)
-        worktree = self.worktrees.worker_worktree(worker_id)
-        if not started and (queued is None or (worktree is not None and self.proofs.tests_waiting(worktree.id))):
+        return self.round_rows(self.steps.round(worker_id))
+
+    def round_rows(self, worker_round: WorkerRound) -> tuple[Task, ...]:
+        if not worker_round.started and (worker_round.following is None or self.steps.is_delivered(worker_round)):
             return ()
-        advanced = self.phases.advanced(worker_id) if started else ()
-        return (*advanced, *started, *self.tasks.queued_tasks(worker_id))
+        advanced = self.phases.advanced(worker_round.worker_id) if worker_round.started else ()
+        return (*advanced, *worker_round.started, *self.tasks.queued_tasks(worker_round.worker_id))
 
     def last_progress_text(self, worker_id: int) -> str:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()

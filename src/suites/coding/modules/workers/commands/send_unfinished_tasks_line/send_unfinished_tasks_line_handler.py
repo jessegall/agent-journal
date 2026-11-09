@@ -14,4 +14,4 @@ class SendUnfinishedTasksLineHandler(Handler[SendUnfinishedTasksLine, AgentLine]
         self.nudger = nudger
 
     def handle(self, command: SendUnfinishedTasksLine, context: Context) -> AgentLine:
-        return self.nudger.send(command.worker_id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context)
+        return self.nudger.send(command.worker_id, WORKER_UNFINISHED_TASKS, UNFINISHED_TASKS_SOURCE, context, line=command.line)

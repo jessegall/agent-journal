@@ -13,11 +13,11 @@ PROJECT = Path(__file__).resolve().parents[5]
 
 
 @pytest.mark.parametrize("name,command,count", [
-    ("pytest", ".venv/bin/python3 -m pytest tests/stories/core/modules/processes/reader_draft.py -n 8", 12),
-    ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py", 12),
-    ("pytest", ".venv/bin/python3 -m pytest -qq tests/stories/core/modules/processes/reader_draft.py", 12),
-    ("pytest", ".venv/bin/python3 -m pytest -v tests/stories/core/modules/processes/reader_draft.py", 12),
-    ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py tests/stories/core/base/repeated_calls.py", 26),
+    ("pytest", ".venv/bin/python3 -m pytest tests/stories/core/modules/processes/reader_draft.py -n 8", 11),
+    ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py", 11),
+    ("pytest", ".venv/bin/python3 -m pytest -qq tests/stories/core/modules/processes/reader_draft.py", 11),
+    ("pytest", ".venv/bin/python3 -m pytest -v tests/stories/core/modules/processes/reader_draft.py", 11),
+    ("pytest", ".venv/bin/python3 -m pytest -q tests/stories/core/modules/processes/reader_draft.py tests/stories/core/base/repeated_calls.py", 25),
     ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --configLoader runner --reporter=dot src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
     ("vitest", "src/viewer/node_modules/.bin/vitest run --root src/viewer --configLoader runner --silent=true src/viewer/tests/processMark.test.js --no-open --browser.enabled=false", 4),
 ])

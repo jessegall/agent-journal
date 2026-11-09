@@ -9,6 +9,7 @@ from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
+from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader import Reader
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -52,6 +53,14 @@ class WorkerTestListings(RunCounts):
             if reader is not None:
                 listings.append(TestListing(part.position, reader, part.command or part.text))
         return tuple(listings)
+
+    def reader_reason(self, process: Process, spec: PartSpec, reader: Reader | None, reason: str) -> str:
+        if spec.category is not CommandCategory.TEST_RUN or self.settings.number(WORKER_TEST_LIMIT) <= 0:
+            return ""
+        part = ProcessPart(process_id=process.id, position=0, text=spec.text, program=spec.program, command=spec.command, piped=spec.piped, category=spec.category)
+        if self.counting_reader(part, None, self.readers.all()) is not None:
+            return ""
+        return f"no reader counts the tests of {spec.command or spec.text}"
 
     def line(self, process: Process) -> str:
         return " && ".join(listing.line for listing in self.parts(process))

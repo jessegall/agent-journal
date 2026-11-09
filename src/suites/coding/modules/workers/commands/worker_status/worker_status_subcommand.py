@@ -21,13 +21,15 @@ from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from suites.coding.modules.workers.support.worker_status import WorkerStatus, WorkerStatusPhase
 from suites.coding.modules.workers.support.worker_status_page_json import WorkerStatusPageJson
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 
 
 class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
     cli_name = "worker"
     name = "status"
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, phases: WorkerPhases, resume: WorkerResume) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, unread_skills: UnreadSkills, files: SkillFiles, phases: WorkerPhases, resume: WorkerResume, guidance: WorkerGuidance) -> None:
+        self.guidance = guidance
         self.queries, self.worktrees, self.proofs = queries, worktrees, proofs
         self.unread_skills, self.files, self.phases, self.resume = unread_skills, files, phases, resume
 
@@ -50,7 +52,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         worker = self.queries.query(Agent).find(worker_id)
         skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
         current_task = self.queries.query(Task).find(worktree.task_id)
-        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.task_phase(current_task, worker_id), worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None)
+        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.task_phase(current_task, worker_id), worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, self.guidance.point(worker_id))
 
     def task_phase(self, task: Task, worker_id: int) -> WorkerStatusPhase | None:
         phase = self.phases.phase(task)
@@ -61,7 +63,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
             super().write_output(value, output)
             return
         phase_lines = () if value.phase is None else (f"Current phase: phase {value.phase.phase.id} ({value.phase.phase.title})", f"Tasks waiting for its end: {value.phase.tasks_waiting}")
-        lines = [f"Worker: {value.worker_id}", f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}", *phase_lines,
+        lines = [value.point.line, f"Point: {value.point.step}", f"Tasks left in the group: {value.point.open_task_count}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_id}", f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}", *phase_lines,
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),
                  f"Skills to load: {len(value.skills)}", *(f"  {skill}" for skill in value.skills)]
@@ -71,7 +73,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
                 lines.append(f"Wait, or journal worker release {value.worker_id}")
         if not value.tests.is_last or not value.assignments.is_last:
             lines.append(f"--page {value.assignments.number + 1} for the next page")
-        data: dict[str, object] = {"worker_id": value.worker_id, "current_task": output.values(value.current_task),
+        data: dict[str, object] = {"step": value.point.step, "guidance": value.point.line, "group": value.point.group, "open_task_count": value.point.open_task_count, "test_runs_available": value.point.test_runs_available, "worker_id": value.worker_id, "current_task": output.values(value.current_task),
                                    "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
                                    "phase": value.phase.listed() if value.phase is not None else None,
                                    "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None}

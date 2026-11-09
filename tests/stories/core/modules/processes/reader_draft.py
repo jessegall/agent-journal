@@ -57,15 +57,6 @@ def test_a_worker_can_save_its_own_draft(draft_sample):
     story.expect_rows(not story.container.get(ReaderRequestQuery).has_active_requests(reader_worker(story).id, story.clock.timestamp()))
 
 
-def test_a_build_draft_reads_a_running_sample_without_a_count(new_story):
-    story = new_story(fixture=ForcedReaders)
-    process = worker_run(story, "custom-build run")
-    story.container.get(OutputFolder).write_output(process.id, 1, "compiling\n" * 10 + "done\n")
-    request = story.container.get(ReaderRequestQuery).open().page(1, 1).rows[0]
-    story.expect_text(f"reader draft {request.id} --save", "saved reader custom-build-reader", "summary: done", actor=story.agent)
-    story.expect_rows(story.container.get(ReaderRequestQuery).find(request.id).completed_at is not None)
-
-
 def test_candidates_fill_an_unrecognized_test_output(draft_sample):
     story, request = draft_sample
     story.container.get(OutputFolder).write_output(request.sample_process_id, 1, "starting\n" * 10 + "3/3\nTests: 3 passed\n")

@@ -6,6 +6,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.commands.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -26,7 +27,8 @@ class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
         WorkerCommandRequest.arguments(parser)
         differences_flag(parser)
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, guidance: WorkerGuidance) -> None:
+        self.guidance = guidance
         self.requests = requests
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
@@ -44,6 +46,6 @@ class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
         if not isinstance(value, Task):
             return
         if value.state is TaskState.TESTING and self.phases.is_grouped(value):
-            output.line(f"the tests of {self.phases.test_label(value)} are queued: stop now, you hear when they end")
+            output.line(self.guidance.line(value.delegated_to))
             return
         output.row(value)

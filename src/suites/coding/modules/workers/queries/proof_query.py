@@ -24,6 +24,9 @@ class ProofQuery(Query[Proof]):
         return self.kept.read(self.table.name, self.worktree_proofs(worktree_id).matching(Among("state", TEST_WAITING_STATES)).exists,
                               f"worktree_id = ? AND state IN ({', '.join('?' for _ in TEST_WAITING_STATES)})", [worktree_id, *TEST_WAITING_STATES], name="workers.tests_waiting")
 
+    def has_short_proof(self, worktree_id: int) -> bool:
+        return self.kept.read(self.table.name, self.worktree_proofs(worktree_id).filter(state=ProofState.SHORT).exists, "worktree_id = ? AND state = ?", [worktree_id, ProofState.SHORT], name="workers.short_proof")
+
     def untested_proofs(self, worktree_id: int) -> Self:
         return self.waiting_proofs(worktree_id).filter(test_command="")
 

@@ -184,14 +184,6 @@ def test_each_step_of_a_request_is_on_the_task_log(allowed):
     allowed.story.expect_text("task inspect 1 --json", TEST_LINE, REASON, "allowed the run of request 1", "ran request 1", actor=allowed.story.agent)
 
 
-def test_an_allowed_saved_run_with_no_read_flag_is_refused_and_keeps_its_permission(allowed):
-    allowed.save_test_alias()
-    expect_reply_refusal(allowed.run_saved_test(read_flag=""), "--tail")
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "allowed"))
-    allowed.run_saved_test()
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "used"))
-
-
 def test_an_allowed_request_runs_once_as_pytest_as_python_dash_m_and_as_its_saved_command(alias_saved):
     module_form = f"python3 -m {TEST_LINE}"
     alias_form = (f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"]))

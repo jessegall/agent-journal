@@ -11,6 +11,7 @@ from suites.coding.modules.workers.commands.start_next_worker_task.start_next_wo
 from suites.coding.modules.workers.support.delivery_differences import differences_flag, required_differences
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.commands.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
 
@@ -24,7 +25,8 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
     name = "next"
     outward = True
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, next_task: WorkerNextTask) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, next_task: WorkerNextTask, guidance: WorkerGuidance) -> None:
+        self.guidance = guidance
         self.requests, self.next_task = requests, next_task
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
@@ -44,7 +46,6 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
         if WorkerCommandRequest.write_output(value, output):
             return
         if isinstance(value, Task) and value.state is TaskState.STARTED:
-            output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}")
+            output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}\n{self.guidance.line(value.delegated_to)}")
         elif isinstance(value, Task):
-            queued = self.phases.test_label(value)
-            output.line(f"the tests of {queued} are queued: stop now, your next task reaches you when they pass")
+            output.line(self.guidance.line(value.delegated_to))

@@ -103,7 +103,7 @@ def proved_without_test(excludes_plan):
 
 def test_outside_a_plan_worker_next_queues_the_tests_of_that_task(proved_with_test):
     excludes_plan = proved_with_test
-    excludes_plan.story.expect_text("worker next --wait --differences none", "the tests of task 1 are queued", actor=excludes_plan.worker)
+    excludes_plan.story.expect_text("worker next --wait --differences none", "tests of task 1 are queued", actor=excludes_plan.worker)
     excludes_plan.story.expect_rows(len(excludes_plan.started) == 1)
 
 
