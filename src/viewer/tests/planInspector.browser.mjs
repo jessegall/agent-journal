@@ -60,8 +60,8 @@ async function check(width, height) {
     const plan = await open(page, "plans", 1);
     await checkActions(plan);
     assert.deepEqual(await layout(plan), taskLayout);
-    assert.equal(await plan.locator("[data-resource-task]").count(), 6);
-    for (let id = 1; id <= 6; id++) assert.deepEqual(await icon(plan.locator("[data-resource-task] .ring").nth(id - 1)), statuses[id - 1]);
+    assert.equal(await plan.locator(".task[data-row]").count(), 6);
+    for (let id = 1; id <= 6; id++) assert.deepEqual(await icon(plan.locator(".task[data-row] .ring").nth(id - 1)), statuses[id - 1]);
     assert.equal(await plan.locator("[data-resource-phase]").evaluate((element) => getComputedStyle(element).borderRadius), "0px");
     assert.ok(await plan.evaluate((element) => element.scrollWidth <= element.clientWidth));
     await screenshots(page, "plan", width);
@@ -83,7 +83,7 @@ async function check(width, height) {
     assert.equal(await plan.locator("[data-plan-event].completed .ring.done").count(), 1);
     assert.equal(await plan.locator("[data-plan-event].cancelled .ring.done").count(), 1);
     await plan.getByRole("radio", {name: "Details", exact: true}).click();
-    await plan.locator("[data-resource-task]").first().click();
+    await plan.locator(".task[data-row]").first().click();
     await page.locator("[data-task-inspector] [data-resource-title]").waitFor();
     await page.close();
 }

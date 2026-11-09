@@ -1,4 +1,4 @@
-from core.modules.tasks.models.support.views import TASK_HELPER_MATCH
+from core.modules.tasks.models.support.views import AUTOMATIC_TASK_WAIT, TASK_HELPER_MATCH, TASK_TAGS_SELECT, USER_TASK_WAIT
 
 PLAN_TASKS_SELECT = (
     "SELECT phase_tasks.task_id, phases.plan_id, phase_tasks.phase_id, phases.position AS phase_position, phases.checkpoint,"
@@ -45,6 +45,10 @@ PLAN_EVENT_ROWS_SELECT = (
 
 PLAN_OUTLINE_TASKS_SELECT = (
     "SELECT plan_tasks.task_id, plan_tasks.plan_id, plan_tasks.phase_id, plan_tasks.phase_position, plan_tasks.priority, plan_tasks.state, tasks.title,"
+    " tasks.complexity, tasks.reason, tasks.delegated_to,"
+    f" {TASK_TAGS_SELECT}"
+    f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic,"
+    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS delegated_is_main,"
     " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"

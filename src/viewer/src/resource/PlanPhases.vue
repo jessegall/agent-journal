@@ -1,11 +1,9 @@
 <script setup>
-import TaskStatusIcon from "../tasks/TaskStatusIcon.vue";
 import Icon from "../kit/Icon.vue";
 import PlanPhaseAgents from "./PlanPhaseAgents.vue";
 
 const CLOSED = new Set(["completed", "cancelled"]);
 defineProps({phases: {type: Array, required: true}, currentPhase: {type: Number, required: true}});
-const emit = defineEmits(["select"]);
 const closedCount = (phase) => phase.tasks.filter((task) => CLOSED.has(task.state)).length;
 const isDone = (phase) => phase.tasks.length > 0 && closedCount(phase) === phase.tasks.length;
 </script>
@@ -29,20 +27,7 @@ const isDone = (phase) => phase.tasks.length > 0 && closedCount(phase) === phase
                 </template>
                 <PlanPhaseAgents :tasks="phase.tasks" />
                 <template v-for="task in phase.tasks" :key="task.id">
-                    <button type="button" :class="['row', task.state]" data-resource-task @click="emit('select', task.id)">
-                        <TaskStatusIcon :status="task.state" />
-                        <span class="row-id">#{{ task.id }}</span>
-                        <span class="row-title">{{ task.title }}</span>
-                        <template v-if="task.helper_id">
-                            <span
-                                class="holder"
-                                :title="task.state === 'open' ? `Queued for ${task.helper_name}` : `Held by ${task.helper_name}`"
-                                data-plan-agent
-                            >
-                                {{ task.helper_name }}
-                            </span>
-                        </template>
-                    </button>
+                    <slot name="task" :task="task" />
                 </template>
             </li>
         </template>
@@ -50,21 +35,6 @@ const isDone = (phase) => phase.tasks.length > 0 && closedCount(phase) === phase
 </template>
 
 <style scoped>
-.holder {
-    min-width: 0;
-    max-width: 35%;
-    margin-left: auto;
-    padding: 0 7px;
-    border-radius: 99px;
-    background: var(--hover);
-    color: var(--text-3);
-    font-size: 11px;
-    line-height: 18px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .phases {
     margin: 0;
     padding: 0;
@@ -125,44 +95,5 @@ const isDone = (phase) => phase.tasks.length > 0 && closedCount(phase) === phase
     margin: 2px 0 6px 24px;
     color: var(--text-3);
     font-size: 12.5px;
-}
-
-.row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    width: 100%;
-    padding: 4px 6px 4px 24px;
-    border: 0;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.row:hover {
-    color: var(--text);
-}
-
-.row.completed .row-title,
-.row.cancelled .row-title {
-    color: var(--text-3);
-}
-
-.row.cancelled .row-title {
-    text-decoration: line-through;
-}
-
-.row-id {
-    flex: none;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.row-title {
-    min-width: 0;
-    overflow-wrap: anywhere;
 }
 </style>
