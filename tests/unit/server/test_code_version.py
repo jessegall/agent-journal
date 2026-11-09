@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from core.base.module.code_fingerprint import CodeFingerprint
+from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE, CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.source_hash import SourceHash
 from server.code_version import CodeVersion
@@ -45,6 +45,7 @@ def test_a_change_is_seen_only_after_the_recheck_time(tmp_path):
 
 def test_a_servers_requests_read_what_the_ticker_found(monkeypatch):
     fingerprint = CodeFingerprint()
+    monkeypatch.delenv(PINNED_CODE_VARIABLE, raising=False)
     monkeypatch.setattr(CodeFingerprint, "ticked", True)
     monkeypatch.setattr(CodeFingerprint, "kept_texts", {})
     first = fingerprint.text([])
