@@ -1,3 +1,4 @@
+from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from pathlib import Path
 
 from core.base.helper_type_book import HelperTypeBook
@@ -37,7 +38,7 @@ class WorkerCommand:
         brief = (f"You are worker {worker.id}.\n{profile.body}\n\nYour task is {task.id}, {task.title}.\n{task.brief}\n{job}\n"
                  f"Load these skills before your first write:\n{reads}\n"
                  f"Run journal overview, then journal task overview {worktree.task_id} before changing project files. Load the architectural skills required by the files you change in {skills}.\n"
-                 f"Run only tests of the code you change, never the whole test suite.\n"
+                 f"{WORKER_TEST_RULE}\n"
                  f"Decide what you can yourself. A question goes in your report to the main agent, never to the user.\n{WORK_STEPS}")
         return self.launched(worker, worktree, environment, SessionStart(worker.session), brief)
 

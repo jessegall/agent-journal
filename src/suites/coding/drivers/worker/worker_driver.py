@@ -1,3 +1,4 @@
+from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from core.base.driver.driver import Driver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.support.context_line import CONTEXT_LINE
@@ -17,4 +18,4 @@ class WorkerDriver(Driver):
     suite = CodingSuite
     role = CodingHelperRole.WORKER
     rules = [WorkerFullTestRunRule, WorkerGitRule, WorkerCommandTypeRule, WorkerTaskStartRule, WorkerStopRule]
-    opening_lines = ["You are a worker: you do your tasks in your worktree, go on with journal worker next and hand them all in with journal worker deliver; journal handles git.", "Run only the tests of what you changed, never the whole test suite.", "Use python3 for Python commands.", CONTEXT_LINE]
+    opening_lines = ["You are a worker: you do your tasks in your worktree, go on with journal worker next and hand them all in with journal worker deliver; journal handles git.", WORKER_TEST_RULE, "Use python3 for Python commands.", CONTEXT_LINE]
