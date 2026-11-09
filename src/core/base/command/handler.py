@@ -23,6 +23,10 @@ class Handler(Generic[C, R]):
     def prepare(self, command: C, actor: Actor) -> None:
         return None
 
+    @property
+    def has_prepare_step(self) -> bool:
+        return type(self).prepare is not Handler[Command[object], object].prepare
+
     def handle(self, command: C, context: Context) -> R:
         raise NotImplementedError(f"{type(self).__name__} carries out nothing")
 

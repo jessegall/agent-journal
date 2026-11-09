@@ -80,7 +80,7 @@ class Bus:
             return self.run(command, context.actor, context.skipped_guards, cause_id=context.cause_id,
                             environment_id=context.environment_id, plugin_script=context.external_runs.plugin_script, approval_id=context.approval_id)
         handler = self.handler(command)
-        if type(handler).prepare is not Handler.prepare and not handler.caller_prepares:
+        if handler.has_prepare_step and not handler.caller_prepares:
             if self.database.has_transaction:
                 raise TransactionError(f"{command.label()} has a prepare step, which a dispatch skips: run it instead")
             handler.prepare(command, context.actor)

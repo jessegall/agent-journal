@@ -89,7 +89,7 @@ class EventLog:
     def data(self, change: Change[Model]) -> dict[str, list[object]]:
         names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in BOOKKEEPING_FIELDS)
         hidden = type(change.row).hidden_fields
-        data = {name: [HIDDEN, HIDDEN] if name in hidden else [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))]
+        data: dict[str, list[object]] = {name: [HIDDEN, HIDDEN] if name in hidden else [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))]
                 for name in names}
         if change.old_row is None and not change.event.endswith(CREATION):
             data["id"] = [None, change.row.id]
