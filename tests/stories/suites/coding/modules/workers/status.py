@@ -66,6 +66,7 @@ def test_the_main_agent_reads_a_workers_status_in_pages(worker_batch):
 def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypatch):
     story, repository, worker = worker_batch
     monkeypatch.setattr(WorkerTestLaunch, "start", lambda *_arguments: None)
+    monkeypatch.setattr(WorkerTestLaunch, "start_waited", lambda *_arguments: None)
     story.expect_success("setting make journal.core.processes.run-batch-size 0 --environment main")
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart story" --test "python tests/cart.py"', actor=worker)

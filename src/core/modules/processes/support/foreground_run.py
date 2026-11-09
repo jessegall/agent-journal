@@ -29,3 +29,4 @@ class ForegroundRun:
     read_flags: tuple[str, ...] = ()
     queue_wait_seconds: int = 5
     timeout_durations: tuple[str, ...] = ()
+    counted_queue: bool = False

@@ -169,6 +169,8 @@ class Console:
             subcommand.write_output(value, output)
         self.note_overview(subcommand, arguments, caller)
         self.run_commit_listeners(argv)
+        with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
+            subcommand.after_listeners(value, output)
         return SUCCESS_CODE
 
     def check_overview(self, subcommand: Subcommand | ReadSubcommand, arguments: Namespace, caller: Caller) -> None:

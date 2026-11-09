@@ -16,7 +16,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
 
-REAL_WORKER_TEST_START = WorkerTestLaunch.start
+REAL_WORKER_TEST_START_WAITED = WorkerTestLaunch.start_waited
 PYTHON = "--test-command python=pytest"
 VITE = '--test-command "vite=npx vitest run"'
 COMMANDS_DISPATCH = f"worker dispatch --model sonnet 1 {PYTHON} {VITE}"
@@ -46,7 +46,7 @@ def worker_with_commands(task_story, monkeypatch):
 def runner_starts(worker_with_commands, monkeypatch):
     """Every start of the real runner, by the real launch that a dispatched story worker otherwise has faked."""
     starts = []
-    monkeypatch.setattr(WorkerTestLaunch, "start", REAL_WORKER_TEST_START)
+    monkeypatch.setattr(WorkerTestLaunch, "start_waited", REAL_WORKER_TEST_START_WAITED)
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr(subprocess, "Popen", lambda command, **options: starts.append((command, options)))
     return starts
@@ -81,12 +81,11 @@ def test_a_named_test_run_starts_through_the_runner_in_the_worktree_once_it_is_s
     process = worker_runs(worker_with_commands)[-1]
     command, options = runner_starts[0]
     expect_value_with(command, f"--process {process.id}")
-    expect_value_with(command, "--background")
     expect_value_with(command, "pytest tests/cart.py")
     expect_value(options["cwd"], str(worker_with_commands.repository.worktree_folder(worker_with_commands.worker.id)))
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: False)
     with pytest.raises(MissingRunnerError, match="not installed"):
-        worker_with_commands.story.container.get(WorkerTestLaunch).start(process, "pytest tests/cart.py", "s-1")
+        worker_with_commands.story.container.get(WorkerTestLaunch).start_waited(process, "pytest tests/cart.py", "s-1")
 
 
 def test_a_named_test_run_with_a_counting_reader_starts_with_its_count(worker_with_commands, runner_starts):

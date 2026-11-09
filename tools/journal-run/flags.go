@@ -37,6 +37,8 @@ const mostOutputVariable = "JOURNAL_RUN_MOST_OUTPUT"
 
 const queueWaitVariable = "JOURNAL_RUN_QUEUE_WAIT"
 
+const countedQueueVariable = "JOURNAL_RUN_COUNTED_QUEUE"
+
 const readFoldersVariable = "JOURNAL_RUN_READ_FOLDERS"
 
 // readFolders reads the folders of the project a worker's line may read, and clears them.
@@ -44,6 +46,13 @@ func readFolders() []string {
 	folders := filepath.SplitList(os.Getenv(readFoldersVariable))
 	_ = os.Unsetenv(readFoldersVariable)
 	return folders
+}
+
+// countedQueue says the foreground limit counts from the start of the line, the time in the queue included.
+func countedQueue() bool {
+	value := os.Getenv(countedQueueVariable)
+	_ = os.Unsetenv(countedQueueVariable)
+	return value == "1"
 }
 
 func queueWait() time.Duration {

@@ -29,6 +29,8 @@ PHASE_TESTS_ENABLED = f"{MODULE_KEY}.test-at-phase-end"
 TEST_BATCH_SIZE = f"{MODULE_KEY}.test-batch-size"
 WORKER_PHASE_TEST_RUNS = f"{MODULE_KEY}.worker-phase-test-runs"
 WORKER_TEST_LIMIT = f"{MODULE_KEY}.worker-run-most-tests"
+WORKER_RUN_WAIT = f"{MODULE_KEY}.worker-run-wait-seconds"
+MOST_RUN_WAIT_SECONDS = 100
 MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
 MERGER_WAIT_MINUTES = f"{MODULE_KEY}.merger-wait-minutes"
 MERGER_COMMANDS = f"{MODULE_KEY}.merger-commands"
@@ -51,6 +53,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True),
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default="", person_set=True),
     SettingValue("worker-run-most-tests", "Test limit per worker command", "A worker command running more tests than this is refused or stopped. 0 means no limit. Journal runs do not count.", SettingType.NUMBER, default=25, person_set=True),
+    SettingValue("worker-run-wait-seconds", "Seconds a helper waits for a test run", "Seconds a helper waits for a test or build, queued or running, before it gets the output number. At 0 none.", SettingType.NUMBER, default=30, person_set=True),
     SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING]),
@@ -88,6 +91,7 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         TEST_BATCH_SIZE: NumberRule(1),
                         WORKER_PHASE_TEST_RUNS: NumberRule(0),
                         WORKER_TEST_LIMIT: NumberRule(0),
+                        WORKER_RUN_WAIT: NumberRule(0, maximum=MOST_RUN_WAIT_SECONDS),
                         DELIVERY_FAILURE_LIMIT: NumberRule(1),
                         WORKER_RUN_FAILURE_LIMIT: NumberRule(1),
                         MERGER_WAIT_MINUTES: NumberRule(1),
