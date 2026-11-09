@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import os
 import select
+import shutil
 import signal
 from datetime import timedelta
 
@@ -441,4 +442,44 @@ def test_a_service_that_cannot_start_does_not_stop_the_round_and_is_told_once(ne
         story.expect_text("plugin list", "keeps failing to run: it could not start", actor=story.user)
         story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
     finally:
+        story.processes.close()
+
+
+def changed_plugin_files(story) -> None:
+    code = story.container.get(PluginFolders).code("served")
+    (code / "journal-plugin.json").write_text((code / "journal-plugin.json").read_text() + "\n")
+    upgraded = PluginDigest.digest(code, PluginManifest.read(code))
+    story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = ?, version = version + 1 WHERE name = 'served'", [upgraded]))
+
+
+def test_a_restart_with_a_changed_plugin_leaves_one_service_running(new_story):
+    story = served_story(new_story)
+    leftover = story.processes.running[("served", "answers")]
+    changed_plugin_files(story)
+    after_restart = ServiceProcesses()
+    try:
+        story.services.follow(after_restart)
+        current = after_restart.running[("served", "answers")]
+        story.expect_rows(current.running(), current.pid != leftover.pid, not is_running(leftover.pid))
+    finally:
+        after_restart.close()
+        story.processes.close()
+
+
+def test_a_restart_with_the_plugin_folder_replaced_leaves_one_service_running(new_story):
+    story = served_story(new_story)
+    leftover = story.processes.running[("served", "answers")]
+    code = story.container.get(PluginFolders).code("served")
+    replaced = code.with_name(f"{code.name}.old")
+    shutil.copytree(code, replaced)
+    shutil.rmtree(code)
+    shutil.copytree(replaced, code)
+    changed_plugin_files(story)
+    after_restart = ServiceProcesses()
+    try:
+        story.services.follow(after_restart)
+        current = after_restart.running[("served", "answers")]
+        story.expect_rows(current.running(), current.pid != leftover.pid, not is_running(leftover.pid))
+    finally:
+        after_restart.close()
         story.processes.close()
