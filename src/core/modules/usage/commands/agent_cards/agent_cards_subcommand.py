@@ -48,7 +48,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         parser.add_argument("--options", action="store_true")
         parser.add_argument("--id", type=int, default=None)
         parser.add_argument("--include-main", action="store_true")
-        parser.add_argument("--kept", action="store_true")
+        parser.add_argument("--reusable", action="store_true")
         parser.add_argument("--role", action="append", default=[])
         parser.add_argument("--profile", action="append", default=[])
         parser.add_argument("--program", action="append", default=[])
@@ -73,7 +73,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
         activity = self.activity.current()
         rows = self.queries.query(AgentListing)
-        if arguments.kept:
+        if arguments.reusable:
             rows = rows.matching(IsNull("retired_at"))
         if arguments.id is not None:
             rows = rows.filter(id=arguments.id)

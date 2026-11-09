@@ -56,7 +56,7 @@ class StartMergerHandler(Handler[StartMerger, None]):
     def assign_job(self, actor: Actor, context: Context) -> None:
         kept = self.queries.query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
         if kept is not None and kept.ended_at is not None and not self.fits_profile(kept):
-            raise Refusal(f"the kept merger agent:{kept.id} runs {kept.program} {kept.program_model}, which its profile no longer names",
+            raise Refusal(f"the merger agent:{kept.id} runs {kept.program} {kept.program_model}, which its profile no longer lists",
                           f"retire it with journal agent retire {kept.id} --reason \"<why>\", or restore the profile")
         if kept is None:
             self.bus.run(StartHelper(MERGER_PROFILE, MERGER_JOB), actor, environment_id=context.environment_id)

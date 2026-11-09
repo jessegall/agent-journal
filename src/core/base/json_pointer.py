@@ -29,7 +29,7 @@ class JsonPointer:
         elif is_list(place) and last.isdigit() and int(last) < len(place):
             place[int(last)] = value
         else:
-            raise Refusal(f"{pointer} names no place in the document", "name an object key or a list position that is there")
+            raise Refusal(f"{pointer} is no place in the document", "name an object key or a list position that is there")
         return changed
 
     @staticmethod
@@ -38,7 +38,7 @@ class JsonPointer:
             return place[part]
         if is_list(place) and part.isdigit() and int(part) < len(place):
             return place[int(part)]
-        raise Refusal(f"{pointer} names no place in the document", "name an object key or a list position that is there")
+        raise Refusal(f"{pointer} is no place in the document", "name an object key or a list position that is there")
 
     @staticmethod
     def differences(old: object, new: object, pointer: str = "") -> list[str]:

@@ -1,7 +1,7 @@
 from core.base.agent_role_reader import AgentRoleReader
 from core.modules.agents.support.agent_role_rows import AgentRoleRows
 from core.modules.agents.migrations.m015_kept_agents_index import KeptAgentsIndexMigration
-from core.modules.agents.migrations.m016_agent_usage_limit import AgentUsageLimitMigration
+from core.modules.agents.migrations.m016_agent_usage_limit import AgentUsageCapMigration
 from core.modules.agents.migrations.m017_agent_interrupt import AgentInterruptMigration
 from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt_handler import RecordAgentInterruptHandler
 from core.modules.agents.commands.record_agent_interrupt.record_agent_interrupt_subcommand import RecordAgentInterruptSubcommand
@@ -123,7 +123,7 @@ class AgentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, query=AgentQuery, excluded_subcommands=["make"]), ModelDeclaration(MenuAnswer, excluded_subcommands=["make", "edit", "delete"])]
     moves = [AgentsMove]
-    migrations = [PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageLimitMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
+    migrations = [PlainColumnNamesMigration, AgentInterruptMigration, AgentUsageCapMigration, KeptAgentsIndexMigration, AgentRetirementMigration, AgentLaunchNameMigration, HelperRowsMigration, MenuAnswerSessionMigration, AgentAccessMigration, AgentParentIndexMigration, AgentEndNameMigration, AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration, MenuAnswersMigration, AgentIdentityMigration, AgentRoleIndexMigration, OpenAgentIndexMigration]
     nudges = [AGENT_START_FAILED, *REPORT_NUDGES]
     guards = [AgentNameGuard, RetiredRowGuard, RetiredDeleteGuard]
     handlers = [ReplaceAgentSessionHandler, WarnInstructionImportsHandler, RemoveInstructionImportHandler, RecordAgentInterruptHandler, SetAgentUsageLimitHandler, RetireAgentHandler, EndReplacedMainHandler, RecordAgentLaunchFailureHandler, RecordAgentProcessHandler, StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, RecordMenuAnswerHandler, ManageProgramHandler, RestoreHooksHandler]

@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class PrivateDataMarksMigration(Migration):
+class PrivateDataFlagsMigration(Migration):
     """Creates the record of each place the private data scan found."""
 
     number = 2

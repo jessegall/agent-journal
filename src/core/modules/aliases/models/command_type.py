@@ -22,6 +22,6 @@ class CommandType(Model):
 
     def __post_init__(self) -> None:
         if not shlex.split(self.prefix_parts):
-            raise Refusal("a command type names the command's leading words", "name its program and first arguments")
+            raise Refusal("a command type is the command's leading words", "name its program and first arguments")
         if self.category in UNCHOOSABLE:
             raise Refusal(f"a command is not classified as {self.category.value}", "choose the type it is, such as test run, build or check")

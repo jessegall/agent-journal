@@ -8,7 +8,7 @@ const idle = {id: 42, role: "worker", state: "idle", program: "claude", created_
 afterEach(() => { document.body.innerHTML = ""; });
 async function counts({readOnly = false} = {}) {
     const row = structuredClone(worker);
-    const held = context({"agent limits": page([row]), "agent cards --show all --kept --role worker --page 1": page([idle])});
+    const held = context({"agent limits": page([row]), "agent cards --show all --reusable --role worker --page 1": page([idle])});
     held.readOnly = readOnly;
     held.run = vi.fn(async (command) => {
         if (command[0] === "setting") row.run_limit = Number(command[3]);

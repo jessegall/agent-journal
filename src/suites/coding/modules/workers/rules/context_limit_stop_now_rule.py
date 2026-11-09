@@ -13,7 +13,7 @@ from suites.coding.support.context_limit_check import ContextLimitCheck
 from suites.coding.modules.workers.rules.context_limit_rule import RETRY_SECONDS
 
 
-class ContextLimitStopNowRule(DriverRule):
+class ContextStopNowRule(DriverRule):
     """An agent whose context has reached the token limit and that holds no task, or a worker just handed its next
     task, is told to stop, so that its stop compacts it."""
 

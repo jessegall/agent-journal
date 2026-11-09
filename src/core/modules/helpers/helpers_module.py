@@ -3,7 +3,7 @@ from core.modules.helpers.commands.cold_sessions.cold_sessions_subcommand import
 from core.modules.helpers.commands.make_provider_outage.make_provider_outage_handler import MakeProviderOutageHandler
 from core.modules.helpers.commands.send_program_fault.send_program_fault_handler import SendProgramFaultHandler
 from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMixSubcommand
-from core.modules.helpers.migrations.m001_helper_limit_key import HelperLimitKeyMigration
+from core.modules.helpers.migrations.m001_helper_limit_key import HelperCapKeyMigration
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
 from core.base.module.module import Module
@@ -43,7 +43,7 @@ from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.modules.helpers.migrations.m006_usage_limits import UsageLimitsMigration
 from core.modules.helpers.migrations.m007_read_only_helper_setting_keys import HelperSettingKeysMigration
 from core.modules.helpers.models.usage_limit import UsageLimit
-from core.modules.helpers.guards.usage_limit_guard import UsageLimitGuard
+from core.modules.helpers.guards.usage_limit_guard import UsageCapGuard
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_handler import SetUsageLimitHandler
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_subcommand import SetUsageLimitSubcommand
 from core.modules.helpers.commands.refresh_hourly_limits.refresh_hourly_limits_handler import RefreshHourlyLimitsHandler
@@ -65,12 +65,12 @@ class HelpersModule(Module):
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperLimitKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
+    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
     models = [ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills"]
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
-    guards = [UsageLimitGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
+    guards = [UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
     handlers = [SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits"), TickHandler(TickInterval(seconds=3), UsageLimitMarker(), "usage limit marks")]
     nudges = HELPER_NUDGES

@@ -119,7 +119,7 @@ class CodingModule(Module):
                                  events=["setting.*", "agent.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"]),
-                                       WindowKey("count-agents", "agent cards --show all --kept", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
+                                       WindowKey("count-agents", "agent cards --show all --reusable", arguments=["role", "profile", "page"], loading=KeyLoading.REQUESTED, events=["agent.*"])]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, skeleton=CODING_FILE_FEED_SKELETON, search=WindowSearch(FileEditSearcher, "Filter files"), icon=WindowIcon.FILE, shows=WindowShows.SELECTED_AGENT, auto_scroll=AutoScroll.BOTTOM, reads=[*FILE_EDIT_READS, "file-edit file", "window setting"],
                                  events=["file_edit.create"],
                                  keys=[WindowKey("edits", "file-edit list", events=["file_edit.create"], arguments=["agent", "limit", "before-id", "after-id"], page_size=50),

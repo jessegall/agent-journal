@@ -40,5 +40,5 @@ class OpenWaitHandler(Handler[OpenWait, Wait]):
             raise Refusal(f"{word} is not a kind of row a wait can end on", f"write a target as word:id with one of these words: {', '.join(self.targets.registered_names())}")
         ended = self.targets.ended_row(model, int(row_id))
         if ended is not None:
-            raise Refusal(self.targets.result(ended, target), "there is nothing to wait for: it is done, so use what it says")
+            raise Refusal(self.targets.result(ended, target), "there is nothing to wait for: it is done, so use its result")
         return self.targets.table(model), int(row_id)

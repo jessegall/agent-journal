@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class ConfirmedRefusalSkipsMigration(Migration):
+class ConfirmedSkipsMigration(Migration):
     """Adds the answer to a held skip: when the agent confirmed it and what it tried instead, or when it withdrew it.
     Skips from before count as confirmed."""
 

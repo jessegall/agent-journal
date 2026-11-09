@@ -30,7 +30,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
         justification = (command.justification or command.approval.justification).strip()
         if not justification:
-            raise Refusal("an approval needs a reason: the person is told it with the question", "add --reason \"<why this is asked>\" to the line")
+            raise Refusal("an approval needs a reason: the person sees it with the question", "add --reason \"<why this is asked>\" to the line")
         requester_id = command.requester_id if command.requester_id is not None else context.actor.id
         if not self.actors.is_agent(requester_id):
             main = MainAgentFinder.newest(self.queries)

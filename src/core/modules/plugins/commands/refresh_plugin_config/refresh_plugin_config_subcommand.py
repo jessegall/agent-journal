@@ -41,7 +41,7 @@ class RefreshPluginConfigSubcommand(Subcommand[RefreshPluginConfig, Plugin]):
     def change(self, change: str) -> tuple[str, object]:
         pointer, separator, value = change.partition(POINTER_SEPARATOR)
         if not separator:
-            raise Refusal(f"{change} names no value", "write it as /path/to/key=<json value>")
+            raise Refusal(f"{change} has no value", "write it as /path/to/key=<json value>")
         return pointer, self.value(value)
 
     @staticmethod

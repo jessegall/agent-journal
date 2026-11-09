@@ -63,7 +63,7 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
     @staticmethod
     def origin(source: str, command: UpgradePlugin) -> str:
         if command.folder and not Path(command.folder).is_dir():
-            raise Refusal(f"{command.folder} is not a folder", "name the folder that holds the plugin")
+            raise Refusal(f"{command.folder} is not a folder", "name the folder of the plugin")
         return command.folder or source
 
     def replaced(self, manifest: PluginManifest, source: Path, code: Path) -> None:

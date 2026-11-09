@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class AgentUsageLimitMigration(Migration):
+class AgentUsageCapMigration(Migration):
     """Adds the moment an agent's program plan allowance starts again, while the agent waits at the
     allowance's limit."""
 

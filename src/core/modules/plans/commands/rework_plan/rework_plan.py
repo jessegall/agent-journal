@@ -5,6 +5,6 @@ from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 
 
 @dataclass(frozen=True)
-class ReworkPlan(MoveCommand[Plan]):
+class ReturnPlan(MoveCommand[Plan]):
     move = PlanLifecycle.rework
     reason: str

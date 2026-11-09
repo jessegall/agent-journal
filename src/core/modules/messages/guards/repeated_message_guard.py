@@ -26,7 +26,7 @@ class RepeatedMessageGuard(Guard[Created[Message]]):
             return
         repeated = self.repeats.repeated(message.creator_id, message.text, message.id)
         if repeated is not None:
-            raise Refusal(f"this says much the same as your message {repeated.id}", "leave it out, or send it anyway with a reason if it adds something new")
+            raise Refusal(f"this is much the same as your message {repeated.id}", "leave it out, or send it anyway with a reason if it adds something new")
 
     @staticmethod
     def ends_job(context: Context) -> bool:
