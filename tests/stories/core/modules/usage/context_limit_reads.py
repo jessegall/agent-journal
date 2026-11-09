@@ -18,8 +18,8 @@ def agent_row(story):
     return rows[0]
 
 
-def reported(story, limit_on, limit_tokens):
-    story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} {limit_on} --project", actor=story.user)
+def reported(story, limit_enabled, limit_tokens):
+    story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} {limit_enabled} --project", actor=story.user)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {limit_tokens} --project", actor=story.user)
     save_status_file(story, "s-1", {"context_window": {"used_percentage": WINDOW_PERCENT, "total_input_tokens": USED_TOKENS}})
     return agent_row(story)
@@ -30,9 +30,9 @@ def test_a_limit_that_comes_before_the_window_is_the_limit_the_usage_read_gives(
     expect_value((row["context_percent"], row["context_tokens"], row["context_limit_tokens"]), (62, USED_TOKENS, 400000))
 
 
-@pytest.mark.parametrize("limit_on, limit_tokens", [("false", 400000), ("true", 2000000)], ids=["limit off", "window smaller than the limit"])
-def test_with_no_limit_on_or_a_smaller_window_the_usage_read_gives_no_limit(new_story, limit_on, limit_tokens):
-    row = reported(new_story(fixture=UserJoined), limit_on, limit_tokens)
+@pytest.mark.parametrize("limit_enabled, limit_tokens", [("false", 400000), ("true", 2000000)], ids=["limit off", "window smaller than the limit"])
+def test_with_no_limit_on_or_a_smaller_window_the_usage_read_gives_no_limit(new_story, limit_enabled, limit_tokens):
+    row = reported(new_story(fixture=UserJoined), limit_enabled, limit_tokens)
     expect_value(row["context_limit_tokens"] is None, True)
     expect_value(row["context_tokens"], USED_TOKENS)
 
@@ -54,7 +54,7 @@ def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_nu
     original = JournalHome.status_file
     asked = []
 
-    def status_file_changing_after_it_is_asked_for(home, session):
+    def status_file_race(home, session):
         asked.append(session)
         found = original(home, session)
         if len(asked) > 1:
@@ -62,7 +62,7 @@ def test_a_status_file_that_changes_during_a_hook_is_read_once_and_gives_both_nu
             os.utime(found, ns=(modified, modified))
         return found
 
-    monkeypatch.setattr(JournalHome, "status_file", status_file_changing_after_it_is_asked_for)
+    monkeypatch.setattr(JournalHome, "status_file", status_file_race)
     with story.repeated_work.request():
         usage = story.container.get(ContextShare).usage("claude", "s-1")
     expect_value((usage.percent, usage.used_tokens), (WINDOW_PERCENT, USED_TOKENS))

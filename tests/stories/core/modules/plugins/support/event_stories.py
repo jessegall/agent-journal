@@ -22,7 +22,7 @@ from core.modules.tasks.models.task import Task
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
-from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from server.listener_thread import ListenerThread
 
@@ -54,7 +54,7 @@ EVENT_SCRIPTS = {
 class EventPluginStarted(StoryFixture):
     """A person, Ada, beside the builder, with task 1 open."""
 
-    parent = BuilderWithOpenTask
+    parent = OpenTaskBuilder
 
     def steps(self, story: Story) -> None:
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -66,7 +66,7 @@ class EventPluginStarted(StoryFixture):
 class EventWorkerStarted(StoryFixture):
     """A person, Ada, beside the orchestrator, with task 1 open."""
 
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -101,7 +101,7 @@ def script_calls(story: Story, script: str, plugin: str = "events") -> list[dict
     return [json.loads(line) for line in called.read_text().splitlines()] if called.is_file() else []
 
 
-def commands_as_in_a_server(story: Story) -> None:
+def server_commands(story: Story) -> None:
     story.container.get(Console).commit_listeners = ListenerWake(ListenerThread(lambda: None, lambda error: None))
 
 
@@ -176,7 +176,7 @@ class PluginPage:
         rows = cast(list[dict[str, object]], self.line("plugin", "list")["rows"])
         return next(row for row in rows if row["name"] == name)
 
-    def expect_on(self, name: str = "events") -> None:
+    def expect_target(self, name: str = "events") -> None:
         plugin = self.plugin(name)
         assert plugin["enabled"] is True, plugin
 

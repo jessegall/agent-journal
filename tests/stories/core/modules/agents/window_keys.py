@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.modules.usage.agent_rows import AgentsWithStates
+from tests.stories.core.modules.usage.agent_rows import StatesAgents
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
@@ -8,7 +8,7 @@ from tests.stories.server.window_data_route import window_data
 
 @pytest.fixture
 def agents_window(new_story):
-    story = new_story(fixture=AgentsWithStates)
+    story = new_story(fixture=StatesAgents)
     with server_story(story) as server:
         yield server, server.expect_viewer_login(server.viewer_key("Ada"))
 

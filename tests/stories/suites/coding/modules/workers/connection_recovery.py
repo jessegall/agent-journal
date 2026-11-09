@@ -23,7 +23,7 @@ from tests.stories.core.modules.processes.support.process_samples import start_p
 from tests.stories.core.support import story_lines as lines
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
+from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 
@@ -46,7 +46,7 @@ class RecoveryCase:
     launches: list[dict[str, object]] = field(default_factory=list)
     terminal_lines: list[tuple[int, str]] = field(default_factory=list)
     stopped: list[int] = field(default_factory=list)
-    on_launch: Callable[[], None] | None = None
+    launch_hook: Callable[[], None] | None = None
 
     def request(self, link, request, answer_bytes=0):
         if "typed" in request:
@@ -54,7 +54,7 @@ class RecoveryCase:
             return b"typed"
         if "command" in request:
             self.launches.append(request)
-            callback, self.on_launch = self.on_launch, None
+            callback, self.launch_hook = self.launch_hook, None
             if callback is not None:
                 callback()
         return b"started\n"
@@ -83,7 +83,7 @@ class RecoveryCase:
 def recovery(new_story, monkeypatch):
     from core.base.connection_probe import ConnectionProbe
 
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -148,7 +148,7 @@ def resumed_running_worker(running_recovery, request):
 def nested_recovery(recovery):
     recovery.story.expect_success(f"agent end {recovery.worker.id}", actor=recovery.worker)
     recovery.launches.clear()
-    recovery.on_launch = lambda: recovery.story.expect_success(
+    recovery.launch_hook = lambda: recovery.story.expect_success(
         f'worker send --wait {recovery.worker.id} "Continue the assigned task"', actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)
     recovery.tick()

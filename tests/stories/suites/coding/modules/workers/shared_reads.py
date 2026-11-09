@@ -6,7 +6,7 @@ from core.base.actor import Actor
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from suites.coding.modules.workers.bindings.worker_agent_work import WorkerAgentWork
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
     DELIVERY, dispatched_worker, repository_environment,
@@ -21,7 +21,7 @@ class WorkerReadsStory(NamedTuple):
 
 @pytest.fixture
 def pending_workers(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success('actor make user "Ada"')
     repository = repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 3 --environment main")

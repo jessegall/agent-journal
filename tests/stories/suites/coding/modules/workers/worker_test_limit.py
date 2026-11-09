@@ -19,7 +19,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -124,7 +124,7 @@ def test_stopping_from_the_output_tick_keeps_the_count_and_ends_the_output(limit
 
 
 def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")

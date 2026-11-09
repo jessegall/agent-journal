@@ -11,12 +11,12 @@ LAW = "The journal's law"
 OLD_BLOCK = "<!-- BEGIN: agent-journal, form 4 (auto-generated, run `journal setup`) -->\nold laws\n<!-- END: agent-journal, form 4 -->\n"
 
 
-def project_of(story):
+def read_project(story):
     return story.container.get(JournalHome).project_folder
 
 
 def journal_text(story):
-    return (project_of(story) / "JOURNAL.md").read_text()
+    return (read_project(story) / "JOURNAL.md").read_text()
 
 
 def plugin_with_text(story, name):
@@ -67,8 +67,8 @@ def test_injected_instructions_are_removed_when_deleted_without_disabling_first(
 
 def test_a_file_outside_the_plugin_is_not_taken_as_its_text(new_story):
     story = new_story(fixture=UserJoined)
-    outside = story.home.folder.parent / "outside.md"
-    outside.write_text("Text from outside the plugin.\n")
+    external = story.home.folder.parent / "outside.md"
+    external.write_text("Text from outside the plugin.\n")
     folder = event_plugin_folder(story.home.folder.parent, [], {}, injected_instructions=["../outside.md"])
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
     story.run_listeners()
@@ -80,7 +80,7 @@ def booted(story):
     story.run_listeners()
 
 
-class ListenersSettled(StoryFixture):
+class ListenersFinished(StoryFixture):
     parent = UserJoined
 
     def steps(self, story):
@@ -88,8 +88,8 @@ class ListenersSettled(StoryFixture):
 
 
 def test_each_official_file_gets_the_single_import_line_and_no_text(new_story):
-    story = new_story(fixture=ListenersSettled)
-    project = project_of(story)
+    story = new_story(fixture=ListenersFinished)
+    project = read_project(story)
     (project / "AGENTS.md").write_text(PROJECT_TEXT)
     (project / "CLAUDE.md").write_text(PROJECT_TEXT)
     booted(story)
@@ -100,8 +100,8 @@ def test_each_official_file_gets_the_single_import_line_and_no_text(new_story):
 
 
 def test_a_file_that_imports_the_other_official_file_gets_no_second_import(new_story):
-    story = new_story(fixture=ListenersSettled)
-    project = project_of(story)
+    story = new_story(fixture=ListenersFinished)
+    project = read_project(story)
     (project / "AGENTS.md").write_text(PROJECT_TEXT)
     (project / "CLAUDE.md").write_text("@AGENTS.md\n")
     booted(story)
@@ -110,8 +110,8 @@ def test_a_file_that_imports_the_other_official_file_gets_no_second_import(new_s
 
 
 def test_the_block_an_older_journal_wrote_into_an_official_file_goes(new_story):
-    story = new_story(fixture=ListenersSettled)
-    project = project_of(story)
+    story = new_story(fixture=ListenersFinished)
+    project = read_project(story)
     (project / "AGENTS.md").write_text(f"{PROJECT_TEXT}\n{OLD_BLOCK}\nOur own ending.\n")
     booted(story)
     expect_value((project / "AGENTS.md").read_text(), f"{PROJECT_TEXT}\nOur own ending.\n\n@JOURNAL.md\n")

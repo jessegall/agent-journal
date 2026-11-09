@@ -3,7 +3,7 @@ import pytest
 import json
 from pathlib import Path
 
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.server.support.server_client import expect_equal_answers, server_story
 
 HOOK_TESTDATA = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "testdata"
@@ -52,5 +52,5 @@ def test_a_recorded_stop_is_refused_the_same_raw_and_prepared(prepared_server):
 
 @pytest.fixture
 def prepared_server(new_story):
-    with server_story(new_story(fixture=BuilderWithStartedTask)) as story:
+    with server_story(new_story(fixture=StartedTaskBuilder)) as story:
         yield story

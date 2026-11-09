@@ -5,12 +5,12 @@ from core.base.driver.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.testing.hook_samples import HookSamples
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
 
 SKILLS_FOLDER = ".claude/skills"
 LISTED = "journal,journal-etiquette,journal-tasks"
-MAIN_ONLY = "journal-dumps"
+MAIN_SKILL = "journal-dumps"
 
 
 def held(repository, worker, skill: str) -> bool:
@@ -18,33 +18,33 @@ def held(repository, worker, skill: str) -> bool:
 
 
 def test_a_worker_s_worktree_holds_only_the_skills_of_its_profile(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
     story.expect_success(f'profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --skills {LISTED}', actor=story.user)
     worker = dispatched_worker(story, DISPATCH.replace("--model sonnet", "--model sonnet --profile notes-worker"))
-    story.expect_rows(held(repository, worker, "journal-tasks"), not held(repository, worker, "journal-memory"), not held(repository, worker, MAIN_ONLY))
+    story.expect_rows(held(repository, worker, "journal-tasks"), not held(repository, worker, "journal-memory"), not held(repository, worker, MAIN_SKILL))
 
 
 def test_a_worker_with_no_list_of_its_own_gets_the_skills_made_for_its_type_and_for_every_type(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_rows(held(repository, worker, "journal-tasks"), held(repository, worker, "journal-memory"), not held(repository, worker, MAIN_ONLY))
+    story.expect_rows(held(repository, worker, "journal-tasks"), held(repository, worker, "journal-memory"), not held(repository, worker, MAIN_SKILL))
 
 
 def test_the_skills_of_a_profile_are_listed_with_the_ones_made_for_its_type_and_a_saved_list_changes_them(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_text("profile skills --profile journal-researcher", "journal-tasks: on", f"{MAIN_ONLY}: off", actor=story.user)
-    story.expect_success(f"profile save journal-researcher --description 'Researches a question' --skills {LISTED},{MAIN_ONLY}", actor=story.user)
-    story.expect_text("profile skills --profile journal-researcher", f"{MAIN_ONLY}: on", "journal-memory: off", actor=story.user)
+    story.expect_text("profile skills --profile journal-researcher", "journal-tasks: on", f"{MAIN_SKILL}: off", actor=story.user)
+    story.expect_success(f"profile save journal-researcher --description 'Researches a question' --skills {LISTED},{MAIN_SKILL}", actor=story.user)
+    story.expect_text("profile skills --profile journal-researcher", f"{MAIN_SKILL}: on", "journal-memory: off", actor=story.user)
 
 
 def test_a_helper_in_the_main_checkout_is_refused_reading_a_skill_its_profile_does_not_list(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.container.get(Bus).run(StartAgent("s-helper", "claude", CodingHelperRole.HELPER, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
     listed = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/journal/SKILL.md"], None)
-    unlisted = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/{MAIN_ONLY}/SKILL.md"], None)
+    unlisted = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/{MAIN_SKILL}/SKILL.md"], None)
     story.expect_hook_allowed("s-helper", listed)
     story.expect_hook_refusal("s-helper", unlisted, "that skill is not one of the skills of your profile")

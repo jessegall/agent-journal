@@ -8,9 +8,9 @@ from core.testing.story import Story
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.core.modules.library.support.copy_stories import connected, shared_server
-from tests.stories.core.modules.library.support.stored_text import every_stored_text
+from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -35,7 +35,7 @@ def token_works(server: SharedServerBinary, token: str) -> bool:
 
 def has_stored_text(story: Story, text: str) -> bool:
     files = [path for path in Path(story.home.folder).rglob("*") if path.is_file() and path.stat().st_size < 5_000_000]
-    return text in every_stored_text(story) or any(text in path.read_bytes().decode(errors="ignore") for path in files if path.suffix != ".env")
+    return text in stored_texts(story) or any(text in path.read_bytes().decode(errors="ignore") for path in files if path.suffix != ".env")
 
 
 def test_an_admin_lists_the_users_with_their_roles(new_story, shared_server):
@@ -130,5 +130,5 @@ def test_the_viewer_accepts_a_team_user_request_and_receives_the_token_only_once
 
 
 def test_with_no_connection_the_users_are_not_read(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_refusal("library-user list", "This journal is not connected to a shared server.", actor=story.agent)

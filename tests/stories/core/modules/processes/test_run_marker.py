@@ -17,7 +17,7 @@ class SampleTool(PerformanceTool):
         return "measured"
 
 
-def tools_of(story) -> PerformanceTools:
+def read_tools(story) -> PerformanceTools:
     return story.container.get(PerformanceTools)
 
 
@@ -49,7 +49,7 @@ def test_a_lost_test_run_clears_the_file(new_story):
 
 def test_every_registered_tool_stays_quiet_while_tests_run(new_story):
     story = new_story(fixture=BuilderStarted)
-    tools = tools_of(story)
+    tools = read_tools(story)
     tools.registered = {*tools.registered, SampleTool}
     expect_tools_3(tools, "measured")
     tools.keep_tests_running(True)
@@ -60,7 +60,7 @@ def test_every_registered_tool_stays_quiet_while_tests_run(new_story):
 def test_a_tool_no_module_registers_does_not_run(new_story):
     story = new_story(fixture=BuilderStarted)
     with pytest.raises(ValueError, match="registers the performance tool sample.tool"):
-        tools_of(story).run(SampleTool)
+        read_tools(story).run(SampleTool)
 
 
 def expect_tools(tools, number, expected) -> None:
@@ -79,10 +79,10 @@ def expect_tools_3(tools, expected) -> None:
 
 
 def expect_absent_exists_marker_tools(story) -> None:
-    actual = tools_of(story).marker.exists()
+    actual = read_tools(story).marker.exists()
     assert not actual, actual
 
 
 def expect_exists_marker_tools(story) -> None:
-    actual = tools_of(story).marker.exists()
+    actual = read_tools(story).marker.exists()
     assert actual, actual

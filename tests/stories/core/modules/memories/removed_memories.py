@@ -1,7 +1,7 @@
 from core.base.query.queries import Queries
 from core.testing.story_fixture import StoryFixture
 from core.modules.memories.models.memory import Memory
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.support.story_checks import expect_value
 
 KEPT, REMOVED = "The release waits for the tag", "The old server name"
@@ -11,7 +11,7 @@ REMOVED_ID = 2
 class OneMemoryRemoved(StoryFixture):
     """The main agent holds one memory and removed another."""
 
-    parent = BuilderWithStartedTask
+    parent = StartedTaskBuilder
 
     def steps(self, story):
         story.run(f'memory make "{KEPT}"', actor=story.agent)

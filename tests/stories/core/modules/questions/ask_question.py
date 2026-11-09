@@ -1,4 +1,4 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from core.testing.hook_samples import HookSamples
@@ -33,7 +33,7 @@ def test_the_user_cannot_ask(new_story):
 
 
 def test_a_message_read_while_a_question_waits_is_marked_read(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success('question ask "What should the page be called?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     story.expect_success('message send "See you tomorrow" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use"))

@@ -16,7 +16,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.modules.usage.support.status_files import FIVE_HOURS_RESET, SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
 
@@ -198,7 +198,7 @@ def test_a_session_says_when_it_was_last_compacted(new_story):
     story.expect_text("usage show --environment main --json", '"last_compacted_at": "2026', actor=story.user)
 
 
-class CompactedFromNinetyTwoPercent(StoryFixture):
+class NinetyTwoPercentCompacted(StoryFixture):
     """The real order: the session start hook of a compaction runs while the status file still holds the old percent."""
 
     parent = UserJoined
@@ -210,7 +210,7 @@ class CompactedFromNinetyTwoPercent(StoryFixture):
 
 
 def test_a_compaction_says_how_full_the_context_was_before_and_after(new_story):
-    story = new_story(fixture=CompactedFromNinetyTwoPercent)
+    story = new_story(fixture=NinetyTwoPercentCompacted)
     story.report_context_percent("s-1", 18)
     story.hook("s-1", HookSamples.prompt("go on"))
     compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
@@ -218,7 +218,7 @@ def test_a_compaction_says_how_full_the_context_was_before_and_after(new_story):
 
 
 def test_a_tick_after_a_compaction_start_reads_the_percent_the_status_file_gets_later(new_story):
-    story = new_story(fixture=CompactedFromNinetyTwoPercent)
+    story = new_story(fixture=NinetyTwoPercentCompacted)
     story.tick("s-1")
     compaction = json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["last_compaction"]
     expect_row(compaction, start_percent=92, end_percent=None)
@@ -292,7 +292,7 @@ def test_an_agents_facts_carry_the_effort_it_runs_at(new_story):
 
 
 def test_a_helpers_facts_carry_its_profile_given_name_and_instruction(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.run('helper start journal-researcher --model sonnet --name "Madame Curie" --brief "Read the cart" --environment main', actor=story.agent)
     launcher.server.close()
@@ -300,14 +300,14 @@ def test_a_helpers_facts_carry_its_profile_given_name_and_instruction(new_story)
 
 
 def test_the_tool_of_a_helper_is_read_by_its_agent_number(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.hook("sub-1", HookSamples.edit("src/cart.py", 3, 1))
     story.expect_text(f"usage tool --agent {story.helper.id}", "Edit src/cart.py +3 -1", actor=story.agent)
     story.expect_absent(f"usage tool --agent {story.agent.id}", "Edit src/cart.py +3 -1", actor=story.agent)
 
 
 def test_a_helper_s_chained_command_is_named_by_the_part_it_runs(new_story):
-    story = install_runner(new_story(fixture=HelperUnderBuilder))
+    story = install_runner(new_story(fixture=BuilderHelper))
     chained = HookSamples.shell("ls src && cat notes.md", ShellPart("ls", CommandCategory.PROCESS, ["src"]), ShellPart("cat", CommandCategory.PROCESS, ["notes.md"]))
     story.hook("sub-1", chained)
     story.expect_text(f"usage tool --agent {story.helper.id}", "ls src", actor=story.agent)
@@ -315,13 +315,13 @@ def test_a_helper_s_chained_command_is_named_by_the_part_it_runs(new_story):
 
 
 def test_a_helper_that_ran_no_command_says_so_plainly(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_text(f"usage tool --agent {story.helper.id}", "has run no command yet", actor=story.agent)
     story.expect_text(f"usage tool --agent {story.helper.id} --json", '"note": "has run no command yet"', actor=story.agent)
 
 
 def test_a_helper_that_stopped_after_a_command_says_nothing_of_having_run_none(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.hook("sub-1", HookSamples.edit("src/cart.py"))
     story.hook("sub-1", HookSamples.stop())
     story.expect_absent(f"usage tool --agent {story.helper.id}", "has run no command yet", actor=story.agent)
@@ -436,7 +436,7 @@ def expect_asking(asking, expected) -> None:
 
 
 def test_an_open_session_that_names_no_window_shows_no_figure_from_an_earlier_account(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     save_status_file(story, "ended-under-the-old-account", {"rate_limits": {"seven_day": {"used_percentage": 85, "resets_at": 1793000000}}})
     story.container.get(StatusFiles).retire("ended-under-the-old-account")
     story.expect_text("usage show --environment main", "plan: 7 days 85% used", actor=story.user)

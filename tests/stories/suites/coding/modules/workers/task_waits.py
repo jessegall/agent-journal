@@ -5,7 +5,7 @@ from datetime import timedelta
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.duration_unit import DurationUnit
 from suites.coding.modules.workers.support.worker_settings import WORKER_IDLE_HOURS
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.stuck import MAIN_SESSION, PROCESS_START
@@ -19,7 +19,7 @@ def waiting_task(story, worker):
 
 
 def working_story(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     return story, repository, worker
@@ -33,7 +33,7 @@ def test_a_task_waits_while_the_worker_still_works(new_story):
 
 
 def test_finishing_one_task_in_a_workers_batch_keeps_the_wait_blocked(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     second_id = story.new_row_id('task make "Second job" --brief "Finish the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"worker dispatch --model sonnet 1 {second_id}")
@@ -90,7 +90,7 @@ def test_a_failed_test_keeps_the_task_waiting_for_the_workers_correction(new_sto
 
 
 def test_a_worker_ending_between_tests_and_its_next_task_keeps_the_wait_blocked(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     processes = recording_launch(monkeypatch)
     second_id = story.new_row_id('task make "Second job" --brief "Finish the second job" --environment main', actor=story.agent)
@@ -130,7 +130,7 @@ def test_a_task_cannot_wait_on_a_worker_that_was_released(working):
 
 
 def test_a_task_cannot_wait_on_a_worker_that_was_merged(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -177,6 +177,6 @@ def test_a_task_waits_for_both_the_worker_and_its_other_target(new_story):
 
 
 def test_the_command_help_and_task_skill_name_worker_waits(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_text("task block --help", "worker:<n>", actor=story.agent)
     story.expect_text("skill show journal-workers", "--on worker:<m>", actor=story.agent)

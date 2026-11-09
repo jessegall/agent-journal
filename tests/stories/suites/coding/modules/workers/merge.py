@@ -25,7 +25,7 @@ from datetime import timedelta
 
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_TEXT, build_repository
@@ -39,7 +39,7 @@ BUILT_FILE = "app/web/dist/chat.js"
 
 
 def test_a_checked_worktree_merges_into_the_base_branch_in_the_environments_folder(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -51,7 +51,7 @@ def test_a_checked_worktree_merges_into_the_base_branch_in_the_environments_fold
 
 
 def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_named_as_inactive(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -65,7 +65,7 @@ def test_a_merged_worker_whose_program_never_ended_ends_at_the_merge_and_is_not_
 
 
 def test_a_worktree_with_a_proof_not_checked_is_refused_its_merge_naming_the_point(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -77,7 +77,7 @@ def test_a_worktree_with_a_proof_not_checked_is_refused_its_merge_naming_the_poi
 
 @pytest.fixture
 def checked_work(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     return story, repository, checked_worker(story, repository)
 
@@ -109,7 +109,7 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
 
 
 def test_a_moved_base_is_rebased_under_the_uncommitted_changes_of_the_worker_and_they_are_put_back(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.changed(worker.id, "extra.py", "EXTRA = 1\n")
@@ -126,7 +126,7 @@ def test_a_moved_base_is_rebased_under_the_uncommitted_changes_of_the_worker_and
 
 
 def test_a_clash_of_committed_work_with_a_moved_base_leaves_the_uncommitted_changes_in_the_worktree_and_no_stash(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.changed(worker.id, "extra.py", "EXTRA = 1\n")
@@ -139,7 +139,7 @@ def test_a_clash_of_committed_work_with_a_moved_base_leaves_the_uncommitted_chan
 
 
 def test_uncommitted_changes_that_clash_with_a_moved_base_go_back_to_the_worker_with_conflict_markers(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("tax.py", "TAX = 1\n", "The first tax")
@@ -155,7 +155,7 @@ def test_uncommitted_changes_that_clash_with_a_moved_base_go_back_to_the_worker_
 
 
 def test_uncommitted_changes_whose_stash_cannot_apply_stay_in_the_stash_and_refuse_the_merge(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     worker = checked_worker(story, repository)
@@ -168,7 +168,7 @@ def test_uncommitted_changes_whose_stash_cannot_apply_stay_in_the_stash_and_refu
 
 
 def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_base_branch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -180,7 +180,7 @@ def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_b
 
 
 def test_a_clash_only_on_built_files_merges_with_a_fresh_build(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = build_repository(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -197,7 +197,7 @@ def test_a_clash_only_on_built_files_merges_with_a_fresh_build(new_story):
 
 
 def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -212,7 +212,7 @@ def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
 
 
 def test_a_job_for_a_worker_comes_on_the_latest_of_its_base_branch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -222,7 +222,7 @@ def test_a_job_for_a_worker_comes_on_the_latest_of_its_base_branch(new_story):
 
 
 def test_a_job_sent_to_a_worker_shows_as_a_mark_naming_the_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f'worker send --wait {worker.id} "one more thing"', actor=story.agent)
@@ -231,7 +231,7 @@ def test_a_job_sent_to_a_worker_shows_as_a_mark_naming_the_worker(new_story):
 
 
 def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_each_hour_and_goes_through_once_it_is_back(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
@@ -254,7 +254,7 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
 
 
 def test_a_merge_after_the_environments_branch_changed_is_refused(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -265,7 +265,7 @@ def test_a_merge_after_the_environments_branch_changed_is_refused(new_story):
 
 
 def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_changed_is_refused_naming_them_before_any_merge(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     worker_tip = repository.tip(repository.worker_branch(worker.id))
@@ -280,7 +280,7 @@ def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_ch
 
 
 def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -296,7 +296,7 @@ def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_s
 
 
 def test_a_job_the_launcher_could_not_start_stays_waiting(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -309,7 +309,7 @@ def test_a_job_the_launcher_could_not_start_stays_waiting(new_story):
 
 
 def test_a_job_for_a_worker_whose_program_still_runs_waits_for_its_next_hook(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -322,7 +322,7 @@ def test_a_job_for_a_worker_whose_program_still_runs_waits_for_its_next_hook(new
 
 
 def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_two_minutes(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -345,7 +345,7 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
 
 
 def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_one_reads_it_at_its_next_hook(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_text(f'worker send --wait {worker.id} "Add the tax as well"', f"worker {worker.id} takes the job", actor=story.agent)
@@ -355,7 +355,7 @@ def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_o
 
 
 def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -367,7 +367,7 @@ def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
 
 
 def test_a_job_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -382,7 +382,7 @@ def test_a_job_sent_to_a_merged_worker_opens_a_worktree_and_resumes_it(new_story
 
 
 def ended_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -418,7 +418,7 @@ def test_two_jobs_close_together_start_the_worker_once(new_story):
 
 
 def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -434,7 +434,7 @@ def test_a_worker_the_main_agent_stops_stays_stopped_with_its_job_waiting(new_st
 
 
 def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -451,7 +451,7 @@ def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
 
 
 def test_a_job_refused_because_the_program_still_runs_starts_the_worker_when_the_program_has_ended(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -470,7 +470,7 @@ def test_a_job_refused_because_the_program_still_runs_starts_the_worker_when_the
 
 
 def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -520,7 +520,7 @@ def expect_worktree_folder_repository_with(repository, worker, text, expected) -
 
 
 def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_whole(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success(f'task log 1 "{"long important line " * 40}" --important', actor=worker)
@@ -552,7 +552,7 @@ def test_long_worker_logs_are_marked_read_only_after_the_saved_output_is_read_wh
 
 
 def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     worker = delivered_worker(story, repository_environment(story))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "logs", str(worker.id)], subcommand="worker")
     story.expect_hook_refusal("s-1", HookSamples.shell(f"journal worker logs {worker.id} > /tmp/log", part, redirects=["> /tmp/log"]), "run the read command directly, without a pipe or redirect")
@@ -566,7 +566,7 @@ def test_redirected_worker_logs_do_not_mark_the_logs_read(new_story):
 
 
 def test_reading_one_task_does_not_mark_other_tasks_logs_as_read(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)

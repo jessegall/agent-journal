@@ -5,7 +5,7 @@ import pytest
 
 from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.core.modules.secrets.support.private_home import private_folder
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.testing.fake_launcher import FakeLauncher
 
@@ -18,7 +18,7 @@ VARIABLE = "GITHUB_PERSONAL_ACCESS_TOKEN"
 @pytest.mark.real_git
 @pytest.mark.parametrize("program,model", [("claude", "sonnet"), ("codex", "gpt-6.1-sol")])
 def test_workers_receive_the_main_agents_servers_and_keys_outside_the_prompt(new_story, private_folder, program, model):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository = repository_environment(story)
     for name in ("playwright", "github", "linear"):

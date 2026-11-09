@@ -3,7 +3,7 @@ from core.base.caller.caller_request import CallerRequest
 from core.base.cli.console import REFUSED_CODE, USAGE_CODE
 from core.base.caller.process_row import ProcessRow
 from core.base.timestamp import Timestamp
-from tests.stories.core.support.fixtures import AgentWithProcess, MainEnvironment
+from tests.stories.core.support.fixtures import ProcessAgent, MainEnvironment
 from tests.stories.core.modules.agents.support.caller_fixtures import LoginUser
 
 AGENT_START_TIME = Timestamp.parsed("2026-10-31T09:00:00+00:00")
@@ -12,7 +12,7 @@ TASK_LINE = 'task make "Fix the cart"'
 
 
 def agent_with_pid(new_story):
-    story = new_story(fixture=AgentWithProcess)
+    story = new_story(fixture=ProcessAgent)
     return story, story.agent.id
 
 

@@ -12,21 +12,21 @@ from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.modules.usage.usage import HELPER_START
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-AT = "2026-11-03T05:00:00.000Z"
+FIXED_TIME = "2026-11-03T05:00:00.000Z"
 
 
-def row(row_type: str, text: str, at: str = AT) -> dict[str, object]:
+def row(row_type: str, text: str, at: str = FIXED_TIME) -> dict[str, object]:
     return {"type": row_type, "timestamp": at, "message": {"content": text}}
 
 
-def transcript_of(tmp_path, monkeypatch, session: str, *rows) -> None:
+def read_transcript(tmp_path, monkeypatch, session: str, *rows) -> None:
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
     transcript = tmp_path / "claude" / "projects" / "-work-journal" / f"{session}.jsonl"
     transcript.parent.mkdir(parents=True, exist_ok=True)
     transcript.write_text("".join(json.dumps(item) + "\n" for item in rows))
 
 
-def worker_of(story) -> int:
+def read_worker(story) -> int:
     return story.new_row_id(HELPER_START.format(parent=story.agent.id))
 
 
@@ -36,13 +36,13 @@ def deliver_line(story, agent_id: int, creator_id: int, text: str) -> None:
 
 
 def test_a_workers_own_rows_say_worker_and_not_assistant(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-2", row("assistant", "The cart is fixed"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("assistant", "The cart is fixed"))
     story = new_story(fixture=TranscriptWorker)
     story.expect_text(f"agent transcript {story.helper.id}", "1  worker  assistant  The cart is fixed")
 
 
 def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agent_sent_is_tagged_main_agent(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-2", row("user", "your tests failed: two"), row("user", "Fix the footer too"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "your tests failed: two"), row("user", "Fix the footer too"))
     story = new_story(fixture=TranscriptWorker)
     worker = story.helper.id
     deliver_line(story, worker, 1, "your tests failed: two")
@@ -51,13 +51,13 @@ def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agen
 
 
 def test_a_row_of_a_worker_that_no_line_matches_is_tagged_journal_and_never_user(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-2", row("user", "Tell me what to do"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "Tell me what to do"))
     story = new_story(fixture=TranscriptWorker)
     story.expect_text(f"agent transcript {story.helper.id}", "1  journal  user  Tell me what to do")
 
 
 def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-2", row("user", "[journal] your next task"), row("user", "[journal] look at the cart"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "[journal] your next task"), row("user", "[journal] look at the cart"))
     story = new_story(fixture=TranscriptWorker)
     worker = story.helper.id
     deliver_line(story, worker, story.agent.id, "[journal] look at the cart")
@@ -65,19 +65,19 @@ def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(new
 
 
 def test_a_monitor_event_in_a_workers_transcript_stays_a_monitor_row(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-2", row("user", "<task-notification>ended</task-notification>"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("user", "<task-notification>ended</task-notification>"))
     story = new_story(fixture=TranscriptWorker)
     story.expect_text(f"agent transcript {story.helper.id}", "1  monitor  user  <task-notification>ended</task-notification>")
 
 
 def test_the_main_agents_rows_keep_user_and_assistant(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart"), row("assistant", "Done"))
+    read_transcript(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart"), row("assistant", "Done"))
     story = new_story(fixture=BuilderStarted)
     story.expect_text(f"agent transcript {story.agent.id}", "1  user  user  Fix the cart", "2  assistant  assistant  Done")
 
 
 def test_each_row_carries_its_time_from_the_session_file(new_story, tmp_path, monkeypatch):
-    transcript_of(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart", "2026-11-03T05:00:01.000Z"), row("assistant", "Done", "2026-11-03T05:00:09.000Z"))
+    read_transcript(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart", "2026-11-03T05:00:01.000Z"), row("assistant", "Done", "2026-11-03T05:00:09.000Z"))
     story = new_story(fixture=BuilderStarted)
     story.expect_text(f"agent transcript {story.agent.id} --json", '"time": "2026-11-03T05:00:01.000Z"', '"time": "2026-11-03T05:00:09.000Z"')
 
@@ -86,14 +86,14 @@ def test_a_codex_row_carries_its_time_too(new_story, tmp_path, monkeypatch):
     monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex"))
     rollout = tmp_path / "codex" / "sessions" / "2026" / "11" / "03" / "rollout-2026-11-03T05-00-00-t-1.jsonl"
     rollout.parent.mkdir(parents=True)
-    rollout.write_text(json.dumps({"timestamp": AT, "type": "response_item", "payload": {"role": "user", "content": [{"type": "input_text", "text": "Write the tests"}]}}) + "\n")
+    rollout.write_text(json.dumps({"timestamp": FIXED_TIME, "type": "response_item", "payload": {"role": "user", "content": [{"type": "input_text", "text": "Write the tests"}]}}) + "\n")
     story = new_story(fixture=BuilderStarted)
     codex = story.new_row_id("agent start t-1 codex main --environment main")
-    story.expect_text(f"agent transcript {codex} --json", f'"time": "{AT}"')
+    story.expect_text(f"agent transcript {codex} --json", f'"time": "{FIXED_TIME}"')
 
 
 class TranscriptWorker(StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story):
-        story.helper = Actor(worker_of(story), ActorType.AGENT)
+        story.helper = Actor(read_worker(story), ActorType.AGENT)

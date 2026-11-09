@@ -4,7 +4,7 @@ from core.testing.expect_reply import expect_reply_allowed
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import helper_agent
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
 SAVE_DESIGNER = 'profile save designer --type helper --access read-only --writable-folders docs/designs --description "Designs a screen" --body "Design in Claude Design and save the page and its picture."'
@@ -29,7 +29,7 @@ def write(repository, relative: str):
 
 
 def test_the_designer_writes_under_docs_designs_and_nowhere_else(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     repository = repository_environment(story)
     designer = started_designer(story)
     expect_reply_allowed(story.hook(designer.session, write(repository, f"{DESIGN_FOLDER}/agent-settings.html")))
@@ -41,7 +41,7 @@ def test_the_designer_writes_under_docs_designs_and_nowhere_else(new_story):
 
 @pytest.mark.real_git
 def test_a_designer_job_ends_with_its_page_and_picture_committed(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     repository = repository_environment(story)
     designer = started_designer(story)
     (repository.folder / DESIGN_FOLDER).mkdir(parents=True)

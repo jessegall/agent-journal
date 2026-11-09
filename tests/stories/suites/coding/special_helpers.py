@@ -8,7 +8,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.modules.helpers.start_helper import started
-from tests.stories.core.support.coding_fixtures import BuilderWithUser, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
 from tests.stories.support.story_checks import expect_value
@@ -19,11 +19,11 @@ MERGER = "journal.suites.coding.workers.merger-on"
 START_DESIGNER = 'helper start journal-designer --brief "Design the cart page" --environment main'
 
 
-def merger_of(story):
+def read_merger(story):
     return next(iter(story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows()), None)
 
 
-def delivered_to_the_merger(story, monkeypatch):
+def merger_delivery(story, monkeypatch):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
@@ -45,16 +45,16 @@ def delivered_to_the_merger(story, monkeypatch):
 
 
 def test_s05_the_merger_takes_in_workers_while_ordinary_helpers_are_off(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.run(f"setting set {HELPERS} off --project")
-    worker = delivered_to_the_merger(story, monkeypatch)
-    merger = merger_of(story)
+    worker = merger_delivery(story, monkeypatch)
+    merger = read_merger(story)
     story.expect_rows(merger is not None)
     story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))
 
 
 def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_without_writing(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     launcher = FakeLauncher(story.home.socket("launcher"), request_count=1)
     story.expect_refusal(START_DESIGNER, "starts no designer", actor=story.agent)
     launcher.server.close()
@@ -65,9 +65,9 @@ def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_withou
 
 
 def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    worker = delivered_to_the_merger(story, monkeypatch)
-    merger = merger_of(story)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    worker = merger_delivery(story, monkeypatch)
+    merger = read_merger(story)
     story.expect_success(f"setting set {MERGER} off --project", actor=story.user)
-    expect_value(merger_of(story).id, merger.id)
+    expect_value(read_merger(story).id, merger.id)
     story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))

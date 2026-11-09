@@ -9,7 +9,7 @@ from core.base.query.queries import Queries
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from core.modules.processes.ticks.run_slot_grant import RunSlotGrant
 from suites.coding.modules.workers.models.proof import Proof
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story, started_server
 from tests.stories.server.support.file_changes import FileChanges
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
@@ -36,7 +36,7 @@ def run_report(story) -> str:
     return f"{story.run(f'process show {process_id}', actor=story.agent).output_text}\n{files}"
 
 
-def waiting_for(story, ticks, wanted: str) -> None:
+def pending_item(story, ticks, wanted: str) -> None:
     deadline = time.monotonic() + WAIT_SECONDS
     process_id = story.container.get(Queries).query(Proof).find(1).process_id
     folder = story.home.folder.resolve() / "processes" / str(process_id)
@@ -52,7 +52,7 @@ def waiting_for(story, ticks, wanted: str) -> None:
 
 
 def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     installed_runner(story)
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     monkeypatch.setenv("JOURNAL_HOME", str(story.home.folder.resolve()))
@@ -66,6 +66,6 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monke
         story.run_listeners()
         story.expect_text("proof show 1", "state: running", actor=story.agent)
     with started_server(story.home):
-        waiting_for(story, (RunSlotGrant(), RunEndRecovery()), "checked")
+        pending_item(story, (RunSlotGrant(), RunEndRecovery()), "checked")
     story.expect_text("proof show 1", "state: checked", actor=story.agent)
     story.expect_text(f"process show {story.container.get(Queries).query(Proof).find(1).process_id}", "state: finished", "exit_code: 0", actor=story.agent)

@@ -24,7 +24,7 @@ def window_data(server, cookie: str, keys: str = "", window: str = WINDOW, query
     return response.status, json.loads(response.read())
 
 
-class ChatWithMessage(StoryFixture):
+class MessageChat(StoryFixture):
     """A person and a message in the chat."""
 
     parent = UserJoined
@@ -35,7 +35,7 @@ class ChatWithMessage(StoryFixture):
 
 @pytest.fixture
 def chat(new_story):
-    story = new_story(fixture=ChatWithMessage)
+    story = new_story(fixture=MessageChat)
     with server_story(story) as server:
         yield server, server.expect_viewer_login(server.viewer_key("Ada"))
 

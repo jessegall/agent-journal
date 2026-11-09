@@ -19,8 +19,8 @@ from core.testing.hook_samples import HookSamples
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.agents.support.agent_launcher import AgentLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_absent_value, expect_count_output_2, expect_total_cost_less
 
@@ -28,7 +28,7 @@ RULE_LIMIT_POINTS = 20
 
 
 def worker_with_background_run(new_story):
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -79,7 +79,7 @@ def test_a_worker_that_has_open_help_request_stays_stopped_when_its_run_ends(new
 
 def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
@@ -95,7 +95,7 @@ def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(
 
 
 def test_a_tick_reads_no_ended_worker_that_has_no_running_process(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     for number in range(30):
         worker_id = story.new_row_id(f"agent start ended-{number} claude worker --parent {story.agent.id} --environment main")
         story.run(f"agent end {worker_id}", actor=story.agent)
@@ -163,7 +163,7 @@ def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_
 
 def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)

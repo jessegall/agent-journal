@@ -17,11 +17,11 @@ def test_a_hook_whose_rule_history_row_was_changed_by_another_writer_records_its
     story.tick("s-1")
     original = RuleHistoryWriter.record
 
-    def record_after_another_writer(writer, agent_id, answers, context):
+    def record_second_writer(writer, agent_id, answers, context):
         story.container.get(Database).update(Statement("UPDATE rule_histories SET version = version + 1"))
         original(writer, agent_id, answers, context)
 
-    monkeypatch.setattr(RuleHistoryWriter, "record", record_after_another_writer)
+    monkeypatch.setattr(RuleHistoryWriter, "record", record_second_writer)
     story.hook("s-1", HookSamples.prompt("go on"))
     row = next(row for row in story.container.get(Queries).query(RuleHistory).all_rows() if row.rule == RULE)
     log = story.home.system_log

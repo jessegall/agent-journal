@@ -11,7 +11,7 @@ from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 
-AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -43,8 +43,8 @@ def test_the_fields_a_new_row_needs_are_told_from_those_with_a_default():
 
 
 def test_every_kind_of_value_reads_back_as_it_was_stored(tmp_path):
-    entry = LogEntry(id=3, version=2, metadata=Metadata.parsed('{"reviews": {"asked": true}}'), created_at=AT, updated_at=AT,
-                         title="Dune", shelf_id=None, state=ItemState.PAUSED, is_rare=True, due_at=AT)
+    entry = LogEntry(id=3, version=2, metadata=Metadata.parsed('{"reviews": {"asked": true}}'), created_at=FIXED_TIME, updated_at=FIXED_TIME,
+                         title="Dune", shelf_id=None, state=ItemState.PAUSED, is_rare=True, due_at=FIXED_TIME)
     table = Table.build(LogEntry)
     database = Database.opened(JournalHome(tmp_path))
     database.update(Statement(f"CREATE TABLE {table.name} ({', '.join(table.columns)})"))

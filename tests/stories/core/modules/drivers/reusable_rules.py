@@ -23,7 +23,7 @@ CURL = HookSamples.shell("curl example.com", ShellPart("curl", CommandCategory.N
 FULL_TESTS = HookSamples.shell("ls && pytest tests", ShellPart("ls", CommandCategory.READ, []), ShellPart("pytest", CommandCategory.TEST_RUN, ["tests"], is_full_test_run=True))
 FILE_TESTS = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]))
 MALFORMED = LS.with_fields(tool={**LS.body["tool"], "shell": {**LS.body["tool"]["shell"], "parse_error": "unbalanced quote"}})
-READ_AND_JOURNAL = HookSamples.shell("ls && journal task make Cart", ShellPart("ls", CommandCategory.READ, []), ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "Cart"], effects=[CommandEffect.WRITES_FILES]))
+READ_JOURNAL = HookSamples.shell("ls && journal task make Cart", ShellPart("ls", CommandCategory.READ, []), ShellPart("journal", CommandCategory.JOURNAL, ["task", "make", "Cart"], effects=[CommandEffect.WRITES_FILES]))
 DESCRIPTOR_REDIRECT = HookSamples.shell("ls 2>&1", ShellPart("ls", CommandCategory.READ, []), redirects=["2>&1"])
 JOURNAL_REDIRECT = HookSamples.shell("journal task list > tasks", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]), redirects=[">tasks"])
 MISSING_SHELL = HookSamples.tool_use("Bash", ToolType.SHELL, [], None)
@@ -38,7 +38,7 @@ def rule_story(new_story, request):
 
 @pytest.mark.parametrize("rule_story,sample", [
     ("reader", READ), ("reader", SEARCH), ("reader", LS), ("reader", JOURNAL),
-    ("reader", READ_AND_JOURNAL), ("reader", DESCRIPTOR_REDIRECT),
+    ("reader", READ_JOURNAL), ("reader", DESCRIPTOR_REDIRECT),
     ("writer", READ), ("writer", EDIT), ("writer", NEW_FILE), ("writer", FILE_REMOVAL), ("writer", REDIRECT),
     ("journal", JOURNAL), ("no-shell", EDIT),
     ("no-git", LS), ("named-tests", FILE_TESTS), ("read-tool", READ),

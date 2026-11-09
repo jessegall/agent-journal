@@ -35,13 +35,13 @@ class PersonPresent(StoryFixture):
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
 
 
-def stamped_and_project_hooks(story: Story) -> None:
+def stamped_project_hooks(story: Story) -> None:
     story.container.get(ManagedHooks).added([managed_hook(STAMPED_COMMAND), managed_hook(PROJECT_COMMAND)])
 
 
 def test_installing_a_plugin_removes_the_managed_hooks_with_its_stamp_and_keeps_the_others(new_story):
     story = new_story(fixture=PersonPresent)
-    stamped_and_project_hooks(story)
+    stamped_project_hooks(story)
     expect_value(commands(story), [STAMPED_COMMAND, PROJECT_COMMAND])
     install_stamped_plugin(story)
     expect_value(commands(story), [PROJECT_COMMAND])
@@ -49,7 +49,7 @@ def test_installing_a_plugin_removes_the_managed_hooks_with_its_stamp_and_keeps_
 
 def test_switching_a_plugin_on_removes_a_stamped_hook_that_came_back(new_story):
     story = new_story(fixture=PersonPresent)
-    stamped_and_project_hooks(story)
+    stamped_project_hooks(story)
     install_stamped_plugin(story)
     story.expect_success("plugin disable commandments", actor=story.user)
     story.container.get(ManagedHooks).added([managed_hook(STAMPED_COMMAND)])
@@ -60,7 +60,7 @@ def test_switching_a_plugin_on_removes_a_stamped_hook_that_came_back(new_story):
 
 def test_a_person_removes_managed_hooks_by_stamp(new_story):
     story = new_story(fixture=PersonPresent)
-    stamped_and_project_hooks(story)
+    stamped_project_hooks(story)
     story.expect_text(f'managed-hook remove --stamp "{STAMP}"', "removed 1 managed hooks", actor=story.user)
     expect_value(commands(story), [PROJECT_COMMAND])
     story.expect_text(f'managed-hook remove --stamp "{STAMP}"', "removed 0 managed hooks", actor=story.user)

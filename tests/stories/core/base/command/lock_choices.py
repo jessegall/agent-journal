@@ -12,7 +12,7 @@ from tests.stories.core.base.command.support.lock_commands import ReadUnlockedPi
 from tests.stories.core.support.fixtures import UserJoined
 
 
-class WithLockCommands(StoryFixture):
+class LockCommands(StoryFixture):
     parent = UserJoined
 
     def steps(self, story) -> None:
@@ -21,7 +21,7 @@ class WithLockCommands(StoryFixture):
 
 
 def test_an_unlocked_command_allows_another_connection_to_write_while_it_reads(new_story, monkeypatch):
-    story = new_story(fixture=WithLockCommands)
+    story = new_story(fixture=LockCommands)
     original = ReadUnlockedPinsHandler.handle
     observed = []
 
@@ -50,15 +50,15 @@ def test_an_unlocked_command_allows_another_connection_to_write_while_it_reads(n
     ("write-unlocked-nested", ["Existing pin"]),
 ])
 def test_a_locked_command_rolls_back_its_own_writes_also_inside_an_unlocked_one(new_story, monkeypatch, line, remaining):
-    story = new_story(fixture=WithLockCommands)
+    story = new_story(fixture=LockCommands)
     original = Repository.save
 
-    def fail_on_second_pin(repository, model, context):
+    def second_pin_fail(repository, model, context):
         if isinstance(model, Pin) and model.title == "Second pin":
             raise Refusal("the second pin cannot be written")
         return original(repository, model, context)
 
-    monkeypatch.setattr(Repository, "save", fail_on_second_pin)
+    monkeypatch.setattr(Repository, "save", second_pin_fail)
     story.expect_refusal(f"lock-sample {line} --environment main", "the second pin cannot be written", actor=story.user)
     story.expect_rows([pin.title for pin in story.container.get(Queries).query(Pin).oldest().all_rows()] == remaining)
     story.expect_rows(story.container.get(Database).nested == [])

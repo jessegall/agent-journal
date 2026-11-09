@@ -10,7 +10,7 @@ from core.modules.templates.models.template import Template
 from suites.coding.support.coding_templates import CODING_TEMPLATES
 from suites.coding.modules.workers.support.worker_templates import WORKER_TEMPLATES
 from server.booting_work import BootingWork
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 PLAN_BUILDING = "Building a plan"
 
@@ -59,7 +59,7 @@ def test_each_standard_sequence_has_one_guard_for_each_step():
 
 
 class StartedSequences(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         started(story)

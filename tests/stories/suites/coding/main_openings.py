@@ -3,17 +3,17 @@ from suites.coding.support.main_options import BUILDER, ORCHESTRATOR, MainOption
 from tests.stories.support.story_checks import expect_value
 
 
-def options_of(bundle: tuple[bool, ...]) -> MainOptions:
+def read_options(bundle: tuple[bool, ...]) -> MainOptions:
     return MainOptions(*bundle)
 
 
 def test_s46_the_builder_opening_allows_code_and_has_no_orchestrator_paragraph():
-    lines = MainOpening(options_of(BUILDER)).lines()
+    lines = MainOpening(read_options(BUILDER)).lines()
     expect_value((CODE_ALLOWED in lines, CODE_FORBIDDEN in lines, KEEP_GOING_LINE in lines), (True, False, False))
 
 
 def test_s46_the_orchestrator_opening_forbids_code_and_keeps_going():
-    lines = MainOpening(options_of(ORCHESTRATOR)).lines()
+    lines = MainOpening(read_options(ORCHESTRATOR)).lines()
     expect_value((CODE_FORBIDDEN in lines, CODE_ALLOWED in lines, KEEP_GOING_LINE in lines), (True, False, True))
 
 

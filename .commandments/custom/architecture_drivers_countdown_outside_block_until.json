@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "tool_call_count",
+                    "tool_use_counts"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/drivers/queries/hook_call_query.py"
+            },
+            {
+                "file": "**/drivers/rules/agent_block_rule.py"
+            },
+            {
+                "file": "**/reminders/rules/due_reminder_rule.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "countdown-outside-block-until",
+        "description": "A rule counts tool uses itself to work out how long an agent has left before it is held, so the count, its line and its block are its own.",
+        "rule": "Hold an agent after a grace with BlockUntil(agent, NUDGE, condition, Interval(ToolUseSpan(n)), COUNTDOWN.nudge(\"{left}\")): agent_block_rule counts the tool uses, says the countdown and holds the agent.",
+        "skill": "plain-code-words"
+    }
+}

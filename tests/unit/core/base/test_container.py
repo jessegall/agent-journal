@@ -33,8 +33,8 @@ class Motor:
 
 
 class Pump:
-    def __init__(self, motor: Motor, litres_per_minute: int = 3) -> None:
-        self.motor, self.litres_per_minute = motor, litres_per_minute
+    def __init__(self, motor: Motor, flow_rate: int = 3) -> None:
+        self.motor, self.flow_rate = motor, flow_rate
 
 
 class Fountain:
@@ -55,7 +55,7 @@ def test_each_class_is_built_once_with_what_its_constructor_asks_for():
 
 
 def test_a_parameter_with_a_default_is_left_to_its_default():
-    assert Container().get(Pump).litres_per_minute == 3
+    assert Container().get(Pump).flow_rate == 3
 
 
 def test_a_bound_value_is_given_instead_of_built():

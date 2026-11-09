@@ -13,7 +13,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.run_queue import queued
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def timeout_tick(story):
@@ -30,7 +30,7 @@ def saved_timeout(duration):
 
 
 def test_a_timeout_counts_from_the_start_and_not_when_it_was_set(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(minutes=1))
     story.expect_success(f"output timeout {process.id} 2m", actor=story.agent)
@@ -46,7 +46,7 @@ def test_a_timeout_counts_from_the_start_and_not_when_it_was_set(new_story):
 
 
 def test_a_passed_limit_is_refused_and_the_run_keeps_going(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = start_process(story, "make build", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=45))
     story.expect_refusal(f"output timeout {process.id} 30s", "already passed", actor=story.agent)
@@ -55,7 +55,7 @@ def test_a_passed_limit_is_refused_and_the_run_keeps_going(new_story):
 
 
 def test_a_refused_replacement_preserves_the_existing_timeout(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = start_process(story, "make package", category=CommandCategory.BUILD)
     story.expect_success(f"output timeout {process.id} 3m", actor=story.agent)
     story.advance(timedelta(minutes=1))
@@ -64,20 +64,20 @@ def test_a_refused_replacement_preserves_the_existing_timeout(new_story):
 
 
 def test_an_ended_output_cannot_get_a_timeout(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = ended_run(story, "make package", "built\n")
     story.expect_refusal(f"output timeout {process.id} 10m", "not running", actor=story.agent)
 
 
 @pytest.mark.parametrize("duration", ["0s", "later"])
 def test_an_invalid_duration_is_refused(new_story, duration):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = start_process(story, "make package", category=CommandCategory.BUILD)
     story.expect_refusal(f"output timeout {process.id} {duration}", "duration", actor=story.agent)
 
 
 def test_a_saved_command_can_set_its_timeout_at_start(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success('alias add cart-build "make package" --category build', actor=story.agent)
     story.expect_hook_allowed("s-1", saved_timeout("5m"))
     process = story.container.get(Queries).query(Process).newest().page(1, 1).rows[0]
@@ -85,14 +85,14 @@ def test_a_saved_command_can_set_its_timeout_at_start(new_story):
 
 
 def test_an_invalid_saved_command_timeout_refuses_the_run(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success('alias add cart-build "make package" --category build', actor=story.agent)
     story.expect_hook_refusal("s-1", saved_timeout("0s"), "duration")
     story.expect_rows(not story.container.get(Queries).query(Process).exists())
 
 
 def test_a_run_ending_before_its_timeout_is_not_reported_as_timed_out(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = start_process(story, "make package", category=CommandCategory.BUILD)
     story.expect_success(f"output timeout {process.id} 1m", actor=story.agent)
     end_run(story, process, "built\n")

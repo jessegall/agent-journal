@@ -7,7 +7,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.ticks.agent_ticks import AgentTicks
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import BuilderHelper
 
 RUNNING_READ = "ended_at IS NULL"
 AGENT_COUNT = 4
@@ -16,7 +16,7 @@ AGENT_COUNT = 4
 class FourAgents(StoryFixture):
     """The builder's agent with three helpers under it."""
 
-    parent = HelperUnderBuilder
+    parent = BuilderHelper
 
     def steps(self, story: Story) -> None:
         for session in ("sub-2", "sub-3"):

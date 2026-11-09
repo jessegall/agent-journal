@@ -14,7 +14,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 PLANNING = "journal-planning"
@@ -29,21 +29,21 @@ def given(story, name):
     return story.container.get(ProfileSkills).folders(profile)
 
 
-@pytest.mark.parametrize("name, has, has_not", [
+@pytest.mark.parametrize("name, has, lacks", [
     ("journal-worker", WORKERS, PLANNING), ("journal-medior", WORKERS, PLANNING), ("journal-senior", WORKERS, PLANNING),
     ("journal-planner", PLANNING, WORKERS), ("journal-plan-reviewer", PLANNING, WORKERS),
     ("journal-functional-designer", DESIGN, PLANNING), ("journal-merger", WORKERS, PLANNING),
     ("journal-researcher", "journal-helpers", PLANNING), ("journal-debugger", "journal-helpers", WORKERS),
     ("journal-designer", "journal-helpers", WORKERS), ("journal-code-reviewer", "journal-helpers", PLANNING),
 ])
-def test_each_shipped_profile_gets_the_skills_of_its_job_and_not_those_of_another(new_story, name, has, has_not):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+def test_each_shipped_profile_gets_the_skills_of_its_job_and_not_those_of_another(new_story, name, has, lacks):
+    story = new_story(fixture=OpenTaskOrchestrator)
     skills = given(story, name)
-    story.expect_rows(has in skills, has_not not in skills, detail=str(skills))
+    story.expect_rows(has in skills, lacks not in skills, detail=str(skills))
 
 
 def test_every_skill_a_shipped_profile_names_exists_and_every_profile_names_some(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     known = {skill.folder for skill in story.container.get(SkillCatalogue).skills()}
     unknown = {profile.name: set(profile.skills) - known for profile in SHIPPED_PROFILES if set(profile.skills) - known}
     unnamed = [profile.name for profile in SHIPPED_PROFILES if not profile.skills]
@@ -51,12 +51,12 @@ def test_every_skill_a_shipped_profile_names_exists_and_every_profile_names_some
 
 
 def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skill(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.container.get(Bus).run(StartAgent(RESEARCHER_SESSION, "claude", CodingHelperRole.HELPER, story.agent.id, profile="journal-researcher"), Actor.core(), environment_id=1)
     story.expect_hook_allowed(RESEARCHER_SESSION, PLAN_LIST)
 
 
 def test_the_skill_list_names_the_agent_groups_that_have_each_skill(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     rows = {row["folder"]: row["groups"] for row in json.loads(story.run("skill list --json").output_text)["rows"]}
     story.expect_rows("Workers" in rows[WORKERS], "Merger" in rows[WORKERS], "Helpers" not in rows[WORKERS], "Helpers" in rows[PLANNING], "Workers" not in rows[PLANNING], rows["journal-dumps"] == [], detail=str(rows))

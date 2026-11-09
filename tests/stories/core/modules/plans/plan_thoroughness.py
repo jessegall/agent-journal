@@ -5,7 +5,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 
 
-class PlanWithOneTaskPhase(StoryFixture):
+class OneTaskPhasePlan(StoryFixture):
     """Plan 1 has phase 1 with task 1 alone and phase 2 with tasks 2 and 3."""
 
     parent = UserJoined
@@ -20,20 +20,20 @@ class PlanWithOneTaskPhase(StoryFixture):
 
 
 def test_a_plan_with_a_one_task_phase_is_not_made_ready_until_a_reason_is_given(new_story):
-    story = new_story(fixture=PlanWithOneTaskPhase)
+    story = new_story(fixture=OneTaskPhasePlan)
     story.expect_refusal("plan ready 1", "phase 1 of plan 1 has one task", actor=story.agent)
     story.expect_success("plan show 1", "state: draft", actor=story.agent)
 
 
 def test_a_reason_lets_a_plan_with_a_one_task_phase_be_made_ready(new_story):
-    story = new_story(fixture=PlanWithOneTaskPhase)
+    story = new_story(fixture=OneTaskPhasePlan)
     story.expect_refusal("plan ready 1", "only if this refusal is wrong for the case in hand, never to get on faster: --skip-guard plans.one-task-phase", actor=story.agent)
     confirmed_skip(story, "plans.one-task-phase", story.agent)
     story.expect_success('plan ready 1 --skip-guard plans.one-task-phase --skip-reason "the phase is one command"', "state: ready", actor=story.agent)
 
 
 def test_a_plan_whose_phases_each_have_two_tasks_is_made_ready_without_a_reason(new_story):
-    story = new_story(fixture=PlanWithOneTaskPhase)
+    story = new_story(fixture=OneTaskPhasePlan)
     story.expect_success('task make "Test it" --brief "Test it" --phase 1 --environment main', actor=story.agent)
     story.expect_success("plan ready 1", "state: ready", actor=story.agent)
 

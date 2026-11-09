@@ -20,14 +20,14 @@ from core.modules.processes.ticks.output_reading import OutputReading
 from core.testing.hook_samples import HookSamples
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session, repository_environment
-from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
+from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 
 BATCH_READS = 2
 
 
 @pytest.fixture
 def four_tasks(new_story):
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     story.run("setting set journal.suites.coding.workers.worker-run-limit 4 --environment main")
     for number in range(2, 5):

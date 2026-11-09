@@ -1,11 +1,11 @@
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 class QueueAgents(StoryFixture):
     """A main agent and a worker share a queue without reader requirements."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run("agent start queue-worker claude worker --environment main")

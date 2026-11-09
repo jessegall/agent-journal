@@ -1,11 +1,11 @@
 import pytest
 
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_line, expect_reply_refusal
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, dispatched_story_worker, worker_on_plan, worker_outside_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, dispatched_story_worker, start_planned_worker, unplanned_worker
 
 MODULE = "journal.suites.coding.workers"
 BATCH = f"{MODULE}.test-batch-size"
@@ -20,7 +20,7 @@ def configure(worker, key, value):
 
 @pytest.fixture
 def batch(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     UserJoined().steps(story)
     repository_environment(story)
     for title in ("Tax", "Totals", "Shipping", "Release"):
@@ -33,14 +33,14 @@ def batch(new_story, monkeypatch):
 @pytest.fixture
 def fourth(batch):
     for _ in range(3):
-        batch.prove_and_move_on(TEST_LINE)
+        batch.prove_advance(TEST_LINE)
     batch.story.expect_rows(batch.current_task() == 4, len(batch.started) == 0)
     return batch
 
 
 @pytest.fixture
 def submitted(fourth):
-    fourth.prove_and_move_on(TEST_LINE)
+    fourth.prove_advance(TEST_LINE)
     return fourth
 
 
@@ -54,7 +54,7 @@ def test_a_batch_waits_for_the_fourth_task_then_runs_all_its_proofs(submitted):
 
 def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch):
     for _ in range(4):
-        batch.change_and_prove(TEST_LINE)
+        batch.edit_prove(TEST_LINE)
         task = batch.current_task()
         batch.story.expect_success(f"proof check {task}", actor=batch.story.agent)
         batch.story.expect_success("worker next --wait --differences none", actor=batch.worker)
@@ -62,10 +62,10 @@ def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch):
 
 
 def test_a_short_batch_runs_at_the_workers_last_task(new_story, monkeypatch):
-    worker = worker_outside_plan(new_story, monkeypatch)
+    worker = unplanned_worker(new_story, monkeypatch)
     UserJoined().steps(worker.story)
     configure(worker, BATCH, "4")
-    worker.prove_and_move_on(TEST_LINE)
+    worker.prove_advance(TEST_LINE)
     worker.story.expect_rows(worker.current_task() == 2, len(worker.started) == 0)
     worker.prove(TEST_LINE)
     worker.story.expect_text("worker deliver --wait --differences none", "tests of batch", actor=worker.worker)
@@ -91,11 +91,11 @@ def test_failures_of_the_batch_return_together_and_only_failures_run_again(submi
 
 
 def test_the_phase_setting_off_tests_each_task_at_its_own_hand_in(new_story, monkeypatch):
-    worker = worker_on_plan(new_story, monkeypatch, build_test="pytest tests/phase.py")
+    worker = start_planned_worker(new_story, monkeypatch, build_test="pytest tests/phase.py")
     configure(worker, PHASE, "off")
     for _ in range(4):
         expect_reply_allowed(worker.run_test())
-    worker.change_and_prove(TEST_LINE)
+    worker.edit_prove(TEST_LINE)
     worker.story.expect_text("worker next --wait --differences none", "tests of task 1", actor=worker.worker)
     worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
     worker.end_all_tests()
@@ -108,9 +108,9 @@ def test_a_batch_has_three_own_runs_and_the_next_batch_starts_a_new_count(batch)
         expect_reply_allowed(reply)
         expect_reply_line(reply, f"Test runs left: {remaining}")
     for _ in range(3):
-        batch.prove_and_move_on(TEST_LINE)
+        batch.prove_advance(TEST_LINE)
     expect_reply_refusal(batch.run_test(), "--ask-main")
-    batch.prove_and_move_on(TEST_LINE)
+    batch.prove_advance(TEST_LINE)
     batch.end_all_tests()
     reply = batch.run_test()
     expect_reply_allowed(reply)
@@ -118,23 +118,23 @@ def test_a_batch_has_three_own_runs_and_the_next_batch_starts_a_new_count(batch)
 
 
 def test_the_default_batch_size_keeps_testing_each_task(new_story, monkeypatch):
-    worker = worker_outside_plan(new_story, monkeypatch)
-    worker.prove_and_move_on(TEST_LINE)
+    worker = unplanned_worker(new_story, monkeypatch)
+    worker.prove_advance(TEST_LINE)
     worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
     worker.end_all_tests()
     worker.story.expect_rows(worker.current_task() == 2)
 
 
 def test_worker_next_with_a_checked_proof_starts_the_next_task_without_a_test(new_story, monkeypatch):
-    worker = worker_outside_plan(new_story, monkeypatch)
-    worker.change_and_prove(TEST_LINE)
+    worker = unplanned_worker(new_story, monkeypatch)
+    worker.edit_prove(TEST_LINE)
     worker.story.expect_success("proof check 1", actor=worker.story.agent)
     worker.story.expect_success("worker next --wait --differences none", actor=worker.worker)
     worker.story.expect_rows(worker.current_task() == 2, not worker.started)
 
 
 def test_a_large_batch_moves_on_without_repeated_row_reads(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     UserJoined().steps(story)
     repository_environment(story)
     for number in range(2, 14):
@@ -143,7 +143,7 @@ def test_a_large_batch_moves_on_without_repeated_row_reads(new_story, monkeypatc
     worker = dispatched_story_worker(story, "worker dispatch --model sonnet " + " ".join(str(number) for number in range(1, 14)), monkeypatch)
     configure(worker, BATCH, "12")
     for _ in range(11):
-        worker.prove_and_move_on()
+        worker.prove_advance()
     worker.prove()
     story.expect_success("worker next --wait --differences none", actor=worker.worker)
     reads = story.repeated_work.read_texts
@@ -167,7 +167,7 @@ def test_both_settings_appear_in_the_viewers_workers_section_and_are_person_set(
 
 @pytest.fixture
 def second(batch):
-    batch.prove_and_move_on(TEST_LINE)
+    batch.prove_advance(TEST_LINE)
     return batch
 
 

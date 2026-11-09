@@ -8,14 +8,14 @@ from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 
 
 class CompactedMainAgent(StoryFixture):
     """The main agent of environment main, with a person beside it, compacted its context."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.hook("s-1", HookSamples.sample("compact"))
@@ -44,5 +44,5 @@ def test_the_newest_page_of_chat_marks_leaves_an_older_compaction_mark_for_a_pag
     first = json.loads(story.run("chat-mark main --environment main --limit 50 --json", actor=story.user).output_text)["rows"]
     story.expect_rows(len(first) == 50, "memories.compaction" not in {row["type"] for row in first}, detail=str(len(first)))
     older = story.run(f"chat-mark main --environment main --before-id {min(row['id'] for row in first)} --json", actor=story.user)
-    behind = json.loads(older.output_text).get("rows", [])
-    story.expect_rows("memories.compaction" in {row["type"] for row in behind}, detail=older.output_text[:300])
+    lagging = json.loads(older.output_text).get("rows", [])
+    story.expect_rows("memories.compaction" in {row["type"] for row in lagging}, detail=older.output_text[:300])

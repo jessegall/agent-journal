@@ -32,7 +32,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
@@ -120,7 +120,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(merger_enabled).lower()} --project", actor=story.user)
     repository = repository_environment(story)
@@ -147,7 +147,7 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
 
 
 def test_with_the_setting_off_the_main_agent_hears_that_the_tests_passed(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_rows(merger_agent(story) is None)
@@ -156,7 +156,7 @@ def test_with_the_setting_off_the_main_agent_hears_that_the_tests_passed(new_sto
 
 
 def test_only_the_merger_runs_its_commands(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_refusal("merger next", "only the merger runs this", actor=story.agent)
     story.expect_refusal('merger pass 1 "odd"', "only the merger runs this", actor=story.agent)
 
@@ -216,7 +216,7 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
@@ -243,7 +243,7 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
 
 
 def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = delivered_worker(story, repository_environment(story))
     stop = HookSamples.stop()
     story.hook(worker_session(story, worker), stop.with_raw({**stop.body["raw"], "last_assistant_message": "Handed in all assigned work."}))
@@ -369,7 +369,7 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
@@ -396,7 +396,7 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
 
 
 def test_the_merger_is_told_to_read_a_merge_that_moved_to_the_background_before_calling_it_unconfirmed(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     profile = story.container.get(ProfileFiles).effective("journal-merger")
     story.expect_rows("journal output read <n> --summary" in profile.body, "never tell the main agent a merge is unconfirmed while its output still runs" in profile.body)
 

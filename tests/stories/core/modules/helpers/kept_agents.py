@@ -15,7 +15,7 @@ from core.modules.agents.support.type_limits import TypeLimits
 from core.modules.helpers.support.kept_helpers import KeptHelpers
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
 from tests.stories.server.support.server_client import server_story, viewer_answer
@@ -290,7 +290,7 @@ def test_steering_or_new_job(new_story):
 
 
 def test_same_reviewer_same_plan_is_refused(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     launcher = FakeLauncher(story.home.socket("launcher"), request_count=2)
     story.expect_success("helper start journal-plan-reviewer --plan 7 --brief 'Review plan 7' --environment main", actor=story.agent)
     reviewer = helper_agent(story)

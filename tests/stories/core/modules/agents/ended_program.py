@@ -25,7 +25,7 @@ def running_launcher(story) -> FakeLauncher:
     return FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2)
 
 
-def stops_of(*agent_ids: int) -> list[dict[str, object]]:
+def read_stops(*agent_ids: int) -> list[dict[str, object]]:
     return [{"agent_id": agent_id, "stop": True} for agent_id in agent_ids]
 
 
@@ -40,7 +40,7 @@ def test_an_agent_another_agent_ended_gets_one_stop(new_story, role):
     agent_id, launcher = started_agent(story, role)
     story.expect_success(f"agent end {agent_id}", actor=story.agent)
     story.run_listeners()
-    story.expect_rows(launcher.requests == stops_of(agent_id))
+    story.expect_rows(launcher.requests == read_stops(agent_id))
 
 
 @pytest.mark.parametrize("role", ROLES)
@@ -49,7 +49,7 @@ def test_an_agent_a_person_ended_gets_one_stop(new_story, role):
     agent_id, launcher = started_agent(story, role)
     story.expect_success(f"agent end {agent_id}", actor=story.user)
     story.run_listeners()
-    story.expect_rows(launcher.requests == stops_of(agent_id))
+    story.expect_rows(launcher.requests == read_stops(agent_id))
 
 
 @pytest.mark.parametrize("role", ROLES)
@@ -66,7 +66,7 @@ def test_a_main_agent_a_person_ended_gets_one_stop(new_story):
     launcher = running_launcher(story)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.run_listeners()
-    story.expect_rows(launcher.requests == stops_of(story.agent.id))
+    story.expect_rows(launcher.requests == read_stops(story.agent.id))
 
 
 def test_a_main_agent_that_ended_itself_gets_no_stop(new_story):
@@ -85,16 +85,16 @@ def test_a_program_stop_waits_for_its_own_round_and_holds_no_ordinary_listener(n
     runner.run_ordinary()
     story.expect_rows(launcher.requests == [])
     runner.run_program_stops()
-    story.expect_rows(launcher.requests == stops_of(worker_id))
+    story.expect_rows(launcher.requests == read_stops(worker_id))
 
 
 def test_a_stop_command_stops_the_program_itself_and_the_listener_adds_no_second_stop(new_story):
     story = new_story(fixture=UserJoined)
     worker_id, launcher = started_agent(story, "worker")
     story.expect_success(f"agent stop {worker_id}", f"stopped agent {worker_id}", actor=story.user)
-    story.expect_rows(launcher.requests == stops_of(worker_id))
+    story.expect_rows(launcher.requests == read_stops(worker_id))
     story.run_listeners()
-    story.expect_rows(launcher.requests == stops_of(worker_id))
+    story.expect_rows(launcher.requests == read_stops(worker_id))
 
 
 def test_with_no_launcher_the_recorded_process_stops_after_the_processes_under_it(new_story, monkeypatch):

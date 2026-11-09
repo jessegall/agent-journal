@@ -21,7 +21,7 @@ func PanicReason(root string) string {
 		return ""
 	}
 	for _, line := range strings.Split(string(text), "\n") {
-		if reason, found := strings.CutPrefix(strings.TrimSpace(line), "why:"); found {
+		if reason, ok := strings.CutPrefix(strings.TrimSpace(line), "why:"); ok {
 			return strings.TrimSpace(reason)
 		}
 	}

@@ -1,4 +1,4 @@
-from tests.stories.core.support.coding_fixtures import CodingEnvironment, BuilderStarted, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import CodingEnvironment, BuilderStarted, OpenTaskOrchestrator
 from tests.stories.core.modules.codex.support.first_lines import expect_memory_start, expect_read_request, expect_image_read, expect_worker_commands
 
 
@@ -18,5 +18,5 @@ def test_codex_view_image_is_a_read_while_a_skill_blocks_writes(new_story):
 
 
 def test_a_worker_gets_python3_and_repair_guidance_and_can_correct_an_unchecked_proof(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     expect_worker_commands(story)

@@ -26,7 +26,7 @@ def open_runs(story) -> list[int]:
     return [run.sequence_id for run in story.container.get(Queries).query(SequenceRun).all_rows() if run.ended_at is None]
 
 
-class CleanupOverRelease(StoryFixture):
+class ReleaseCleanup(StoryFixture):
     """The agent runs Release, then a plan is made, so Cleanup runs on top of it."""
 
     parent = ReleaseAndCleanup
@@ -41,12 +41,12 @@ class CleanupOverRelease(StoryFixture):
 
 
 def test_a_record_made_while_a_sequence_runs_starts_its_sequence_on_top_of_it(new_story):
-    story = new_story(fixture=CleanupOverRelease)
+    story = new_story(fixture=ReleaseCleanup)
     story.expect_success("sequence follow", "sequence 2, step 1: Sweep the folder", actor=story.agent)
 
 
 def test_finishing_the_top_sequence_says_the_step_of_the_one_below(new_story):
-    story = new_story(fixture=CleanupOverRelease)
+    story = new_story(fixture=ReleaseCleanup)
     story.run("sequence follow", actor=story.agent)
     story.expect_success("sequence next", "sequence 2, step 2: Tidy the notes", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
@@ -55,7 +55,7 @@ def test_finishing_the_top_sequence_says_the_step_of_the_one_below(new_story):
 
 
 def test_abandoning_the_top_sequence_says_the_step_of_the_one_below(new_story):
-    story = new_story(fixture=CleanupOverRelease)
+    story = new_story(fixture=ReleaseCleanup)
     story.run("sequence follow", actor=story.agent)
     story.expect_refusal('sequence abandon --why "not now"', "leaves undone", actor=story.agent)
     story.expect_success('sequence abandon --why "not now" --sure', "sequence 2 abandoned", "sequence 1, step 1: Run the suite", actor=story.agent)
@@ -71,7 +71,7 @@ def test_a_sequence_started_by_hand_goes_on_top_of_a_running_one_but_the_same_on
 
 
 def test_a_record_made_again_starts_no_second_run_of_a_sequence_already_running(new_story):
-    story = new_story(fixture=CleanupOverRelease, environment="main")
+    story = new_story(fixture=ReleaseCleanup, environment="main")
     story.run('plan make "Another plan"', actor=story.user)
     story.run_listeners()
     story.expect_rows(open_runs(story) == [1, 2])

@@ -9,7 +9,7 @@ from core.base.model.move import Move
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 
-AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -39,8 +39,8 @@ def test_a_move_sets_the_state_and_carries_the_move():
 
 
 def test_saving_gives_the_id_version_and_timestamps_and_drops_the_move():
-    saved = Item(title="Dune").moved(ItemLifecycle.pause).saved(4, 1, AT)
-    assert (saved.id, saved.version, saved.created_at, saved.updated_at, saved.move) == (4, 1, AT, AT, None)
+    saved = Item(title="Dune").moved(ItemLifecycle.pause).saved(4, 1, FIXED_TIME)
+    assert (saved.id, saved.version, saved.created_at, saved.updated_at, saved.move) == (4, 1, FIXED_TIME, FIXED_TIME, None)
     assert saved.is_saved and not Item(title="Dune").is_saved
 
 

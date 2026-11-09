@@ -13,11 +13,11 @@ from server.booting_work import BootingWork
 from server.server_files import ServerFiles
 from core.base.performance.performance_state import PerformanceState
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
-from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsOn
+from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
 
 
 def developer_story(new_story):
-    return new_story(fixture=DevelopmentToolsOn)
+    return new_story(fixture=DevelopmentToolsEnabled)
 
 
 def warning_count(story):

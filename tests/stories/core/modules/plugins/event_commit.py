@@ -12,7 +12,7 @@ from core.base.model.event_form import EventForm
 from core.modules.plugins.support.plugin_subscriptions import PluginSubscriptions
 from tests.stories.core.modules.plugins.support.event_modules import FAILS_LATER, LATER_REFUSAL, NOTES, REFUSED_TITLE
 from tests.stories.core.modules.plugins.support.event_stories import (
-    PIN_CREATED, SECOND_JOB, commands_as_in_a_server, SECOND_JOB_TITLE, TASK_CREATED, data_row, deliveries, event_data, event_plugin_story, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
+    PIN_CREATED, SECOND_JOB, server_commands, SECOND_JOB_TITLE, TASK_CREATED, data_row, deliveries, event_data, event_plugin_story, plugin_data, plugin_page, plugin_row, script_calls, tasks_titled)
 
 LONG_TEXT = "a long brief " * 10000
 FAILING_COUNT = 5
@@ -61,7 +61,7 @@ def test_s16_a_commit_script_on_a_deleted_row_receives_the_last_row(new_story):
 
 def test_s17_a_commit_script_runs_on_its_own_thread_after_the_command_returns(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
-    commands_as_in_a_server(story)
+    server_commands(story)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(not script_calls(story, "see.sh"))
     runner = story.container.get(CommitListenerRunner)

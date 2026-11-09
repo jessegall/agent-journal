@@ -31,11 +31,11 @@ from tests.unit.core.base.model.test_model import Item
 
 
 def checked(old_row: Item | None, new_row: Item | None) -> None:
-    change = change_of(old_row, new_row)
+    change = read_change(old_row, new_row)
     LifecycleGuard(StateBook()).check(change.typed_event(LifecycleGuard), change.context)
 
 
-def change_of(old_row: Item | None, new_row: Item | None, skipped: frozenset[str] = frozenset()) -> Change[Model]:
+def read_change(old_row: Item | None, new_row: Item | None, skipped: frozenset[str] = frozenset()) -> Change[Model]:
     return Change(old_row, new_row, Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"), skipped))
 
 
@@ -80,7 +80,7 @@ def test_a_delete_happens_only_in_a_deletable_state():
 
 
 def test_a_change_of_metadata_alone_is_no_edit_and_raises_no_event():
-    metadata_change = change_of(CLOSED, CLOSED.changed(metadata=Metadata.parsed('{"reviews": {"asked": true}}')))
+    metadata_change = read_change(CLOSED, CLOSED.changed(metadata=Metadata.parsed('{"reviews": {"asked": true}}')))
     assert metadata_change.is_empty
 
 
@@ -92,5 +92,5 @@ def test_the_lifecycle_guard_can_be_neither_skipped_nor_switched_off():
     registry = Registry("abc", {}, {}, {}, [GuardEntry("core.lifecycle", EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")], ())
     guards = Guards(registry, Container(), AllOff(), ChangeFilter())
     with pytest.raises(GuardRefusal) as raised:
-        guards.ask(change_of(CLOSED, None, frozenset({"core.lifecycle"})))
+        guards.ask(read_change(CLOSED, None, frozenset({"core.lifecycle"})))
     assert raised.value.text == "refused by core.lifecycle: item 4 is closed, so it cannot be deleted: closed is final"

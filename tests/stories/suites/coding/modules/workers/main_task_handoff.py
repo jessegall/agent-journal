@@ -3,7 +3,7 @@ from pathlib import Path
 
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.support.main_task_handoff import MainTaskHandoff
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
@@ -28,7 +28,7 @@ def refused(handoff, worktree, patch) -> bool:
 
 @pytest.mark.real_git
 def test_s53_assigned_main_task_goes_to_new_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository, worker = worker_with_main_progress(story)
     handoff = story.container.get(MainTaskHandoff)
     patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))
@@ -41,7 +41,7 @@ def test_s53_assigned_main_task_goes_to_new_worker(new_story):
 
 @pytest.mark.real_git
 def test_s53_failed_handoff_preserves_main_and_unrelated_edits(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository, worker = worker_with_main_progress(story)
     handoff = story.container.get(MainTaskHandoff)
     patch = handoff.saved(str(repository.folder), 1, tuple(["cart.py"]))

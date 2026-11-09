@@ -1,5 +1,5 @@
 import pytest
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
@@ -7,7 +7,7 @@ from tests.stories.server.support.server_client import server_story
 
 @pytest.mark.real_git
 def test_agent_card_links_its_current_plan(new_story, tmp_path):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     story.expect_success('plan make "Release work" --environment main', actor=story.user)
     story.expect_success('phase make --plan 1 "Build" --goal "Finish"', actor=story.user)

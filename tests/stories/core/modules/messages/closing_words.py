@@ -1,7 +1,7 @@
 import pytest
 
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.support.message_nudges import MESSAGE_REACTION
@@ -18,7 +18,7 @@ def two_lines(text: str) -> str:
 
 
 def test_words_after_a_reply_by_command_reach_the_chat_once(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('message send "are you there" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.run('message reply 1 "yes"', actor=story.agent)
@@ -28,7 +28,7 @@ def test_words_after_a_reply_by_command_reach_the_chat_once(new_story):
 
 
 def test_words_after_a_person_wrote_again_since_the_reply_reach_the_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('message send "is the cart done" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.run('message reply 1 "yes"', actor=story.agent)
@@ -38,35 +38,35 @@ def test_words_after_a_person_wrote_again_since_the_reply_reach_the_chat(new_sto
 
 
 def test_a_turn_with_no_reply_reaches_the_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.hook("s-1", HookSamples.message_display("Here is what I found."))
     expect_chat(story, "Here is what I found")
 
 
 def test_a_few_words_answering_a_journal_line_stay_out_of_the_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
     story.hook("s-1", HookSamples.message_display("The stories are running."))
     expect_absent_chat(story, "The stories are running")
 
 
 def test_a_question_after_a_journal_line_reaches_the_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
     story.hook("s-1", HookSamples.message_display("Where is the cart total kept?"))
     expect_chat(story, "Where is the cart total kept?")
 
 
 def test_a_plain_answer_to_a_new_message_line_reaches_the_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.prompt("[journal] new message 7"))
     story.hook("s-1", HookSamples.message_display("Yes, done."))
     expect_chat(story, "Yes, done")
 
 
 def test_a_plain_answer_to_an_answered_question_line_reaches_the_chat(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.prompt("[journal] question:58 is answered"))
     story.hook("s-1", HookSamples.message_display("Going with your choice."))
     expect_chat(story, "Going with your choice")
@@ -84,7 +84,7 @@ def expect_chat(story, expected) -> None:
 
 @pytest.fixture
 def reply_ready(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('message send "What happened?" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.prompt("go on"))
     return story
@@ -198,7 +198,7 @@ def test_a_one_line_text_after_a_reply_that_a_tool_follows_reaches_chat(reply_re
 
 @pytest.fixture
 def reaction_turn(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     lines = []
     monkeypatch.setattr(TerminalTyping, "type_line", lambda _typing, agent_id, line: lines.append((agent_id, line)))
     story.expect_success('message send "The cart is ready" --environment main', actor=story.agent)
@@ -240,7 +240,7 @@ def test_a_message_sent_on_purpose_in_a_reaction_turn_reaches_chat(reaction_turn
 
 
 def test_an_older_reaction_line_also_keeps_the_closing_text_out(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.prompt("[journal] the user put 👍 on message:1: act on it if it asks for something"))
     story.hook("s-1", HookSamples.message_display("Should I continue?"))
     story.hook("s-1", HookSamples.stop())

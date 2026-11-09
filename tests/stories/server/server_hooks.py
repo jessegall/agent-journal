@@ -15,7 +15,7 @@ from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from tests.stories.core.support.fixtures import ThreeTasks, UserJoined
 from tests.stories.server.support.server_client import expect_timing_lines, server_story
 from core.testing.expect_row import expect_row
@@ -154,5 +154,5 @@ def lead_server(new_story):
 
 @pytest.fixture
 def builder_server(new_story):
-    with server_story(new_story(fixture=BuilderWithOpenTask)) as story:
+    with server_story(new_story(fixture=OpenTaskBuilder)) as story:
         yield story

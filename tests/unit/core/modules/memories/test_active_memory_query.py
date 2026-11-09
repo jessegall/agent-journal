@@ -1,7 +1,7 @@
 from core.base.database.statement import Statement
 from core.base.timestamp import Timestamp
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
-from tests.unit.core.modules.memories.support.memory_journal import NOW, MemoryJournal
+from tests.unit.core.modules.memories.support.memory_journal import FIXED_TIME, MemoryJournal
 
 
 def memories(tmp_path) -> tuple[MemoryJournal, ActiveMemoryQuery]:
@@ -9,7 +9,7 @@ def memories(tmp_path) -> tuple[MemoryJournal, ActiveMemoryQuery]:
 
     def make(text: str, environment_id: int, agent_id: int | None, weight: int = 5) -> None:
         journal.database.insert(Statement("INSERT INTO memories (environment_id, agent_id, creator_id, text, weight, created_at, updated_at)"
-                                          " VALUES (?, ?, 1, ?, ?, ?, ?)", (environment_id, agent_id, text, weight, NOW, NOW)))
+                                          " VALUES (?, ?, 1, ?, ?, ?, ?)", (environment_id, agent_id, text, weight, FIXED_TIME, FIXED_TIME)))
 
     make("environment fact", 1, None)
     make("own fact", 1, journal.first_agent, weight=7)

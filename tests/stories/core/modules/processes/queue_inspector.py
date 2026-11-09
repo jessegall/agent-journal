@@ -5,11 +5,11 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
@@ -34,7 +34,7 @@ def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output
 
 
 def test_the_finished_list_reads_as_many_as_asked_and_counts_them_all(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     runs = [start_process(story, f"make step-{number}", category=CommandCategory.BUILD) for number in range(3)]
     for run in runs:
         end_run(story, run, "done\n")
@@ -43,7 +43,7 @@ def test_the_finished_list_reads_as_many_as_asked_and_counts_them_all(new_story)
 
 
 def test_the_inspector_reads_main_agent_spots_and_the_queue_halt_reason(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("setting set journal.core.processes.main-runs-take-slots on --environment main", actor=story.user)
     main = start_process(story, "make main", category=CommandCategory.BUILD)
     story.expect_success('queue halt "Machine maintenance"', actor=story.user)
@@ -57,7 +57,7 @@ def test_the_inspector_reads_main_agent_spots_and_the_queue_halt_reason(new_stor
 
 
 def test_the_inspector_explains_a_server_restart(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.home.restart_mark.write_text("1")
     queue = json.loads(story.run("queue inspect --environment 1 --json", actor=story.user).output_text)
     story.expect_rows(queue["halted"], queue["halt_reason"] == "Server restart")

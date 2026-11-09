@@ -13,8 +13,8 @@ from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item
 
-AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
-CONTEXT = Context(Actor(7, ActorType.AGENT), AT, MakeItem(title="Dune"))
+FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+CONTEXT = Context(Actor(7, ActorType.AGENT), FIXED_TIME, MakeItem(title="Dune"))
 STORED = Item(id=4, version=1, title="Dune")
 
 

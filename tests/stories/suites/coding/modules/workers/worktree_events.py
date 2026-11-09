@@ -51,12 +51,12 @@ def hiding_story(new_story):
 @pytest.fixture
 def lifting_story(new_story):
     story = story_with_hidden_rules(new_story, {"event": WORKTREE_DELIVER, "commit": "lift.sh"}, **{"lift.sh": RESTORE_RULES_SCRIPT})
-    hand_in(story)
+    delivery_line(story)
     story.run_listeners()
     return story
 
 
-def hand_in(story) -> None:
+def delivery_line(story) -> None:
     story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success(FIRST_PROOF, "point: 1", actor=story.worker)
     story.expect_success(DELIVERY, actor=story.worker)
@@ -72,15 +72,15 @@ def worktree_state(story) -> tuple[str, str, bool]:
 
 @pytest.fixture
 def delivered_story(hiding_story):
-    hand_in(hiding_story)
+    delivery_line(hiding_story)
     return hiding_story
 
 
 @pytest.fixture
-def delivered_after_the_branch_moved(hiding_story):
+def moved_branch_delivery(hiding_story):
     hiding_story.repository.checkout(ENVIRONMENT_BRANCH)
     hiding_story.repository.committed(RULES, CHANGED_RULES_TEXT, "The rules change")
-    hand_in(hiding_story)
+    delivery_line(hiding_story)
     return hiding_story
 
 
@@ -99,8 +99,8 @@ def test_s36_the_branch_keeps_a_hidden_folder_whole_after_the_merge(delivered_st
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
 
 
-def test_s36_the_branch_changes_the_hidden_folder_during_the_work_and_the_delivery_rebases(delivered_after_the_branch_moved):
-    story, repository, worker = delivered_after_the_branch_moved, delivered_after_the_branch_moved.repository, delivered_after_the_branch_moved.worker
+def test_s36_the_branch_changes_the_hidden_folder_during_the_work_and_the_delivery_rebases(moved_branch_delivery):
+    story, repository, worker = moved_branch_delivery, moved_branch_delivery.repository, moved_branch_delivery.worker
     story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", True))
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, CHANGED_RULES_TEXT)
@@ -123,7 +123,7 @@ def test_a_plugin_hears_one_event_for_a_merge_with_its_commits_and_none_for_a_re
     outcome = story.run(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()
     story.expect_rows(outcome.code != 0, not script_calls(story, "see.sh"))
-    hand_in(story)
+    delivery_line(story)
     original_commit = story.repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()
@@ -148,7 +148,7 @@ def removable(new_story):
 
 def test_a_removal_event_fires_when_a_merge_removes_the_worktree(removable):
     story = removable
-    hand_in(story)
+    delivery_line(story)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()

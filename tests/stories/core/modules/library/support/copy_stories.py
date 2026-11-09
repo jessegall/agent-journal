@@ -12,7 +12,7 @@ from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.testing.story import Story
 from core.testing.template_databases import TemplateDatabases
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
 
@@ -40,7 +40,7 @@ def new_item(server: SharedServerBinary, token: str, title: str, body: str = "Ta
 
 
 def connected(new_story, server: SharedServerBinary, token: str, module: str | None = None) -> Story:
-    story = new_story(module, fixture=BuilderWithUser) if module else new_story(fixture=BuilderWithUser)
+    story = new_story(module, fixture=UserBuilder) if module else new_story(fixture=UserBuilder)
     story.expect_text(f"library connect {server.address} --token {token}", "Connected: ", actor=story.user)
     return story
 
@@ -48,10 +48,10 @@ def connected(new_story, server: SharedServerBinary, token: str, module: str | N
 def made_copy(story: Story, server: SharedServerBinary, token: str, title: str) -> LibraryCopy:
     item_id = new_item(server, token, title)
     story.expect_text(f"library get doc {item_id}", f"library doc {item_id}, version 1 is now doc ", actor=story.user)
-    return copy_of_item(story, item_id)
+    return item_copy(story, item_id)
 
 
-def copy_of_item(story: Story, item_id: int) -> LibraryCopy:
+def item_copy(story: Story, item_id: int) -> LibraryCopy:
     return story.container.get(Queries).query(LibraryCopy).filter(share="doc", item_id=item_id).first()
 
 
@@ -68,13 +68,13 @@ def copy_line(story: Story, copy: LibraryCopy) -> str:
     return next(line for line in story.run("library copies", story.agent).output_text.splitlines() if line.startswith(f"copy {copy.id}:"))
 
 
-def change_on_server(server: SharedServerBinary, token: str, item_id: int, title: str, body: str, version: int) -> None:
+def server_change(server: SharedServerBinary, token: str, item_id: int, title: str, body: str, version: int) -> None:
     code = server.send(token, "PUT", f"/items/doc/{item_id}", {"fields": doc_fields(title, body)}, {"If-Match": f'"{version}"'})[0]
     assert code == 200
 
 
 def second_story(templates: TemplateDatabases, folder: Path) -> Story:
-    return templates.story(folder, (), BuilderWithUser)
+    return templates.story(folder, (), UserBuilder)
 
 
 def connected_second(story: Story, server: SharedServerBinary, token: str) -> Story:

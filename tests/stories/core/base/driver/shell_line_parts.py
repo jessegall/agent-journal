@@ -17,7 +17,7 @@ BUILDING = ShellPart("make", CommandCategory.BUILD, [])
 EDITING = ShellPart("sed", CommandCategory.EDIT, ["-i"], effects=[CommandEffect.WRITES_FILES])
 
 
-def line_of(text: str, *parts: ShellPart, redirects: Sequence[str] = ()) -> ShellLine:
+def read_line(text: str, *parts: ShellPart, redirects: Sequence[str] = ()) -> ShellLine:
     return ShellLine.parsed(HookSamples.shell(text, *parts, redirects=redirects).body["tool"]["shell"])
 
 
@@ -63,57 +63,57 @@ def test_a_process_of_a_mixed_chain_takes_the_category_of_the_part_a_reader_watc
 
 
 def expect_watched_part_category(text, item, item_2, expected) -> None:
-    actual = line_of(text, item, item_2).watched_part_category
+    actual = read_line(text, item, item_2).watched_part_category
     assert actual is expected, actual
 
 
 def expect_readonly(text, item, text_2) -> None:
-    actual = line_of(text, item, redirects=[text_2]).is_readonly
+    actual = read_line(text, item, redirects=[text_2]).is_readonly
     assert actual, actual
 
 
 def expect_absent_readonly(text, item, text_2) -> None:
-    actual = line_of(text, item, redirects=[text_2]).is_readonly
+    actual = read_line(text, item, redirects=[text_2]).is_readonly
     assert not actual, actual
 
 
 def expect_absent_readonly_2(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).is_readonly
+    actual = read_line(text, item, item_2).is_readonly
     assert not actual, actual
 
 
 def expect_readonly_2(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).is_readonly
+    actual = read_line(text, item, item_2).is_readonly
     assert actual, actual
 
 
 def expect_part_writing_files(text, item, text_2) -> None:
-    actual = line_of(text, item, redirects=[text_2]).has_part_writing_files
+    actual = read_line(text, item, redirects=[text_2]).has_part_writing_files
     assert actual, actual
 
 
 def expect_absent_part_writing_files(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).has_part_writing_files
+    actual = read_line(text, item, item_2).has_part_writing_files
     assert not actual, actual
 
 
 def expect_part_writing_files_2(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).has_part_writing_files
+    actual = read_line(text, item, item_2).has_part_writing_files
     assert actual, actual
 
 
 def expect_build_part(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).has_build_part
+    actual = read_line(text, item, item_2).has_build_part
     assert actual, actual
 
 
 def expect_absent_test_part(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).has_test_run_part
+    actual = read_line(text, item, item_2).has_test_run_part
     assert not actual, actual
 
 
 def expect_test_part(text, item, item_2) -> None:
-    actual = line_of(text, item, item_2).has_test_run_part
+    actual = read_line(text, item, item_2).has_test_run_part
     assert actual, actual
 
 
@@ -122,11 +122,11 @@ def expect_uncertainty(line: ShellLine, uncertain: bool, old_hook: bool) -> None
 
 
 def test_a_part_the_hook_could_not_judge_reaches_the_shell_line():
-    expect_uncertainty(line_of("""awk 'BEGIN { system("rm a") }' notes""", ShellPart("awk", CommandCategory.READ, ["notes"], uncertain=True)), True, False)
+    expect_uncertainty(read_line("""awk 'BEGIN { system("rm a") }' notes""", ShellPart("awk", CommandCategory.READ, ["notes"], uncertain=True)), True, False)
 
 
 def test_a_line_of_plain_reads_has_no_uncertain_part():
-    expect_uncertainty(line_of("cat notes", LISTING), False, False)
+    expect_uncertainty(read_line("cat notes", LISTING), False, False)
 
 
 def test_an_old_hook_sends_no_doubt_so_its_parts_count_as_uncertain_and_the_line_says_why():
@@ -138,5 +138,5 @@ def test_an_old_hook_sends_no_doubt_so_its_parts_count_as_uncertain_and_the_line
 def test_a_line_naming_the_same_task_twice_names_it_once():
     block = ShellPart("journal", CommandCategory.JOURNAL, ["task", "block", "12", "--reason", "waits"])
     other = ShellPart("journal", CommandCategory.JOURNAL, ["task", "close", "9"])
-    line = line_of("journal task block 12 --reason waits && journal task block 12 --reason waits && journal task close 9", block, block, other)
+    line = read_line("journal task block 12 --reason waits && journal task block 12 --reason waits && journal task close 9", block, block, other)
     expect_value(line.journal_command_numbers("task block", "task close"), (12, 9))

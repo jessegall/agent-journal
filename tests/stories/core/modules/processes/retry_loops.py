@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.modules.aliases.saved_commands import hook_of
+from tests.stories.core.modules.aliases.saved_commands import read_hook
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 REFUSAL = "no retry loops"
@@ -8,7 +8,7 @@ REFUSAL = "no retry loops"
 
 @pytest.fixture
 def hook(new_story):
-    yield from hook_of(new_story(fixture=BuilderStarted), {})
+    yield from read_hook(new_story(fixture=BuilderStarted), {})
 
 
 @pytest.mark.parametrize("line", ["for i in 1 2 3; do git status && break; sleep 2; done",

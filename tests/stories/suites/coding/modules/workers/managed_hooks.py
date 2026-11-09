@@ -2,14 +2,14 @@ import json
 
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_answers, expect_program_hooks
 
 
 def test_a_new_worktree_strips_committed_hooks_and_keeps_the_shared_store_unchanged(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     name = ".claude/settings.json"
     settings = {"permissions": {"allow": ["Bash(ls)"]}, "hooks": {

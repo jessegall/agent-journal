@@ -56,7 +56,7 @@ def test_s5_a_wrong_key_is_marked_installs_and_runs_nothing_while_the_rest_of_th
     folder = event_folder(story, {"event": WRONG_KEY, "guard": "see.sh", "listen": "see.sh", "commit": "see.sh"}, {"event": PIN_CREATED, "commit": "right.sh"})
     expect_listed(event_page.preview(folder), category="guard", label=WRONG_KEY, state="wrong key")
     story.expect_success(f"plugin install {folder} --yes", actor=story.user)
-    event_page.expect_on()
+    event_page.expect_target()
     expect_listed(event_page.card(), key=WRONG_KEY, form="commit", state="wrong key")
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_success('task edit 2 --title "Second job again"', actor=story.agent)
@@ -71,7 +71,7 @@ def test_s5_a_wrong_key_is_marked_installs_and_runs_nothing_while_the_rest_of_th
 def test_s5_a_plugin_whose_only_key_is_wrong_still_installs(event_page):
     folder = event_folder(event_page.story, {"event": WRONG_KEY, "commit": "see.sh"})
     event_page.install(folder)
-    event_page.expect_on()
+    event_page.expect_target()
     expect_listed(event_page.card(), key=WRONG_KEY, state="wrong key")
 
 
@@ -79,7 +79,7 @@ def test_s5_a_plugin_whose_only_key_is_wrong_still_installs(event_page):
 def test_s6_an_entry_of_the_wrong_shape_installs_and_shows_as_wrong(event_page, entries):
     story = event_page.story
     install_event_plugin(story, *entries, {"event": TASK_CREATED, "commit": "see.sh"})
-    event_page.expect_on()
+    event_page.expect_target()
     card = event_page.card()
     expect_listed(card, key=TASK_CREATED, form="commit", state="listens")
     story.expect_rows(any(row["state"] == "wrong key" for row in card))
@@ -87,27 +87,27 @@ def test_s6_an_entry_of_the_wrong_shape_installs_and_shows_as_wrong(event_page, 
 
 def test_s6_a_listen_that_is_a_text_and_not_a_list_installs_and_shows_as_wrong(event_page):
     install_event_plugin(event_page.story, listen=TASK_CREATED)
-    event_page.expect_on()
+    event_page.expect_target()
     event_page.story.expect_rows(any(row["state"] == "wrong key" for row in event_page.card()))
 
 
 def test_s7_a_script_outside_the_folder_installs_and_never_runs_and_the_card_says_so(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": TASK_CREATED, "commit": "../other/run.sh"})
-    outside = story.home.folder / "plugins" / "other" / "run.sh"
-    outside.parent.mkdir(parents=True)
-    outside.write_text(f'#!/bin/sh\ntouch "{outside}.called"\n')
-    outside.chmod(0o755)
+    external = story.home.folder / "plugins" / "other" / "run.sh"
+    external.parent.mkdir(parents=True)
+    external.write_text(f'#!/bin/sh\ntouch "{external}.called"\n')
+    external.chmod(0o755)
     expect_listed(event_page.card(), key=TASK_CREATED, form="commit", script="../other/run.sh", state="wrong script")
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
-    story.expect_rows(not Path(f"{outside}.called").exists())
+    story.expect_rows(not Path(f"{external}.called").exists())
 
 
 def test_s8_a_guard_on_a_system_event_installs_shows_the_only_form_and_its_commit_entry_works(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": BOOTING, "guard": "refuse.sh", "commit": "see.sh"})
-    event_page.expect_on()
+    event_page.expect_target()
     expect_listed(event_page.card(), key=BOOTING, form="guard", state="form not offered")
     expect_listed(event_page.card(), key=BOOTING, form="commit", state="listens")
     story.expect_rows("takes only After a change" in CARD.read_text())
@@ -118,7 +118,7 @@ def test_s8_a_guard_on_a_system_event_installs_shows_the_only_form_and_its_commi
 
 def test_s9_an_old_name_in_hears_installs_and_the_card_shows_it_as_for_a_key(event_page):
     install_event_plugin(event_page.story, program="see.sh", hears=["tol_starting"])
-    event_page.expect_on()
+    event_page.expect_target()
     expect_listed(event_page.card(), key="tol_starting", state="wrong key")
 
 
@@ -128,7 +128,7 @@ def test_s10_a_key_the_journal_stops_raising_stays_on_shows_on_the_card_and_othe
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     page = plugin_page(story)
-    page.expect_on()
+    page.expect_target()
     expect_listed(page.card(), key=NOTE_CREATED, form="commit", state="wrong key")
     expect_listed(page.card(), key=TASK_CREATED, form="commit", state="listens")
     story.expect_rows(not script_calls(story, "see.sh"), len(script_calls(story, "right.sh")) == 1)
@@ -162,7 +162,7 @@ def test_s12_a_new_script_file_changes_the_digest_and_an_upgrade_takes_the_new_d
     story.expect_rows(plugin_row(story).files_digest != original_digest)
     story.expect_success(PIN_LINE, actor=story.agent)
     story.run_listeners()
-    event_page.expect_on()
+    event_page.expect_target()
     story.expect_rows(len(script_calls(story, "extra.sh")) == 1)
 
 

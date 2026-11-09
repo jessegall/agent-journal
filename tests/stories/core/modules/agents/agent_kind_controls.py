@@ -8,7 +8,7 @@ from tests.stories.core.modules.helpers.start_helper import START
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.helper_reports import enforced, helper_report
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
 from tests.stories.suites.coding.modules.workers.support.program_split import dispatch, exit_program, expect_program, new_task, split_story, split_viewer
@@ -28,7 +28,7 @@ def new_reasons(story, agent_type: str, profile: str = "") -> list[str]:
 
 
 def test_s11_inheritance_without_options_allows_every_type_and_profile(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     with scope_line(story):
         resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
     expect_value((resolved.source, resolved.problems, resolved.options.allow_new, resolved.options.allowed_profiles), ("default", (), True, None))
@@ -36,7 +36,7 @@ def test_s11_inheritance_without_options_allows_every_type_and_profile(new_story
 
 
 def test_s11_inheritance_a_profile_line_wins_over_its_type_only_for_its_own_fields(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off", "helper:journal-merger allow_new=on")
     expect_absent_value(new_reasons(story, "helper", "journal-merger"))
     expect_value(new_reasons(story, "helper", "journal-researcher"), ["new helper sessions are switched off"])
@@ -44,7 +44,7 @@ def test_s11_inheritance_a_profile_line_wins_over_its_type_only_for_its_own_fiel
 
 
 def test_s13_inheritance_an_empty_allowed_profiles_list_denies_all_and_a_missing_one_allows_all(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     set_options(story, "worker allowed_profiles=")
     expect_value(new_reasons(story, "worker", "journal-worker"), ["worker may not use the profile journal-worker"])
     set_options(story, "worker allowed_profiles=journal-worker")
@@ -53,7 +53,7 @@ def test_s13_inheritance_an_empty_allowed_profiles_list_denies_all_and_a_missing
 
 
 def test_s12_inheritance_the_environment_list_replaces_the_project_list_and_names_its_source(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off", scope="--project")
     expect_value(new_reasons(story, "helper", "journal-researcher"), ["new helper sessions are switched off"])
     set_options(story, "worker allow_resume=off")
@@ -63,7 +63,7 @@ def test_s12_inheritance_the_environment_list_replaces_the_project_list_and_name
 
 
 def test_s52_inheritance_provider_and_model_restrictions_intersect_and_never_widen(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {ALLOWED_MODELS} {shlex.quote(json.dumps(['claude opus', 'codex gpt']))} --environment main", actor=story.user)
     set_options(story, "worker allowed_providers=claude", "worker allowed_models=claude:opus")
     with scope_line(story):
@@ -75,7 +75,7 @@ def test_s52_inheritance_provider_and_model_restrictions_intersect_and_never_wid
 
 
 def test_s61_invalid_legacy_policy_is_readable_and_repairable_inheritance(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     set_options(story, "worker allow_new=maybe")
     with scope_line(story):
         resolved = story.container.get(AgentOptions).resolved("worker", "journal-worker")
@@ -156,7 +156,7 @@ def test_s11_lifecycle_new_workers_off_refuses_a_dispatch_and_starts_nothing(spl
 
 
 def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off")
     launcher = FakeLauncher(story.home.socket("launcher"), request_count=1)
     story.expect_refusal(START, "new helper sessions are switched off", actor=story.agent)
@@ -188,13 +188,13 @@ def helper_profiles(story) -> dict[str, dict]:
 
 
 def test_s20_inheritance_an_unused_helper_profile_shows_the_common_limits_with_no_counts(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     merger = helper_profiles(story)["journal-merger"]
     expect_value((merger["running"], merger["kept"], merger["run_limit"], merger["kept_limit"]), (0, 0, 4, 8))
 
 
 def test_s21_inheritance_an_explicit_profile_limit_changes_only_that_profile(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps(['journal-merger:1:2']))} --environment main", actor=story.user)
     profiles = helper_profiles(story)
     merger, researcher = profiles["journal-merger"], profiles["journal-researcher"]
@@ -227,7 +227,7 @@ def test_failed_opening_releases_place_once(split_story, split_viewer):
 
 
 def test_special_designer_and_merger_profiles_each_show_once_with_the_common_helper_limits(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
     names = [row["profile"] for row in next(row for row in rows if row["key"] == "helper")["profiles"]]
     profiles = helper_profiles(story)
@@ -236,7 +236,7 @@ def test_special_designer_and_merger_profiles_each_show_once_with_the_common_hel
 
 
 def test_s49_special_profiles_with_no_agents_add_nothing_to_the_helper_totals(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
     helper = next(row for row in rows if row["key"] == "helper")
     expect_value((helper["running"], helper["kept"], sum(row["running"] + row["kept"] for row in helper["profiles"])), (0, 0, 0))

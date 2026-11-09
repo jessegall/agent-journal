@@ -16,7 +16,7 @@ def story_with_main_runs(new_story, setting: bool, main_runs: int = 1):
     return story, runs
 
 
-def state_of(story, process: Process) -> Process:
+def read_state(story, process: Process) -> Process:
     return story.container.get(Queries).query(Process).find(process.id)
 
 
@@ -73,7 +73,7 @@ def expect_slot_2(story, running_process) -> None:
 
 
 def expect_state(story, running_process, expected) -> None:
-    actual = state_of(story, running_process).state
+    actual = read_state(story, running_process).state
     assert actual is expected, actual
 
 

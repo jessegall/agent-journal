@@ -3,13 +3,13 @@ import pytest
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
-from tests.stories.core.modules.skills.agent_skills import read_of
+from tests.stories.core.modules.skills.agent_skills import read_row
 from tests.stories.core.modules.skills.due import environment, start
 
 SKILLS = ("journal", "journal-etiquette", "journal-messages", "journal-notes")
 
 
-def nothing_due(new_story):
+def empty_due(new_story):
     story = environment(new_story)
     story.run("setting make journal.core.skills.session-start '[]'")
     start(story)
@@ -17,7 +17,7 @@ def nothing_due(new_story):
 
 
 def read_skill(story, folder: str) -> None:
-    read_of(story, f".claude/skills/{folder}/SKILL.md")
+    read_row(story, f".claude/skills/{folder}/SKILL.md")
     story.run_listeners()
 
 
@@ -47,7 +47,7 @@ def test_a_skill_read_twice_shows_once(cleared_skill_requirements):
 
 @pytest.fixture
 def cleared_skill_requirements(new_story):
-    return nothing_due(new_story)
+    return empty_due(new_story)
 
 
 def expect_family_mark_grouping(mark, number, expected) -> None:

@@ -7,8 +7,8 @@ from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_C
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.report import OrchestratorWithMergerOff
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -29,7 +29,7 @@ def stop_mark(story, variant):
 
 
 def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -39,7 +39,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
 
 
 def test_a_worker_with_a_task_queued_and_none_started_is_refused_its_stop(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
@@ -49,7 +49,7 @@ def test_a_worker_with_a_task_queued_and_none_started_is_refused_its_stop(new_st
 
 
 def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothing_when_it_stops(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     main = story.agent
     worker = dispatched_worker(story)
@@ -67,7 +67,7 @@ def test_a_worker_that_says_stuck_while_its_run_goes_tells_its_main_agent_nothin
 
 
 def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -82,7 +82,7 @@ def test_a_stuck_worker_may_stop_and_its_main_agent_hears_of_it(new_story):
 
 def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_main_chat(new_story, tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     last_reply(tmp_path, worker_session(story, worker), "The build tool is gone from the path")
@@ -96,7 +96,7 @@ def test_a_stuck_worker_tells_its_main_agent_at_once_and_shows_a_mark_in_the_mai
 
 def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hears_it_is_started_again(new_story, tmp_path, monkeypatch):
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     last_reply(tmp_path, worker_session(story, worker), "I ran out of ideas")
@@ -110,7 +110,7 @@ def test_a_worker_that_stops_with_tasks_left_shows_a_mark_and_its_main_agent_hea
 
 
 def test_a_worker_with_no_tasks_left_shows_no_stop_mark(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success("task cancel 1 --reason gone", actor=story.agent)
@@ -122,7 +122,7 @@ def test_a_worker_with_no_tasks_left_shows_no_stop_mark(new_story):
 
 
 def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -134,7 +134,7 @@ def test_a_worker_a_person_stops_loses_its_tasks_and_is_not_started_again(new_st
 
 
 def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_which_its_main_agent_hears_of(new_story):
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
@@ -150,7 +150,7 @@ def test_a_stopped_worker_keeps_its_task_in_testing_and_loses_the_one_queued_whi
 
 def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_agent(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = dispatched_worker(story, f"{DISPATCH} 2")
@@ -162,7 +162,7 @@ def test_a_worker_that_ends_with_only_a_queued_task_has_it_named_to_the_main_age
 
 
 def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('task make "Other job" --brief "Do the other job" --environment main', actor=story.agent)
@@ -175,7 +175,7 @@ def test_a_queued_task_waiting_on_an_open_task_is_not_next_in_the_queue(new_stor
 
 def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
@@ -186,7 +186,7 @@ def test_a_worker_that_keeps_ending_is_named_to_the_main_agent(new_story, monkey
 
 def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
@@ -199,7 +199,7 @@ def test_a_worker_that_ends_with_many_tasks_left_gives_the_main_agent_one_line(n
 
 
 def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_told_to_carry_on(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
@@ -211,7 +211,7 @@ def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_told_to_ca
 
 
 def test_a_main_session_whose_recorded_process_is_gone_is_never_ended_by_the_tick(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success(f"agent edit {story.agent.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
     story.use_processes()
     story.tick(MAIN_SESSION)
@@ -219,7 +219,7 @@ def test_a_main_session_whose_recorded_process_is_gone_is_never_ended_by_the_tic
 
 
 def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_next_session_start_names_it(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     story.hook(MAIN_SESSION, HookSamples.sample("session_end"))
@@ -229,7 +229,7 @@ def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_
 
 
 def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_their_own(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success(f"environment make side {repository.folder} --branch {ENVIRONMENT_BRANCH}", "name: side")
     story.expect_success('task make "Fix the till" --environment side', "environment_id: 2")

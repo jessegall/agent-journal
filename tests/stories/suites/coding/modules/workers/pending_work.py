@@ -15,7 +15,7 @@ from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -25,7 +25,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended,
 
 
 class PersonOrchestrator(StoryFixture):
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story):
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

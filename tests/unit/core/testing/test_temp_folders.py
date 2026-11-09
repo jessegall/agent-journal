@@ -10,7 +10,7 @@ from core.testing.template_cache import TemplateCache
 CHECK = Path(__file__).resolve().parents[4] / "scripts" / "checks" / "pytest_folder_size.py"
 
 
-def user_folder_in(root: Path) -> Path:
+def user_folder(root: Path) -> Path:
     return root / f"pytest-of-{getpass.getuser()}"
 
 
@@ -50,14 +50,14 @@ def test_only_the_newest_failed_runs_are_kept(tmp_path):
 
 
 def test_a_run_still_going_is_left_and_an_old_leftover_is_removed(tmp_path):
-    going = filled(tmp_path / f"{RUNNING_PREFIX}20260101T000000-1", 1)
+    active = filled(tmp_path / f"{RUNNING_PREFIX}20260101T000000-1", 1)
     leftover = filled(tmp_path / f"{PYTEST_PREFIX}7", 1)
     old = os.stat(leftover).st_mtime - RUNNING_FOLDER_SECONDS - 1
     os.utime(leftover, (old, old))
 
     TempFolders(tmp_path).remove_old()
 
-    assert going.is_dir() and not leftover.exists()
+    assert active.is_dir() and not leftover.exists()
 
 
 def run_check(root: Path, limit: int) -> subprocess.CompletedProcess:
@@ -66,7 +66,7 @@ def run_check(root: Path, limit: int) -> subprocess.CompletedProcess:
 
 
 def test_the_size_check_fails_over_the_limit_and_passes_under_it(tmp_path):
-    filled(user_folder_in(tmp_path) / "pytest-1", 100)
+    filled(user_folder(tmp_path) / "pytest-1", 100)
 
     assert run_check(tmp_path, 1000).returncode == 0
     assert run_check(tmp_path, 99).returncode == 1
@@ -94,7 +94,7 @@ def run_pytest_with_plugin(root: Path, test_source: str, *options: str) -> subpr
 
 
 def kept_folders(root: Path) -> list[str]:
-    return [folder.name.split("-")[0] for folder in user_folder_in(root / "temp").iterdir()]
+    return [folder.name.split("-")[0] for folder in user_folder(root / "temp").iterdir()]
 
 
 def test_a_passing_run_leaves_no_folder_and_a_failing_run_leaves_one(tmp_path):
@@ -117,11 +117,11 @@ def test_a_run_with_workers_removes_its_folder_when_it_passes(tmp_path):
 
 def test_a_new_run_removes_the_folder_of_a_run_whose_process_has_ended_and_keeps_one_still_going(tmp_path):
     ended = filled(tmp_path / f"{RUNNING_PREFIX}20260101T000000-99999999", 1)
-    going = filled(tmp_path / f"{RUNNING_PREFIX}20260101T000000-{os.getpid()}", 1)
+    active = filled(tmp_path / f"{RUNNING_PREFIX}20260101T000000-{os.getpid()}", 1)
 
     TempFolders(tmp_path).start()
 
-    assert not ended.exists() and going.is_dir()
+    assert not ended.exists() and active.is_dir()
 
 
 def test_a_new_run_keeps_only_the_newest_failed_runs(tmp_path):
@@ -139,7 +139,7 @@ def test_a_story_folder_is_removed_when_its_test_passes_and_kept_when_it_fails(t
 
     run_pytest_with_plugin(tmp_path, source)
 
-    failed = next(user_folder_in(tmp_path / "temp").iterdir())
+    failed = next(user_folder(tmp_path / "temp").iterdir())
     assert not (failed / "test_passes0" / "journal").exists()
     assert (failed / "test_fails0" / "journal").is_dir()
 

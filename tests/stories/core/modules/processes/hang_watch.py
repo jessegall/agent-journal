@@ -23,7 +23,7 @@ class FakeGroupCpuTime(GroupCpuTime):
         return self.used
 
 
-class RunningBuild(StoryFixture):
+class ActiveBuild(StoryFixture):
     """The main agent's make build runs in the background."""
 
     parent = BuilderStarted
@@ -47,7 +47,7 @@ def started_tree(story: Story, used: float | None) -> FakeGroupCpuTime:
 
 
 def test_an_idle_silent_run_is_stopped_and_its_agent_told_which_run_and_for_how_long(new_story):
-    story = new_story(fixture=RunningBuild)
+    story = new_story(fixture=ActiveBuild)
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     watch_tick(story)
@@ -56,7 +56,7 @@ def test_an_idle_silent_run_is_stopped_and_its_agent_told_which_run_and_for_how_
 
 
 def test_a_silent_run_whose_processor_time_rises_is_left_alone(new_story):
-    story = new_story(fixture=RunningBuild)
+    story = new_story(fixture=ActiveBuild)
     tree = started_tree(story, 12.0)
     for used in (13.0, 14.0):
         story.advance(timedelta(seconds=200))
@@ -66,7 +66,7 @@ def test_a_silent_run_whose_processor_time_rises_is_left_alone(new_story):
 
 
 def test_an_idle_run_that_printed_lately_is_left_alone(new_story):
-    story = new_story(fixture=RunningBuild)
+    story = new_story(fixture=ActiveBuild)
     started_tree(story, 12.0)
     story.advance(timedelta(seconds=HANG_SECONDS + 10))
     folder = story.container.get(OutputFolder)
@@ -79,7 +79,7 @@ def test_an_idle_run_that_printed_lately_is_left_alone(new_story):
 
 
 def test_a_run_with_no_process_tree_is_left_alone(new_story):
-    story = new_story(fixture=RunningBuild)
+    story = new_story(fixture=ActiveBuild)
     started_tree(story, None)
     story.advance(timedelta(seconds=HANG_SECONDS + 30))
     watch_tick(story)

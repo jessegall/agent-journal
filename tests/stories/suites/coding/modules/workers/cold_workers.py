@@ -8,7 +8,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from tests.stories.core.modules.usage.support.status_files import full_status
 from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID
-from tests.stories.suites.coding.modules.workers.gone_workers import ended_worker, no_program_on_the_machine, replaced_launcher, running_worker, start_launcher, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import ended_worker, missing_program, replaced_launcher, running_worker, start_launcher, worker_story
 
 __all__ = ["ended_worker", "no_program_on_the_machine", "running_worker", "worker_story"]
 
@@ -25,7 +25,7 @@ def stopped_worker(ended_worker):
     return ended_worker
 
 
-def sent_a_job(story, minutes, percent):
+def with_job(story, minutes, percent):
     worker = story.row(Agent, story.worker.id)
     full_status(story, worker.session, percent, 0.0)
     story.advance(timedelta(minutes=minutes))
@@ -39,7 +39,7 @@ def sent_a_job(story, minutes, percent):
 
 def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(stopped_worker):
     folder = stopped_worker.container.get(WorktreeQuery).worker_worktree(stopped_worker.worker.id).folder
-    worker, request = sent_a_job(stopped_worker, 55, 20)
+    worker, request = with_job(stopped_worker, 55, 20)
     replaced = stopped_worker.row(Agent, worker.id)
     worktree = stopped_worker.container.get(WorktreeQuery).worker_worktree(worker.id)
     prompt = " ".join(request["command"])
@@ -48,17 +48,17 @@ def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(sto
 
 
 def test_a_worker_idle_over_an_hour_with_a_small_context_gets_a_new_session(stopped_worker):
-    worker, request = sent_a_job(stopped_worker, 61, 5)
+    worker, request = with_job(stopped_worker, 61, 5)
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session != worker.session, "--resume" not in request["command"], detail=str(request))
 
 
 @pytest.mark.parametrize("minutes, percent", [(49, 100), (50, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])
 def test_a_worker_idle_under_an_hour_that_is_warm_or_small_resumes_its_own_session(stopped_worker, minutes, percent):
-    worker, request = sent_a_job(stopped_worker, minutes, percent)
+    worker, request = with_job(stopped_worker, minutes, percent)
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session == worker.session, "--resume" in request["command"], worker.session in request["command"], detail=str(request))
 
 
 def test_with_the_check_off_a_worker_idle_over_an_hour_still_gets_a_new_session(stopped_worker):
     stopped_worker.expect_success(f"setting set {COLD_SESSION_CONTEXT_PERCENT} 0 --project", actor=stopped_worker.user)
-    worker, request = sent_a_job(stopped_worker, 300, 100)
+    worker, request = with_job(stopped_worker, 300, 100)
     stopped_worker.expect_rows(stopped_worker.row(Agent, worker.id).session != worker.session, "--resume" not in request["command"], detail=str(request))

@@ -29,14 +29,14 @@ from core.base.change.deleted import Deleted
 HANDLED: list[str] = []
 
 
-class FirstOnSave(SaveListener[Changed[Item]]):
+class SaveFirst(SaveListener[Changed[Item]]):
     name = "items.first"
 
     def handle(self, event: Changed[Item], context: Context) -> None:
         HANDLED.append(self.name)
 
 
-class SecondOnSave(SaveListener[Created[Item]]):
+class SaveSecond(SaveListener[Created[Item]]):
     name = "items.second"
 
     def handle(self, event: Created[Item], context: Context) -> None:
@@ -56,7 +56,7 @@ def entry(listener: type[SaveListener] | type[DeletionListener], timing: Listene
 
 
 UNUSED = ListenerEntry("shelves.count", EventPattern("shelf.create"), ListenerTiming.SAVE, DottedPath("tests.unit.core.base.samples.listener_sample:ShelfCounter"), 9)
-REGISTRY = Registry("abc", {}, {}, {}, (), (entry(SecondOnSave, ListenerTiming.SAVE, 2), entry(FirstOnSave, ListenerTiming.SAVE, 1),
+REGISTRY = Registry("abc", {}, {}, {}, (), (entry(SaveSecond, ListenerTiming.SAVE, 2), entry(SaveFirst, ListenerTiming.SAVE, 1),
                                           entry(ClearItemNotes, ListenerTiming.DELETION, 1), UNUSED))
 CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"))
 

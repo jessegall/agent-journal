@@ -1,10 +1,10 @@
 from core.testing.fake_launcher import FakeLauncher
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
 
 def dispatched_brief(new_story, line):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(line, actor=story.agent)
@@ -36,6 +36,6 @@ def test_with_no_model_the_profile_s_model_is_used(new_story):
 
 
 def test_a_profile_of_another_type_is_refused(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_refusal("worker dispatch 1 --model sonnet --profile journal-researcher", "journal helper start", actor=story.agent)

@@ -13,15 +13,15 @@ AUTO_MODE = "journal.suites.coding.auto-mode"
 
 
 @pytest.fixture
-def person_in_viewer(new_story):
+def viewer_person(new_story):
     story = new_story(fixture=MainControlsActors)
     with person_viewer(story) as viewer:
         yield story, viewer
 
 
 
-def test_s49_fixture_person_changes_a_control_through_the_viewer_line_route_and_reads_it_back(person_in_viewer):
-    _, viewer = person_in_viewer
+def test_s49_fixture_person_changes_a_control_through_the_viewer_line_route_and_reads_it_back(viewer_person):
+    _, viewer = viewer_person
     viewer.set_setting(AUTO_MODE, "false")
     status, auto = window_data(viewer.server, viewer.cookie, keys="auto", window="coding.work-mode")
     expect_value((status, auto["keys"]["auto"]["value"]["value"]), (200, False))
@@ -135,14 +135,14 @@ def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_noth
         expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (before, True))
 
 
-def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(person_in_viewer):
-    story, viewer = person_in_viewer
+def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(viewer_person):
+    story, viewer = viewer_person
     advanced = field_values(work_reading(viewer), "advanced")
     declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
     story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
 
 
-def test_the_context_limit_action_is_a_choice_of_compact_or_clear(person_in_viewer):
-    story, viewer = person_in_viewer
+def test_the_context_limit_action_is_a_choice_of_compact_or_clear(viewer_person):
+    story, viewer = viewer_person
     action = next(field for field in work_reading(viewer)["fields"] if field["key"] == CONTEXT_LIMIT_ACTION)
     story.expect_rows(action["type"] == "choice", action["choices"] == ["compact", "clear"], detail=str(action))

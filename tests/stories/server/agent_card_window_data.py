@@ -1,10 +1,10 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_an_open_agent_key_keeps_the_agent_after_it_leaves_the_working_list(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     agent_id = story.new_row_id("agent start inspect-helper claude helper --environment main")
     story.expect_success(f"agent end {agent_id}")
     with server_story(story) as server:
@@ -17,10 +17,10 @@ def test_an_open_agent_key_keeps_the_agent_after_it_leaves_the_working_list(new_
 
 
 def test_a_worker_with_a_started_and_a_blocked_task_shows_its_current_task(new_story):
-    from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+    from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
     from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('actor make user "Ada"')
@@ -37,7 +37,7 @@ def test_a_worker_with_a_started_and_a_blocked_task_shows_its_current_task(new_s
 
 
 def test_agent_counts_and_a_page_of_thirty_idle_agents_do_not_read_worktrees_per_agent(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for number in range(30):
         agent = story.new_row_id(f"agent start count-{number} claude worker --environment main")
         story.expect_success(f"agent end {agent}")

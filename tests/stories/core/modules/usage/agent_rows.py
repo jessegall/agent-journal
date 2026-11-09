@@ -9,7 +9,7 @@ from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_a
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def cards(story, state: str) -> list[dict[str, object]]:
@@ -32,7 +32,7 @@ def expect_unlisted(story, *agent_ids: int) -> None:
 
 
 def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     oldest = story.new_row_id("agent start oldest claude helper --environment main")
     story.advance(timedelta(seconds=1))
     middle = story.new_row_id("agent start middle codex worker --environment main")
@@ -45,7 +45,7 @@ def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_stor
 
 
 def test_agent_rows_filter_search_and_page_before_answering(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for session in ("first", "second", "third"):
         story.run(f"agent start {session} claude helper --environment main")
         story.advance(timedelta(seconds=1))
@@ -60,7 +60,7 @@ def test_agent_filters_leave_out_main_agents_and_include_finished_helpers(new_st
     transcript = tmp_path / "claude" / "projects" / "-work-journal" / "helper-session.jsonl"
     transcript.parent.mkdir(parents=True)
     transcript.write_text(json.dumps({"type": "assistant", "message": {"content": "The review is complete"}}) + "\n")
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     main = story.new_row_id("agent start main-session claude main --environment main")
     helper = story.new_row_id("agent start helper-session claude helper --environment main")
     reviewer = story.new_row_id("agent start review-session claude reviewer --environment main")
@@ -95,7 +95,7 @@ def expect_session_matching(matching_rows, expected) -> None:
     assert actual == expected, actual
 
 
-class AgentsWithStates(StoryFixture):
+class StatesAgents(StoryFixture):
     parent = EndedHelper
 
     def steps(self, story):
@@ -112,7 +112,7 @@ class AgentsWithStates(StoryFixture):
 
 @pytest.fixture
 def agents_window_server(new_story):
-    story = new_story(fixture=AgentsWithStates)
+    story = new_story(fixture=StatesAgents)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         yield server, cookie
@@ -166,7 +166,7 @@ def test_agent_tabs_in_light_and_dark(agents_window_server):
 
 @pytest.mark.parametrize(("role", "job_enabled"), [("worker", True), ("main", False), ("helper", False)])
 def test_the_suite_selects_which_agent_cards_show_their_job(new_story, role, job_enabled):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     agent_id = story.new_row_id(f"agent start policy-session codex {role} --environment main")
     rows = json.loads(story.run("usage agents --environment main --json", actor=story.user).output_text)["rows"]
     facts = next(row for row in rows if row["id"] == agent_id)
@@ -174,7 +174,7 @@ def test_the_suite_selects_which_agent_cards_show_their_job(new_story, role, job
 
 
 def test_agent_card_filters_combine_before_paging(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     worker = story.new_row_id("agent start filter-worker codex worker --environment main")
     story.new_row_id("agent start filter-helper claude helper --environment main")
     rows = json.loads(story.run("agent cards --environment main --show all --role worker --program codex --limit 1 --json", actor=story.user).output_text)

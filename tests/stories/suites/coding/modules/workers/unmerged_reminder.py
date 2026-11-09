@@ -7,7 +7,7 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNMERGED
 from suites.coding.modules.workers.listeners.worker_merge_block_listener import WorkerMergeBlockListener
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_value
@@ -17,7 +17,7 @@ REMINDER_INTERVAL = timedelta(seconds=WORKER_UNMERGED.interval.seconds)
 
 
 class MainAgentMerges(StoryFixture):
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story):
         story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
@@ -131,7 +131,7 @@ def test_a_reason_passes_only_that_hold_and_the_next_reminder_holds_again(new_st
 
 
 def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     worker = checked_worker(story, repository)
@@ -149,7 +149,7 @@ def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(new_story):
 
 
 def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     worker = checked_worker(story, repository)

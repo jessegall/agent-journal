@@ -2,7 +2,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
-class EnvironmentWithSampleDriver(StoryFixture):
+class SampleDriverEnvironment(StoryFixture):
     """An environment explicitly runs the sample suite and its main driver."""
 
     parent = MainEnvironment

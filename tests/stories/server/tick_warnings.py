@@ -4,11 +4,11 @@ from core.base.module.performance_tools import PerformanceTools
 from core.base.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.processes.ticks.output_reading import OutputReading
-from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsOn
+from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
 
 
 def test_tick_warnings_repeat_after_five_rise_at_once_and_reset_below_the_limit(new_story, monkeypatch):
-    story = new_story(fixture=DevelopmentToolsOn)
+    story = new_story(fixture=DevelopmentToolsEnabled)
     tools = story.container.get(PerformanceTools)
     costs = iter([51, 51, 51, 51, 51, 51, 52, 51, 51, 51, 51, 51, 52, 50, 51])
     monkeypatch.setattr(tools, "cost", lambda start: Points(rows=next(costs)))

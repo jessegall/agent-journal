@@ -28,7 +28,7 @@ class AgentStarted(StoryFixture):
         story.expect_success(f"agent show {story.agent.id}", "session: s-1", "environment_id: 1")
 
 
-class AgentWithProcess(StoryFixture):
+class ProcessAgent(StoryFixture):
     """An agent session s-7 started in main by the agent program running as pid 700: story.agent."""
 
     parent = MainEnvironment
@@ -53,7 +53,7 @@ class ThreeTasks(StoryFixture):
         story.expect_success(lines.TASK_LIST, "1  First  open  normal", "3  Third  open  normal")
 
 
-class TaskWaitingOnSecond(StoryFixture):
+class SecondTaskWaiting(StoryFixture):
     """Task 1, First, waits on task 2, Second, which is open."""
 
     parent = ThreeTasks
@@ -77,7 +77,7 @@ class UserJoined(StoryFixture):
         story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
 
 
-class PlanWithPhases(StoryFixture):
+class PhasesPlan(StoryFixture):
     """A draft plan 1 in main with three phases in order: Values, Models and Queries."""
 
     parent = UserJoined
@@ -91,10 +91,10 @@ class PlanWithPhases(StoryFixture):
         story.expect_success("phase show 3", "position: 3", "title: Queries")
 
 
-class PhaseWithThreeTasks(StoryFixture):
+class ThreeTasksPhase(StoryFixture):
     """Phase 1, Values, of plan 1 holds tasks First (1), Second (2) and Third (3) at places 1, 2 and 3."""
 
-    parent = PlanWithPhases
+    parent = PhasesPlan
 
     def steps(self, story: Story) -> None:
         for task_id, title in enumerate(("First", "Second", "Third"), 1):
@@ -105,10 +105,10 @@ class PhaseWithThreeTasks(StoryFixture):
         story.expect_success(lines.FIRST_PHASE_PLACES, "1  1  1  1", "3  1  3  3")
 
 
-class PlanWithTasks(StoryFixture):
+class TasksPlan(StoryFixture):
     """The plan with phases, and two open tasks not yet placed: First (1) and Second (2)."""
 
-    parent = PlanWithPhases
+    parent = PhasesPlan
 
     def steps(self, story: Story) -> None:
         for title in ("First", "Second"):
@@ -231,7 +231,7 @@ class PlanTasksWaitingOutside(StoryFixture):
         story.expect_success("task show 4", "state: open")
 
 
-class PlanWithCheckpoint(StoryFixture):
+class CheckpointPlan(StoryFixture):
     """A started plan 1 whose phase Build (1) is a checkpoint holding Cart (1), Tax (2) and Totals (3), followed by
     phase Ship (2) holding Release (4); Tax waits on Outside (5), an open task in no plan."""
 

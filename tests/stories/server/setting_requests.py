@@ -15,7 +15,7 @@ APPROVE = "accept"
 REQUEST_LINE = f"setting request {SUITE_KEY} samples --reason 'it fits the work' --environment main"
 
 
-class MainWithPerson(StoryFixture):
+class PersonMain(StoryFixture):
     """A main agent in main with a person, Ada, beside it, and the suite setting left to its default."""
 
     parent = SampleSuiteChoice
@@ -36,7 +36,7 @@ def viewer_answer(answer: str) -> dict[str, object]:
 
 @pytest.fixture
 def plain_story(new_story):
-    return new_story(SAMPLES, fixture=MainWithPerson)
+    return new_story(SAMPLES, fixture=PersonMain)
 
 
 @pytest.fixture

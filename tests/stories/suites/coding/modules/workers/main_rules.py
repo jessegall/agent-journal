@@ -1,12 +1,12 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
 
 MAIN_SESSION = "s-1"
 
 
 def test_a_main_agent_is_refused_its_stop_until_it_checks_a_proof_with_no_test(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), f"worker:{worker.id} delivered task:1, proofs 1")
@@ -16,7 +16,7 @@ def test_a_main_agent_is_refused_its_stop_until_it_checks_a_proof_with_no_test(n
 
 
 def test_a_worker_is_refused_a_second_started_task(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task make "Fix the till" --environment main', "state: open")
@@ -24,7 +24,7 @@ def test_a_worker_is_refused_a_second_started_task(new_story):
 
 
 def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", "TOTAL = 1\n")

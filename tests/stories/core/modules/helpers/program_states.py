@@ -6,12 +6,12 @@ import pytest
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.program_states import ProgramStates
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 @pytest.fixture
 def ready_program_story(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     monkeypatch.setattr('shutil.which', lambda name: name)
     for provider in story.container.get(Providers).all():
         monkeypatch.setattr(provider, 'hook_trust', Mock(return_value=HookTrust.READY))

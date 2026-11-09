@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote, ManyNotes
 from tests.stories.core.modules.plugins.support.event_stories import (
-    NOTES_PIN_TITLE, REFUSAL, SECOND_JOB, commands_as_in_a_server, SECOND_JOB_TITLE, TASK_CREATED, EventWorkerStarted, answer_with_commands, deliveries, event_page, event_plugin_story, install_event_plugin, pins_titled,
+    NOTES_PIN_TITLE, REFUSAL, SECOND_JOB, server_commands, SECOND_JOB_TITLE, TASK_CREATED, EventWorkerStarted, answer_with_commands, deliveries, event_page, event_plugin_story, install_event_plugin, pins_titled,
     script_calls, tasks_titled)
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -47,7 +47,7 @@ def test_s31_two_commit_scripts_each_get_their_own_delivery(new_story):
 def test_s32_a_plugin_that_is_off_gets_no_script_and_coming_back_on_replays_nothing(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": TASK_CREATED, "guard": "guard.sh", "listen": "pin.sh", "commit": "see.sh"}, scripts={"guard.sh": ""})
-    commands_as_in_a_server(story)
+    server_commands(story)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(len(deliveries(story)) == 1)
     initial_guard_count, initial_listen_count = len(script_calls(story, "guard.sh")), len(script_calls(story, "pin.sh"))

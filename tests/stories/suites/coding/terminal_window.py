@@ -1,11 +1,11 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_the_terminal_reads_its_agents_calls_then_requests_older_calls_and_output(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.stop().with_fields(firing="terminal-stop"))
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

@@ -12,7 +12,7 @@ from core.modules.developer.support.hook_request_log import HookRequestLog
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from core.testing.expect_row import expect_row
@@ -21,7 +21,7 @@ from tests.stories.support.story_checks import expect_value
 
 @pytest.fixture
 def recording_server(new_story):
-    with server_story(new_story(fixture=HookRecordingOn)) as server:
+    with server_story(new_story(fixture=HookRecordingEnabled)) as server:
         yield server
 
 
@@ -82,7 +82,7 @@ def test_a_locked_hook_log_counts_the_dropped_row_without_a_warning(recording_se
     server = recording_server
     record_hook = HookRequestLog.record_hook
 
-    def record_while_locked(log, *args):
+    def locked_record(log, *args):
         connection = sqlite3.connect(server.story.home.database, timeout=0, autocommit=True)
         try:
             connection.execute("BEGIN IMMEDIATE")
@@ -91,7 +91,7 @@ def test_a_locked_hook_log_counts_the_dropped_row_without_a_warning(recording_se
             connection.execute("ROLLBACK")
             connection.close()
 
-    monkeypatch.setattr(HookRequestLog, "record_hook", record_while_locked)
+    monkeypatch.setattr(HookRequestLog, "record_hook", locked_record)
     previous_count = server.context.request_log.counts["dropped"]
     sample = HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="locked-log")
     server.expect_hook_answer("/hook", dict(sample.body), 200, '"refusal":')

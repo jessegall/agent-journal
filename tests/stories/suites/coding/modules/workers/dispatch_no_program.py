@@ -5,7 +5,7 @@ from core.modules.agents.models.agent import Agent
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -19,7 +19,7 @@ def person(story) -> Actor:
 
 
 def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hooks_are_the_workers(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
     try:
@@ -43,13 +43,13 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
 
 
 def test_an_agent_cannot_dispatch_a_worker_with_no_program(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_refusal(NO_PROGRAM, "only a person dispatches a worker with no program", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")
 
 
 def test_a_session_is_refused_without_no_program(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_refusal(f"worker dispatch --program claude --model sonnet 1 --session {SESSION}", "add --no-program", actor=person(story))

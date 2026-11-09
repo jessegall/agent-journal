@@ -4,7 +4,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.documents.models.report import Report
-from tests.stories.core.modules.plan_reviews.review_rounds import CRITIQUE_COMMAND, REPORT, PlanReadyForACritique, start_helper
+from tests.stories.core.modules.plan_reviews.review_rounds import CRITIQUE_COMMAND, REPORT, CritiquePlanReady, start_helper
 from tests.stories.server.support.server_client import server_story
 
 PLANS_WINDOW = "plans.plans"
@@ -16,7 +16,7 @@ def tip_lines(story) -> list[str]:
 
 
 def test_the_tip_of_a_plan_under_review_says_who_still_reads_and_who_reported_with_the_report_number(new_story):
-    story = new_story(fixture=PlanReadyForACritique)
+    story = new_story(fixture=CritiquePlanReady)
     story.expect_success(CRITIQUE_COMMAND, actor=story.user)
     first, second = start_helper(story, "Give plan 1 a thorough review"), start_helper(story, "Read plan:1 for risks")
     story.expect_rows(tip_lines(story)[0] == "2 reviewers: 0 reported, 2 still reading")
@@ -29,13 +29,13 @@ def test_the_tip_of_a_plan_under_review_says_who_still_reads_and_who_reported_wi
 
 
 def test_the_tip_says_so_when_no_reviewer_has_started(new_story):
-    story = new_story(fixture=PlanReadyForACritique)
+    story = new_story(fixture=CritiquePlanReady)
     story.expect_success(CRITIQUE_COMMAND, actor=story.user)
     story.expect_rows(tip_lines(story) == ["No reviewer has started reading yet"])
 
 
 def test_the_viewer_reads_the_declared_tip_from_any_window_and_is_refused_a_read_nobody_declared(new_story):
-    with server_story(new_story(fixture=PlanReadyForACritique), listener_thread_started=False) as server:
+    with server_story(new_story(fixture=CritiquePlanReady), listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         server.story.expect_success(CRITIQUE_COMMAND, actor=server.story.user)
         server.expect_viewer_status("/api/states", 200, cookie, text="plan review-tip {row_id}")

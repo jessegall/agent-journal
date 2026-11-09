@@ -7,20 +7,20 @@ import pytest
 
 from core.base.database.database import Database
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from server.viewer.read_attribution import ReadAttribution
 
 
 @pytest.fixture
 def logging_server(new_story):
-    with server_story(new_story(fixture=HookRecordingOn), listener_thread_started=False) as server:
+    with server_story(new_story(fixture=HookRecordingEnabled), listener_thread_started=False) as server:
         yield server
 
 
 @pytest.mark.parametrize("enabled", [False, True])
 def test_a_batch_uses_no_logging_connection_when_off_and_one_reused_connection_when_on(new_story, monkeypatch, enabled):
-    story = new_story(fixture=HookRecordingOn)
+    story = new_story(fixture=HookRecordingEnabled)
     story.expect_success(f"setting set journal.core.developer.tools.hooks.request-log {str(enabled).lower()} --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

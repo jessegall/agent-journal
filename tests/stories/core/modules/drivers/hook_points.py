@@ -10,7 +10,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
+from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.core.modules.processes.support.process_samples import moved_run
 from tests.stories.support.story_checks import expect_absent_value, expect_total_cost_less, expect_greater
 
@@ -45,18 +45,18 @@ def test_post_tool_use_stays_under_budget_with_checks_background_runs_and_held_t
 
 
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(filled_hook_points):
-    story, database, over = filled_hook_points
+    story, database, finished = filled_hook_points
     for name, sample in SAMPLES.items():
         start = database.repeated_work.points()
         story.hook("s-1", sample)
         cost = database.repeated_work.points().minus(start)
         if cost.total >= HOOK_LIMIT_POINTS:
-            over[name] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
-    expect_absent_value(over)
+            finished[name] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
+    expect_absent_value(finished)
 
 
 def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_a_filled_journal(filled_hook_points):
-    story, database, over = filled_hook_points
+    story, database, finished = filled_hook_points
     measured = 0
     for read in sorted({read for window in story.container.get(Registry).windows for read in window.reads}):
         for line in (read, f"{read} 1", f"{read} --agent {story.agent.id}"):
@@ -67,20 +67,20 @@ def test_every_read_a_window_asks_of_an_endpoint_costs_under_the_same_points_on_
                 continue
             measured += 1
             if cost.total >= HOOK_LIMIT_POINTS:
-                over[line] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
+                finished[line] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
             break
     expect_greater(measured, READS_MEASURED)
-    expect_absent_value(over)
+    expect_absent_value(finished)
 
 
 @pytest.fixture
 def filled_hook_points(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     filled(story)
     story.hook("s-1", HookSamples.prompt("Carry on"))
     database = story.container.get(Database)
-    over = {}
-    return story, database, over
+    finished = {}
+    return story, database, finished
 
 
 @pytest.fixture
