@@ -17,8 +17,9 @@ class ProtectedFolders:
         absolute = Path(abspath(checkout / path))
         names = []
         for candidate in (absolute, absolute.resolve()):
-            if candidate.is_relative_to(checkout):
-                relative = candidate.relative_to(checkout)
-                names.extend([relative.as_posix(), *(parent.as_posix() for parent in relative.parents if parent != Path("."))])
+            if not candidate.is_relative_to(checkout):
+                continue
+            relative = candidate.relative_to(checkout)
+            names.extend([relative.as_posix(), *(parent.as_posix() for parent in relative.parents if parent != Path("."))])
         return next((pattern for pattern in self.settings.project.texts(PROTECTED_FOLDERS)
                      if any(fnmatchcase(name, pattern.rstrip("/")) for name in names)), "")
