@@ -18,8 +18,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.affected_test_rows import AffectedTestRows
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-
-TEST_LIMIT_SECONDS = 3600
+from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
 
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):

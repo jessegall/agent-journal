@@ -38,7 +38,7 @@ def test_a_phase_changes_place_only_by_a_move(new_story):
 
 def test_a_phase_can_name_its_own_test(new_story):
     story = plan_with_three_phases(new_story)
-    story.expect_success('phase make --plan 1 "Commands" --test "python tests/commands.py"', "test_command: pytest tests/commands.py")
+    story.expect_success('phase make --plan 1 "Commands" --test "python tests/commands.py"', "test_command: python tests/commands.py")
 
 
 def test_a_phase_names_no_test_unless_it_is_told_one(new_story):

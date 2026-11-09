@@ -2,7 +2,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 
-WORKER_TASK_STARTED = NudgeDeclaration("coding.worker_task_started", NudgeType.REFUSAL, '{line}', path_fields=["line"])
+WORKER_TASK_STARTED = NudgeDeclaration("coding.worker_task_started", NudgeType.REFUSAL, 'Not finished: {line}', path_fields=["line"])
 WORKER_TASK_UNSTARTED = NudgeDeclaration("coding.worker_task_not_started", NudgeType.REFUSAL, 'your task has not started yet: only reading and journal commands run until it does')
 WORKER_GIT_BAN = NudgeDeclaration("coding.worker_runs_no_git", NudgeType.REFUSAL, 'a worker runs no git: the journal commits and merges your work. ' + AskTopic.TOOL.ask_line(), full_text=True)
 WORKER_COMMAND_TYPE = NudgeDeclaration("coding.worker_command_type", NudgeType.REFUSAL, 'a worker here runs no {category} command. ' + AskTopic.TOOL.ask_line(), full_text=True)

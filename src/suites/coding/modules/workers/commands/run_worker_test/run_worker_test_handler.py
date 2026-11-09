@@ -16,8 +16,7 @@ from suites.coding.modules.workers.support.worker_test_arguments import WorkerTe
 from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
-
-TEST_LIMIT_SECONDS = 3600
+from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
 
 
 class RunWorkerTestHandler(Handler[RunWorkerTest, Process]):

@@ -6881,6 +6881,54 @@
       "worktree_id"
     ]
   },
+  "suites.coding.workers.merger_advice.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "group_key",
+      "step",
+      "task_id",
+      "text",
+      "visit_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.merger_advice.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "group_key",
+      "step",
+      "task_id",
+      "text",
+      "visit_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.merger_advice.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id",
+      "group_key",
+      "step",
+      "task_id",
+      "text",
+      "visit_id",
+      "worker_id"
+    ]
+  },
   "suites.coding.workers.merger_line.created": {
     "forms": [
       "commit",
@@ -6890,9 +6938,12 @@
     "fields": [
       "environment_id",
       "fallback_source",
+      "group_key",
       "read_at",
       "read_output_id",
-      "text"
+      "text",
+      "topic",
+      "worker_id"
     ]
   },
   "suites.coding.workers.merger_line.deleted": {
@@ -6904,9 +6955,12 @@
     "fields": [
       "environment_id",
       "fallback_source",
+      "group_key",
       "read_at",
       "read_output_id",
-      "text"
+      "text",
+      "topic",
+      "worker_id"
     ]
   },
   "suites.coding.workers.merger_line.updated": {
@@ -6918,9 +6972,42 @@
     "fields": [
       "environment_id",
       "fallback_source",
+      "group_key",
       "read_at",
       "read_output_id",
-      "text"
+      "text",
+      "topic",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.merger_visit.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id"
+    ]
+  },
+  "suites.coding.workers.merger_visit.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id"
+    ]
+  },
+  "suites.coding.workers.merger_visit.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "environment_id"
     ]
   },
   "suites.coding.workers.proof.check": {
@@ -7248,6 +7335,7 @@
       "count",
       "creator_id",
       "notice_at",
+      "refusal_text",
       "worktree_id"
     ]
   },
@@ -7261,6 +7349,7 @@
       "count",
       "creator_id",
       "notice_at",
+      "refusal_text",
       "worktree_id"
     ]
   },
@@ -7274,6 +7363,7 @@
       "count",
       "creator_id",
       "notice_at",
+      "refusal_text",
       "worktree_id"
     ]
   },
@@ -7489,6 +7579,20 @@
     ]
   },
   "suites.coding.workers.worker_test_request.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "reason",
+      "state",
+      "task_id",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_request.refuse": {
     "forms": [
       "commit",
       "guard",
