@@ -4,7 +4,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.runnable_plugins import RunnablePlugins
 from core.modules.plugins.support.plugin_nudges import PLUGIN_PROGRAM_OFF
 
 PLUGIN_PROGRAM = re.compile(r"(?:^|/)\.journal/plugins/([^/]+)/")
@@ -18,14 +18,14 @@ class PluginProgramRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
 
-    def __init__(self, plugins: PluginQuery) -> None:
+    def __init__(self, plugins: RunnablePlugins) -> None:
         self.plugins = plugins
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
-        enabled = {plugin.name for plugin in self.plugins.enabled_plugins()}
+        enabled = {plugin.name for plugin in self.plugins.enabled_rows()}
         for part in shell.parts:
             matched = PLUGIN_PROGRAM.search(part.program)
             if matched is not None and matched.group(1) not in enabled:
