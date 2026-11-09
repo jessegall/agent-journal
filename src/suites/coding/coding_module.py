@@ -94,6 +94,7 @@ class CodingModule(Module):
     drivers = [MainDriver, HelperDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-plan-dispatch", "How the main agent gets a plan made: it dispatches a functional designer and then a planner; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
               SkillDeclaration("journal-functional-design", "How a functional designer writes a design document: user stories, code examples and the phases in order; read it before you write one"),
+              SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, who acts, what they see, refusals, failures, recovery and abuse, and group them into story books; load it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from core.base.actor import Actor
@@ -87,6 +89,23 @@ def test_the_main_agent_skill_names_who_to_dispatch_and_what_to_do_when_helpers_
 def test_the_functional_design_skill_asks_for_stories_examples_and_phases(bundled_story):
     bundled_story.run("skill write")
     expect_skill_text(bundled_story, "journal-functional-design", "name: journal-functional-design", "User stories", "Code examples", "Phases", "any application")
+
+
+def test_the_user_stories_skill_teaches_every_angle_and_holds_no_test_builder(bundled_story):
+    bundled_story.run("skill write")
+    expect_skill_text(bundled_story, "journal-user-stories", "name: journal-user-stories", "Who acts", "Refusal", "Failure", "Recovery", "Abuse", "at least", "Story books")
+    text = Path("src/suites/coding/skills/journal-user-stories/SKILL.md").read_text()
+    bundled_story.expect_rows("inferred" not in text, "source" not in text.lower(), detail=text)
+
+
+def test_the_functional_designer_must_read_the_user_stories_skill_and_is_given_it(bundled_story):
+    designer = profile(bundled_story, FUNCTIONAL_DESIGNER)
+    bundled_story.expect_rows("journal-user-stories" in designer.body, "mandatory" in designer.body, "journal-user-stories" in designer.skills, detail=designer.body)
+
+
+def test_the_planner_turns_stories_into_story_books_of_one_task_each(bundled_story):
+    planner = profile(bundled_story, PLANNER)
+    bundled_story.expect_rows("story books" in planner.body, "one task" in planner.body, "names each story" in planner.body, "when the book is done" in planner.body, detail=planner.body)
 
 
 def test_the_planning_skill_stays_the_planners_and_takes_a_design_as_its_source(bundled_story):

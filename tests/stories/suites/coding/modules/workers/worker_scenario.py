@@ -39,6 +39,18 @@ def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_th
     story.expect_text("proof list --task 3", "receipt.py:1", actor=worker)
 
 
+def test_a_worker_whose_current_task_is_blocked_goes_on_to_its_next_open_task(new_story, monkeypatch):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    recording_launch(monkeypatch)
+    repository_environment(story)
+    story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    story.expect_success('task block 1 --reason "waits on a person"', actor=story.agent)
+    story.expect_success("worker next --wait --differences none", actor=worker)
+    expect_states(story, task1="blocked", task2="started")
+    story.expect_text("worker-worktree list --json", '"task_id": 2', actor=story.agent)
+
+
 def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_over(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
@@ -103,7 +115,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.run_listeners()
     expect_states(story, task1="testing", task2="open", task3="open")
     expect_absent_marks_text(story, "handed in")
-    story.expect_refusal("worker next --wait --differences none", "the tests of task 1 are running", actor=worker)
+    story.expect_refusal("worker next --wait --differences none", "The tests of task 1 are queued", actor=worker)
 
     # its test fails: the task goes back to the worker with a mark in the chat, and the next task waits
     ended(story, started[0], 1)

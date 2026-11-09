@@ -26,6 +26,8 @@ from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
+from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
+from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
@@ -38,16 +40,16 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
     command = StartNextWorkerTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, compaction: WorkerCompaction) -> None:
-        self.next_task = next_task
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, tasks: TaskQuery, task_commit: WorkerTaskCommit, proof_queue: WorkerProofQueue, repository: Repository, bus: Bus, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, compaction: WorkerCompaction, guidance: WorkerGuidance) -> None:
+        self.next_task, self.guidance = next_task, guidance
         self.compaction = compaction
         self.rows, self.worktrees, self.tasks, self.task_commit, self.proof_queue, self.repository, self.bus = rows, worktrees, tasks, task_commit, proof_queue, repository, bus
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
     def check_rows(self, command: StartNextWorkerTask, actor: Actor) -> None:
         worktree = self.worktrees.worker_worktree(actor.id)
-        if worktree is None or worktree.state is not WorktreeState.CUT:
-            raise Refusal("only a worker with a started task moves to its next", "journal worker-worktree list shows the worktrees")
+        if worktree is None or worktree.state is not WorktreeState.CUT or self.guidance.point(actor.id).step is WorkerStep.BLOCKED:
+            raise Refusal(self.guidance.line(actor.id))
         task = self.rows.required(Task, worktree.task_id)
         if task.state is not TaskState.STARTED:
             return
@@ -66,14 +68,14 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
 
     def handle(self, command: StartNextWorkerTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
-        if worktree is None or worktree.state is not WorktreeState.CUT:
-            raise Refusal("only a worker with a started task moves to its next", "journal worker-worktree list shows the worktrees")
+        if worktree is None or worktree.state is not WorktreeState.CUT or self.guidance.point(context.actor.id).step is WorkerStep.BLOCKED:
+            raise Refusal(self.guidance.line(context.actor.id))
         task = self.rows.required(Task, worktree.task_id)
         if task.state is TaskState.STARTED:
             self.differences.record(task.id, command.differences, context)
         if task.state is TaskState.TESTING:
             if self.proof_queue.tests_pending(worktree):
-                raise Refusal(f"the tests of task {task.id} are running: your next task comes when they pass")
+                raise Refusal(self.guidance.line(context.actor.id))
             if self.proof_queue.queue_proofs(worktree, context):
                 return task
             self.close_checked(task, context)
@@ -115,7 +117,9 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
 
     def start_following(self, worktree: Worktree, following: Task, context: Context) -> Task:
         started = self.bus.dispatch(StartTask(following.id), context)
-        self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        current = self.rows.required(Worktree, worktree.id)
+        if current.task_id != following.id:
+            self.repository.save_change(current, current.moved(WorktreeLifecycle.advance, task_id=following.id), context)
         self.compaction.stop_after_task(context.actor.id)
         return started
 

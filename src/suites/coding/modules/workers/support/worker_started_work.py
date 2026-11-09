@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.query.conditions.among import Among
+from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
@@ -17,17 +18,18 @@ from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
 class WorkerStartedWork:
-    """The stopped workers that hold started work they can go on with and have no job waiting, which nothing
-    else resumes: not one whose tests wait, not one a person or another agent stopped, and not one that was
-    told to go on three times with no task moved since."""
+    """The stopped workers that hold started work or an open assigned task they can go on with and have no job
+    waiting, which nothing else resumes: not one whose tests wait, not one a person or another agent stopped,
+    and not one that was told to go on three times with no task moved since."""
 
     def __init__(self, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, bus: Bus, guidance: WorkerGuidance) -> None:
         self.guidance = guidance
         self.queries, self.unfinished, self.stop, self.bus = queries, unfinished, stop, bus
 
     def workers(self) -> list[Agent]:
-        holders = sorted({task.holder_id for task in self.queries.query(Task).filter(state=TaskState.STARTED).all_rows() if task.holder_id is not None})
-        return [worker for worker in self.queries.query(Agent).find_many(holders) if self.is_abandoned(worker)]
+        holders = {task.holder_id for task in self.queries.query(Task).filter(state=TaskState.STARTED).all_rows() if task.holder_id is not None}
+        assigned = {task.delegated_to for task in self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("delegated_to")).all_rows()}
+        return [worker for worker in self.queries.query(Agent).find_many(sorted(holders | assigned)) if self.is_abandoned(worker)]
 
     def is_abandoned(self, worker: Agent) -> bool:
         if worker.role != CodingHelperRole.WORKER or worker.ended_at is None or worker.paused_at is not None or worker.retired_at is not None:
@@ -35,11 +37,13 @@ class WorkerStartedWork:
         worker_round = self.unfinished.steps.round(worker.id)
         if worker_round.is_asking or not self.unfinished.round_rows(worker_round):
             return False
-        return not self.has_resume_nudge(worker) and not self.stop.was_stopped(worker) and self.resume_count(worker) < worker_job.RESUME_LIMIT_COUNT
+        return not self.has_waiting_job(worker) and not self.stop.was_stopped(worker) and self.resume_count(worker) < worker_job.RESUME_LIMIT_COUNT
 
-    def has_resume_nudge(self, worker: Agent) -> bool:
-        lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id).matching(Among("source", tuple(RESUMING_SOURCES))).all_rows()
-        return any(line.state is AgentLineState.WAITING or line.update_timestamp().value > worker.ended_at.value for line in lines)
+    def reached_restart_limit(self, worker: Agent) -> bool:
+        return self.resume_count(worker) >= worker_job.RESUME_LIMIT_COUNT
+
+    def has_waiting_job(self, worker: Agent) -> bool:
+        return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.WAITING).matching(Among("source", tuple(RESUMING_SOURCES))).exists()
 
     def resume_count(self, worker: Agent) -> int:
         lines = self.queries.query(AgentLine).filter(session_agent_id=worker.id, source=UNFINISHED_TASKS_SOURCE).all_rows()

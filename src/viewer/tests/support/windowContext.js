@@ -59,7 +59,7 @@ export function context(answers, agent = null, keys = WINDOW_KEYS) {
             return {ok: true, value: {declared, keys: Object.fromEntries(names.map((name, index) => [name, results[index]]))}};
         },
         run: async () => ({ok: true, value: null}),
-        follow: () => {},
+        follow: () => () => {},
         open: () => {},
         setting: async (key, fallback) => fallback,
         keep: async () => {},

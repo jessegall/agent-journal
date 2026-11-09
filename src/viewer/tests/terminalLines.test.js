@@ -123,3 +123,25 @@ test("opening a refused command shows why it was refused instead of an empty out
     expect(element.textContent).toContain("not in this folder");
     expect(element.textContent).not.toContain("No output recorded.");
 });
+
+test("a command opened while its run has printed nothing shows the output once the run goes on", async () => {
+    const empty = {ok: true, value: {lines: [], first_byte: 0, last_byte: 0, total: 0, cut_bytes: 0, command: "journal worker test"}};
+    const window = terminalWindowContext({"output hook-page 504": empty});
+    const read = window.read;
+    window.read = async (line) => line.startsWith("hook-call feed") ? feed(line)
+        : line.includes("--after") ? {ok: true, value: {lines: ["10 passed"], first_byte: 0, last_byte: 10, total: 10, cut_bytes: 0}} : read(line);
+    const heard = [];
+    window.follow = (patterns, listener) => {
+        if (patterns.includes("process.*")) heard.push(listener);
+        return () => {};
+    };
+    window.option = () => ({value: "commands"});
+    const element = await mounted(Terminal, window);
+    await settle();
+    element.querySelector("[data-terminal-command] .terminal-text").click();
+    await settle();
+    expect(element.textContent).toContain("No output recorded.");
+    heard.forEach((listener) => listener({event: "process.finish"}));
+    await settle();
+    expect(element.querySelector("[data-terminal-output]").textContent).toContain("10 passed");
+});

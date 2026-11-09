@@ -253,7 +253,7 @@ def test_with_the_merger_on_a_workers_closing_words_do_not_reach_the_main_agent(
 
 def test_merger_notices_combine_worker_numbers_without_reasons():
     notices = Nudge.collapsed([MERGER_PASSED.nudge(worker=6), MERGER_PASSED.nudge(worker=7), MERGER_PASSED.nudge(worker=8)])
-    expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you"])
+    expect_merger_lines(notices, ["the merger leaves workers 6, 7, 8 to you: their merges wait on you"])
 
 
 def expect_merger_lines(notices, expected):
@@ -447,3 +447,27 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_rows(reminder in story.run(main_lines).output_text)
+
+
+def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge_waiting_and_named_again_after_the_wait(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.expect_success(f'merger pass {worker.id} "important differences need the main agent"', actor=merger)
+    story.run_listeners()
+    story.expect_text(main_lines, f"the merger leaves worker:{worker.id} to you: its merge waits on you")
+    story.tick("s-1")
+    story.expect_text(main_lines, f"worker:{worker.id} delivered")
+    first = story.run(main_lines).output_text.count(f"worker:{worker.id} delivered")
+    story.advance(timedelta(minutes=15))
+    story.tick("s-1")
+    story.expect_rows(story.run(main_lines).output_text.count(f"worker:{worker.id} delivered") > first)
