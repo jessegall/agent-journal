@@ -27,6 +27,7 @@ class ToolsModule(Module):
 
     name = "journal.core.tools"
     seed_reason = "a demo installs no tool"
+    move_reason = "version 4 had no tools rows"
     requires_core = ">=5,<6"
     file_events = ["tool.changed"]
     dependencies = ["journal.core.actors", "journal.core.settings", "journal.core.drivers"]

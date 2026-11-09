@@ -62,10 +62,10 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
     if name in FOREIGN_TEMPLATES:
         return
     if name == "TASK_METADATA_REMINDER":
-        assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "tag_command", "score_command"}
+        assert set(PLACEHOLDER.findall(text)) == {"task", "missing"}
         return
     if name == "TASK_HELPER_METADATA_REMINDER":
-        assert set(PLACEHOLDER.findall(text)) == {"task", "missing", "options"}
+        assert set(PLACEHOLDER.findall(text)) == {"task", "missing"}
         return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"
     extra_fields = set(PLACEHOLDER.findall(text)) - ALLOWED_PLACEHOLDERS

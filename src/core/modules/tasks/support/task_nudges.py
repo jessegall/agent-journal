@@ -34,6 +34,6 @@ TASK_BRIEF_FIRST = NudgeDeclaration("tasks.brief_first", NudgeType.REFUSAL, "rea
 TASK_FILED = NudgeDeclaration("tasks.filed", NudgeType.STEERING, "filed: leave it open, do not start it", turn_limited=False)
 TASK_FILED_KEEP_CURRENT = NudgeDeclaration("tasks.filed_keep_current", NudgeType.STEERING, "filed: carry on with task:{task}, and leave the new one open", turn_limited=False)
 TASK_TESTING_QUESTION = NudgeDeclaration("tasks.testing_question", NudgeType.STEERING, "did you mean to move task:{task} to testing first?", turn_limited=False)
-TASK_METADATA_REMINDER = NudgeDeclaration("tasks.missing_metadata", NudgeType.NOTICE, "task {task} needs {missing}: {tag_command}{score_command}", turn_limited=False)
-TASK_HELPER_METADATA_REMINDER = NudgeDeclaration("tasks.read_only_missing_metadata", NudgeType.NOTICE, "task {task} needs {missing}: ask the main agent to set them; on the next task use journal task make <title> {options}", turn_limited=False)
+TASK_METADATA_REMINDER = NudgeDeclaration("tasks.missing_metadata", NudgeType.NOTICE, "task {task} needs {missing}", turn_limited=False)
+TASK_HELPER_METADATA_REMINDER = NudgeDeclaration("tasks.read_only_missing_metadata", NudgeType.NOTICE, "task {task} needs {missing}: ask the main agent to set them", turn_limited=False)
 TASK_NUDGES = [TASK_METADATA_REMINDER, TASK_HELPER_METADATA_REMINDER, TASK_TESTING_QUESTION, TASK_BRIEF_FIRST, TASK_FILED, TASK_FILED_KEEP_CURRENT, TASK_REOPENED, WAIT_DESCRIPTION, PLAIN_BLOCK, TASK_NAME, BLOCK_REVIEW, BLOCK_REVIEW_REQUIRED, USER_BLOCK_REVIEW, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST.declaration, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]

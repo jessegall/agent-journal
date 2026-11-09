@@ -1,7 +1,6 @@
 from core.base.command.context import Context
 from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
-from core.base.agent_role import AgentRole
+from core.modules.agents.support.main_agent_finder import MainAgentFinder
 
 
 class MainCaller:
@@ -11,4 +10,4 @@ class MainCaller:
         self.queries = queries
 
     def is_main(self, context: Context) -> bool:
-        return self.queries.query(Agent).filter(id=context.actor.id, role=AgentRole.MAIN).exists()
+        return context.actor.id in MainAgentFinder.main_ids(self.queries, (context.actor.id,))
