@@ -1,5 +1,6 @@
 from suites.coding.modules.workers.models.enums.worker_operation_name import (WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT, WORKER_OPERATION_MERGED, WORKER_OPERATION_JOB, WORKER_OPERATION_DELIVERED)
 from dataclasses import replace
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import WORKER_PROGRAM_UNAVAILABLE, WORKER_PROGRAM_RESUMED
 from core.base.driver.interval import Interval
@@ -41,14 +42,14 @@ WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.STEERIN
 WORKER_PHASE_TESTS_FAILED = NudgeDeclaration("workers.phase_tests_failed", NudgeType.STEERING, 'phase:{phase} tests failed, output {outputs}: {line}', turn_limited=False, id_field="outputs", path_fields=["line"])
 WORKER_TEST_REQUESTED = NudgeDeclaration("workers.test_requested", NudgeType.STEERING, 'worker:{worker} asks to run a command for task:{task}, request:{request}', turn_limited=False, wakes_agent=True, id_field="request", plural_text="worker:{worker} asks for task:{task}, requests {request}")
 WORKER_TEST_ALLOWED = NudgeDeclaration("workers.test_allowed", NudgeType.STEERING, 'request {request} is allowed: run it once without the flag', turn_limited=False, wakes_agent=True, id_field="request", plural_text="requests {request} are allowed: run each once")
-TEST_REQUEST_FORWARDED = NudgeDeclaration("workers.test_request_sent", NudgeType.SAFETY_REFUSAL, 'your request went to your main agent: go on working, you hear when it is allowed', turn_limited=False)
-TEST_REQUEST_WAITING = NudgeDeclaration("workers.test_request_waiting", NudgeType.SAFETY_REFUSAL, 'request {request} is with your main agent: go on working, you hear when it is allowed', turn_limited=False)
+TEST_REQUEST_FORWARDED = NudgeDeclaration("workers.test_request_sent", NudgeType.SAFETY_REFUSAL, 'your request is sent: go on working, you hear when it is allowed', turn_limited=False)
+TEST_REQUEST_WAITING = NudgeDeclaration("workers.test_request_waiting", NudgeType.SAFETY_REFUSAL, 'request {request} waits for an answer: go on working, you hear when it is allowed', turn_limited=False)
 TEST_REQUEST_ALLOWED = NudgeDeclaration("workers.test_request_allowed", NudgeType.SAFETY_REFUSAL, 'request {request} is allowed: run this command once, without the flag', turn_limited=False)
 TEST_REQUEST_REASON_MISSING = NudgeDeclaration("workers.test_request_no_reason", NudgeType.SAFETY_REFUSAL, 'the flag needs a reason: run it again with --ask-main "<why>"', turn_limited=False)
 TEST_REQUEST_UNNEEDED = NudgeDeclaration("workers.test_needs_no_request", NudgeType.SAFETY_REFUSAL, 'you need not ask: run the command without the flag', turn_limited=False)
 PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "Do not test in the middle of a phase or batch: the journal tests at its end. Test runs left here: {remaining}", turn_limited=False)
-WORKER_TEST_LINE_REFUSED = NudgeDeclaration("workers.named_tests_only", NudgeType.SAFETY_REFUSAL, "A test runs only through your test commands. Yours: {names}", turn_limited=False)
-PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'No test runs left in this phase or batch: hand in and go on. Only if you must run one, --ask-main "<why>".', turn_limited=False)
+WORKER_TEST_LINE_REFUSED = NudgeDeclaration("workers.named_tests_only", NudgeType.SAFETY_REFUSAL, "A test runs only through your test commands. Yours: {names}. " + AskTopic.TESTS.ask_line(), turn_limited=False, full_text=True)
+PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'No test runs left in this phase or batch: hand in and go on. Only if you must run one, --ask-main "<why>". ' + AskTopic.TESTS.ask_line(), turn_limited=False, full_text=True)
 WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: read it, then go on',
                                    plural_text='your runs {output} ended: read each, then go on', id_field="output")
 READER_SAMPLE_READY = NudgeDeclaration("workers.reader_sample_ready", NudgeType.STEERING, "read the sample of output {output} with reader {reader}", wakes_agent=True)

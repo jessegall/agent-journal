@@ -9,12 +9,13 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.enums.task_state import TaskState
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
 
-HELP_COMMAND_TEXT = 'If you cannot go on: journal wait stuck "<why>"'
+HELP_COMMAND_TEXT = AskTopic.GENERAL.ask_line()
 
 
 class WorkerStopRule(DriverRule):

@@ -6,7 +6,7 @@ from suites.coding.modules.workers.models.worker_test_request import WorkerTestR
 
 @dataclass(frozen=True)
 class AskWorkerTest(Command[WorkerTestRequest]):
-    """A worker asks its main agent to let it run one test command once."""
+    """A worker asks to run one test command once."""
 
     worker_id: int
     task_id: int

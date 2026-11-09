@@ -15,9 +15,9 @@ class WorkerRefusals:
     def __init__(self, repository: Repository, main_agent_line: MergerInbox, queries: Queries) -> None:
         self.repository, self.main_agent_line, self.queries = repository, main_agent_line, queries
 
-    def record(self, worktree: Worktree, context: Context) -> None:
+    def record(self, worktree: Worktree, context: Context, refusal_text: str | None = None) -> None:
         counts = self.read_count(worktree, context)
-        counts = self.repository.save(counts.changed(count=counts.count + 1), context)
+        counts = self.repository.save(counts.changed(count=counts.count + 1, refusal_text=refusal_text or counts.refusal_text), context)
         if counts.count < REFUSAL_LIMIT_COUNT:
             return
         if counts.notice_at is not None and counts.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
@@ -30,7 +30,7 @@ class WorkerRefusals:
         counts = self.read_count(worktree, context)
         if counts.count == 0:
             return
-        self.repository.save(counts.changed(count=0, notice_at=None), context)
+        self.repository.save(counts.changed(count=0, notice_at=None, refusal_text=None), context)
 
     def read_count(self, worktree: Worktree, context: Context) -> WorkerRefusalCount:
         counted = self.queries.query(WorkerRefusalCount).filter(worktree_id=worktree.id).first()

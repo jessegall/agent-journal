@@ -51,7 +51,7 @@ def test_the_next_phase_starts_a_new_count(moved):
 
 
 def test_an_allowed_request_does_not_spend_the_phase_allowance(spent):
-    expect_reply_refusal(spent.run_test(asking_main(TEST_LINE, "a real run is needed")), "main agent")
+    expect_reply_refusal(spent.run_test(asking_main(TEST_LINE, "a real run is needed")), "your request is sent")
     spent.story.expect_success("worker allow-test 1", actor=spent.story.user)
     spent.story.expect_success(f"setting set {SETTING} 4 --environment main", actor=spent.story.user)
     expect_reply_allowed(spent.run_test())

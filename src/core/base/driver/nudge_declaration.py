@@ -29,6 +29,7 @@ class NudgeDeclaration:
     path_fields: Sequence[str] = ()
     repeats_without_hook: bool = False
     id_field: str | None = None
+    full_text: bool = False
 
     @property
     def limit(self) -> int:
@@ -61,7 +62,7 @@ class NudgeDeclaration:
         if self.text != BARE_TEMPLATE:
             values = {name: str(value) if name in self.path_fields or name == self.id_field else self.field_text(value) for name, value in fields.items()}
         rendered = text.format(**values)
-        line = rendered if self.path_fields or self.id_field else self.cut(rendered)
+        line = rendered if self.full_text or self.path_fields or self.id_field else self.cut(rendered)
         return Nudge(self.key, self.type, line, self.interval, self.turn_limited, self.required_command.format(**fields) if self.required_command else "", tuple(fields.items()), self)
 
     def field_text(self, value: object) -> str:

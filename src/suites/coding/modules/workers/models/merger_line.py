@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -11,7 +12,7 @@ class MergerLine(EnvironmentScoped, Model):
 
     model_name = "merger_line"
     cli_name = "merger-line"
-    hidden_fields = frozenset(["nudge_json"])
+    hidden_fields = frozenset(["nudge_json", "facts_json"])
 
     environment_id: int = 0
     text: str
@@ -19,3 +20,5 @@ class MergerLine(EnvironmentScoped, Model):
     read_at: Timestamp | None = None
     nudge_json: str | None = None
     read_output_id: int | None = None
+    topic: AskTopic | None = None
+    facts_json: str | None = None

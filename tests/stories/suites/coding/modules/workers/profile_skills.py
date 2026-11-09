@@ -4,6 +4,7 @@ from core.base.command.bus import Bus
 from core.base.driver.tool_type import ToolType
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.testing.hook_samples import HookSamples
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
@@ -48,3 +49,11 @@ def test_a_helper_in_the_main_checkout_is_refused_reading_a_skill_its_profile_do
     unlisted = HookSamples.tool_use("Read", ToolType.READ, [f"{SKILLS_FOLDER}/{MAIN_SKILL}/SKILL.md"], None)
     story.expect_hook_allowed("s-helper", listed)
     story.expect_hook_refusal("s-helper", unlisted, "that skill is not one of the skills of your profile")
+
+
+def test_the_worker_skill_says_how_to_ask_and_what_to_do_for_each_topic(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    text = (repository.worktree_folder(worker.id) / SKILLS_FOLDER / "journal-workers" / "SKILL.md").read_text()
+    story.expect_rows("journal worker ask" in text, "When this happens" in text, "journal wait stuck" not in text, all(topic.waiting_work() in text for topic in AskTopic), detail=text)

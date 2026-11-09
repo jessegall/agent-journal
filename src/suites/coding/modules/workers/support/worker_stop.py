@@ -5,11 +5,12 @@ from core.base.change.event_log import EventLog
 from core.base.database.kept_rows import KeptRows
 from core.base.model.model import Model
 from core.base.model.tables import Tables
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import ENDED_FIELD, Agent
 from core.modules.waits.models.enums.wait_state import WaitState
-from core.modules.waits.models.enums.wait_type import WaitType
+from core.modules.waits.models.enums.wait_type import WORK_ENDED_TYPES
 from core.modules.waits.models.wait import Wait
 
 STOPPING_ACTOR_TYPES = (ActorType.USER, ActorType.AGENT)
@@ -37,5 +38,5 @@ class WorkerStop:
         return not self.was_stopped(worker)
 
     def has_open_help_request(self, worker_id: int) -> bool:
-        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists,
-                              "session_agent_id = ? AND state = ? AND type = ?", [worker_id, WaitState.OPEN, WaitType.HELP_REQUEST], name="workers.open_help_request")
+        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES)).exists,
+                              "session_agent_id = ? AND state = ? AND type IN (?, ?)", [worker_id, WaitState.OPEN, *WORK_ENDED_TYPES], name="workers.open_help_request")

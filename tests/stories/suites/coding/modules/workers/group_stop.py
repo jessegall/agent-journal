@@ -1,6 +1,7 @@
 import pytest
 
 from core.testing.hook_samples import HookSamples
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from core.base.driver.command_category import CommandCategory
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
@@ -33,7 +34,7 @@ def expect_quiet_stop(worker) -> None:
 
 def expect_refused_with_status(worker) -> None:
     reply = worker.stop()
-    worker.story.expect_rows(bool(reply.refusal), worker.status_line() in reply.refusal, 'journal wait stuck "<why>"' in reply.refusal, detail=reply.refusal)
+    worker.story.expect_rows(bool(reply.refusal), worker.status_line() in reply.refusal, AskTopic.GENERAL.ask_line() in reply.refusal, detail=reply.refusal)
 
 
 @pytest.fixture

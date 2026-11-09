@@ -15,4 +15,4 @@ class RecordWorkerRefusalHandler(Handler[RecordWorkerRefusal, None]):
         self.rows, self.refusals = rows, refusals
 
     def handle(self, command: RecordWorkerRefusal, context: Context) -> None:
-        self.refusals.record(self.rows.required(Worktree, command.worktree_id), context)
+        self.refusals.record(self.rows.required(Worktree, command.worktree_id), context, command.refusal_text)

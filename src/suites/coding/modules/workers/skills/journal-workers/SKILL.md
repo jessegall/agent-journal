@@ -110,6 +110,23 @@ be drawn from its output.
 tests, corrections and queued tasks keep it blocked. A crashed worker is detected on a tick; one that
 never starts is retired after the idle time.
 
+## When this happens
+
+Read `journal worker status` first: it says the point of your round you are at (build, task-proven, group-end, wait, fix,
+conflict or question) and the one thing to do there. Every refusal at a hand-in says what is wrong and what fixes it.
+When you cannot go on, ask the merger; it hears your point, your last refusal, your last outputs, your task and your files.
+
+| You saw | Ask | Meanwhile |
+|---|---|---|
+| A judge refusal you cannot place | `journal worker ask "<what>" --about judge` | fix the sins in your own files, leave the rest, and go on |
+| No test runs left, or a test you cannot run | `journal worker ask "<what>" --about tests` | work on the next task or prove what you have while the answer comes |
+| The task is already built, or changed nothing | `journal worker ask "<what>" --about built` | prove each point with where it is and hand in with --differences already built: <where>, then go on to the next task |
+| A clash you cannot settle | `journal worker ask "<what>" --about conflict` | settle what you can in the named files |
+| A tool or folder you do not have | `journal worker ask "<what>" --about tool` | do the part that needs no such tool |
+| Anything else | `journal worker ask "<what>" --about general` | go on with anything the task still holds, or stop |
+
+An open question lets you stop; the answer wakes you. Going on with other work ends the wait, and the answer still comes.
+
 ## As the worker
 
 - A full context is no reason to hurry or stop: it is compacted, and you get your task's overview, your memories and

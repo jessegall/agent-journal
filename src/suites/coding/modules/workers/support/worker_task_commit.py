@@ -6,6 +6,7 @@ from core.base.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worktree_base.record_worktree_base import RecordWorktreeBase
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
@@ -33,17 +34,17 @@ class WorkerTaskCommit:
         proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
-            raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
+            raise Refusal(f"point {', '.join(unproved)} has no proof", AskTopic.GENERAL.hint(f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\""))
 
     def commit(self, worktree: Worktree, task: Task, actor: Actor, differences: str) -> None:
         for path in self.git.uncommitted_files(worktree.folder):
             folder = self.protected.match(worktree.folder, path)
             if folder:
-                raise Refusal(f"{folder} is protected", "report the change to the main agent")
+                raise Refusal(f"{folder} is protected", AskTopic.TOOL.hint("undo the change in that folder"))
         base_commit = self.git.tip(worktree.folder, worktree.base_branch)
         conflicts = self.git.rebased_commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         if conflicts:
-            raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", "settle the conflict markers in those files, then hand in again")
+            raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle the conflict markers in those files, then hand in again"))
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
         changes = self.git.comparison(current)
         if follows_brief(differences):
@@ -55,12 +56,12 @@ class WorkerTaskCommit:
 
     def check_built(self, worktree: Worktree, task: Task, changes: WorktreeChanges) -> None:
         if not changes.files:
-            raise Refusal("your worktree has no change", UNCHANGED_TASK_HINT)
+            raise Refusal("your worktree has no change", AskTopic.BUILT.hint(UNCHANGED_TASK_HINT))
         if task.state is not TaskState.STARTED:
             return
         commits = self.git.task_commits(worktree, task.id)
         if not any(commit.worker_id == worktree.session_agent_id for commit in commits):
-            raise Refusal(f"task {task.id} changed no file, so it is not built", self.no_change_hint(commits))
+            raise Refusal(f"task {task.id} changed no file, so it is not built", AskTopic.BUILT.hint(self.no_change_hint(commits)))
 
     @staticmethod
     def no_change_hint(commits: tuple[TaskBranchCommit, ...]) -> str:

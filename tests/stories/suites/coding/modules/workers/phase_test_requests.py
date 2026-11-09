@@ -6,6 +6,7 @@ from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.nudge import Nudge
@@ -13,6 +14,7 @@ from core.base.driver.nudge_type import NudgeType
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_ALIAS, TEST_LINE, RunRequest, asking_main, shell_test_part, start_planned_worker
 
 REASON = "the rounding only shows in a real run"
@@ -54,7 +56,7 @@ def expect_requests(worker, *requests: RunRequest) -> None:
 
 def test_a_flagged_run_does_not_run_and_sends_one_request(planned_worker):
     reply = planned_worker.run_test(asking_main(TEST_LINE, REASON))
-    expect_reply_refusal(reply, "main agent")
+    expect_reply_refusal(reply, "your request is sent")
     expect_requests(planned_worker, REQUESTED)
     planned_worker.story.expect_rows(all(TEST_LINE not in line and REASON not in line for line in planned_worker.main_agent_lines()))
     planned_worker.story.expect_text("worker-test-request show 1", TEST_LINE, REASON, actor=planned_worker.story.agent)
@@ -74,7 +76,7 @@ def test_the_same_command_flagged_again_sends_nothing_more_and_names_the_same_re
 
 
 def test_a_different_command_sends_its_own_request(requested):
-    expect_reply_refusal(requested.run_test(asking_main(SECOND_TEST_LINE, SECOND_REASON)), "main agent")
+    expect_reply_refusal(requested.run_test(asking_main(SECOND_TEST_LINE, SECOND_REASON)), "your request is sent")
     expect_requests(requested, REQUESTED, RunRequest(2, SECOND_TEST_LINE, SECOND_REASON, "requested"))
 
 
@@ -184,3 +186,22 @@ def test_a_test_request_and_approval_show_marks_for_the_worker(requested):
     allowed = marks.filter(variant=WorkerMarkVariant.TEST_ALLOWED).first()
     story.expect_rows(allowed is not None, allowed.target_id == requested.worker.id, TEST_LINE in allowed.detail,
                       REASON in allowed.detail, "may run the test" in allowed.text)
+
+
+def test_a_test_request_reaches_the_merger_and_not_the_main_agent(planned_worker, monkeypatch):
+    merger_can_start(monkeypatch)
+    with running_launcher(planned_worker.story):
+        planned_worker.run_test(asking_main(TEST_LINE, REASON))
+        planned_worker.story.run_listeners()
+    rows = planned_worker.story.container.get(Queries).query(MergerLine).all_rows()
+    planned_worker.story.expect_rows(any(f"asks to run a command for task:1, request:1" in row.text for row in rows), not any("asks to run" in line for line in planned_worker.main_agent_lines()), detail=str(planned_worker.main_agent_lines()))
+
+
+def test_with_the_merger_off_a_test_request_reaches_the_main_agent(planned_worker):
+    planned_worker.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=planned_worker.story.user)
+    planned_worker.run_test(asking_main(TEST_LINE, REASON))
+    planned_worker.story.expect_rows(any("asks to run a command for task:1, request:1" in line for line in planned_worker.main_agent_lines()), detail=str(planned_worker.main_agent_lines()))
+
+
+def test_the_refusal_of_a_request_does_not_say_who_answers(planned_worker):
+    expect_reply_refusal(planned_worker.run_test(asking_main(TEST_LINE, REASON)), "your request is sent")

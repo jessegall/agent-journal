@@ -13,6 +13,7 @@ from pathlib import Path, PurePosixPath
 from core.base.conflict_files import ConflictFiles
 from core.base.instruction_imports import INSTRUCTION_FILES
 from core.base.refusal import Refusal
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.file_status import FileStatus
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
@@ -166,7 +167,7 @@ class WorktreeGit:
     def refuse_conflicts(self, worktree: Worktree) -> None:
         conflicts = self.conflict_files(worktree)
         if conflicts:
-            raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", "settle them in the worktree, then try again")
+            raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle them in the worktree, then try again"))
 
     def is_merging(self, worktree: Worktree) -> bool:
         return self.git(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
@@ -211,7 +212,7 @@ class WorktreeGit:
         kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
-                          "build them again with npm --prefix src/viewer run build, then hand in again")
+                          AskTopic.TOOL.hint("build them again with npm --prefix src/viewer run build, then hand in again"))
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:
         changed = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_branch, worktree.branch).stdout.splitlines()
@@ -305,7 +306,7 @@ class WorktreeGit:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
         if not applied and not has_markers:
-            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.session_agent_id}", f"they stay in its stash {stash}: the worker applies them")
+            raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.session_agent_id}", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):

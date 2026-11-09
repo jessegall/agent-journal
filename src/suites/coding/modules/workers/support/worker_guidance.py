@@ -37,6 +37,9 @@ class WorkerGuidance:
         runs = self.groups.test_runs_available(worktree, group)
         return WorkerPoint(worker_round, step, step_line(step, self.facts(worker_round, open_task_count, runs)), self.groups.group_key(group), open_task_count, runs)
 
+    def question_line(self, worker_round: WorkerRound) -> str:
+        return step_line(WorkerStep.QUESTION, self.no_work_facts(worker_round))
+
     def conflict_line(self, task: Task, files: str) -> str:
         return step_line(WorkerStep.CONFLICT, WorkerStepFacts(task_id=task.id, open_task_count=0, test_runs_available=None, label=WORK_LABEL, deliver_command=DELIVER_COMMAND, conflict_files=files))
 

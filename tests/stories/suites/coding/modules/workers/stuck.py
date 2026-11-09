@@ -6,6 +6,9 @@ import json
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.command_category import CommandCategory
+from core.base.query.queries import Queries
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import start_process
@@ -14,6 +17,7 @@ from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -43,7 +47,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     for _ in range(STOP_REFUSAL_COUNT + 2):
-        story.expect_hook_refusal(session, HookSamples.stop(), "If you cannot go on: journal wait stuck")
+        story.expect_hook_refusal(session, HookSamples.stop(), AskTopic.GENERAL.ask_line())
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 
@@ -248,3 +252,16 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
     story.expect_success("worker-worktree show 2", f"branch: {repository.worker_branch(side_worker_id, 'side')}", f"folder: {repository.worktree_folder(side_worker_id, 'side')}")
     repository.expect_branch_tip(repository.worker_branch(main_worker.id), repository.tip(ENVIRONMENT_BRANCH))
     repository.expect_branch_tip(repository.worker_branch(side_worker_id, "side"), repository.tip(ENVIRONMENT_BRANCH))
+
+
+def test_a_stuck_worker_reaches_the_merger_and_not_the_main_agent(new_story, monkeypatch):
+    merger_can_start(monkeypatch)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    with running_launcher(story):
+        story.expect_success('wait stuck "the build tool is missing"', actor=worker)
+        story.run_listeners()
+    rows = story.container.get(Queries).query(MergerLine).all_rows()
+    story.expect_rows(any(f"worker:{worker.id} is stuck on task:1" in row.text for row in rows), detail=str(rows))
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", "is stuck")
