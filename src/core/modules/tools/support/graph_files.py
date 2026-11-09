@@ -42,7 +42,7 @@ class GraphFiles:
         if not self.running_path.is_file():
             return False
         text = FileAccess.shared().read(self.running_path).strip()
-        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else text.isdigit() and self.is_alive(int(text))
+        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else text.isdigit() and self.process_exists(int(text))
         if not is_claimed:
             self.running_path.unlink(missing_ok=True)
         return is_claimed
@@ -63,7 +63,7 @@ class GraphFiles:
         self.running_path.unlink(missing_ok=True)
 
     @staticmethod
-    def is_alive(pid: int) -> bool:
+    def process_exists(pid: int) -> bool:
         try:
             os.kill(pid, 0)
         except ProcessLookupError:

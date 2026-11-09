@@ -10,11 +10,11 @@ from suites.coding.modules.workers.support.worker_next_task import WorkerNextTas
 
 
 class WorkerUnfinishedTasks:
-    """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or
-    when its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it
-    moved on from inside a phase count too, since they wait for the end of that phase. A worker has made progress
-    when a task of it started or closed, or when it last used a tool, so only a worker that does nothing runs out of
-    restarts."""
+    """The tasks a worker still has to do when it stops: none when it holds no task it can go on with, or when
+    its tests are waiting, since those hand it its next task. While it holds a started task, the tasks it
+    moved on from inside a phase count too, since they wait for the end of that phase. A worker has made
+    progress when a task of it started or closed, or when it last used a tool, so only a worker that does
+    nothing runs out of restarts."""
 
     def __init__(self, tasks: TaskQuery, worktrees: WorktreeQuery, proofs: ProofQuery, processes: ProcessQuery, phases: WorkerPhases, next_task: WorkerNextTask, hook_calls: HookCallQuery) -> None:
         self.next_task, self.hook_calls = next_task, hook_calls

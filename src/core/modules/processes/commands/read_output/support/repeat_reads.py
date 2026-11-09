@@ -8,14 +8,14 @@ from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 
-POLL_LIMIT = 3
+POLL_LIMIT_COUNT = 3
 
 
 class RepeatReads:
     """Stops an agent reading an ended run's output the same way twice in one context: what it read since its
     last compaction is still in its context, so a repeat costs a turn for nothing. The record of a read is a
-    mark in the run's folder; --again reads it anyway. The third read in a row of a run still going is refused,
-    since the journal tells the agent when it ends."""
+    mark in the run's folder; --again reads it anyway. The third read in a row of a run still going is
+    refused, since the journal tells the agent when it ends."""
 
     def __init__(self, queries: Queries, folder: OutputFolder) -> None:
         self.queries, self.folder = queries, folder
@@ -37,7 +37,7 @@ class RepeatReads:
         previous_id, previous_reads = self.running_reads.get(agent_id, (process_id, 0))
         reads = previous_reads + 1 if previous_id == process_id else 1
         self.running_reads[agent_id] = (process_id, reads)
-        if reads >= POLL_LIMIT:
+        if reads >= POLL_LIMIT_COUNT:
             raise Refusal(f"output {process_id} is still running: stop polling it", f"a main agent sets a monitor with journal output monitor {process_id}; a worker or helper goes idle: the journal wakes you when it ends")
 
     def note(self, command: ReadOutput, actor: Actor, read_at: str) -> None:

@@ -27,7 +27,7 @@ def test_s59_kept_session_new_job_has_new_cost_baseline(new_story, monkeypatch):
     resumable_session(story, helper, monkeypatch)
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     expect_value([job.cost_baseline for job in read_jobs(story, helper)], [0.0, 3.0])
     report_cost(story, 3.4)
     enforced(story, 1)

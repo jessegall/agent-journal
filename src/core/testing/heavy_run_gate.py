@@ -6,6 +6,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import IO
 
+from core.base.file_access import FileAccess
+
 GATE_FOLDER = Path(os.environ.get("JOURNAL_HEAVY_GATE_FOLDER", Path.home() / ".cache" / "agent-journal" / "heavy-runs"))
 HOLDER_FILE = "holder.lock"
 TICKETS_FOLDER = "waiting"
@@ -28,7 +30,7 @@ class HeavyRunGate:
         tickets = self.folder / TICKETS_FOLDER
         tickets.mkdir(exist_ok=True)
         mine = tickets / f"{time.time_ns():020d}-{os.getpid()}"
-        mine.touch()
+        FileAccess.shared().update_timestamp(mine)
         announced_at, announced_place = 0.0, 0
         try:
             while True:
@@ -51,7 +53,7 @@ class HeavyRunGate:
             self.lock_handle = None
 
     def try_lock(self) -> bool:
-        lock = open(self.folder / HOLDER_FILE, "a")
+        lock = os.fdopen(os.open(self.folder / HOLDER_FILE, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644), "a")
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
@@ -64,14 +66,14 @@ class HeavyRunGate:
     def active_tickets(tickets: Path) -> list[Path]:
         active = []
         for ticket in sorted(tickets.iterdir()):
-            if HeavyRunGate.is_alive(int(ticket.name.rpartition("-")[2])):
+            if HeavyRunGate.process_exists(int(ticket.name.rpartition("-")[2])):
                 active.append(ticket)
             else:
                 ticket.unlink(missing_ok=True)
         return active
 
     @staticmethod
-    def is_alive(pid: int) -> bool:
+    def process_exists(pid: int) -> bool:
         try:
             os.kill(pid, 0)
         except ProcessLookupError:

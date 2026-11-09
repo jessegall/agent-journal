@@ -145,7 +145,7 @@ def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_
     story = new_story(fixture=UserJoined)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_text("agent launch claude --environment main", "started agent", actor=story.user)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     request = launcher.requests[0]
     story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith("claude"), request["variables"]["JOURNAL_LAUNCH"] == request["session"])
 

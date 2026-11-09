@@ -115,7 +115,7 @@ class PluginProgram:
         if not service_socket.is_open():
             return None
         try:
-            with self.waits.held(path):
+            with self.waits.locked(path):
                 return PluginAnswer.parsed(service_socket.ask(line, limit_ms))
         except (ConnectionError, FileNotFoundError):
             return None

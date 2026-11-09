@@ -20,7 +20,7 @@ class SetToolHandler(Handler[SetTool, ToolCard]):
 
     def handle(self, command: SetTool, context: Context) -> ToolCard:
         tool = self.catalogue.find(command.name)
-        card = self.tools.set_on(tool, command.enabled)
+        card = self.tools.set_enabled(tool, command.enabled)
         if tool.settings is not None:
             self.store.write(tool.settings_key, command.enabled, None, context)
         self.events.write_file_change("tool.changed", self.managed.path, context)

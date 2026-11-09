@@ -48,7 +48,7 @@ class FakeLauncher:
             return STOPPED_ANSWER
         return self.answer
 
-    def wait_for_requests(self) -> None:
+    def drain_requests(self) -> None:
         with self.arrived:
             self.arrived.wait_for(lambda: len(self.requests) >= self.request_count, ACCEPT_TIMEOUT_SECONDS)
 
@@ -57,7 +57,7 @@ class FakeLauncher:
         return [request for request in self.requests if STOP_FIELD not in request]
 
     def expect_started(self, agent_id: int, session: str, folder: Path) -> None:
-        self.wait_for_requests()
+        self.drain_requests()
         self.server.close()
         assert self.requests, f"the launcher was handed nothing for agent {agent_id}"
         request = self.requests[0]

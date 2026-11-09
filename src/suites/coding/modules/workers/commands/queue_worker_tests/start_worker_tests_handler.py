@@ -23,9 +23,10 @@ TEST_LIMIT_SECONDS = 3600
 
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
-    """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it reads
-    their output; a later listener starts them once this is committed. They all go on the run queue at once and run
-    on the commit handed in, in a checkout of its own, so the worker can go on working in its worktree."""
+    """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it
+    reads their output; a later listener starts them once this is committed. They all go on the run queue at
+    once and run on the commit handed in, in a checkout of its own, so the worker can go on working in its
+    worktree."""
 
     command = StartWorkerTests
 

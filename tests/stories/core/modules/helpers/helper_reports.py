@@ -195,7 +195,7 @@ def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 1)
 
 
@@ -274,7 +274,7 @@ def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.run('helper start journal-researcher --brief "Review HEAD~5..HEAD" --environment main', actor=Actor.core())
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
     story.expect_rows(helper_agent(story).parent_id == story.agent.id)

@@ -32,7 +32,7 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentInspectorAnswer:
         agent = self.queries.query(Agent).find(arguments.agent_id)
-        listed = self.facts.listing(True, agent.id, (agent,)).agents
+        listed = self.facts.listing(True, agent.id, tuple([agent])).agents
         return AgentInspectorAnswer(agent, listed[0] if listed else None, self.inspection.read(Namespace(agent_id=agent.id), caller),
                                     ToolFacts() if agent.ended_at else self.tool.read(Namespace(agent=agent.id), caller),
                                     self.queries.query(Agent).filter(parent_id=agent.id).count(),

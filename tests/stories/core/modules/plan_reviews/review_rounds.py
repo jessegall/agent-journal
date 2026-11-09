@@ -116,7 +116,7 @@ def start_helper(story, brief: str) -> Agent:
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f'helper start journal-researcher --brief "{brief}" --environment main', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     launcher.server.close()
     story.home.socket("launcher").unlink()
     return max(story.container.get(Queries).query(Agent).filter(role="helper").all_rows(), key=lambda agent: agent.id)

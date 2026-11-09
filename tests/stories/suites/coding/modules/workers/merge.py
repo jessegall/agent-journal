@@ -303,7 +303,7 @@ def test_a_job_the_launcher_could_not_start_stays_waiting(new_story):
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"failed\n")
     story.run(f'worker send --wait {worker.id} "Add the tax as well"', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 1)
     story.expect_text(f"agent-line list --agent {worker.id}", "waiting")
 
@@ -316,7 +316,7 @@ def test_a_job_for_a_worker_whose_program_still_runs_waits_for_its_next_hook(new
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"running\n")
     story.run(f'worker send --wait {worker.id} "Add the tax as well"', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 1)
     story.expect_text(f"agent-line list --agent {worker.id} --state waiting", "Add the tax as well")
 
@@ -339,7 +339,7 @@ def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_tw
     story.tick(MAIN_SESSION)
     story.run(f'worker send --wait {worker.id} "And the total"', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 2)
     expect_command_requests_launcher_line(launcher, "And the receipt")
 
@@ -461,7 +461,7 @@ def test_a_job_refused_because_the_program_still_runs_starts_the_worker_when_the
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
     WorkerResumeRetry()(story.container)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 2)
     expect_command_requests_launcher_line(launcher, "Add the tax as well")
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
@@ -484,7 +484,7 @@ def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(ne
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 2)
     expect_command_requests_launcher_line(launcher, "Add the tax as well")
 

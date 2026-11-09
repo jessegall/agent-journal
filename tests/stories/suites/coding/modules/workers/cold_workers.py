@@ -21,7 +21,7 @@ def stopped_worker(ended_worker):
     """A worker whose program ended and whose end has been settled, with its worktree still open."""
     stop_launcher = replaced_launcher(ended_worker, b"running\n", b"stopped\n")
     ended_worker.run_listeners()
-    stop_launcher.wait_for_requests()
+    stop_launcher.drain_requests()
     stop_launcher.server.close()
     return ended_worker
 
@@ -34,7 +34,7 @@ def with_job(story, minutes, percent):
     story.expect_success(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.user)
     story.container.get(WorkerResume).resume(story.row(Agent, worker.id), story.agent)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     return worker, launcher.requests[0]
 
 

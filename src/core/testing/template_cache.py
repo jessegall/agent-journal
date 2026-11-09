@@ -39,7 +39,7 @@ class TemplateCache:
         is_new = not current.is_dir()
         current.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().update_timestamp(current)
-        (current / f"{LEASE_PREFIX}{os.getpid()}").touch()
+        FileAccess.shared().update_timestamp(current / f"{LEASE_PREFIX}{os.getpid()}")
         if is_new or self.is_prune_due():
             self.drop_expired(current)
         return current
@@ -61,7 +61,7 @@ class TemplateCache:
         stamp = self.root / PRUNED_STAMP
         due = not stamp.exists() or FolderStat.modified_time(stamp) < time.time() - PRUNE_INTERVAL_SECONDS
         if due:
-            stamp.touch()
+            FileAccess.shared().update_timestamp(stamp)
         return due
 
     def drop_expired(self, kept: Path | None = None) -> None:

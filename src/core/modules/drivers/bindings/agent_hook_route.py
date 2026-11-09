@@ -35,11 +35,12 @@ MILLISECONDS = 1000
 
 
 class AgentHookRoute(HookRoute):
-    """Answers a hook as the agent that sent it: finds its open agent by session, then by the
-    launch name it was started under, saving the real session on it when it is a main agent or runs a program that does not take a session from the journal, starts the main agent at its
-    session's first hook, gives back the stored answer of a hook sent twice, refuses the tools of a
-    program whose agent has ended and asks the launcher to stop it, and lets through, without a
-    record, a hook from an unknown agent when the event does not require an agent check."""
+    """Answers a hook as the agent that sent it: finds its open agent by session, then by the launch name it
+    was started under, saving the real session on it when it is a main agent or runs a program that does not
+    take a session from the journal, starts the main agent at its session's first hook, gives back the stored
+    answer of a hook sent twice, refuses the tools of a program whose agent has ended and asks the launcher to
+    stop it, and lets through, without a record, a hook from an unknown agent when the event does not require
+    an agent check."""
 
     def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers) -> None:
         self.clock, self.providers = clock, providers

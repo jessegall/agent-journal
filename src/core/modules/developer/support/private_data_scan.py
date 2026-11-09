@@ -13,7 +13,7 @@ SKIPPED_PATHS = ("/web/dist/", "tools/journal-hook/testdata/", "tools/journal-ho
 FAKE_DOMAINS = ("example.com", "example.org", "example.net", "localhost", "invalid", "test", "users.noreply.github.com", "anthropic.com")
 RECORDING_SUFFIXES = (".cast", ".rec", ".recording", ".har")
 SANITISED_MARKS = ("sanitised", "sanitized")
-TEXT_SUFFIX_LIMIT = 1_000_000
+TEXT_SUFFIX_MAX_BYTES = 1_000_000
 
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,})")
 HOME_PATH = re.compile(r"(?:/Users|/home)/([A-Za-z0-9_-][A-Za-z0-9._-]*)/")

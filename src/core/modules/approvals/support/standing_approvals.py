@@ -6,7 +6,7 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.standing_scope import StandingScope
 from core.modules.approvals.models.standing_approval import StandingApproval
 
-COMMAND_TYPE_LENGTH = 2
+COMMAND_TYPE_WORD_COUNT = 2
 
 
 class StandingApprovals:
@@ -20,13 +20,13 @@ class StandingApprovals:
     def category(self, request: ApprovalRequest) -> str:
         if request.command_json:
             return str(json.loads(request.command_json)[TYPE_KEY]).rpartition(".")[2]
-        return " ".join(request.arguments[:COMMAND_TYPE_LENGTH])
+        return " ".join(request.arguments[:COMMAND_TYPE_WORD_COUNT])
 
     def target(self, request: ApprovalRequest) -> str:
         if request.command_json:
             values = list(json.loads(request.command_json)["fields"].values())
             return str(values[0]) if values else ""
-        return request.arguments[COMMAND_TYPE_LENGTH] if len(request.arguments) > COMMAND_TYPE_LENGTH else ""
+        return request.arguments[COMMAND_TYPE_WORD_COUNT] if len(request.arguments) > COMMAND_TYPE_WORD_COUNT else ""
 
     @staticmethod
     def match_key(request: ApprovalRequest) -> str:

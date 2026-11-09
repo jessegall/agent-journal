@@ -79,7 +79,7 @@ def test_a_codex_worker_ended_before_its_first_hook_is_refused_its_tools_and_its
     story.run(f"agent end {worker_id}")
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_hook_refusal("t-7", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-7"), ENDED_AGENT.nudge().text)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(launcher.requests == [{"agent_id": worker_id, "stop": True}], "launch name worker-7" not in story.system_log_text())
     story.expect_absent("agent list --environment main", "t-7")
 

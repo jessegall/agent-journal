@@ -99,7 +99,7 @@ def with_job(story, monkeypatch, minutes, percent):
     launcher = FakeLauncher(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     return helper, launcher.requests[0]
 
 
@@ -171,7 +171,7 @@ def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_hel
     launcher = FakeLauncher(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in launcher.requests[0]["command"], detail=str(launcher.requests[0]))
 
 

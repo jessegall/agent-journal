@@ -28,7 +28,7 @@ def start_launcher(story, answer: bytes, request_count: int = 1) -> FakeLauncher
 
 
 def expect_restart(story, launcher: FakeLauncher) -> None:
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(bool(launcher.requests))
     story.expect_text(f"agent-line list --agent {story.worker.id}", "Add the tax")
 
@@ -54,7 +54,7 @@ def running_worker(worker_story):
     launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
     story.worker = dispatched_worker(story)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(bool(launcher.requests), story.row(Agent, story.worker.id).pid == WORKER_PID)
     story.advance(timedelta(minutes=5))
     return story
@@ -204,14 +204,14 @@ def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_w
     worker = ended_worker.worker
     stop_launcher = replaced_launcher(ended_worker, b"running\n", b"running\n")
     ended_worker.run_listeners()
-    stop_launcher.wait_for_requests()
+    stop_launcher.drain_requests()
     stop_launcher.server.close()
     new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
     ended_worker.use_processes(new_process)
     launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
     ended_worker.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=ended_worker.agent)
     ended_worker.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     ended_worker.hook(worker_session(ended_worker, worker), HookSamples.session_start())
     ended_worker.expect_text(f"agent show {worker.id}", f"pid: {new_process.pid}")
     ended_worker.expect_no_text(f"agent show {worker.id}", "ended_at:")
@@ -225,7 +225,7 @@ def test_a_launcher_that_answers_no_pid_leaves_no_old_process_on_the_worker(runn
     launcher = start_launcher(running_worker, b"started\n")
     running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "the job waits until it starts", actor=running_worker.agent)
     running_worker.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     running_worker.expect_no_text(f"agent show {worker.id}", "pid:")
 
 
@@ -242,7 +242,7 @@ def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
     helper = story.new_row_id('helper start journal-researcher --brief "Read src/cart.py" --environment main', actor=story.agent)
     story.run_listeners()
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_text(f"agent show {helper}", f"pid: {WORKER_PID}")
     story.use_processes()
     story.tick(MAIN_SESSION)

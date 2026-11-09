@@ -26,14 +26,14 @@ SOURCE = "workers.ended-worker"
 
 class EndedWorkerListener(SaveListener[AgentEnded]):
     """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
-    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one
-    that ended while a run of its own goes is started again when the run ends. A worker that ended while its
-    hand-in is under way leaves its main agent no line, and a program that ended within seconds of its start is
-    reported to the main agent as a launch failure, with the error it wrote. A worker that stops while a
+    agent gets one quiet line; one that ended while its tests wait gets its next task from them, and one that
+    ended while a run of its own goes is started again when the run ends. A worker that ended while its
+    hand-in is under way leaves its main agent no line, and a program that ended within seconds of its start
+    is reported to the main agent as a launch failure, with the error it wrote. A worker that stops while a
     run of its own goes leaves its main agent no line, however often it has stopped, unless a person or
-    another agent stopped it. A worker a person or another agent stopped holds no delegated task or was
-    ended by them; that one, one that reported being stuck and one that keeps ending with no run going
-    leave its main agent one line naming all its tasks."""
+    another agent stopped it. A worker a person or another agent stopped holds no delegated task or was ended
+    by them; that one, one that reported being stuck and one that keeps ending with no run going leave its
+    main agent one line naming all its tasks."""
 
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]

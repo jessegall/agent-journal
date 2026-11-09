@@ -28,7 +28,7 @@ def test_resumed_helper_shows_its_new_job(new_story):
     helper = helper_agent(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f'helper send {helper.id} "Review plan 1093"', actor=story.agent)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     launcher.server.close()
     rows = json.loads(story.run("usage agents --closed --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows(next(row for row in rows if row["id"] == helper.id)["helper_job"] == "Review plan 1093")

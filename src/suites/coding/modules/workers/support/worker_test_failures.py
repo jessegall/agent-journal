@@ -16,13 +16,14 @@ from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILU
 
 TEST_FILE_PATTERN = re.compile(r"[\w./-]*(?:test|stories)[\w./-]*\.(?:py|js|mjs|go)|[\w./-]+_test\.go")
 ALL_RUN_TESTS = "the whole run"
-DELIVERY_REVIEW_INTERVAL = 3
+DELIVERY_REVIEW_INTERVAL_COUNT = 3
 
 
 class WorkerTestFailures:
-    """Records each failed hand-in and each failed test a worker ran, in the system log and in a row kept from the
-    worker. A task past the limit of a setting has lines for the main agent to read before it merges, and every
-    third failed hand-in of a task puts a line before the merger, since only a pass ends a task's run of them."""
+    """Records each failed hand-in and each failed test a worker ran, in the system log and in a row kept from
+    the worker. A task past the limit of a setting has lines for the main agent to read before it merges, and
+    every third failed hand-in of a task puts a line before the merger, since only a pass ends a task's run of
+    them."""
 
     def __init__(self, queries: Queries, repository: Repository, settings: SettingValues, system_log: SystemLogWriter, inbox: MergerInbox) -> None:
         self.queries, self.repository, self.settings, self.system_log, self.inbox = queries, repository, settings, system_log, inbox
@@ -30,7 +31,7 @@ class WorkerTestFailures:
     def record_delivery(self, worker_id: int, task_id: int, test_name: str, context: Context) -> None:
         self.record(worker_id, task_id, TestFailureSource.DELIVERY, test_name, context)
         failures = self.queries.query(WorkerTestFailure).filter(task_id=task_id, source=TestFailureSource.DELIVERY).count()
-        if failures % DELIVERY_REVIEW_INTERVAL == 0:
+        if failures % DELIVERY_REVIEW_INTERVAL_COUNT == 0:
             self.inbox.send(f"worker:{worker_id} failed {failures} hand-ins in a row on task:{task_id}: work out where it goes wrong and tell it", MERGER_SOURCE, context)
 
     def record_worker_run(self, worker_id: int, task_id: int, line: str, context: Context) -> None:

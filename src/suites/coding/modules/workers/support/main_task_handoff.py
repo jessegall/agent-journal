@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from core.base.file_access import FileAccess
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
@@ -19,7 +20,7 @@ class MainTaskHandoff:
         patch = self.git.checked(folder, GIT_LIMIT_SECONDS, "diff", "HEAD", "--binary", "--", *paths).stdout
         saved = Path(folder) / HANDOFF_FOLDER / f"task-{task_id}.patch"
         saved.parent.mkdir(parents=True, exist_ok=True)
-        saved.write_text(patch)
+        FileAccess.shared().write(saved, patch)
         return saved
 
     def collect_patch(self, worktree_folder: str, patch: Path) -> None:

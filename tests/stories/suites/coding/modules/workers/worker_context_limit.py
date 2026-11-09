@@ -44,7 +44,7 @@ def compacting_worker(ended_worker):
     story, worker = ended_worker
     has_context(story, worker, LIMIT)
     launcher = with_job(story, worker)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     return story, worker, launcher
 
 
@@ -62,7 +62,7 @@ def compaction_ended(story, worker, launcher, tokens):
     following = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
-    following.wait_for_requests()
+    following.drain_requests()
     return launched(following, 0)
 
 
@@ -84,7 +84,7 @@ def test_a_worker_under_the_limit_resumes_on_its_job(ended_worker):
     story, worker = ended_worker
     has_context(story, worker, LIMIT - 1)
     launcher = with_job(story, worker)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     command = launched(launcher, 0)
     story.expect_rows("/compact" not in command, JOB in command, detail=command)
 

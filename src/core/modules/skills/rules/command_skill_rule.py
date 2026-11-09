@@ -11,8 +11,8 @@ from core.modules.skills.support.skill_nudges import READ_COMMAND_SKILL_FIRST
 
 class CommandSkillRule(DriverRule):
     """A journal command of a noun a skill covers gives the agent three tool uses to load it. After them only
-    reading that skill goes through, and the refusal gives the path. A skill the agent's profile does not give it
-    is not asked for, since it could not read it."""
+    reading that skill goes through, and the refusal gives the path. A skill the agent's profile does not give
+    it is not asked for, since it could not read it."""
 
     name = "skills.command"
     hook = HookEventName.PRE_TOOL_USE

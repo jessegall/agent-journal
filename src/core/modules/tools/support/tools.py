@@ -25,7 +25,7 @@ class Tools:
         return ToolCard(tool.name, tool.title, tool.description, self.graphify.is_installed(), self.hooks.enabled(tool), status.is_running,
                         self.graphify.is_failed(self.home.project_folder), status.refreshed_at, status.graph_commit)
 
-    def set_on(self, tool: ToolDefinition, enabled: bool) -> ToolCard:
+    def set_enabled(self, tool: ToolDefinition, enabled: bool) -> ToolCard:
         if enabled:
             self.hooks.add(tool)
         else:

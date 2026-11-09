@@ -23,5 +23,5 @@ def test_the_fake_launcher_keeps_what_it_was_handed(new_story):
     story = new_story(fixture=HelperStarted)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_text("agent launch claude --environment main", "started agent", actor=story.user)
-    launcher.wait_for_requests()
+    launcher.drain_requests()
     story.expect_rows(launcher.requests[0]["environment"] == "main")

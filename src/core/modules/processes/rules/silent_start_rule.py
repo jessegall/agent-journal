@@ -14,7 +14,7 @@ from core.modules.processes.support.silent_run import SilentRun
 
 UNKNOWN_SHAPE = "none of the known ones"
 MISSING_TOTAL_TEXT = "states no total, so the command must print one first"
-SILENT_RUN_LIMIT = 2
+SILENT_RUN_LIMIT_COUNT = 2
 
 
 class SilentStartRule(DriverRule):
@@ -48,7 +48,7 @@ class SilentStartRule(DriverRule):
     def answer_name(self, name: str) -> RuleAnswer:
         runs = self.runs.runs(name)
         count = SilentStartRuns.silent_run_count(runs)
-        if count >= SILENT_RUN_LIMIT:
+        if count >= SILENT_RUN_LIMIT_COUNT:
             return self.refusal(name, runs[0])
         if count:
             return RuleAnswer.with_nudges(self.taught(name, runs[0]))
