@@ -1,4 +1,5 @@
 from core.base.driver.nudge import Nudge
+from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -7,7 +8,7 @@ from suites.coding.modules.workers.support.worker_proof_queue import WorkerProof
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from suites.coding.modules.workers.support.worker_nudges import WORKER_OPERATION_FAILED
+from suites.coding.modules.workers.support.worker_nudges import WORKER_OPERATION_NEVER_STARTED, WORKER_OPERATION_FAILED
 from core.modules.processes.events.process_ended import ProcessEnded
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.listener.save_listener import SaveListener
@@ -53,6 +54,8 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
         self.nudger.send(agent.id, WORKER_RUN_ENDED, WORKER_JOB_SOURCE, context, output=process.id)
 
     def operation_nudge(self, operation: WorkerOperation, process: Process) -> Nudge:
+        if operation.started_at is None and process.state is ProcessState.ORPHANED:
+            return WORKER_OPERATION_NEVER_STARTED.nudge(output=process.id)
         if process.exit_code != 0:
             return WORKER_OPERATION_FAILED.nudge(output=process.id)
         worktree = self.worktrees.worker_worktree(operation.worker_id)

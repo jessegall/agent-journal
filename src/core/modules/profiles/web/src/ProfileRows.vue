@@ -51,7 +51,7 @@ async function reset(profile) {
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", fields.fallback_programs, "--tier", fields.tier || "", ...programs.value.flatMap((program) => [program.model_option, fields.program_models[program.name] || ""]), "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body, ...(fields.skills ? ["--skills", fields.skills.join(",")] : [])]);
+    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", fields.fallback_programs, "--tier", fields.tier || "", ...programs.value.flatMap((program) => [program.model_option, fields.program_models[program.name] || ""]), "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body, ...(fields.skills ? ["--skills", fields.skills.join(",")] : []), ...(fields.required_skills ? ["--required-skills", fields.required_skills.join(",")] : [])]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
@@ -103,7 +103,7 @@ async function save(profile, fields) {
             </div>
         </template>
         <template v-if="panel">
-            <ProfilePanel :programs="programs" :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset">
+            <ProfilePanel :notice="notice" :failure="actionFailure" :programs="programs" :types="types" :profile="panel" :used="usedWords(panel)" @close="close" @save="save" @reset="reset">
                 <template v-if="panel.name && panel.agent_type === 'helper'"><HelperStartForm :programs="programs" :profile="panel.name" /></template>
             </ProfilePanel>
         </template>

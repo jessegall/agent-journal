@@ -12,6 +12,7 @@ from core.modules.plugins.migrations.m007_plugin_config import PluginConfigMigra
 from core.modules.plugins.migrations.m008_plugin_setting_environments import PluginSettingEnvironmentsMigration
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries_handler import PrunePluginDeliveriesHandler
 from core.modules.plugins.ticks.delivery_pruning import DeliveryPruning
+from core.modules.plugins.ticks.orphan_service_stopping import OrphanServiceStopping
 from core.modules.plugins.ticks.plugin_config_reading import PluginConfigReading
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_handler import RefreshPluginConfigHandler
 from core.modules.plugins.commands.refresh_plugin_config.refresh_plugin_config_subcommand import RefreshPluginConfigSubcommand
@@ -142,6 +143,7 @@ class PluginsModule(Module):
     marks = PLUGIN_MARKS
     tick_handlers = [TickHandler(TickInterval(seconds=1), PluginCardReading(), "plugin card reading"),
                      TickHandler(TickInterval(seconds=5), PluginConfigReading(), "plugin config reading", starts_immediately=True),
+                     TickHandler(TickInterval(seconds=60), OrphanServiceStopping(), "orphan plugin service stopping"),
                      TickHandler(TickInterval(seconds=24 * 60 * 60), DeliveryPruning(), "plugin delivery pruning", starts_immediately=True)]
     guards = [PluginEventGuard]
     listeners = [PluginServicesUpgradeListener, PluginWrongKeyMarkListener, PluginEventListener, SystemEventDeliveryListener, LoginPathListener, PluginSkillPublishListener, JournalInstructionFileListener, StaleManagedHooksListener, PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]

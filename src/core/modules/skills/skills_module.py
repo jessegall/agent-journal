@@ -41,6 +41,7 @@ from core.modules.skills.migrations.m002_skill_requests import SkillRequestsTabl
 from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.models.skill_request import SkillRequest
 from core.modules.skills.rules.command_skill_rule import CommandSkillRule
+from core.modules.skills.rules.profile_skill_first_rule import ProfileSkillFirstRule
 from core.modules.skills.rules.skill_read_first_rule import SkillReadFirstRule
 from core.modules.skills.rules.unread_skill_stop_rule import UnreadSkillStopRule
 from core.modules.skills.seeders.skills_seeder import SkillsSeeder
@@ -82,7 +83,7 @@ class SkillsModule(Module):
     handlers = [SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
     listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = SKILL_MARKS
-    driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
+    driver_rules = [SkillReadFirstRule, ProfileSkillFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),
                                  reads=SKILLS_READS, runs=SKILLS_RUNS, events=SKILLS_EVENTS,
                                  keys=SKILLS_KEYS),

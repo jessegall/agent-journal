@@ -9,6 +9,7 @@ export {default as ButtonForm} from "../src/kit/ButtonForm.vue";
 export {allowed, buttonCatalogue, buttonsAt, startButtons} from "../src/domain/buttons.js";
 export {default as RunningCommand} from "./RunningCommand.vue";
 export {default as Switch} from "./Switch.vue";
+export {default as Notice} from "../src/kit/Notice.vue";
 export {openInChat, peekRef} from "../src/route.js";
 export {tableOfWord} from "../src/domain/tables.js";
 export {steppedItem} from "../src/domain/steppedItem.js";
