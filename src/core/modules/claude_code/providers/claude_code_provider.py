@@ -3,6 +3,7 @@ from core.modules.claude_code.providers.support.claude_server_file import Claude
 from dataclasses import replace
 from core.base.profile.agent_profile import AgentProfile
 from core.base.file_access import FileAccess
+from core.base.provider.context_window import ContextWindow
 from core.base.provider.status_file_fields import StatusFileFields
 import json
 import os
@@ -202,21 +203,14 @@ class ClaudeCodeProvider(Provider):
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
-        return self.context_window(home, session)[0]
+        return self.context_window(home, session).used_percentage
 
     def context_tokens(self, home: JournalHome, session: str) -> int | None:
-        return self.context_window(home, session)[1]
+        return self.context_window(home, session).total_input_tokens
 
-    def context_window(self, home: JournalHome, session: str) -> tuple[int | None, int | None]:
+    def context_window(self, home: JournalHome, session: str) -> ContextWindow:
         path = home.status_file(session)
-        fields = StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {}
-        window = fields.get("context_window") if is_mapping(fields) else None
-        return self.window_number(window, "used_percentage"), self.window_number(window, "total_input_tokens")
-
-    @staticmethod
-    def window_number(window: object, name: str) -> int | None:
-        value = window.get(name) if is_mapping(window) else None
-        return int(value) if isinstance(value, int | float) and not isinstance(value, bool) else None
+        return ContextWindow.parsed(StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {})
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))
