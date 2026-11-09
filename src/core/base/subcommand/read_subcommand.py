@@ -23,6 +23,7 @@ class ReadSubcommand(Generic[R]):
     name: str
     help: str = ""
     outward: bool = False
+    background: bool = False
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None

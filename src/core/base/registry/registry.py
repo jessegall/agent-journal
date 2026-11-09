@@ -102,6 +102,7 @@ class Registry:
     module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
     events: tuple[str, ...] = ()
     outward_lines: tuple[str, ...] = ()
+    background_lines: tuple[str, ...] = ()
     event_keys: dict[str, EventKeyEntry] = field(default_factory=dict[str, EventKeyEntry])
     former_event_keys: dict[str, str] = field(default_factory=dict[str, str])
     declared_plugin_events: tuple[str, ...] = ()
@@ -139,6 +140,7 @@ class Registry:
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
             outward_lines=tuple(entries.get("outward_lines", ())),
+            background_lines=tuple(entries.get("background_lines", ())),
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"], guard.get("is_confirmation", False))
                          for guard in entries["guards"]),
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),
@@ -200,6 +202,7 @@ class Registry:
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
             "outward_lines": list(self.outward_lines),
+            "background_lines": list(self.background_lines),
             "guards": [{"name": guard.name, "event": guard.event.text, "path": guard.path.text, "position": guard.position, "short_flag": guard.short_flag, "is_confirmation": guard.is_confirmation}
                        for guard in self.guards],
             "listeners": [{"name": listener.name, "event": listener.event.text, "timing": listener.timing.value, "path": listener.path.text,
