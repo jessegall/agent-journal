@@ -54,5 +54,5 @@ def test_a_pointer_sets_a_value_and_differences_name_each_changed_place():
     changed = JsonPointer.with_value({"level": 1, "paths": ["src"]}, "/paths/-", "tests")
     assert changed == {"level": 1, "paths": ["src", "tests"]}
     assert JsonPointer.differences({"level": 1, "paths": ["src"]}, {"level": 2, "paths": ["src"], "mode": "strict"}) == ["/level", "/mode"]
-    with pytest.raises(Refusal, match="names no place"):
+    with pytest.raises(Refusal, match="is no place in the document"):
         JsonPointer.with_value({"level": 1}, "/limits/files", 3)

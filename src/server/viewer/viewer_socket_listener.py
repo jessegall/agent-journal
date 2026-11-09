@@ -1,6 +1,7 @@
 import os
 import shutil
 import socket
+from core.base.hosting.hosted_start_check import SOCKET_MODE
 from pathlib import Path
 from socketserver import UnixStreamServer
 from urllib.parse import urlparse
@@ -14,7 +15,6 @@ from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.viewer.viewer_socket_request_handler import ViewerSocketRequestHandler
 
-SOCKET_MODE = 0o660
 
 
 class ViewerSocketListener(ViewerEndpoint, UnixStreamServer):

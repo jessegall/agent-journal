@@ -19,6 +19,7 @@
     ],
     "base": "main",
     "detectors": [
+        "architecture_drivers_countdown_outside_block_until",
         "architecture_approvals_approval_without_its_command",
         "architecture_plans_names_no_mod_identifier",
         "architecture_plans_names_no_mod_literal",

@@ -1,11 +1,11 @@
 import shlex
 
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.shell_line import JOURNAL_PROGRAM
 from core.base.refusal import Refusal
 from core.modules.aliases.models.alias import ARGS_MARK
 from core.modules.aliases.queries.alias_query import AliasQuery
 
-JOURNAL_PROGRAM = "journal"
 TEST_FILE_ENDINGS = (".py", ".js", ".mjs", ".ts", ".go")
 
 
