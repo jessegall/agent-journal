@@ -46,7 +46,7 @@ def test_no_plan_action_is_called_close(new_story):
 def test_the_plan_inspector_declares_its_components_and_links(new_story):
     registry, declaration = inspector_declaration(new_story(fixture=MainEnvironment))
     expect_value([(component.window, component.tab) for component in declaration.components], [("plans.plan-details", ""), ("plans.plan-phases", ""), ("plans.plan-timeline", "Timeline")])
-    expect_value((declaration.width.value, declaration.comments, declaration.links.excludes_plan), ("medium", True, True))
+    expect_value((declaration.width.value, declaration.comments, declaration.links.excludes_plan), ("large", True, True))
     expect_value({window.name for window in registry.windows if window.place == "section"} >= {"plans.plan-details", "plans.plan-phases", "plans.plan-timeline"}, True)
 
 

@@ -1,4 +1,4 @@
-import {createApp, h} from "vue";
+import {createApp, h, ref} from "vue";
 import {afterEach, expect, test} from "vitest";
 import PlanDetails from "../src/resource/PlanDetails.vue";
 import PlanPhases from "../src/resource/PlanPhases.vue";
@@ -52,7 +52,7 @@ test("the phases leave the drawing of each task to the slot", async () => {
 });
 
 test("the plan inspector draws each task as the Tasks window row, with its tags, agent, complexity, priority and reason", async () => {
-    const window = {...context({}), option: (key) => ({value: key === "row" ? PLAN : undefined})};
+    const window = {...context({}), option: (key) => ref(key === "row" ? PLAN : undefined)};
     const element = await mounted(PlanPhasesWindow, window);
     expect([...element.querySelectorAll(".task[data-row]")].map((one) => one.dataset.row)).toEqual(["7", "8", "9"]);
     const started = element.querySelector('.task[data-row="8"]');
