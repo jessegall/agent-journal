@@ -3,7 +3,7 @@ import json
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.type_guards import is_list, is_tuple
 from core.modules.settings.commands.set_setting.set_setting import SetSetting
