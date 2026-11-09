@@ -50,3 +50,16 @@ def hosted_viewer_factory(socket_path: Path, proxy_uid: int):
 def hosted_server(new_story, socket_path):
     with server_story(new_story(), viewer_factory=hosted_viewer_factory(socket_path, os.getuid())) as server:
         yield server, socket_path
+
+
+@pytest.fixture
+def local_server(new_story):
+    with server_story(new_story()) as server:
+        yield server
+
+
+@pytest.fixture
+def stale_file_server(new_story, socket_path):
+    socket_path.write_text("left by a server that died")
+    with server_story(new_story(), viewer_factory=hosted_viewer_factory(socket_path, os.getuid())):
+        yield socket_path

@@ -1,8 +1,8 @@
 import pytest
 
 from server.viewer.closed_service import ClosedService
-from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, socket_answer, socket_path
-from tests.stories.server.support.server_client import server_story, viewer_answer
+from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, local_server, socket_answer, socket_path
+from tests.stories.server.support.server_client import viewer_answer
 from tests.stories.support.story_checks import expect_value
 
 ORIGIN_HEADERS = {"Origin": PUBLIC_ORIGIN, "Sec-Fetch-Site": "same-origin"}
@@ -36,17 +36,15 @@ def test_a_closed_door_answers_404_on_a_hosted_journal_for_a_post(hosted_server,
 
 
 @pytest.mark.parametrize("route", CLOSED_GETS.values(), ids=CLOSED_GETS.keys())
-def test_the_same_get_is_not_closed_on_a_local_journal(new_story, route):
-    with server_story(new_story()) as server:
-        _, _, text = viewer_answer(server.viewer_port(), route, "", "")
-        expect_value(CLOSED_REASON in text, False)
+def test_the_same_get_is_not_closed_on_a_local_journal(local_server, route):
+    _, _, text = viewer_answer(local_server.viewer_port(), route, "", "")
+    expect_value(CLOSED_REASON in text, False)
 
 
 @pytest.mark.parametrize("route", CLOSED_POSTS.values(), ids=CLOSED_POSTS.keys())
-def test_the_same_post_is_not_closed_on_a_local_journal(new_story, route):
-    with server_story(new_story()) as server:
-        _, _, text = viewer_answer(server.viewer_port(), route, "", "", {})
-        expect_value(CLOSED_REASON in text, False)
+def test_the_same_post_is_not_closed_on_a_local_journal(local_server, route):
+    _, _, text = viewer_answer(local_server.viewer_port(), route, "", "", {})
+    expect_value(CLOSED_REASON in text, False)
 
 
 def test_a_hosted_journal_starts_no_tunnel_and_no_plugin_part(hosted_server):
@@ -54,6 +52,5 @@ def test_a_hosted_journal_starts_no_tunnel_and_no_plugin_part(hosted_server):
     expect_value([service for service in ClosedService if not server.context.viewer.closed_doors.closes_service(service)], [])
 
 
-def test_a_local_journal_starts_every_part(new_story):
-    with server_story(new_story()) as server:
-        expect_value([service for service in ClosedService if server.context.viewer.closed_doors.closes_service(service)], [])
+def test_a_local_journal_starts_every_part(local_server):
+    expect_value([service for service in ClosedService if local_server.context.viewer.closed_doors.closes_service(service)], [])
