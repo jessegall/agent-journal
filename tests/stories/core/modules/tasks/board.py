@@ -3,6 +3,7 @@ import pytest
 import json
 from datetime import timedelta
 
+from tests.stories.core.modules.tasks.task_counts import TasksInFourStates, counted_task
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_id_cancelled, expect_index, expect_value, expect_value_with, expect_value_without
 
@@ -71,10 +72,32 @@ def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_cl
     expect_id_cancelled(page, [3, 2])
 
 
-def test_delegated_tasks_come_after_blocked_and_before_open(new_story):
+def test_the_board_has_no_delegated_group(new_story):
     story = new_story(fixture=UserJoined)
     states = [group["state"] for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]]
-    expect_index(states, "blocked", "delegated", "open")
+    assert "delegated" not in states
+    expect_index(states, "testing", "blocked", "open")
+
+
+def test_a_delegated_task_is_in_the_group_of_its_state(new_story):
+    story = new_story(fixture=TasksInFourStates)
+    groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
+    assert counted_task(story, 3) in [row["id"] for row in groups["open"]["rows"]]
+
+
+def test_a_group_can_leave_out_the_tasks_of_a_plan_in_its_rows_and_its_count(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('task make "In a plan" --environment main', actor=story.user)
+    story.expect_success('task make "Alone" --environment main', actor=story.user)
+    story.expect_success('plan make "The rebuild" --brief "all of it" --environment main', actor=story.user)
+    story.expect_success('phase make --plan 1 "First" --goal "it works"', actor=story.user)
+    story.expect_success("phase place 1 --phase 1", actor=story.user)
+    read = lambda flags: {group["state"]: group for group in json.loads(story.run(f"task board --environment main --json {flags}", actor=story.user).output_text)["groups"]}
+    shown, hidden = read(""), read("--hide-plan-tasks open")
+    expect_value((shown["open"]["total"], [row["id"] for row in shown["open"]["rows"]]), (2, [2, 1]))
+    expect_value((hidden["open"]["total"], [row["id"] for row in hidden["open"]["rows"]]), (1, [2]))
+    page = json.loads(story.run("task board --environment main --json --state open --hide-plan-tasks open --before-id 2", actor=story.user).output_text)["groups"][0]
+    expect_value((page["total"], page["rows"]), (1, []))
 
 
 def test_the_blocked_tasks_come_whole_whatever_the_limit(three_board_tasks):

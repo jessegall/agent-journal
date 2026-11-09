@@ -52,20 +52,6 @@ test("more tasks are asked for older than the oldest shown, without doubles, and
     expect(element.textContent).not.toContain("Two");
 });
 
-test("the delegated tasks come with every one in progress and blocked, and more of them are asked for older than the oldest open one shown", async () => {
-    const row = (id, state) => ({...task(id, `Task ${id}`), state, delegated_to: 5});
-    const {window, reads} = reader((line) => {
-        if (line.includes("--before-id")) return {ok: true, value: {groups: [{state: "delegated", total: 5, rows: [row(1, "open")]}]}};
-        return {ok: true, value: {groups: [{state: "delegated", total: 5, rows: [row(2, "blocked"), row(9, "started"), row(8, "blocked"), row(7, "open")]}]}};
-    });
-    const element = await mounted(TaskGroups, window);
-    expect([...element.querySelectorAll(".task-title")].map((title) => title.textContent)).toEqual(["Task 9", "Task 2", "Task 8", "Task 7"]);
-    element.querySelector('[data-more="delegated"]').click();
-    await settle();
-    expect(reads).toContain("task board --state delegated --before-id 7");
-    expect(element.querySelectorAll('[data-more="delegated"]')).toHaveLength(0);
-});
-
 test("a group folds and unfolds from its header, and stays folded on the next load", async () => {
     localStorage.removeItem("journal.tasks.folded");
     const {window} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 1, rows: [task(1, "One")]}]}}));
@@ -124,26 +110,44 @@ test("a plan card shows its state as a badge, and no phase once none is left", a
     expect(element.querySelector(".plan-foot").textContent).toBe("3 of 3 tasks done");
 });
 
-test("every section has a Show tasks in plans switch that hides the tasks of a plan and shows them again, kept on the pane", async () => {
-    const planned = {ok: true, value: {rows: [{id: 5, label: "Plan 5, phase 1", task_ids: [1, 3]}], page: 1, size: 50, total: 1}};
-    const {window} = reader((line) => (line.startsWith("plan places") ? planned : {ok: true, value: {groups: [{state: "open", total: 2, rows: [task(1, "In a plan"), task(2, "Alone")]}, {state: "started", total: 2, rows: [task(3, "Started in a plan"), task(4, "Started alone")]}]}}));
+test("every section has a Show tasks in plans switch that asks the server to leave the tasks of a plan out, kept on the pane", async () => {
+    const {window, reads} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 2, rows: [task(1, "In a plan"), task(2, "Alone")]}, {state: "started", total: 1, rows: [task(3, "Started")]}]}}));
     const element = await mounted(TaskGroups, window);
-    const shown = (state) => [...element.querySelectorAll(`[data-state="${state}"] [data-row]`)].map((row) => row.dataset.row);
     const toggle = async (state) => {
         element.querySelector(`[data-plan-switch="${state}"]`).click();
         await settle();
     };
     expect(element.querySelector('[data-plan-switch="open"]').textContent).toContain("Show tasks in plans");
     expect(element.querySelector('[data-plan-switch="started"]')).not.toBeNull();
-    expect([shown("open"), shown("started")]).toEqual([["1", "2"], ["3", "4"]]);
     await toggle("open");
-    expect([shown("open"), shown("started")]).toEqual([["2"], ["3", "4"]]);
     expect(window.state["board.hide-plan-tasks"]).toBe("open");
+    expect(reads.at(-1)).toContain("--hide-plan-tasks open");
     await toggle("started");
-    expect([shown("open"), shown("started")]).toEqual([["2"], ["4"]]);
     expect(window.state["board.hide-plan-tasks"]).toBe("open,started");
+    expect(reads.at(-1)).toContain("--hide-plan-tasks open,started");
     await toggle("open");
     await toggle("started");
-    expect([shown("open"), shown("started")]).toEqual([["1", "2"], ["3", "4"]]);
     expect(window.state["board.hide-plan-tasks"]).toBeUndefined();
+    expect(reads.at(-1)).not.toContain("--hide-plan-tasks");
+});
+
+test("more tasks of a section that leaves out plan tasks are asked for the same way", async () => {
+    const {window, reads} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 3, rows: [task(3, "Three"), task(2, "Two")]}]}}));
+    const element = await mounted(TaskGroups, window);
+    element.querySelector('[data-plan-switch="open"]').click();
+    await settle();
+    element.querySelector('[data-more="open"]').click();
+    await settle();
+    expect(reads.at(-1)).toContain("--state open");
+    expect(reads.at(-1)).toContain("--hide-plan-tasks open");
+    expect(reads.at(-1)).toContain("--before-id 2");
+});
+
+test("the switch sits at the far right of the section head, small, with its label left of it", async () => {
+    const source = readFileSync(resolve(__dirname, "../../core/modules/tasks/web/src/TaskGroups.vue"), "utf8");
+    expect(source).toMatch(/\.tasks-plan-switch \{[^}]*flex-direction: row-reverse;[^}]*margin-left: auto;/);
+    expect(source).toMatch(/\.tasks-group-head \{[^}]*display: flex;/);
+    const {window} = reader(() => ({ok: true, value: {groups: [{state: "open", total: 1, rows: [task(1, "One")]}]}}));
+    const element = await mounted(TaskGroups, window);
+    expect(element.querySelector('[data-plan-switch="open"] .switch').classList.contains("small")).toBe(true);
 });
