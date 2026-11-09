@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.models.merger_line import MergerLine
 import json
 import subprocess
 from datetime import timedelta
@@ -318,6 +319,22 @@ def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_n
     story.run_listeners()
     ended(story, started[3], 0)
     story.expect_text(f"worker logs {worker.id}", "! failed 3 hand-ins", actor=story.agent)
+
+
+def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(new_story, monkeypatch):
+    story, repository, worker, started = queued_story(new_story, monkeypatch)
+    for attempt in range(2):
+        ended(story, started[attempt], 1)
+        repository.changed(worker.id, "cart.py", f"TOTAL = {attempt + 10}\n")
+        story.expect_success("worker deliver --wait --differences none", actor=worker)
+        story.run_listeners()
+    assert review_lines(story) == []
+    ended(story, started[2], 1)
+    assert review_lines(story) == [f"worker:{worker.id} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"]
+
+
+def review_lines(story) -> list[str]:
+    return [line.text for line in story.container.get(Queries).query(MergerLine).all_rows() if "in a row" in line.text]
 
 
 def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(new_story, monkeypatch):

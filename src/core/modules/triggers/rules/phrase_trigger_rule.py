@@ -2,7 +2,9 @@ from core.modules.skills.commands.request_skill.request_skill import RequestSkil
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_files import SkillFiles
-from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
+from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
+from core.modules.skills.support.skill_countdown import SkillCountdown
+from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST, SKILL_COUNTDOWN, SKILL_TOOL_USES
 from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
 from core.base.role_group import RoleGroup
@@ -31,9 +33,9 @@ class PhraseTriggerRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
 
-    def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions, catalogue: SkillCatalogue, rows: AgentSkillRows, files: SkillFiles) -> None:
+    def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions, catalogue: SkillCatalogue, rows: AgentSkillRows, files: SkillFiles, countdown: SkillCountdown) -> None:
         self.triggers, self.conditions = triggers, conditions
-        self.catalogue, self.rows, self.files = catalogue, rows, files
+        self.catalogue, self.rows, self.files, self.countdown = catalogue, rows, files, countdown
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         texts = [(place, text) for place, text in self.texts(hook) if text]
@@ -52,11 +54,16 @@ class PhraseTriggerRule(DriverRule):
         if missing:
             folder = missing[0].skill
             if folder is not None:
+                remaining = self.tool_uses_left(hook, folder)
                 nudge = READ_SKILL_FIRST.nudge(instruction=self.files.instruction(folder, hook))
-                if hook.event.event is HookEventName.PRE_TOOL_USE:
+                if hook.event.event is HookEventName.PRE_TOOL_USE and remaining <= 0:
                     return RuleAnswer.blocked(hook, nudge, SkillLoaded(folder)).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
-                nudges.append(nudge)
+                nudges.append(SKILL_COUNTDOWN.nudge(remaining, skill=folder) if hook.event.event is HookEventName.PRE_TOOL_USE else nudge)
         return RuleAnswer.with_nudges(*nudges).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
+
+    def tool_uses_left(self, hook: AgentHook, folder: str) -> int:
+        due = self.rows.find(hook.agent_id, folder)
+        return self.countdown.remaining(hook, due) if due is not None and due.state is AgentSkillState.DUE else SKILL_TOOL_USES
 
     def watches_phrase(self, trigger: Trigger, texts: list[tuple[str, str]]) -> bool:
         return any(trigger.match_mode.finds(phrase, text) for phrase in trigger.phrases for place, text in texts if place in trigger.watch_places)
