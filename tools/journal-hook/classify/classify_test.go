@@ -26,8 +26,6 @@ var classifyCases = []struct {
 	{"bash -c 'rm -rf build'", "edit", []string{"deletes_files"}, false},
 	{"for f in *.tmp; do rm $f; done", "edit", []string{"deletes_files"}, false},
 	{"(cd src && make)", "build", []string{"changes_folder", "makes_files", "reads_files", "runs_long"}, false},
-	{"journal sins --changes", "test run", []string{"reads_files", "runs_long"}, false},
-	{"journal sins src/core", "test run", []string{"reads_files", "runs_long"}, false},
 	{"journal suite run", "test run", []string{"reads_files", "runs_long"}, false},
 	{"journal task list", "journal", []string{}, false},
 	{`pytest tests/cart.py --ask-main "the rounding only shows in a real run"`, "test run", []string{"reads_files", "runs_long"}, false},

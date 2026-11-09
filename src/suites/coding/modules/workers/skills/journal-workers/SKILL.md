@@ -121,7 +121,7 @@ When you cannot go on, ask the merger; it hears your point, your last refusal, y
 
 | You saw | Ask | Meanwhile |
 |---|---|---|
-| A judge refusal you cannot place | `journal worker ask "<what>" --about judge` | fix the sins in your own files, leave the rest, and go on |
+| A judge refusal you cannot place | `journal worker ask "<what>" --about judge` | fix the findings in your own files, leave the rest, and go on |
 | No test runs left, or a test you cannot run | `journal worker ask "<what>" --about tests` | work on the next task or prove what you have while the answer comes |
 | The task is already built, or changed nothing | `journal worker ask "<what>" --about built` | prove each point with where it is and hand in with --differences already built: <where>, then go on to the next task |
 | A clash you cannot settle | `journal worker ask "<what>" --about conflict` | settle what you can in the named files |
@@ -155,7 +155,7 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   files cover the code you changed. Include those and your new tests in the proof's `--test` command; it covers both.
   A proof with no test waits for the main agent's check.
 - Correct your own unchecked proof with `journal proof edit <proof> --task <task> "<text>" --test "<command>"`, or with `journal proof make` again for the same point. The main agent can return a checked proof with `journal proof short <proof> "<reason>"`.
-- Never run the judge on your own work, with `journal sins` or the judge's own command. The journal judges your work when
+- Never run a plugin's check of the code on your own work. The journal judges your work when
   you hand it in and when it is merged, and what it finds comes back to you to fix at its source.
 - At each hand-in, say only what you did other than the task's brief asked or left out of it, never what you did:
   `journal worker next --differences "<what>"`. When you followed the brief, `--differences none`. The same goes for

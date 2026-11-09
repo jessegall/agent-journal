@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 if (!document.getElementById("window-styles-a3b010e4efee")) { const style = document.createElement("style"); style.id = "window-styles-a3b010e4efee"; style.textContent = "button.title[data-v-a4362d67]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.suggestion[data-v-a4362d67]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-a4362d67]{flex:1}.answer[data-v-a4362d67]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { openBlock as _, createBlock as f, unref as e, withCtx as u, createVNode as d, createElementVNode as c, toDisplayString as g } from "vue";
 import { useWindow as w, useListTools as h, WindowRoom as m, ListTools as v, RowList as y, peekRef as k } from "@journal/window-kit";

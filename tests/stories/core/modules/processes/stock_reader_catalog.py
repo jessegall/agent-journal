@@ -113,19 +113,6 @@ def test_go_vet_output(new_story):
     story.expect_rows(story.container.get(ReaderJudge).misses(reader, CommandCategory.CHECK, output) == ())
 
 
-@pytest.mark.parametrize(("output", "summary"), [
-    ("detector 3/9\nNo sins found\n", "No sins found"),
-    ("Nothing to judge\n", "Nothing to judge"),
-    ("3 sins across 2 skills.\ncommandments-plain-code-words  (2)\n", "3 sins across"),
-])
-def test_the_judge_reader_reads_journal_sins(new_story, output, summary):
-    story = new_story(fixture=BuilderStarted)
-    reader = story.container.get(ReaderQuery).filter(name="judge").page(1, 1).rows[0]
-    run = story.container.get(ReaderRun)
-    story.expect_rows(ReaderSelection.matches(reader.commands, "journal sins --changes"), run.summary(reader, output) == summary)
-    story.expect_rows(run.progress(reader, "detector 3/9\n", 0) == 33, run.lines(reader, "detector 3/9\nNo sins found\n", "running") == ["2: No sins found"])
-
-
 def test_every_stock_reader_is_stored_and_none_is_a_default(new_story):
     story = new_story(fixture=BuilderStarted)
     stored = {reader.name: reader for reader in story.container.get(ReaderQuery).filter(creator_id=1).page(1, 500).rows}

@@ -2615,14 +2615,6 @@
      "kind": "search",
      "effects": []
     },
-    "sins": {
-     "label": "judging",
-     "kind": "test run",
-     "effects": [
-      "reads_files",
-      "runs_long"
-     ]
-    },
     "suite": {
      "label": "testing",
      "kind": "test run",
