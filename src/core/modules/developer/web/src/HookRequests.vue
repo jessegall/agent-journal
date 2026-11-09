@@ -58,7 +58,7 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
                     <Btn small data-request-queue-open @click="queueOpen = true">Request queue</Btn>
                     <template v-if="filterAnchor"><MenuPanel :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
                         <MenuLabel>Type</MenuLabel>
-                        <template v-for="kind in ['hook', 'viewer', 'command line']" :key="kind"><MenuItem :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.category.includes(category)" :aria-checked="filters.category.includes(category)" @click="toggle('kind', category)">{{ category }}</MenuItem></template>
+                        <template v-for="category in ['hook', 'viewer', 'command line']" :key="category"><MenuItem :data-filter-category="category" role="menuitemcheckbox" :checked="filters.category.includes(category)" :aria-checked="filters.category.includes(category)" @click="toggle('category', category)">{{ category }}</MenuItem></template>
                         <MenuLabel>Event or command</MenuLabel>
                         <template v-for="family in options.family" :key="family"><MenuItem :data-filter-family="family" role="menuitemcheckbox" :checked="filters.family.includes(family)" :aria-checked="filters.family.includes(family)" @click="toggle('family', family)">{{ family }}</MenuItem></template>
                         <MenuLabel>Sender</MenuLabel>

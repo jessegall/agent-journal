@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {InnerTabs, SwitchCase, WindowRoom, useWindow} from "@journal/window-kit";
+import {InnerTabs, SwitchCase, TabBody, WindowRoom, useWindow} from "@journal/window-kit";
 import {countEntries, isFull} from "../../../../core/modules/agents/web/src/agentCounts.js";
 import AgentSettingsAdvanced from "./AgentSettingsAdvanced.vue";
 import AgentSettingsAgents from "./AgentSettingsAgents.vue";
@@ -28,20 +28,22 @@ function pick(entry) {
                 <template v-if="view.readOnly">
                     <p class="note lock" role="note" data-settings-lock>Only a person can change these settings. You can read every value, and ask a person for a change.</p>
                 </template>
-                <SwitchCase :value="tab">
-                    <template #work>
-                        <AgentSettingsWork />
-                    </template>
-                    <template #agents>
-                        <AgentSettingsAgents />
-                    </template>
-                    <template #tests>
-                        <AgentSettingsTests />
-                    </template>
-                    <template #advanced>
-                        <AgentSettingsAdvanced />
-                    </template>
-                </SwitchCase>
+                <TabBody :tab="active">
+                    <SwitchCase :value="tab">
+                        <template #work>
+                            <AgentSettingsWork />
+                        </template>
+                        <template #agents>
+                            <AgentSettingsAgents />
+                        </template>
+                        <template #tests>
+                            <AgentSettingsTests />
+                        </template>
+                        <template #advanced>
+                            <AgentSettingsAdvanced />
+                        </template>
+                    </SwitchCase>
+                </TabBody>
             </div>
         </div>
     </WindowRoom>

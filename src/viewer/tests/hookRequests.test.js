@@ -34,12 +34,12 @@ test("request filters are sent to the server and remembered", async () => {
     document.body.append(element);
     element.querySelector("[data-filter-open]").click();
     await settle();
-    document.querySelector('[data-filter-kind="viewer"]').click();
+    document.querySelector('[data-filter-category="viewer"]').click();
     document.querySelector('[data-filter-family="process bookkeeping"]').click();
     await settle();
     expect(window.reads.some((line) => line.includes('--categories ["viewer"]') && line.includes('--families ["process bookkeeping"]'))).toBe(true);
     expect(element.querySelector("[data-filter-count]").textContent).toContain("2");
-    expect(JSON.parse(localStorage.getItem("journal.hook-requests.filters")).kind).toEqual(["viewer"]);
+    expect(JSON.parse(localStorage.getItem("journal.hook-requests.filters")).category).toEqual(["viewer"]);
     document.querySelector("[data-filter-clear]").click();
     await settle();
     expect(element.querySelector("[data-filter-count]")).toBeNull();
