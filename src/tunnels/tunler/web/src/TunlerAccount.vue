@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {Btn, Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
 import TunlerDomain from "./TunlerDomain.vue";
 import TunlerLoginForm from "./TunlerLoginForm.vue";
@@ -7,28 +7,25 @@ import TunlerLoginForm from "./TunlerLoginForm.vue";
 const SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain";
 const SERVICE_SETTING = "journal.core.tunnel.service";
 
-const context = useWindow();
-const status = ref(null);
-const version = ref(null);
-const domains = ref([]);
-const failure = ref("");
+const view = useWindow();
+const {data: status, failure: readFailure} = view.props.status;
+const {data: version} = view.props.version;
+const {data: domainData} = view.props.domains;
+const domains = computed(() => domainData.value?.domains ?? []);
+const runFailure = ref("");
+const failure = computed(() => runFailure.value || readFailure.value);
 const switching = ref(false);
 const server = ref("");
 const subdomain = ref("");
+watch(status, (current) => (subdomain.value = current?.subdomain ?? ""), {immediate: true});
 
-async function load() {
-    const [statusAnswer, versionAnswer, domainsAnswer] = await Promise.all([context.read("tunler status"), context.read("tunler version"), context.read("tunler domains")]);
-    failure.value = statusAnswer.ok ? "" : statusAnswer.error;
-    status.value = statusAnswer.ok ? statusAnswer.value : null;
-    version.value = versionAnswer.ok ? versionAnswer.value : null;
-    domains.value = domainsAnswer.ok ? domainsAnswer.value.domains : [];
-    subdomain.value = status.value?.subdomain ?? "";
-}
+const load = () => view.reload(["status", "version", "domains"]);
 
 async function run(...lines) {
+    runFailure.value = "";
     for (const line of lines) {
-        const result = await context.run(line);
-        failure.value = result.ok ? "" : result.error;
+        const result = await view.run(line);
+        runFailure.value = result.ok ? "" : result.error;
         if (!result.ok) break;
     }
     await load();
@@ -41,8 +38,6 @@ function ready() {
     switching.value = false;
     load();
 }
-
-load();
 </script>
 
 <template>

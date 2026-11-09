@@ -68,7 +68,10 @@ class WorkerProofQueue:
     def queue_phase_test(self, worktree: Worktree, task: Task, phase: Phase, context: Context) -> None:
         if not phase.test_command:
             return
-        if self.proofs.worktree_proofs(worktree.id).filter(point=PHASE_TEST_POINT, task_id=task.id).exists():
+        proof = self.proofs.worktree_proofs(worktree.id).filter(point=PHASE_TEST_POINT, task_id=task.id).first()
+        if proof is not None:
+            if proof.state is ProofState.SHORT and proof.test_command != phase.test_command:
+                self.repository.save_change(proof, proof.revise(context.timestamp, context.actor, proof.text, phase.test_command), context)
             return
         self.repository.save(Proof(task_id=task.id, worktree_id=worktree.id, creator_id=worktree.session_agent_id, point=PHASE_TEST_POINT,
                                    text=f"the test phase {phase.title} names", test_command=phase.test_command), context)

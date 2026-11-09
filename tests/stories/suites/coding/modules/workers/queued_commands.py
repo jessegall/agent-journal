@@ -12,12 +12,14 @@ from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import LAUNCHER_SOCKET
+from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from core.modules.processes.support.queued_process_start import QueuedProcessStart
@@ -189,6 +191,28 @@ def test_a_failed_background_command_releases_the_worker_and_names_its_output(wo
     notifications = [line for line in lines if line.nudge.key == "workers.operation_failed"]
     story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text)
     story.expect_rows(story.row(WorkerOperation, operation.id).ended_at is not None)
+
+
+def test_a_worker_command_starts_in_the_urgent_round_while_the_ordinary_listeners_wait(worker_command, monkeypatch):
+    story, _, worker, launches = worker_command
+    monkeypatch.setattr(CommitListenerRunner, "run", lambda _runner: None)
+    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_rows(launches == [])
+    story.container.get(CommitListenerRunner).run_urgent()
+    story.expect_rows(len(launches) == 1)
+
+
+def test_a_worker_command_lost_before_it_started_tells_the_worker_and_can_be_given_again(worker_command):
+    story, _, worker, launches = worker_command
+    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    operation = story.container.get(Queries).query(WorkerOperation).newest().first()
+    story.container.get(Bus).run(OrphanProcess(operation.process_id), Actor.core(), environment_id=story.row(Agent, worker.id).environment_id)
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=worker.id).all_rows()
+    notifications = [line for line in lines if line.nudge.key == "workers.operation_never_started"]
+    story.expect_rows(len(notifications) == 1, str(operation.process_id) in notifications[0].text,
+                      story.row(WorkerOperation, operation.id).ended_at is not None)
+    story.expect_text('worker deliver --differences none', "command accepted", actor=worker)
+    story.expect_rows(len(launches) == 2)
 
 
 def test_missing_proofs_are_refused_before_creating_a_background_process(worker_command):

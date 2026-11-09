@@ -5,6 +5,7 @@ import pytest
 from core.base.registry.button_line import ButtonLine
 from core.base.viewer.choice import Choice
 from core.base.viewer.choice_field import ChoiceField
+from core.base.viewer.agent_field import AgentField
 from core.base.viewer.template_field import TemplateField
 from core.base.viewer.text_field import TextField
 
@@ -54,3 +55,9 @@ def test_permission_covers_the_whole_template_and_choice_keys():
     assert line.permission_line == replace(line, fields={"size": replace(choice, choices=tuple(reversed(choice.choices)))}).permission_line
     assert line.permission_line == replace(line, fields={"size": replace(choice, label="New label")}).permission_line
     assert LINE.permission_line == LINE.template
+
+
+def test_an_agent_field_takes_only_an_agent_number():
+    line = ButtonLine("plans", "plan assign {row_id} --to={agent}", False, {"agent": AgentField("agent", "Agent")})
+    assert line.allows(["plan", "assign", "1", "--to=12"])
+    assert not line.allows(["plan", "assign", "1", "--to=main"])

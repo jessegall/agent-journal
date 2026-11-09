@@ -108,6 +108,20 @@ def test_the_planner_turns_stories_into_story_books_of_one_task_each(bundled_sto
     bundled_story.expect_rows("story books" in planner.body, "one task" in planner.body, "names each story" in planner.body, "when the book is done" in planner.body, detail=planner.body)
 
 
+def test_the_functional_designer_points_out_the_unit_tests_a_change_needs(bundled_story):
+    designer = profile(bundled_story, FUNCTIONAL_DESIGNER)
+    bundled_story.expect_rows("which unit tests are needed" in designer.body, detail=designer.body)
+    bundled_story.run("skill write")
+    expect_skill_text(bundled_story, "journal-functional-design", "**Unit tests**", "at a high level")
+
+
+def test_the_planner_carries_a_documents_unit_test_plan_into_the_plan(bundled_story):
+    planner = profile(bundled_story, PLANNER)
+    bundled_story.expect_rows("testing plan for unit tests" in planner.body, detail=planner.body)
+    bundled_story.run("skill write")
+    expect_skill_text(bundled_story, "journal-planning", "testing plan for unit tests")
+
+
 def test_the_planning_skill_stays_the_planners_and_takes_a_design_as_its_source(bundled_story):
     bundled_story.run("skill write")
     expect_skill_text(bundled_story, "journal-planning", "name: journal-planning", "functional design document", "cheaper model")

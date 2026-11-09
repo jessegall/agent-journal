@@ -2,6 +2,7 @@
 import FlowchartDialog from "../src/chat/FlowchartDialog.vue";
 import GrowingCard from "../src/chat/GrowingCard.vue";
 import MessageLinks from "./MessageLinks.vue";
+import AgentTip from "./AgentTip.vue";
 import {computed, inject, ref} from "vue";
 import {WINDOW_CONTEXT} from "./windowContextKey.js";
 import Icon from "../src/kit/Icon.vue";
@@ -95,7 +96,7 @@ function pick(face) {
                         <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
                     </template>
                     <template v-if="worker !== null">
-                        <button type="button" class="message-worker" data-message-worker :title="`Open worker ${worker}`" @click.stop="peekRef(`agents:${worker}`)">Worker {{ worker }}</button>
+                        <AgentTip as="button" :agent-id="worker" :label="`Worker ${worker}`" class="message-worker" data-message-worker @click.stop="peekRef(`agents:${worker}`)">Worker {{ worker }}</AgentTip>
                     </template>
                     <Folded :at="folding.at" :keep="folding.keep" :name="`message:${message.id}`">
                         <div data-message-text v-html="html" />
@@ -154,7 +155,7 @@ function pick(face) {
                 <div class="message-sent-to" data-message-sent-to>
                     <Icon name="send" :size="12" />
                     <template v-for="target in sentTo" :key="target.id">
-                        <button type="button" class="message-sent-worker" :disabled="target.unavailable || !target.open_ref" :data-sent-worker="target.id" :title="`Open worker ${target.id}`" @click.stop="target.open_ref && peekRef(target.open_ref)">Also sent to worker {{ target.id }}<template v-if="target.unavailable"> (unavailable)</template></button>
+                        <AgentTip as="button" :agent-id="target.id" :label="`Worker ${target.id}`" class="message-sent-worker" :disabled="target.unavailable || !target.open_ref" :data-sent-worker="target.id" @click.stop="target.open_ref && peekRef(target.open_ref)">Also sent to worker {{ target.id }}<template v-if="target.unavailable"> (unavailable)</template></AgentTip>
                     </template>
                 </div>
             </template>

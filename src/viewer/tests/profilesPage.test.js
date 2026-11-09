@@ -16,9 +16,10 @@ const BUILDER = {name: "builder", description: "Writes a bounded change", agent_
 const ROUTED = {...BUILDER, name: "routed", description: "Reads on one program, then another", program: "claude", preferred_program: true, fallback_programs: ["codex"]};
 const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: ""}, {key: "worker", label: "Worker", access: "writing", extends: "helper"}];
 const SKILLS = {ok: true, value: {profile: "journal-researcher", rows: [
-    {key: "journal", description: "Find your way in the journal", state: "on", own: false},
-    {key: "journal-helpers", description: "Start a helper for a bounded read", state: "on", own: true},
-    {key: "journal-dumps", description: "File what the user dropped", state: "off", own: false},
+    {key: "journal", description: "Find your way in the journal", state: "on", own: false, required: false, locked: true},
+    {key: "journal-helpers", description: "Start a helper for a bounded read", state: "on", own: true, required: true, locked: false},
+    {key: "journal-tasks", description: "Declare, log and finish the work", state: "on", own: false, required: false, locked: false},
+    {key: "journal-dumps", description: "File what the user dropped", state: "off", own: false, required: false, locked: false},
 ]}};
 let app;
 let host;
@@ -85,7 +86,7 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     expect(document.querySelector("[data-side-panel]")).not.toBeNull();
     expect(document.querySelector('[role="dialog"] h2').textContent).toBe("journal-researcher");
     const actions = document.querySelector('[role="dialog"] > [data-inspector-actions]');
-    expect(actions.previousElementSibling.matches("header.head")).toBe(true);
+    expect(actions.previousElementSibling.matches(".body")).toBe(true);
     expect(actions.querySelector("[data-profile-save]")).not.toBeNull();
     expect(panel().querySelector("#profile-description").value).toBe(RESEARCHER.description);
     expect(panel().querySelector("#profile-tools")).toBeNull();
@@ -93,7 +94,7 @@ test("a profile opens in a panel at the side with its fields and a model picker 
     const pickers = [...panel().querySelectorAll("[data-drop-head]")].map((head) => head.textContent.trim());
     expect(pickers).toEqual(["sonnet", "gpt-6.1-sol"]);
     expect(panel().querySelector('input[aria-label="Model on Claude Code"]')).toBeNull();
-    expect(panel().textContent).toContain("This comes with the journal.");
+    expect(document.querySelector("[data-profile-meta]").textContent).toContain("Comes with the journal");
 });
 
 test("Save waits until something changed, and an edit with a new model is saved by the profile's name", async () => {
@@ -196,7 +197,7 @@ test("a changed shipped profile says so, locks its type and offers the journal's
     expect(host.querySelector('[data-profile="journal-researcher"]').textContent).toContain("Changed");
     await open("journal-researcher");
     expect(panel().querySelector("[data-profile-type-locked]").textContent).toBe("Helper");
-    expect(panel().textContent).toContain("This comes with the journal. Your changes are kept through updates.");
+    expect(document.querySelector("[data-profile-meta]").textContent).toContain("Comes with the journal");
     document.querySelector("[data-profile-reset]").click();
     await settle();
     expect(lines).toContainEqual(["profile", "reset", "journal-researcher"]);
@@ -262,16 +263,137 @@ test("the panel lists every skill with a switch and marks the ones made for the 
     const lines = await drawn();
     await open("journal-researcher");
     const rows = [...panel().querySelectorAll("[data-profile-skill]")];
-    expect(rows.map((row) => row.dataset.profileSkill)).toEqual(["journal", "journal-helpers", "journal-dumps"]);
-    expect(rows.map((row) => row.querySelector("[data-profile-skill-switch]").getAttribute("aria-checked"))).toEqual(["true", "true", "false"]);
-    expect(rows.map((row) => row.querySelector("[data-profile-skill-own]") !== null)).toEqual([false, true, false]);
+    expect(rows.map((row) => row.dataset.profileSkill)).toEqual(["journal", "journal-helpers", "journal-tasks", "journal-dumps"]);
+    expect(rows.map((row) => row.querySelector("[data-profile-skill-switch]").getAttribute("aria-checked"))).toEqual(["true", "true", "true", "false"]);
+    expect(rows.map((row) => row.querySelector("[data-profile-skill-own]") !== null)).toEqual([false, true, false, false]);
     const save = document.querySelector("[data-profile-save]");
     expect(save.disabled).toBe(true);
-    rows[2].querySelector("[data-profile-skill-switch]").click();
+    rows[3].querySelector("[data-profile-skill-switch]").click();
     await settle();
-    expect(rows[2].querySelector("[data-profile-skill-switch]").getAttribute("aria-checked")).toBe("true");
+    expect(rows[3].querySelector("[data-profile-skill-switch]").getAttribute("aria-checked")).toBe("true");
     expect(save.disabled).toBe(false);
     save.click();
     await settle();
-    expect(lines.at(-1).slice(-2)).toEqual(["--skills", "journal,journal-helpers,journal-dumps"]);
+    expect(lines.at(-1).slice(-2)).toEqual(["--skills", "journal,journal-helpers,journal-tasks,journal-dumps"]);
+});
+
+const skillRow = (key) => panel().querySelector(`[data-profile-skill="${key}"]`);
+const requiredSwitch = (key) => skillRow(key).querySelector("[data-profile-skill-required]");
+const openSkills = async (name = "journal-researcher") => {
+    const lines = await drawn();
+    await open(name);
+    document.querySelector('[data-inner-tabs] [data-tab="skills"]').click();
+    await settle();
+    return lines;
+};
+
+test("the panel is wide and its fields are in five tabs, the first open and the skills tab counting what is on", async () => {
+    await drawn();
+    await open("journal-researcher");
+    expect(document.querySelector("[data-side-panel] .panel").classList.contains("wide")).toBe(true);
+    const tabs = [...document.querySelectorAll("[data-inner-tabs] [data-tab]")];
+    expect(tabs.map((tab) => tab.dataset.tab)).toEqual(["about", "model", "instructions", "tools", "skills"]);
+    expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+    expect(tabs[4].textContent).toContain("3");
+});
+
+test("choosing a tab shows its fields and keeps what was typed in another", async () => {
+    await drawn();
+    await open("journal-researcher");
+    const title = document.querySelector("#profile-title");
+    await type(title, "Researcher");
+    document.querySelector('[data-inner-tabs] [data-tab="instructions"]').click();
+    await settle();
+    expect(document.querySelector('[data-profile-tab="instructions"]').style.display).not.toBe("none");
+    expect(document.querySelector('[data-profile-tab="about"]').style.display).toBe("none");
+    expect(document.querySelector("#profile-title").value).toBe("Researcher");
+});
+
+test("the header names the profile and says it comes with the journal", async () => {
+    await drawn();
+    await open("journal-researcher");
+    const meta = document.querySelector("[data-profile-meta]").textContent;
+    expect(meta).toContain("journal-researcher");
+    expect(meta).toContain("Comes with the journal");
+});
+
+test("a change shows Unsaved changes, and none shows nothing", async () => {
+    await drawn();
+    await open("journal-researcher");
+    expect(document.querySelector("[data-profile-unsaved]")).toBe(null);
+    await type(document.querySelector("#profile-title"), "Researcher");
+    expect(document.querySelector("[data-profile-unsaved]").textContent).toBe("Unsaved changes");
+});
+
+test("a skill that is on has a Required toggle, showing what the profile requires, and one that is off has none", async () => {
+    await openSkills();
+    expect(requiredSwitch("journal-helpers").getAttribute("aria-checked")).toBe("true");
+    expect(requiredSwitch("journal-tasks").getAttribute("aria-checked")).toBe("false");
+    expect(requiredSwitch("journal-dumps")).toBe(null);
+});
+
+test("the Required toggle is saved as the skills the profile requires", async () => {
+    const lines = await openSkills();
+    requiredSwitch("journal-tasks").click();
+    await settle();
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    expect(lines.at(-1).slice(-2)).toEqual(["--required-skills", "journal-helpers,journal-tasks"]);
+});
+
+test("switching a required skill off clears Required, and switching it on again starts with Required off", async () => {
+    const lines = await openSkills();
+    skillRow("journal-helpers").querySelector("[data-profile-skill-switch]").click();
+    await settle();
+    expect(requiredSwitch("journal-helpers")).toBe(null);
+    skillRow("journal-helpers").querySelector("[data-profile-skill-switch]").click();
+    await settle();
+    expect(requiredSwitch("journal-helpers").getAttribute("aria-checked")).toBe("false");
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    expect(lines.at(-1).slice(-2)).toEqual(["--required-skills", ""]);
+});
+
+test("the last Required taken off is saved as an empty list, so that it really goes", async () => {
+    const lines = await openSkills();
+    requiredSwitch("journal-helpers").click();
+    await settle();
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    expect(lines.at(-1).slice(-2)).toEqual(["--required-skills", ""]);
+});
+
+test("a skill every agent reads at the start is locked on, with a note in place of the toggle", async () => {
+    await openSkills();
+    const row = skillRow("journal");
+    expect(row.querySelector("[data-profile-skill-switch]").disabled).toBe(true);
+    expect(requiredSwitch("journal")).toBe(null);
+    expect(row.querySelector("[data-profile-skill-locked]").textContent).toBe("Every agent reads this at the start");
+});
+
+test("the skills tab counts what is on and what is required as the switches move", async () => {
+    await openSkills();
+    expect(panel().querySelector("[data-profile-skill-count]").textContent).toBe("3 of 4 on, 1 required");
+    requiredSwitch("journal-tasks").click();
+    await settle();
+    expect(panel().querySelector("[data-profile-skill-count]").textContent).toBe("3 of 4 on, 2 required");
+});
+
+test("a new profile has no skill list yet and says to save first", async () => {
+    await drawn();
+    host.querySelector("[data-profile-new]").click();
+    await settle();
+    document.querySelector('[data-inner-tabs] [data-tab="skills"]').click();
+    await settle();
+    expect(panel().querySelector("[data-profile-skills]")).toBe(null);
+    expect(panel().textContent).toContain("Save the profile first, then choose its skills.");
+});
+
+test("a failed save is shown inside the panel, not only behind it", async () => {
+    await drawn([RESEARCHER], async (line) => (line[1] === "save" ? {ok: false, error: "only a person saves a profile"} : {ok: true, value: null}));
+    await open("journal-researcher");
+    await type(document.querySelector("#profile-title"), "Researcher");
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    expect(panel().querySelector("[data-profile-panel-failure]").textContent).toContain("only a person saves a profile");
 });

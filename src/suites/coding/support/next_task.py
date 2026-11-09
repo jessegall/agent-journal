@@ -5,20 +5,21 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.support.next_task_choices import NextTaskChoices
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.context_limit_check import ContextLimitCheck
 
 
 class NextTask:
-    """The coding suite's task assigner: an agent with empty hands is given a task above high outside any
-    plan, else a task reserved for it, else a started plan's next task, else the most urgent open task
-    outside any plan that waits on nothing. An agent with tasks still in hand is given only the task above
-    high. Auto mode turns it on, and an agent past its context limit is given nothing until its stop has
-    compacted it."""
+    """The coding suite's task assigner: an agent with empty hands is given the task it was told to take next,
+    else a task above high outside any plan, else a task reserved for it, else a started plan's next task,
+    else the most urgent open task outside any plan that waits on nothing. An agent with tasks still in hand
+    is given only the task above high. Auto mode turns it on, and an agent past its context limit is given
+    nothing until its stop has compacted it."""
 
-    def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextLimitCheck, plan_order: PlanTaskOrder) -> None:
+    def __init__(self, tasks: TaskQuery, plan_tasks: NextPlanTasks, queries: Queries, settings: SettingValues, context_limit: ContextLimitCheck, plan_order: PlanTaskOrder, choices: NextTaskChoices) -> None:
         self.tasks, self.plan_tasks, self.queries, self.settings, self.context_limit = tasks, plan_tasks, queries, settings, context_limit
-        self.plan_order = plan_order
+        self.plan_order, self.choices = plan_order, choices
 
     def is_automatic(self) -> bool:
         return self.settings.flag(AUTO_MODE_SETTING)
@@ -37,6 +38,9 @@ class NextTask:
         return self.plan_order.first_started_plan_task(self.tasks.ready_delegated(agent_id))
 
     def following(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
+        told_task = self.choices.find(agent_id, excluded_id)
+        if told_task is not None:
+            return told_task
         open_task = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
         if open_task is not None and open_task.priority >= URGENT_PRIORITY:
             return open_task

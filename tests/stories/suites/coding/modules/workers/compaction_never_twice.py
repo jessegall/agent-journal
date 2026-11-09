@@ -1,0 +1,245 @@
+import os
+from datetime import timedelta
+
+import pytest
+
+from core.base.refusal import Refusal
+from core.modules.agents.support.terminal_typing import LAUNCHER_MISSING, TerminalTyping
+from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
+from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS
+from core.testing.hook_samples import HookSamples
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.modules.usage.support.status_files import rewrite_status_file
+from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT, PRE_COMPACT, SESSION, LimitEnabled, RecordedTyping, has_context, set_value, stops, typing_recorded
+
+TOO_LONG = timedelta(seconds=601)
+EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
+OLD_READING = timedelta(seconds=60)
+GROWTH_TOKENS = LIMIT // 10
+SETTLED_TOKENS = LIMIT + 50_000
+STOPS_WITHOUT_LAUNCHER = 5
+
+
+def compacted(story, trigger):
+    story.hook(SESSION, PRE_COMPACT.with_raw({"trigger": trigger}))
+    story.hook(SESSION, COMPACTION_START)
+    story.run_listeners()
+
+
+class HardLimitEnabled(StoryFixture):
+    parent = LimitEnabled
+
+    def steps(self, story):
+        set_value(story, CONTEXT_LIMIT_HARD_TOKENS, HARD)
+
+
+class AutoCompacted(StoryFixture):
+    parent = LimitEnabled
+
+    def steps(self, story):
+        compacted(story, "auto")
+
+
+class ManualCompacted(StoryFixture):
+    parent = LimitEnabled
+
+    def steps(self, story):
+        compacted(story, "manual")
+
+
+class HardAutoCompacted(StoryFixture):
+    parent = HardLimitEnabled
+
+    def steps(self, story):
+        compacted(story, "auto")
+
+
+class LimitedMemory(StoryFixture):
+    parent = LimitEnabled
+
+    def steps(self, story):
+        story.expect_success('memory make "The cart total is in cents" --environment main', "created: memory:1", actor=story.agent)
+
+
+class CompactedLimitedMemory(StoryFixture):
+    parent = LimitedMemory
+
+    def steps(self, story):
+        compacted(story, "auto")
+
+
+class ContextFact(StoryFixture):
+    parent = BuilderStarted
+
+    def steps(self, story):
+        story.expect_success('memory make "The cart total is in cents" --environment main', "created: memory:1", actor=story.agent)
+
+
+class CompactedFact(StoryFixture):
+    parent = ContextFact
+
+    def steps(self, story):
+        compacted(story, "auto")
+
+
+@pytest.fixture
+def agent(new_story):
+    return typing_recorded(new_story(fixture=LimitEnabled))
+
+
+@pytest.fixture
+def hard_agent(new_story):
+    return typing_recorded(new_story(fixture=HardLimitEnabled))
+
+
+def modified_at_story_time(story, moment=None):
+    """The status file is modified at a moment of the story's clock, which stands apart from the machine's."""
+    seconds = (moment or story.clock.timestamp().value).timestamp()
+    os.utime(story.home.status_folder / f"{SESSION}.json", (seconds, seconds))
+
+
+def old_reading(story, tokens):
+    """A reading the program wrote before the compaction ended, and has not rewritten since."""
+    has_context(story, tokens)
+    modified_at_story_time(story, story.clock.timestamp().value - OLD_READING)
+
+
+def settled_reading(story, tokens):
+    story.advance(timedelta(seconds=1))
+    rewrite_status_file(story, SESSION, tokens)
+    modified_at_story_time(story)
+
+
+def expect_compactions_typed(story, count):
+    story.expect_rows(story.typing.typed.count(COMPACT) == count, detail=str(story.typing.typed))
+
+
+def ended_at_once(story):
+    story.advance(OLD_READING)
+    compacted(story, "manual")
+
+
+def ended_after_too_long(story):
+    story.advance(TOO_LONG)
+    compacted(story, "manual")
+
+
+def sent_and_waiting(story):
+    story.advance(TOO_LONG)
+
+
+def started_and_waiting(story):
+    story.hook(SESSION, PRE_COMPACT.with_raw({"trigger": "manual"}))
+    story.advance(TOO_LONG)
+
+
+@pytest.mark.parametrize("moment", [ended_at_once, ended_after_too_long, sent_and_waiting, started_and_waiting], ids=["b1-ended-at-once", "b5-c9-ended-after-601-seconds", "c9-sent", "c9-started"])
+def test_a_later_stop_does_not_type_the_compaction_the_first_stop_typed_again(agent, moment):
+    has_context(agent, LIMIT)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+    moment(agent)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+
+
+@pytest.mark.parametrize("compaction", [AutoCompacted, ManualCompacted], ids=["b2-by-the-program", "b3-by-a-person"])
+def test_a_stop_after_a_compaction_with_the_old_reading_types_nothing(new_story, compaction):
+    agent = typing_recorded(new_story(fixture=compaction))
+    old_reading(agent, LIMIT)
+    agent.hook(SESSION, HookSamples.prompt("check the cart"))
+    agent.hook(SESSION, HookSamples.stop())
+    expect_compactions_typed(agent, 0)
+
+
+def test_b4_a_tool_past_the_second_limit_after_the_stops_compaction_is_allowed_and_types_nothing(hard_agent):
+    agent = hard_agent
+    has_context(agent, HARD)
+    agent.hook(SESSION, HookSamples.prompt("fix the cart"))
+    agent.hook(SESSION, HookSamples.stop())
+    expect_compactions_typed(agent, 1)
+    compacted(agent, "manual")
+    agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
+    expect_compactions_typed(agent, 1)
+
+
+def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_with_nothing_typed(new_story):
+    agent = typing_recorded(new_story(fixture=HardAutoCompacted))
+    old_reading(agent, HARD)
+    agent.advance(timedelta(seconds=40))
+    agent.tick(SESSION)
+    agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
+    expect_compactions_typed(agent, 0)
+
+
+def test_b7_the_stop_now_nudge_is_not_said_after_a_compaction_while_the_number_is_old(new_story):
+    agent = typing_recorded(new_story(fixture=AutoCompacted))
+    old_reading(agent, LIMIT)
+    reply = agent.hook(SESSION, HookSamples.sample("post_tool_use"))
+    agent.expect_rows(not any("stop now" in line for line in reply.lines), detail=str(reply.lines))
+
+
+def test_b8_a_memory_mark_does_not_open_at_the_old_percent_after_a_compaction(new_story):
+    story = new_story(fixture=CompactedFact)
+    story.report_context_percent(SESSION, 55)
+    modified_at_story_time(story, story.clock.timestamp().value - OLD_READING)
+    reply = story.hook(SESSION, EDITED)
+    story.expect_rows(not any("tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
+
+
+def test_c8_a_post_tool_use_while_the_reading_is_unsettled_says_no_stop_now_and_opens_no_mark(new_story):
+    story = typing_recorded(new_story(fixture=CompactedLimitedMemory))
+    old_reading(story, LIMIT)
+    reply = story.hook(SESSION, EDITED)
+    story.expect_rows(not any("stop now" in line or "tool uses to weigh" in line for line in reply.lines), detail=str(reply.lines))
+
+
+def test_e4_a_reading_over_the_limit_older_than_the_end_of_the_newest_compaction_is_not_due(new_story):
+    agent = typing_recorded(new_story(fixture=AutoCompacted))
+    old_reading(agent, LIMIT + 1)
+    agent.advance(OLD_READING)
+    stops(agent)
+    expect_compactions_typed(agent, 0)
+
+
+def test_e5_after_a_compaction_left_the_context_over_the_limit_one_is_due_only_once_it_has_grown_by_a_tenth_of_the_limit(new_story):
+    agent = typing_recorded(new_story(fixture=AutoCompacted))
+    settled_reading(agent, SETTLED_TOKENS)
+    stops(agent)
+    expect_compactions_typed(agent, 0)
+    settled_reading(agent, SETTLED_TOKENS + GROWTH_TOKENS - 1)
+    stops(agent)
+    expect_compactions_typed(agent, 0)
+    settled_reading(agent, SETTLED_TOKENS + GROWTH_TOKENS)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+
+
+class MissingLauncherTyping(RecordedTyping):
+    def type_line(self, agent_id: int, line: str) -> None:
+        super().type_line(agent_id, line)
+        raise Refusal(LAUNCHER_MISSING, "start the agent with journal launch")
+
+
+def test_f2_a_missing_launcher_is_tried_once_and_not_again_at_every_stop(new_story):
+    story = new_story(fixture=LimitEnabled)
+    story.typing = MissingLauncherTyping()
+    story.container.bind(TerminalTyping, story.typing)
+    has_context(story, LIMIT)
+    for _ in range(STOPS_WITHOUT_LAUNCHER):
+        story.advance(TOO_LONG)
+        stops(story)
+    story.expect_rows(len(story.typing.typed) <= 1, len(story.refusals()) <= 1, detail=f"{len(story.typing.typed)} attempts, {len(story.refusals())} refusals")
+
+
+def wake_lines(story):
+    return [line for line in story.typing.typed if "compacted" in line]
+
+
+def test_g3_a_slow_wake_after_a_typed_compaction_is_typed_once_not_again_by_the_tick(agent):
+    compacted(agent, "manual")
+    agent.expect_rows(len(wake_lines(agent)) == 1, detail=str(agent.typing.typed))
+    agent.advance(TOO_LONG)
+    agent.tick(SESSION)
+    agent.expect_rows(len(wake_lines(agent)) == 1, detail=str(agent.typing.typed))

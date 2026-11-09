@@ -21,8 +21,9 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         self.agents, self.environments, self.worktrees, self.log_lines, self.log_read = agents, environments, worktrees, log_lines, log_read
 
     def handle(self, command: ReadWorkerLogs, context: Context) -> str:
-        is_merger = self.is_merger(context)
-        if not is_merger and not self.reviews_logs(context):
+        reviews_logs = self.reviews_logs(context)
+        is_merger = not reviews_logs and self.is_merger(context)
+        if not (reviews_logs or is_merger):
             raise Refusal("only the main agent or the merger reviews a worker's logs", "ask the main agent to read them")
         worktree = self.worktrees.worker_worktree(command.worker_id)
         is_delivered = worktree is not None and worktree.state is WorktreeState.DELIVERED

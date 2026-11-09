@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from core.base.library.library_hits import LibraryHits
 from core.modules.search.support.search_hit import SearchHit
@@ -15,6 +16,13 @@ class SearchResult:
     total: int
     library: LibraryHits = LibraryHits()
     is_closest: bool = False
+
+    @classmethod
+    def restored(cls, stored: dict[str, Any]) -> "SearchResult":
+        return cls(stored["terms"], [SearchHit.restored(hit) for hit in stored["hits"]], stored["total"], is_closest=stored["is_closest"])
+
+    def stored(self) -> dict[str, object]:
+        return {"terms": list(self.terms), "total": self.total, "is_closest": self.is_closest, "hits": [hit.stored() for hit in self.hits]}
 
     def lines(self) -> list[str]:
         if not self.hits and not self.library.entries:

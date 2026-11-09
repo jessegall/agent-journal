@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {AgentBadge, Icon, MenuItem, MenuLabel, MenuPanel, agentLabel, peekRef} from "@journal/window-kit";
+import {AgentBadge, AgentTip, Icon, MenuItem, MenuLabel, MenuPanel, agentLabel, peekRef} from "@journal/window-kit";
 
 // who has a plan, on its card: always one row, so every card keeps its height. One agent shows its badge, several a button that lists them
 const props = defineProps({planId: {type: Number, required: true}, agents: {type: Array, default: () => []}});
@@ -16,7 +16,7 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
             <span class="plan-agents-none" data-plan-agents-none>No agent assigned</span>
         </template>
         <template v-else-if="named.length === 1">
-            <button type="button" class="plan-agents-button" :title="`Open ${agentLabel(named[0].name, named[0].main)}`" data-plan-agent @click="openAgent(named[0])"><AgentBadge :name="named[0].name" :main="named[0].main" /></button>
+            <AgentTip as="button" :agent-id="named[0].id" :label="agentLabel(named[0].name, named[0].main)" class="plan-agents-button" data-plan-agent @click="openAgent(named[0])"><AgentBadge :name="named[0].name" :main="named[0].main" /></AgentTip>
         </template>
         <template v-else>
             <button ref="anchor" type="button" class="plan-agents-button" :aria-expanded="open" data-plan-agents-list @click="open = !open">

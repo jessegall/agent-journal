@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from core.base.viewer.agent_field import AgentField
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_field import ButtonField, restored_fields
 from core.base.viewer.button_menu_item import ButtonMenuItem
@@ -10,7 +11,7 @@ from core.base.viewer.choice_field import ChoiceField
 from core.base.viewer.template_field import TemplateField
 from core.base.viewer.text_field import TextField
 
-__all__ = ["Choice", "ChoiceField", "TextField", "TemplateField", "ButtonCondition", "ButtonMenuItem", "ButtonDeclaration"]
+__all__ = ["Choice", "ChoiceField", "TextField", "TemplateField", "AgentField", "ButtonCondition", "ButtonMenuItem", "ButtonDeclaration"]
 
 
 @dataclass(frozen=True)

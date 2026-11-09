@@ -57,7 +57,7 @@ test("the plan inspector draws each task as the Tasks window row, with its tags,
     expect([...element.querySelectorAll(".task[data-row]")].map((one) => one.dataset.row)).toEqual(["7", "8", "9"]);
     const started = element.querySelector('.task[data-row="8"]');
     expect(started.querySelector("[data-task-tag]").textContent).toBe("cart");
-    expect(started.querySelector("[data-task-agent] [role='tooltip'] b").textContent).toBe("Worker 12");
+    expect(started.querySelector("[data-task-agent]").getAttribute("aria-label")).toBe("Worker 12");
     expect(started.querySelector("[data-task-complexity]")).not.toBeNull();
     expect(started.querySelector("[data-task-priority]")).not.toBeNull();
     expect(element.querySelector('.task[data-row="9"] [data-task-reason]').textContent).toBe("waits on task 8");

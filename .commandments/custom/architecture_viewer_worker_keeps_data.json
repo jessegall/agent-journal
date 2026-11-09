@@ -5,7 +5,7 @@
         "select": "call",
         "where": [
             {
-                "fileMatches": "(^|/)src/viewer/public/phone-sw\\.js$"
+                "fileMatches": "(^|/)tools/phone-worker/phone-sw\\.js$"
             },
             {
                 "any": [

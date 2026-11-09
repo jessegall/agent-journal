@@ -8,6 +8,7 @@ import pytest
 
 from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
+from core.modules.messages.support.message_nudges import CLOSING_LINE_HIDDEN
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
@@ -104,18 +105,46 @@ def test_a_displayed_part_and_its_complete_transcript_reach_chat_once(builder, t
     builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
 
 
-def test_a_displayed_part_uses_the_whole_transcript_at_once(builder, tmp_path):
+def test_the_pieces_of_a_block_and_its_transcript_reach_chat_once(builder, tmp_path):
     first = "The first paragraph is here."
     second = "The second paragraph is here."
-    row = agent_row(builder, first)
-    row["message"]["content"].append({"type": "text", "text": second})
-    path = transcript(tmp_path, row)
-    builder.hook("s-1", HookSamples.message_display(second).with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": True, "delta": second, "transcript_path": path}))
+    builder.hook("s-1", HookSamples.message_display(f"{first}\n\n", final=False))
+    builder.hook("s-1", HookSamples.message_display(second))
     output = chat(builder)
     builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
-    run_hook(builder, path, TOOL_FINISHED)
+    run_hook(builder, transcript(tmp_path, agent_row(builder, f"{first}\n\n{second}", HOOK_DELAY)), TOOL_FINISHED)
     output = chat(builder)
     builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
+
+
+@pytest.fixture
+def refused_stop_story(builder):
+    builder.run('message send "are you there" --environment main', actor=builder.user)
+    builder.hook("s-1", HookSamples.prompt("go on"))
+    builder.advance(HOOK_DELAY)
+    builder.run('message send "is it committed" --environment main', actor=builder.user)
+    builder.run('message reply 1 "yes"', actor=builder.agent)
+    builder.advance(HOOK_DELAY)
+    builder.expect_hook_refusal("s-1", HookSamples.stop(), "message")
+    return builder
+
+
+@pytest.mark.parametrize("first_parts", [[], ["No, nothing is committed.\n\n"]])
+def test_a_block_after_a_refused_stop_reaches_the_chat_whole(refused_stop_story, first_parts):
+    for part in first_parts:
+        refused_stop_story.hook("s-1", HookSamples.message_display(part, final=False))
+    shown = refused_stop_story.hook("s-1", HookSamples.message_display("Say go and I will commit."))
+    output = chat(refused_stop_story)
+    refused_stop_story.expect_rows(output.count("Say go and I will commit.") == 1, all(output.count(part.strip()) == 1 for part in first_parts), detail=output)
+    refused_stop_story.expect_rows(CLOSING_LINE_HIDDEN.nudge().text not in "\n".join(shown.lines), detail=str(shown.lines))
+
+
+def test_a_line_held_after_a_reply_is_shown_whole_when_a_tool_comes(reply_story):
+    reply_story.hook("s-1", HookSamples.message_display("Fixing the cart ", final=False))
+    reply_story.hook("s-1", HookSamples.message_display("next."))
+    expect_chat_count(reply_story, "Fixing the cart next.", 0)
+    reply_story.hook("s-1", HookSamples.edit("src/cart.py"))
+    expect_chat_count(reply_story, "Fixing the cart next.", 1)
 
 
 def test_a_displayed_part_whose_transcript_row_is_written_after_the_hook_reaches_chat_once(builder, tmp_path):

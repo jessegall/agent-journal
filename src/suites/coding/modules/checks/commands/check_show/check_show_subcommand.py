@@ -1,4 +1,5 @@
 from argparse import ArgumentParser, Namespace
+from typing import cast
 
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
@@ -32,7 +33,7 @@ class CheckShowSubcommand(LibraryAwareShow, ReadSubcommand[Check | LibraryReadin
         if isinstance(value, LibraryReading):
             self.write_library(value, output)
             return
-        self.write_check(value, output)
+        self.write_check(cast(Check, value), output)
 
     def write_check(self, check: Check, output: Output) -> None:
         values = {**output.values(check), "state": check.state}

@@ -4,7 +4,8 @@ from dataclasses import dataclass
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.positioned import Positioned
 from core.base.profile.model_tier import ModelTier
-from core.modules.tasks.models.support.task_complexity import MOST_COMPLEXITY, TaskComplexity
+from core.modules.tasks.models.support.task_complexity import TaskComplexity
+from core.modules.tasks.support.task_match import has_tags, matches_complexity_range
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -25,22 +26,14 @@ class WorkerRoute(EnvironmentScoped, Positioned):
     strict: bool = False
 
     def matches_tags(self, task_tags: Collection[str]) -> bool:
-        return set(self.tags) <= set(task_tags)
+        return has_tags(task_tags, self.tags)
 
     @property
     def needs_complexity(self) -> bool:
         return self.minimum_complexity is not None or self.maximum_complexity is not None
 
     def matches(self, task_tags: Collection[str], complexity: TaskComplexity | None) -> bool:
-        if not self.matches_tags(task_tags):
-            return False
-        if not self.needs_complexity:
-            return True
-        if complexity is None:
-            return False
-        lower = self.minimum_complexity if self.minimum_complexity is not None else 1
-        upper = self.maximum_complexity if self.maximum_complexity is not None else MOST_COMPLEXITY
-        return lower <= complexity <= upper
+        return self.matches_tags(task_tags) and matches_complexity_range(complexity, self.minimum_complexity, self.maximum_complexity)
 
     @property
     def reason(self) -> str:

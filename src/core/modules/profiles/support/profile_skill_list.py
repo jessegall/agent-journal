@@ -13,7 +13,7 @@ class ProfileSkillList:
 
     @property
     def rows(self) -> Sequence[Mapping[str, object]]:
-        return [{"key": skill.folder, "description": skill.description, "state": "on" if skill.listed else "off", "own": skill.matches_type} for skill in self.skills]
+        return [{"key": skill.folder, "description": skill.description, "state": "on" if skill.listed else "off", "status": skill.status, "own": skill.matches_type, "required": skill.required, "locked": skill.locked} for skill in self.skills]
 
     def json(self) -> Mapping[str, object]:
         return {"profile": self.profile, "rows": list(self.rows)}

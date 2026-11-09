@@ -63,10 +63,13 @@ class PluginServices:
                     faults.extend(ServiceFault(plugin, fault) for fault in self.keep(processes, key, folder, service, manifest, plugin.files_digest))
         for key in [key for key in processes.running if key not in wanted]:
             processes.stop(key)
+        processes.paused &= wanted
         self.scripts.keep_services({process.pid: plugin_name for (plugin_name, _), process in processes.running.items()})
         return faults
 
     def is_checkable(self, processes: ServiceProcesses, key: tuple[str, str]) -> bool:
+        if key in processes.paused:
+            return False
         is_condition_due = key not in processes.skipped or self.clock.timestamp().value - processes.skipped[key].value > CONDITION_RECHECK
         return is_condition_due and processes.retries.is_due(key, self.clock.timestamp().value)
 
@@ -85,8 +88,9 @@ class PluginServices:
             if not processes.retries.is_due(key, self.clock.timestamp().value):
                 return faults
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
-        if process is None and self.is_kept(pid_file, program, digest):
-            processes.running[key], processes.digests[key] = AdoptedProcess(int(FileAccess.shared().read(pid_file)), program), digest
+        previous_pid = int(FileAccess.shared().read(pid_file)) if process is None and pid_file.is_file() else None
+        if previous_pid is not None and self.is_kept(previous_pid, pid_file, program, digest):
+            processes.running[key], processes.digests[key] = AdoptedProcess(previous_pid, program), digest
             return faults
         environment = self.environment(key, manifest)
         if process is None and service.condition:
@@ -100,8 +104,8 @@ class PluginServices:
                 processes.skipped[key] = self.clock.timestamp()
                 return faults
             processes.skipped.pop(key, None)
-        if process is None and pid_file.is_file():
-            LeftoverProcess.stop(int(FileAccess.shared().read(pid_file)), program)
+        if previous_pid is not None:
+            LeftoverProcess.stop(previous_pid, program)
         try:
             self.start(processes, key, folder, service, manifest, digest, environment)
         except OSError as error:
@@ -134,11 +138,10 @@ class PluginServices:
         if manifest.health:
             self.poll_socket(self.sockets.health(*key), processes.running[key])
 
-    def is_kept(self, pid_file: Path, program: str, digest: str) -> bool:
+    def is_kept(self, pid: int, pid_file: Path, program: str, digest: str) -> bool:
         digest_file = self.digest_file(pid_file)
-        if not pid_file.is_file() or not digest_file.is_file() or FileAccess.shared().read(digest_file) != digest:
+        if not digest_file.is_file() or FileAccess.shared().read(digest_file) != digest:
             return False
-        pid = int(FileAccess.shared().read(pid_file))
         return LeftoverProcess.is_running(pid) and LeftoverProcess.runs_program(pid, program)
 
     @staticmethod

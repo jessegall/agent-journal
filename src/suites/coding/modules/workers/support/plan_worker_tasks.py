@@ -3,7 +3,7 @@ from core.base.refusal import Refusal
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_outlines import PlanOutlines
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES, TaskState
 
 HANDED_STATES = (PlanState.APPROVED, PlanState.STARTED)
 
@@ -20,7 +20,7 @@ class PlanWorkerTasks:
         if plan.state not in HANDED_STATES:
             raise Refusal(f"plan {plan.id} is {plan.state.value}", "only an approved or started plan goes to a worker")
         phases = self.outlines.outline(plan.id).chosen(phase_id)
-        tasks = tuple(task for phase in phases for task in phase.tasks if task.helper_id is None and task.state in (TaskState.OPEN.value, TaskState.BLOCKED.value))
+        tasks = tuple(task for phase in phases for task in phase.tasks if task.helper_id is None and task.state in UNSTARTED_STATES)
         first = next((task for task in tasks if task.state == TaskState.OPEN.value), None)
         task_ids = tuple(task.id for task in tasks)
         if first is not None:

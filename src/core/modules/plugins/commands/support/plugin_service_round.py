@@ -14,7 +14,8 @@ class PluginServiceRound:
         self.services, self.faults, self.scripts, self.runnable, self.places = services, faults, scripts, runnable, places
 
     def run(self, processes: ServiceProcesses) -> None:
-        self.faults.record(self.services.follow(processes))
+        with processes.lock:
+            self.faults.record(self.services.follow(processes))
         wanted = {plugin.name for plugin in self.runnable.enabled_rows()}
         for name in self.scripts.plugin_names() - wanted:
             self.scripts.stop(name)

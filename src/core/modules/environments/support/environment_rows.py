@@ -19,8 +19,8 @@ class EnvironmentRows:
             raise MissingRowsError(Environment.cli_name, [environment_id])
         return environment
 
-    def grants(self, environment_id: int, actor_id: int) -> bool:
-        return self.find(environment_id).grants(actor_id)
+    def grants(self, environment_id: int, agent_id: int) -> bool:
+        return self.find(environment_id).grants(agent_id)
 
     def find_many(self, environment_ids: list[int]) -> list[Environment]:
         rows = {row.id: row for row in self.all()}

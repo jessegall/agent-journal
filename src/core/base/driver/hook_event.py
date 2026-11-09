@@ -112,9 +112,17 @@ class HookEvent:
         return self.raw.get("source") in CONTINUING_SOURCES
 
     @property
-    def displayed_text(self) -> str:
+    def displayed_part(self) -> str:
         text = self.raw.get("delta")
-        return text.strip() if self.raw.get("final") is True and isinstance(text, str) else ""
+        return text if isinstance(text, str) else ""
+
+    @property
+    def displayed_message_id(self) -> str:
+        return str(self.raw.get("message_id", ""))
+
+    @property
+    def is_final_display(self) -> bool:
+        return self.raw.get("final") is True
 
     def is_monitor_tool(self) -> bool:
         return self.tool is not None and self.tool.category is ToolType.MONITOR

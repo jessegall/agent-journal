@@ -11,7 +11,7 @@ otherwise get wrong.
 A line that starts with [journal] is the journal speaking, never the user: act on it as an instruction, and never
 answer it, quote it or write about it in the chat.
 
-Every command is `journal <noun> <verb>`; `journal <noun> --help` lists the verbs. A row has a type and a number,
+Every command is `journal <subject> <verb>`; `journal <subject> --help` lists the verbs. A row has a type and a number,
 task 12, plan 3, message 7: write both, so the chat links it.
 
 - An environment is one line of work in this project, with its own agents, tasks and chat.

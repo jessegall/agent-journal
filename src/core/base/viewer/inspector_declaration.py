@@ -18,7 +18,7 @@ class InspectorDeclaration:
     events that reload it its links section (None for a row that has none), whether it lists the row's
     fields, which an inspector with sections of its own does not, and whether a part of it draws the row's
     text itself, so the inspector does not draw it above its parts. `named` is the noun of a row no model
-    of that noun holds, such as the test queue; the model is then the one that supplies its data."""
+    of that term holds, such as the test queue; the model is then the one that supplies its data."""
 
     model: type[Model] | type[ViewModel]
     reads: str = ""

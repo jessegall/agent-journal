@@ -3,7 +3,7 @@ from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.listener.save_listener import SaveListener
 from core.base.scope.actor_scope import ActorScope
-from core.base.tasks.tasks_changed_together import TasksChangedTogether
+from core.base.tasks.task_waits_updated_together import TaskWaitsUpdatedTogether
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits
@@ -24,7 +24,7 @@ class WaitingTaskListener(SaveListener[Changed[Task]]):
 
     def handle(self, event: Changed[Task], context: Context) -> None:
         row, old_row = event.row, event.old_row
-        if isinstance(event, Deleted) or isinstance(context.command, TasksChangedTogether) or (old_row is not None and self.changes_no_dependency(row, old_row)):
+        if isinstance(event, Deleted) or isinstance(context.command, TaskWaitsUpdatedTogether) or (old_row is not None and self.changes_no_dependency(row, old_row)):
             return
         self.waits.update_tasks([row.id], context)
 

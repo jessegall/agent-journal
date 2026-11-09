@@ -32,9 +32,9 @@ class HookSamples:
         return sample.with_fields(event="stop_failure").with_raw({"hook_event_name": "StopFailure", "error": "invalid_request", "error_details": message})
 
     @staticmethod
-    def message_display(text: str, final: bool = True) -> HookSample:
+    def message_display(text: str, final: bool = True, message_id: str = "message-1") -> HookSample:
         sample = HookSamples.sample("message_display")
-        return sample.with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": final, "delta": text}).with_fields(accepts_lines=False)
+        return sample.with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": message_id, "index": 0, "final": final, "delta": text}).with_fields(accepts_lines=False)
 
     @staticmethod
     def prompt(text: str) -> HookSample:

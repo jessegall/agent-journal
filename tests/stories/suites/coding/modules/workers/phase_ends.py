@@ -18,6 +18,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, start_planned_worker
 
 PHASE_TEST = "pytest tests/phase.py"
+CHANGED_PHASE_TEST = "pytest tests/phase_part.py"
 
 
 def last_phase_task(worker, first_test: str = "", last_test: str = ""):
@@ -134,6 +135,19 @@ def test_the_phases_own_test_runs_at_its_end_as_a_proof_of_the_last_task(new_sto
     worker.story.expect_text("worker next --wait --differences none", "queued", actor=worker.worker)
     worker.story.expect_text("proof list --task 3", PHASE_TEST, actor=worker.story.agent)
     expect_value([process.line for process in worker.started_processes()] == [PHASE_TEST], True)
+
+
+def test_a_changed_phase_test_replaces_the_command_of_its_proof_at_the_next_hand_in(new_story, monkeypatch):
+    worker = last_phase_task(start_planned_worker(new_story, monkeypatch, build_test=PHASE_TEST))
+    story = worker.story
+    story.expect_text("worker next --wait --differences none", "queued", actor=worker.worker)
+    story.expect_success(f'phase edit 1 --test-command "{CHANGED_PHASE_TEST}"', actor=story.user)
+    story.expect_success('proof short 4 "the test failed"', actor=story.agent)
+    worktree = story.container.get(WorktreeQuery).worker_worktree(worker.worker.id)
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+    with story.container.get(Database).transaction():
+        story.container.get(WorkerProofQueue).queue_group(worktree, story.row(Task, 3), WorkerTestGroup(story.row(Phase, 1), ()), context)
+    story.expect_text("proof list --task 3", CHANGED_PHASE_TEST, actor=story.agent)
 
 
 def test_the_selected_tests_run_at_the_end_of_a_phase_after_the_proofs(declared_tests):

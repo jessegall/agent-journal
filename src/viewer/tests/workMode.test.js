@@ -83,7 +83,7 @@ test("the modal has the tabs of the agent settings", async () => {
     const {element} = await mount();
     element.querySelector("[data-open-agent-settings]").click();
     await settled();
-    expect(document.querySelector("[data-agent-settings]").textContent).toMatch(/Work.*Agents.*Tests.*Advanced/s);
+    expect(document.querySelector("[data-agent-settings]").textContent).toMatch(/Work.*Helpers.*Tests.*Advanced/s);
 });
 
 test("the agent settings tabs are the viewer's shared tabs, which have a border below them, and choosing one shows its settings", async () => {
@@ -93,7 +93,7 @@ test("the agent settings tabs are the viewer's shared tabs, which have a border 
     const bar = document.querySelector("[data-agent-settings] .settings-bar");
     expect(bar.querySelector("[data-inner-tabs]")).not.toBeNull();
     expect(bar.querySelector(".segmented")).toBeNull();
-    expect([...bar.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim())).toEqual(["Work", "Agents", "Tests", "Advanced"]);
+    expect([...bar.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim())).toEqual(["Work", "Helpers", "Tests", "Advanced"]);
     expect(styleDeclarations("kit/InnerTabs.vue", ".inner-tabs")).toMatch(/border-bottom:\s*1px solid/);
     bar.querySelector("[data-tab=tests]").click();
     await settled();

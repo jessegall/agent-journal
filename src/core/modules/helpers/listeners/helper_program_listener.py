@@ -3,6 +3,7 @@ from core.base.change.created import Created
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
+from core.base.listener.commit_listener_runner import PROGRAM_STOP_RUN_ORDER
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure import RecordAgentLaunchFailure
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.agents.support.agent_launcher import AgentLauncher
@@ -13,9 +14,11 @@ from core.modules.helpers.support.helper_resume import HelperResume
 
 
 class HelperProgramListener(CommitListener[Created[HelperJob]]):
-    """A helper's first job hands the running launcher its program, folder and agent row; a later job resumes it."""
+    """A helper's first job hands the running launcher its program, folder and agent row; a later job resumes it.
+    A launch can take a minute, so it runs in the round of program stops and holds no ordinary listener."""
 
     name = "helpers.helper-program-request"
+    run_order = PROGRAM_STOP_RUN_ORDER
 
     def __init__(self, launcher: AgentLauncher, helper_command: HelperCommand, bus: Bus, environments: EnvironmentRows, agents: AgentRows, resume: HelperResume) -> None:
         self.launcher, self.helper_command, self.bus, self.environments, self.agents = launcher, helper_command, bus, environments, agents

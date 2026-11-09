@@ -46,9 +46,10 @@ from core.modules.profiles.profiles_module import ProfilesModule
 from core.modules.voices.voices_module import VoicesModule
 from core.modules.project_rules.project_rules_module import ProjectRulesModule
 from core.modules.reminders.reminders_module import RemindersModule
+from core.modules.assign_rules.assign_rules_module import AssignRulesModule
 from core.modules.transcriptions.transcriptions_module import TranscriptionsModule
 from core.modules.usage.usage_module import UsageModule
 from core.modules.updates.updates_module import UpdatesModule
 from core.modules.tools.tools_module import ToolsModule
 
-DEFAULT_MODULES = (ActorsModule, ApprovalsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, ProjectRulesModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, SettingRequestsModule, ReviewsModule, PhoneModule, AccountsModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, SchedulesModule, TemplatesModule, PlanReviewsModule, PinsModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, ProfilesModule, VoicesModule, TranscriptionsModule, RemindersModule, UpdatesModule, ToolsModule, OverviewModule, HelpersModule, LibraryModule)
+DEFAULT_MODULES = (ActorsModule, ApprovalsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, ProjectRulesModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, SettingRequestsModule, ReviewsModule, PhoneModule, AccountsModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, SchedulesModule, TemplatesModule, PlanReviewsModule, PinsModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, ProfilesModule, VoicesModule, TranscriptionsModule, RemindersModule, AssignRulesModule, UpdatesModule, ToolsModule, OverviewModule, HelpersModule, LibraryModule)

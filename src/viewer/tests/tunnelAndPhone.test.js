@@ -40,8 +40,10 @@ const LINES = {
     "tunler domains": {ok: true, value: {domains: [{name: "cart.tunnels.example", own: true}, {name: "old.tunnels.example", own: false}]}},
 };
 
+const TUNLER_KEYS = {status: {line: "tunler status"}, version: {line: "tunler version"}, domains: {line: "tunler domains"}};
+
 function recording(answers) {
-    const window = context(answers);
+    const window = context(answers, null, TUNLER_KEYS);
     window.lines = [];
     window.run = async (line) => {
         window.lines.push(line);

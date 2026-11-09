@@ -16,6 +16,7 @@ from core.modules.drivers.support.active_modules import ActiveModules
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")
 WINDOW_SEARCH_LINE = "window search"
+AGENT_TIP_LINE = "agent tip"
 
 
 class WindowLines:
@@ -23,7 +24,7 @@ class WindowLines:
     session: the line parses, it is a read subcommand the window declares or a command it declares, or one
     of its own settings, it neither skips a guard nor names another environment, and the person has allowed
     it unless the journal ships the window. Any window may read the line a state declares for its badge's
-    tooltip. A line only a button allows answers to the module of that button, not the window. It checks
+    tooltip, and any window may read an agent's tooltip. A line only a button allows answers to the module of that button, not the window. It checks
     the parsed line, never its raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames,
@@ -39,6 +40,8 @@ class WindowLines:
 
     def checked(self, window_name: str, argv: list[str], person: Actor, environment: str) -> None:
         dock = self.registry.dock(window_name)
+        if " ".join(argv[:2]) == AGENT_TIP_LINE:
+            return self.checked_agent_tip(window_name, argv, environment)
         if dock is not None and not self.registry.has_window(window_name):
             if " ".join(argv[:2]) not in dock.reads:
                 raise WindowRefusal(f"the dock {window_name} does not declare {' '.join(argv[:2])}")
@@ -75,6 +78,12 @@ class WindowLines:
         permission_type = WindowPermissionType.READS if parsed.is_read else WindowPermissionType.RUNS
         if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, window_name, permission_type):
             raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
+
+    def checked_agent_tip(self, window_name: str, argv: list[str], environment: str) -> None:
+        if not self.registry.has_window(window_name) and self.registry.dock(window_name) is None:
+            raise WindowRefusal(f"no installed module declares the window {window_name}")
+        if getattr(self.parsed(window_name, argv).arguments, "environment", None) not in (None, environment):
+            raise WindowRefusal(f"{window_name} may not name another environment")
 
     def state_tip_lines(self) -> frozenset[str]:
         return frozenset(" ".join(entry.tip_read.split()[:2]) for entry in self.registry.state_additions if entry.tip_read and self.active.is_active(entry.module))

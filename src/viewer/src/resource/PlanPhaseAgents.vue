@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import AgentBadge from "../kit/AgentBadge.vue";
+import AgentTip from "../../kit/AgentTip.vue";
 import {agentLabel} from "../domain/agentLabel.js";
 import {peekRef} from "../route.js";
 
@@ -22,11 +23,11 @@ const agents = computed(() => {
     <template v-if="agents.length">
         <div class="phase-agents" data-plan-phase-agents>
             <template v-for="agent in agents" :key="agent.id">
-                <button type="button" class="phase-agent" :title="`Open ${agentLabel(agent.name, agent.main)}`" data-plan-phase-agent @click="peekRef(`agents:${agent.id}`)">
+                <AgentTip as="button" :agent-id="agent.id" :label="agentLabel(agent.name, agent.main)" class="phase-agent" data-plan-phase-agent @click="peekRef(`agents:${agent.id}`)">
                     <span :class="['agent-dot', {held: agent.held}]" />
                     <AgentBadge :name="agent.name" :main="agent.main" />
                     <span class="agent-word">{{ agent.held ? "Working" : "Queued" }}</span>
-                </button>
+                </AgentTip>
             </template>
         </div>
     </template>

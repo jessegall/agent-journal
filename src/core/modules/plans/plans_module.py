@@ -57,6 +57,7 @@ from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_tab import WindowTab
@@ -119,6 +120,7 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule, PlanContextRule]
     docks = PLAN_DOCKS
+    window_extensions = [WindowExtension("messages.chat", reads=["agent running"])]
     buttons = [ButtonDeclaration("plans.approve", tuple(["row.plan"]), "Approve", "plan approve {row_id}",
                                  icon="check", primary=True, condition=ButtonCondition("state", tuple(["ready"])),
                                  tip="Approve the plan; the agent starts it", menu_label="Other ways to approve",

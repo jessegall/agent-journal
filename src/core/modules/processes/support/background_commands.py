@@ -3,20 +3,22 @@ from core.base.cli.shell_aliases import ShellAliases
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
+from core.base.registry.registry import Registry
 from core.modules.processes.support.part_command import PartCommand
 
 JOURNAL = "journal"
 
 
 class BackgroundCommands:
-    """How each alias a line runs is run, and whether one is marked to go to the background at once; a journal
-    command of its own never goes there."""
+    """How each alias a line runs is run, and whether the line goes to the background at once: an alias marked so,
+    or a journal command whose subcommand declares it."""
 
-    def __init__(self, aliases: ShellAliases) -> None:
-        self.aliases = aliases
+    def __init__(self, aliases: ShellAliases, registry: Registry) -> None:
+        self.aliases, self.registry = aliases, registry
 
     def includes(self, shell: ShellLine) -> bool:
-        return any(options.background for options in self.alias_runs(shell))
+        declared = any(" ".join(part.arguments[:2]) in self.registry.background_lines for part in shell.parts_running_journal_command())
+        return declared or any(options.background for options in self.alias_runs(shell))
 
     def part_command(self, part: Part, shell: ShellLine) -> PartCommand:
         argv = list(part.arguments) if part.program == JOURNAL else []

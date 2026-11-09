@@ -141,10 +141,8 @@ class MemoryWorktreeGit(WorktreeGit):
         self.moved_files(worktree.folder, branch_tip.tree, tree)
         return ()
 
-    def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
-        name = self.built_name(path)
-        siblings = [committed for committed in self.committed_tree(worktree.folder) if str(Path(committed).parent) == str(Path(path).parent)]
-        return name is not None and name in {self.built_name(sibling) for sibling in siblings}
+    def siblings(self, worktree: Worktree, path: str) -> list[str]:
+        return [committed for committed in self.committed_tree(worktree.folder) if str(Path(committed).parent) == str(Path(path).parent)]
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
         if any(change.deleted_under(BUILT_FOLDER) for change in changes.changes):
