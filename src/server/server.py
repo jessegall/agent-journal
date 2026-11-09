@@ -34,7 +34,8 @@ from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.handover_descriptors import HandoverDescriptors
-from server.journal_door import OpenJournalDoor, OwnerOnlyJournalDoor
+from server.hosted_journal_door import HostedJournalDoor
+from server.local_journal_door import LocalJournalDoor
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.server_plugin_services import ServerPluginServices
@@ -150,10 +151,10 @@ def main(argv: list[str]) -> int:
             start_check.check_socket(files.viewer_socket)
         except Refusal as refusal:
             return refused_start_code(files, refusal)
-        journal_door = OwnerOnlyJournalDoor(os.getuid())
+        journal_door = HostedJournalDoor(os.getuid())
     else:
         viewer = ViewerListener(login, routes, last_port(home), inherited_socket=inherited_viewer)
-        journal_door = OpenJournalDoor()
+        journal_door = LocalJournalDoor()
         home.viewer_port_file.write_text(str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)

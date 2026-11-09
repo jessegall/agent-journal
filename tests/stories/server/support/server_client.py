@@ -37,7 +37,8 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
-from server.journal_door import JournalDoor, OpenJournalDoor
+from server.journal_door import JournalDoor
+from server.local_journal_door import LocalJournalDoor
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
@@ -344,7 +345,7 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = OpenJournalDoor()):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
     without_start_skills(story)
     story.run("setting make journal.core.voices.avatar false")
     with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door) as (socket_path, context):
@@ -352,13 +353,13 @@ def server_story(story: Story, code_folders: CodeFolders | None = None, listener
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = OpenJournalDoor()):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
     with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = OpenJournalDoor()):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
