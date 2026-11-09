@@ -9,9 +9,11 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.read_next_merge.read_next_merge_handler import ReadNextMergeHandler
+from suites.coding.modules.workers.commands.return_unhandled_merger_lines.return_unhandled_merger_lines import ReturnUnhandledMergerLines
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE, MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
@@ -29,10 +31,18 @@ class MergerRetry:
             worktree = next(row for row in worktrees if row.environment_id == environment_id and ReadNextMergeHandler.waits(row))
             with container.get(Scopes).row_scope(worktree):
                 self.retry(container, worktree)
+        self.return_unhandled_lines(container)
         unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).oldest().all_rows()
         for line in dict((row.environment_id, row) for row in reversed(tuple(unread))).values():
             with container.get(Scopes).row_scope(line):
                 self.retry_line(container, line)
+
+    def return_unhandled_lines(self, container: Container) -> None:
+        open_visits = container.get(Queries).query(MergerVisit).matching(IsNull("closed_at")).all_rows()
+        for visit in dict((row.environment_id, row) for row in open_visits).values():
+            with container.get(Scopes).row_scope(visit):
+                if self.is_merger_idle(container):
+                    container.get(Bus).run(ReturnUnhandledMergerLines(), Actor.core(), environment_id=visit.environment_id)
 
     def retry_line(self, container: Container, line: MergerLine) -> None:
         if not self.is_merger_idle(container):

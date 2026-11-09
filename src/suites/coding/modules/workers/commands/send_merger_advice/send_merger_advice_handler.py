@@ -14,6 +14,7 @@ from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.support.group_message_limit import GROUP_MESSAGE_LIMIT_COUNT
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_point import WorkerPoint
+from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
 class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
@@ -22,11 +23,12 @@ class SendMergerAdviceHandler(Handler[SendMergerAdvice, str]):
     command = SendMergerAdvice
     disabled_scopes = [ActorScope]
 
-    def __init__(self, agents: AgentRows, guidance: WorkerGuidance, queries: Queries, repository: Repository, bus: Bus) -> None:
-        self.agents, self.guidance, self.queries, self.repository, self.bus = agents, guidance, queries, repository, bus
+    def __init__(self, agents: AgentRows, guidance: WorkerGuidance, queries: Queries, repository: Repository, bus: Bus, visits: MergerVisits) -> None:
+        self.agents, self.guidance, self.queries, self.repository, self.bus, self.visits = agents, guidance, queries, repository, bus, visits
 
     def handle(self, command: SendMergerAdvice, context: Context) -> str:
         require_merger(self.agents, context)
+        self.visits.close_newest(context)
         point = self.guidance.point(command.worker_id)
         if point.round.worktree is None:
             raise Refusal(f"agent {command.worker_id} has no open work", "advise a worker that is at work")

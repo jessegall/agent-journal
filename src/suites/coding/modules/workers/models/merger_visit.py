@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
+from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -12,3 +13,4 @@ class MergerVisit(EnvironmentScoped, Model):
     cli_name = "merger-visit"
 
     environment_id: int = 0
+    closed_at: Timestamp | None = None

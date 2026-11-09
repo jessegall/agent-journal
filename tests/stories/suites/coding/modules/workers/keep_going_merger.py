@@ -1,6 +1,7 @@
 import pytest
 
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -8,6 +9,7 @@ from core.base.refusal import Refusal
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
@@ -96,3 +98,46 @@ def test_with_the_merger_off_an_unread_line_starts_nothing(unread_line):
     with running_launcher(story):
         MergerRetry()(story.container)
     story.expect_rows(merger_agent(story) is None)
+
+
+@pytest.fixture
+def merger_that_read_the_line(unread_line):
+    story = unread_line.story
+    with running_launcher(story):
+        MergerRetry()(story.container)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
+    story.expect_success("merger next", actor=merger)
+    expect_unread_lines(story, 0)
+    return unread_line, merger
+
+
+def expect_unread_lines(story, count: int) -> None:
+    unread = tuple(story.container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).all_rows())
+    story.expect_rows(len(unread) == count, detail=str(unread))
+
+
+def retry_after_the_merger_ended(story) -> None:
+    with running_launcher(story):
+        MergerRetry()(story.container)
+
+
+def test_a_line_the_merger_read_and_did_nothing_about_comes_back(merger_that_read_the_line):
+    worker, merger = merger_that_read_the_line
+    retry_after_the_merger_ended(worker.story)
+    expect_unread_lines(worker.story, 1)
+
+
+def test_a_line_the_merger_acted_on_does_not_come_back(merger_that_read_the_line):
+    worker, merger = merger_that_read_the_line
+    worker.story.expect_success('merger tell "Worker asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
+    retry_after_the_merger_ended(worker.story)
+    expect_unread_lines(worker.story, 0)
+
+
+def test_a_line_that_came_back_once_is_not_returned_a_second_time(merger_that_read_the_line):
+    worker, merger = merger_that_read_the_line
+    retry_after_the_merger_ended(worker.story)
+    second = Actor(merger_agent(worker.story).id, ActorType.AGENT)
+    worker.story.expect_success("merger next", actor=second)
+    retry_after_the_merger_ended(worker.story)
+    expect_unread_lines(worker.story, 0)
