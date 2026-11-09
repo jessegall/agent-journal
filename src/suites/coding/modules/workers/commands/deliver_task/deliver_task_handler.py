@@ -19,19 +19,21 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
+from suites.coding.modules.workers.support.worker_free_task import WorkerFreeTask
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 
 
 class DeliverTaskHandler(Handler[DeliverTask, Task]):
     """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every
     task it holds started to testing, delivers the worktree and queues the tests of its proofs. On a phase
-    of a started plan it queues the whole phase, and with nothing to run it finishes at once."""
+    of a started plan it queues the whole phase, and with nothing to run it finishes at once. The worker is
+    given the next free task it may take, which it starts when this work is done."""
 
     command = DeliverTask
     disabled_scopes = [ActorScope]
 
-    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask) -> None:
-        self.next_task = next_task
+    def __init__(self, rows: EventRows, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery, queries: Queries, phases: WorkerPhases, results: RecordWorkerTestHandler, differences: DeliveryDifferences, next_task: WorkerNextTask, free_task: WorkerFreeTask) -> None:
+        self.next_task, self.free_task = next_task, free_task
         self.rows, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = rows, worktrees, proof_queue, repository, task_commit, tasks
         self.queries, self.phases, self.results, self.differences = queries, phases, results, differences
 
@@ -54,6 +56,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     def handle(self, command: DeliverTask, context: Context) -> Task:
         committed = self.worktrees.worker_worktree(context.actor.id)
         self.differences.record(committed.task_id, command.differences, context)
+        self.free_task.give_next(context.actor.id, context)
         for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
             self.repository.save_change(started, started.moved(TaskLifecycle.test), context)
         delivered = self.repository.save_change(committed, committed.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None), context)

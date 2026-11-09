@@ -7,6 +7,7 @@ from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.support.main_agent_line import MainAgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.base.query.conditions.minimum import Minimum
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
@@ -33,14 +34,14 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
     is reported to the main agent as a launch failure, with the error it wrote. A worker that stops while a
     run of its own goes leaves its main agent no line, however often it has stopped, unless a person or
     another agent stopped it. A worker a person or another agent stopped holds no delegated task or was ended
-    by them; that one, one that reported being stuck and one that keeps ending with no run going leave its
-    main agent one line naming all its tasks."""
+    by them and one that reported being stuck leave one line naming all its tasks through the merger; one that
+    keeps ending with no run going leaves its main agent that line itself, since nobody else can start it."""
 
     name = "workers.ended-worker"
     disabled_scopes = [ActorScope]
 
-    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance) -> None:
-        self.guidance = guidance
+    def __init__(self, nudger: Nudger, queries: Queries, unfinished: WorkerUnfinishedTasks, stop: WorkerStop, resume: WorkerResume, waits: WorkerProgramWait, inbox: MergerInbox, scopes: Scopes, handoff: WorkerHandoff, launches: WorkerLaunchFailures, guidance: WorkerGuidance, main_line: MainAgentLine) -> None:
+        self.guidance, self.main_line = guidance, main_line
         self.nudger, self.queries, self.unfinished, self.stop = nudger, queries, unfinished, stop
         self.resume, self.waits, self.inbox, self.scopes = resume, waits, inbox, scopes
         self.handoff, self.launches = handoff, launches
@@ -74,5 +75,6 @@ class EndedWorkerListener(SaveListener[AgentEnded]):
                     return
                 self.nudger.send(new.parent_id, WORKER_RESTARTED, SOURCE, context, worker=new.id, tasks=tasks)
                 return
+        resume_limit_reached = delegated and not is_final and not help_requested
         with self.scopes.row_scope(new):
-            self.inbox.send_nudge(WORKER_ENDED_WITH_TASKS.nudge(worker=new.id, tasks=tasks), SOURCE, context)
+            (self.main_line if resume_limit_reached else self.inbox).send_nudge(WORKER_ENDED_WITH_TASKS.nudge(worker=new.id, tasks=tasks), SOURCE, context)

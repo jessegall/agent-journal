@@ -6,6 +6,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.commands.run_worker_test.run_worker_test import RunWorkerTest
+from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 from suites.coding.modules.workers.support.worker_test_wait import WorkerTestWait
 
 SHOWN_LINES = 200
@@ -18,8 +19,8 @@ class RunWorkerTestSubcommand(Subcommand[RunWorkerTest, Process]):
     cli_name = "worker"
     name = "test"
 
-    def __init__(self, wait: WorkerTestWait, folder: OutputFolder) -> None:
-        self.wait, self.folder = wait, folder
+    def __init__(self, wait: WorkerTestWait, folder: OutputFolder, run_answer: WorkerRunAnswer) -> None:
+        self.wait, self.folder, self.run_answer = wait, folder, run_answer
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")
@@ -36,7 +37,7 @@ class RunWorkerTestSubcommand(Subcommand[RunWorkerTest, Process]):
             return
         exit_code = self.wait.exit_code(value.id)
         if exit_code is None:
-            output.line(f"test run in the background: output {value.id}; stop or go on working, you hear when it ends")
+            output.line(f"test run in the background: output {value.id}; {self.run_answer.test_instruction(value.session_agent_id)}")
             return
         for line in self.folder.last_lines(value.id, SHOWN_LINES):
             output.line(line)

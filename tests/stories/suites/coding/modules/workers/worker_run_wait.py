@@ -27,7 +27,7 @@ TEST_RUN = "worker test python tests/cart.py"
 BUILD_LINE = "make build"
 BUILD_SHELL = HookSamples.shell(BUILD_LINE, ShellPart("make", CommandCategory.BUILD, ["build"]))
 SEARCH_SHELL = HookSamples.shell("grep -r cart src", ShellPart("grep", CommandCategory.SEARCH, ["-r", "cart", "src"]))
-TOLD_THE_NUMBER = "stop or go on working, you hear when it ends"
+TOLD_THE_NUMBER = "go on with task 1, you hear when it ends"
 SECONDS_SET = f"setting set {WORKER_RUN_WAIT} {{seconds}} --environment main"
 
 
