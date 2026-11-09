@@ -23,7 +23,7 @@ class WorkerUnfinishedTasks:
         return self.round_rows(self.steps.round(worker_id))
 
     def round_rows(self, worker_round: WorkerRound) -> tuple[Task, ...]:
-        if not worker_round.started and (worker_round.following is None or self.steps.is_delivered(worker_round)):
+        if self.steps.is_delivered(worker_round) or (not worker_round.started and worker_round.following is None):
             return ()
         advanced = self.phases.advanced(worker_round.worker_id) if worker_round.started else ()
         return (*advanced, *worker_round.started, *self.tasks.queued_tasks(worker_round.worker_id))
