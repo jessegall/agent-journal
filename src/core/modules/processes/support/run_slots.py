@@ -8,6 +8,7 @@ from core.base.listener.event_rows import EventRows
 from core.base.database.kept_rows import KeptRows
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.has_value import HasValue
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.scopes import Scopes
@@ -31,19 +32,12 @@ class RunSlots:
         self.rows, self.kept, self.scopes, self.outputs = rows, kept, scopes, outputs
 
     def grant(self, context: Context) -> None:
-        runs = self.running()
-        queued = [process for process in runs if process.queued_at is not None]
-        outputs = {output.process_id: output for output in self.outputs.process_outputs(tuple(process.id for process in queued))}
-        for waiting in queued:
+        for waiting in [process for process in self.running() if process.queued_at is not None]:
             agent = self.rows.required(Agent, waiting.session_agent_id)
             needs_slot = self.admission.needs_slot(waiting, agent)
-            if not self.admission.may_start(waiting, agent, outputs.get(waiting.id), self.clock.timestamp()):
+            if not self.admission.may_start(waiting, agent, self.clock.timestamp()):
                 continue
             process = self.rows.required(Process, waiting.id)
-            self.record_count(process, agent, context)
-            process = self.rows.required(Process, process.id)
-            if process.queued_at is None or process.state not in RUNNING_STATES:
-                continue
             used_slots = sum(self.admission.uses_slot(run) for run in self.running() if run.queued_at is None)
             room = self.settings.integer(ProcessSetting.RUN_BATCH_SIZE) - used_slots
             if needs_slot and (self.halt.is_halted or room <= 0):
@@ -68,11 +62,17 @@ class RunSlots:
             with self.scopes.opened(None, environment_id):
                 self.grant(context)
 
+    def take_counts(self, context: Context) -> None:
+        started = self.queries.query(Process).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).oldest().all_rows()
+        for process in tuple(started):
+            if self.folder.is_count_taken(process.id) or self.folder.count_status(process.id) is None:
+                continue
+            with self.scopes.opened(None, process.environment_id):
+                self.record_count(process, self.rows.required(Agent, process.session_agent_id), context)
+            self.folder.mark_count_taken(process.id)
+
     def record_count(self, process: Process, agent: Agent, context: Context) -> None:
         status = self.folder.count_status(process.id)
-        if status is None:
-            self.listings.reject_unknown(process, agent, status, 0, context)
-            return
         count = self.listings.count(process, self.folder.count_text(process.id)) if status == 0 else 0
         self.listings.reject_unknown(process, agent, status, count, context)
         output = self.outputs.process_output(process.id)
