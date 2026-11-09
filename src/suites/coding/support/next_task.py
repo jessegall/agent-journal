@@ -12,8 +12,9 @@ from suites.coding.support.context_limit_check import ContextLimitCheck
 
 class NextTask:
     """The coding suite's task assigner: an agent with empty hands is given the task it was told to take next,
-    else a task above high outside any plan, else a task reserved for it, else a started plan's next task,
-    else the most urgent open task outside any plan that waits on nothing. An agent with tasks still in hand
+    else a task above high outside any plan, else a started plan's next task, else the most urgent open task
+    outside any plan that waits on nothing, else, last, a task reserved for it, which stays open and is never
+    one the agent released just now. An agent with tasks still in hand
     is given only the task above high. Auto mode turns it on, and an agent past its context limit is given
     nothing until its stop has compacted it."""
 
@@ -34,8 +35,8 @@ class NextTask:
         most_urgent = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
         return most_urgent if most_urgent is not None and most_urgent.priority >= URGENT_PRIORITY else None
 
-    def reserved(self, agent_id: int) -> Task | None:
-        return self.plan_order.first_started_plan_task(self.tasks.ready_delegated(agent_id))
+    def reserved(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
+        return self.plan_order.first_started_plan_task(tuple(task for task in self.tasks.ready_delegated(agent_id) if task.id != excluded_id))
 
     def following(self, agent_id: int, excluded_id: int | None = None) -> Task | None:
         told_task = self.choices.find(agent_id, excluded_id)
@@ -44,10 +45,7 @@ class NextTask:
         open_task = self.tasks.next_open(excluded_id, self.plan_tasks.plan_exclusion())
         if open_task is not None and open_task.priority >= URGENT_PRIORITY:
             return open_task
-        reserved = self.reserved(agent_id)
-        if reserved is not None:
-            return reserved
         planned = self.plan_tasks.environment_task()
         if planned is not None and planned.id != excluded_id:
             return planned
-        return open_task
+        return open_task if open_task is not None else self.reserved(agent_id, excluded_id)
