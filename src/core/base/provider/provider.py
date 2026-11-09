@@ -117,6 +117,9 @@ class Provider(ABC):
     @abstractmethod
     def resumed_arguments(self, session: str) -> Sequence[str]: ...
 
+    def is_session_chosen(self) -> bool:
+        return bool(self.new_session_arguments(""))
+
     @abstractmethod
     def helper_outcome(self, output: str, errors: str) -> HelperOutcome: ...
 

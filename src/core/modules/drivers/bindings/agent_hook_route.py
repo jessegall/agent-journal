@@ -11,6 +11,7 @@ from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
+from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
@@ -35,13 +36,13 @@ MILLISECONDS = 1000
 
 class AgentHookRoute(HookRoute):
     """Answers a hook as the agent that sent it: finds its open agent by session, then by the
-    launch name it was started under, saving the real session on it, starts the main agent at its
+    launch name it was started under, saving the real session on it when it is a main agent or runs a program that does not take a session from the journal, starts the main agent at its
     session's first hook, gives back the stored answer of a hook sent twice, refuses the tools of a
     program whose agent has ended and asks the launcher to stop it, and lets through, without a
     record, a hook from an unknown agent when the event does not require an agent check."""
 
-    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock) -> None:
-        self.clock = clock
+    def __init__(self, bus: Bus, queries: Queries, system_log: SystemLogWriter, durations: HookDurations, settings: SettingValues, agents: AgentRows, program: AgentProgram, rule_answers: HookRuleAnswers, request_values: RequestValues, clock: Clock, providers: Providers) -> None:
+        self.clock, self.providers = clock, providers
         self.rule_answers, self.request_values = rule_answers, request_values
         self.bus, self.queries, self.system_log, self.durations, self.settings = bus, queries, system_log, durations, settings
         self.agents, self.program = agents, program
@@ -107,6 +108,9 @@ class AgentHookRoute(HookRoute):
         if agent is None:
             if self.agents.session(event.session) is None and self.ended_agent(event) is None:
                 self.system_log.write(LogLevel.WARNING, f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
+            return None
+        if agent.role != AgentRole.MAIN and self.providers.provider(agent.program).is_session_chosen():
+            self.system_log.write(LogLevel.WARNING, f"a {event.program} session {event.session} came under launch name {event.launch}, whose {agent.role} {agent.id} holds session {agent.session}; let through")
             return None
         return self.bus.run(BindAgentSession(agent.id, event.session), Actor.core(), environment_id=agent.environment_id)
 

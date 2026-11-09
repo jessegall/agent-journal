@@ -2,7 +2,9 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
+from core.base.query.conditions.minimum import Minimum
 from core.base.query.query import Query
+from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
 
@@ -17,6 +19,9 @@ class WorkerOperationQuery(Query[WorkerOperation]):
     def active(self, worker_id: int) -> WorkerOperation | None:
         return self.kept.scoped_current(lambda: self.filter(worker_id=worker_id).matching(IsNull("ended_at")).first(),
                                         name=f"workers.active_operation:{worker_id}")
+
+    def ended_after(self, worker_id: int, cutoff: Timestamp) -> bool:
+        return self.filter(worker_id=worker_id).matching(Minimum("ended_at", cutoff.text)).exists()
 
     def check_available(self, worker_id: int, process_id: int | None = None) -> None:
         operation = self.active(worker_id)

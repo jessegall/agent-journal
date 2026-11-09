@@ -32,6 +32,14 @@ def test_a_workers_tool_no_agent_holds_is_refused(new_story):
     story.expect_hook_refusal("t-8", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-98", role="worker"), UNKNOWN_AGENT.nudge().text)
 
 
+def test_a_session_under_a_claude_workers_launch_name_leaves_the_session_its_row_holds(started_main_agent):
+    story, main = started_main_agent
+    worker_id = story.new_row_id(f"agent start t-1 claude worker --parent {main.id} --environment main")
+    story.expect_hook_silent("t-9", HookSamples.session_start().with_fields(launch="t-1"))
+    story.expect_text(f"agent show {worker_id}", "session: t-1")
+    story.expect_rows("whose worker" in story.system_log_text())
+
+
 def test_a_claude_helper_is_found_by_the_session_it_was_given(started_main_agent):
     story, main = started_main_agent
     helper_id = story.new_row_id(f"agent start s-2 claude worker --parent {main.id} --environment main")
