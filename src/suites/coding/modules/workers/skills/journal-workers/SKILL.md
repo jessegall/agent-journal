@@ -141,9 +141,9 @@ never starts is retired after the idle time.
   `journal worker next --differences "<what>"`. When you followed the brief, `--differences none`. The same goes for
   `journal worker deliver`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
-  right; the journal commits and runs its proofs' tests in turn, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
+  right; the journal commits and puts all its proofs' tests on the run queue at once, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
-  tests in turn; those that fail come back to you to fix and deliver again.
+  tests, all on the run queue at once; those that fail come back to you to fix and deliver again.
 - `test-at-phase-end` (on by default) tests a started plan's tasks together at the end of each phase. Off tests
   each task at its own hand-in. Outside a plan, `test-batch-size` sets how many tasks to finish before testing;
   its default is 1. A larger batch ends at that count or the worker's last task.
