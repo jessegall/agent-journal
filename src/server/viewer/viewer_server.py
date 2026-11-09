@@ -1,5 +1,8 @@
 from typing import Protocol, runtime_checkable
 
+from server.viewer.answer_headers import AnswerHeaders
+from server.viewer.closed_doors import ClosedDoors
+from server.viewer.door import Door
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 
@@ -12,5 +15,8 @@ class ViewerServer(Protocol):
     login: ViewerLogin
     routes: ViewerRoutes
     host: str
+    door: Door
+    answer_headers: AnswerHeaders
+    closed_doors: ClosedDoors
 
     def untrack_request(self) -> None: ...

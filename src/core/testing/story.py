@@ -27,6 +27,7 @@ from core.base.driver.hook_route import HookRoute
 from core.base.command.script_policy import ScriptPolicy
 from core.base.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.hosting.hosting import Hosting
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
 from core.modules import DEFAULT_MODULES
@@ -311,6 +312,7 @@ def story_container(home: JournalHome, clock: ManualClock, process_table: "Fixed
     container.bind(ScriptPolicy, ScriptPolicy(guards_run=True, commit_limit_ms=None))
     container.bind(Clock, clock)
     container.bind(ProcessTable, process_table)
+    container.bind(Hosting, Hosting.local())
     container.bind(ShellSandbox, StoryShellSandbox(home))
     container.bind(OverviewFirst, StoryOverviewFirst())
     container.bind(HelperPrograms, StoryHelperPrograms())

@@ -5,10 +5,11 @@ from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.timestamp import Timestamp
 from server.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
+from server.journal_door import JournalDoor
 from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
 from server.server_tunnel import ServerTunnel
-from server.viewer.viewer_listener import ViewerListener
+from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.request_log import RequestLog
 
 HOOK_LIMIT_SECONDS = 3.5
@@ -19,7 +20,8 @@ AGENT_HOOK_LIMIT_SECONDS = 45.0
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
     files, when it started, its listener thread, the database connection its hooks share, the viewer's
-    listener, the findings of repeated work it has reported (the viewer's lines share them), how long a hook
+    listener, the findings of repeated work it has reported (the viewer's lines share them), the door its
+    socket's requests pass, how long a hook
     waits for another writer, and how far its hooks have read each session file."""
 
     home: JournalHome
@@ -28,9 +30,10 @@ class ServerContext:
     started_at: Timestamp
     listener_thread: ListenerThread
     hook_database: HookDatabase
-    viewer: ViewerListener
+    viewer: ViewerEndpoint
     tunnel: ServerTunnel
     reported_findings: ReportedFindings
+    door: JournalDoor
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS
     agent_hook_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS
     transcript_entries: TranscriptEntries = field(default_factory=TranscriptEntries)

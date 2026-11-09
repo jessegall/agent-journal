@@ -1,5 +1,6 @@
 import argparse
 import math
+import os
 import resource
 from datetime import datetime, timezone
 import signal
@@ -12,9 +13,13 @@ if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from core.base.container import Container
+from core.base.hosting.host_probe import HostProbe
+from core.base.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
+from core.base.hosting.hosted_start_check import HostedStartCheck
 from core.base.journal_container import opened_container, synced_database_container
 from core.base.journal_home import JournalHome
 from core.base.log_level import LogLevel
+from core.base.refusal import Refusal
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler
@@ -29,6 +34,8 @@ from server.code_sync_work import CodeSyncWork
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.handover_descriptors import HandoverDescriptors
+from server.hosted_journal_door import HostedJournalDoor
+from server.local_journal_door import LocalJournalDoor
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.server_plugin_services import ServerPluginServices
@@ -44,7 +51,9 @@ from server.program_stop_listener_work import ProgramStopListenerWork
 from server.urgent_listener_work import UrgentListenerWork
 from server.ticker import Ticker
 from server.viewer.session_file import SessionFile
+from server.viewer.closed_service import ClosedService
 from server.viewer.viewer_listener import ViewerListener
+from server.viewer.viewer_socket_listener import ViewerSocketListener
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_login import ViewerLogin
@@ -54,10 +63,11 @@ from server.server_backup import ServerBackup
 from server.server_files import ServerFiles
 from server.waiting_server import WaitingServer
 
-FILE_LIMIT = 10240
+MAX_OPEN_FILES = 10240
 
 ANSWER_LIMIT_SECONDS = 2
 SECOND_SERVER_CODE = 0
+UNSAFE_HOST_CODE = 1
 
 TUNNEL_CHECK_SECONDS = 30.0
 SERVICES_CHECK_SECONDS = 30.0
@@ -75,6 +85,12 @@ def last_port(home: JournalHome) -> int:
     return int(text) if text.isdigit() else 0
 
 
+def refused_start_code(files: ServerFiles, refusal: Refusal) -> int:
+    files.log_line(refusal.text, LogLevel.ERROR)
+    print(refusal.text, file=sys.stderr)
+    return UNSAFE_HOST_CODE
+
+
 def begin_files(home: JournalHome, files: ServerFiles) -> None:
     PerformanceState(home).begin_start()
     TimingLog(home).rotate()
@@ -83,7 +99,7 @@ def begin_files(home: JournalHome, files: ServerFiles) -> None:
 
 def raise_file_limit() -> None:
     soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    target = FILE_LIMIT if hard == resource.RLIM_INFINITY else min(FILE_LIMIT, hard)
+    target = MAX_OPEN_FILES if hard == resource.RLIM_INFINITY else min(MAX_OPEN_FILES, hard)
     if soft < target:
         resource.setrlimit(resource.RLIMIT_NOFILE, (target, hard))
 
@@ -99,6 +115,12 @@ def main(argv: list[str]) -> int:
     code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
     code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)
     files = ServerFiles(home)
+    hosting = HostedFile.shared_hosting(home)
+    start_check = HostedStartCheck(hosting, HostProbe(), HOSTED_FILE_PATH)
+    try:
+        start_check.check_host()
+    except Refusal as refusal:
+        return refused_start_code(files, refusal)
     waiting_server = WaitingServer(home, HandoverDescriptors.parsed(arguments.take_over)) if arguments.take_over else None
     if waiting_server is not None:
         files.keep_lock_descriptor(waiting_server.descriptors.lock)
@@ -121,8 +143,19 @@ def main(argv: list[str]) -> int:
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue), last_port(home), inherited_socket=waiting_server.viewer_socket() if waiting_server else None)
-    home.viewer_port_file.write_text(str(viewer.port))
+    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue)
+    inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
+    if hosting.is_hosted:
+        viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, HostProbe().user_id(hosting.mode.proxy_user), inherited_viewer)
+        try:
+            start_check.check_socket(files.viewer_socket)
+        except Refusal as refusal:
+            return refused_start_code(files, refusal)
+        journal_door = HostedJournalDoor(os.getuid())
+    else:
+        viewer = ViewerListener(login, routes, last_port(home), inherited_socket=inherited_viewer)
+        journal_door = LocalJournalDoor()
+        home.viewer_port_file.write_text(str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     plugin_services = ServerPluginServices(home)
@@ -134,11 +167,13 @@ def main(argv: list[str]) -> int:
 
     ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
     ticker.register(TickHandler(TickInterval(seconds=CHECK_PERIOD_SECONDS), lambda container: container.get(PeriodicChecks).run(), "checks"))
-    ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
-    ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
-    ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
+    if not viewer.closed_doors.closes_service(ClosedService.TUNNEL):
+        ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
+    if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SERVICES):
+        ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
+        ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel, reported_findings),
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel, reported_findings, journal_door),
                            waiting_server.journal_socket() if waiting_server else None)
     ticker.register(TickHandler(TickInterval(seconds=SETTINGS_REFRESH_SECONDS), lambda container: server.context.request_log.refresh(container), "request log settings"))
     if waiting_server is not None:
@@ -155,15 +190,17 @@ def main(argv: list[str]) -> int:
             starting_round.run()
         except Exception as error:
             starting_round.report(error)
-    try:
-        plugin_services.follow()
-    except Exception as error:
-        files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
+    if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SERVICES):
+        try:
+            plugin_services.follow()
+        except Exception as error:
+            files.log_line(f"the plugin services could not be started: {error}", LogLevel.ERROR)
     server.context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
     listener_thread.wake()
     listener_thread.start()
     urgent_thread.start()
-    plugin_thread.start()
+    if not viewer.closed_doors.closes_service(ClosedService.PLUGIN_SCRIPTS):
+        plugin_thread.start()
     stop_thread.start()
     ticker_thread.start()
     viewer.start()
