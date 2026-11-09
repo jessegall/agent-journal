@@ -46,9 +46,9 @@ def test_a_worker_whose_current_task_is_blocked_goes_on_to_its_next_open_task(ne
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     story.expect_success('task block 1 --reason "waits on a person"', actor=story.agent)
-    story.expect_success("worker next --differences none", actor=worker)
+    story.expect_success("worker next --wait --differences none", actor=worker)
     expect_states(story, task1="blocked", task2="started")
-    story.expect_text("worker-worktree list", "task_id: 2", actor=story.agent)
+    story.expect_text("worker-worktree list --json", '"task_id": 2', actor=story.agent)
 
 
 def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_over(new_story, monkeypatch):
