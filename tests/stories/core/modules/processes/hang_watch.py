@@ -13,7 +13,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 MISSING_GROUP = 999999
 HANG_SECONDS = 300
 LOOK_SECONDS = 900
-LOOK_LINE = "while it still uses processor time"
+LOOK_LINE = "hangs"
 
 
 class FakeGroupCpuTime(GroupCpuTime):
@@ -127,7 +127,7 @@ def test_a_silent_test_run_that_keeps_using_processor_time_has_its_agent_asked_t
 def test_a_silent_build_that_keeps_using_processor_time_is_never_asked_about(new_story):
     story = new_story(fixture=ActiveBuild)
     tree = started_tree(story, 12.0)
-    for seconds in (400, 400, 400):
+    for seconds in (500, 500, 500):
         busy_for(story, tree, seconds)
     story.expect_rows(look_lines(story) == 0)
     story.expect_text("process show 1", "state: background", actor=story.agent)
@@ -151,7 +151,7 @@ def test_the_ask_repeats_after_the_hang_seconds_and_the_run_is_stopped_after_the
 def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it_goes_silent_again(new_story):
     story = new_story(fixture=ActiveTestRun)
     tree = started_tree(story, 12.0)
-    busy_for(story, tree, LOOK_SECONDS + 1)
+    busy_for(story, tree, LOOK_SECONDS + 5)
     folder = story.container.get(OutputFolder)
     folder.write_start(1, "go test ./...", ["go test ./..."])
     folder.write_output(1, 1, "ok\n")
