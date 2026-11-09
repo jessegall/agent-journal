@@ -7,7 +7,7 @@ afterEach(() => (document.body.innerHTML = ""));
 
 const drawn = (mark) => mounted({render: () => h(MarkBody, {declaration: {}, mark, shown: true})}, context({}));
 
-test("a mark that stopped short says justification", async () => {
+test("a mark that stopped short says why", async () => {
     const element = await drawn({id: 1, type: "tasks.task", variant: "blocked", detail: "needs the price list"});
     expect(element.textContent).toContain("Why it stopped");
     expect(element.querySelector("[data-mark-reason]").textContent).toBe("needs the price list");

@@ -2,7 +2,7 @@
 import {computed, ref} from "vue";
 import {Btn, RowList, removed, useWindow} from "@journal/window-kit";
 
-// the environments of this project, the one you are in first; removing one asks first, shows it gone at once, and says justification when it is refused
+// the environments of this project, the one you are in first; removing one asks first, shows it gone at once, and says why when it is refused
 const context = useWindow();
 const {rows, failure, loaded, act} = context.props.environments;
 const asking = ref(0);

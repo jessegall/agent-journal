@@ -114,7 +114,7 @@ export function rowList(context, askRows, pageSizeOf, isIncremental, readsIds = 
 
     const loadLatest = () => readPage((fresh) => fresh);
 
-    // runs a command the window declares, keeps what it answered or justification it failed, and reads the rows again; a change, from the rows held to
+    // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again; a change, from the rows held to
     // the rows the command will leave, shows at once, and is put back with the reason when the command fails
     async function act(words, change = null) {
         const result = await runChanged(change && {target: rows, fields: {value: change(rows.value)}}, words, context.run);

@@ -16,10 +16,10 @@ class CloseTextSubcommand(Subcommand[CloseText, TextRow]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
-        parser.add_argument("--why", dest="justification", required=True)
+        parser.add_argument("--why", dest="why", required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> CloseText:
-        return CloseText(self.model, arguments.id, arguments.justification)
+        return CloseText(self.model, arguments.id, arguments.why)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TextRow):

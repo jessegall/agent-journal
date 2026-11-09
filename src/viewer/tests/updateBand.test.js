@@ -36,7 +36,7 @@ test("a current journal, or a check that cannot answer, shows nothing", async ()
     expect((await drawn({check: {ok: false, error: "no network"}})).element.querySelector("[data-update-band]")).toBeNull();
 });
 
-test("not now puts it away, and a failed install says justification", async () => {
+test("not now puts it away, and a failed install says why", async () => {
     const later = await drawn({check: {ok: true, value: {is_current: false}}});
     later.element.querySelector("[data-update-later]").click();
     await settle();

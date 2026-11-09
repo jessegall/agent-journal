@@ -1,7 +1,7 @@
 import {ref} from "vue";
 import {useWindow} from "./windowContextKey.js";
 
-// runs a command the window declares and keeps justification it was refused; `after` is called when the command worked, to read what it changed
+// runs a command the window declares and keeps why it was refused; `after` is called when the command worked, to read what it changed
 export function useRunLine(after) {
     const context = useWindow();
     const refusal = ref("");

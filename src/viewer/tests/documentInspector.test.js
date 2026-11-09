@@ -85,7 +85,7 @@ test("a comment is sent with its selection, and with none it is on the whole doc
     expect(ran).toContainEqual(["doc", "comment", "4", "--", "Good"]);
 });
 
-test("a refused comment keeps its words and says justification", async () => {
+test("a refused comment keeps its words and says why", async () => {
     const {element} = drawn([]);
     await settle();
     typeInto(element.querySelector("[data-comment-input]"), "no");

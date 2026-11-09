@@ -41,7 +41,7 @@ class AliasFileListener(CommitListener[FilePublishing | Touched[Alias] | Touched
         FileAccess.shared().write(self.home.saved_command_file, json.dumps([alias.name for alias in aliases if alias.name in lines and alias.category and alias.category.is_long_running]))
         FileAccess.shared().write(self.home.alias_category_file, json.dumps({alias.name: alias.category.value for alias in aliases if alias.name in lines and alias.category}))
         types = self.kept.read("command_types", lambda: tuple(self.queries.query(CommandType).all_rows()), name="aliases.command_types")
-        FileAccess.shared().write(self.home.command_type_file, json.dumps({command_type.prefix_parts: command_type.category.value for command_type in types}))
+        FileAccess.shared().write(self.home.command_type_file, json.dumps({command_type.words: command_type.category.value for command_type in types}))
 
     def line(self, alias: Alias) -> str:
         line = self.shell_aliases.resolved_line(alias.line)

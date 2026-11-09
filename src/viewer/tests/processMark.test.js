@@ -42,7 +42,7 @@ test("a process mark opens to its run's output and folds on the next click", asy
     expect(element.textContent).toContain("compiling the cart");
 });
 
-test("a process mark whose output cannot be read says justification, not that it printed nothing", async () => {
+test("a process mark whose output cannot be read says why, not that it printed nothing", async () => {
     const element = document.createElement("div");
     document.body.append(element);
     mounted.push(element);

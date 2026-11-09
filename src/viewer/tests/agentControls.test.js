@@ -78,7 +78,7 @@ test("stopping asks first and can be kept running", async () => {
     expect(ran).toContain("agent stop 7");
 });
 
-test("with no agent it offers the programs to start, and a refusal says justification", async () => {
+test("with no agent it offers the programs to start, and a refusal says why", async () => {
     const {element, ran} = await drawn(null, "no launcher is running here");
     element.querySelector("[data-agent-start]").click();
     await settle();

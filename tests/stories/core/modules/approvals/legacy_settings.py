@@ -16,7 +16,7 @@ def restored_question(new_story):
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
     request = story.container.get(Queries).query(ApprovalRequest).first()
-    story.expect_rows(request is not None, "old request" in request.justification)
+    story.expect_rows(request is not None, "old request" in request.why)
     return story, request
 
 

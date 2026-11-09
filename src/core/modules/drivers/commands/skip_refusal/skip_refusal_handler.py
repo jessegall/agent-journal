@@ -107,4 +107,4 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     @staticmethod
     def restoration_approval(agent_id: int) -> UserApprovalRefusal:
         return UserApprovalRefusal(f"Agent {agent_id} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
-                            ("refusal", "restore", str(agent_id)), justification=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")
+                            ("refusal", "restore", str(agent_id)), why=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")

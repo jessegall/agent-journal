@@ -139,7 +139,7 @@ test("the guide opens with every manifest key", async () => {
     for (const key of ["journal-plugin.json", "hears", "holds", "services", "dashboard", "$JOURNAL_PLUGIN_DATA"]) expect(guide).toContain(key);
 });
 
-test("a refused install says justification", async () => {
+test("a refused install says why", async () => {
     const {element} = await drawn(true);
     const form = element.querySelector("[data-plugin-install-form]");
     await type(form.querySelector("input"), "owner/repo");
@@ -213,7 +213,7 @@ test("what a plugin did lists its outputs with their times and no last fault", a
     expect(body.textContent).not.toContain("it timed out");
 });
 
-test("a plugin that did nothing says so, and a refused read says justification", async () => {
+test("a plugin that did nothing says so, and a refused read says why", async () => {
     await recordDrawn({ok: true, value: {name: "sins", outputs: [], fault_count: 0, last_fault: ""}});
     expect(document.querySelector("[data-plugin-record-body]").textContent).toContain("No activity yet.");
     document.body.innerHTML = "";

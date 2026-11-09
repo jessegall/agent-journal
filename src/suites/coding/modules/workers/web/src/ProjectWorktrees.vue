@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {Btn, RowList, WindowRoom, removed, useWindow} from "@journal/window-kit";
 
-// the worktrees of this repository and who holds each; removing one asks first, shows it gone at once, keeps its branch and says justification when it is refused
+// the worktrees of this repository and who holds each; removing one asks first, shows it gone at once, keeps its branch and says why when it is refused
 const view = useWindow();
 const {rows, failure, loaded, act} = view.props.worktrees;
 const asking = ref("");

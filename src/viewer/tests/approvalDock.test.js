@@ -34,10 +34,10 @@ test("an approval with only a question shows a title and no description", async 
 });
 
 test("the reason the requester gave is shown under the question", async () => {
-    const element = await drawn("Change this profile?", {justification: "The merger runs on Codex, as you asked in message 110327."});
-    const justification = element.querySelector("[data-approval-why]");
-    expect(justification.textContent).toBe("The merger runs on Codex, as you asked in message 110327.");
-    expect(element.querySelector("[data-approval-question]").compareDocumentPosition(justification) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const element = await drawn("Change this profile?", {why: "The merger runs on Codex, as you asked in message 110327."});
+    const why = element.querySelector("[data-approval-why]");
+    expect(why.textContent).toBe("The merger runs on Codex, as you asked in message 110327.");
+    expect(element.querySelector("[data-approval-question]").compareDocumentPosition(why) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 });
 
 test("a long action line is shown whole, in a block that wraps instead of being cut", async () => {

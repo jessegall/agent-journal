@@ -35,9 +35,9 @@ class StandingApprovals:
     def build_standing(self, request: ApprovalRequest, scope: StandingScope, creator_id: int) -> StandingApproval:
         category, target = self.category(request), self.target(request)
         text = f"{category} {target}".strip() if scope is StandingScope.LIKE else f"{category}: {request.text}"
-        return StandingApproval(creator_id=creator_id, scope=scope, category=category, target=target, match_key=self.match_key(request), text=text)
+        return StandingApproval(creator_id=creator_id, scope=scope, kind=category, target=target, match_key=self.match_key(request), text=text)
 
     def covering(self, request: ApprovalRequest) -> StandingApproval | None:
         category, target, match_key = self.category(request), self.target(request), self.match_key(request)
-        standing = self.queries.query(StandingApproval).filter(category=category).oldest().all_rows()
+        standing = self.queries.query(StandingApproval).filter(kind=category).oldest().all_rows()
         return next((row for row in standing if row.scope is StandingScope.LIKE and row.target == target or row.scope is StandingScope.EXACT and row.match_key == match_key), None)

@@ -1,7 +1,7 @@
 <script setup>
 import {Btn, SwitchCase} from "@journal/window-kit";
 
-// what an empty list of memories says, and what to do about it: `kind` is justification it is empty
+// what an empty list of memories says, and what to do about it: `kind` is why it is empty
 defineProps({kind: {type: String, required: true}, others: {type: Number, default: 0}, reason: {type: String, default: ""}});
 const emit = defineEmits(["retry", "everyone", "others", "make"]);
 </script>

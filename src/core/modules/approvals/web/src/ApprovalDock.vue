@@ -16,8 +16,8 @@ const description = computed(() => lines.value.slice(1).join("\n").trim());
   <template v-if="description">
     <p class="approval-description" data-approval-description>{{ description }}</p>
   </template>
-  <template v-if="request?.justification">
-    <p class="approval-why" data-approval-why>{{ request.justification }}</p>
+  <template v-if="request?.why">
+    <p class="approval-why" data-approval-why>{{ request.why }}</p>
   </template>
   <details class="approval-details">
     <summary>Action details</summary>

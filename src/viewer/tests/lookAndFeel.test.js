@@ -168,7 +168,7 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     expect(element.querySelector("[data-dock-failure]").textContent).toContain("only a person approves");
 });
 
-test("a refused close of a docked card says justification on the card", async () => {
+test("a refused close of a docked card says why on the card", async () => {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, error: "this card stays"})})));
     const element = document.createElement("div");
     mountedApp(createApp({setup: () => () => h(DockStack, {items: [REPORT_DOCK]}), provide: {[WINDOW_CONTEXT]: dockWindow([REPORT_DOCK])}}), element);

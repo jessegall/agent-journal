@@ -17,11 +17,11 @@ class CommandType(Model):
     cli_name = "command-type"
 
     creator_id: int
-    prefix_parts: str
+    words: str
     category: CommandCategory
 
     def __post_init__(self) -> None:
-        if not shlex.split(self.prefix_parts):
+        if not shlex.split(self.words):
             raise Refusal("a command type is the command's leading words", "name its program and first arguments")
         if self.category in UNCHOOSABLE:
             raise Refusal(f"a command is not classified as {self.category.value}", "choose the type it is, such as test run, build or check")

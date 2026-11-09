@@ -29,7 +29,7 @@ test("a waiting agent has a still dot that says what it waits for", async () => 
     expect(words(element)).toBe("Status: tests running");
 });
 
-test("a blocked agent has a still dot that says justification", async () => {
+test("a blocked agent has a still dot that says why", async () => {
     const element = await card(worker(), {tasks: [], state: "blocked", blocked_reason: "it waits on task 7340", last_activity: new Date(Date.now() - 54 * 60000).toISOString()});
     expect(dotOf(element).dataset.state).toBe("blocked");
     expect(dotOf(element).classList.contains("pulse")).toBe(false);

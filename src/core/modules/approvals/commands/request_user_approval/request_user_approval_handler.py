@@ -28,8 +28,8 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
         self.actors, self.rows = actors, rows
 
     def handle(self, command: RequestUserApproval, context: Context) -> ApprovalRequest:
-        justification = (command.justification or command.approval.justification).strip()
-        if not justification:
+        why = (command.why or command.approval.why).strip()
+        if not why:
             raise Refusal("an approval needs a reason: the person sees it with the question", "add --reason \"<why this is asked>\" to the line")
         requester_id = command.requester_id if command.requester_id is not None else context.actor.id
         if not self.actors.is_agent(requester_id):
@@ -72,7 +72,7 @@ class RequestUserApprovalHandler(Handler[RequestUserApproval, object]):
                 Among("state", (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED))).newest().first()
             if decided is not None:
                 return decided
-        request = ApprovalRequest(creator_id=context.actor.id, requester_id=requester_id, text=command.approval.reason, justification=justification,
+        request = ApprovalRequest(creator_id=context.actor.id, requester_id=requester_id, text=command.approval.reason, why=why,
                                   arguments=command.arguments, refused_arguments=command.approval.refused_arguments,
                                   required_person_id=command.approval.required_person_id,
                                   recipient_agent_id=recipient,

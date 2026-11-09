@@ -18,13 +18,13 @@ class RequestSecretSubcommand(Subcommand[MakeSecret, Secret]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")
-        parser.add_argument("--why", dest="justification", required=True)
+        parser.add_argument("--why", dest="why", required=True)
         parser.add_argument("--type", default=SecretType.API_KEY.value)
         parser.add_argument("--field", action="append", default=[])
         parser.add_argument("--brief", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeSecret:
-        return MakeSecret(arguments.title, arguments.brief, SecretType.lookup(arguments.type), tuple(arguments.field), arguments.justification)
+        return MakeSecret(arguments.title, arguments.brief, SecretType.lookup(arguments.type), tuple(arguments.field), arguments.why)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Secret):

@@ -112,7 +112,7 @@ test("an open link shows its views and comments and stops, and every share stops
     expect(held.lines).toEqual([["share", "revoke", "2"], ["share", "revoke", "3"]]);
 });
 
-test("a visitor reads and writes comments and a refusal says justification", async () => {
+test("a visitor reads and writes comments and a refusal says why", async () => {
     const sent = [];
     vi.stubGlobal("fetch", async (url, options) => {
         const comment = options?.body ? JSON.parse(options.body) : null;

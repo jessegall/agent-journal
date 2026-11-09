@@ -40,7 +40,7 @@ test("a setting shows its new value before the server has answered", async () =>
     expect(isOn(element, "shop.fast")).toBe("true");
 });
 
-test("a refused setting goes back to the value it had and says justification", async () => {
+test("a refused setting goes back to the value it had and says why", async () => {
     const {window, runs} = slowServer(ROWS);
     const element = await mounted(SettingsTree, window);
     switchOf(element, "shop.fast").click();

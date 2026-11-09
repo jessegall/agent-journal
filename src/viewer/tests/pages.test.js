@@ -249,7 +249,7 @@ test("the full screen button draws the expand icon, not the plain dot, and the p
     expect(narrow.element.querySelectorAll("[data-add-bar] [data-reopen] svg").length).toBeGreaterThan(0);
 });
 
-test("a journal that cannot run the shell's lines says justification above the page", async () => {
+test("a journal that cannot run the shell's lines says why above the page", async () => {
     vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 2, value: null, error: "the journal's modules changed: journal module sync"})})));
     const {element} = await mount(HomePage);
     expect(element.querySelector(".home-problem").textContent).toContain("the journal's modules changed: journal module sync");

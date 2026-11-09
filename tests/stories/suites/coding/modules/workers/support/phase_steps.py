@@ -48,8 +48,8 @@ def planned_story(new_story, approve: bool = True, build_test: str = ""):
     return story
 
 
-def asking_main(line: str, justification: str) -> str:
-    return f'{line} --ask-main "{justification}"'
+def asking_main(line: str, why: str) -> str:
+    return f'{line} --ask-main "{why}"'
 
 
 def shell_test_part(line: str) -> ShellPart:

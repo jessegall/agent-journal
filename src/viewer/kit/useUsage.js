@@ -11,7 +11,7 @@ export function usageRead(environment, read) {
     return answer;
 }
 
-// what `usage show` answers to a window: its value, kept when a later read fails, and justification it failed
+// what `usage show` answers to a window: its value, kept when a later read fails, and why it failed
 export function useUsage() {
     const context = useWindow();
     const value = ref(null);
