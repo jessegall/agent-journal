@@ -293,6 +293,12 @@ test("process events refresh the queue and output events refresh only an open ou
     expect(read.mock.calls.filter(([line]) => line[0] === "output")).toHaveLength(2);
 });
 
+test("the queue window declares the process, output and setting events it follows, so its list and open output update live", () => {
+    const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
+    expect(module).toMatch(/WINDOW_EVENTS = \["process\.\*", "output\.\*"\]/);
+    expect(module).toMatch(/WindowDeclaration\("processes\.queue-body", "Process queue",[\s\S]*?events=\[\*WINDOW_EVENTS, "setting\.\*"\]\)/);
+});
+
 test("the queue is named Process queue in its window and its inspector, and its window may read the pages of an output it opens", () => {
     const module = readFileSync(resolve(__dirname, "../../core/modules/processes/processes_module.py"), "utf8");
     const inspector = readFileSync(resolve(__dirname, "../../core/modules/processes/support/queue_inspector.py"), "utf8");
