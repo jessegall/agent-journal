@@ -210,7 +210,10 @@ class ClaudeCodeProvider(Provider):
 
     def context_window(self, home: JournalHome, session: str) -> ContextWindow:
         path = home.status_file(session)
-        return ContextWindow.parsed(StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {})
+        if not path.is_file():
+            return ContextWindow(None, None)
+        version = FileAccess.shared().version(path)
+        return ContextWindow.parsed(StatusFileFields.read(path, version), version.modified_timestamp())
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))
