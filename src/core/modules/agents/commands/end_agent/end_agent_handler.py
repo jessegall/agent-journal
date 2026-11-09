@@ -5,7 +5,7 @@ from core.base.command.completed_command_error import CompletedCommandError
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
-from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.agents.support.current_agent_policy import CurrentAgentPolicy
 
 
 class EndAgentHandler(Handler[EndAgent, Agent]):
@@ -14,7 +14,7 @@ class EndAgentHandler(Handler[EndAgent, Agent]):
     command = EndAgent
     runs_once = True
 
-    def __init__(self, rows: EventRows, repository: Repository, suites: SuiteChoice) -> None:
+    def __init__(self, rows: EventRows, repository: Repository, suites: CurrentAgentPolicy) -> None:
         self.rows, self.repository, self.suites = rows, repository, suites
 
     def handle(self, command: EndAgent, context: Context) -> Agent:

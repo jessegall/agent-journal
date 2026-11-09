@@ -1,12 +1,6 @@
 src/core/__init__.py: the file is in no layer
 src/core/journal.py: the file is in no layer
 src/core/modules/__init__.py: the file is in no layer
-src/core/modules/agents/commands/bind_agent_session/bind_agent_session_handler.py imports core module drivers, which core module agents may not use
-src/core/modules/agents/commands/end_agent/end_agent_handler.py imports core module drivers, which core module agents may not use
-src/core/modules/agents/commands/end_replaced_main/end_replaced_main_handler.py imports core module drivers, which core module agents may not use
-src/core/modules/agents/commands/record_agent_launch_failure/record_agent_launch_failure_handler.py imports core module drivers, which core module agents may not use
-src/core/modules/agents/commands/stop_agent/stop_agent_handler.py imports core module drivers, which core module agents may not use
-src/core/modules/agents/listeners/instruction_imports_listener.py imports core module drivers, which core module agents may not use
 src/core/modules/chat/guards/agent_chat_guard.py imports core module agents, which core module chat may not use
 src/core/modules/developer/commands/send_exception_line/send_exception_line_handler.py imports core module drivers, which core module developer may not use
 src/core/modules/developer/models/hook_request.py imports core module drivers, which core module developer may not use
