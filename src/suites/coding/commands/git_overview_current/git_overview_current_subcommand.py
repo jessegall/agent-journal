@@ -2,11 +2,12 @@ from argparse import Namespace
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
+from core.base.subcommand.overview_command import OverviewCommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.support.project_git import ProjectGit
 
 
-class GitOverviewCurrentSubcommand(ReadSubcommand[str]):
+class GitOverviewCurrentSubcommand(OverviewCommand, ReadSubcommand[str]):
     """`journal git-overview current`: the branch the environment's checkout is on."""
 
     cli_name = "git-overview"

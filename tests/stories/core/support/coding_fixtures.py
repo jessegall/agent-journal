@@ -127,4 +127,4 @@ class BuilderWithReadTask(StoryFixture):
         story.run("task overview 1", actor=story.agent)
 
     def expect(self, story) -> None:
-        story.expect_success("task overview 1", "task 1: Fix the cart", actor=story.agent)
+        story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
