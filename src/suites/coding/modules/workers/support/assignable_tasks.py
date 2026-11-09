@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 

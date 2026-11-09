@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 ABSTRACT_LIMIT_CHARACTERS = 200
 DOCUMENT_TITLE_LIMIT_CHARACTERS = 200

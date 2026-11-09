@@ -6,7 +6,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.model.model import Model
 from core.base.model.table import Table, indefinite_article
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 RULE_PREFIX = "rule: "
 UNIQUE_COLUMNS = re.compile(r"UNIQUE constraint failed: (.+)")

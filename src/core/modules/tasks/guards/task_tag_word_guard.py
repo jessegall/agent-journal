@@ -3,7 +3,7 @@ from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task_tag import TaskTag
 from core.modules.tasks.models.task_tag_word import TaskTagWord
 from core.modules.tasks.support.task_tag_confirmation import TaskTagConfirmation

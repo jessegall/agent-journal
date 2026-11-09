@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.model.model import Model
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.library.commands.merge_library_item.merge_library_item import MergeLibraryItem
 from core.modules.library.commands.choose_library_version.choose_library_version import ChooseLibraryVersion
 from core.modules.library.models.enums.kept_side import KeptSide

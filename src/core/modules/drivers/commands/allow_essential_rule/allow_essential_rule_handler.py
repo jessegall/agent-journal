@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule import AllowEssentialRule
 from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS

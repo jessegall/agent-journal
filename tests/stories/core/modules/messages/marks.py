@@ -1,6 +1,6 @@
 from tests.stories.core.modules.chat.support.v4_looks import FILED, SUMMARY, expect_declared_appearance
 from core.base.command.bus import Bus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 import pytest
 
 from core.modules.chat.commands.show_mark.show_mark import ShowMark

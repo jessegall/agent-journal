@@ -6,7 +6,7 @@ import re
 
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 ROW_TRIGGER = "row"

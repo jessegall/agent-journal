@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from dataclasses import replace
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE

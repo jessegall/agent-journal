@@ -6,7 +6,7 @@ from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.page import Page
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.recorded_refusal import RecordedRefusal
 from core.base.query.conditions.prefix import Prefix
 from core.base.query.select import Select

@@ -3,7 +3,7 @@ from core.base.change.changed import Changed
 from core.base.change.deleted import Deleted
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.commands.answer_agent_approval.answer_agent_approval import AnswerAgentApproval
 

@@ -8,7 +8,7 @@ from core.base.database.database import Database
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from server.viewer.share_events import ShareEvents
 from server.viewer.shared_row import SharedRow
 from server.viewer.events_request import EventsRequest

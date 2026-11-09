@@ -5,7 +5,7 @@ import shlex
 import pytest
 
 from core.base.file_access import FileAccess
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture

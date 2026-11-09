@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.mcp.commands.give_server_key.give_server_key import GiveServerKey
 from core.modules.mcp.models.enums.server_auth import ServerAuth
 from core.modules.mcp.models.mcp_server import McpServer

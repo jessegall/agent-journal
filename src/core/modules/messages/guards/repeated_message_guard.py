@@ -2,7 +2,7 @@ from core.base.actor_type import ActorType
 from core.base.change.created import Created
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.messages.commands.send_agent_message.send_agent_message import SendAgentMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message

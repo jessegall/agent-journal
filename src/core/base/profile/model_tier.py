@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 class ModelTier(StrEnum):

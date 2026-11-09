@@ -3,7 +3,7 @@ from collections.abc import Mapping
 
 from core.base.access import Access
 from core.base.profile.model_tier import ModelTier
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping, is_tuple
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_text import ProfileText

@@ -9,7 +9,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.queries.hook_call_query import COMPACTION_LIMIT_SECONDS

@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.database.database import Database
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.commands.end_agent.end_agent import EndAgent

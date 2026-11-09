@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.mcp.models.enums.server_auth import ServerAuth
 from core.modules.mcp.support.server_suggestion import ServerSuggestion
 

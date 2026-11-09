@@ -6,7 +6,7 @@ from core.base.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart
 from core.modules.documents.conditions.link_counterparts import LinkCounterparts

@@ -1,7 +1,7 @@
 from core.base.skill.skill_contents import SkillContents
 from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.argument_alias import declare_argument_alias
 from core.base.subcommand.read_subcommand import ReadSubcommand

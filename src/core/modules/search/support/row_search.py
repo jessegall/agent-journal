@@ -7,7 +7,7 @@ from core.base.query.conditions.excluding import Excluding
 from core.base.query.conditions.prefix import Prefix
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.search.support.search_hit import SearchHit
 from core.modules.search.support.search_result import SearchResult

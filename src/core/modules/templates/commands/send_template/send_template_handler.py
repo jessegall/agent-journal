@@ -6,7 +6,7 @@ from core.base.command.move_row import MoveRow
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.documents.commands.comment_text.comment_text import CommentText
 from core.modules.drivers.support.active_modules import ActiveModules
 from core.modules.messages.models.message import Message

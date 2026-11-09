@@ -5,7 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger

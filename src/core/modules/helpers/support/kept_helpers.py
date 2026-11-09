@@ -4,7 +4,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob

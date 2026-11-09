@@ -1,5 +1,5 @@
 from core.base.command.context import Context
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE

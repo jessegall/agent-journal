@@ -1,5 +1,5 @@
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.report import Report
 from core.modules.plans.models.plan import Plan

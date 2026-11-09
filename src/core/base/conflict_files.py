@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 IGNORED_FOLDERS = frozenset({".git", ".journal", ".venv", "node_modules", "__pycache__"})
 MARKER_PREFIXES = (b"<" * 7, b">" * 7, b"|" * 7)

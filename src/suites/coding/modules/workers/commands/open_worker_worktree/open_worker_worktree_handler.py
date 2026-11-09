@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.repository.repository import Repository
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree

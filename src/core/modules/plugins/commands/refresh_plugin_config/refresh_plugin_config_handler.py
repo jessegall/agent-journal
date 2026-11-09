@@ -10,7 +10,7 @@ from core.base.journal_home import JournalHome
 from core.base.json_pointer import JsonPointer
 from core.base.json_schema import JsonSchema
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.skill.skill_digest import SkillDigest
 from core.base.type_guards import is_object_mapping

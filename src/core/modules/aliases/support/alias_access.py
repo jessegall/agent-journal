@@ -2,7 +2,7 @@ from core.base.actor_type import ActorType
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.aliases.models.alias import Alias
 from core.modules.plugins.models.plugin import Plugin

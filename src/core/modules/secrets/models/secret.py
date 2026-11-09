@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.secrets.models.enums.secret_type import SecretType
 from core.modules.secrets.models.support.secret_field import SecretField

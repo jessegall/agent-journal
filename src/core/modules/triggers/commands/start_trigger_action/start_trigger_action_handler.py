@@ -5,7 +5,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process

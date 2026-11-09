@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.setting_reader import SettingReader

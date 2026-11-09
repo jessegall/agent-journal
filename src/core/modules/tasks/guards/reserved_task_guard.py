@@ -4,7 +4,7 @@ from core.base.change.moved import Moved
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task

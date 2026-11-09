@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.driver.essential_allowances import EssentialAllowances
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
 from core.base.caller.caller import Caller

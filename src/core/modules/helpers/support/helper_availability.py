@@ -1,6 +1,6 @@
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_start_state import HelperStartState

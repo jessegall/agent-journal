@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Self
 import re
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.type_guards import is_list
 
 

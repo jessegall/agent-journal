@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from urllib.parse import urlsplit
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 ADDRESS_SETTING = "journal.core.library.address"
 DEFAULT_PORT = 8740

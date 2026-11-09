@@ -10,7 +10,7 @@ from core.base.guard.guard import Guard
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository

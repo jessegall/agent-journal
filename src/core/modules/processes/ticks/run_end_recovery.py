@@ -3,7 +3,7 @@ from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.container import Container
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.process_setting import ProcessSetting

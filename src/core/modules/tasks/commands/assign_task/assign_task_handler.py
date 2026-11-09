@@ -3,7 +3,7 @@ from dataclasses import replace
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.commands.assign_task.assign_task import AssignTask

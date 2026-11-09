@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.completed_command_error import CompletedCommandError
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock
 from core.modules.drivers.models.agent_block import AgentBlock

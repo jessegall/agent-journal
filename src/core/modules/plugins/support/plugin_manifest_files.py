@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.version_numbers import VersionNumbers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 MANIFEST_FILE = "journal-plugin.json"
 VERSIONED_MANIFEST = re.compile(r"journal-plugin\.(\d+(?:\.\d+)*)\.json")

@@ -4,7 +4,7 @@ from datetime import timedelta
 from core.base.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.timestamp import Timestamp
 from core.modules.triggers.commands.schedule_trigger.schedule_trigger import ScheduleTrigger

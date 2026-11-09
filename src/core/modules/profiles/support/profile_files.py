@@ -9,7 +9,7 @@ from core.base.kept_file_text import KeptFileText
 from core.base.journal_home import JournalHome
 from core.base.profile.agent_profile import AgentProfile
 from core.base.profile.profile_name import PROFILE_NAME
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.text_digest import TextDigest
 from core.modules.profiles.support.profile_format import ProfileFormat

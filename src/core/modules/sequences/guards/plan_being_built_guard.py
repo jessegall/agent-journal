@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
 from core.base.query.conditions.is_null import IsNull
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 from core.modules.plans.models.plan import Plan
 from core.modules.sequences.models.sequence import Sequence

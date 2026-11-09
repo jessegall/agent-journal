@@ -7,7 +7,7 @@ from core.base.cli.console import Console
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.models.process import Process
 from core.modules.messages.support.work_sources import WorkSources

@@ -14,7 +14,7 @@ from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
 from core.base.module.module_error import ModuleError
 from core.base.module.module_removal import ModuleRemoval
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.subcommand.output import Output
 

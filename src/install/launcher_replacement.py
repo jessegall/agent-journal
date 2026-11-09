@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 REPLACEMENT_LIMIT_SECONDS = 12
 

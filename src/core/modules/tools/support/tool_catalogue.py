@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tools.support.tool_definition import ToolDefinition
 from core.modules.tools.support.tool_setting import GRAPHIFY_SETTINGS
 

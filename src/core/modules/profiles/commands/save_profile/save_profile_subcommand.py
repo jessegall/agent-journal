@@ -6,7 +6,7 @@ from core.base.profile.model_tier import ModelTier
 from core.base.caller.caller import Caller
 from core.base.profile.agent_profile import AgentProfile
 from core.base.provider.providers import Providers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.profiles.commands.save_profile.save_profile import SaveProfile

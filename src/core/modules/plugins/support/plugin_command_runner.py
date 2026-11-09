@@ -12,7 +12,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.model.event_form import EventForm
 from core.base.project_reads import ProjectReads
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.base.script_stop import ScriptStop
 from core.modules.agents.models.agent import Agent

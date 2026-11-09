@@ -11,7 +11,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.documents.support.row_comments import RowComments

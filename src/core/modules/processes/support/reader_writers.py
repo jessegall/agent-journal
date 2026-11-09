@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.reader import Reader

@@ -30,7 +30,7 @@ from core.base.provider.transcript_row import TranscriptRow
 from core.base.provider.transcript_tail import TranscriptTail
 from core.base.provider.transcript_entry import TranscriptEntry
 from core.base.timestamp import Timestamp
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 class Provider(ABC):

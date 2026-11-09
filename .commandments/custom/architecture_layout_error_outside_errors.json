@@ -142,9 +142,6 @@
                 "file": "src/core/base/recorded_refusal.py"
             },
             {
-                "file": "src/core/base/refusal.py"
-            },
-            {
                 "file": "src/core/base/registry/lazy_load_error.py"
             },
             {

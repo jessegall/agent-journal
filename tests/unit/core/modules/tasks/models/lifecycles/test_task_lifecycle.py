@@ -9,7 +9,7 @@ from core.base.command.context import Context
 from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.model.state_book import StateBook
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle

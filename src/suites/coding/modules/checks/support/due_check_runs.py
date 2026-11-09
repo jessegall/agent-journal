@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.periodic_checks import PeriodicChecks
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.checks.commands.record_check_run.record_check_run import RecordCheckRun
 from suites.coding.modules.checks.commands.support.check_progress import CheckProgress
 from suites.coding.modules.checks.commands.support.check_runner import CheckRunner

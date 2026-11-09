@@ -1,7 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.triggers.models.enums.trigger_extra_action_type import TriggerExtraActionType
 
 WEB_LIMIT_SECONDS = "10"

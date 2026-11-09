@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 
 SEARCH_DAYS = 366

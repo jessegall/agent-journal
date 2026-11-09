@@ -1,7 +1,7 @@
 from core.base.container import Container
 from core.base.library.library_share import LibraryShare
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 
 

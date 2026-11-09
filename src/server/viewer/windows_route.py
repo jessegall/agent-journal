@@ -5,7 +5,7 @@ from core.base.database.database import Database
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.inspector_defaults import InspectorDefaults
 from core.base.registry.inspector_listing import InspectorListing
 from core.base.registry.registry import Registry

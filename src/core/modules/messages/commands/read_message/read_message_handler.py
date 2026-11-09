@@ -5,7 +5,7 @@ from core.base.repository.repository import Repository
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.messages.models.message import Message
 from core.base.actor_type import ActorType
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.work_sources import WorkSources
 

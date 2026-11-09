@@ -8,7 +8,7 @@ import pytest
 
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.unknown_program_error import UnknownProgramError
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.helpers.support.program_states import ProgramStates
 

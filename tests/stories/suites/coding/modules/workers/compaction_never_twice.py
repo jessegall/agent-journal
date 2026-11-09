@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import LAUNCHER_MISSING, TerminalTyping
 from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE as COMPACT
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS

@@ -8,7 +8,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.timestamp import Timestamp
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.scopes import Scopes
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent

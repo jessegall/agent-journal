@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.documents.support.outline import Outline
 
 

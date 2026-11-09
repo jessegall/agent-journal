@@ -1,6 +1,6 @@
 from suites.coding.modules.workers.support.worker_split_problem import WorkerSplitProblem
 from core.base.helper_type_book import HelperTypeBook
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output

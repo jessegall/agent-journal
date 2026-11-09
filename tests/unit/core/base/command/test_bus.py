@@ -28,7 +28,7 @@ from core.base.dotted_path.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.command.test_commands import MakeItem

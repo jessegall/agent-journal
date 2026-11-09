@@ -1,5 +1,5 @@
 from core.base.agent_role import AgentRole
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
 

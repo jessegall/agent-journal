@@ -1,6 +1,6 @@
 from core.base.private.secret_values import SecretValues
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.documents.support.mention_refs import MentionRefs
 from core.modules.library.models.library_copy import LibraryCopy

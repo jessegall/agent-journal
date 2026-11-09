@@ -3,7 +3,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand

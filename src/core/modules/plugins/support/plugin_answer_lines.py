@@ -9,7 +9,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.outside_runs import OutsideRuns
 from core.base.module.module_actors import ModuleActors
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_answer import MOST_COMMAND_LINES
 from core.modules.plugins.support.plugin_code_faults import PLUGIN_CODE_FAULTS

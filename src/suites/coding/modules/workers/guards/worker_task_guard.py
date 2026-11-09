@@ -1,6 +1,6 @@
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.modules.tasks.queries.task_query import TaskQuery

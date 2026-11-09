@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process

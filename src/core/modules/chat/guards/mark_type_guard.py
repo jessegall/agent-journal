@@ -1,6 +1,6 @@
 from core.base.guard.guard import Guard
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.models.chat_mark import ChatMark

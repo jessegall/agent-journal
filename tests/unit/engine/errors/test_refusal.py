@@ -1,6 +1,6 @@
 from core.base.guard.guard_refusal import GuardRefusal
 from engine.errors.missing_rows_error import MissingRowsError
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 def test_a_refusal_says_its_reason_and_the_line_that_works():

@@ -6,7 +6,7 @@ from core.base.model.tables import Tables
 from core.base.query.query import Query
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.less import Less
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.replaced_rows import replaced_rows
 

@@ -1,5 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.conditions.dependency_chain import DependencyChain
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.queries.task_query import TaskQuery

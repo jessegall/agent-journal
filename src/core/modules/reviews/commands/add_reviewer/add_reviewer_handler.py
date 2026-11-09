@@ -4,7 +4,7 @@ from core.base.helper_role import HelperRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.reviews.commands.add_reviewer.add_reviewer import AddReviewer

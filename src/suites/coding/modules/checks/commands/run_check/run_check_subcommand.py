@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.command.bus import Bus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.checks.commands.record_check_run.record_check_run import RecordCheckRun

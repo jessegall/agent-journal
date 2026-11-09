@@ -6,7 +6,7 @@ from pathlib import Path
 
 from core.base.profile.agent_profile import AgentProfile
 from core.base.provider.providers import Providers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.helpers.support.agent_admission import AgentAdmission

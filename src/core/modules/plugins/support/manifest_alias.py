@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from collections.abc import Sequence
 
 from core.base.driver.command_category import CommandCategory
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.type_guards import is_mapping
 
 
