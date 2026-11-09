@@ -1,23 +1,29 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, DiffCard, FormField, ModelPicker, Segmented, SidePanel, TextArea, TextInput} from "@journal/window-kit";
+import {Btn, DiffCard, FormField, InnerTabs, Notice, SidePanel, TextArea, TextInput} from "@journal/window-kit";
+import ProfileAboutTab from "./ProfileAboutTab.vue";
+import ProfileModelTab from "./ProfileModelTab.vue";
 import ProfileSkillToggles from "./ProfileSkillToggles.vue";
 
-const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}, programs: {type: Array, required: true}});
+const props = defineProps({profile: {type: Object, required: true}, used: {type: String, default: ""}, types: {type: Array, default: () => []}, programs: {type: Array, required: true}, notice: {type: String, default: ""}, failure: {type: String, default: ""}});
 const emit = defineEmits(["close", "save", "reset"]);
 
 const WRITING = "writing";
-const TIERS = [{key: "", label: "Profile models"}, {key: "fast", label: "Fast"}, {key: "general", label: "General"}, {key: "strongest", label: "Strongest"}];
-const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
-const programs = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
+const NAME_PATTERN = /^[a-z0-9_-]+$/i;
+const TABS = [{key: "about", label: "About"}, {key: "model", label: "Model"}, {key: "instructions", label: "Instructions"}, {key: "tools", label: "Tools"}, {key: "skills", label: "Skills", count_field: "skills"}];
+const programChoices = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
 const FIELDS = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"];
 
 const draft = ref({});
+const tab = ref(TABS[0]);
+const skillsOn = ref(null);
 watch(
     () => props.profile.name,
     () => {
-        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(","), program_models: {...props.profile.program_models}, skills: null};
+        draft.value = {name: props.profile.name, ...Object.fromEntries(FIELDS.map((key) => [key, props.profile[key]])), mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(","), program_models: {...props.profile.program_models}, skills: null, required_skills: null};
+        tab.value = TABS[0];
+        skillsOn.value = null;
     },
     {immediate: true},
 );
@@ -35,110 +41,125 @@ const compared = computed(() => {
     return [...lineRows("del", yours, journal), ...lineRows("add", journal, yours)];
 });
 const saved = computed(() => ({...props.profile, mcp_tools: props.profile.mcp_tools.join(","), fallback_programs: props.profile.fallback_programs.join(",")}));
-const dirty = computed(() => FIELDS.some((key) => JSON.stringify(draft.value[key]) !== JSON.stringify(saved.value[key])) || draft.value.skills !== null || !props.profile.name);
-const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.name || "") && draft.value.description.trim());
+const dirty = computed(() => FIELDS.some((key) => JSON.stringify(draft.value[key]) !== JSON.stringify(saved.value[key])) || draft.value.skills !== null || draft.value.required_skills !== null || !props.profile.name);
+const nameIsBad = computed(() => !props.profile.name && !NAME_PATTERN.test(draft.value.name || ""));
+const descriptionIsEmpty = computed(() => !draft.value.description.trim());
+const canSave = computed(() => dirty.value && !nameIsBad.value && !descriptionIsEmpty.value);
+const tabCounts = computed(() => (skillsOn.value === null ? {} : {skills: skillsOn.value}));
+const problems = computed(() => [props.profile.problem, ...props.profile.notes].filter(Boolean));
 </script>
 
 <template>
-    <SidePanel :title="profile.title || profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
+    <SidePanel width="wide" foot-below :title="profile.title || profile.name || 'New profile'" :abstract="profile.name ? used : 'Instructions, type and model for an agent'" @close="emit('close')">
+        <template #meta>
+            <template v-if="profile.name">
+                <div class="profile-panel-meta" data-profile-meta>
+                    <span class="profile-panel-name">{{ profile.name }}</span>
+                    <template v-if="profile.shipped"><span class="profile-panel-tag" title="Your changes are kept through updates.">Comes with the journal</span></template>
+                    <template v-if="profile.changed.length"><span class="profile-panel-tag">Changed</span></template>
+                    <template v-if="profile.problem"><span class="profile-panel-tag">Problem</span></template>
+                </div>
+            </template>
+        </template>
         <slot />
         <div class="profile-panel" data-profile-panel>
-            <template v-if="profile.title"><small>{{ profile.name }}</small></template>
-            <template v-if="!profile.name">
-                <FormField label="Name" for="profile-name" help="Letters, digits and dashes; the agent starts it by this name.">
-                    <TextInput id="profile-name" :value="draft.name" placeholder="critic" @input="draft.name = $event.target.value.trim()" />
-                </FormField>
+            <template v-if="failure">
+                <Notice tone="danger"><span role="alert" data-profile-panel-failure>{{ failure }}</span></Notice>
             </template>
-            <FormField label="Title" for="profile-title">
-                <TextInput id="profile-title" :value="draft.title" @input="draft.title = $event.target.value" />
-            </FormField>
-            <FormField label="When it is used" for="profile-description" help="The agent reads this to decide when to start it.">
-                <TextArea id="profile-description" rows="3" :value="draft.description" @input="draft.description = $event.target.value" />
-            </FormField>
-            <FormField label="Type" for="profile-type" help="The type of agent that runs this profile.">
-                <template v-if="profile.shipped">
-                    <span data-profile-type-locked>{{ pickedType?.label }}</span>
-                </template>
-                <template v-else>
-                    <Segmented data-profile-type :options="choices" :value="draft.agent_type" @pick="draft.agent_type = $event" />
-                </template>
-            </FormField>
-            <FormField label="Access" for="profile-access" help="Whether it may change files.">
-                <Segmented data-profile-access :options="accesses" :value="draft.access" @pick="draft.access = $event" />
-            </FormField>
-            <FormField label="Program" for="profile-program" help="A registered program, or the same program as the agent that starts it.">
-                <Segmented :options="programs" :value="draft.program" @pick="draft.program = $event" />
-            </FormField>
-            <template v-if="draft.program">
-                <FormField label="When it cannot start" for="profile-program-choice" help="If possible: a start uses the other program, on its model, when this one is not installed or not ready, and says so.">
-                    <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.preferred_program ? 'possible' : 'always'" @pick="draft.preferred_program = $event === 'possible'" />
-                </FormField>
-                <template v-if="draft.preferred_program">
-                    <FormField label="Programs to try instead" for="profile-fallbacks" help="Program names in the order to try them, separated by commas. Blank tries every other program.">
-                        <TextInput id="profile-fallbacks" :value="draft.fallback_programs" data-profile-fallbacks @input="draft.fallback_programs = $event.target.value" />
-                    </FormField>
-                </template>
+            <template v-else-if="notice">
+                <Notice><span data-profile-panel-notice>{{ notice }}</span></Notice>
             </template>
-            <FormField label="Model tier" for="profile-tier" help="Chooses a model when this profile has no named model for the program.">
-                <Segmented data-profile-tier :options="TIERS" :value="draft.tier || ''" @pick="draft.tier = $event || null" />
-            </FormField>
-            <template v-for="program in props.programs" :key="program.name">
-                <FormField :label="`Model on ${program.title}`" :for="`profile-model-${program.name}`" help="The least expensive model that reliably fits the work.">
-                    <ModelPicker :title="program.title" :models="program.models" inherits :value="draft.program_models[program.name] || ''" :data-profile-model="program.name" @pick="draft.program_models[program.name] = $event" />
-                </FormField>
+            <template v-for="problem in problems" :key="problem">
+                <Notice tone="wait">{{ problem }}</Notice>
             </template>
-            <FormField label="Instructions" for="profile-body" help="What it is told each time it starts, after the brief.">
-                <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />
-            </FormField>
-            <FormField label="MCP tools this profile may call" for="profile-mcp" help="Separate the names with commas.">
-                <TextInput id="profile-mcp" :value="draft.mcp_tools" @input="draft.mcp_tools = $event.target.value" />
-            </FormField>
-            <template v-if="profile.name">
-                <FormField label="Skills" help="The skills this profile's agents get. A worker's worktree holds only these, and a read-only helper in the main checkout may read only these.">
-                    <ProfileSkillToggles :profile="profile.name" :chosen="draft.skills" @change="draft.skills = $event" />
-                </FormField>
-            </template>
-            <label class="profile-panel-check"><input v-model="draft.independent" type="checkbox" data-profile-independent /> Must judge fresh</label>
             <template v-if="profile.module_text_changed">
-                <p class="profile-panel-note">Text changed: the journal's instructions have a new version.</p>
-                <Btn variant="ghost" small data-profile-compare @click="comparing = !comparing">Compare</Btn>
+                <Notice>
+                    <span class="profile-panel-changed">
+                        <span>Text changed: the journal's instructions have a new version.</span>
+                        <Btn variant="ghost" small data-profile-compare @click="comparing = !comparing">Compare</Btn>
+                    </span>
+                </Notice>
                 <template v-if="comparing">
                     <DiffCard path="Instructions" change="edit" :added="compared.filter((row) => row.line_type === 'add').length" :removed="compared.filter((row) => row.line_type === 'del').length" at="" :rows="compared" data-profile-diff />
                 </template>
             </template>
-            <template v-if="profile.shipped">
-                <p class="profile-panel-note">This comes with the journal. Your changes are kept through updates.</p>
-            </template>
+            <InnerTabs :tabs="TABS" :active="tab" :answer="tabCounts" @choose="tab = $event" />
+            <ProfileAboutTab v-show="tab.key === 'about'" v-model:draft="draft" :profile="profile" :choices="choices" :accesses="accesses" :picked-type="pickedType" :name-is-bad="nameIsBad" :description-is-empty="descriptionIsEmpty" />
+            <ProfileModelTab v-show="tab.key === 'model'" v-model:draft="draft" :programs="programs" :program-choices="programChoices" />
+            <div v-show="tab.key === 'instructions'" class="profile-panel-tab" data-profile-tab="instructions">
+                <FormField label="Instructions" for="profile-body" help="What it is told each time it starts, after the brief.">
+                    <TextArea id="profile-body" rows="16" :value="draft.body" @input="draft.body = $event.target.value" />
+                </FormField>
+            </div>
+            <div v-show="tab.key === 'tools'" class="profile-panel-tab" data-profile-tab="tools">
+                <FormField label="MCP tools this profile may call" for="profile-mcp" help="Separate the names with commas.">
+                    <TextInput id="profile-mcp" :value="draft.mcp_tools" @input="draft.mcp_tools = $event.target.value" />
+                </FormField>
+            </div>
+            <div v-show="tab.key === 'skills'" class="profile-panel-tab" data-profile-tab="skills">
+                <template v-if="profile.name">
+                    <ProfileSkillToggles :profile="profile.name" :chosen="draft.skills" :required-chosen="draft.required_skills" @change="draft.skills = $event" @change-required="draft.required_skills = $event" @count="skillsOn = $event" />
+                </template>
+                <template v-else>
+                    <p class="profile-panel-reason">Save the profile first, then choose its skills.</p>
+                </template>
+            </div>
         </div>
         <template #foot>
+            <Btn variant="ghost" small data-profile-cancel @click="emit('close')">Cancel</Btn>
             <template v-if="profile.changed.length || profile.problem">
                 <Btn variant="ghost" small data-profile-reset @click="emit('reset', profile)">Use the journal's version</Btn>
             </template>
             <span class="profile-panel-grow" />
-            <Btn variant="ghost" small data-profile-cancel @click="emit('close')">Cancel</Btn>
+            <template v-if="dirty && profile.name">
+                <span class="profile-panel-unsaved" data-profile-unsaved>Unsaved changes</span>
+            </template>
             <Btn variant="primary" small :disabled="!canSave" data-profile-save @click="emit('save', profile, draft)">Save</Btn>
         </template>
     </SidePanel>
 </template>
 
 <style scoped>
-.profile-panel {
+.profile-panel,
+.profile-panel-tab {
     display: flex;
     flex-direction: column;
     gap: 14px;
 }
 
-.profile-panel-note {
-    margin: 0;
-    color: var(--text-3);
-    font-size: 12.5px;
+.profile-panel-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin-top: 8px;
 }
 
-.profile-panel-check {
+.profile-panel-name {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.profile-panel-tag {
+    padding: 0 5px;
+    border: 1px solid var(--border-2);
+    border-radius: 5px;
+    color: var(--text-3);
+    font-size: 10px;
+}
+
+.profile-panel-changed {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
-    font-size: 13px;
+    justify-content: space-between;
+}
+
+.profile-panel-reason,
+.profile-panel-unsaved {
+    margin: 0;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .profile-panel-grow {

@@ -13,6 +13,7 @@ from core.modules.profiles.commands.save_profile.save_profile import SaveProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_format import ProfileFormat
 from core.modules.profiles.support.profile_problem import ProfileProblem
+from core.modules.skills.support.profile_skills import ProfileSkills
 
 
 class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
@@ -22,8 +23,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
     name = "save"
     outward = True
 
-    def __init__(self, files: ProfileFiles, providers: Providers) -> None:
-        self.files, self.providers = files, providers
+    def __init__(self, files: ProfileFiles, providers: Providers, skills: ProfileSkills) -> None:
+        self.files, self.providers, self.skills = files, providers, skills
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("profile_name")
@@ -38,6 +39,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
         parser.add_argument("--independent", action=BooleanOptionalAction, default=None)
         parser.add_argument("--keeps-project-instructions", dest="uses_project_instructions", action=BooleanOptionalAction, default=None, help="a helper's own checkout keeps the project's instruction files beside the ones written for this profile")
         parser.add_argument("--skills", help="the skill folders the profile's agents get, a comma list or a JSON list; blank takes the skills of the profile's type")
+        parser.add_argument("--required-skills", help="the skills of this profile its agents must read at the start, a comma list or a JSON list; blank requires none")
         parser.add_argument("--injections", help='JSON naming each injection into the instruction files with true or false, such as {"journal": false}')
         parser.add_argument("--program-if-possible", dest="preferred_program", action=BooleanOptionalAction, default=None, help="start on the other program when this one cannot start")
 
@@ -68,7 +70,8 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             model = getattr(arguments, f"program_model_{provider.name}")
             if model is not None:
                 profile = provider.with_profile_model(profile, model)
-        return SaveProfile(profile)
+        required = None if arguments.required_skills is None else ProfileFormat.tools(arguments.required_skills)
+        return SaveProfile(self.skills.with_required(profile, required))
 
     def registered(self, programs: tuple[str, ...]) -> tuple[str, ...]:
         available = [provider.name for provider in self.providers.all()]

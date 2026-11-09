@@ -8,6 +8,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
+from core.modules.skills.support.agent_profile_skills import AgentProfileSkills
 from core.modules.skills.support.main_agent_skills import MainAgentSkills
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
@@ -20,17 +21,17 @@ class StartSkillsListener(SkillListener[SessionStarted]):
 
     name = "skills.start"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice, main_skills: MainAgentSkills, agents: AgentRows) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills, suites: SuiteChoice, main_skills: MainAgentSkills, agents: AgentRows, profile_skills: AgentProfileSkills) -> None:
         super().__init__(bus, actors, queries, catalogue, suites, agents)
-        self.start, self.main_skills = start, main_skills
+        self.start, self.main_skills, self.profile_skills = start, main_skills, profile_skills
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
-        if self.agents.find(call.session_agent_id).role not in self.suites.agent_policy().prompt_roles:
-            return
         if call.is_resumed:
             return
-        for skill in self.skills(call):
+        takes_start_skills = self.agents.find(call.session_agent_id).role in self.suites.agent_policy().prompt_roles
+        start = self.skills(call) if takes_start_skills else []
+        for skill in dict.fromkeys((*start, *self.profile_skills.required(call.session_agent_id))):
             self.run(logged, RequireSkill(call.session_agent_id, skill))
 
     def skills(self, call: HookCall) -> list[str]:

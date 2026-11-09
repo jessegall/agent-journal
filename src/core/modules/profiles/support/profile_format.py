@@ -52,6 +52,8 @@ class ProfileFormat:
             fields["writable_folders"] = ProfileFormat.tools(fields["writable_folders"])
         if "skills" in fields:
             fields["skills"] = ProfileFormat.tools(fields["skills"])
+        if "required_skills" in fields:
+            fields["required_skills"] = ProfileFormat.tools(fields["required_skills"])
         return fields
 
     @staticmethod

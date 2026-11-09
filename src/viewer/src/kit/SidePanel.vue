@@ -13,6 +13,7 @@ const props = defineProps({
     depth: {type: Number, default: 0},
     over: {type: Boolean, default: false},
     closeLabel: {type: String, default: "Close the panel"},
+    footBelow: {type: Boolean, default: false},
 });
 const emit = defineEmits(["close", "dismiss"]);
 const {visible, close, closed} = closing(emit, props);
@@ -31,11 +32,12 @@ const layer = stacking(visible);
                                 <template v-if="abstract">
                                     <TextDisplay class="abstract" :text="abstract" />
                                 </template>
+                                <slot name="meta" />
                             </div>
                             <slot name="actions" />
                             <CloseButton :title="closeLabel" @click="close" />
                         </header>
-                        <template v-if="$slots.foot">
+                        <template v-if="$slots.foot && !footBelow">
                             <InspectorActions>
                                 <slot name="foot" />
                             </InspectorActions>
@@ -43,6 +45,11 @@ const layer = stacking(visible);
                         <div class="body">
                             <slot />
                         </div>
+                        <template v-if="$slots.foot && footBelow">
+                            <InspectorActions class="below">
+                                <slot name="foot" />
+                            </InspectorActions>
+                        </template>
                     </template>
                     <template v-else>
                         <slot />
@@ -160,6 +167,11 @@ h2 {
     color: var(--text-2);
     font-size: 12.5px;
     line-height: 1.45;
+}
+
+.below {
+    border-top: 1px solid var(--border);
+    border-bottom: 0;
 }
 
 .body {
