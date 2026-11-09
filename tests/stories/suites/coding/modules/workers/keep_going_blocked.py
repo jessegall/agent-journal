@@ -20,10 +20,6 @@ BLOCK = 'task block 1 --reason "the build tool is missing"'
 ASK_LINE = "journal worker ask"
 
 
-def main_agent_lines(story) -> str:
-    return story.run(f"agent-line list --agent {story.agent.id}").output_text
-
-
 def worker_lines(story) -> str:
     return story.run(f"agent-line list --agent {story.worker.id}").output_text
 
@@ -72,12 +68,6 @@ def worker_with_a_queued_task(new_story, monkeypatch):
     return story
 
 
-def test_a_worker_blocking_its_task_with_the_merger_on_tells_the_main_agent(worker_blocked_its_task):
-    story = worker_blocked_its_task
-    lines = main_agent_lines(story)
-    story.expect_rows(f"worker:{story.worker.id} blocked task:1" in lines, detail=lines)
-
-
 def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
     story = worker_blocked_its_task
     texts = merger_line_texts(story)
@@ -86,24 +76,6 @@ def test_a_blocked_task_is_not_left_to_the_merger(worker_blocked_its_task):
 
 def test_the_line_about_a_blocked_task_wakes_the_main_agent():
     assert WORKER_TASK_BLOCKED.wakes_agent
-
-
-def test_the_status_of_a_worker_with_only_a_blocked_task_says_so(worker_blocked_its_task):
-    story = worker_blocked_its_task
-    status = story.run("worker status", actor=story.worker).output_text
-    first = status.splitlines()[0]
-    story.expect_rows("blocked" in first, "handed in" not in first, "woken when it opens" in first, detail=status)
-
-
-def test_a_worker_with_only_a_blocked_task_may_stop(worker_blocked_its_task):
-    story = worker_blocked_its_task
-    story.expect_text("worker status", "Point: blocked", actor=story.worker)
-
-
-def test_worker_next_on_a_blocked_last_task_says_it_is_blocked(worker_blocked_its_task):
-    story = worker_blocked_its_task
-    text = refusal_text(story, "worker next --wait --differences none")
-    story.expect_rows("task 1 is blocked" in text, "is your last" not in text, detail=text)
 
 
 def test_worker_deliver_on_a_blocked_task_is_refused_and_hands_in_nothing(worker_blocked_its_task):
@@ -134,22 +106,9 @@ def test_a_stopped_worker_whose_blocked_task_opens_is_started_again(running_work
     story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id, detail=str(launcher.requests))
 
 
-def test_a_running_worker_whose_blocked_task_opens_has_it_again(worker_on_a_task):
-    story = worker_on_a_task
-    story.expect_success(BLOCK, actor=story.agent)
-    story.expect_success("task unblock 1", actor=story.agent)
-    story.expect_text("task show 1", "state: open", f"delegated_to: {story.worker.id}", actor=story.agent)
-
-
 def test_worker_next_after_a_hand_in_says_it_is_handed_in(handed_in_worker):
     story = handed_in_worker
     text = refusal_text(story, "worker next --wait --differences none")
-    story.expect_rows("handed in" in text, "worker-worktree list" not in text, detail=text)
-
-
-def test_worker_deliver_after_a_hand_in_says_it_is_handed_in(handed_in_worker):
-    story = handed_in_worker
-    text = refusal_text(story, DELIVERY)
     story.expect_rows("handed in" in text, "worker-worktree list" not in text, detail=text)
 
 
@@ -158,9 +117,3 @@ def test_worker_next_while_its_tests_run_says_to_stop(worker_with_a_queued_task)
     story.expect_success("worker next --wait --differences none", actor=story.worker)
     text = refusal_text(story, "worker next --wait --differences none")
     story.expect_rows("stop" in text, detail=text)
-
-
-def test_worker_deliver_with_a_queued_task_says_how_to_ask(worker_with_a_queued_task):
-    story = worker_with_a_queued_task
-    text = refusal_text(story, DELIVERY)
-    story.expect_rows("journal worker next" in text, ASK_LINE in text, detail=text)

@@ -7,6 +7,9 @@ export const OPEN_VIEW = Symbol("open-view");
 export const WINDOW_CONTEXT = Symbol.for("journal.window-context");
 const DOCK_CARD = Symbol("dock-card");
 
+// the action bar of the inspector a section is drawn in, as an element: what a section adds to the bar goes in it
+export const INSPECTOR_ACTIONS = Symbol.for("journal.inspector-actions");
+
 // a window's props start being read the first time it uses them, so a window that declares none makes no request
 function withProps(context) {
     if ("props" in context) return context;

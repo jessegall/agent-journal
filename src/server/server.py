@@ -2,7 +2,6 @@ import argparse
 import math
 import os
 import resource
-from datetime import datetime, timezone
 import signal
 import sys
 import threading
@@ -12,11 +11,13 @@ from pathlib import Path
 if __name__ == "__main__":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from core.base.clock import Clock
 from core.base.container import Container
 from core.base.hosting.host_probe import HostProbe
 from core.base.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
 from core.base.hosting.hosted_start_check import HostedStartCheck
 from core.base.journal_container import opened_container, synced_database_container
+from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from core.base.log_level import LogLevel
 from core.base.refusal import Refusal
@@ -24,7 +25,6 @@ from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
-from core.base.timestamp import Timestamp
 from core.base.timing_log import TimingLog
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -81,7 +81,7 @@ CODE_CHECK_SECONDS = 10.0
 
 
 def last_port(home: JournalHome) -> int:
-    text = home.viewer_port_file.read_text().strip() if home.viewer_port_file.is_file() else ""
+    text = FileAccess.shared().read(home.viewer_port_file).strip() if home.viewer_port_file.is_file() else ""
     return int(text) if text.isdigit() else 0
 
 
@@ -114,6 +114,7 @@ def main(argv: list[str]) -> int:
     CodeFingerprint.ticked = True
     code_fingerprint, finder = CodeFingerprint(), ModuleFinder(home)
     code_version = CodeVersion(code_fingerprint, CodeFolders(finder), math.inf)
+    clock = Clock()
     files = ServerFiles(home)
     hosting = HostedFile.shared_hosting(home)
     start_check = HostedStartCheck(hosting, HostProbe(), HOSTED_FILE_PATH)
@@ -141,9 +142,9 @@ def main(argv: list[str]) -> int:
     listener_thread = ListenerThread(listener_round.run, listener_round.report, linked_threads=(urgent_thread, plugin_thread, stop_thread))
     ticker = Ticker(home, Ticker.module_handlers(finder), listener_thread.wake, queue=hook_database.queue)
     phones = PhoneSessions(home, listener_thread)
-    login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
+    login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock), SessionFile(home.viewer_sessions_file))
     reported_findings = ReportedFindings()
-    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue)
+    routes = ViewerRoutes(home, listener_thread, login, reported_findings, hook_database.queue, clock)
     inherited_viewer = waiting_server.viewer_socket() if waiting_server else None
     if hosting.is_hosted:
         viewer = ViewerSocketListener(login, routes, files.viewer_socket, hosting.mode.proxy_user, hosting.mode.public_origin, HostProbe().user_id(hosting.mode.proxy_user), inherited_viewer)
@@ -155,11 +156,11 @@ def main(argv: list[str]) -> int:
     else:
         viewer = ViewerListener(login, routes, last_port(home), inherited_socket=inherited_viewer)
         journal_door = LocalJournalDoor()
-        home.viewer_port_file.write_text(str(viewer.port))
+        FileAccess.shared().write(home.viewer_port_file, str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     plugin_services = ServerPluginServices(home)
-    backup = ServerBackup(home)
+    backup = ServerBackup(home, clock)
 
     def check_code(container: Container) -> None:
         code_version.check()
@@ -173,7 +174,7 @@ def main(argv: list[str]) -> int:
         ticker.register(TickHandler(TickInterval(seconds=SERVICES_CHECK_SECONDS), lambda container: plugin_services.follow(), "plugin services", starts_immediately=True))
         ticker.register(TickHandler(TickInterval(seconds=HEALTH_CHECK_SECONDS), lambda container: plugin_services.check_health(), "plugin health"))
     ticker.register(TickHandler(TickInterval(seconds=BACKUP_CHECK_SECONDS), lambda container: backup.follow(), "database copies", starts_immediately=True))
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel, reported_findings, journal_door),
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, clock.timestamp(), listener_thread, hook_database, viewer, tunnel, reported_findings, journal_door),
                            waiting_server.journal_socket() if waiting_server else None)
     ticker.register(TickHandler(TickInterval(seconds=SETTINGS_REFRESH_SECONDS), lambda container: server.context.request_log.refresh(container), "request log settings"))
     if waiting_server is not None:

@@ -29,9 +29,8 @@ class TaskPlans:
         for task_id in dict.fromkeys(task_ids):
             self.kept.read("phase_tasks", lambda task_id=task_id: places.get(task_id),
                            "task_id = ?", [task_id], name="plans.task_phase")
-        self.rows.prepare(Phase, [place.phase_id for place in places.values()])
-        phases = [self.rows.required(Phase, place.phase_id) for place in places.values()]
-        self.rows.prepare(Plan, [phase.plan_id for phase in phases])
+        phases = self.rows.required_by_id(Phase, [place.phase_id for place in places.values()])
+        self.rows.prepare(Plan, [phase.plan_id for phase in phases.values()])
 
     def remember(self, place: PhaseTask) -> None:
         self.kept.update("phase_tasks", lambda previous: place, "task_id = ?", [place.task_id], name="plans.task_phase")

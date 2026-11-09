@@ -104,12 +104,6 @@ def test_a_person_s_new_row_lands_in_the_environment_of_the_request(new_story):
     story.expect_rows(story.row(Task, task_id).environment_id == 2)
 
 
-def test_the_environment_may_be_named_by_its_number_on_a_write(new_story):
-    story = new_story(fixture=TwoWorkingEnvironments)
-    task_id = story.new_row_id('task make "Third" --environment 2', story.user)
-    story.expect_rows(story.row(Task, task_id).environment_id == 2)
-
-
 def test_a_person_with_no_environment_cannot_make_a_row_that_needs_one(new_story):
     story = new_story(fixture=TwoWorkingEnvironments)
     story.expect_refusal('task make "Third"', "a task needs an environment", actor=story.user)

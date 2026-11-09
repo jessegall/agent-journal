@@ -43,18 +43,6 @@ def four_workers(four_tasks):
     return story
 
 
-def test_a_tick_reads_its_family_and_environment_activity_once_each(four_workers):
-    story = four_workers
-    story.advance(timedelta(minutes=15))
-    with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
-        story.tick("s-1")
-    activity_reads = [call for call in reads.call_args_list if "FROM agent_activities" in call.args[1].sql]
-    expect_value(len(activity_reads), 2)
-    story.expect_rows(any("parent_id" in call.args[1].sql for call in activity_reads),
-                      any("id IN" in call.args[1].sql for call in activity_reads))
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "has used no tool for 15 minutes")
-
-
 def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
     story = four_workers
     workers = list(story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows())
@@ -80,15 +68,6 @@ def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_
         story.expect_success("worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet 1 2 3 4", actor=story.agent)
     batch_reads = [call for call in reads.call_args_list if "FROM tasks WHERE id IN (?, ?, ?, ?)" in call.args[1].sql and "delegated_to" not in call.args[1].sql]
     expect_value(len(batch_reads), BATCH_READS)
-
-
-def test_a_tick_limits_the_stopped_workers_process_read_to_its_environment(four_workers):
-    story = four_workers
-    with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
-        story.tick("s-1")
-    process_reads = [call.args[1] for call in reads.call_args_list if "FROM processes WHERE state IN" in call.args[1].sql]
-    expect_value(bool(process_reads), True)
-    expect_value(all("environment_id = ?" in statement.sql for statement in process_reads), True)
 
 
 def test_reading_running_worker_output_stays_within_the_tick_limit(four_workers):

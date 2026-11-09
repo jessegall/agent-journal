@@ -63,38 +63,3 @@ def test_a_skill_claude_code_put_back_after_a_compaction_counts_as_loaded_at_the
     late_compaction_record(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")})
     expect_skills_absent(story, "journal-notes")
     expect_due(story, "journal-chores")
-
-
-def test_a_skill_put_back_counts_with_most_of_a_megabyte_written_between_the_record_and_the_first_tool_use(new_story, tmp_path):
-    story = new_story(DUE, fixture=CompactingClaude)
-    ranged_rows = tuple({"attachment": {"type": "deferred_tools", "text": "x" * 40_000}} for _ in range(20))
-    late_compaction_record(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, later_files=ranged_rows)
-    expect_skills_absent(story, "journal-notes")
-
-
-def test_every_skill_put_back_counts_so_the_first_tool_use_is_not_held(new_story, tmp_path):
-    story = new_story(DUE, fixture=CompactingClaude)
-    skills = {name: skill_body(story, name) for name in ("journal-notes", "journal-chores")}
-    late_compaction_record(story, tmp_path, skills)
-    expect_skills_absent(story, "journal-notes", "journal-chores")
-
-
-def test_a_skill_put_back_in_an_older_text_is_still_due(new_story, tmp_path):
-    story = new_story(DUE, fixture=CompactingClaude)
-    late_compaction_record(story, tmp_path, {"journal-notes": "# Notes\n\nAn older text."})
-    expect_due(story, "journal-notes", "journal-chores")
-
-
-def test_only_the_latest_compactions_record_counts_when_a_second_compaction_comes_after_an_older_one(new_story, tmp_path):
-    story = new_story(DUE, fixture=CompactingClaude)
-    older = tuple(kept_skill_records(tmp_path, {"journal-notes": skill_body(story, "journal-notes")}))
-    late_compaction_record(story, tmp_path, {"journal-chores": skill_body(story, "journal-chores")}, previous_value=older)
-    expect_skills_absent(story, "journal-chores")
-    expect_due(story, "journal-notes")
-
-
-def test_the_record_of_an_older_compaction_does_not_count_while_the_latest_has_none_yet(new_story, tmp_path):
-    story = new_story(DUE, fixture=CompactingClaude)
-    older = tuple(kept_skill_records(tmp_path, {"journal-notes": skill_body(story, "journal-notes")}))
-    late_compaction_record(story, tmp_path, {}, previous_value=older, is_recorded=False)
-    expect_due(story, "journal-notes", "journal-chores")

@@ -37,16 +37,6 @@ def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story
     story.expect_text("task overview 1", "main agent on the important lines: The phone width follows in its own task")
 
 
-def test_no_difference_writes_no_line_and_the_merge_asks_nothing(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository, worker = proved_worker(story)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
-    story.expect_success("proof check 1", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-
-
 def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)

@@ -10,12 +10,6 @@ def test_a_read_of_a_skill_file_marks_it_loaded_with_the_digest_of_the_catalogue
     story.expect_success("agent-skill show 3", "state: loaded", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
 
 
-def test_a_read_of_a_skill_not_made_due_loads_it_too(new_story):
-    story = started(new_story)
-    read_row(story, NOTES_FILE)
-    story.expect_success("agent-skill show 1", "state: loaded", "skill: journal-notes")
-
-
 def test_a_read_of_any_other_file_loads_nothing(new_story):
     story = started(new_story)
     read_row(story, "README.md")

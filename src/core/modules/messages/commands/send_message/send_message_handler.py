@@ -1,5 +1,6 @@
 from core.base.metadata import Metadata
 from core.modules.messages.support.message_reactions import MessageReactions
+from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
@@ -48,6 +49,12 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         with self.scopes.row_scope(parent):
             return self.sent(command, parent, context)
 
+    def answered_agent_name(self, parent: Message | None, actor: Actor) -> str:
+        """A reply to what another agent wrote is talk between agents and names that agent; any other message names none."""
+        if parent is None or actor.type is not ActorType.AGENT or parent.type is not MessageType.AGENT or parent.session_agent_id in (None, actor.id):
+            return ""
+        return self.rows.required(Agent, parent.session_agent_id).display_name
+
     def sent(self, command: SendMessage, parent: Message | None, context: Context) -> Message:
         actor = context.actor
         target_id = command.target_agent_id
@@ -60,7 +67,8 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         message = Message(session_agent_id=actor.id if actor.type is ActorType.AGENT else None,
                           target_agent_id=self.targets.stored_id(target, target_id),
                           parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.commented_row and message_type is MessageType.USER else message_type,
-                          text=command.text, files=names, metadata=metadata, is_chat_visible=command.is_chat_visible)
+                          text=command.text, files=names, metadata=metadata, is_chat_visible=command.is_chat_visible, is_agent_text=command.is_agent_text,
+                          recipient=self.answered_agent_name(parent, actor))
         saved = self.repository.save(message, context)
         self.files.attach(saved.id, command.files)
         return saved

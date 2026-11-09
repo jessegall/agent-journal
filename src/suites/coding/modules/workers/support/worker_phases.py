@@ -1,3 +1,4 @@
+from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
 from core.base.query.conditions.among import Among
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -20,8 +21,8 @@ WAITING_TASK_STATES = (TaskState.STARTED, TaskState.TESTING)
 class WorkerPhases:
     """Groups a worker's pending tests by phase or by the configured number of tasks."""
 
-    def __init__(self, queries: Queries, plans: TaskPlans, worktrees: WorktreeQuery, proofs: ProofQuery, settings: SettingValues) -> None:
-        self.queries, self.plans, self.worktrees, self.proofs, self.settings = queries, plans, worktrees, proofs, settings
+    def __init__(self, queries: Queries, plans: TaskPlans, worktrees: WorktreeQuery, proofs: ProofQuery, settings: SettingValues, kept: KeptRows) -> None:
+        self.queries, self.plans, self.worktrees, self.proofs, self.settings, self.kept = queries, plans, worktrees, proofs, settings, kept
 
     def phase(self, task: Task) -> Phase | None:
         if not self.settings.flag(PHASE_TESTS_ENABLED):
@@ -82,7 +83,8 @@ class WorkerPhases:
         return task.state is TaskState.STARTED and self.is_grouped(task)
 
     def advanced(self, worker_id: int) -> tuple[Task, ...]:
-        testing = tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows())
+        testing = self.kept.scoped_current(lambda: tuple(self.queries.query(Task).filter(delegated_to=worker_id, state=TaskState.TESTING).oldest().all_rows()),
+                                           name=f"workers.testing_tasks:{worker_id}")
         self.plans.prepare([task.id for task in testing])
         return tuple(task for task in testing if self.is_grouped(task))
 

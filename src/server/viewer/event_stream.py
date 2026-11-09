@@ -69,7 +69,7 @@ class EventStream:
         if environment is not None:
             value["changed_ids"] = {name: [number for number in pair if type(number) is int] for name, pair in event.data.items() if name.endswith("_id")}
         if event.row_table == "links":
-            sources = []
+            sources: list[dict[str, object]] = []
             for position in (0, 1):
                 model = event.data.get("source_model", (None, None))[position]
                 number = event.data.get("source_id", (None, None))[position]

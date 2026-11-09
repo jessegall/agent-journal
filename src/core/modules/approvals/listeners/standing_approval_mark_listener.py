@@ -2,7 +2,6 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.change.changed import Changed
 from core.base.change.created import Created
 from core.base.scope.actor_scope import ActorScope
-from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_mark_type import ApprovalMarkType
 from core.modules.approvals.models.enums.approval_mark_variant import ApprovalMarkVariant

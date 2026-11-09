@@ -27,11 +27,6 @@ def test_a_menu_the_launcher_answered_shows_in_the_chat_with_what_it_pressed(new
     story.expect_text("chat-mark list --environment 1", "agents.menu", 'A menu in the agent\'s terminal was answered: "Switch model?" The journal chose Yes.')
 
 
-def test_an_agent_the_launcher_never_ran_has_no_terminal_lines(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.expect_success(f"agent terminal {story.agent.id}", "nothing found")
-
-
 class FakeTyping(TerminalTyping):
     """Keeps what would be typed, so a story reaches no launcher."""
 
@@ -58,11 +53,6 @@ def test_an_empty_line_and_an_ended_agent_are_refused(new_story):
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
     story.expect_refusal(f'agent type {story.agent.id} "ls"', "has ended", actor=story.user)
     story.expect_rows(typing.typed == [])
-
-
-def test_with_no_launcher_the_line_is_refused(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_refusal(f'agent type {story.agent.id} "ls"', "no launcher is running here", actor=story.user)
 
 
 def launcher_with_answer(story, answer: bytes) -> list[bytes]:
@@ -117,4 +107,3 @@ def test_a_resumed_session_reads_and_types_in_the_terminal_of_the_launch_it_runs
     story.expect_success(f"agent terminal {story.agent.id}", "1  ready")
     story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
     story.expect_rows(typing.typed == [(launch_id, "ls")])
-

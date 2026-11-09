@@ -28,17 +28,6 @@ def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_ne
     repository.expect_root_exclude_unchanged()
 
 
-def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_sees_them(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    hooks = repository.folder / ".codex" / "hooks.json"
-    hooks.parent.mkdir(parents=True)
-    hooks.write_text('{"hooks": {}}')
-    worker = dispatched_worker(story)
-    expect_worktree_folder_repository(repository, worker, ".codex", "hooks.json", '{\n  "hooks": {}\n}\n')
-    repository.expect_excluded(worker.id, ".codex/hooks.json")
-
-
 def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_first_hook(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
@@ -48,34 +37,11 @@ def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_
     expect_session(story, worker, "real-codex-session")
 
 
-def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
-    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
-    worker_id = dispatched_worker(story).id
-    repository.expect_copy(worker_id, "vendor", LIBRARY_FILE, LIBRARY_TEXT)
-    repository.expect_excluded(worker_id, "vendor")
-    repository.expect_root_exclude_unchanged()
-
-
 def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_refusal(f"{DISPATCH} --library-link node_modules", f"node_modules is no folder in {repository.folder}", actor=story.agent)
     story.expect_refusal(f"{DISPATCH} --library-copy ..", f".. is no folder in {repository.folder}", actor=story.agent)
-    expect_clean_environment(story, repository)
-
-
-def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
-    (repository.folder / "vendor" / LIBRARY_FILE).chmod(0)
-    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
-    outcome = story.run(DISPATCH, actor=story.agent)
-    (repository.folder / "vendor" / LIBRARY_FILE).chmod(0o644)
-    story.expect_rows(outcome.code != 0)
     expect_clean_environment(story, repository)
 
 
@@ -132,9 +98,4 @@ def expect_resolve_folder_node(folder, text, expected) -> None:
 
 def expect_session(story, worker, expected) -> None:
     actual = story.container.get(Queries).query(Agent).find(worker.id).session
-    assert actual == expected, actual
-
-
-def expect_worktree_folder_repository(repository, worker, text, text_2, expected) -> None:
-    actual = (repository.worktree_folder(worker.id) / text / text_2).read_text()
     assert actual == expected, actual

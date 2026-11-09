@@ -7,7 +7,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.commands.assign_task.assign_task import AssignTask
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES, TaskState
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.task_assignees import TaskAssignees
 
@@ -24,12 +24,10 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
     def handle(self, command: AssignTask, context: Context) -> Task:
         task = self.queries.query(Task).find(command.task_id)
         agent = self.queries.query(Agent).find(command.agent_id)
-        if agent.ended_at is not None:
-            raise Refusal(f"agent {agent.id} has ended", "journal agent list shows who is running")
-        self.assignees.check(agent)
+        self.assignees.check_running(agent)
         delegated_to = agent.id if command.reserved else None
         is_undelegated_holder = task.holder_id == agent.id and task.delegated_to is None
-        if task.state in (TaskState.OPEN, TaskState.BLOCKED) or is_undelegated_holder:
+        if task.state in UNSTARTED_STATES or is_undelegated_holder:
             return self.repository.save(replace(task, delegated_to=delegated_to), context)
         if task.state is not TaskState.STARTED:
             raise Refusal(f"task {task.id} is {task.state.value}: only an open, blocked or started task moves")

@@ -15,6 +15,7 @@ class OwnQuestionToolRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "An agent that calls its program's own tool for asking the user is refused, and told to ask through the journal"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

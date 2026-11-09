@@ -23,8 +23,18 @@ class SavedRun(StoryFixture):
         story.run_listeners()
 
 
-def saved_run(new_story):
-    story = install_runner(new_story(fixture=SavedRun))
+class SavedCheck(StoryFixture):
+    """A check the agent started that the runner has not begun yet."""
+
+    parent = UserBuilder
+
+    def steps(self, story: Story) -> None:
+        start_process(story, "make lint", category=CommandCategory.CHECK)
+        story.run_listeners()
+
+
+def saved_run(new_story, fixture=SavedRun):
+    story = install_runner(new_story(fixture=fixture))
     return story, story.row(Process, 1)
 
 
@@ -38,8 +48,13 @@ def saved(new_story):
     return saved_run(new_story)
 
 
-def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(saved):
-    story, process = saved
+@pytest.fixture(params=[SavedRun, SavedCheck], ids=["build", "check"])
+def saved_command(new_story, request):
+    return saved_run(new_story, request.param)
+
+
+def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(saved_command):
+    story, process = saved_command
     story.expect_absent(MARKS, "processes.command", actor=story.user)
     part_started(story, process)
     story.expect_text(MARKS, "processes.command", "process:1", "running", actor=story.user)

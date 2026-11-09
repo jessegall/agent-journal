@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:Compare",
+        "where": [
+            {"fileMatches": "(^|/)src/(core/modules|suites)/.+_handler\\.py$"},
+            {"any": [
+                {"all": [
+                    {"descendant": {"all": [{"is": "member-access"}, {"name": "type"}]}},
+                    {"descendant": {"all": [{"is": "member-access"}, {"nameIn": ["USER", "AGENT"]}]}}
+                ]},
+                {"all": [
+                    {"descendant": {"all": [{"is": "identifier"}, {"name": "AgentRole"}]}},
+                    {"descendant": {"all": [{"is": "member-access"}, {"name": "MAIN"}]}}
+                ]}
+            ]}
+        ],
+        "reject": [
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "actor-checked-by-hand",
+        "description": "A handler compares an actor's type with ActorType.USER or ActorType.AGENT, or an agent's role with AgentRole.MAIN, so who may run a command is decided in each handler.",
+        "rule": "Ask the actor what it is with Actor.is_agent, or let a guard or a driver rule decide who may run the command; a handler only does the work.",
+        "skill": "plain-code-words"
+    }
+}

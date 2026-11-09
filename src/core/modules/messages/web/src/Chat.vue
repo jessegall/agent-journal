@@ -1,9 +1,10 @@
 <script setup>
 import {computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
 import {useComposerHeight} from "./composerHeight.js";
+import ChatPins from "./ChatPins.vue";
 import DumpForm from "./DumpForm.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
-import {READ_RATES, coalesced, Btn, DockStack, FeedPaginator, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, PinsToggle, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, usePins, useWindow, withDayLines} from "@journal/window-kit";
+import {READ_RATES, coalesced, Btn, DockStack, FeedPaginator, FigureFloors, Icon, MarkGroup, MarkHost, MessageCard, RowList, RunningCommand, SHORT_CHAT, Skeleton, SwitchCase, VoiceFigure, arrivalQueue, arriveAtOnce, depart, dockOpening, fetchDockDeclarations, fetchMarkDeclarations, foldedMarks, interleaved, markDeclaration, reachMessages, openInChat, patched, removed, shownMarks, useWindow, withDayLines} from "@journal/window-kit";
 
 const view = useWindow();
 const {rows: messages, failure, loaded, load, loadLatest, older, act} = view.props.messages;
@@ -14,7 +15,6 @@ const {rows: allMarks, loaded: marksLoaded, older: olderMarks, loadLatest: lates
 const markFeed = view.props.marks;
 const {rows: docked} = view.props.docks;
 const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
-const {rows: pins, act: runOnPin} = view.props.pins;
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
     openQuestion.value = id;
@@ -30,7 +30,6 @@ watch(messages, () => {
     if (kept.length !== outgoing.value.length) outgoing.value = kept;
 });
 const rows = computed(() => withDayLines(foldedMarks(interleaved([...messages.value, ...outgoing.value.filter((echo) => !landed(echo))], marks.value), markDeclaration)));
-const {visible: pinned} = usePins(() => pins.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
 // the figure is the one the pane names, or by default the voice the user chose, shown as the figure settings say: always, only while the agent works, or never
@@ -71,9 +70,21 @@ const shownVoice = ref("");
 watch(figureVoice, (chosen) => {
     if (chosen) shownVoice.value = chosen;
 }, {immediate: true});
+const toolRunning = ref(false);
+const commandShown = ref(false);
+let fadeTimer = 0;
+// a finished command stays on the strip for five seconds and then gives way to the thinking word; a running one stays as long as it runs
+const COMMAND_LINGER_MS = 5000;
 const {data: toolProp, failure: toolFailure} = view.props.tool;
 watch([toolProp, toolFailure], () => {
     const tool = toolFailure.value ? {} : (toolProp.value ?? {});
+    const changed = (tool.tool ?? "") !== runningTool.value || Boolean(tool.running) !== toolRunning.value;
+    if (changed) {
+        clearTimeout(fadeTimer);
+        commandShown.value = Boolean(tool.tool);
+        if (tool.tool && !tool.running) fadeTimer = setTimeout(() => { commandShown.value = false; }, COMMAND_LINGER_MS);
+    }
+    toolRunning.value = Boolean(tool.running);
     runningTool.value = tool.tool ?? "";
     waitingFor.value = tool.wait_target ?? "";
     thinking.value = Boolean(tool.thinking);
@@ -436,35 +447,11 @@ onUnmounted(() => {
     comeIn.flush();
 });
 const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
-const linkOf = (pin) => (pin.link.startsWith("http") ? pin.link : `#open=${pin.link}`);
-// a pin that holds a ! command is a button: it types the command into the main agent's terminal through the journal
-const isCommand = (pin) => pin.link.startsWith("!");
-async function runCommand(pin) {
-    const main = await view.readKey("main-agent");
-    if (main.ok && main.value.id) await runOnPin(["agent", "type", String(main.value.id), pin.link]);
-}
 </script>
 
 <template>
     <div ref="chat" class="chat" data-figure-world>
-        <div data-pins class="pins">
-            <template v-for="pin in pinned" :key="pin.id">
-                <div class="pin">
-                    <span class="pin-dot" />
-                    <span class="pin-text">{{ pin.title }}</span>
-                    <template v-if="isCommand(pin)">
-                        <button type="button" class="pin-link" data-pin-run :title="pin.link" @click="runCommand(pin)">{{ pin.label }}</button>
-                    </template>
-                    <template v-else>
-                        <a class="pin-link" :href="linkOf(pin)" :target="pin.link.startsWith('http') ? '_blank' : undefined">{{ pin.label }}</a>
-                    </template>
-                    <button type="button" class="pin-close" data-pin-close aria-label="Close" @click="runOnPin(['pin', 'close', String(pin.id)])">
-                        <Icon name="close" :size="12" />
-                    </button>
-                </div>
-            </template>
-            <PinsToggle :pin-rows="pins" />
-        </div>
+        <ChatPins />
         <div ref="scroller" class="history" data-figure-scroll @scroll="followScroll">
           <div ref="historyContent" class="history-content">
             <template v-if="paging">
@@ -501,7 +488,7 @@ async function runCommand(pin) {
         <template v-if="view.option('floors').value">
             <FigureFloors />
         </template>
-        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="commandShown ? runningTool : ''" :idle="waitingFor ? `waiting for ${waitingFor}` : runningTool || thinking ? 'thinking' : 'idle'" /></p>
         <div data-figure-chat-foot class="chat-foot">
             <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :insides-folded="scrolledUp" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
@@ -612,58 +599,6 @@ async function runCommand(pin) {
 
 .history :deep(.mark.w-event) {
     color: var(--text-3);
-}
-
-.pins {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    /* version 4's pins run edge to edge under the tab bar: out past the pane's padding on the sides, and with no gap to the history below */
-    margin: 0 -12px -8px;
-}
-
-.pin {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--accent) 10%, var(--bg));
-    font-size: 13px;
-}
-
-.pin-dot {
-    flex: none;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-}
-
-.pin-text {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.pin-link {
-    flex: none;
-    padding: 2px 10px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    color: var(--text);
-    font-size: 12px;
-}
-
-.pin-close {
-    flex: none;
-    border: 0;
-    background: none;
-    color: var(--text-3);
-    cursor: pointer;
 }
 
 .running-strip {

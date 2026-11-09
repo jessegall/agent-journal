@@ -17,6 +17,7 @@ class DeniedProgramsRule(DriverRule):
     exempt = True
     denied_programs: ClassVar[Sequence[str]] = ()
     refusal: ClassVar[NudgeDeclaration] = PROGRAM_RESTRICTION
+    refuses_one_action = "Refuses a shell line containing any program a driver excludes"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

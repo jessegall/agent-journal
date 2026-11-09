@@ -33,3 +33,7 @@ class Command(Generic[R]):
 
     def field_values(self, exclusions: Sequence[str]) -> dict[str, object]:
         return {field.name: getattr(self, field.name) for field in fields(self) if field.name not in exclusions}
+
+
+def is_command_class(class_type: type) -> TypeIs[type[Command[object]]]:
+    return issubclass(class_type, Command)

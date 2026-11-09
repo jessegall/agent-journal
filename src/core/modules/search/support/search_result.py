@@ -1,5 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from core.base.library.library_hits import LibraryHits
 from core.modules.search.support.search_hit import SearchHit
@@ -16,6 +17,13 @@ class SearchResult:
     library: LibraryHits = LibraryHits()
     is_closest: bool = False
 
+    @classmethod
+    def restored(cls, stored: dict[str, Any]) -> "SearchResult":
+        return cls(stored["terms"], [SearchHit.restored(hit) for hit in stored["hits"]], stored["total"], is_closest=stored["is_closest"])
+
+    def stored(self) -> dict[str, object]:
+        return {"terms": list(self.terms), "total": self.total, "is_closest": self.is_closest, "hits": [hit.stored() for hit in self.hits]}
+
     def lines(self) -> list[str]:
         if not self.hits and not self.library.entries:
             return [f"nothing here holds all of: {' '.join(self.terms)}", *self.library_notice()]
@@ -28,7 +36,5 @@ class SearchResult:
         return ["the library could not be reached, so these are local results only"] if self.library.is_unreachable else []
 
     def json(self) -> dict[str, object]:
-        listed: dict[str, object] = {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in self.hits], "total": self.total}
-        if self.is_closest:
-            listed["closest"] = True
+        listed: dict[str, object] = {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in self.hits], "total": self.total, **({"closest": True} if self.is_closest else {})}
         return {**listed, "library": [hit.json() for hit in self.library.entries], "library_unreachable_error": self.library.is_unreachable} if self.library.entries or self.library.is_unreachable else listed

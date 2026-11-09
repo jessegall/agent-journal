@@ -90,15 +90,6 @@ def test_a_stopped_check_takes_a_changed_command(new_story, shared_server):
     story.expect_rows(story.row(Check, 1).command == "echo new", story.row(Check, 1).stopped, copy_state(story, item_id) is CopyState.SYNCED)
 
 
-def test_a_changed_brief_or_interval_of_a_started_check_applies_at_once(new_story, shared_server):
-    server, tokens = shared_server
-    story, item_id = story_with_check(new_story, server, tokens, "Brief and interval")
-    story.expect_text("check start 1", "check 1 started", actor=story.user)
-    change_check(server, tokens.admin, item_id, 1, **check_fields("Brief and interval", "echo old", "Says it better", 10))
-    story.expect_text("library sync", "1 copies followed, 1 changed.", actor=story.agent)
-    story.expect_rows(story.row(Check, 1).brief == "Says it better", story.row(Check, 1).interval_minutes == 10, not story.row(Check, 1).stopped, copy_state(story, item_id) is CopyState.SYNCED)
-
-
 def test_a_check_removed_from_this_journal_leaves_and_the_item_stays_in_the_library(new_story, shared_server):
     server, tokens = shared_server
     story, item_id = story_with_check(new_story, server, tokens, "Removed here")

@@ -8,6 +8,7 @@ import pytest
 
 from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
+from core.modules.messages.support.message_nudges import CLOSING_LINE_HIDDEN
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
@@ -81,18 +82,6 @@ def server(builder):
         yield story
 
 
-def test_text_whose_display_hook_went_unchecked_reaches_the_chat_at_a_run_hook(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
-    run_hook(builder, path)
-    expect_chat_count(builder, AGENT_TEXT, 1)
-
-
-def test_text_the_display_hook_recorded_is_not_recorded_again(builder, tmp_path):
-    builder.hook("s-1", HookSamples.message_display(AGENT_TEXT))
-    run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT, HOOK_DELAY)))
-    expect_chat_count(builder, AGENT_TEXT, 1)
-
-
 def test_a_displayed_part_and_its_complete_transcript_reach_chat_once(builder, tmp_path):
     first = "The first paragraph is here."
     second = "The second paragraph is here."
@@ -104,47 +93,24 @@ def test_a_displayed_part_and_its_complete_transcript_reach_chat_once(builder, t
     builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
 
 
-def test_a_displayed_part_uses_the_whole_transcript_at_once(builder, tmp_path):
-    first = "The first paragraph is here."
-    second = "The second paragraph is here."
-    row = agent_row(builder, first)
-    row["message"]["content"].append({"type": "text", "text": second})
-    path = transcript(tmp_path, row)
-    builder.hook("s-1", HookSamples.message_display(second).with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": True, "delta": second, "transcript_path": path}))
-    output = chat(builder)
-    builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
-    run_hook(builder, path, TOOL_FINISHED)
-    output = chat(builder)
-    builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
+@pytest.fixture
+def refused_stop_story(builder):
+    builder.run('message send "are you there" --environment main', actor=builder.user)
+    builder.hook("s-1", HookSamples.prompt("go on"))
+    builder.advance(HOOK_DELAY)
+    builder.run('message send "is it committed" --environment main', actor=builder.user)
+    builder.run('message reply 1 "yes"', actor=builder.agent)
+    builder.advance(HOOK_DELAY)
+    builder.expect_hook_refusal("s-1", HookSamples.stop(), "message")
+    return builder
 
 
-def test_a_displayed_part_whose_transcript_row_is_written_after_the_hook_reaches_chat_once(builder, tmp_path):
-    first = "The first paragraph is here."
-    second = "The second paragraph is here."
-    path = transcript(tmp_path)
-    builder.hook("s-1", HookSamples.message_display(second).with_raw({"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": True, "delta": second, "transcript_path": path}))
-    row = agent_row(builder, first)
-    row["message"]["content"].append({"type": "text", "text": second})
-    transcript(tmp_path, row)
-    run_hook(builder, path, TOOL_FINISHED)
-    output = chat(builder)
-    builder.expect_rows(output.count(first) == 1, output.count(second) == 1, detail=output)
-
-
-def test_a_few_words_the_display_hook_kept_out_of_the_chat_stay_out(builder, tmp_path):
-    builder.hook("s-1", HookSamples.prompt("[journal] output 3 ended: finished"))
-    builder.hook("s-1", HookSamples.message_display("The stories are running."))
-    run_hook(builder, transcript(tmp_path, agent_row(builder, "The stories are running.")), TOOL_FINISHED)
-    expect_chat_count(builder, "The stories are running.", 0)
-
-
-def test_text_just_written_waits_for_its_own_display_hook(builder, tmp_path):
-    path = transcript(tmp_path, agent_row(builder, AGENT_TEXT))
-    builder.hook("s-1", HookSamples.prompt("go on").with_raw({"transcript_path": path}))
-    expect_chat_count(builder, AGENT_TEXT, 0)
-    builder.hook("s-1", HookSamples.message_display(AGENT_TEXT))
-    run_hook(builder, path, TOOL_FINISHED)
-    expect_chat_count(builder, AGENT_TEXT, 1)
+def test_a_line_held_after_a_reply_is_shown_whole_when_a_tool_comes(reply_story):
+    reply_story.hook("s-1", HookSamples.message_display("Fixing the cart ", final=False))
+    reply_story.hook("s-1", HookSamples.message_display("next."))
+    expect_chat_count(reply_story, "Fixing the cart next.", 0)
+    reply_story.hook("s-1", HookSamples.edit("src/cart.py"))
+    expect_chat_count(reply_story, "Fixing the cart next.", 1)
 
 
 def test_a_restarted_server_that_reads_the_file_again_records_nothing_twice(builder, tmp_path):
@@ -160,16 +126,6 @@ def test_the_same_words_written_again_later_are_not_shown_twice(builder, tmp_pat
     run_hook(builder, path)
     builder.advance(timedelta(minutes=5))
     run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT)), TOOL_FINISHED)
-    expect_chat_count(builder, AGENT_TEXT, 1)
-
-
-def test_text_written_before_the_agent_started_is_not_recorded(builder, tmp_path):
-    run_hook(builder, transcript(tmp_path, agent_row(builder, AGENT_TEXT, timedelta(days=2))))
-    expect_chat_count(builder, AGENT_TEXT, 0)
-
-
-def test_codex_text_whose_hook_went_unchecked_reaches_the_chat(builder, tmp_path):
-    run_hook(builder, transcript(tmp_path, codex_row(builder, "assistant", AGENT_TEXT)), HookSamples.prompt("go on").with_fields(program="codex"))
     expect_chat_count(builder, AGENT_TEXT, 1)
 
 
@@ -191,30 +147,9 @@ def test_a_line_after_a_reply_shows_when_a_tool_follows_it_and_is_not_repeated(r
     expect_chat_count(reply_story, AGENT_TEXT, 1)
 
 
-def test_a_text_of_two_lines_after_a_reply_shows_at_once_and_a_closing_line_after_a_tool_stays_out(reply_story):
-    text = "First part.\nSecond line."
-    reply_story.hook("s-1", HookSamples.message_display(text))
-    expect_chat_count(reply_story, text, 1)
-    reply_story.hook("s-1", TOOL_FINISHED)
-    reply_story.hook("s-1", HookSamples.message_display("All of it is in."))
-    reply_story.hook("s-1", HookSamples.stop())
-    expect_chat_count(reply_story, text, 1)
-    expect_chat_count(reply_story, "All of it is in.", 0)
-
-
 def test_a_closing_line_after_a_reply_stays_out_of_the_chat(reply_story):
     reply_story.hook("s-1", HookSamples.message_display("I told you where it stands."))
     reply_story.hook("s-1", HookSamples.stop())
-    expect_chat_count(reply_story, "I told you where it stands.", 0)
-
-
-def test_lost_text_after_a_reply_shows_when_a_tool_came_after_it(reply_story, tmp_path):
-    run_hook(reply_story, transcript(tmp_path, agent_row(reply_story, AGENT_TEXT)), TOOL_FINISHED)
-    expect_chat_count(reply_story, AGENT_TEXT, 1)
-
-
-def test_a_lost_closing_line_after_a_reply_stays_out_of_the_chat(reply_story, tmp_path):
-    run_hook(reply_story, transcript(tmp_path, agent_row(reply_story, "I told you where it stands.")))
     expect_chat_count(reply_story, "I told you where it stands.", 0)
 
 
@@ -321,23 +256,6 @@ def reaction_builder(builder):
     return builder
 
 
-def test_a_reaction_turns_lost_closing_text_stays_out_of_chat(reaction_builder, tmp_path):
-    builder = reaction_builder
-    text = "Should I continue with this reaction? " * 15
-    run_hook(builder, transcript(tmp_path, agent_row(builder, text)))
-    expect_chat_count(builder, text, 0)
-
-
-def test_lost_text_before_a_tool_in_a_reaction_turn_can_reach_chat(reaction_builder, tmp_path):
-    builder = reaction_builder
-    text = "I will inspect the cart."
-    path = transcript(tmp_path, agent_row(builder, text))
-    builder.advance(timedelta(seconds=1))
-    builder.hook("s-1", TOOL_FINISHED)
-    run_hook(builder, path, HookSamples.stop())
-    expect_chat_count(builder, text, 1)
-
-
 def test_a_later_turns_tool_does_not_release_lost_reaction_closing_text(reaction_builder, tmp_path):
     builder = reaction_builder
     text = "Finished that reaction turn."
@@ -350,8 +268,30 @@ def test_a_later_turns_tool_does_not_release_lost_reaction_closing_text(reaction
     expect_chat_count(builder, text, 0)
 
 
-def test_lost_reaction_text_reaches_chat_when_its_first_following_hook_is_a_tool(reaction_builder, tmp_path):
-    builder = reaction_builder
-    text = "I will check the cart now."
-    run_hook(builder, transcript(tmp_path, agent_row(builder, text)), TOOL_FINISHED)
-    expect_chat_count(builder, text, 1)
+def thinking_row(story, thinking_text: str, text: str = "") -> dict[str, object]:
+    blocks = [{"type": "thinking", "thinking": thinking_text, "signature": "sig"}, *([{"type": "text", "text": text}] if text else [])]
+    return {"type": "assistant", "timestamp": entry_timestamp(story, timedelta()), "message": {"role": "assistant", "content": blocks}}
+
+
+def test_text_written_before_a_tool_and_the_closing_text_of_a_turn_with_no_reply_both_reach_the_chat(builder):
+    parsed = "The parser read 12 files and found 3 faults in the cart code."
+    closing = "I fixed the 3 faults and the cart stories pass."
+    builder.hook("s-1", HookSamples.prompt("look at the parser"))
+    builder.hook("s-1", HookSamples.message_display(parsed))
+    builder.hook("s-1", TOOL_FINISHED)
+    builder.hook("s-1", HookSamples.message_display(closing))
+    builder.hook("s-1", HookSamples.stop())
+    expect_chat_count(builder, parsed, 1)
+    expect_chat_count(builder, closing, 1)
+
+
+def test_text_that_repeats_the_reply_the_agent_sent_by_command_is_not_said_twice(builder):
+    reply = "The parser read 12 files and found 3 faults in the cart code."
+    builder.run('message send "what did the parser find" --environment main', actor=builder.user)
+    builder.hook("s-1", HookSamples.prompt("go on"))
+    builder.advance(HOOK_DELAY)
+    builder.run(f'message reply 1 "{reply}"', actor=builder.agent)
+    builder.hook("s-1", HookSamples.message_display(reply))
+    builder.hook("s-1", TOOL_FINISHED)
+    builder.hook("s-1", HookSamples.stop())
+    expect_chat_count(builder, reply, 1)

@@ -7,7 +7,6 @@ from core.modules.reviews.commands.abandon_review.abandon_review import AbandonR
 from core.modules.reviews.commands.end_reviewer.end_reviewer import EndReviewer
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
-from core.modules.agents.models.agent import Agent
 
 MODULE_NAME = "journal.core.reviews"
 

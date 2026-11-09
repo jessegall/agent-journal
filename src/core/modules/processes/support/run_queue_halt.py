@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 from core.base.journal_home import JournalHome
 from core.base.server_restart_state import ServerRestartState
 from core.base.file_access import FileAccess
@@ -18,11 +19,11 @@ class RunQueueHalt:
 
     @property
     def is_restarting(self) -> bool:
-        return ServerRestartState(self.home).is_restarting
+        return ServerRestartState(self.home, Clock()).is_restarting
 
     @property
     def is_update_waiting(self) -> bool:
-        return ServerRestartState(self.home).has_run_lock
+        return ServerRestartState(self.home, Clock()).has_run_lock
 
     @property
     def is_halted(self) -> bool:

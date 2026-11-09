@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 
 from core.base.database.database import Database
@@ -30,7 +30,7 @@ class WindowsRoute:
         self.home = home
 
     @contextmanager
-    def read(self, environment: str) -> Iterator[tuple[Container, Registry]]:
+    def read(self, environment: str) -> Generator[tuple[Container, Registry]]:
         container = synced_container(self.home)
         try:
             registry = container.get(Registry)

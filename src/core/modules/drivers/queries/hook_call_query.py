@@ -1,10 +1,12 @@
 from collections.abc import Sequence
+from itertools import takewhile
 from typing import Self
 
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.database.statement import Statement
 from core.base.timestamp import Timestamp
+from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables
 from core.base.query.conditions.among import Among
@@ -19,6 +21,7 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.base.driver.search_category import CODE, GRAPHIFY
 
 STOPS_READ = 20
+MOST_DISPLAYED_PARTS = 500
 TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
 TOOL_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 IDLE_LIMIT_SECONDS = 30
@@ -44,6 +47,16 @@ class HookCallQuery(Query[HookCall]):
     def last_stop_refused(self, agent_id: int) -> bool:
         stop = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().first()
         return stop is not None and stop.answer == HookAnswer.REFUSED
+
+    def refused_stop_exists(self, agent_id: int, after_at: Timestamp, cutoff_at: Timestamp) -> bool:
+        return self.agent(agent_id).filter(hook=HookEventName.STOP, answer=HookAnswer.REFUSED).matching(Greater("created_at", after_at.text)).matching(Maximum("created_at", cutoff_at.text)).exists()
+
+    def displayed_block(self, agent_id: int, event: HookEvent) -> str:
+        if not event.is_final_display:
+            return ""
+        calls = self.agent(agent_id).filter(hook=HookEventName.MESSAGE_DISPLAY).newest().limited(MOST_DISPLAYED_PARTS)
+        part_calls = takewhile(lambda call: call.displayed_part != "" and call.displayed_message_id == event.displayed_message_id, calls)
+        return "".join([*(call.displayed_part for call in reversed(list(part_calls))), event.displayed_part]).strip()
 
     def latest_turn_call(self, agent_id: int) -> HookCall | None:
         return self.kept.read_newest(self.table.name, self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().first,

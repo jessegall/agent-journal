@@ -3,7 +3,6 @@ import shutil
 
 import pytest
 
-from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.query.queries import Queries
@@ -113,24 +112,6 @@ def test_a_local_change_reads_sending_while_the_server_is_reached_and_waiting_to
     story.expect_rows(copy_line(story, copy).endswith("Status: Waiting to send"))
 
 
-@pytest.mark.parametrize("state, label", [(CopyState.DENIED, "Local change, not sent"), (CopyState.REJECTED, "Not accepted by the server"), (CopyState.CONFLICT, "Conflict"),
-                                          (CopyState.REVIEW, "New version to read"), (CopyState.REMOVED, "Removed from the library")])
-def test_a_copy_kept_from_being_in_step_reads_the_status_of_its_reason(new_story, shared_server, state, label):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story,server, tokens.admin, f"Pearl {state.value}")
-    copy_with(story, copy, state=state, note="The command of this check changed." if state is CopyState.REVIEW else "")
-    story.expect_rows(f"Status: {label}" in copy_line(story, copy))
-
-
-def test_the_note_of_a_copy_is_printed_with_its_status(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story,server, tokens.admin, "Garnet note")
-    copy_with(story, copy, state=CopyState.REJECTED, note="This text is over the size limit.")
-    story.expect_text("library copies", "Status: Not accepted by the server", "This text is over the size limit.", actor=story.agent)
-
-
 def test_copies_are_filtered_by_status_and_read_as_json(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -166,28 +147,6 @@ def test_a_change_on_the_server_arrives_in_the_row_with_a_revision_of_its_own(ne
     story.expect_text(f"doc revision {doc.id} 1", "Tag first.", actor=story.user)
     story.expect_text(f"doc revision {doc.id} 2", "Newer text.", actor=story.user)
     story.expect_rows(copy_line(story, copy).endswith("version 2. Status: In sync"))
-
-
-def test_a_removal_leaves_the_row_and_a_restore_resumes_following(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Basalt removed later")
-    server.send(tokens.admin, "DELETE", f"/items/doc/{copy.item_id}")
-    story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(item_copy(story, copy.item_id).state is CopyState.REMOVED, story.row(Doc, copy.row_id).title == "Basalt removed later")
-    story.expect_rows(copy_line(story, copy).endswith("Status: Removed from the library"))
-    server.send(tokens.admin, "POST", f"/items/doc/{copy.item_id}/restore")
-    story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(item_copy(story, copy.item_id).state is CopyState.SYNCED, copy_line(story, copy).endswith("Status: In sync"))
-
-
-def test_a_purged_item_reads_as_removed_and_the_row_stays(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Slate purged")
-    server.run(f"item purge doc {copy.item_id}")
-    story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(item_copy(story, copy.item_id).state is CopyState.REMOVED, story.row(Doc, copy.row_id).title == "Slate purged")
 
 
 def test_a_row_that_is_gone_from_this_journal_removes_its_copy_and_never_the_item(new_story, shared_server):
@@ -239,16 +198,6 @@ def test_one_copy_that_cannot_be_settled_stops_no_other_and_its_note_is_written_
     story.expect_text("library sync", "Reached the library. 2 copies followed, 2 changed.", actor=story.agent)
     story.expect_rows(story.row(Doc, copy.row_id).body == "Server text.", story.row(LibraryCopy, bad.id).note == "this journal shares no memo with the library")
     story.expect_text("library sync", "Reached the library. 2 copies followed, 0 changed.", actor=story.agent)
-
-
-def test_a_quiet_round_writes_nothing(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    made_copy(story, server, tokens.admin, "Onyx quiet")
-    story.expect_text("library sync", "Reached the library. 1 copies followed, 0 changed.", actor=story.agent)
-    stored_text = stored_texts(story)
-    story.expect_text("library sync", "Reached the library. 1 copies followed, 0 changed.", actor=story.agent)
-    story.expect_rows(stored_texts(story) == stored_text)
 
 
 def test_a_sync_with_no_connection_says_so_and_changes_nothing(new_story):

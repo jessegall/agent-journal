@@ -61,6 +61,9 @@ class SettingValues:
             raise SettingTypeError(f"{key} holds {value!r}, not a number")
         return float(value)
 
+    def seconds(self, key: str) -> Seconds:
+        return Seconds(self.number(key))
+
     def minutes(self, key: str) -> Seconds:
         return Seconds.minutes(self.number(key))
 

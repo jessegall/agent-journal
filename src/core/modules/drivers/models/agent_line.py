@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.model.session_private import SessionPrivate
@@ -17,6 +17,7 @@ class AgentLine(SessionPrivate, Model):
 
     hidden_state = AgentLineState.HIDDEN
     model_name = "agent_line"
+    events_expire = True
     cli_name = "agent-line"
     hidden_fields = frozenset(["nudge_json"])
     lifecycle = AgentLineLifecycle

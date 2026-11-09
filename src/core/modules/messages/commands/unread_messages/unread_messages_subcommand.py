@@ -8,7 +8,6 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
 from core.base.query.conditions.among import Among
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_text import MessageText
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.conditions.main_message_target import MainMessageTarget

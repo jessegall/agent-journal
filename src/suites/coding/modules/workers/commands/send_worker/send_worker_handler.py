@@ -23,6 +23,7 @@ from suites.coding.modules.workers.commands.record_worktree_libraries.record_wor
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS
 from suites.coding.modules.workers.commands.cancel_worker_opening.cancel_worker_opening import CancelWorkerOpening
+from suites.coding.modules.workers.commands.record_worktree_removal.record_worktree_removal import RecordWorktreeRemoval
 from suites.coding.modules.workers.commands.end_gone_worker.end_gone_worker import EndGoneWorker
 from suites.coding.modules.workers.commands.open_kept_worktree.open_kept_worktree import OpenKeptWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
@@ -89,6 +90,7 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         worker = self.rows.required(Agent, command.worker_id)
         self.check_job(command, worker)
         self.check_session(worker)
+        self.remove_merged(worker, actor)
         task_ids = command.task_ids
         if not task_ids and self.worktrees.worker_worktree(worker.id) is None:
             self.kept_tasks.check_recut(worker)
@@ -112,6 +114,13 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         if not self.git.conflict_files(worktree):
             self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.session_agent_id}")
         self.conflicts = tuple(self.git.sync(worktree))
+
+    def remove_merged(self, worker: Agent, actor: Actor) -> None:
+        worktree = self.worktrees.worker_worktree(worker.id)
+        if worktree is None or worktree.state is not WorktreeState.MERGED:
+            return
+        self.git.remove(self.environments.find(worker.environment_id).folder, worktree)
+        self.bus.run(RecordWorktreeRemoval(worktree.id), actor, environment_id=worker.environment_id)
 
     def job_text(self, command: SendWorker, worktree: Worktree) -> str:
         if not self.conflicts:

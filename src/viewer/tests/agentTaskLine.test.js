@@ -62,11 +62,21 @@ test("a helper's line reads Job with its question in the tooltip, and has no cou
     expect(element.querySelector("[data-agent-bar]")).toBeNull();
 });
 
-test("a row has no plan link, no Waiting or Blocked words and no pace", async () => {
-    const element = await card(worker(), {tasks: tasksOf(1, "started", 3).map((task) => ({...task, plan_id: 7})), work_status: "tests running", state: "blocked", blocked_reason: "x"});
-    expect(element.querySelector("[data-agent-plan]")).toBeNull();
+test("a row has no Waiting or Blocked words and no pace", async () => {
+    const element = await card(worker(), {tasks: tasksOf(1, "started", 3), work_status: "tests running", state: "blocked", blocked_reason: "x"});
     expect(element.querySelector("[data-agent-work-status]")).toBeNull();
     expect(element.querySelector("[data-agent-list-pace]")).toBeNull();
     expect(element.querySelector("[data-agent-title]")).not.toBeNull();
     expect(element.querySelector("[data-agent-identity]")).not.toBeNull();
+});
+
+test("after the task the row says Plan and its number, with no title, when the task is in a plan", async () => {
+    const element = await card(worker(), {tasks: tasksOf(1, "started", 3).map((task) => ({...task, plan_id: 7, plan_title: "Plan title seven"}))});
+    expect(element.querySelector("[data-agent-plan]").textContent).toBe("Plan 7");
+    expect(element.querySelector("[data-agent-task]").nextElementSibling).toBe(element.querySelector("[data-agent-plan]"));
+});
+
+test("a task in no plan shows no plan after it", async () => {
+    const element = await card(worker(), {tasks: tasksOf(1, "started", 3).map((task) => ({...task, plan_id: null, plan_title: null}))});
+    expect(element.querySelector("[data-agent-plan]")).toBeNull();
 });

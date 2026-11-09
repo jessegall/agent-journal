@@ -1,6 +1,5 @@
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
 
 from core.base.timestamp import Timestamp
 from server.viewer.shared_row import SharedRow
@@ -28,5 +27,5 @@ class ShareLinkSession:
         return cls(int(row["id"]), int(row["creator_id"]), str(row["state"]), Timestamp.parsed(str(row["expires_at"])) if row["expires_at"] else None,
                    SharedRow(str(row["row_model"]), int(row["row_id"]), int(row["environment_id"])), bool(row["comments"]), bool(row["locked"]))
 
-    def is_open(self) -> bool:
-        return self.state == ACTIVE and (self.expires_at is None or self.expires_at.value > datetime.now(timezone.utc))
+    def is_open(self, now: Timestamp) -> bool:
+        return self.state == ACTIVE and (self.expires_at is None or self.expires_at > now)

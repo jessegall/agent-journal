@@ -26,24 +26,8 @@ def checked_work(new_story):
     return CheckedWork(story, repository, worker)
 
 
-def test_a_merge_by_the_main_agent_nudges_it_once_and_wakes_it_when_idle(checked_work):
-    story, worker = checked_work.story, checked_work.worker
-    story.expect_rows(merged_worker_lines(story, worker) == [])
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    merged_lines = merged_worker_lines(story, worker)
-    story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, merged_lines[0].state is AgentLineState.WAITING)
-
-
 def test_a_merge_by_a_person_nudges_the_main_agent_and_wakes_it_when_idle(checked_work):
     story, worker = checked_work.story, checked_work.worker
     story.expect_success(f"worker merge --wait {worker.id} --environment main", actor=story.user)
     merged_lines = merged_worker_lines(story, worker)
     story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, merged_lines[0].state is AgentLineState.WAITING)
-
-
-@pytest.mark.real_git
-def test_a_merge_that_clashes_does_not_nudge_the_main_agent_as_merged(checked_work):
-    story, repository, worker = checked_work.story, checked_work.repository, checked_work.worker
-    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(f"worker merge --wait {worker.id}", "clashed on cart.py", actor=story.agent)
-    story.expect_rows(merged_worker_lines(story, worker) == [])

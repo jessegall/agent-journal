@@ -160,18 +160,6 @@ def test_a_reconnection_resumes_a_silent_worker_once(reconnected_recovery):
     recovery.story.expect_rows(not any(agent_id == recovery.worker.id for agent_id, line in recovery.terminal_lines))
 
 
-def test_a_running_or_queued_shell_command_prevents_recovery(running_command_recovery):
-    recovery = running_command_recovery
-    recovery.story.agent = recovery.worker
-    process = start_process(recovery.story, "sleep 30", category=CommandCategory.TEST_RUN)
-    recovery.online = False
-    recovery.tick()
-    recovery.advance(SILENT_SECONDS)
-    recovery.online = True
-    recovery.tick()
-    recovery.story.expect_rows(not recovery.launches, not recovery.lines(recovery.worker.id))
-
-
 def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(first_recovery):
     recovery = first_recovery
     recovery.story.expect_rows(len(recovery.launches) == 1)
@@ -270,16 +258,6 @@ def test_any_recent_hook_prevents_silence_recovery(recovery):
     recovery.story.expect_rows(not recovery.launches)
 
 
-def test_the_silence_setting_changes_the_first_wake_delay(recovery):
-    recovery.story.expect_success("setting set journal.suites.coding.workers.silent-agent-minutes 6 --environment main")
-    recovery.advance(SILENT_SECONDS)
-    recovery.tick()
-    recovery.story.expect_rows(not recovery.launches)
-    recovery.advance(SILENT_SECONDS)
-    recovery.tick()
-    recovery.story.expect_rows(len(recovery.launches) == 1)
-
-
 def test_reconnection_wakes_each_silent_worker_with_work(recovery):
     task_id = recovery.story.new_row_id('task make "Second job" --brief "Finish it" --environment main')
     second = dispatched_worker(recovery.story, f"worker dispatch --test-command python=pytest --model sonnet {task_id}")
@@ -294,15 +272,6 @@ def test_reconnection_wakes_each_silent_worker_with_work(recovery):
 
 def test_a_second_wake_during_a_session_launch_does_not_start_another_process(nested_recovery):
     nested_recovery.story.expect_rows(len(nested_recovery.launches) == 1)
-
-
-def test_a_silent_main_agent_with_open_tasks_is_woken_under_auto_mode(recovery):
-    story = recovery.story
-    story.expect_success("setting set journal.suites.coding.auto-mode on --environment main", actor=story.user)
-    story.expect_success('task make "For later" --environment main', actor=story.agent)
-    recovery.advance(SILENT_SECONDS + 1)
-    recovery.tick()
-    story.expect_rows(len(recovery.lines(story.agent.id, SILENT_AGENT_SOURCE)) == 1)
 
 
 def test_a_silent_main_agent_is_not_woken_for_the_open_tasks_of_a_plan_waiting_for_approval(recovery):

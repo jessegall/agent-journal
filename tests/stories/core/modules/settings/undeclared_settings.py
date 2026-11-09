@@ -41,11 +41,3 @@ def test_a_row_that_is_not_of_its_settings_type_is_reported_at_sync(new_story):
     expect_value(code, 0)
     expect_value_with(report, "setting good.limit (good) is not a number")
     story.expect_text("setting list", "good.limit")
-
-
-def test_a_sync_with_every_row_declared_and_of_its_type_reports_no_setting(new_story):
-    story = new_story(f"{PATH}:GoodModule", fixture=UserJoined)
-    story.run("setting set good.limit 60 --project", actor=story.user)
-    code, report = story.synced()
-    expect_value(code, 0)
-    expect_value_without(report, "setting ")

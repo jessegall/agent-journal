@@ -1,3 +1,4 @@
+from core.base.viewer.agent_field import AgentField
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.inspector_component import InspectorComponent
@@ -21,7 +22,7 @@ PLAN_INSPECTOR = InspectorDeclaration(
     actions=(
         ButtonDeclaration("plans.mark-ready", (), "Mark the plan ready", "plan ready {row_id}", icon="plan", condition=ButtonCondition("state", tuple(["draft"]))),
         ButtonDeclaration("plans.assign-agent", (), "Assign to an agent", "plan assign {row_id} --to={agent}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE),
-                          fields=tuple([TextField("agent", "Agent number")])),
+                          fields=tuple([AgentField("agent", "Agent")])),
         ButtonDeclaration("plans.assign-main", (), "Let the agent pick", "plan assign {row_id}", icon="plan", condition=ButtonCondition("state", ASSIGNABLE)),
         ButtonDeclaration("plans.start", (), "Start the plan", "plan start {row_id}", icon="start", primary=True, condition=ButtonCondition("state", tuple(["approved"]))),
         ButtonDeclaration("plans.pause", (), "Pause the plan", "plan block {row_id} --reason={reason}", icon="pause", condition=ButtonCondition("state", tuple(["started"])),

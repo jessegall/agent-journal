@@ -15,6 +15,7 @@ class StepCommandRule(DriverRule):
     name = "sequences.step-refused-command"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "A step refuses the journal commands it lists, also in a chain or inside a shell of their own"
 
     def __init__(self, runs: SequenceRunQuery, rows: EventRows) -> None:
         self.runs, self.rows = runs, rows

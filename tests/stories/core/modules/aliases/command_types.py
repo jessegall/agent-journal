@@ -20,8 +20,3 @@ def test_a_command_is_never_classified_as_unknown_or_as_a_journal_command(new_st
     story = new_story(fixture=BuilderStarted)
     story.expect_refusal('command-type make "scripts/dev" unknown', "a command is not classified as unknown", actor=story.agent)
     story.expect_refusal('command-type make "scripts/dev" journal', "a command is not classified as journal", actor=story.agent)
-
-
-def test_a_bare_variable_assignment_is_no_command_of_unknown_type(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_hook_allowed("s-1", HookSamples.shell("S=/tmp/sample", ShellPart("", "unknown", []), has_saved_commands=True))

@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from contextlib import nullcontext
 
+from core.base.clock import Clock
 from core.base.container import Container
 from core.base.exception_sink import ExceptionSink
 from core.base.database.database import Database
@@ -53,4 +54,4 @@ class JournalRound:
             container.get(Database).close()
 
     def report(self, error: Exception) -> None:
-        ErrorLog(SystemLogWriter(self.home), ExceptionSink()).reported([self.name], error)
+        ErrorLog(SystemLogWriter(self.home, Clock()), ExceptionSink()).reported([self.name], error)

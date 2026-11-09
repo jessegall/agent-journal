@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 import json
 import sqlite3
 import sys
@@ -25,7 +26,7 @@ from core.base.registry.suite_entry import SuiteEntry
 from core.base.template.template_declaration import TemplateDeclaration
 from core.base.registry.template_entry import TemplateEntry
 from core.base.registry.button_entry import ButtonEntry
-from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
+from core.base.viewer.button_declaration import AgentField, ButtonCondition, ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TemplateField, TextField
 from core.base.agent_policy import AgentPolicy
 from core.base.registry.window_entry import WindowEntry
 from dataclasses import replace
@@ -52,7 +53,7 @@ ENTRIES = {
 @pytest.fixture
 def database(tmp_path):
     opened = Database.opened(JournalHome(tmp_path))
-    Schema(opened, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(opened, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     opened.insert(Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, 'abc', ?, '2026-10-31')", [json.dumps(ENTRIES)]))
     yield opened
     opened.close()
@@ -165,7 +166,7 @@ def test_an_in_memory_copy_shares_the_registry_of_its_rows(database):
 
 def test_a_journal_never_synced_is_told_to_sync(tmp_path):
     database = Database.opened(JournalHome(tmp_path))
-    Schema(database, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(database, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     with pytest.raises(StaleRegistryError, match="never been synced"):
         Registry.read(database)
 
@@ -181,7 +182,7 @@ def test_a_class_named_by_its_path_is_imported_only_when_asked_for(database):
 
 def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read_with_their_defaults(tmp_path):
     opened = Database.opened(JournalHome(tmp_path))
-    Schema(opened, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(opened, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     window = {"name": "notes.board", "module": "notes", "title": "Board", "entry": "board.html", "loading": "frame", "place": "environment", "roles": [],
               "reads": [], "runs": [], "events": [], "shipped": False, "unavailable_reason": ""}
     suite = {"name": "notes", "module": "notes", "requires": [], "defaults": {}, "complete_control": False, "included_overlays": [], "windows": ["notes.board"]}
@@ -197,7 +198,7 @@ def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read
 
 def test_windows_saved_with_the_old_places_read_as_a_pane_and_whose_work_they_show(tmp_path):
     opened = Database.opened(JournalHome(tmp_path))
-    Schema(opened, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(opened, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     base = {"module": "notes", "title": "Board", "entry": "board.html", "loading": "frame", "roles": [], "reads": [], "runs": [], "events": [], "shipped": False, "unavailable_reason": ""}
     windows = [{**base, "name": "notes.board", "place": "environment"}, {**base, "name": "notes.mine", "place": "agent"}, {**base, "name": "notes.menu", "place": "dropdown"}]
     opened.insert(Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, 'abc', ?, '2026-10-31')", [json.dumps({**ENTRIES, "windows": windows})]))
@@ -265,10 +266,11 @@ def test_a_button_with_fields_menu_and_labels_survives_registry_storage(database
     size = ChoiceField("size", "Size", (Choice("short", "Short"), Choice("full", "Full")), "short")
     template = TemplateField("template", "Template", "item", "critique", "General critique")
     message = TextField("message", "Message")
+    agent = AgentField("agent", "Agent")
     menu = ButtonMenuItem("Review with a message", "item pause {row_id} --message={message}",
                           fields=tuple([message]), description="Send a message with the review")
     declaration = ButtonDeclaration("notes.review", ("row.item", "notes.toolbar"), "Review", "item pause {row_id}",
-                                    icon="check", primary=True, fields=(size, template, message),
+                                    icon="check", primary=True, fields=(size, template, message, agent),
                                     condition=ButtonCondition("state", tuple(["open"])), menu=tuple([menu]),
                                     menu_label="More review actions", tip="Review this item")
     entry = ButtonEntry("notes", declaration, True)

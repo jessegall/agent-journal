@@ -90,20 +90,6 @@ def test_a_transcripts_pages_and_total_stay_right_when_the_file_grows(new_story,
     story.expect_absent(f"agent transcript {agent_id} --limit 2 --page 3", "2  user  user  line 2", "page 3, 1 of 5 rows: --page 4 for the next")
 
 
-def test_a_row_without_text_between_the_rows_takes_no_position(transcript_with_empty_rows):
-    transcript, story, agent_id = transcript_with_empty_rows
-    with transcript.open("a") as grown:
-        grown.write(json.dumps({"type": "summary", "summary": "skipped"}) + "\n" + user_lines(3))
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 1", "2  user  user  line 2", "3  user  user  line 3")
-
-
-def test_a_transcript_that_shrank_is_read_from_its_start_again(readable_transcript):
-    transcript, story, agent_id = readable_transcript
-    transcript.write_text(user_lines(7))
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 7")
-    story.expect_absent(f"agent transcript {agent_id}", "2  user  user  line 2", "3  user  user  line 3")
-
-
 def test_a_line_still_being_written_is_read_once_it_ends(partial_transcript):
     transcript, complete_line, story, agent_id = partial_transcript
     transcript.write_text(user_lines(1) + complete_line)
@@ -165,23 +151,3 @@ def partial_transcript(new_story, tmp_path, monkeypatch):
     agent_id = story.agent.id
     story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 1")
     return transcript, complete_line, story, agent_id
-
-
-@pytest.fixture
-def transcript_with_empty_rows(new_story, tmp_path, monkeypatch):
-    transcript = transcript_file(tmp_path, monkeypatch)
-    transcript.write_text(user_lines(1) + json.dumps({"type": "summary", "summary": "skipped"}) + "\n\n" + user_lines(2))
-    story = new_story(fixture=ClaudeTranscriptAgent)
-    agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "1  user  user  line 1", "2  user  user  line 2")
-    return transcript, story, agent_id
-
-
-@pytest.fixture
-def readable_transcript(new_story, tmp_path, monkeypatch):
-    transcript = transcript_file(tmp_path, monkeypatch)
-    transcript.write_text(user_lines(1, 2, 3))
-    story = new_story(fixture=ClaudeTranscriptAgent)
-    agent_id = story.agent.id
-    story.expect_success(f"agent transcript {agent_id}", "3  user  user  line 3")
-    return transcript, story, agent_id

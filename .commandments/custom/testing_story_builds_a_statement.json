@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Statement"
+            },
+            {
+                "fileMatches": "(^|/)tests/stories/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "_browser\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "story-builds-a-statement",
+        "description": "A story builds a Statement, which is SQL written in a story.",
+        "rule": "Set up rows through the commands that own them and read them with expect_rows; never write SQL in a story.",
+        "skill": "stories-stay-in-the-story-kit"
+    }
+}

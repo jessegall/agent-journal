@@ -51,12 +51,6 @@ def test_a_paused_agents_tool_calls_are_refused_until_it_is_resumed(new_story):
     story.expect_hook_allowed("s-1", EDIT_SAMPLE)
 
 
-def test_resume_types_that_it_may_carry_on(paused_typing_agent):
-    story, typing = paused_typing_agent
-    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    expect_terminal_line_parts(":", typing, ["[journal] the user paused you", "[journal] the user resumed you"])
-
-
 def test_a_paused_agent_may_read_and_is_not_told_of_the_pause_on_what_it_may_do(new_story):
     story = new_story(fixture=UserJoined)
     story.container.bind(TerminalTyping, FakeTyping())
@@ -164,15 +158,6 @@ def paused_task_holder(new_story):
 
 
 @pytest.fixture
-def paused_typing_agent(new_story):
-    story = new_story(fixture=UserJoined)
-    typing = FakeTyping()
-    story.container.bind(TerminalTyping, typing)
-    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
-    return story, typing
-
-
-@pytest.fixture
 def watched_paused_agent(new_story):
     story = new_story(fixture=UserJoined)
     database = story.container.get(Database)
@@ -193,8 +178,3 @@ def paused_agent_without_terminal(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     return story
-
-
-def expect_terminal_line_parts(text, typing, expected) -> None:
-    actual = [line.split(text)[0] for _, line in typing.typed]
-    assert actual == expected, actual

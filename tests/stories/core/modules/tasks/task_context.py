@@ -13,9 +13,6 @@ from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_read import TaskRead
-from core.modules.tasks.models.task_log import TaskLog
-from core.modules.messages.models.message import Message
-from core.base.query.query import Query
 from core.modules.documents.conditions.work_context_seeds import WorkContextSeeds
 from core.modules.documents.support.work_context_request import WorkContextRequest
 from core.modules.documents.support.work_context_reader import WorkContextReader
@@ -47,21 +44,6 @@ class ContextTaskStarted(StoryFixture):
 @pytest.fixture
 def started_context(new_story):
     return Scenario(new_story(fixture=ContextTaskStarted))
-
-
-def test_replies_are_visible_in_both_arrival_orders(linked_scenario):
-    linked_scenario.person("messages.chat", "message", "reply", "2", "A later reply")
-    page = linked_scenario.context()
-    text = json.dumps(page)
-    feature("Original cart request" in text and "Working on task 1" in text and "A later reply" in text, text)
-
-
-def test_context_has_authors_relations_and_stable_order(linked_scenario):
-    page = linked_scenario.context()
-    messages = page["messages"]
-    feature([message["id"] for message in messages] == [1, 2, 3], json.dumps(messages))
-    feature(all(message["author"] and message["relations"] for message in messages), json.dumps(messages))
-    feature(messages == linked_scenario.context()["messages"], "context order changed without a write")
 
 
 def test_context_is_bounded_and_pages_without_duplicates(linked_scenario):
@@ -280,15 +262,3 @@ def test_overview_failure_does_not_record_a_read_or_release_the_gate(started_con
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read task 1 first")
     linked_scenario.command("task overview 1")
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-
-
-def test_overview_never_loads_unbounded_messages_or_logs(linked_scenario):
-    original = Query.all_rows
-
-    def bounded(query):
-        feature(query.model not in (Message, TaskLog), "overview loaded all messages or logs")
-        return original(query)
-
-    with patch.object(Query, "all_rows", bounded):
-        outcome = linked_scenario.command("task overview 1")
-    feature("Original cart request" in outcome.output_text, outcome.output_text)

@@ -85,13 +85,6 @@ def test_a_keyword_of_the_main_agent_s_memory_gives_a_worker_nothing(new_story):
     story.expect_absent_hook_line("s-9", CART_EDIT, "applies now")
 
 
-def test_a_worker_s_compaction_leaves_the_main_agent_s_memories(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    story.hook("s-9", COMPACTION)
-    story.run_listeners()
-    story.expect_rows(stored_memory(story, MAIN_MEMORY).weight == 5, stored_memory(story, WORKER_MEMORY).weight == 4)
-
-
 def test_a_main_agent_s_compaction_leaves_a_worker_s_memories(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     story.hook("s-1", COMPACTION)

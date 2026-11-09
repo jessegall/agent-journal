@@ -39,6 +39,11 @@ test("a click on an open-row mark opens its row, on an open-page mark the page i
     expect(markLook(row, {click: "open row"}).action).toBe("Open the task");
 });
 
+test("the button of a mark whose row has no name of its own reads Open", () => {
+    const row = {id: 1, text: "x", target_model: "nothing_known", target_id: 8};
+    expect(markLook(row, {click: "open row"}).action).toBe("Open");
+});
+
 test("a plugin card is drawn in the tone its variant names, and any other variant in none", () => {
     const type = {type: "plugins.card", colouring: "group", group: "journal"};
     expect(markLook({id: 1, text: "2 sins", variant: "warn", created_at: "2026-11-01T10:00:00Z"}, type).tone).toBe("warn");

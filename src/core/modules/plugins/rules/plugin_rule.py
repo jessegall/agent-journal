@@ -3,6 +3,7 @@ from core.modules.drivers.commands.record_agent_notice.record_agent_notice impor
 import json
 
 from core.base.agent_role import AgentRole
+from core.base.clock import Clock
 from core.base.role_group import RoleGroup
 from core.base.command.command import Command
 from core.base.driver.agent_hook import AgentHook
@@ -41,9 +42,9 @@ class PluginRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PLUGIN
 
-    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, runs: PluginRun, setting_values: SettingValues, queries: Queries) -> None:
+    def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, runs: PluginRun, setting_values: SettingValues, queries: Queries, clock: Clock) -> None:
         self.runnable, self.folders, self.runs, self.setting_values = runnable, folders, runs, setting_values
-        self.queries = queries
+        self.queries, self.clock = queries, clock
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         lines: list[str] = []
@@ -77,7 +78,7 @@ class PluginRule(DriverRule):
         queue = PluginQueue(self.folders.data(plugin.name))
         reserved = queue.reserved_names()
         committed = {row.name for row in self.queries.query(PluginQueueFile).filter(plugin_id=plugin.id).matching(Among("name", reserved)).all_rows()} if reserved else set()
-        read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed)
+        read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed, self.clock)
         for name, answer in read.answers:
             lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])
             commands.extend([AddPluginOutput(plugin.id, hook.agent_id, answer.output)] if answer.has_output() else [])

@@ -24,6 +24,7 @@ class WorkerStopRule(DriverRule):
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
+    refuses_one_action = "A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own"
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance) -> None:
         self.compaction, self.guidance = compaction, guidance

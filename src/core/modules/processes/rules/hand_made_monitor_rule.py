@@ -18,6 +18,7 @@ class HandMadeMonitorRule(DriverRule):
     name = "processes.hand-made-monitor"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "A Monitor that loops over an output by hand is refused"
 
     def __init__(self, providers: Providers) -> None:
         self.providers = providers

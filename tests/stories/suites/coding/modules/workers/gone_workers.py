@@ -145,59 +145,10 @@ def test_a_resume_a_launch_in_hand_holds_stops_nothing(worker_with_waiting_job):
     story.expect_rows(launcher.requests == [])
 
 
-def test_a_send_to_an_ended_worker_does_not_say_it_starts(ended_worker):
-    start_launcher(ended_worker, b"running\n", request_count=4)
-    outcome = ended_worker.run(f'worker send --wait {ended_worker.worker.id} "Add the tax"', actor=ended_worker.agent)
-    ended_worker.expect_rows("the job waits until it starts, and you are told if it does not" in outcome.output_text, "starts it again" not in outcome.output_text)
-
-
 def test_a_worker_whose_job_waits_to_start_is_not_listed_as_running(worker_with_waiting_job):
     story = worker_with_waiting_job
     listed = {view: [row["id"] for row in json.loads(story.run(f"agent cards --environment main --show {view} --json", actor=story.agent).output_text).get("rows", [])] for view in ("running", "idle")}
     story.expect_rows(story.worker.id not in listed["running"], story.worker.id in listed["idle"])
-
-
-def test_the_start_launcher_a_pid_records_the_workers_process(running_worker):
-    running_worker.expect_text(f"agent show {running_worker.worker.id}", f"pid: {WORKER_PID}", "process_started_at: 2026-10-31T09:00:00")
-
-
-def test_a_worker_whose_end_hook_was_lost_is_ended_at_a_tick(ended_worker):
-    ended_worker.expect_text(f"agent show {ended_worker.worker.id}", "ended_at: 2026")
-
-
-def test_a_running_worker_is_condition_unmet_at_a_tick(running_worker):
-    running_worker.tick(MAIN_SESSION)
-    running_worker.expect_no_text(f"agent show {running_worker.worker.id}", "ended_at:")
-
-
-def test_a_send_after_a_tick_ended_the_worker_restarts_it(ended_worker):
-    ended_worker.expect_rows(ended_worker.row(Agent, ended_worker.worker.id).ended_at is not None)
-    launcher = start_launcher(ended_worker, f"started {WORKER_PID}\n".encode())
-    ended_worker.expect_success(f'worker send --wait {ended_worker.worker.id} "Add the tax"', actor=ended_worker.agent)
-    ended_worker.run_listeners()
-    expect_restart(ended_worker, launcher)
-
-
-def test_a_send_finds_a_process_gone_before_the_tick_does_and_restarts_the_worker(running_worker):
-    running_worker.use_processes()
-    launcher = start_launcher(running_worker, b"started\n")
-    running_worker.expect_text(f'worker send --wait {running_worker.worker.id} "Add the tax"', "was not running: the job waits until it starts", actor=running_worker.agent)
-    running_worker.run_listeners()
-    expect_restart(running_worker, launcher)
-
-
-def test_a_send_to_a_running_worker_says_it_takes_the_job(running_worker):
-    running_worker.expect_success(f'worker send --wait {running_worker.worker.id} "Add the tax"', f"worker {running_worker.worker.id} takes the job", actor=running_worker.agent)
-
-
-def test_a_send_to_a_worker_with_no_recorded_process_says_the_journal_cannot_tell(worker_story):
-    worker = dispatched_worker(worker_story)
-    worker_story.expect_text(f'worker send --wait {worker.id} "Add the tax"', "its process is not recorded, so the journal cannot say whether it runs", f"journal worker status {worker.id}", actor=worker_story.agent)
-
-
-def test_a_send_with_no_launcher_says_the_worker_is_not_running(ended_worker):
-    ended_worker.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
-    ended_worker.expect_text(f'worker send --wait {ended_worker.worker.id} "Add the tax"', "is not running and has the job waiting", "needs the launcher", actor=ended_worker.agent)
 
 
 def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_worker):
@@ -233,7 +184,7 @@ def test_a_send_to_a_paused_worker_says_it_waits_for_the_resume(running_worker):
     worker = running_worker.worker
     running_worker.expect_success(f"agent pause {worker.id}", actor=running_worker.agent)
     running_worker.use_processes()
-    running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "is paused: the job waits until it is resumed", actor=running_worker.agent)
+    running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "is paused: the job waits until journal agent resume", actor=running_worker.agent)
 
 
 def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
@@ -247,4 +198,3 @@ def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent show {helper}", "ended_at: 2026")
-

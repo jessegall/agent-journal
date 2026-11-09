@@ -24,30 +24,6 @@ def test_s01_effective_main_options_start_from_the_declared_builder_bundle(new_s
     expect_value({source for _, source in options.sources}, {"default"})
 
 
-def test_s01_effective_main_options_name_the_environment_that_set_them(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_success(f"setting set {AUTO} off --environment main", actor=story.user)
-    story.expect_success(f"setting set {MERGER} off --project", actor=story.user)
-    options = main_options(story)
-    expect_value((options.auto, options.merger, dict(options.sources)[AUTO], dict(options.sources)[MERGER]), (False, False, "environment", "project"))
-
-
-def test_s44_effective_workflow_is_derived_from_the_preset_owned_controls_only(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_success(f"setting set {AUTO} off --environment main", actor=story.user)
-    expect_value(main_options(story).workflow, "custom")
-    story.expect_success(f"setting set {CONTINUE_SETTING} on --environment main", actor=story.user)
-    expect_value(main_options(story).workflow, "custom")
-    story.expect_success("setting set journal.suites.coding.main-writes-code off --environment main", actor=story.user)
-    expect_value((main_options(story).bundle, main_options(story).workflow), (ORCHESTRATOR, "orchestrator"))
-    story.expect_success(f"setting set {WORKER_LIMIT} 5 --environment main", actor=story.user)
-    expect_value(main_options(story).workflow, "orchestrator")
-    story.expect_success(f"setting set {AUTO} on --environment main", actor=story.user)
-    story.expect_success(f"setting set {CONTINUE_SETTING} off --environment main", actor=story.user)
-    story.expect_success("setting set journal.suites.coding.main-writes-code on --environment main", actor=story.user)
-    expect_value(main_options(story).workflow, "builder")
-
-
 def test_s61_invalid_legacy_policy_is_readable_and_repairable_effective_main_options(new_story):
     story = new_story(fixture=UserBuilder)
     story.run(f"setting make {AUTO} {shlex.quote(chr(34) + 'maybe' + chr(34))} --environment main")

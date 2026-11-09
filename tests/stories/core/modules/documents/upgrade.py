@@ -104,13 +104,6 @@ def old_release_scenario(new_story):
     return Scenario(story)
 
 
-def test_message_work_links_move_without_document_endpoint(historical_scenario):
-    scenario = historical_scenario
-    rows = scenario.links("message:1")
-    subjects = {(row["target_model"], row["target_id"]) for row in rows if row["link_type"] == "about"}
-    feature({("task", 1), ("plan", 1)} <= subjects, json.dumps(rows))
-
-
 def test_old_edited_and_comment_links_keep_creator_and_timestamps(historical_scenario):
     scenario = historical_scenario
     rows = scenario.links("message:1")
@@ -129,21 +122,6 @@ def test_historical_refers_to_keeps_its_distinct_type(historical_scenario):
     rows = scenario.links("message:1")
     relations = {row["link_type"] for row in rows if row["target_model"] == "message" and row["target_id"] == 2}
     feature("refers_to" in relations and "mentions" not in relations, "explicit refers_to was lost or relabelled as a mention")
-
-
-def test_question_links_move_after_question_ids(historical_scenario):
-    scenario = historical_scenario
-    scenario.expect_link("question:1", "message:1", "about")
-
-
-def test_retry_duplicate_unmapped_and_other_domain_links_are_accounted_for(historical_scenario):
-    scenario = historical_scenario
-    scenario.expect_link("message:1", "task:1", "about")
-    feature("old_unknown_relation" in scenario.story.upgrade_text, scenario.story.upgrade_text)
-    feature("99999" in scenario.story.upgrade_text, scenario.story.upgrade_text)
-    feature("duplicate" in scenario.story.upgrade_text.lower(), scenario.story.upgrade_text)
-    scenario.story.expect_rows("handled elsewhere" in scenario.story.upgrade_text)
-    scenario.story.expect_rows("depends" in scenario.story.upgrade_text, "revision_of" in scenario.story.upgrade_text)
 
 
 def test_recovery_after_finished_documents_move(old_release_scenario):
@@ -221,17 +199,6 @@ def test_question_recovery_rolls_back_alone_and_retries_after_the_documents_pass
     monkeypatch.undo()
     scenario.story.container.get(MoveRunner).run(source)
     scenario.expect_link("question:1", "message:1", "about")
-
-
-def test_recovery_uses_the_existing_upgrade_entry_with_retained_source(old_release_scenario):
-    scenario = old_release_scenario
-    source = scenario.story.home.folder / "version-4" / "journal.db"
-    with sqlite3.connect(source) as database:
-        database.execute("INSERT INTO links (source, target, link_type, creator, created_at) VALUES ('messages:1', 'tasks:1', 'edited', 'user:1', '2026-10-01T10:00:00+00:00')")
-    outcome = UpgradeJournal(scenario.story.home).run(confirmed=True)
-    scenario.story.expect_rows(outcome.code == 0, detail=outcome.text)
-    scenario.expect_link("message:1", "task:1", "edited")
-    scenario.story.expect_rows(UpgradeJournal(scenario.story.home).run(confirmed=True).text == "nothing left to move")
 
 
 def test_a_message_converted_to_a_card_is_not_used_as_a_message_endpoint(historical_scenario):

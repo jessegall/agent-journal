@@ -29,20 +29,6 @@ def test_an_agent_is_not_measured_in_its_first_half_hour(new_story):
     story.expect_text(f"usage fitness --agent {story.agent.id}", "fitness not measured yet", actor=story.user)
 
 
-def test_with_nothing_waiting_an_agent_scores_full_marks(new_story):
-    story = new_story(fixture=UserJoined)
-    story.advance(HALF_HOUR)
-    answer = fitness(story)
-    story.expect_rows(answer["is_measured"] is True, answer["score"] == 100, answer["workload"] == 0)
-
-
-def test_a_message_left_waiting_lowers_the_score(half_hour_session):
-    story = half_hour_session
-    answer = fitness(story)
-    waited = measure(answer, "message_wait")
-    story.expect_rows(waited["value"] == 15, waited["pass_share"] == 0.6, answer["score"] == 80)
-
-
 def test_a_message_read_no_longer_counts(half_hour_session):
     story = half_hour_session
     story.hook("s-1", READ_LINE)

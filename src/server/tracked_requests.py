@@ -2,7 +2,7 @@ import socket
 import sys
 import threading
 import time
-from socketserver import ThreadingMixIn
+from socketserver import TCPServer, ThreadingMixIn
 from typing import Any
 
 from server.client_disconnected import client_disconnected
@@ -10,7 +10,7 @@ from server.client_disconnected import client_disconnected
 DRAIN_POLL_SECONDS = 0.05
 
 
-class TrackedRequests(ThreadingMixIn):
+class TrackedRequests(ThreadingMixIn, TCPServer):
     """A socket server's requests, each on a daemon thread of its own and kept, so a stop waits for them up to its
     limit. The server binds its address, or takes the listening socket of the server it replaces, with the
     connections that wait in it."""
@@ -26,7 +26,7 @@ class TrackedRequests(ThreadingMixIn):
 
     def handle_error(self, request: Any, client_address: Any) -> None:
         if not client_disconnected(sys.exception()):
-            super().handle_error(request, client_address)  # type: ignore[misc]
+            super().handle_error(request, client_address)
 
     def server_bind(self) -> None:
         if self.inherited_socket is None:

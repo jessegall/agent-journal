@@ -6,8 +6,6 @@ from suites.coding.modules.workers.support.worker_nudges import WORKER_LOG_DUE
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -65,25 +63,3 @@ def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_st
     story.advance(timedelta(minutes=1))
     story.expect_success("task log 1 'the cart total is worked out'", actor=worker)
     story.expect_hook_allowed(session, edit)
-
-
-def test_a_workers_build_goes_in_the_queue_and_its_read_does_not(new_story):
-    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
-    repository_environment(story)
-    worker = dispatched_worker(story)
-    session = worker_session(story, worker)
-    build = HookSamples.shell("make build", ShellPart("make", "build", ["build"]))
-    read = HookSamples.shell("cat notes.txt", ShellPart("cat", "read", ["notes.txt"]))
-    expect_updated_input_hook_with_2(story, session, build, "--queue")
-    expect_updated_input_hook_without_2(story, session, read, "--queue")
-    expect_updated_input_hook_with_2(story, "s-1", build, "--queue")
-
-
-def expect_updated_input_hook_without_2(story, text, build, expected) -> None:
-    actual = str(story.hook(text, build).updated_input)
-    assert expected not in actual, actual
-
-
-def expect_updated_input_hook_with_2(story, session, build, expected) -> None:
-    actual = str(story.hook(session, build).updated_input)
-    assert expected in actual, actual

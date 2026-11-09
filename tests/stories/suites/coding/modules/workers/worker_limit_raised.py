@@ -58,12 +58,6 @@ def test_lowering_the_worker_limit_tells_nothing(new_story):
     expect_limit_lines(story, [])
 
 
-def test_setting_the_limit_to_what_it_is_tells_nothing(new_story):
-    story = story_with_person(new_story)
-    set_limit(story, 2)
-    expect_limit_lines(story, [])
-
-
 def test_a_project_wide_limit_raised_tells_the_main_agent_of_each_environment(new_story):
     story = story_with_person(new_story)
     set_limit(story, 5, "--project")

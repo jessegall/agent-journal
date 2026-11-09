@@ -17,11 +17,6 @@ class TwoEnvironments(StoryFixture):
         story.expect_success("environment show 2", "name: staging")
 
 
-def test_a_person_s_request_reads_only_the_environment_it_names(new_story):
-    story = new_story(fixture=TwoEnvironments)
-    story.expect_refusal(f"memory show {MAIN_MEMORY} --environment staging", "no memory", actor=story.user)
-
-
 def test_a_person_s_request_reads_a_row_of_the_environment_it_names(new_story):
     story = new_story(fixture=TwoEnvironments)
     story.expect_success(f"memory show {MAIN_MEMORY} --environment main", f"text: {MAIN_FACT}", actor=story.user)

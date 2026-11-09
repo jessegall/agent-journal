@@ -1,8 +1,11 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 from types import UnionType
-from typing import TypeVar, Union, get_args, get_origin
+from typing import TypeIs, TypeVar, Union, get_args, get_origin
 
+from core.base.change.changed import Changed
+from core.base.change.system_event import SystemEvent
+from core.base.change.touched import Touched
 from core.base.model.model import Model
 from core.base.model.move import Move
 
@@ -12,7 +15,7 @@ class EventType:
     """One event a listener or guard declared by its type parameter: the class of the event and the model of its
     row, or no model for a system event."""
 
-    event_class: type
+    event_class: type[SystemEvent] | type[Changed[Model]] | type[Touched[Model]]
     model: type[Model] | None
 
     @classmethod
@@ -31,11 +34,11 @@ class EventType:
     @classmethod
     def parsed(cls, hint: object) -> "EventType":
         origin = get_origin(hint)
-        if isinstance(origin, type):
+        if isinstance(origin, type) and is_row_event_class(origin):
             return cls(origin, get_args(hint)[0])
-        if not isinstance(hint, type):
-            raise TypeError(f"{hint} is no event")
-        return cls(hint, cls.event_model(hint))
+        if isinstance(hint, type) and (is_row_event_class(hint) or issubclass(hint, SystemEvent)):
+            return cls(hint, cls.event_model(hint))
+        raise TypeError(f"{hint} is no event")
 
     @staticmethod
     def event_model(event_class: type) -> type[Model] | None:
@@ -47,6 +50,12 @@ class EventType:
         return None
 
     def pattern(self, moves: Sequence[Move]) -> str:
-        if self.model is None:
+        if issubclass(self.event_class, SystemEvent):
             return self.event_class.name
+        if self.model is None:
+            raise TypeError(f"{self.event_class.__name__} names no model")
         return self.event_class.pattern(self.model, moves)
+
+
+def is_row_event_class(class_type: type) -> TypeIs[type[Changed[Model]] | type[Touched[Model]]]:
+    return issubclass(class_type, (Changed, Touched))

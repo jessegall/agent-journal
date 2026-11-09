@@ -1,5 +1,3 @@
-import json
-
 from core.base.actor_type import ActorType
 from core.base.change.changed import Changed
 from core.base.command.context import Context
@@ -32,7 +30,5 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
             raise UserApprovalRefusal(f"Change {entry.title}?", self.arguments(event.row))
 
     def arguments(self, row: Setting) -> tuple[str, ...]:
-        value = json.loads(row.value)
-        text = value if isinstance(value, str) else json.dumps(value)
         project = tuple(["--project"]) if row.environment_id is None else ()
-        return ("setting", "set", row.key, text, *project, "--expected-revision", self.revision.current(row.key))
+        return ("setting", "set", row.key, row.value_text(), *project, "--expected-revision", self.revision.current(row.key))

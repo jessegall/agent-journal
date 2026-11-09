@@ -20,6 +20,8 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.server.support.browser_story import expect_browser
+from core.base.provider.context_window import ContextWindow
+from core.modules.helpers.support.profile_model import ProfileModel
 import json
 
 REASON = '--reason "Its question is answered"'
@@ -238,9 +240,9 @@ def test_an_idle_helper_on_another_model_or_with_its_session_gone_is_not_offered
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
     kept = story.container.get(KeptHelpers)
-    story.expect_rows(kept.idle("journal-researcher", "", "") == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher")) == ())
     resumable_session(story, helper, monkeypatch)
-    story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id, kept.idle("journal-researcher", "", "another-model") == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"))[0].id == helper.id, kept.idle(ProfileModel("", "another-model", "journal-researcher")) == ())
 
 
 def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
@@ -248,9 +250,9 @@ def test_a_nearly_full_session_is_not_offered(new_story, monkeypatch):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     kept = story.container.get(KeptHelpers)
-    story.expect_rows(kept.idle("journal-researcher", "", "")[0].id == helper.id)
-    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: (80, 1000))
-    story.expect_rows(kept.idle("journal-researcher", "", "") == ())
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher"))[0].id == helper.id)
+    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: ContextWindow(80, 1000))
+    story.expect_rows(kept.idle(ProfileModel("", "", "journal-researcher")) == ())
 
 
 def test_two_sends_to_one_idle_helper_run_one_session(new_story, monkeypatch):

@@ -2,7 +2,6 @@ from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.driver.rule_answers import RuleAnswers
-from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.rule_outcome import SILENCED
 from core.base.driver.rule_record import RuleRecord
 from core.base.query.queries import Queries

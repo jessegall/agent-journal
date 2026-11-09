@@ -203,10 +203,10 @@ class WorktreeGit:
 
     def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
         name = self.built_name(path)
-        if name is None:
-            return False
-        siblings = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
-        return name in {self.built_name(sibling) for sibling in siblings}
+        return name is not None and name in {self.built_name(sibling) for sibling in self.siblings(worktree, path)}
+
+    def siblings(self, worktree: Worktree, path: str) -> list[str]:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
 
     @staticmethod
     def built_name(path: str) -> str | None:
@@ -214,7 +214,7 @@ class WorktreeGit:
         return injections.group(1) if injections is not None else None
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
-        deleted = [change.relative for change in changes.changes if change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative]
+        deleted = [change.relative for change in changes.changes if change.deleted_under(BUILT_FOLDER)]
         kept = [path for path in deleted if self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", path.split(BUILT_FOLDER, 1)[0]).stdout.strip() and not self.is_rebuilt(worktree, path)]
         if kept:
             raise Refusal(f"it deletes {len(kept)} built files under web/dist while their sources stay, such as {kept[0]}",
@@ -253,16 +253,17 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        original_texts = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
-        texts = {name: FileAccess.shared().read(Path(folder) / name) for name in original_texts}
-        for name in original_texts:
+        written = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        kept = {name: self.git_folder(folder) / f"{name}.kept" for name in written}
+        for name in written:
+            FileAccess.shared().replace(Path(folder) / name, kept[name])
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", name)
         try:
             yield
         finally:
-            for name in original_texts:
-                FileAccess.shared().write(Path(folder) / name, texts[name])
+            for name in written:
+                FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 
     def rebase(self, worktree: Worktree) -> bool:
@@ -311,7 +312,7 @@ class WorktreeGit:
     def unstash(self, worktree: Worktree, stash: str) -> None:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
-        if not applied and not has_markers:
+        if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
             raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.session_agent_id}", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
@@ -319,21 +320,34 @@ class WorktreeGit:
                 if entry[0] == stash:
                     self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
 
+    def head_contains(self, folder: str, stash: str) -> bool:
+        parts = [(stash, self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{stash}^1", stash).stdout.splitlines())]
+        untracked = f"{stash}^3"
+        if self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", untracked).returncode == 0:
+            parts.append((untracked, self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "-r", "--name-only", untracked).stdout.splitlines()))
+        return all(self.git(folder, GIT_LIMIT_SECONDS, "diff", "--quiet", tree, "HEAD", "--", *names).returncode == 0 for tree, names in parts if names)
+
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())
         uncommitted = {line[3:] for line in self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.splitlines()}
         return tuple(sorted(changed & uncommitted))
 
+    def branch_contains(self, worktree: Worktree, commit: str) -> bool:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", commit, worktree.branch).returncode == 0
+
     def merge(self, folder: str, worktree: Worktree, message: str) -> None:
-        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "--no-commit", worktree.branch)
+        self.merge_revision(folder, worktree.branch, message)
+
+    def merge_revision(self, folder: str, revision: str, message: str) -> None:
+        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "--no-commit", revision)
         if not self.is_merging(folder):
             if finished.returncode != 0:
-                raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+                raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
             return
         self.keep_instruction_files(folder)
         if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip():
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
-            raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+            raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
         self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message)
 
     def keep_instruction_files(self, folder: str) -> None:

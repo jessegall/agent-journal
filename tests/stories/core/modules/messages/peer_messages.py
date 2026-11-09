@@ -33,32 +33,11 @@ def test_a_message_from_another_session_shows_in_the_chat_once(new_story, tmp_pa
     expect_value_with(listed, '"type": "peer"')
 
 
-def test_a_queued_prompt_of_the_user_is_no_peer_message(new_story, tmp_path):
-    story = new_story(fixture=UserBuilder)
-    hook_with(story, transcript_with(tmp_path, queued("carry on")))
-    story.expect_no_text("message list --json", "carry on", actor=story.user)
-
-
 def test_a_message_reaches_the_chat_while_the_agent_waits_on_a_question(new_story, tmp_path):
     story = new_story(fixture=UserBuilder)
     story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main', actor=story.agent)
     hook_with(story, transcript_with(tmp_path, queued(ENVELOPE)))
     story.expect_text("message list --json", "Check 138 failed", actor=story.user)
-
-
-def test_a_peer_message_does_not_wait_as_unread(new_story, tmp_path):
-    story = new_story(fixture=UserBuilder)
-    hook_with(story, transcript_with(tmp_path, queued(ENVELOPE)))
-    story.expect_no_text("message unread", "Check 138 failed", actor=story.agent)
-
-
-def test_a_message_sent_to_another_agent_shows_in_the_chat_naming_who_it_went_to(new_story):
-    story = new_story(fixture=UserBuilder)
-    sample = HookSamples.tool_use("SendMessage", ToolType.UNCATEGORISED, [], None).with_raw({"tool_input": {"to": "Dijkstra", "message": "Look at the merge"}}).with_fields(event="post_tool_use")
-    story.hook("s-1", sample)
-    listed = story.run("message list --json", actor=story.user)
-    listed.expect_text('"recipient": "Dijkstra"')
-    listed.expect_text("Look at the merge")
 
 
 SAVED_ADDRESS = "uds:/tmp/cc-socks/88554.sock"

@@ -12,7 +12,6 @@ from core.base.module.version_requirement import VersionRequirement
 from core.base.registry.button_line import ButtonLine
 from core.base.registry.button_window import ButtonWindow
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.viewer.person_lines import PERSON_LINES
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.window_place import WindowPlace

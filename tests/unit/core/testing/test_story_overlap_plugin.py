@@ -8,7 +8,7 @@ def test_shared_story_steps_fail_pytest_as_a_named_failure(pytester, monkeypatch
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
     pytest_run.assert_outcomes(passed=2, failed=1)
-    assert "stories::shared_first_steps" in pytest_run.stdout.str()
+    assert "stories::overlapping_steps" in pytest_run.stdout.str()
     assert "test_first" in pytest_run.stdout.str() and "test_second" in pytest_run.stdout.str()
 
 
@@ -17,7 +17,7 @@ def test_shared_story_steps_on_different_workers_fail_pytest(pytester, monkeypat
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short", "-n", "2", "--maxschedchunk=1")
     assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
     pytest_run.assert_outcomes(passed=2, failed=1)
-    assert "stories::shared_first_steps" in pytest_run.stdout.str()
+    assert "stories::overlapping_steps" in pytest_run.stdout.str()
     assert "test_first" in pytest_run.stdout.str() and "test_second" in pytest_run.stdout.str()
 
 

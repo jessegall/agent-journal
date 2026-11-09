@@ -1,6 +1,7 @@
 import tempfile
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.command.context import Context
 from core.base.command.bus import Bus
 from core.base.code_versions import CodeVersions
@@ -23,13 +24,13 @@ class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
     command = InstallRelease
     runs_once = True
 
-    def __init__(self, source: ReleaseSource, home: JournalHome, repository: Repository, bus: Bus) -> None:
-        self.source, self.home, self.repository, self.bus = source, home, repository, bus
+    def __init__(self, source: ReleaseSource, home: JournalHome, repository: Repository, bus: Bus, clock: Clock) -> None:
+        self.source, self.home, self.repository, self.bus, self.clock = source, home, repository, bus, clock
 
     def handle(self, command: InstallRelease, context: Context) -> ReleaseInstall:
         release = self.source.newest(online=True)
         with tempfile.TemporaryDirectory() as folder:
-            tag = CodeVersions(self.home).add(self.source.unpacked(release, Path(folder)))
+            tag = CodeVersions(self.home).add(self.source.unpacked(release, Path(folder)), self.clock)
         install = self.repository.save(ReleaseInstall(creator_id=context.actor.id, checksum=release.checksum,
                                                       tag=release.tag, code_version=tag), context)
         handover = CodeHandover(self.home, ReleaseInstallSteps(self.home, install.id))

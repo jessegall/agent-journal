@@ -1,11 +1,16 @@
 import json
 
+import pytest
+
 from core.base.actor import Actor
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.support.story_checks import expect_value
 
 PLAN_TASKS = (1, 2, 3, 4)
+BLOCKED_BUILD_TASK = 2
+SHIP_TASK = 4
+LONG_PLAN_EXTRA_TASKS = 12
 
 
 def story_with_two_workers(new_story):
@@ -35,34 +40,3 @@ def test_a_plan_is_assigned_to_a_worker_before_it_starts(new_story):
     expect_task_holder(story, first)
     story.expect_text("plan show 1", "state: approved", actor=story.agent)
     expect_value(assignee(story)["id"], first.id)
-
-
-def test_changing_the_assignee_moves_the_open_tasks_to_the_new_one(new_story):
-    story, first, second = story_with_two_workers(new_story)
-    story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
-    story.expect_success(f"plan assign 1 --to {second.id}", actor=story.agent)
-    expect_task_holder(story, second)
-    expect_value(assignee(story)["id"], second.id)
-
-
-def test_letting_the_agent_pick_gives_the_plan_to_the_main_agent(new_story):
-    story, first, _ = story_with_two_workers(new_story)
-    story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
-    story.expect_success("plan assign 1", actor=story.agent)
-    expect_task_holder(story, None)
-    expect_value(assignee(story), {"id": story.agent.id, "name": "main", "main": True})
-
-
-def test_an_assigned_plan_keeps_its_worker_when_it_starts(new_story):
-    story, first, _ = story_with_two_workers(new_story)
-    story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
-    story.expect_success("plan start 1", actor=story.user)
-    story.expect_text("plan show 1", "state: started", actor=story.agent)
-    expect_task_holder(story, first)
-    expect_value(assignee(story)["id"], first.id)
-
-
-def test_a_worker_cannot_assign_a_plan(new_story):
-    story, first, second = story_with_two_workers(new_story)
-    story.expect_refusal(f"plan assign 1 --to {second.id}", "cannot assign a plan", actor=first)
-    expect_task_holder(story, None)

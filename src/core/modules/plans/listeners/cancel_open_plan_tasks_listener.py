@@ -1,6 +1,5 @@
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.plans.models.plan_task import PlanTask

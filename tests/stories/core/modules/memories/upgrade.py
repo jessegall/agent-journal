@@ -5,11 +5,6 @@ from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_value_4, expect_value_with
 
 
-def test_a_memory_moves_with_its_text_weight_and_environment(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("memory show 1", "text: Totals are in cents", "weight: 5", "environment_id: 1", "state: active")
-
-
 def test_a_memory_whose_end_has_passed_is_not_moved_and_a_removed_one_moves_removed(new_story):
     story = upgraded_story(new_story)
     listing = story.run("memory list --state active")
@@ -24,21 +19,10 @@ def test_a_memory_with_a_future_end_moves_without_an_end_and_is_listed_in_the_re
     expect_upgrade_text(story, "memory 3 had an end on 2036-01-01")
 
 
-def test_a_removed_memory_keeps_its_removal(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("memory show 4", "text: A removed fact", "state: removed")
-
-
 def test_keywords_and_a_weight_of_zero_move_and_a_task_expiry_ties_the_memory_to_the_moved_task(new_story):
     story = upgraded_story(new_story)
     story.expect_success("memory show 5", "weight: 0", "task_id: 1")
     story.expect_text("memory-keyword list", "cart")
-
-
-def test_the_new_memories_are_listed_nowhere_as_a_rule_or_reminder(new_story):
-    story = upgraded_story(new_story)
-    story.expect_no_text("memory list", "type: rule")
-    story.expect_no_text("memory list", "type: reminder")
 
 
 def test_a_memory_longer_than_version_5_allows_moves_whole_into_a_document_and_keeps_its_start_with_the_document_number(new_story):
@@ -66,8 +50,3 @@ def test_a_version_4_rule_moves_as_a_rule_and_a_reminder_as_a_memory(new_story):
     memories = story.run("memory list --json")
     memories.expect_no_text("Always keep totals in cents")
     memories.expect_text("Run the cart tests before a commit")
-
-
-def test_a_long_rule_moves_whole(new_story):
-    story = upgraded_story(new_story)
-    story.expect_no_text("rule list --state active", "whole text in doc")

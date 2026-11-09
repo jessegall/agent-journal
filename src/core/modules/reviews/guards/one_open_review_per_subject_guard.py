@@ -1,5 +1,4 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.modules.reviews.models.review import Review
 from core.modules.reviews.queries.review_query import ReviewQuery

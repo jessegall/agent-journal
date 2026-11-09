@@ -32,6 +32,7 @@ class FakeLauncher:
         self.server.listen(1)
         self.server.settimeout(ACCEPT_TIMEOUT_SECONDS)
         self.thread.start()
+        return self
 
     def accepted(self) -> None:
         while True:

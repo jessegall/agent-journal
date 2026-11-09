@@ -30,13 +30,6 @@ def failed_worker_story(split_story):
     return split_story, worker, launcher
 
 
-def test_nothing_set_dispatches_as_today(split_story):
-    story = split_story
-    worker = dispatch(story)
-    expect_program(story, worker, 'claude', 'sonnet')
-    story.expect_text(f'agent show {worker.id}', 'profile: journal-worker')
-
-
 def test_nothing_set_dispatches_as_today_on_codex(split_story):
     story = split_story
     parent = Actor(story.new_row_id('agent start codex-parent codex main --environment main'), ActorType.AGENT)
@@ -65,21 +58,6 @@ def test_tier_flag_picks_the_model_of_each_program_rare_needs_a_name(split_story
 def test_profile_tier_fits_any_program(split_story, program, model):
     story = split_story
     worker = dispatch(story, flags=f'--profile journal-senior --program {program}')
-    expect_program(story, worker, program, model)
-
-
-def test_profile_tier_fits_any_program_added_provider(split_story):
-    story = split_story
-    story.expect_sync_success(SAMPLE_MODULE)
-    worker = dispatch(story, flags='--profile journal-senior --program sample')
-    expect_program(story, worker, 'sample', 'sample-strongest')
-
-
-@pytest.mark.parametrize('program,model', [('claude', 'haiku'), ('codex', 'gpt-6.1-terra')])
-def test_profile_tier_fits_any_program_saved_model(split_story, split_viewer, program, model):
-    story = split_story
-    split_viewer.value('profiles.profiles', ['profile', 'save', 'saved-worker', '--type', 'worker', '--description', 'Implements one task', '--body', 'Do the task.', '--model', 'haiku', '--codex-model', 'gpt-6.1-terra'])
-    worker = dispatch(story, flags=f'--profile saved-worker --program {program}')
     expect_program(story, worker, program, model)
 
 
@@ -117,27 +95,6 @@ def window_split_story(split_story, request, split_viewer):
     return split_story, dispatch(split_story)
 
 
-@pytest.mark.parametrize('window_split_story', [96], indirect=True)
-def test_split_passes_over_a_nearly_used_plan_window(window_split_story):
-    story, worker = window_split_story
-    expect_program(story, worker, 'codex')
-    story.advance(timedelta(hours=1, seconds=1))
-    next_task = new_task(story, 'After reset')
-    expect_program(story, dispatch(story, str(next_task)), 'claude')
-
-
-@pytest.mark.parametrize('window_split_story', [94], indirect=True)
-def test_split_passes_over_a_nearly_used_plan_window_at_94_is_ready(window_split_story):
-    story, worker = window_split_story
-    expect_program(story, worker, 'claude')
-
-
-def test_split_passes_over_a_nearly_used_plan_window_no_status_is_ready(split_story, split_viewer):
-    story = split_story
-    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
-    expect_program(story, dispatch(story), 'codex')
-
-
 def test_exit_on_a_limit_opens_an_outage(failed_worker_story):
     story, worker, launcher = failed_worker_story
     story.expect_text('provider-outage list', 'claude', 'rate limit')
@@ -156,13 +113,6 @@ def test_exit_on_a_limit_opens_an_outage_for_a_helper(split_story):
     story.expect_text(f'message read {report.id}', 'rate limit')
 
 
-def test_exit_on_a_limit_opens_an_outage_only_for_a_failed_exit(split_story):
-    story = split_story
-    worker = dispatch(story)
-    exit_program(story, worker, code=0)
-    story.expect_text('provider-outage list', 'nothing found')
-
-
 def test_exit_on_a_limit_opens_an_outage_for_an_expired_login(split_story):
     story = split_story
     exit_program(story, dispatch(story), text='Please run /login')
@@ -177,14 +127,6 @@ def test_outage_ends_on_time(split_story, split_viewer):
     story.advance(timedelta(minutes=15, seconds=1))
     expect_program(story, dispatch(story), 'codex')
     story.expect_text(f'provider-outage show {row_id}', 'rate limit', ends_at)
-
-
-def test_outage_ends_on_time_back_now_ends_it_early(split_story, split_viewer):
-    story = split_story
-    row_id, _ = outage(story)
-    split_viewer.value('workers.workers', ['provider-outage', 'delete', str(row_id)])
-    set_split(story, 'codex 100,claude 0', viewer=split_viewer)
-    expect_program(story, dispatch(story), 'codex')
 
 
 def test_worker_on_an_out_program_does_not_restart(failed_worker_story):

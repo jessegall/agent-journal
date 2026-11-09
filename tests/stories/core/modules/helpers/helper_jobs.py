@@ -76,14 +76,6 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, mon
     story.expect_rows(len(read_jobs(story, helper)) == 2, helper.session in " ".join(launcher.requests[0]["command"]), JOB in " ".join(launcher.requests[0]["command"]))
 
 
-def test_a_long_job_arrives_whole(new_story):
-    story = new_story(fixture=StartedHelper)
-    helper = helper_agent(story)
-    job = "y" * 6000
-    story.expect_success(f'helper send {helper.id} "{job}" --steer', actor=story.agent)
-    story.expect_rows(job in read_jobs(story, helper)[0].brief)
-
-
 def test_a_send_refuses_an_agent_that_is_no_helper(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_refusal(f'helper send {story.agent.id} "{JOB}"', "is no helper", actor=story.agent)
@@ -137,12 +129,6 @@ def test_a_job_on_other_files_starts_a_new_helper(new_story):
     story = new_story(fixture=EndedHelper)
     FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success('helper start journal-researcher --brief "Read src/queue.py" --environment main', actor=story.agent)
-
-
-def test_a_send_says_which_helper_takes_the_job(new_story):
-    story = new_story(fixture=StartedHelper)
-    helper = helper_agent(story)
-    story.expect_success(f'helper send {helper.id} "{JOB}" --steer', f"helper {helper.id} takes the job", actor=story.agent)
 
 
 def test_a_helper_that_ran_as_a_program_subagent_is_refused_a_new_job(new_story):

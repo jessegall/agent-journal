@@ -4,6 +4,7 @@ from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from tunnels.tunler.commands.install_tunler.install_tunler_handler import InstallTunlerHandler
@@ -38,4 +39,5 @@ class TunlerModule(Module):
     handlers = [LoginTunlerHandler, LogoutTunlerHandler, UpdateTunlerHandler, InstallTunlerHandler, ReleaseTunlerDomainHandler]
     windows = [WindowDeclaration("tunler.account", "Tunler", "tunler.js", WindowLoading.COMPONENT, skeleton=TUNLER_ACCOUNT_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SHARE,
                                  reads=["tunler status", "tunler domains", "tunler version"],
+                                 keys=[WindowKey("status", "tunler status"), WindowKey("version", "tunler version"), WindowKey("domains", "tunler domains")],
                                  runs=["tunler login", "tunler logout", "tunler update", "tunler install", "tunler release", "setting set"])]

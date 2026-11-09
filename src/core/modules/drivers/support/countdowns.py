@@ -36,5 +36,9 @@ class Countdowns:
         if kept is not None:
             self.repository.delete_stored(kept, context)
 
+    def used_count(self, count_down: CountDown, actor_id: int) -> int:
+        kept = self.kept(count_down, actor_id)
+        return 0 if kept is None else kept.used_count
+
     def kept(self, count_down: CountDown, actor_id: int) -> Countdown | None:
         return self.queries.query(Countdown).filter(actor_id=actor_id, key=count_down.key).first()

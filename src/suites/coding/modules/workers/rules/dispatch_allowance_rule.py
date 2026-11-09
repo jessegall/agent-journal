@@ -18,6 +18,7 @@ class DispatchAllowanceRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "The main agent dispatches no workers while the setting main-dispatches-workers is off"
 
     def __init__(self, settings: SettingValues, guidance: AutoAdvice) -> None:
         self.settings, self.guidance = settings, guidance

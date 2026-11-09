@@ -1,4 +1,3 @@
-from core.base.change.event_log import FILE_PUBLISHING_EVENTS, UPGRADE_FINISHED_EVENT
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.registry.registry import Registry

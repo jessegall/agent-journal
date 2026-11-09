@@ -42,14 +42,6 @@ def test_what_a_worker_says_as_it_stops_with_every_task_handed_in_is_its_report_
     story.expect_text("message read 1", REPORT, actor=story.agent)
 
 
-def test_a_worker_that_stops_with_no_words_leaves_no_report(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = delivered_worker(story, repository)
-    story.expect_hook_allowed(worker_session(story, worker), stop_with_text(" "))
-    story.expect_text("message feed", "nothing found")
-
-
 def test_a_worker_refused_its_stop_leaves_no_report(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)

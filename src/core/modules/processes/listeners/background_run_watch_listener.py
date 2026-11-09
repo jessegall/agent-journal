@@ -7,7 +7,6 @@ from core.base.command.bus import Bus
 from core.base.driver.block_until import BlockUntil
 from core.base.driver.tool_type import ToolType
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository

@@ -2,15 +2,11 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
-from core.base.query.conditions.equal import Equal
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun, START
-from core.modules.sequences.models.sequence import Sequence
+from core.modules.sequences.models.support.sequence_trigger_list import SequenceTriggerList
+from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_STARTED
-from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
-
-EMPTY_TRIGGERS = "[]"
 
 
 class SequenceTriggerRule(DriverRule):
@@ -21,17 +17,16 @@ class SequenceTriggerRule(DriverRule):
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
 
-    def __init__(self, queries: Queries, runs: SequenceRunQuery) -> None:
-        self.queries, self.runs = queries, runs
+    def __init__(self, sequences: SequenceQuery, runs: SequenceRunQuery) -> None:
+        self.sequences, self.runs = sequences, runs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        candidates = self.queries.query(Sequence).matching(Equal("triggers", EMPTY_TRIGGERS, negated=True))
-        triggered = [sequence for sequence in candidates.all_rows() if self.is_triggered(sequence, hook)]
-        sequence = next((sequence for sequence in triggered if not self.runs.is_running(hook.agent_id, sequence.id)), None)
+        triggered = [candidate for candidate in self.sequences.trigger_lists() if self.is_triggered(candidate, hook)]
+        sequence = next((candidate for candidate in triggered if not self.runs.is_running(hook.agent_id, candidate.sequence_id)), None)
         if sequence is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(SEQUENCE_STARTED.nudge(sequence=sequence.id)).running(MoveSequenceRun(START, sequence.id))
+        return RuleAnswer.with_nudges(SEQUENCE_STARTED.nudge(sequence=sequence.sequence_id)).running(MoveSequenceRun(START, sequence.sequence_id))
 
     @staticmethod
-    def is_triggered(sequence: Sequence, hook: AgentHook) -> bool:
-        return any(trigger.matches_hook(hook) for trigger in SequenceTriggers.parsed(sequence.triggers))
+    def is_triggered(candidate: SequenceTriggerList, hook: AgentHook) -> bool:
+        return any(trigger.matches_hook(hook) for trigger in candidate.triggers)

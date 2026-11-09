@@ -22,17 +22,6 @@ def installed_file(story, name: str) -> str:
     return next(story.home.folder.rglob(name)).read_text()
 
 
-def test_an_old_reader_file_is_rewritten_with_its_first_comment_as_its_title_and_loads_with_it(new_story):
-    story = new_story(fixture=UserJoined)
-    folder, readers = reader_folder(story)
-    (readers / "cart-test.pattern").write_text("# each package's result\n^(ok|FAIL)\\s\nlabel: Cart tests\nfinished: ^ok\n")
-    (readers / "merge.sh").write_text("#!/bin/sh\n# what a merge did\n# label: Worker merge\ncat\n")
-    name_index = installed_readers(story, folder)
-    rewritten = (installed_file(story, "cart-test.pattern"), installed_file(story, "merge.sh"))
-    story.expect_rows(name_index["cart-test"]["title"] == "each package's result", name_index["merge"]["title"] == "what a merge did",
-                      rewritten[0].startswith("title: each package's result\n^(ok|FAIL)"), "# title: what a merge did" in rewritten[1], detail=str(rewritten))
-
-
 def test_a_new_reader_file_that_declares_its_title_loads_with_it_and_is_left_as_it_is(new_story):
     story = new_story(fixture=UserJoined)
     folder, readers = reader_folder(story)

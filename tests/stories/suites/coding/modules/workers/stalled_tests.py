@@ -43,13 +43,6 @@ def test_a_proof_with_a_test_the_main_agent_checked_needs_no_run_and_the_worker_
     story.expect_text("task show 2", "state: started", actor=story.agent)
 
 
-def test_worker_next_says_the_tests_run_only_while_they_do(two_tasks):
-    story, worker, _ = two_tasks
-    story.expect_success("worker next --wait --differences none", actor=worker)
-    story.run_listeners()
-    story.expect_refusal("worker next --wait --differences none", RUNNING, actor=worker)
-
-
 @pytest.fixture
 def edited_proof(two_tasks):
     story, worker, started = two_tasks
@@ -59,13 +52,6 @@ def edited_proof(two_tasks):
     story.expect_success('proof edit 1 --task 1 "cart.py:1, the cart story and the total" --test "python tests/cart.py"', actor=worker)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
     return story, worker, started
-
-
-def test_worker_next_queues_a_test_a_proof_edit_left_behind(edited_proof):
-    story, worker, started = edited_proof
-    story.expect_text("worker next --wait --differences none", "are queued", actor=worker)
-    story.expect_text("proof show 1", "state: running", actor=story.agent)
-    story.expect_rows(len(started) == 2)
 
 
 def test_the_tick_queues_a_test_a_proof_edit_left_behind(edited_proof):

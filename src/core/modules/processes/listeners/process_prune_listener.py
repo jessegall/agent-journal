@@ -3,7 +3,6 @@ from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.listener.event_rows import EventRows
 from core.modules.processes.commands.prune_processes.prune_processes import PruneProcesses
-from core.modules.processes.models.process import Process
 from core.base.command.context import Context
 
 

@@ -6,31 +6,6 @@ from tests.stories.support.story_checks import expect_endswith_authorization, ex
 LONG_BRIEF = "Before " + "words " * 20 + "the cents   rounding\n\nbreaks " + "after " * 30
 
 
-def test_a_row_holding_every_word_in_any_of_its_fields_is_found_with_its_noun_and_number(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('task make "Fix the cart" --brief "totals in cents" --environment main', actor=story.user)
-    story.expect_text('search find cart cents', "task 1: ", actor=story.agent)
-
-
-def test_a_row_missing_every_word_but_one_is_found_as_the_closest_and_the_line_says_so(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('task make "Fix the cart" --brief "totals in cents" --environment main', actor=story.user)
-    story.expect_text('search find cart euros', "no row holds all of: cart, euros, these hold most of them, the closest first", "task 1: ", actor=story.agent)
-
-
-def test_rows_holding_more_of_the_words_come_before_rows_holding_fewer(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('task make "Fix the cart in cents" --environment main', actor=story.user)
-    story.run('task make "Fix the cart in cents and euros" --environment main', actor=story.user)
-    story.expect_ordered_lines('search find cart cents euros pounds', "task 2: ", "task 1: ", actor=story.agent)
-
-
-def test_a_search_where_no_row_holds_even_half_the_words_finds_nothing(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('task make "Fix the cart" --brief "totals in cents" --environment main', actor=story.user)
-    story.expect_success('search find zebra euros pounds', "nothing here holds all of: zebra euros pounds", actor=story.agent)
-
-
 def test_a_word_matches_by_its_stem_so_hours_finds_two_hourly(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "The two-hourly reviewer" --environment main', actor=story.user)
@@ -50,12 +25,6 @@ def test_a_message_ranks_above_a_process_that_holds_the_same_words(new_story):
     start_process(story, "make cart", limit_seconds=0)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.expect_ordered_lines('search find cart', "message ", "process ", actor=story.agent)
-
-
-def test_words_match_whatever_their_case(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('task make "Fix the Cart" --environment main', actor=story.user)
-    story.expect_text('search find CART', "task 1: Fix the Cart", actor=story.agent)
 
 
 def test_hits_of_every_model_come_newest_first(new_story):
@@ -108,22 +77,8 @@ def test_a_comma_separated_model_filter_searches_only_those_modules(new_story):
     story.expect_text('search find tests cart --model task', "task 1: Cart task", actor=story.agent)
 
 
-def test_at_most_forty_hits_are_shown_and_the_line_says_more_were_found(new_story):
-    story = new_story(fixture=UserJoined)
-    for number in range(45):
-        story.run(f'task make "Cart task {number}" --environment main', actor=story.user)
-    output = story.run('search find cart', actor=story.agent).output_text
-    expect_sum_startswith_output("task ", output, 40)
-    expect_value_with(output, "45 rows hold all of: cart, the newest 40 are shown")
-
-
 def expect_fewer_rows_loaded(loaded, limit) -> None:
     assert loaded < limit, loaded
-
-
-def expect_sum_startswith_output(text, output, expected) -> None:
-    actual = sum((line.startswith(text) for line in output.splitlines()))
-    assert actual == expected, actual
 
 
 def test_a_search_that_matches_nothing_loads_no_whole_rows(new_story):

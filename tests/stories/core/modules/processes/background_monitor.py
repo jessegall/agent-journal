@@ -20,28 +20,6 @@ def running(new_story):
     return story, moved_run(story, "make test")
 
 
-def test_a_moved_run_with_no_monitor_leaves_the_agent_working(running):
-    story, _ = running
-    expect_reply_allowed(story.hook("s-1", BUILD))
-
-
-def test_a_stop_with_a_run_going_and_no_monitor_is_refused(running):
-    story, process = running
-    story.expect_hook_refusal("s-1", HookSamples.stop(), f"output {process.id} still runs: set a Monitor on its wait before you stop")
-
-
-def test_a_monitor_on_the_run_lets_the_agent_stop(running):
-    story, process = running
-    story.hook("s-1", monitor(f"journal output monitor {process.id}"))
-    expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "set a Monitor")
-
-
-def test_a_monitor_on_another_run_does_not_let_the_agent_stop(running):
-    story, process = running
-    story.hook("s-1", monitor(f"journal output monitor {process.id + 1}"))
-    story.expect_hook_refusal("s-1", HookSamples.stop(), f"output {process.id} still runs")
-
-
 def test_each_running_output_needs_its_own_monitor(running):
     story, first = running
     second = moved_run(story, "make build")

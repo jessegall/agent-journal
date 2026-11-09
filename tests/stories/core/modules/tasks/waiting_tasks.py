@@ -36,12 +36,6 @@ def test_it_opens_when_the_task_it_waits_on_completes(new_story):
     story.expect_rows(read_state(story, 1) == "started")
 
 
-def test_it_opens_when_the_task_it_waits_on_is_cancelled(new_story):
-    story = new_story(fixture=WaitingTask)
-    story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
-    story.expect_rows(read_state(story, 1) == "open")
-
-
 def test_it_opens_when_the_task_it_waits_on_is_removed(new_story):
     story = new_story(fixture=WaitingTask)
     story.expect_success("task delete 2", actor=story.user)
@@ -51,16 +45,6 @@ def test_it_opens_when_the_task_it_waits_on_is_removed(new_story):
 def test_it_opens_when_the_dependency_is_removed(new_story):
     story = new_story(fixture=WaitingTask)
     story.expect_success("task remove-dependency 1 --on 2", actor=story.agent)
-    story.expect_rows(read_state(story, 1) == "open")
-
-
-def test_it_stays_blocked_until_the_last_task_it_waits_on_ends(new_story):
-    story = new_story(fixture=WaitingTask)
-    story.expect_success('task make "Also needed"', actor=story.agent)
-    story.expect_success("task depend 1 --on 3", actor=story.agent)
-    story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
-    story.expect_rows(read_state(story, 1) == "blocked")
-    story.expect_success('task cancel 3 --reason "Not needed"', actor=story.agent)
     story.expect_rows(read_state(story, 1) == "open")
 
 

@@ -2,7 +2,6 @@ from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLi
 from core.base.change.moved import Moved
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.model.model import Model
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_group import ProcessGroup

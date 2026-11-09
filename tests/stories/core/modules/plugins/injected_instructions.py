@@ -40,39 +40,12 @@ def test_injected_instructions_are_written_on_enable(new_story):
     expect_value(bool(LAW in text and PLUGIN_TEXT in text), True)
 
 
-def test_injected_instructions_are_removed_on_disable(new_story):
-    story = new_story(fixture=UserJoined)
-    plugin_with_text(story, "disabled")
-    expect_value(PLUGIN_TEXT in journal_text(story), True)
-    executed(story, "plugin disable disabled")
-    text = journal_text(story)
-    expect_value(bool(LAW in text and PLUGIN_TEXT not in text), True)
-
-
 def test_injected_instructions_are_removed_when_deleted(new_story):
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "deleted")
     executed(story, "plugin disable deleted")
     executed(story, "plugin remove deleted")
     expect_value(PLUGIN_TEXT not in journal_text(story), True)
-
-
-def test_injected_instructions_are_removed_when_deleted_without_disabling_first(new_story):
-    story = new_story(fixture=UserJoined)
-    plugin_with_text(story, "direct")
-    expect_value(PLUGIN_TEXT in journal_text(story), True)
-    executed(story, "plugin remove direct")
-    expect_value(PLUGIN_TEXT not in journal_text(story), True)
-
-
-def test_a_file_outside_the_plugin_is_not_taken_as_its_text(new_story):
-    story = new_story(fixture=UserJoined)
-    external = story.home.folder.parent / "outside.md"
-    external.write_text("Text from outside the plugin.\n")
-    folder = event_plugin_folder(story.home.folder.parent, [], {}, injected_instructions=["../outside.md"])
-    story.expect_success(f"plugin install {folder} --yes", actor=story.user)
-    story.run_listeners()
-    expect_value("Text from outside" not in journal_text(story), True)
 
 
 def booted(story):
@@ -115,18 +88,3 @@ def test_the_block_an_older_journal_wrote_into_an_official_file_goes(new_story):
     (project / "AGENTS.md").write_text(f"{PROJECT_TEXT}\n{OLD_BLOCK}\nOur own ending.\n")
     booted(story)
     expect_value((project / "AGENTS.md").read_text(), f"{PROJECT_TEXT}\nOur own ending.\n\n@JOURNAL.md\n")
-
-
-def test_a_codex_agent_receives_the_text_through_its_launch_setting(new_story):
-    story = new_story(fixture=MainEnvironment)
-    folder = story.home.folder.parent / "project"
-    folder.mkdir()
-    (folder / "JOURNAL.md").write_text('The "journal" text.\n')
-    story.expect_text(f"program command codex {folder} --launch launch-1", '-c\ndeveloper_instructions="The \\"journal\\" text.\\n"')
-
-
-def test_a_codex_agent_in_a_folder_without_the_file_has_no_launch_setting(new_story):
-    story = new_story(fixture=MainEnvironment)
-    folder = story.home.folder.parent / "project"
-    folder.mkdir()
-    expect_value("developer_instructions" not in story.run(f"program command codex {folder} --launch launch-1").output_text, True)

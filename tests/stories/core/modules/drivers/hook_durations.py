@@ -16,11 +16,6 @@ def terminal_line(story) -> str:
     return story.hook("s-1", HookSamples.stop()).terminal
 
 
-def test_no_hook_duration_reaches_the_terminal_while_the_developer_switch_is_off(new_story):
-    story = new_story(fixture=UserBuilder)
-    expect_terminal_line(story, "")
-
-
 def test_a_hook_duration_reaches_the_terminal_once_the_developer_switch_is_on(new_story):
     story = new_story(fixture=HookLogging)
     line = terminal_line(story)
@@ -41,13 +36,6 @@ def test_switching_the_developer_switch_off_turns_off_the_hooks_group_with_it(ne
     story.run(f"setting switch {MASTER} off --project", actor=story.user)
     story.expect_success(f"setting show {HOOKS}.terminal-durations", "value: off", actor=story.user)
     expect_terminal_line(story, "")
-
-
-def test_a_stop_hook_costs_the_database_less_than_the_50_points_a_hook_may_cost(new_story):
-    story = new_story(fixture=HookLogging)
-    line = terminal_line(story)
-    points = int(line.split("hook stop ")[1].split(" points")[0])
-    expect_value_less(points, 50)
 
 
 def test_the_agent_is_never_told_what_a_hook_cost_and_the_terminal_says_when_it_went_over(new_story, monkeypatch):

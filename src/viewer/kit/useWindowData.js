@@ -2,6 +2,7 @@ import {onUnmounted, reactive, ref, watch} from "vue";
 import {rowList} from "./useRows.js";
 import {usePoll} from "./usePoll.js";
 import {matches} from "../src/windows/windowSubscriptions.js";
+import {eventMayBeChildOf} from "./eventRows.js";
 
 const RELOAD_JOIN_MS = 50;
 const REFRESH_EVENT = "refresh";
@@ -28,8 +29,10 @@ export function useWindowData(context) {
     let latestRead = 0;
     let disposed = false;
 
+    const keyOf = (name) => declared[name] ?? declared[`${name.slice(0, name.lastIndexOf("."))}.*`] ?? {};
+
     function propOf(name) {
-        const key = () => declared[name] ?? declared[`${name.slice(0, name.lastIndexOf("."))}.*`] ?? {};
+        const key = () => keyOf(name);
         const data = ref(undefined);
         const list = rowList(context, async (flags) => {
             const result = await readKey(name, flags);
@@ -125,6 +128,12 @@ export function useWindowData(context) {
     // a key with ids, such as rounds.*, reloads the ids that were read
     const loadedNames = (name) => (name.endsWith(ID_KEY_SUFFIX) ? Object.keys(held).filter((heldName) => heldName.startsWith(name.slice(0, -1)) && held[heldName].readAt) : [name]);
 
+    // a key that names the column of its events' rows reads again only for an event that names its own id, or does not say whose it is
+    const concerns = (name, event) => {
+        const column = keyOf(name).event_column;
+        return !column || eventMayBeChildOf(event, column, new Set([Number(name.slice(name.lastIndexOf(".") + 1))]));
+    };
+
     const reloadSecondsOf = (name) => (declared[name] ?? declared[`${name.split(".")[0]}.*`]).reload_seconds;
 
     function heard(event) {
@@ -132,7 +141,7 @@ export function useWindowData(context) {
         names.filter((name) => declared[name].page_size).forEach((name) => props[name].heard(event));
         const ownNames = names.filter((name) => !declared[name].page_size);
         ownNames.filter((name) => !isOnScreen(name)).forEach((name) => (props[name].readAt = 0));
-        reloadSoon(ownNames.filter(isOnScreen).flatMap(loadedNames));
+        reloadSoon(ownNames.filter(isOnScreen).flatMap(loadedNames).filter((name) => concerns(name, event)));
     }
 
     function follow(listed) {

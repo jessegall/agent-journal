@@ -25,6 +25,7 @@ class MainFileWriteRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "While the main agent writes no code, it writes no file of the project checkout, by a file tool or a shell"
 
     def __init__(self, options: CodingMainOptions, rows: EventRows) -> None:
         self.options, self.rows = options, rows

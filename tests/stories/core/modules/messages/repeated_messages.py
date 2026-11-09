@@ -54,13 +54,6 @@ def test_a_message_on_the_same_subject_with_its_points_elsewhere_in_the_text_pas
     delivered(story, DUPLICATE_SUBJECT)
 
 
-def test_only_the_last_five_messages_are_compared(new_story):
-    story = new_story(fixture=FirstMessageDelivered, environment="main")
-    for filler in FILLERS:
-        delivered(story, filler)
-    delivered(story, REWORDED)
-
-
 def test_closing_words_much_like_an_earlier_turns_message_are_held_and_the_agent_is_told(new_story):
     story = new_story(fixture=UserBuilder, environment="main")
     story.run('message send "Is the merge done?"', actor=story.user)

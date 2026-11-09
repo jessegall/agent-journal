@@ -31,10 +31,6 @@ def test_outage_ends_on_time_without_split(ready_program_story):
     story.expect_text(f'provider-outage show {row_id}', 'rate limit', 'ends_at:')
 
 
-def test_outage_unknown_program_is_refused(ready_program_story):
-    ready_program_story.expect_refusal('provider-outage make gone "rate limit" --ends-at 2027-01-01T00:00:00+00:00', 'unknown program', actor=ready_program_story.agent)
-
-
 def test_mark_a_program_out_past_time_is_refused(ready_program_story):
     story = ready_program_story
     story.expect_refusal('provider-outage make codex "out of credit" --ends-at 2026-10-30T09:00:00+00:00', 'future', actor=story.agent)

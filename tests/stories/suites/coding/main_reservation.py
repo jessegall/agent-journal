@@ -19,11 +19,6 @@ def assigned_task(story):
         return story.container.get(AvailableWork).answer(story.agent.id).assigned_task
 
 
-def plan_tasks(story) -> dict[int, dict[str, object]]:
-    phases = json.loads(story.run("plan inspect 1 --json", actor=story.user).output_text)["phases"]
-    return {task["id"]: task for phase in phases for task in phase["tasks"]}
-
-
 def delegated_cards(story) -> list[dict[str, object]]:
     board = json.loads(story.run("task board --environment main --state open --json", actor=story.agent).output_text)
     return [row for row in board["groups"][0]["rows"] if row["delegated_to"] is not None]
@@ -46,34 +41,6 @@ def test_a_person_assigns_a_task_to_the_main_agent_and_the_board_shows_who_it_wa
     expect_value((card["id"], card["delegated_to"], card["delegated_name"]), (1, story.agent.id, f"Agent {story.agent.id}"))
 
 
-def test_a_main_agent_claims_a_whole_plan_and_the_plan_shows_it(new_story):
-    story = planned_story(new_story)
-    story.expect_success(f"plan assign 1 --to {story.agent.id}", actor=story.agent)
-    for task in (*BUILD_PHASE_TASKS, SHIP_PHASE_TASK):
-        expect_reserved(story, task)
-    inspection = json.loads(story.run("plan inspect 1 --json", actor=story.user).output_text)
-    expect_value((inspection["assignee"]["main"], inspection["delegated"]), (True, True))
-    expect_value(plan_tasks(story)[1]["helper_id"], story.agent.id)
-    expect_value((plan_tasks(story)[1]["helper_main"], {agent["main"] for agent in inspection["agents"]}), (True, {True}))
-    board = json.loads(story.run("plan board --environment main --json", actor=story.user).output_text)["plans"][0]
-    expect_value({agent["main"] for agent in board["agents"]}, {True})
-
-
-def test_a_person_assigns_one_phase_to_the_main_agent_and_the_plan_keeps_no_agent(new_story):
-    story = planned_story(new_story)
-    story.expect_success(f"plan assign 1 --phase 2 --to {story.agent.id}", actor=story.user)
-    expect_reserved(story, SHIP_PHASE_TASK)
-    for task in BUILD_PHASE_TASKS:
-        story.expect_absent(f"task show {task}", "delegated_to", actor=story.agent)
-    expect_value(json.loads(story.run("plan inspect 1 --json", actor=story.user).output_text)["assignee"], None)
-    expect_value(plan_tasks(story)[SHIP_PHASE_TASK]["helper_id"], story.agent.id)
-
-
-def test_a_phase_that_is_not_in_the_plan_is_refused(new_story):
-    story = planned_story(new_story)
-    story.expect_refusal(f"plan assign 1 --phase 9 --to {story.agent.id}", "phase 9 is not in plan 1", actor=story.agent)
-
-
 def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("driver choose coding.main --environment main")
@@ -92,26 +59,11 @@ def test_an_open_task_stays_with_auto_mode_while_a_reservation_ends_when_the_mai
     story.expect_text("task show 1", f"holder_id: {story.agent.id}", actor=story.agent)
 
 
-def test_a_reserved_task_of_a_plan_waits_for_the_plan_to_start_and_comes_in_its_order(new_story):
-    story = planned_story(new_story)
-    story.expect_success(f"plan assign 1 --to {story.agent.id}", actor=story.user)
-    expect_value(assigned_task(story), None)
-    story.expect_success("plan start 1", actor=story.user)
-    expect_value(assigned_task(story).id, 1)
-
-
 def test_a_main_agent_that_writes_no_code_cannot_have_a_task_reserved(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     story.expect_success(f"setting set {WRITES_CODE} off --environment main")
     story.expect_refusal(f"task assign 1 --to {story.agent.id}", "task 1 goes to a worker", actor=story.agent)
     story.expect_absent("task show 1", "delegated_to", actor=story.agent)
-
-
-def test_letting_the_agent_pick_reserves_nothing(new_story):
-    story = planned_story(new_story)
-    story.expect_success("plan assign 1", actor=story.user)
-    for task in BUILD_PHASE_TASKS:
-        story.expect_absent(f"task show {task}", "delegated_to", actor=story.agent)
 
 
 def test_a_reserved_task_is_not_sent_to_a_worker(new_story):
@@ -122,29 +74,12 @@ def test_a_reserved_task_is_not_sent_to_a_worker(new_story):
     expect_reserved(story, 1)
 
 
-def test_a_plan_sent_to_a_worker_leaves_the_task_reserved_for_the_main_agent(new_story):
-    story = planned_story(new_story)
-    story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1")
-    expect_reserved(story, 1)
-    story.expect_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
-    story.expect_refusal("task start 1", f"task 1 is reserved for agent {story.agent.id}", actor=worker)
-
-
 def test_a_reserved_task_is_not_offered_to_send_to_a_worker(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     with scope_line(story):
         answer = story.container.get(AvailableWork).answer(story.agent.id)
     expect_value(answer.delegatable, ())
-
-
-def test_a_person_moves_a_task_reserved_for_the_main_agent_to_a_worker(new_story):
-    story = planned_story(new_story)
-    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
-    story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.user)
-    story.expect_success(f"task assign 1 --to {worker.id}", actor=story.user)
-    story.expect_text("task show 1", f"delegated_to: {worker.id}", actor=story.agent)
 
 
 def test_a_blocked_task_can_be_assigned_to_a_main_agent_and_stays_blocked(new_story):

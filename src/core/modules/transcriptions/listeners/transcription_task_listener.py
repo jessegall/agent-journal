@@ -1,6 +1,5 @@
 from core.base.actor_type import ActorType
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.scope.scopes import Scopes

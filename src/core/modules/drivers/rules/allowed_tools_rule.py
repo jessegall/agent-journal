@@ -15,6 +15,7 @@ class AllowedToolsRule(AllowedCommandTypesRule):
     name = "drivers.allowed-tools"
     allowed_tools: ClassVar[Sequence[ToolType]] = tuple(ToolType)
     refusal = TOOL_RESTRICTION
+    refuses_one_action = "Allows the tool types and shell command categories declared by a driver"
 
     def __init__(self, providers: Providers) -> None:
         self.providers = providers

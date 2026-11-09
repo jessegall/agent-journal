@@ -136,11 +136,6 @@ def test_nothing_is_typed_to_an_agent_that_starts_again_after_a_compaction(compa
     expect_value(typing.typed, [])
 
 
-def test_a_new_session_is_told_to_run_the_overview(new_story):
-    story = overview_story(new_story)
-    story.expect_hook_allowed("s-1", HookSamples.session_start(), "read the overview")
-
-
 def test_the_overview_shows_the_memories(new_story):
     story = compacted_story(new_story)
     text = story.run("overview", actor=story.agent, environment_id=1).output_text

@@ -3,6 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.seconds import Seconds
 from core.base.scope.actor_scope import ActorScope
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.support.worker_compaction import WorkerCompaction
@@ -10,7 +11,8 @@ from suites.coding.modules.workers.support.worker_nudges import CONTEXT_STOP_AFT
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
-from suites.coding.modules.workers.rules.context_size_rule import RETRY_SECONDS
+
+RETRY_SECONDS = Seconds(600)
 
 
 class ContextStopNowRule(DriverRule):

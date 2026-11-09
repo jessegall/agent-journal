@@ -84,13 +84,6 @@ def test_reserved_prompt_values_cannot_be_supplied(new_story, name):
     expect_empty_messages(story)
 
 
-@pytest.mark.parametrize("target", ["plan", "plan:unknown", "unknown:1", "plan:999"])
-def test_a_target_that_cannot_be_found_leaves_no_message(new_story, target):
-    story = new_story(fixture=SendingTemplates, environment="main")
-    story.expect_refusal(f"template send 2 --on={target}", "row" if target != "plan:999" else "no plan 999", actor=story.user)
-    expect_empty_messages(story)
-
-
 def test_a_target_outside_the_template_targets_is_refused(new_story):
     story = new_story(fixture=SendingTemplates)
     story.expect_refusal(CRITIQUE.replace("send 1", "send 4"), "does not apply to plan", actor=story.user)

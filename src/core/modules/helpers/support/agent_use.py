@@ -4,7 +4,6 @@ from datetime import timedelta
 
 from core.base.clock import Clock
 from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import MAIN_ROLE, Agent
 from core.modules.drivers.models.helper_job import HelperJob

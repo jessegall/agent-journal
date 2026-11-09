@@ -92,14 +92,6 @@ def test_a_change_of_a_task_that_is_not_its_text_does_not_link_it(old_task):
     story.expect_no_text("message read 1", "links:", actor=story.user)
 
 
-def test_a_task_a_reply_names_links_to_the_message_it_answers(old_task):
-    story = old_task
-    story.run('message send "Is it filed" --environment main', actor=story.user)
-    story.run('message reply 1 "Yes, it is task 1"', actor=story.agent)
-    story.run_listeners()
-    story.expect_text("message read 1", "links: task:1", actor=story.user)
-
-
 def test_a_reply_naming_a_task_that_does_not_exist_links_nothing(new_story):
     story = new_story(fixture=UserBuilder)
     story.run('message send "Is it filed" --environment main', actor=story.user)

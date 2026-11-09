@@ -1,7 +1,6 @@
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.actors.models.actor_record import ActorRecord

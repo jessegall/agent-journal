@@ -1,0 +1,188 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "assignment",
+        "where": [
+            {
+                "topLevel": true
+            },
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|core/testing|server|install|tunnels)/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)(__init__|[a-z_]+_(module|suite))\\.py$"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/testing/fake_launcher.py"
+            },
+            {
+                "file": "src/core/testing/full_run_records.py"
+            },
+            {
+                "file": "src/core/testing/heavy_run_gate.py"
+            },
+            {
+                "file": "src/core/testing/helper_started.py"
+            },
+            {
+                "file": "src/core/testing/hook_samples.py"
+            },
+            {
+                "file": "src/core/testing/manual_clock.py"
+            },
+            {
+                "file": "src/core/testing/pytest_plugin.py"
+            },
+            {
+                "file": "src/core/testing/run_size.py"
+            },
+            {
+                "file": "src/core/testing/story.py"
+            },
+            {
+                "file": "src/core/testing/story_body.py"
+            },
+            {
+                "file": "src/core/testing/story_budget.py"
+            },
+            {
+                "file": "src/core/testing/story_overlap.py"
+            },
+            {
+                "file": "src/core/testing/story_path.py"
+            },
+            {
+                "file": "src/core/testing/temp_folders.py"
+            },
+            {
+                "file": "src/core/testing/template_adaptation.py"
+            },
+            {
+                "file": "src/core/testing/template_cache.py"
+            },
+            {
+                "file": "src/core/testing/working_journal.py"
+            },
+            {
+                "file": "src/install/built_bundle.py"
+            },
+            {
+                "file": "src/install/built_bundles.py"
+            },
+            {
+                "file": "src/install/chat_update_steps.py"
+            },
+            {
+                "file": "src/install/code_handover.py"
+            },
+            {
+                "file": "src/install/hook_switch.py"
+            },
+            {
+                "file": "src/install/install_journal.py"
+            },
+            {
+                "file": "src/install/launcher_replacement.py"
+            },
+            {
+                "file": "src/install/restore_version_four.py"
+            },
+            {
+                "file": "src/install/run_drain.py"
+            },
+            {
+                "file": "src/install/server_lock.py"
+            },
+            {
+                "file": "src/install/server_stop.py"
+            },
+            {
+                "file": "src/install/update_steps.py"
+            },
+            {
+                "file": "src/install/upgrade_journal.py"
+            },
+            {
+                "file": "src/install/upgrade_report_file.py"
+            },
+            {
+                "file": "src/install/upgrade_text.py"
+            },
+            {
+                "file": "src/install/version_four.py"
+            },
+            {
+                "file": "src/install/version_four_backup.py"
+            },
+            {
+                "file": "src/install/version_four_files.py"
+            },
+            {
+                "file": "src/install/working_tree_install.py"
+            },
+            {
+                "file": "src/server/code_folders.py"
+            },
+            {
+                "file": "src/server/handover_descriptors.py"
+            },
+            {
+                "file": "src/server/hosted_journal_door.py"
+            },
+            {
+                "file": "src/server/journal_round.py"
+            },
+            {
+                "file": "src/server/journal_server.py"
+            },
+            {
+                "file": "src/server/listener_thread.py"
+            },
+            {
+                "file": "src/server/request_handler.py"
+            },
+            {
+                "file": "src/server/request_log.py"
+            },
+            {
+                "file": "src/server/server.py"
+            },
+            {
+                "file": "src/server/server_backup.py"
+            },
+            {
+                "file": "src/server/server_context.py"
+            },
+            {
+                "file": "src/server/server_files.py"
+            },
+            {
+                "file": "src/server/server_instance.py"
+            },
+            {
+                "file": "src/server/socket_peer.py"
+            },
+            {
+                "file": "src/server/successor_proof.py"
+            },
+            {
+                "file": "src/server/successor_start.py"
+            },
+            {
+                "file": "src/server/tracked_requests.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "top-loose-value",
+        "description": "A value sits loose directly in a top folder of src, so it belongs to no folder.",
+        "rule": "Move it into the folder of its area under a top folder of src. Every class, function and value sits in a folder named for its sort: errors, enums, models, support or the folder of its area.",
+        "skill": "plain-code-words"
+    }
+}

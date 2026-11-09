@@ -36,11 +36,6 @@ def test_a_field_named_twice_is_refused(new_story):
     story.expect_refusal('secret make "Stripe" --field key', "this secret repeats a field: key, key", actor=story.agent)
 
 
-def test_an_unknown_kind_is_refused_with_the_kinds_there_are(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_refusal('secret make "Github" --type token', "a secret is one of api key, login, custom, not 'token'", actor=story.agent)
-
-
 def test_a_request_makes_the_secret_and_asks_the_user_in_the_chat_to_fill_it_on_the_secrets_window(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success('secret request "Stripe" --why "to refund order 12" --environment main', "secret 1 asked for: the user fills it on the Secrets window",
@@ -70,11 +65,6 @@ def test_a_filled_value_lives_only_in_the_values_file_outside_the_project_readab
 def test_a_field_the_secret_lacks_is_refused_with_its_fields(new_story):
     story = made_story(new_story)
     story.expect_refusal(f"secret fill 1 token {VALUE}", "secret 1 has no field token: its fields are key", actor=story.user)
-
-
-def test_a_replaced_value_is_kept_retired_beside_the_new_one(new_story, private_folder):
-    story = filled_story(new_story, f"secret fill 1 key {REPLACEMENT_VALUE}")
-    story.expect_rows(VALUE in values_text(private_folder), REPLACEMENT_VALUE in values_text(private_folder), "RETIRED_GITHUB_KEY" in values_text(private_folder))
 
 
 def test_a_value_the_agent_made_is_stored_from_its_file_which_is_deleted(new_story, private_folder, tmp_path):

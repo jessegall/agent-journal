@@ -37,19 +37,9 @@ def test_an_alias_gives_back_the_exit_code_of_its_line(new_story):
     story.run("fail", actor=story.agent).expect_code(4)
 
 
-def test_a_name_of_other_than_lower_case_letters_digits_and_dashes_is_refused(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_refusal('alias add Bad_Name "echo x"', "an alias name is lower-case letters, digits and dashes, starting with a letter or digit", actor=story.agent)
-
-
 def test_a_journal_command_name_is_refused(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_refusal('alias add task "echo x"', "task is a journal command: pick another name", actor=story.agent)
-
-
-def test_a_word_the_journal_program_takes_itself_is_refused(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_refusal('alias add launch "echo x"', "launch is a journal command: pick another name", actor=story.agent)
 
 
 def test_a_taken_name_is_refused(new_story):

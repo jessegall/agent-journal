@@ -1,11 +1,5 @@
-from core.base.agent_role import AgentRole
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import ShellLine
-from core.base.query.conditions.is_null import IsNull
-from core.base.query.queries import Queries
-from core.base.query.conditions.among import Among
-from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
-from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
@@ -33,7 +27,7 @@ class ForegroundLimit:
         part_commands = tuple(self.background.part_command(part, shell) for part in shell.parts)
         declared = self.background.declared_category(shell)
         if shell.is_journal_line and all(command.category is CommandCategory.JOURNAL for command in part_commands):
-            return ForegroundRun(0, False, part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES))
+            return ForegroundRun(0, self.background.includes(shell), part_commands=part_commands, most_output_bytes=self.output_limit(ProcessSetting.MOST_OUTPUT_MEGABYTES))
         seconds = self.seconds_allowed(agent_id)
         is_long = self.processes.has_moved_run(tuple(dict.fromkeys(part.text for part in shell.pipeline_heads)), seconds)
         reader_ids = {options.reader_id for options in alias_runs if options.reader_id is not None}

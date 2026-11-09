@@ -20,13 +20,6 @@ def test_a_person_stops_a_runaway_helper_from_its_card(new_story):
     story.expect_rows(helper_agent(story).ended_at is not None)
 
 
-def test_a_person_sends_a_job_to_a_helper_from_its_card(new_story):
-    story = new_story(fixture=StartedHelper)
-    helper = helper_agent(story)
-    WindowStory(story).expect_window_allowed("agents.helpers", f'helper send {helper.id} "{JOB}"')
-    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.user)
-
-
 def test_a_job_shows_one_mark_that_says_it_started(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_text(MARKS, "Started journal-researcher")

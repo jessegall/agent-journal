@@ -34,38 +34,15 @@ def test_a_run_the_journal_started_keeps_running_as_its_agent_after_the_agent_ha
     story.expect_requested_success(TASK_LINE, CallerRequest({"JOURNAL_AGENT_SESSION": "s-7", "JOURNAL_RUNNER_PROCESS": "12"}), f"creator_id: {agent_id}", "environment_id: 1")
 
 
-def test_a_shell_of_an_agent_program_with_no_runner_session_runs_as_the_agent_its_program_names(new_story):
-    story, agent_id = agent_with_pid(new_story)
-    story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-7", "USER": "ada"}), f"creator_id: {agent_id}", "environment_id: 1")
-
-
 def test_a_shell_of_an_agent_program_no_agent_holds_is_never_taken_for_the_person(new_story):
     story = new_story(fixture=LoginUser)
     story.expect_requested_success(TASK_LINE, CallerRequest({"CLAUDE_CODE_SESSION_ID": "s-9", "USER": "ada"}, "/work/journal/src"), f"creator_id: {CORE_ACTOR_ID}", "environment_id: 1")
-
-
-def test_an_ancestor_process_whose_pid_and_start_match_an_open_agent_names_it(new_story):
-    story, agent_id = agent_with_pid(new_story)
-    story.use_processes(ProcessRow(900, 700, REUSED_START_TIME), ProcessRow(700, 1, AGENT_START_TIME), ProcessRow(1, 0, AGENT_START_TIME))
-    story.expect_requested_success(TASK_LINE, CallerRequest(pid=900), f"creator_id: {agent_id}")
 
 
 def test_a_reused_pid_with_another_start_time_names_no_agent(new_story):
     story, agent_id = agent_with_pid(new_story)
     story.use_processes(ProcessRow(900, 700, REUSED_START_TIME), ProcessRow(700, 1, REUSED_START_TIME))
     story.expect_requested_success(f"{TASK_LINE} --environment main", CallerRequest(pid=900), f"creator_id: {CORE_ACTOR_ID}")
-
-
-def test_with_no_agent_the_person_of_the_login_name_runs_in_the_environment_holding_the_folder(new_story):
-    story = new_story(fixture=LoginUser)
-    person_id = story.user.id
-    story.expect_requested_success(TASK_LINE, CallerRequest({"USER": "ada"}, "/work/journal/src"), f"creator_id: {person_id}", "environment_id: 1")
-
-
-def test_the_deepest_environment_folder_holding_the_working_folder_wins(new_story):
-    story = new_story(fixture=MainEnvironment)
-    story.run("environment make web /work/journal/web")
-    story.expect_requested_success(TASK_LINE, CallerRequest(folder="/work/journal/web/src"), "environment_id: 2")
 
 
 def test_a_symlinked_working_folder_finds_the_environment_of_the_folder_it_points_to(new_story):

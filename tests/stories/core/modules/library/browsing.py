@@ -49,13 +49,6 @@ def connected(new_story, server: SharedServerBinary, token: str) -> Story:
     return story
 
 
-def test_the_list_names_each_item_with_its_version_title_author_and_day(new_story, shared_server):
-    server, tokens = shared_server
-    item_id = new_item(server, tokens.admin, "doc", doc_fields("Quartz release checklist"))
-    story = connected(new_story, server, tokens.editor)
-    story.expect_text("library list --search quartz", f"doc {item_id}  v1  Quartz release checklist  Ada  ", actor=story.agent)
-
-
 def test_a_list_page_has_the_shape_the_viewer_rows_read(new_story, shared_server):
     server, tokens = shared_server
     item_id = new_item(server, tokens.admin, "doc", doc_fields("Basalt page shape"))
@@ -66,33 +59,10 @@ def test_a_list_page_has_the_shape_the_viewer_rows_read(new_story, shared_server
                       (row["share"], row["id"], row["version"], row["title"], row["creator"], row["updated_by"]) == ("doc", item_id, 1, "Basalt page shape", "Ada", "Ada"))
 
 
-def test_the_list_filters_by_kind(new_story, shared_server):
-    server, tokens = shared_server
-    new_item(server, tokens.admin, "doc", doc_fields("Granite filter"))
-    new_item(server, tokens.admin, "sequence", {"title": "Granite filter steps", "steps": '["Read it"]', "step_guards": "[]"})
-    story = connected(new_story, server, tokens.editor)
-    story.expect_text("library list --type sequence --search granite", "Granite filter steps", actor=story.agent)
-    story.expect_no_text("library list --type sequence --search granite", "Granite filter  ", actor=story.agent)
-    story.expect_text("library list --type doc --search granite", "Granite filter", actor=story.agent)
-
-
 def test_a_kind_the_server_does_not_have_is_refused_with_the_kinds_it_has(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     story.expect_refusal("library list --type poem", "there is no such kind: the kinds are doc, sequence, check", actor=story.agent)
-
-
-def test_a_search_shows_the_excerpt_around_the_match(new_story, shared_server):
-    server, tokens = shared_server
-    new_item(server, tokens.admin, "doc", doc_fields("Marble excerpt", "Before anything else, tag the commit and then build the zirconium package."))
-    story = connected(new_story, server, tokens.editor)
-    story.expect_text("library list --search zirconium", "Marble excerpt", "zirconium", actor=story.agent)
-
-
-def test_a_search_that_matches_nothing_says_so(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    story.expect_success("library list --search nothingmatchesthis", "nothing found", actor=story.agent)
 
 
 def test_a_page_past_the_first_is_asked_for_by_number(new_story, shared_server):

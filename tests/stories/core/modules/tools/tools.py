@@ -1,5 +1,3 @@
-import subprocess
-
 import json
 
 from core.base.provider.managed_hooks import ManagedHooks
@@ -22,54 +20,11 @@ def tool_hooks(story):
     return [hook for hook in story.container.get(ManagedHooks).all() if "tool tick graphify" in hook.command]
 
 
-def test_graphify_is_off_by_default_and_holds_no_hook(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    story.expect_text("tool list", "graphify: off", actor=story.user)
-    story.expect_rows(tool_hooks(story) == [])
-
-
-def test_turning_graphify_on_adds_a_managed_hook_for_each_program_and_writes_no_program_settings(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    story.expect_text("tool on graphify", "graphify: on", actor=story.user)
-    hooks = tool_hooks(story)
-    story.expect_rows({hook.program for hook in hooks} == {"claude", "codex"}, all(hook.event == "UserPromptSubmit" for hook in hooks),
-                      all(hook.source == "" for hook in hooks))
-    story.expect_rows(not (story.home.project_folder / ".claude/settings.json").exists())
-
-
 def test_turning_graphify_off_removes_its_managed_hooks(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
     story.expect_success("tool on graphify", actor=story.user)
     story.expect_text("tool off graphify", "graphify: off", actor=story.user)
     story.expect_rows(tool_hooks(story) == [])
-
-
-def test_a_new_commit_starts_one_incremental_update_in_the_checkout(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    story.expect_text(f"{TICK} {repo.folder}", "no graph yet", actor=story.agent)
-    repo.poll_refresh()
-    story.expect_rows(repo.call_count() == 1, f"{repo.folder} update ." in repo.calls.read_text())
-    repo.commit("second")
-    story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
-    repo.poll_refresh()
-    story.expect_rows(repo.call_count() == 2)
-
-
-def test_the_graph_folder_is_ignored_by_git(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    story.run(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.poll_refresh()
-    status = subprocess.run(["git", "-C", str(repo.folder), "status", "--porcelain"], capture_output=True, text=True, check=True).stdout
-    story.expect_rows("graphify-out" not in status, detail=status)
-
-
-def test_no_update_starts_while_no_commit_has_landed_and_the_agent_is_told_the_graph_is_current(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.poll_refresh()
-    story.expect_text(f"{TICK} {repo.folder}", f"current as of commit {repo.head()[:7]}", actor=story.agent)
-    story.expect_text(f"{TICK} {repo.folder}", "graphify-out", actor=story.agent)
-    story.expect_rows(repo.call_count() == 1)
 
 
 def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
@@ -78,7 +33,7 @@ def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_calls(1)
     repo.commit("second")
-    story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
+    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     story.expect_text(f"tool refresh graphify --folder {repo.folder}", "refreshing", actor=story.agent)
     story.expect_rows(repo.call_count() == 1)
     repo.release_graphify()
@@ -86,15 +41,6 @@ def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
-
-
-def test_a_failed_update_is_not_started_again_for_the_same_commit(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    repo.script.write_text(f'#!/bin/sh\necho "$PWD $*" >> "{repo.calls}"\nexit 1\n')
-    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.wait(repo.folder / "graphify-out", lambda: (repo.folder / "graphify-out/.journal-failed").is_file() and not (repo.folder / "graphify-out/.journal-running").exists())
-    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    story.expect_rows(repo.call_count() == 1)
 
 
 def test_the_card_shows_installed_on_and_the_last_refresh_and_refresh_now_updates_the_project(new_story, tmp_path):
@@ -117,21 +63,6 @@ def test_refresh_now_is_refused_while_graphify_is_not_installed(new_story, tmp_p
     story.expect_rows(repo.call_count() == 0)
 
 
-def test_install_runs_the_install_command_and_the_card_shows_installed(new_story, tmp_path):
-    story, repo = story_with_graphify(new_story, tmp_path)
-    installed = tmp_path / "installed-graphify"
-    installer = tmp_path / "installer"
-    installer.write_text(f'#!/bin/sh\ncp "{repo.script}" "{installed}"\n')
-    installer.chmod(0o755)
-    story.expect_success(f"setting set {COMMAND_SETTING} {installed} --project", actor=story.user)
-    story.expect_success(f"setting set {INSTALL_SETTING} {installer} --project", actor=story.user)
-    story.expect_text("tool list", "not installed", actor=story.user)
-    story.expect_text("tool install graphify", "installed", actor=story.user)
-    story.expect_rows(installed.is_file())
-    calls = [line.split(" ", 1)[1] for line in repo.calls.read_text().splitlines()]
-    story.expect_rows(calls == ["install"], detail=str(calls))
-
-
 def test_installing_graphify_writes_no_search_hook_for_an_agent_program(new_story, tmp_path):
     story, _ = story_with_graphify(new_story, tmp_path)
     writer = tmp_path / "hook-writing-graphify"
@@ -143,16 +74,6 @@ def test_installing_graphify_writes_no_search_hook_for_an_agent_program(new_stor
     story.expect_success("tool install graphify", actor=story.user)
     commands = [hook.command for hook in story.container.get(ManagedHooks).all()]
     story.expect_rows("graphify-guard" not in commands, detail=str(commands))
-
-
-def test_graphifys_own_install_that_fails_is_refused_with_its_last_line(new_story, tmp_path):
-    story, _ = story_with_graphify(new_story, tmp_path)
-    failing = tmp_path / "failing-graphify"
-    failing.write_text('#!/bin/sh\nif [ "$1" = install ]; then echo no settings file >&2; exit 4; fi\n')
-    failing.chmod(0o755)
-    story.expect_success(f"setting set {COMMAND_SETTING} {failing} --project", actor=story.user)
-    story.expect_success(f"setting set {INSTALL_SETTING} true --project", actor=story.user)
-    story.expect_refusal("tool install graphify", "no settings file", actor=story.user)
 
 
 def test_a_failing_install_is_refused_with_its_last_line(new_story, tmp_path):

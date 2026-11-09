@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from "vue";
+import { TimeAgo } from "@journal/window-kit";
 const props = defineProps({ history: { type: Object, required: true } });
 const run = computed(() => props.history.last);
 const OUTCOMES = {
@@ -15,8 +16,8 @@ const OUTCOMES = {
   <div class="hook-history">
     <template v-if="run">
       <strong>{{ OUTCOMES[history.last_outcome] }}</strong>
-      <time :datetime="history.last_at">{{ history.last_at }}</time>
-      <span>Exit: {{ run.exit_code }} · {{ run.milliseconds }} ms</span>
+      <TimeAgo :at="history.last_at" />
+      <span>Ended with code {{ run.exit_code }} after {{ run.milliseconds }} ms</span>
     </template>
     <template v-else><span>No runs yet</span></template>
     <span>Refusals: {{ history.refused }} / {{ history.runs }}</span>

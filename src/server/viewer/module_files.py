@@ -1,6 +1,7 @@
 import mimetypes
 
 from core.base.database.database import Database
+from core.base.file_access import FileAccess
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.module.module_finder import ModuleFinder
@@ -28,7 +29,7 @@ class ModuleFiles:
         target = (folder / path).resolve()
         if not target.is_relative_to(folder) or not target.is_file():
             raise MissingModuleFileError(f"{module_name} has no file {path} in its web/dist")
-        return ModuleFile(target.read_bytes(), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
+        return ModuleFile(FileAccess.shared().binary(target), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
 
     def is_frame_entry(self, module_name: str, path: str) -> bool:
         container = synced_container(self.home)

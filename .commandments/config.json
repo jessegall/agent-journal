@@ -7,6 +7,8 @@
         "src/install",
         "src/server",
         "tools/journal-hook",
+        "tools/journal",
+        "tools/journal-run",
         "src/viewer"
     ],
     "exclude": [
@@ -151,8 +153,20 @@
         "architecture_layout_suite_driver_rule_in_shared_rules",
         "architecture_layout_suite_top_folder_file",
         "architecture_layout_value_at_a_module_top",
+        "testing_story_builds_a_statement",
+        "testing_story_imports_journal_internals",
+        "testing_story_reads_journal_internals",
+        "testing_story_takes_monkeypatch",
+        "architecture_layout_base_loose_class",
+        "architecture_layout_base_loose_function",
+        "architecture_layout_base_loose_value",
+        "architecture_layout_top_loose_class",
+        "architecture_layout_top_loose_function",
+        "architecture_layout_top_loose_value",
+        "architecture_layout_error_outside_errors",
+        "architecture_layout_enum_outside_enums",
+        "architecture_layout_wrong_sort_in_kind_folder",
         "architecture_memories_agents_know_memories",
-        "architecture_memories_memory_lines_outside_rules",
         "architecture_memories_memory_built_outside_handlers",
         "architecture_nudges_raw_line_from_a_rule",
         "architecture_nudges_command_in_a_nudge",
@@ -225,6 +239,10 @@
         "architecture_scopes_agent_filtered_by_hand",
         "architecture_scopes_scope_id_set_on_a_new_row",
         "naming_plain_viewer_state_text",
+        "naming_plain_viewer_raw_field_text",
+        "architecture_core_wall_clock_outside_clock",
+        "architecture_drivers_actor_checked_by_hand",
+        "architecture_core_poll_with_deadline",
         "ViewerVersionTextDetector",
         "ViewerVersionAttributeDetector",
         "ViewerVersionScriptDetector",
@@ -278,109 +296,6 @@
             {
                 "judges": [
                     "tests"
-                ]
-            }
-        ],
-        "python/NamespaceDependencyDetector": [
-            {
-                "layer": [
-                    "core.base"
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.actors",
-                    [
-                        "core.base"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.environments",
-                    [
-                        "core.base",
-                        "core.modules.actors"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.agents",
-                    [
-                        "core.base",
-                        "core.modules.actors",
-                        "core.modules.environments"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.tasks",
-                    [
-                        "core.base",
-                        "core.modules.actors",
-                        "core.modules.environments",
-                        "core.modules.agents"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.plans",
-                    [
-                        "core.base",
-                        "core.modules.actors",
-                        "core.modules.environments",
-                        "core.modules.agents",
-                        "core.modules.tasks"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.messages",
-                    [
-                        "core.base",
-                        "core.modules.actors",
-                        "core.modules.environments",
-                        "core.modules.agents"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.modules.settings",
-                    [
-                        "core.base",
-                        "core.modules.actors"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.journal_module",
-                    [
-                        "core.base",
-                        "core.modules.actors",
-                        "core.modules.settings"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "core.journal",
-                    [
-                        "core.base"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "server",
-                    [
-                        "core"
-                    ]
                 ]
             }
         ],

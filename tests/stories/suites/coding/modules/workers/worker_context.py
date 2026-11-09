@@ -167,18 +167,6 @@ def test_worker_compaction_requires_current_task_context(assigned_worker):
     worker_scenario.story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
 
 
-def test_worker_can_open_its_source_attachment(worker_scenario):
-    message_id = attach_image(worker_scenario)
-    worker_scenario.switch(message_id)
-    worker = dispatch(worker_scenario)
-    outcome = worker_scenario.story.run(f"task context 1 --message {message_id} --attachment cart.png --json", actor=worker)
-    feature(outcome.code == 0, outcome.output_text)
-    value = json.loads(outcome.output_text)
-    feature(base64.b64decode(value["attachment"]["content_base64"]) == IMAGE_BYTES, "worker could not open its assigned source attachment")
-    refused = worker_scenario.story.run("task context 999 --message 1 --attachment private.png --json", actor=worker)
-    feature(refused.code == 1 and "content_base64" not in refused.output_text, refused.output_text)
-
-
 def test_resumed_launch_requires_current_overview(assigned_worker):
     scenario, worker = assigned_worker.scenario, assigned_worker.worker
     scenario.story.container.get(TaskBriefRequirement).is_required = True

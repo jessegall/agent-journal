@@ -1,4 +1,3 @@
-from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler

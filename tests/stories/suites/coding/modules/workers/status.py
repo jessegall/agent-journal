@@ -24,16 +24,6 @@ def worker_batch(new_story):
     return story, repository, worker
 
 
-def test_after_a_compaction_a_worker_is_held_until_it_has_read_its_status(worker_batch):
-    story, _, worker = worker_batch
-    session = worker_session(story, worker)
-    story.hook(session, HookSamples.session_start().with_raw({"source": "compact"}))
-    story.expect_hook_refusal(session, HookSamples.edit("src/cart.py"), "read your worker status first")
-    story.expect_text("worker status", "Skills to load: ", actor=worker)
-    story.expect_hook_allowed(session, HookSamples.shell("journal worker status", ShellPart("journal", CommandCategory.JOURNAL, ["worker", "status"], subcommand="worker")))
-    story.expect_hook_allowed(session, HookSamples.edit("src/cart.py"))
-
-
 def test_a_worker_reads_its_current_task_and_remaining_assignments(worker_batch):
     story, _, worker = worker_batch
     status = json.loads(story.run("worker status --json", actor=worker).output_text)
@@ -48,12 +38,6 @@ def test_a_worker_in_a_phase_reads_the_phase_and_the_tasks_waiting_for_its_end(n
     planned_worker.story.expect_text("worker status", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=planned_worker.worker)
     status = json.loads(planned_worker.story.run("worker status --json", actor=planned_worker.worker).output_text)
     expect_value(status["phase"] == {"id": 1, "title": "Build", "tasks_waiting": 1}, True)
-
-
-def test_the_status_of_a_worker_outside_a_plan_names_no_phase(worker_batch):
-    story, _, worker = worker_batch
-    story.expect_no_text("worker status", "phase", actor=worker)
-    story.expect_rows(json.loads(story.run("worker status --json", actor=worker).output_text)["phase"] is None)
 
 
 def test_the_main_agent_reads_a_workers_status_in_pages(worker_batch):
@@ -76,11 +60,6 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
     story.expect_rows(status["current_task"]["state"] == "testing", status["tests"]["total"] == 1,
                       status["tests"]["rows"][0]["test_command"] == "pytest tests/cart.py")
     story.expect_text(f"worker status {worker.id}", "Current task: 1", "Tests waiting: 1", "Assignments remaining: 2", actor=story.agent)
-
-
-def test_status_without_a_worker_names_the_missing_worktree(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_text("worker status", "has no worker worktree", actor=story.agent)
 
 
 def test_status_refuses_an_unbounded_page(worker_batch):

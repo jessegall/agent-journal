@@ -3,6 +3,7 @@ import {computed, ref, watch} from "vue";
 import {Btn, MenuItem, MenuLabel, MenuPanel, WindowRoom, peekRef, toggleFilter, usePoll, useWindow} from "@journal/window-kit";
 import RequestQueueInspector from "./RequestQueueInspector.vue";
 import RequestDetails from "./RequestDetails.vue";
+import {requestOutcomeLabel} from "./labels.js";
 import {toggleFeedPause} from "./toggleFeedPause.js";
 import {usePausedProp} from "./usePausedProp.js";
 
@@ -87,7 +88,7 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
                         <template v-if="row.day_start">
                             <div class="day" data-hook-day>{{ row.day }}<span>UTC</span></div>
                         </template>
-                        <div role="button" tabindex="0" :class="['row', {open: row.id === openedNumber, slow: isSlow(row), refused: isRefused(row)}]" :data-hook-request="row.id" :aria-pressed="row.id === openedNumber" :title="row.outcome" @click="openedNumber = row.id" @keydown.enter="openedNumber = row.id">
+                        <div role="button" tabindex="0" :class="['row', {open: row.id === openedNumber, slow: isSlow(row), refused: isRefused(row)}]" :data-hook-request="row.id" :aria-pressed="row.id === openedNumber" :title="requestOutcomeLabel(row.outcome)" @click="openedNumber = row.id" @keydown.enter="openedNumber = row.id">
                             <span class="event">{{ row.event }}</span>
                             <span class="tool">{{ row.tool || '—' }}</span>
                             <span class="parts" data-hook-parts>{{ row.part_count || '' }}</span>

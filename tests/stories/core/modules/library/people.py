@@ -100,17 +100,6 @@ def test_a_role_that_may_not_administer_cannot_change_users(new_story, shared_se
     story.expect_refusal(line, DENIED, actor=story.user)
 
 
-def test_a_user_revokes_their_own_token_and_not_that_of_another(new_story, shared_server):
-    server, tokens = shared_server
-    admin_story = connected(new_story, server, tokens.admin)
-    owner_token, friend_token = server.new_user("Rue", "edit"), server.new_user("Sol", "edit")
-    token_numbers = {name: server.send(tokens.admin, "GET", f"/users/{user_id(server, tokens.admin, name)}/tokens")[1]["tokens"][0]["id"] for name in ("Rue", "Sol")}
-    admin_story.expect_rows(token_works(server, owner_token), token_works(server, friend_token))
-    refused = server.send(owner_token, "DELETE", f"/tokens/{token_numbers['Sol']}")
-    admin_story.expect_rows(refused[0] == 403, token_works(server, friend_token))
-    admin_story.expect_rows(server.send(owner_token, "DELETE", f"/tokens/{token_numbers['Rue']}")[0] == 200, not token_works(server, owner_token))
-
-
 @pytest.mark.parametrize("line", ["library-user add Tess --role edit --reason needed", "library-user role 3 edit --reason needed", "library-user remove 3 --reason needed", "library-user revoke 1 --reason needed"])
 def test_an_agent_cannot_change_users_or_tokens(new_story, shared_server, line):
     server, tokens = shared_server

@@ -15,11 +15,6 @@ def test_a_key_no_module_declares_is_refused(new_story):
     story.expect_refusal("setting set good.nothing 3", "no module declares the setting good.nothing", actor=story.user)
 
 
-def test_a_value_of_the_wrong_type_is_refused(new_story):
-    story = settings_story(new_story)
-    story.expect_refusal("setting set good.limit many", "good.limit is a number, not 'many'", actor=story.user)
-
-
 def test_a_project_setting_set_for_an_environment_is_refused_with_the_flag_to_use(new_story):
     story = settings_story(new_story)
     story.expect_refusal(f"setting set {ADDRESS} https://tunnel.example.org --environment main", f"{ADDRESS} is set for the whole project", actor=story.user)

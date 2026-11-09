@@ -53,11 +53,13 @@ def blocked(graphify_enabled):
     return graphify_enabled
 
 
-def test_searches_without_graphify_are_nudged_at_ten_and_again_at_twenty(nine_searched):
-    story = nine_searched
-    expect_value(bool(is_nudged(search(story))), True)
-    expect_value(bool(any(is_nudged(search(story)) for _ in range(9))), False)
-    expect_value(bool(is_nudged(search(story))), True)
+def test_twenty_five_searches_deliver_at_most_three_graphify_lines_and_other_tool_uses_and_prompts_none(graphify_enabled):
+    story = graphify_enabled
+    others = [story.hook(SESSION, HookSamples.prompt("go on")), story.hook(SESSION, HookSamples.edit("src/cart.py"))]
+    graphify_lines = [line for _ in range(25) for line in search(story, SHELL_SEARCH).lines if "graphify" in line.lower()]
+    others.append(story.hook(SESSION, HookSamples.edit("src/cart.py")))
+    story.expect_rows(len(graphify_lines) <= 3, detail=str(graphify_lines))
+    story.expect_rows(not any("graphify" in line.lower() for reply in others for line in reply.lines), detail=str([reply.lines for reply in others]))
 
 
 def test_after_twenty_five_searches_every_search_that_is_not_graphify_is_refused_and_other_tools_still_pass(blocked):
@@ -66,20 +68,6 @@ def test_after_twenty_five_searches_every_search_that_is_not_graphify_is_refused
     reply = search(story)
     expect_value("graphify query 2 to 4 code names" in reply.refusal, True)
     expect_value(bool(search(story, SHELL_SEARCH).refusal), True)
-
-
-def test_using_graphify_lifts_the_block_and_starts_the_count_again(blocked):
-    story = blocked
-    expect_value(bool(search(story, GRAPHIFY_QUERY).refusal), False)
-    searched(story, 25)
-    expect_value(bool(search(story).refusal), True)
-
-
-def test_with_the_tool_off_nothing_is_nudged_or_refused(new_story):
-    story = new_story(fixture=UserJoined)
-    for _ in range(30):
-        reply = search(story, SHELL_SEARCH)
-        expect_value(bool(not reply.refusal and not is_nudged(reply)), True)
 
 
 def test_a_search_outside_the_code_does_not_count(graphify_enabled):

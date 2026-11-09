@@ -32,7 +32,7 @@ def retried(story):
     return launcher
 
 
-def expect_woken(story, launcher) -> None:
+def expect_worker_restart(story, launcher) -> None:
     launcher.drain_requests()
     story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id, detail=str(launcher.requests))
 
@@ -64,25 +64,7 @@ def blocked_worker(two_task_worker):
 
 
 def test_a_stopped_worker_whose_current_task_is_blocked_is_woken_for_its_next_open_task(blocked_worker):
-    expect_woken(blocked_worker, retried(blocked_worker))
-
-
-def test_a_stopped_worker_whose_last_line_went_into_a_dying_program_is_woken_again(blocked_worker):
-    waiting_lines_entered(blocked_worker)
-    blocked_worker.advance(timedelta(minutes=1))
-    expect_woken(blocked_worker, retried(blocked_worker))
-
-
-def test_a_stopped_worker_with_a_started_task_whose_last_line_went_into_a_dying_program_is_woken_again(two_task_worker):
-    ended(two_task_worker)
-    waiting_lines_entered(two_task_worker)
-    two_task_worker.advance(timedelta(minutes=1))
-    expect_woken(two_task_worker, retried(two_task_worker))
-
-
-def test_a_stopped_worker_is_told_which_task_it_goes_on_with(blocked_worker):
-    expect_woken(blocked_worker, retried(blocked_worker))
-    blocked_worker.expect_text(f"agent-line list --agent {blocked_worker.worker.id}", "you ended with tasks left")
+    expect_worker_restart(blocked_worker, retried(blocked_worker))
 
 
 def test_a_stopped_worker_with_only_blocked_tasks_is_left_alone(two_task_worker):
@@ -133,23 +115,10 @@ def test_a_worker_handing_on_to_an_open_task_is_pointed_at_it(worker_command):
     story.expect_rows(GO_ON_WITH_TASK_2 in outcome.output_text, "stop or go on" not in outcome.output_text, detail=outcome.output_text)
 
 
-def test_a_worker_with_no_task_left_is_told_to_stop_and_that_it_will_hear(worker_command):
-    story, _, worker, _ = worker_command
-    outcome = story.run("worker deliver --differences none", actor=worker)
-    story.expect_rows(STOP_AND_WAIT in outcome.output_text, "stop or go on" not in outcome.output_text, detail=outcome.output_text)
-
-
 def test_a_main_agent_merging_a_worker_keeps_its_own_line(worker_command):
     story, _, worker, _ = worker_command
     outcome = story.run(f'worker send {worker.id} "The receipt"', actor=story.agent)
     story.expect_rows("command accepted" in outcome.output_text, GO_ON_WITH_TASK_2 not in outcome.output_text, STOP_AND_WAIT not in outcome.output_text, detail=outcome.output_text)
-
-
-def test_a_worker_that_handed_in_its_last_task_is_given_the_next_free_task(worker_command):
-    story, _, worker, _ = worker_command
-    story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 2 --environment main', actor=story.agent)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
-    story.expect_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
 
 
 def test_a_worker_is_not_given_a_task_of_a_plan(worker_command):

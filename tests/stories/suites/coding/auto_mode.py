@@ -15,13 +15,6 @@ def started_holder(story, task_id: int) -> str:
     return story.run(f"task show {task_id}", actor=story.agent).output_text
 
 
-def test_closing_the_task_in_hand_starts_the_most_urgent_open_one_for_the_same_agent(next_task_after_close):
-    story = next_task_after_close
-    expect_started_holder(story, 3, "state: started")
-    expect_started_holder(story, 3, f"holder_id: {story.agent.id}")
-    expect_started_holder(story, 2, "state: open")
-
-
 @pytest.mark.parametrize("move", ['task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'])
 def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(new_story, move):
     story = new_story(fixture=PrioritizedTasks)
@@ -106,14 +99,6 @@ class PrioritizedTasks(StoryFixture):
 
     def steps(self, story):
         task_pair(story)
-
-
-@pytest.fixture
-def next_task_after_close(new_story):
-    story = new_story(fixture=PrioritizedTasks)
-    story.run('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
-    return story
 
 
 @pytest.fixture

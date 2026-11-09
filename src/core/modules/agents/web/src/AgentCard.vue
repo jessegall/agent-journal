@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {age, ago, peekRef, perHour, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, peekRef, perHour, seenWords, sinceWords, AgentTip, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentActions from "./AgentActions.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -23,7 +23,7 @@ const queuedTasks = computed(() => tasks.value.filter((task) => task.state === "
 const currentTask = computed(() => tasks.value.find((task) => task.id === props.progress?.task_id && task.state === "started"));
 const jobTask = computed(() => currentTask.value || tasks.value.find((task) => task.id === props.facts?.task_id) || tasks.value.find((task) => IN_HAND_STATES.has(task.state)) || queuedTasks.value[0] || tasks.value.at(-1));
 const job = computed(() => props.row.role === "helper" ? props.facts?.helper_job || "" : (props.facts?.job_enabled ? currentTask.value?.title || props.facts?.task_title || queuedTasks.value[0]?.title || tasks.value.at(-1)?.title || "" : ""));
-const roleLabel = computed(() => props.facts?.job_enabled ? `${props.row.role} ${props.row.id}` : "");
+const roleLabel = computed(() => `${props.row.role} ${props.row.id}`);
 const identity = computed(() => [props.row.program, props.facts?.model, props.facts?.effort, roleLabel.value].filter(Boolean).join(" · "));
 const context = useWindow();
 const runTime = computed(() => age(props.row.process_started_at || props.row.created_at, now.value));
@@ -49,19 +49,19 @@ const statusAt = computed(() => {
     const held = dotState.value === "blocked" || dotState.value === "waiting";
     return props.row.ended_at || (held && props.facts?.last_activity) || props.row.process_started_at || props.row.created_at;
 });
-const statusSince = computed(() => (statusAt.value ? `Since: ${new Date(statusAt.value).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}, ${ago(statusAt.value, now.value)}` : ""));
-const statusSeen = computed(() => (props.facts?.last_activity ? `Seen: ${ago(props.facts.last_activity, now.value)}` : ""));;
+const statusSince = computed(() => sinceWords(statusAt.value, now.value));
+const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.value));
 </script>
 
 <template>
     <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
-        <span class="agent-head">
+        <AgentTip :agent-id="row.id" :label="title" class="agent-head">
             <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
             <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>
             <template v-if="open"><span class="agent-time" data-agent-motion data-agent-run-time title="How long this session has run">{{ runTime }}</span></template>
-        </span>
+        </AgentTip>
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity data-agent-motion>{{ identity }}</span>
             <template v-if="facts?.sandbox_off"><span class="agent-sandbox-off" data-agent-sandbox-off>sandbox off</span></template>

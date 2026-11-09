@@ -57,13 +57,17 @@ class LinkPinCheck:
 
     def first_unpinned_command(self, text: str) -> str | None:
         commands = dict.fromkeys(f"! {line.strip()}" for line in BANG_COMMAND.findall(text))
-        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
-        return next((command for command in commands if not pins.filter(link=command).exists()), None)
+        pinned = {pin.link for pin in self.queries.query(Pin).matching(IsNull("closed_at")).matching(Among("link", tuple(commands))).all_rows()}
+        return next((command for command in commands if command not in pinned), None)
 
     def change_request_pins(self, text: str) -> list[MakePin]:
-        pins = self.queries.query(Pin)
         links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and PR_ADDRESS.fullmatch(url.rstrip(".,;:/")))
-        return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if not pins.matching(Among("link", (url, f"{url}/"))).exists()]
+        pinned = {pin.link for pin in self.queries.query(Pin).matching(Among("link", self.with_trailing_slashes(tuple(links)))).all_rows()}
+        return [MakePin(f"Pull request {url.rsplit('/', 1)[-1]}", url, OPEN_LABEL) for url in links if url not in pinned and f"{url}/" not in pinned]
+
+    @staticmethod
+    def with_trailing_slashes(urls: tuple[str, ...]) -> tuple[str, ...]:
+        return (*urls, *(f"{url}/" for url in urls))
 
     def design_pins(self, text: str) -> list[MakePin]:
         links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and DESIGN_ADDRESS.fullmatch(url))
@@ -101,10 +105,13 @@ class LinkPinCheck:
 
     def first_unpinned(self, text: str) -> str | None:
         links = dict.fromkeys(url.rstrip(".,;:") for url in LINK.findall(text) if self.is_complete_link(url) and not LOCAL_ADDRESS.match(url) and not PR_ADDRESS.match(url) and not DESIGN_ADDRESS.match(url))
-        pins = self.queries.query(Pin).matching(IsNull("closed_at"))
-        return next((url for url in links if not self.kept.scoped_read(
-            "pins", lambda: pins.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists(),
-            "closed_at IS NULL AND link IN (?, ?)", [url.rstrip("/"), f"{url.rstrip('/')}/"], name="pins.open_link")), None)
+        if not links:
+            return None
+        variants = self.with_trailing_slashes(tuple(url.rstrip("/") for url in links))
+        pins = self.queries.query(Pin).matching(IsNull("closed_at")).matching(Among("link", variants))
+        pinned = self.kept.scoped_read("pins", lambda: {pin.link for pin in pins.all_rows()},
+                                       f"closed_at IS NULL AND link IN ({', '.join('?' * len(variants))})", list(variants), name="pins.open_links")
+        return next((url for url in links if url.rstrip("/") not in pinned and f"{url.rstrip('/')}/" not in pinned), None)
 
     def claims_missing_pin(self, text: str) -> bool:
         if not PIN_CLAIM.search(text):

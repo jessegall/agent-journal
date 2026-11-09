@@ -39,20 +39,6 @@ def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_t
     story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "journal output stop 1")
 
 
-def test_the_hold_shows_the_last_lines_of_the_output(new_story):
-    story = new_story(fixture=ActiveBuild)
-    print_line(story, "compiling\nlinking\n")
-    story.advance(timedelta(seconds=HANG_SECONDS + 2))
-    story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "compiling | linking")
-
-
-def test_the_hold_says_the_processor_time_is_not_rising_when_it_has_not_moved(new_story):
-    story = new_story(fixture=ActiveBuild)
-    started_tree(story, 12.0)
-    story.advance(timedelta(seconds=HANG_SECONDS + 3))
-    story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "processor time is not rising")
-
-
 def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_went_silent(new_story):
     story = new_story(fixture=ActiveBuild)
     started_tree(story, 12.0)

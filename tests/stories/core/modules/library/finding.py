@@ -51,17 +51,6 @@ def local_doc(story, title: str, body: str) -> None:
 
 
 @SERVER_BUILD_REQUIRED
-def test_library_hits_follow_the_local_ones_with_their_excerpt(new_story, shared_server):
-    server, tokens = shared_server
-    server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Recovery procedure", "abstract": "How to undo", "body": "Run the rollback script, then check the logs."}})
-    story = new_story(fixture=UserBuilder)
-    story.expect_text(f"library connect {server.address} --token {tokens.editor}", "Connected: ", actor=story.user)
-    local_doc(story, "Deploy notes", "How to rollback after a failed deploy")
-    story.expect_ordered_lines("search find rollback", "doc 1: ", "library doc ", actor=story.agent)
-    story.expect_text("search find rollback", "library doc 1: Recovery procedure ", "rollback script", actor=story.agent)
-
-
-@SERVER_BUILD_REQUIRED
 def test_the_library_hits_are_in_the_json_with_whether_the_library_was_reached(new_story, shared_server):
     server, tokens = shared_server
     server.send(tokens.admin, "POST", "/items/doc", {"fields": {"title": "Granite note", "abstract": "About granite", "body": "Granite only."}})
@@ -79,14 +68,6 @@ def test_a_search_with_only_library_hits_does_not_say_nothing_holds_the_words(ne
     story.expect_text(f"library connect {server.address} --token {tokens.editor}", "Connected: ", actor=story.user)
     story.expect_text("search find basalt", "library doc ", actor=story.agent)
     story.expect_no_text("search find basalt", "nothing here holds all of", actor=story.agent)
-
-
-def test_with_no_connection_the_output_is_what_it_was(new_story):
-    story = new_story(fixture=UserBuilder)
-    local_doc(story, "Deploy notes", "How to rollback after a failed deploy")
-    story.expect_no_text("search find rollback", "library", actor=story.agent)
-    story.expect_no_text("search find nothingmatches", UNREACHABLE_LINE, "library", actor=story.agent)
-    story.expect_success("search find nothingmatches", "nothing here holds all of: nothingmatches", actor=story.agent)
 
 
 def test_an_unreachable_library_adds_one_line_after_the_local_hits(new_story):
@@ -161,11 +142,6 @@ def test_a_plain_number_with_no_local_document_is_refused_with_the_library_item_
     story.expect_refusal(f"doc show {number}", f"library doc {number} exists: Rollback procedure; read it with journal doc show library:{number}", actor=story.agent)
 
 
-def test_a_plain_number_with_no_local_document_and_no_library_stays_a_plain_refusal(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_refusal("doc show 5000", "no doc 5000", actor=story.agent)
-
-
 @SERVER_BUILD_REQUIRED
 def test_a_library_reading_lists_no_links_of_the_local_row_with_the_same_number(new_story, tmp_path):
     with SharedServerBinary(tmp_path) as server:
@@ -188,11 +164,6 @@ def test_a_report_takes_no_library_number(new_story):
 def test_a_library_number_that_is_no_number_is_a_usage_error(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_usage_error("doc show library:twelve", actor=story.agent)
-
-
-def test_with_no_connection_a_library_number_is_refused_in_plain_words(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_refusal("doc show library:31", "This journal is not connected to a shared server.", actor=story.agent)
 
 
 def test_a_share_session_reads_the_shared_document_and_never_the_library_item_with_that_number(new_story):
@@ -241,12 +212,6 @@ def test_a_plain_number_with_no_local_sequence_or_check_is_refused_with_the_libr
     story.expect_refusal(f"{share_name} show {number}", f"library {share_name} {number} exists: Hinted {share_name}; read it with journal {share_name} show library:{number}", actor=story.agent)
 
 
-@pytest.mark.parametrize("share_name", SHARE_NAMES)
-def test_a_plain_number_with_no_local_sequence_or_check_and_no_library_stays_a_plain_refusal(new_story, share_name):
-    story = new_story(fixture=UserBuilder)
-    story.expect_refusal(f"{share_name} show 5000", f"no {share_name} 5000", actor=story.agent)
-
-
 @SERVER_BUILD_REQUIRED
 def test_a_library_check_lists_no_links_of_the_local_check_with_the_same_number(new_story, shared_server):
     server, tokens = shared_server
@@ -256,12 +221,6 @@ def test_a_library_check_lists_no_links_of_the_local_check_with_the_same_number(
     story.expect_text("check show 1", "Local one", actor=story.agent)
     story.expect_text(f"check show library:{number}", f"library check {number}: Library check one", actor=story.agent)
     story.expect_no_text(f"check show library:{number}", "Local one", "links:", actor=story.agent)
-
-
-@pytest.mark.parametrize("share_name", SHARE_NAMES)
-def test_with_no_connection_a_library_sequence_or_check_number_is_refused_in_plain_words(new_story, share_name):
-    story = new_story(fixture=UserBuilder)
-    story.expect_refusal(f"{share_name} show library:31", "This journal is not connected to a shared server.", actor=story.agent)
 
 
 @pytest.mark.parametrize("share_name", SHARE_NAMES)

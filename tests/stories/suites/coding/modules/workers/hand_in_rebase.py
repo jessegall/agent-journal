@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import STASH_MESSAGE, WorktreeGit
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.query.queries import Queries
 
@@ -45,27 +45,6 @@ def expect_tip(story, repository, worker):
     story.expect_rows(worktree_row(story, worker)["base_commit"] == tip,
                       repository.git("merge-base", "--is-ancestor", tip, "HEAD", folder=folder).returncode == 0,
                       (folder / "rate.py").read_text() == "RATE = 2\n")
-
-
-def test_a_hand_in_on_a_moved_base_rebases_the_work_and_base_commit_follows(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = moved_base_worker(story, repository)
-    story.expect_success(DELIVERY, actor=worker)
-    expect_tip(story, repository, worker)
-    repository.expect_clean(worker.id)
-    repository.expect_no_stash()
-
-
-def test_uncommitted_changes_come_back_after_the_rebase_and_are_committed(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = moved_base_worker(story, repository)
-    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
-    story.expect_success(DELIVERY, actor=worker)
-    repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
-    repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
-    repository.expect_clean(worker.id)
 
 
 def test_worker_next_rebases_before_the_next_task_starts(new_story):
@@ -151,6 +130,22 @@ def test_an_interrupted_rebase_restores_the_uncommitted_files_before_returning(n
     story.expect_success(DELIVERY, actor=worker)
 
 
+def stashed_worker(story, repository):
+    worker = moved_base_worker(story, repository)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+    repository.git("stash", "push", "--include-untracked", "--message", f"{STASH_MESSAGE}{repository.worker_branch(worker.id)}",
+                   folder=repository.worktree_folder(worker.id))
+    return worker
+
+
+def committed_files(repository, worker, notes):
+    folder = repository.worktree_folder(worker.id)
+    (folder / "cart.py").write_text(CART_CHANGE)
+    (folder / "notes.py").write_text(notes)
+    repository.git("add", "cart.py", "notes.py", folder=folder)
+    repository.git("commit", "-m", "The work the stash also holds", folder=folder)
+
+
 def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -213,4 +208,3 @@ def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
     story.expect_rows((worker_folder / "notes.py").exists(), not (worker_folder / "sibling.py").exists())
     story.expect_rows((sibling_folder / "sibling.py").exists(), not (sibling_folder / "notes.py").exists())
     repository.expect_no_stash()
-

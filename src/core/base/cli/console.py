@@ -15,6 +15,7 @@ from core.base.subcommand.overview_reads import OverviewReads
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser
+from core.base.cli.subcommand_lookup import AnySubcommand
 from core.base.cli.shell_aliases import ShellAliases
 from core.base.cli.shell_handoff import ShellHandoff
 from core.base.cli.usage_error import UsageError
@@ -25,7 +26,6 @@ from core.base.command.check_approval_works import CheckApprovalWorks
 from core.base.command.accept_covered_approval import AcceptCoveredApproval
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.server_stopping_error import ServerStoppingError
-from core.base.command.handler import Handler
 from core.base.deadline_passed_error import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
 from core.base.error_log import ErrorLog
@@ -143,7 +143,7 @@ class Console:
             output.write(accepted, {"accepted": accepted})
             return SUCCESS_CODE
 
-    def parsed_run(self, argv: list[str], subcommand: Subcommand | ReadSubcommand, arguments: Namespace,
+    def parsed_run(self, argv: list[str], subcommand: AnySubcommand, arguments: Namespace,
                    caller: Caller, output: Output) -> int:
         environment_id = caller.environment_id
         if not isinstance(subcommand, Subcommand):
@@ -173,11 +173,11 @@ class Console:
             subcommand.after_listeners(value, output)
         return SUCCESS_CODE
 
-    def check_overview(self, subcommand: Subcommand | ReadSubcommand, arguments: Namespace, caller: Caller) -> None:
+    def check_overview(self, subcommand: AnySubcommand, arguments: Namespace, caller: Caller) -> None:
         if isinstance(subcommand, OverviewCommand):
             self.overview_reads.check(caller.actor, f"{subcommand.cli_name} {subcommand.name}", subcommand.overview_target(arguments), subcommand.is_read_required(arguments, caller))
 
-    def note_overview(self, subcommand: Subcommand | ReadSubcommand, arguments: Namespace, caller: Caller) -> None:
+    def note_overview(self, subcommand: AnySubcommand, arguments: Namespace, caller: Caller) -> None:
         if isinstance(subcommand, OverviewCommand):
             self.overview_reads.note(caller.actor, f"{subcommand.cli_name} {subcommand.name}", subcommand.overview_target(arguments))
 
@@ -195,7 +195,7 @@ class Console:
             raise Refusal(f"journal {' '.join(argv[:2])} only reads, so it has no place in a transaction")
         command = subcommand.command(arguments, replace(caller, environment_id=environment_id))
         handler = self.bus.handler(command)
-        if type(handler).prepare is not Handler.prepare:
+        if handler.has_prepare_step:
             raise Refusal(f"journal {' '.join(argv[:2])} works outside the database, so it cannot run inside a transaction")
         with self.scopes.command_scope(handler.disabled_scopes, caller.actor, environment_id):
             return self.bus.dispatch(command, replace(context, actor=caller.actor, environment_id=environment_id))

@@ -33,6 +33,8 @@ WORKER_RUN_WAIT = f"{MODULE_KEY}.worker-run-wait-seconds"
 MOST_RUN_WAIT_SECONDS = 100
 MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
 MERGER_WAIT_MINUTES = f"{MODULE_KEY}.merger-wait-minutes"
+UNSTARTED_WORKER_SECONDS = f"{MODULE_KEY}.unstarted-worker-seconds"
+STOPPED_WORKER_RUN_MINUTES = f"{MODULE_KEY}.stopped-worker-run-minutes"
 MERGER_COMMANDS = f"{MODULE_KEY}.merger-commands"
 DELIVERY_FAILURE_LIMIT = f"{MODULE_KEY}.hand-in-failures-to-flag"
 WORKER_RUN_FAILURE_LIMIT = f"{MODULE_KEY}.own-test-failures-to-flag"
@@ -57,6 +59,8 @@ WORKER_SETTING_VALUES = [
     SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING]),
+    SettingValue("unstarted-worker-seconds", "Seconds before an unstarted worker", "Seconds after a worker is dispatched with no sign of its program before its main agent is told.", SettingType.NUMBER, default=60, person_set=True),
+    SettingValue("stopped-worker-run-minutes", "Minutes before a stopped worker's run", "Minutes after a worker stopped with tasks left, while a command it started still runs, before its main agent is told.", SettingType.NUMBER, default=30, person_set=True),
     SettingValue("merger-wait-minutes", "Merger wait minutes", "Minutes the merger has to take in a worker whose tests passed, before the main agent is told to merge it.", SettingType.NUMBER, default=15, person_set=True),
     SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, required_settings=[MERGER_ENABLED]),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
@@ -95,6 +99,8 @@ WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
                         DELIVERY_FAILURE_LIMIT: NumberRule(1),
                         WORKER_RUN_FAILURE_LIMIT: NumberRule(1),
                         MERGER_WAIT_MINUTES: NumberRule(1),
+                        UNSTARTED_WORKER_SECONDS: NumberRule(1),
+                        STOPPED_WORKER_RUN_MINUTES: NumberRule(1),
                         MERGER_COMMANDS: ListRule(),
                         PROTECTED_FOLDERS: ListRule(),
                         MERGE_COMMANDS: ListRule()}

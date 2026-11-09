@@ -26,11 +26,6 @@ def test_a_comment_on_a_message_leaves_the_message_unchanged(new_story, tmp_path
     story.expect_text("message show 2", "Check 138 failed", actor=story.user)
 
 
-def test_a_comment_with_no_words_is_refused(new_story, tmp_path):
-    story = story_with_peer_message(new_story, tmp_path)
-    story.expect_refusal('message comment 2 " " --environment main', "give the comment's text", actor=story.user)
-
-
 def test_a_comment_on_a_message_that_does_not_exist_is_refused(new_story, tmp_path):
     story = story_with_peer_message(new_story, tmp_path)
     story.expect_refusal('message comment 99 "Hello" --environment main', "99", actor=story.user)

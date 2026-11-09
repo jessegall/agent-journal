@@ -5,7 +5,7 @@ const OWN_WORDS = {outputs: "output", skills: "skill", agents: "agent", helpers:
 
 export function actionLabel(table) {
     const word = OWN_WORDS[table] || meta(table)?.title.toLowerCase();
-    return word ? `Open the ${word}` : "Open it";
+    return word ? `Open the ${word}` : "Open";
 }
 
 // the action of a mark whose card names what it is about by its ref, as tasks:12

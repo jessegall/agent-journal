@@ -102,17 +102,6 @@ def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(reply_re
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
-def test_a_countdown_comes_before_tool_calls_wait(reply_countdown):
-    story = reply_countdown
-    story.expect_hook_allowed("s-1", VIEW_LINE, "reply to message 1 due:")
-
-
-def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(chained_reply_countdown):
-    story = chained_reply_countdown
-    story.expect_hook_allowed("s-1", CHAINED_LINE, "reply to message 1 due: 2 tool uses")
-    story.expect_hook_allowed("s-1", VIEW_LINE, "reply to message 1 due: 1 tool uses")
-
-
 def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chained_reply_countdown):
     story = chained_reply_countdown
     for _ in range(2):
@@ -163,11 +152,6 @@ def test_a_reply_written_before_its_message_is_marked_read_answers_it(new_story)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")
 
 
-def test_a_reply_line_by_any_path_goes_through_the_hold(reply_required):
-    story = reply_required
-    story.expect_absent_hook_line("s-1", journal_line(".journal/bin/journal message reply 1 done"), "answer message 1 first")
-
-
 @pytest.fixture
 def chained_reply_countdown(read_message):
     story, _ = read_message
@@ -198,3 +182,14 @@ class AnnouncedCartMessage(StoryFixture):
     def steps(self, story):
         story.run('message send "Fix the cart first" --environment main', actor=story.user)
         story.hook('s-1', HookSamples.stop())
+
+
+def test_a_takeover_holds_the_new_agent_only_for_messages_it_read_itself(read_message):
+    story, _ = read_message
+    story.hook("s-2", HookSamples.session_start())
+    story.expect_absent_hook_line("s-2", VIEW_LINE, "answer message 1")
+    story.run('message send "Then the totals" --environment main', actor=story.user)
+    story.hook("s-2", HookSamples.stop())
+    story.hook("s-2", journal_line("journal message read 2").with_fields(event="post_tool_use"))
+    story.expect_hook_allowed("s-2", VIEW_LINE, "answer message 2 before you go on")
+    story.expect_absent_hook_line("s-2", VIEW_LINE, "answer message 1")

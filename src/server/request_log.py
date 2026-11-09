@@ -2,6 +2,7 @@ import sqlite3
 from contextlib import contextmanager
 from dataclasses import asdict
 from collections.abc import Callable, Sequence
+from core.base.clock import Clock
 from core.base.container import Container
 from threading import RLock
 from uuid import uuid4
@@ -34,9 +35,9 @@ def is_database_busy(error: sqlite3.Error) -> bool:
 class RequestLog:
     """Records requests without waiting for a database writer."""
 
-    def __init__(self, home: JournalHome) -> None:
+    def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home = home
-        self.system_log = SystemLogWriter(home)
+        self.system_log = SystemLogWriter(home, clock)
         self.priorities = WindowPriorities(home)
         self.epoch = str(uuid4())
         self.lock = RLock()
@@ -117,7 +118,7 @@ class RequestLog:
         if not attribution["command_id"]:
             attribution["command_id"] = f"{http.request_id}:{record.child_index}"
         body = {"event": " ".join(request.line), "attribution": attribution}
-        return RequestLogEntry(request.line, "viewer", record.duration_ms, record.queued_ms, record.code, body)
+        return RequestLogEntry(request.line, "viewer", record.duration_ms, record.queued_ms, record.code, body, record.child_index == 0)
 
     def complete_reads(self, person_id: int, receipts: tuple[ReadAttribution, ...]) -> None:
         started_at = perf_counter()
@@ -174,7 +175,7 @@ class RequestLog:
         with self.lock:
             configuration = self.configuration
             self.counts["attempted"] += len(entries)
-            if any(isinstance(entry.body, dict) and "attribution" in entry.body and entry.body["attribution"]["child_index"] == 0 for entry in entries):
+            if any(entry.starts_http_request for entry in entries):
                 self.counts["http_requests"] += 1
             if not configuration.enabled:
                 self.counts["disabled"] += len(entries)

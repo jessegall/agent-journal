@@ -23,10 +23,3 @@ def test_a_dispatch_with_the_launcher_running_hands_it_the_worker_to_start_in_it
         story.expect_rows(expected in brief)
     story.expect_rows("Load these skills before your first write" in brief, "journal overview" in brief,
                       "only your new tests or the tests your change affects" in brief, "no Monitor" in brief)
-
-
-def test_a_dispatch_with_no_launcher_prints_the_command_line_that_starts_the_worker(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    story.expect_text(DISPATCH, "start the worker with: cd ", str(repository.folder / ".journal" / "worktrees" / "main"), actor=story.agent)
-

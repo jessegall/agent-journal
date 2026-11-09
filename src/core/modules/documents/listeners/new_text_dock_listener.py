@@ -7,7 +7,6 @@ from core.base.module.module_actors import ModuleActors
 from core.base.scope.actor_scope import ActorScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.documents.models.enums.text_dock_type import TextDockType
-from core.modules.documents.models.text_row import TextRow
 from core.base.change.event_subscriber import E
 
 

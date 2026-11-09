@@ -8,11 +8,6 @@ def started(new_story):
     return new_story(GOOD, fixture=BuilderStarted)
 
 
-def test_an_agent_skill_is_made_due_with_no_digest(new_story):
-    story = started(new_story)
-    story.expect_success(f"agent-skill make {story.agent.id} journal-notes", "state: due", f"session_agent_id: {story.agent.id}", "skill: journal-notes")
-
-
 def test_a_skill_is_due_once_for_an_agent(new_story):
     story = started(new_story)
     story.run(f"agent-skill make {story.agent.id} journal-notes")

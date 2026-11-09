@@ -1,7 +1,6 @@
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.base.actor_type import ActorType
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
 from core.modules.library.support.library_address import ADDRESS_SETTING
 from core.modules.settings.models.setting import Setting
 from core.base.change.changed import Changed

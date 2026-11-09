@@ -1,3 +1,4 @@
+from core.base.driver.seconds import Seconds
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -10,6 +11,9 @@ class ProcessSettings:
 
     def integer(self, setting: ProcessSetting) -> int:
         return self.settings.number(setting.key)
+
+    def seconds(self, setting: ProcessSetting) -> Seconds:
+        return Seconds(self.integer(setting))
 
     def flag(self, setting: ProcessSetting) -> bool:
         return self.settings.flag(setting.key)

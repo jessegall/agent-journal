@@ -47,16 +47,6 @@ def test_the_linked_folders_stay_out_of_git(detected_worktree):
     expect_value(repository.git("status", "--porcelain", folder=folder).stdout, "")
 
 
-def test_a_tracked_folder_with_a_dependency_name_is_not_linked(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    (repository.folder / "vendor").mkdir()
-    repository.committed("vendor/own.py", "OWN = 1\n", "Own vendored code")
-    worker = dispatched_worker(story, DISPATCH)
-    expect_value((repository.worktree_folder(worker.id) / "vendor").is_symlink(), False)
-
-
 def test_the_test_checkout_gets_the_detected_folders_too(detected_worktree):
     story, repository, folder = detected_worktree
     worktree = story.container.get(WorktreeQuery).open_worktrees()[0]

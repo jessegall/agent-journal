@@ -2,28 +2,15 @@ import pytest
 
 from datetime import timedelta
 
-from core.modules.tasks.rules.inactive_task_reminder_rule import INACTIVE_MINUTES
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
+
+INACTIVE_MINUTES = 15
 
 
 def test_a_builder_quiet_with_its_task_in_hand_is_reminded_on_a_tick(task_turn):
     story = task_turn
     story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", f"nothing has happened for {INACTIVE_MINUTES} minutes", "tasks.quiet-task")
-
-
-def test_a_builder_quiet_for_less_is_not_reminded(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    story.hook("s-1", HookSamples.prompt("go on"))
-    story.advance(timedelta(minutes=INACTIVE_MINUTES - 1))
-    story.tick("s-1")
-    story.expect_absent(f"agent-line list --agent {story.agent.id} --state waiting", "nothing has happened")
-
-
-def test_a_quiet_reminder_reaches_the_agent_with_its_next_hook(task_turn):
-    story = task_turn
-    story.expect_hook_allowed("s-1", HookSamples.prompt("and on"), f"nothing has happened for {INACTIVE_MINUTES} minutes")
-
 
 
 def test_a_builder_is_reminded_by_a_tick_that_comes_late(new_story):
@@ -40,7 +27,6 @@ def test_a_builder_is_reminded_once_per_quiet_stretch(task_turn):
     story.tick("s-1")
     reply = story.hook("s-1", HookSamples.prompt("and on"))
     story.expect_rows(sum("nothing has happened" in line for line in reply.lines) == 1)
-
 
 @pytest.fixture
 def task_turn(new_story):

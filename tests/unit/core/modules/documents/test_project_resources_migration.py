@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 import sqlite3
 
 from core.base.database.database import Database
@@ -46,7 +47,7 @@ def test_existing_environment_resources_become_project_resources_without_losing_
     connection.execute('CREATE VIEW dump_rows AS SELECT environment_id FROM dumps')
     rows = {table: [tuple(row) for row in connection.execute(f'SELECT * FROM {table}')]
             for table in ('docs', 'reports', 'dumps', 'doc_revisions', 'dump_items')}
-    schema = Schema(database, Tables())
+    schema = Schema(database, Tables(), Clock())
     schema.migrate([
         ModuleMigrations('journal.core.documents', [ProjectDocumentsMigration()]),
         ModuleMigrations('journal.core.dumps', [ProjectDumpsMigration()]),

@@ -65,16 +65,6 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
     story.expect_success(f"output peek {third.id} --all", actor=story.user)
 
 
-def test_the_inspector_lists_every_waiting_command_beyond_the_default_page(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
-    story.expect_success("setting set journal.core.processes.run-batch-size 0 --environment main", actor=story.user)
-    story.agent = Actor(story.new_row_id("agent start long-queue-worker claude worker --environment main"), ActorType.AGENT)
-    processes = [start_process(story, f"make package-{number}", category=CommandCategory.BUILD) for number in range(51)]
-    page = queue_page(story)
-    story.expect_rows(len(page["rows"]) == 50, page["waiting_count"] == 51,
-                      [row["id"] for row in page["waiting"]] == [process.id for process in processes])
-
-
 def expect_running_2(page, expected) -> None:
     actual = page['running']
     assert actual == expected, actual

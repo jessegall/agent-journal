@@ -7,13 +7,16 @@ LISTING_SECONDS = 10
 
 class GroupCpuTime:
     """The processor time, in seconds, that every process of a group has used together; a run's runner leads its
-    group, so the group is the run's whole process tree."""
+    group, so the group is the run's whole process tree. One listing of the machine's processes serves every
+    group asked of it."""
 
-    def seconds(self, group: int) -> float | None:
+    def listing(self) -> str | None:
         try:
-            listing = subprocess.run(["ps", "-axo", "pgid=,time="], capture_output=True, text=True, timeout=LISTING_SECONDS, check=False).stdout
+            return subprocess.run(["ps", "-axo", "pgid=,time="], capture_output=True, text=True, timeout=LISTING_SECONDS, check=False).stdout
         except (OSError, subprocess.SubprocessError):
             return None
+
+    def seconds(self, listing: str, group: int) -> float | None:
         return self.group_total(listing, group)
 
     @classmethod

@@ -20,6 +20,7 @@ class WorkerStatus:
     program: str
     program_state: ProgramState | None
     point: WorkerPoint
+    is_paused: bool
 
     @property
     def runs_text(self) -> str:

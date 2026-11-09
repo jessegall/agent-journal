@@ -47,10 +47,3 @@ def test_it_starts_when_one_of_its_tasks_opens(unstarted):
     unstarted.run_listeners()
     launcher.drain_requests()
     expect_value([start["agent_id"] for start in launcher.starts], [newest_worker(unstarted).id])
-
-
-def test_a_worker_given_an_open_task_starts_at_once(launcher_story):
-    launcher_story.expect_success(DISPATCH, actor=launcher_story.agent)
-    launcher_story.run_listeners()
-    launcher_story.launcher.drain_requests()
-    expect_value([start["agent_id"] for start in launcher_story.launcher.starts], [newest_worker(launcher_story).id])

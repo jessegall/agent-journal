@@ -16,6 +16,7 @@ class WorkerFileRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "The main agent edits no file inside a worker's worktree"
 
     def __init__(self, worktrees: WorkerWorktrees) -> None:
         self.worktrees = worktrees

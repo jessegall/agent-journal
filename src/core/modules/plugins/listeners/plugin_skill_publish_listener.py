@@ -1,4 +1,3 @@
-from core.base.change.event_log import JOURNAL_BOOTING_EVENT
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.modules.plugins.support.plugin_folders import PluginFolders

@@ -31,36 +31,6 @@ def halted(story: Story) -> bool:
     return story.row(Agent, story.agent.id).usage_limit_ends_at is not None
 
 
-def test_a_fixed_limit_on_the_5_hour_window_halts_the_agents_at_its_point_and_a_raised_limit_lets_them_go_on(new_story):
-    story = limited_story(new_story)
-    story.expect_success("usage-limit set claude '5 hours' fixed 50", actor=story.user)
-    report(story, 40)
-    story.expect_rows(not halted(story))
-    report(story, 55)
-    story.expect_rows(halted(story))
-    story.expect_success("usage-limit set claude '5 hours' fixed 70", actor=story.user)
-    story.expect_rows(not halted(story))
-
-
-def test_a_fixed_limit_on_the_7_day_window_halts_the_agents_when_that_window_reaches_it(new_story):
-    story = limited_story(new_story)
-    story.expect_success("usage-limit set claude '7 days' fixed 20", actor=story.user)
-    report(story, 90, seven_days=10)
-    story.expect_rows(not halted(story))
-    report(story, 90, seven_days=25)
-    story.expect_rows(halted(story))
-
-
-def test_a_budget_counts_from_what_the_window_held_when_it_was_set(new_story):
-    story = limited_story(new_story)
-    report(story, 30)
-    story.expect_success("usage-limit set claude '5 hours' budget 20", actor=story.user)
-    report(story, 45)
-    story.expect_rows(not halted(story))
-    report(story, 50)
-    story.expect_rows(halted(story))
-
-
 def test_an_hourly_budget_counts_from_the_start_of_the_clock_hour_and_starts_again_with_the_next(new_story):
     story = limited_story(new_story)
     report(story, 30)

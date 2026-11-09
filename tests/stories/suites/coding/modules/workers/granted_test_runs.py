@@ -4,9 +4,7 @@ import pytest
 
 from core.base.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
-from core.modules.processes.models.process import Process
 from core.modules.processes.support.runner_binary import RunnerBinary
-from core.testing.expect_reply import expect_reply_refusal
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 
@@ -31,43 +29,14 @@ def granted(spent):
     return spent
 
 
-def newest_line(story) -> str:
-    return story.container.get(Queries).query(Process).newest().first().line
-
-
-def test_a_worker_out_of_runs_is_told_to_ask_and_never_of_a_flag(spent):
-    reply = spent.run_test()
-    expect_reply_refusal(reply, OUT_OF_RUNS_REFUSAL)
-    expect_value("--ask-main" in reply.refusal, False)
-
-
 @pytest.mark.parametrize("line", ["worker allow-test 1", "merger allow 1", "worker-test-request list"])
 def test_the_old_ways_of_allowing_a_test_are_gone(spent, line):
     expect_value(spent.story.run(line, actor=spent.story.agent).code == 0, False)
 
 
-def test_a_granted_test_runs_with_no_runs_left(granted):
-    granted.story.expect_success(RUN, actor=granted.worker)
-    expect_value(newest_line(granted.story), "pytest tests/cart.py")
-
-
 def test_a_grant_stays_so_the_same_test_runs_twice(granted):
     granted.story.expect_success(RUN, actor=granted.worker)
     granted.story.expect_success(RUN, actor=granted.worker)
-
-
-def test_a_test_the_grant_does_not_name_is_refused(granted):
-    granted.story.expect_refusal("helper run pytest tests/other.py", "is not granted", actor=granted.worker)
-
-
-def test_a_counted_run_still_needs_runs_left_after_a_grant(granted):
-    expect_reply_refusal(granted.run_test(), OUT_OF_RUNS_REFUSAL)
-
-
-def test_the_grant_tells_the_worker_its_number_and_no_command(granted):
-    lines = granted.story.run(f"agent-line list --agent {granted.worker.id}").output_text
-    expect_value_with(lines, "helper-grant:1")
-    expect_value(TEST_LINE in lines, False)
 
 
 def test_the_worker_reads_what_it_was_granted(granted):

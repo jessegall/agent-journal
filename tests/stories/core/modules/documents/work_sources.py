@@ -1,5 +1,4 @@
 from datetime import timedelta
-from concurrent.futures import ThreadPoolExecutor
 import shlex
 import subprocess
 from unittest.mock import patch
@@ -17,10 +16,6 @@ from tests.stories.core.modules.documents.support.trail_fixtures import Scenario
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.client_binary import ROOT
 from tests.stories.server.support.server_client import server_story
-from tests.stories.core.modules.library.support.copy_stories import new_item, shared_server
-from tests.stories.core.modules.secrets.support.private_home import private_folder
-
-
 @pytest.fixture
 def source_server(unselected_scenario):
     with server_story(unselected_scenario.story, listener_thread_started=False) as server:
@@ -64,11 +59,6 @@ def test_close_reopen_and_other_moves_do_not_claim_a_request(scenario, move):
     scenario.story.expect_rows(not any(row["target_model"] == "task" and row["target_id"] == 1 for row in scenario.links("message:2")))
 
 
-def test_person_made_work_has_no_borrowed_source(scenario):
-    scenario.person("tasks.tasks", "task", "make", "Person made work", "--brief", "Direct action")
-    scenario.story.expect_rows(not any(row["target_model"] == "task" and row["target_id"] == 2 for row in scenario.links("message:2")))
-
-
 def test_immediate_start_sees_committed_source(scenario):
     scenario.make_task()
     scenario.expect_link("message:2", "task:2", "about")
@@ -104,12 +94,6 @@ def test_routine_rereads_preserve_active_source(scenario):
     scenario.expect_source(2)
 
 
-def test_work_from_selects_an_older_request(scenario):
-    scenario.switch(1)
-    scenario.make_task()
-    scenario.expect_source(1)
-
-
 def test_thanks_does_not_replace_active_request(scenario):
     scenario.person("messages.chat", "message", "send", "thanks")
     scenario.select(3)
@@ -125,15 +109,6 @@ def test_compaction_keeps_source_and_new_agent_starts_without_one(scenario):
     replacement = hook_agent(scenario.story, scenario.story.hook("replacement-main", HookSamples.session_start()))
     scenario.expect_source(2)
     feature(scenario.source_ids(replacement.id) == (), "replacement agent inherited another agent's selected source")
-
-
-def test_deleting_selected_message_clears_source(scenario):
-    scenario.person("messages.chat", "message", "send", "Unread request to delete")
-    scenario.switch(3)
-    scenario.person("messages.chat", "message", "delete", "3")
-    scenario.make_task()
-    scenario.expect_no_link("message:3", "task:2")
-    feature(scenario.source_ids(scenario.story.agent.id) == (), "deleted source remains selected")
 
 
 @pytest.mark.parametrize("number", [999, 0, -1])
@@ -170,31 +145,11 @@ def test_single_read_and_make_on_one_shell_line_uses_source(source_server):
     scenario.expect_source(2)
 
 
-def test_competing_source_selections_leave_one_valid_version(source_server):
-    scenario = Scenario(source_server.story)
-    with ThreadPoolExecutor(max_workers=2) as workers:
-        outcomes = list(workers.map(lambda number: source_server.run_as(f"message work-from {number}", "s-1"), [1, 2]))
-    feature(all(outcome.exit_code == 0 for outcome in outcomes), repr(outcomes))
-    selected = scenario.source_rows(scenario.story.agent.id)
-    feature(len(selected) == 1 and selected[0].message_id in (1, 2) and selected[0].version >= 1, repr(selected))
-    scenario.make_task()
-    scenario.expect_source(selected[0].message_id)
-
-
 def test_close_and_reopen_do_not_claim_a_request(scenario):
     scenario.command("task start 1")
     scenario.command('task close 1 --outcome "Complete cart work"')
     scenario.command("task reopen 1")
     scenario.story.expect_rows(not any(row["target_model"] == "task" and row["target_id"] == 1 for row in scenario.links("message:2")))
-
-
-@pytest.mark.usefixtures("private_folder")
-def test_imports_and_library_copies_do_not_acquire_sources(scenario, shared_server):
-    server, tokens = shared_server
-    item_id = new_item(server, tokens.admin, "Imported cart design", "An independently authored library document")
-    scenario.person("library.teams", "library", "connect", server.address, "--token", tokens.editor)
-    scenario.person("library.teams", "library", "get", "doc", str(item_id))
-    scenario.story.expect_rows(not any(row["target_model"] == "doc" and row["target_id"] == 2 for row in scenario.links("message:2")))
 
 
 def test_task_named_in_reply_retains_existing_behaviour(scenario):

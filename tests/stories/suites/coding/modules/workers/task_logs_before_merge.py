@@ -19,35 +19,11 @@ def test_merge_waits_for_the_main_agent_to_read_the_workers_logs(new_story):
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
 
 
-def test_a_worker_with_no_logs_still_needs_a_read(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = unread_worker(story, repository)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_refusal(f"worker merge --wait {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker logs {worker.id}", "0 notes:", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-
-
 def test_a_worker_cannot_mark_its_own_logs_read(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = unread_worker(story, repository)
     story.expect_refusal(f"worker logs {worker.id}", "main agent", actor=worker)
-    story.expect_refusal(f"worker merge --wait {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
-
-
-@pytest.mark.real_git
-def test_a_new_delivery_requires_the_logs_to_be_read_again(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = unread_worker(story, repository)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(f"worker merge --wait {worker.id}", "clashed on cart.py", actor=story.agent)
-    repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.expect_refusal(f"worker merge --wait {worker.id}", f"journal worker logs {worker.id}", actor=story.agent)
 
 

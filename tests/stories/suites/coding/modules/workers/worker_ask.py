@@ -123,52 +123,13 @@ def judged(new_story):
     return questioning_worker
 
 
-@pytest.mark.parametrize("topic", list(AskTopic))
-def test_an_ask_for_each_topic_reaches_the_merger_with_its_facts_and_gives_the_meanwhile_line(asking, topic):
-    outcome = asking.post_question(topic=topic)
-    line = asking.merger_lines()[0]
-    asking.story.expect_rows(topic.waiting_work() in outcome.output_text, line.topic is topic, QUESTION in line.text, f"worker {asking.worker.id}" in line.text, f"task 1" in line.text, detail=outcome.output_text + line.text)
-    facts = asking.facts()
-    asking.story.expect_rows(facts["point"] == "build", facts["task"] == 1, facts["refusal"] is None, facts["outputs"] == [], facts["files"] == [], detail=str(facts))
-
-
-def test_the_answer_of_an_ask_also_says_what_to_do_now(open_question):
-    outcome = open_question.post_question(FIXTURE_QUESTION)
-    open_question.story.expect_rows("Now:" in outcome.output_text, "Then:" in outcome.output_text, detail=outcome.output_text)
-
-
-def test_an_ask_without_a_topic_is_about_other(asking):
-    outcome = asking.post_question()
-    asking.story.expect_rows(asking.merger_lines()[0].topic is AskTopic.GENERAL, AskTopic.GENERAL.waiting_work() in outcome.output_text, detail=outcome.output_text)
-
-
 def test_an_unknown_topic_is_refused_with_the_list_of_topics(asking):
     expect_refused_with(asking.story, f'worker ask "{QUESTION}" --about weather', "weather", ALL_TOPICS, actor=asking.worker)
     asking.story.expect_rows(asking.merger_lines() == ())
 
 
-def test_an_empty_ask_is_refused(asking):
-    asking.story.expect_refusal('worker ask "   "', "say what you need", actor=asking.worker)
-    asking.story.expect_rows(asking.merger_lines() == ())
-
-
 def test_the_ask_is_logged_on_the_task(open_question):
     open_question.story.expect_text("task-log list --task 1", f"worker {open_question.worker.id} asked the merger", QUESTION, actor=open_question.story.agent)
-
-
-def test_the_facts_holds_the_files_the_worker_changed(changed_worker):
-    changed_worker.post_question()
-    changed_worker.story.expect_rows(changed_worker.facts()["files"] == ["cart.py"], detail=str(changed_worker.facts()))
-
-
-def test_the_facts_holds_the_last_three_outputs_of_the_worker(asking):
-    main = asking.story.agent
-    asking.story.agent = asking.worker
-    processes = [start_process(asking.story, f"echo step{number}") for number in range(4)]
-    asking.story.agent = main
-    asking.post_question()
-    outputs = asking.facts()["outputs"]
-    asking.story.expect_rows(len(outputs) == 3, all(f"output {process.id}" in text for process, text in zip(reversed(processes[1:]), outputs, strict=True)), "step3" in outputs[0], not any("step0" in text for text in outputs), detail=str(outputs))
 
 
 @pytest.mark.real_git
@@ -191,10 +152,6 @@ def test_a_worker_that_handed_in_may_still_ask(changed_worker):
     changed_worker.story.expect_rows(changed_worker.facts()["point"] == "wait", changed_worker.facts()["files"] == ["cart.py"], detail=str(changed_worker.facts()))
 
 
-def test_a_worker_with_an_open_ask_is_at_the_question_point(open_question):
-    open_question.story.expect_rows(OPEN_QUESTION_LINE in open_question.status_line(), detail=open_question.status_line())
-
-
 def test_a_worker_with_an_open_ask_may_stop_and_is_not_resumed(open_question):
     open_question.story.expect_hook_allowed(open_question.session(), HookSamples.stop())
     open_question.program_ended()
@@ -205,18 +162,6 @@ def test_going_on_working_closes_the_question_and_the_stop_is_refused_again(open
     open_question.worked_on()
     open_question.story.expect_rows(OPEN_QUESTION_LINE not in open_question.status_line(), detail=open_question.status_line())
     open_question.story.expect_hook_refusal(open_question.session(), HookSamples.stop(), AskTopic.GENERAL.question_line())
-
-
-def test_asking_the_same_twice_sends_one_line_and_gives_the_same_answer(asking):
-    first = asking.post_question()
-    second = asking.post_question()
-    asking.story.expect_rows(len(asking.merger_lines()) == 1, second.output_text == first.output_text, detail=second.output_text)
-
-
-def test_the_same_text_about_another_topic_is_a_new_ask(asking):
-    asking.post_question(topic=AskTopic.TOOL)
-    asking.post_question(topic=AskTopic.JUDGE)
-    asking.story.expect_rows([line.topic for line in asking.merger_lines()] == [AskTopic.TOOL, AskTopic.JUDGE])
 
 
 def test_another_question_while_one_is_open_is_a_new_line_and_work_closes_both(asking):

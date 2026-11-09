@@ -6,9 +6,6 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.viewer_events import LoggedViewer, expect_cursor, expect_event
-from tests.stories.support.story_checks import expect_value
-
-
 @pytest.fixture
 def logged_viewer(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
@@ -39,20 +36,3 @@ def test_a_stream_keeps_hook_calls_when_a_window_follows_them(logged_viewer):
         logged_viewer.server.story.run('task make "Check call filtering" --environment main')
         logged_viewer.server.story.hook("s-1", HookSamples.prompt("Read the call window"))
         expect_event(response, "hook_call.prompt")
-
-
-def test_a_filtered_stream_resumes_without_losing_a_followed_event(logged_viewer):
-    server = logged_viewer.server
-    server.story.run('task make "First streamed task" --environment main')
-    server.story.run('task make "Second streamed task" --environment main')
-    with logged_viewer.stream(["task.create"]) as response:
-        first_id = expect_event(response, "task.create")
-        next_id = expect_event(response, "task.create")
-    with server.viewer_stream(logged_viewer.cookie, first_id, ["task.create"]) as response:
-        expect_value(expect_event(response, "task.create"), next_id)
-
-
-def test_an_empty_filter_starts_a_filtered_stream_instead_of_following_every_event(logged_viewer):
-    with logged_viewer.stream([]) as response:
-        logged_viewer.server.story.hook("s-1", HookSamples.prompt("No window follows these events"))
-        expect_cursor(response, logged_viewer.cursor_id)

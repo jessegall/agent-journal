@@ -8,7 +8,6 @@ from core.base.query.conditions.among import Among
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import END, MoveSequenceRun
 from core.modules.sequences.support.sequence_events import SequenceEvents
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.base.change.touched import Touched
 from core.base.model.model import Model
 

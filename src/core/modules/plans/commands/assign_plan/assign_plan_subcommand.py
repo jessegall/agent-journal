@@ -7,8 +7,8 @@ from core.modules.plans.models.plan import Plan
 
 
 class AssignPlanSubcommand(Subcommand[AssignPlan, Plan]):
-    """`journal plan assign <plan> [--phase <phase>] [--to <n>]`: the open tasks of the plan or phase are
-    reserved for the agent named; with none named they are left free for the main agent to pick."""
+    """`journal plan assign <plan> [--phase <phase>] [--to <n>]`: the open and blocked tasks of the plan or
+    phase are reserved for the agent named; with none named they are left free for the main agent to pick."""
 
     cli_name = "plan"
     name = "assign"

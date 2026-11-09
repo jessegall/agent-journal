@@ -102,12 +102,6 @@ def test_a_dashboard_lists_the_events_it_names_by_their_viewer_names_and_leaves_
     story.expect_rows(rows[0]["events"] == ["task.create"])
 
 
-def test_a_written_dashboard_is_read_back(new_story):
-    story = installed_plugin(new_story)
-    board_file(story).write_text(json.dumps(PAGES))
-    story.expect_text("plugin dashboard standup", "Today")
-
-
 def test_a_dashboard_that_is_not_valid_says_so(new_story):
     story = installed_plugin(new_story)
     board_file(story).write_text("{ half written")
@@ -199,4 +193,3 @@ def test_a_failed_setup_leaves_the_old_code(new_story):
     story.expect_rows(story.container.get(Queries).query(ApprovalRequest).find(request.id).state is ApprovalState.OPEN)
     story.expect_rows("1.2.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
     story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)
-

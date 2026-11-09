@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import os
 import select
+import shutil
 import signal
 from datetime import timedelta
 
@@ -32,11 +33,13 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import plugin_row
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter
-from tests.stories.core.modules.plugins.support.service_samples import service_plugin_folder
+from tests.stories.core.modules.plugins.support.service_samples import SERVICE, service_plugin_folder
+from core.modules.plugins.models.plugin import Plugin
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
+SERVED = ("served", "answers")
 REMOVAL_PART = ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES])
 
 
@@ -73,14 +76,6 @@ def test_an_upgrade_starts_the_service_again_with_the_new_code_before_it_reports
 def expect_service_refusal(story, sample):
     story.expect_hook_refusal("s-1", sample, "plugin:1 refused")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin served] the service says no", actor=story.agent)
-
-
-def test_a_service_that_answers_is_asked_in_place_of_the_program(new_story):
-    story = served_story(new_story)
-    try:
-        expect_service_refusal(story, REMOVAL_SAMPLE)
-    finally:
-        story.processes.close()
 
 
 def test_a_line_of_four_parts_reaches_the_service_as_four_events_and_starts_no_program(new_story, monkeypatch):
@@ -164,18 +159,6 @@ def test_the_services_read_names_each_service_and_whether_it_runs(new_story):
     story.expect_text("plugin services", "served answers: stopped")
 
 
-def test_a_service_that_ended_is_started_again_by_the_next_follow(new_story):
-    story = served_story(new_story)
-    try:
-        first = story.processes.running[("served", "answers")]
-        os.kill(first.pid, signal.SIGKILL)
-        first.wait(5)
-        story.services.follow(story.processes)
-        story.expect_rows(story.processes.running[("served", "answers")].running(), story.processes.running[("served", "answers")].pid != first.pid)
-    finally:
-        story.processes.close()
-
-
 def test_a_service_is_started_again_once_the_files_of_its_plugin_changed(new_story):
     story = served_story(new_story)
     try:
@@ -193,16 +176,58 @@ def test_a_service_is_started_again_once_the_files_of_its_plugin_changed(new_sto
         story.processes.close()
 
 
-def test_a_switched_off_plugins_services_are_stopped(new_story):
-    story = served_story(new_story)
-    try:
-        process = story.processes.running[("served", "answers")]
-        story.run("plugin disable served", actor=story.user)
-        story.services.follow(story.processes)
-        process.wait(5)
-        story.expect_rows(not process.running(), ("served", "answers") not in story.processes.running)
-    finally:
-        story.processes.close()
+def server_kept_story(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
+    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.services, story.processes = story.container.get(PluginServices), ServiceProcesses.shared(story.home)
+    story.processes.serving = True
+    story.services.follow(story.processes)
+    return story
+
+
+@pytest.fixture
+def controlled_service(new_story):
+    story = server_kept_story(new_story)
+    yield story
+    story.processes.close()
+
+
+def test_stopping_a_service_ends_it_and_says_it_stopped(controlled_service):
+    story = controlled_service
+    process = story.processes.running[SERVED]
+    story.expect_text("plugin service stop served answers", "served answers: stopped", actor=story.user)
+    process.wait(5)
+    story.expect_rows(not process.running(), SERVED not in story.processes.running)
+    story.expect_text("plugin services", "served answers: stopped", actor=story.user)
+
+
+@pytest.mark.parametrize("line, reason", [
+    ("plugin service stop served missing", "plugin served has no running service missing"),
+    ("plugin service restart absent answers", "plugin absent has no running service answers"),
+])
+def test_a_service_the_journal_does_not_run_is_refused(controlled_service, line, reason):
+    story = controlled_service
+    story.expect_refusal(line, reason, actor=story.user)
+    story.expect_rows(story.processes.running[SERVED].running())
+
+
+def test_switching_a_plugin_off_and_on_starts_its_stopped_service(controlled_service):
+    story = controlled_service
+    story.run("plugin service stop served answers", actor=story.user)
+    story.run("plugin disable served", actor=story.user)
+    story.services.follow(story.processes)
+    story.run("plugin enable served", actor=story.user)
+    story.services.follow(story.processes)
+    story.expect_rows(story.processes.running[SERVED].running())
+
+
+def test_removing_a_plugin_has_stopped_its_services_when_it_reports_done(controlled_service):
+    story = controlled_service
+    process = story.processes.running[SERVED]
+    story.expect_success("plugin remove served", actor=story.user)
+    story.expect_rows(not process.running(), SERVED not in story.processes.running)
 
 
 def test_a_service_that_answers_its_health_check_leaves_the_plugin_without_a_fault(new_story):
@@ -248,28 +273,6 @@ def is_running(pid: int) -> bool:
     return True
 
 
-def test_stopping_a_service_ends_the_children_it_started(new_story):
-    story = served_story(new_story)
-    reader = os.open(story.home.folder / "plugin-data" / "served" / "child.alive", os.O_RDONLY | os.O_NONBLOCK)
-    story.processes.close()
-    readable, _, _ = select.select([reader], [], [], END_LIMIT_SECONDS)
-    ended = bool(readable) and os.read(reader, 1) == b""
-    os.close(reader)
-    story.expect_rows(ended)
-
-
-def test_a_server_started_after_a_crash_keeps_the_service_still_running_and_starts_no_second_one(new_story):
-    story = served_story(new_story)
-    leftover = story.processes.running[("served", "answers")]
-    after_crash = ServiceProcesses()
-    try:
-        story.services.follow(after_crash)
-        story.expect_rows(is_running(leftover.pid), after_crash.running[("served", "answers")].pid == leftover.pid)
-    finally:
-        after_crash.close()
-        story.processes.close()
-
-
 def conditioned_story(new_story, condition: str):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
@@ -298,30 +301,6 @@ def test_a_service_whose_condition_kept_it_from_starting_is_not_listed(unready_s
     try:
         story.services.run(story.processes)
         story.expect_absent("plugin services", "served answers")
-    finally:
-        story.processes.close()
-
-
-def test_a_condition_past_its_limit_counts_as_failed_and_is_the_plugins_fault(new_story):
-    story = conditioned_story(new_story, "sleep 5")
-    try:
-        story.services.run(story.processes)
-        story.run_listeners()
-        story.expect_rows(("served", "answers") not in story.processes.running)
-        story.expect_text("plugin list", "last fault: the condition of its service answers ran past 1 s", actor=story.user)
-    finally:
-        story.processes.close()
-
-
-def test_a_service_whose_condition_later_passes_starts_once_it_is_checked_again(delayed_service):
-    story = delayed_service
-    try:
-        story.services.run(story.processes)
-        story.expect_rows(("served", "answers") not in story.processes.running)
-        (story.home.folder / "plugin-data" / "served" / "ready").write_text("")
-        story.advance(timedelta(minutes=11))
-        story.services.run(story.processes)
-        story.expect_rows(("served", "answers") in story.processes.running)
     finally:
         story.processes.close()
 
@@ -375,3 +354,95 @@ def test_a_plugin_an_agent_installs_through_the_persons_approval_has_its_service
         story.expect_rows(list(processes.running) == [("served", "answers")])
     finally:
         processes.close()
+
+
+FAILING_SERVICE = "#!/bin/sh\nexit 1\n"
+
+
+def rewritten_service(story, text: str) -> None:
+    path = story.container.get(PluginFolders).code("served") / "serve.py"
+    path.write_text(text)
+    path.chmod(0o755)
+
+
+def failed_round(story) -> None:
+    running = story.processes.running.get(("served", "answers"))
+    if running is not None:
+        running.wait(END_LIMIT_SECONDS)
+    story.services.run(story.processes)
+
+
+def test_a_service_that_fails_again_and_again_is_tried_after_a_growing_pause_and_the_user_hears_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
+    rewritten_service(story, FAILING_SERVICE)
+    story.services, story.processes = story.container.get(PluginServiceRound), ServiceProcesses()
+    try:
+        story.services.run(story.processes)
+        failed_round(story)
+        first_retry = story.processes.running[("served", "answers")]
+        failed_round(story)
+        story.expect_rows(("served", "answers") not in story.processes.running, detail="a second failure in a row waits before the next try")
+        story.advance(timedelta(seconds=31))
+        failed_round(story)
+        story.expect_rows(story.processes.running[("served", "answers")].pid != first_retry.pid)
+        failed_round(story)
+        story.run_listeners()
+        story.expect_text("plugin list", "last fault: its service answers keeps failing to run: it ended with exit 1", actor=story.user)
+        for _ in range(3):
+            story.advance(timedelta(minutes=11))
+            failed_round(story)
+        story.run_listeners()
+        story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
+        rewritten_service(story, SERVICE)
+        failed_round(story)
+        story.advance(timedelta(minutes=11))
+        story.services.run(story.processes)
+        story.expect_rows(story.processes.running[("served", "answers")].running())
+    finally:
+        story.processes.close()
+
+
+def test_a_service_that_cannot_start_does_not_stop_the_round_and_is_told_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
+    (story.container.get(PluginFolders).code("served") / "serve.py").unlink()
+    story.services, story.processes = story.container.get(PluginServiceRound), ServiceProcesses()
+    try:
+        for _ in range(4):
+            story.services.run(story.processes)
+            story.advance(timedelta(minutes=11))
+        story.run_listeners()
+        story.expect_rows(("served", "answers") not in story.processes.running)
+        story.expect_text("plugin list", "keeps failing to run: it could not start", actor=story.user)
+        story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
+    finally:
+        story.processes.close()
+
+
+def changed_plugin_files(story) -> None:
+    code = story.container.get(PluginFolders).code("served")
+    (code / "journal-plugin.json").write_text((code / "journal-plugin.json").read_text() + "\n")
+    upgraded = PluginDigest.digest(code, PluginManifest.read(code))
+    story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = ?, version = version + 1 WHERE name = 'served'", [upgraded]))
+
+
+def test_a_restart_with_the_plugin_folder_replaced_leaves_one_service_running(new_story):
+    story = served_story(new_story)
+    leftover = story.processes.running[("served", "answers")]
+    code = story.container.get(PluginFolders).code("served")
+    replaced = code.with_name(f"{code.name}.old")
+    shutil.copytree(code, replaced)
+    shutil.rmtree(code)
+    shutil.copytree(replaced, code)
+    changed_plugin_files(story)
+    after_restart = ServiceProcesses()
+    try:
+        story.services.follow(after_restart)
+        current = after_restart.running[("served", "answers")]
+        story.expect_rows(current.running(), current.pid != leftover.pid, not is_running(leftover.pid))
+    finally:
+        after_restart.close()
+        story.processes.close()

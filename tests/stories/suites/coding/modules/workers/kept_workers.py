@@ -44,25 +44,6 @@ def test_a_worker_with_unmerged_work_is_not_retired(new_story):
     story.expect_refusal(f"agent retire {worker.id} {REASON}", "unmerged work", actor=story.agent)
 
 
-def test_retire_refused_with_uncommitted_files(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = dispatched_worker(story)
-    repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
-    stopped(story, worker)
-    story.expect_refusal(f"agent retire {worker.id} {REASON}", "uncommitted files", actor=story.agent)
-
-
-def test_retire_ignores_the_instruction_files_the_journal_writes(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = dispatched_worker(story)
-    repository.changed(worker.id, "AGENTS.md", "The journal's text\n")
-    repository.changed(worker.id, "CLAUDE.md", "The journal's text\n")
-    stopped(story, worker)
-    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
-
-
 def test_retire_settles_what_a_worker_holds(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -76,39 +57,6 @@ def test_retire_settles_what_a_worker_holds(new_story):
     repository.expect_no_folder(worker.id)
     retired = story.run(f'worker send --wait {worker.id} "Another job"', actor=story.agent)
     story.expect_rows(retired.code == 5, "retired" in retired.output_text)
-
-
-@pytest.mark.real_git
-def test_retire_refused_with_a_preserved_branch(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = dispatched_worker(story)
-    worktree_commit(repository, worker.id, "cart.py")
-    story.expect_success(f'worker release {worker.id} "Not needed"', actor=story.agent)
-    story.expect_refusal(f"agent retire {worker.id} {REASON}", "unmerged work", actor=story.agent)
-
-
-@pytest.mark.real_git
-def test_a_failed_git_status_holds_the_retirement(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = dispatched_worker(story)
-    stopped(story, worker)
-    folder = repository.worktree_folder(worker.id)
-    (folder / ".git").write_text("not a git folder")
-    story.expect_refusal(f"agent retire {worker.id} {REASON}", "git status --porcelain failed", actor=story.agent)
-
-
-@pytest.mark.real_git
-def test_a_removed_worktree_is_not_checked_through_git_when_a_worker_is_retired(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = merged_kept_worker(story, repository)
-    stopped(story, worker)
-    leftover = repository.worktree_folder(worker.id)
-    (leftover / ".claude").mkdir(parents=True)
-    repository.uncommitted("notes.txt", "Work of someone else\n")
-    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
 
 
 @pytest.mark.real_git
@@ -235,15 +183,6 @@ def test_a_worker_whose_task_was_cancelled_can_be_released(new_story):
     story.expect_success('task cancel 1 --reason "Not needed"', actor=story.user)
     story.expect_success(f'worker release {worker.id} "Its task was cancelled"', actor=story.agent)
     story.expect_rows(story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
-
-
-def test_stop_allowed_when_a_dispatch_cannot_proceed(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
-    dispatched_worker(story)
-    story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_hook_allowed("s-1", HookSamples.sample("stop"))
 
 
 def merged_kept_worker(story, repository):

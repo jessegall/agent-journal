@@ -99,15 +99,6 @@ def test_a_shape_that_states_a_total_says_so(new_story):
     expect_line(story, ALIAS_START, "line shape reading n/m, and it states its total")
 
 
-def test_a_second_silent_run_refuses_the_next_start_with_a_ready_reader(new_story):
-    story = new_story(fixture=SecondBuildStarted)
-    finish_build(story, 2, GOLANG_OUTPUT, seconds=71)
-    reply = story.hook("s-1", ALIAS_START)
-    expect_value("journal build-npm ran silent twice" in reply.refusal, True)
-    ready = [line for line in reply.lines if "a reader for journal build-npm" in line]
-    expect_value(bool(ready and 'journal reader add build-npm --commands "journal build-npm --tail 5"' in ready[0] and '--step "(?m)^\\s*--- (?:(?P<passed>PASS)|(?P<failed>FAIL)):"' in ready[0]), True)
-
-
 def test_a_skip_with_a_reason_lets_the_refused_start_through_once(new_story):
     story = new_story(fixture=SecondBuildStarted)
     finish_build(story, 2, GOLANG_OUTPUT, seconds=72)

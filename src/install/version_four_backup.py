@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from core.base.database.version_four_tables import VersionFourTables
+from core.base.file_access import FileAccess
 from install.backup_mismatch_error import BackupMismatchError
 from install.backup_write_error import BackupWriteError
 from install.backup_result import BackupResult
@@ -25,7 +26,7 @@ class VersionFourBackup:
 
     def version(self) -> str:
         file = self.journal / VERSION_FILE
-        stated = VERSION_PATTERN.search(file.read_text()) if file.is_file() else None
+        stated = VERSION_PATTERN.search(FileAccess.shared().read(file)) if file.is_file() else None
         return stated.group(1) if stated else UNKNOWN_VERSION
 
     def make(self) -> BackupResult:

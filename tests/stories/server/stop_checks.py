@@ -3,7 +3,7 @@ import pytest
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from tests.stories.suites.coding.drivers.orchestrator.orchestrator import ReadyPlanTaskOrchestrator
+from tests.stories.suites.coding.drivers.main.orchestrator import ReadyPlanTaskOrchestrator
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def test_an_allowed_stop_records_every_check_and_reason_through_the_viewer_route
                                 checks["memories.weigh-first-stop"]["reason"] == "no active memories.weighing layer",
                                 checks["workers.delivered-work-at-stop"]["reason"] == "no delivered proof needs a check at this stop")
     stop_server.story.expect_text(f"hook-call stops --session-agent-id {stop_server.story.agent.id} --json", "the agent has no task in hand")
-    stop_server.story.expect_rows("stop " in stop_server.story.system_log_text(), "the agent has no task in hand" in stop_server.story.system_log_text())
+    stop_server.story.expect_rows("stop " not in stop_server.story.system_log_text())
 
 
 def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_server):
@@ -42,6 +42,8 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     story.expect_rows(record["answer"] == "refused", "task:1 is in hand" in checks["tasks.carry-on-at-stop"]["reason"],
                       not checks["coding.main-stop"]["applied"],
                       checks["coding.main-stop"]["reason"] == "no task can be handed to the main agent or sent to a worker")
+    lines = [line for line in story.system_log_text().splitlines() if "stop " in line and "refused" in line]
+    story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" not in lines[0], detail=str(lines))
 
 
 @pytest.mark.parametrize("places,answer", [(0, "allowed"), (1, "refused")])

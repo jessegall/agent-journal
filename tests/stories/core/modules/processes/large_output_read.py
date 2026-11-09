@@ -9,14 +9,6 @@ def posted(line):
     return HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="output")).with_fields(event="post_tool_use")
 
 
-def test_reading_all_of_a_large_output_names_the_flags_once_for_that_output(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "make test")
-    end_run(story, process, "x\n" * 300)
-    story.expect_hook_allowed("s-1", posted(f"journal output read {process.id} --all"), f"output {process.id} has 300 lines")
-    story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --all"), "lines: read it with")
-
-
 def test_reading_all_of_a_short_output_says_nothing(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make test")

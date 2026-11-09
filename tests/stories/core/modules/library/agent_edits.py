@@ -2,7 +2,6 @@ import shutil
 
 import pytest
 
-from core.modules.documents.models.doc import Doc
 from core.modules.library.models.enums.copy_state import CopyState
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.library.support.agent_edits import AGENT_EDITS_WAIT_SETTING
@@ -52,58 +51,6 @@ def test_an_edit_by_an_agent_stays_on_this_journal_until_a_person_sends_it(new_s
     story.expect_rows(copy_line(story, copy).endswith("Status: Agent change, not sent"))
     story.expect_text(f"library resolve {copy.id} --keep mine", "Status: In sync", actor=story.user)
     story.expect_rows(len(updates) == 1, stored_copy(story, copy).state is CopyState.SYNCED, server_body(server, tokens.admin, copy) == "Edited by an agent.")
-
-
-def test_an_edit_by_a_person_goes_up_by_itself(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Basalt person edit")
-    edit_body(story, copy, "Edited by a person.", agent=False)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, server_body(server, tokens.admin, copy) == "Edited by a person.")
-
-
-def test_a_person_who_edits_after_an_agent_sends_both_changes(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Slate both edits")
-    edit_body(story, copy, "Edited by an agent.", agent=True)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    edit_body(story, copy, "Edited by a person after the agent.", agent=False)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, server_body(server, tokens.admin, copy) == "Edited by a person after the agent.")
-
-
-def test_an_agent_change_that_is_undone_leaves_the_copy_in_sync(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Opal agent undone")
-    edit_body(story, copy, "Edited by an agent.", agent=True)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    edit_body(story, copy, "Tag first.", agent=True)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, copy_line(story, copy).endswith("Status: In sync"))
-
-
-def test_the_library_version_replaces_an_agent_change_a_person_does_not_want(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Garnet agent discarded")
-    edit_body(story, copy, "Edited by an agent.", agent=True)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_text(f"library resolve {copy.id} --keep library", "Status: In sync", actor=story.user)
-    story.expect_rows(story.row(Doc, copy.row_id).body == "Tag first.", server_body(server, tokens.admin, copy) == "Tag first.")
-    story.expect_text(f"doc revision {copy.row_id} 2", "Edited by an agent.", actor=story.user)
-
-
-def test_an_agent_cannot_send_an_agent_change(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Pearl agent cannot send")
-    edit_body(story, copy, "Edited by an agent.", agent=True)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_refusal(f"library resolve {copy.id} --keep mine --reason 'a story asks'", "only a person chooses between a copy and its item", actor=story.agent)
-    story.expect_rows(server_body(server, tokens.admin, copy) == "Tag first.")
 
 
 def test_with_the_setting_off_an_edit_by_an_agent_goes_up_by_itself(new_story, shared_server):

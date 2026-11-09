@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeIs, TypeVar
 
 from core.base.model.model import Model
 from core.base.model.move import Move
@@ -20,3 +20,7 @@ class Changed(Generic[M]):
     @classmethod
     def pattern(cls, model: type[Model], moves: Sequence[Move]) -> str:
         return "*.*" if model is Model else f"{model.model_name}.*"
+
+
+def is_changed_class(class_type: type) -> TypeIs[type[Changed[Model]]]:
+    return issubclass(class_type, Changed)

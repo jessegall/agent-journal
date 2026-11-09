@@ -34,6 +34,15 @@ class EventRows:
             raise MissingRowsError(model.cli_name, [row_id])
         return row
 
+    def required_by_id(self, model: type[M], row_ids: Sequence[int]) -> dict[int, M]:
+        self.prepare(model, row_ids)
+        name = self.cache_name(model)
+        rows = {row_id: self.known[(model, row_id)][name].row for row_id in dict.fromkeys(row_ids)}
+        missing = [row_id for row_id, row in rows.items() if row is None]
+        if missing:
+            raise MissingRowsError(model.cli_name, missing)
+        return cast(dict[int, M], rows)
+
     def prepare(self, model: type[M], row_ids: Sequence[int]) -> None:
         if len(self.known) >= KEPT_ROW_COUNT:
             self.known.clear()

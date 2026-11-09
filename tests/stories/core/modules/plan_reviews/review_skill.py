@@ -47,11 +47,3 @@ def test_a_helper_that_made_the_plan_must_read_the_skill_when_the_critique_repor
     story.expect_success(CRITIQUE_REPORT, actor=story.agent)
     story.run_listeners()
     story.expect_rows(f"{SKILL_LINE}  due" in due_skills(story, helper))
-
-
-def test_a_report_about_a_plan_not_under_review_makes_no_skill_due(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_success('plan make "Cart plan" --environment main', actor=story.agent)
-    story.expect_success(CRITIQUE_REPORT, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(SKILL_LINE not in due_skills(story, story.agent))

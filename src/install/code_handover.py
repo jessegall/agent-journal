@@ -2,7 +2,9 @@ import threading
 import time
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.code_versions import CodeVersions
+from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.unix_connection import UnixConnection
@@ -22,10 +24,10 @@ class CodeHandover:
     running, the link moves at once."""
 
     def __init__(self, home: JournalHome, steps: UpdateSteps = UpdateSteps()) -> None:
-        self.home, self.versions, self.files, self.steps = home, CodeVersions(home), ServerFiles(home), steps
+        self.home, self.versions, self.files, self.steps, self.clock = home, CodeVersions(home), ServerFiles(home), steps, Clock()
 
     def run(self, source: Path) -> float:
-        tag = self.versions.add(source)
+        tag = self.versions.add(source, self.clock)
         running_pid = self.server_pid()
         started_seconds = time.monotonic()
         try:
@@ -46,7 +48,7 @@ class CodeHandover:
             self.steps.record(SERVING)
 
     def begin(self, source: Path) -> None:
-        self.begin_version(self.versions.add(source))
+        self.begin_version(self.versions.add(source, self.clock))
 
     def begin_version(self, tag: str) -> None:
         threading.Thread(target=self.background_takeover, args=(tag, self.server_pid()), name="code handover", daemon=True).start()
@@ -72,7 +74,7 @@ class CodeHandover:
         raise Refusal(f"code version {tag} was not taken over: status {status}", f"the running server keeps serving: read {self.files.log}")
 
     def server_pid(self) -> str:
-        return self.files.pid_file.read_text().strip() if self.files.pid_file.is_file() else ""
+        return FileAccess.shared().read(self.files.pid_file).strip() if self.files.pid_file.is_file() else ""
 
     def takeover_status(self, tag: str) -> int:
         connection = UnixConnection(str(self.files.socket), PROOF_LIMIT_SECONDS + TAKEOVER_LIMIT_SECONDS, "journal")

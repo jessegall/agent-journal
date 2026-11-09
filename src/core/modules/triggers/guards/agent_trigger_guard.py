@@ -1,6 +1,4 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
-from core.base.refusal import Refusal
 from core.base.user_approval_refusal import UserApprovalRefusal
 from core.modules.triggers.models.trigger import Trigger
 from core.modules.triggers.support.trigger_approval import TriggerApproval

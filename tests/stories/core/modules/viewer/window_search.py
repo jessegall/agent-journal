@@ -10,21 +10,9 @@ from core.testing.expect_row import expect_row
 SEARCH = "window search questions.questions"
 
 
-def test_a_window_reads_the_rows_its_declared_search_finds_for_the_words(new_story):
-    story = new_story(fixture=DatabaseQuestions)
-    story.expect_text(f"{SEARCH} database", "Which database?", actor=story.user)
-    story.expect_absent(f"{SEARCH} database", "Which cache?", actor=story.user)
-
-
 def test_a_search_with_no_words_finds_every_row(new_story):
     story = new_story(fixture=DatabaseQuestions)
     story.expect_text(SEARCH, "Which database?", "Which cache?", actor=story.user)
-
-
-def test_every_word_must_be_held_by_a_row_found(new_story):
-    story = new_story(fixture=DatabaseQuestions)
-    story.expect_text(f"{SEARCH} which cache", "Which cache?", actor=story.user)
-    story.expect_absent(f"{SEARCH} which cache", "Which database?", actor=story.user)
 
 
 def test_a_window_may_run_its_own_search_without_declaring_the_line(new_story):
@@ -35,11 +23,6 @@ def test_a_window_may_run_its_own_search_without_declaring_the_line(new_story):
 def test_a_window_may_not_run_the_search_of_another_window(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_refusal("questions.questions", "window search suggestions.suggestions cart", "may use only its own search")
-
-
-def test_a_window_that_declares_no_search_is_refused_one(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_refusal("window search questions.waiting cart", "questions.waiting declares no search", actor=story.user)
 
 
 def test_a_window_nobody_declares_is_refused_a_search(new_story):

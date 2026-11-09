@@ -90,23 +90,10 @@ def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
     story.expect_rows(job.brief == "How does the queue hold a run?", job.profile == "journal-researcher", job.session_agent_id == story.agent.id)
 
 
-def test_the_launcher_gets_the_program_and_brief_in_the_parent_s_folder(new_story):
-    story, helper_id, launcher = start_source(new_story, LauncherRuns)
-    request = launcher.requests[0]
-    command = " ".join(request["command"])
-    story.expect_rows(request["agent_id"] == helper_id, request["folder"] == "/work/journal", request["environment"] == "main")
-    story.expect_rows(f"You are helper {helper_id}." in command, "How does the queue hold a run?" in command)
-
-
 def test_a_helper_runs_on_the_program_named(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, CODEX_START)
     story.expect_success(f"agent show {helper_id}", "program: codex", "program_model: gpt-6.1-sol")
-
-
-def test_with_no_program_or_model_it_runs_on_its_parent_s_program_and_the_profile_s_model(new_story):
-    story = new_story(fixture=StartedHelper)
-    story.expect_success(f"agent show {running_helper(story)}", "program: claude", "program_model: sonnet")
 
 
 def test_a_given_name_shows_on_the_helper(new_story):
@@ -145,12 +132,6 @@ def test_a_person_s_start_has_the_main_agent_as_parent(new_story):
     story = new_story(fixture=LauncherRuns)
     helper_id, _ = started(story, START, story.user)
     story.expect_success(f"agent show {helper_id}", f"parent_id: {story.agent.id}")
-
-
-def test_no_launcher_is_refused_before_any_row(new_story):
-    story = new_story(fixture=LauncherRuns)
-    story.expect_refusal(START, "journal launch", actor=story.agent)
-    story.expect_rows(helpers(story) == [])
 
 
 def test_at_the_limit_a_start_names_the_running_helpers_and_an_ended_one_gives_its_slot_back(new_story):

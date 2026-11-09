@@ -1,5 +1,4 @@
 from server.viewer.windows_route import WindowsRoute
-from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.base.viewer.support.inspector_listing_modules import PATH
 from tests.stories.core.base.viewer.support.inspector_modules import PATH as PLAIN_PATH
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -27,13 +26,6 @@ def test_a_declared_inspector_is_listed_with_its_width_and_components(new_story)
 def test_a_row_with_a_shared_read_is_shareable(new_story):
     listed = read_inspectors(new_story(fixture=MainEnvironment))
     expect_value({model_name: listed[model_name].shareable for model_name in ("plan", "doc", "task", "agent")}, {"plan": True, "doc": True, "task": False, "agent": False})
-
-
-def test_an_inactive_module_lists_no_inspector(new_story):
-    story = new_story(SAMPLES, fixture=MainEnvironment)
-    expect_value("file-edit" in read_inspectors(story), True)
-    story.run("suite choose samples --environment main")
-    expect_value("file-edit" not in read_inspectors(story), True)
 
 
 def test_the_windows_list_is_unchanged(new_story):

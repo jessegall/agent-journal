@@ -24,10 +24,11 @@ class WindowKey:
     answered_line: bool = False
     name_ids: bool = False
     switches: Sequence[str] = ()
+    event_column: str = ""
 
     def listed(self) -> Mapping[str, object]:
         return {"tab": self.tab, "events": list(self.events), "reload_seconds": self.reload_seconds, "loading": self.loading,
-                "page_size": self.page_size, "reads_ids": "ids" in self.arguments}
+                "page_size": self.page_size, "reads_ids": "ids" in self.arguments, "event_column": self.event_column}
 
     @property
     def has_ids(self) -> bool:

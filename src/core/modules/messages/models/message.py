@@ -18,7 +18,7 @@ class Message(EnvironmentScoped, Model):
     cli_name = "message"
     search_fields = ["text"]
     search_rank = 1
-    hidden_fields = frozenset(["is_chat_visible"])
+    hidden_fields = frozenset(["is_chat_visible", "is_agent_text"])
 
     environment_id: int = 0
     session_agent_id: int | None = None
@@ -38,6 +38,7 @@ class Message(EnvironmentScoped, Model):
     peer_key: str = ""
     recipient: str = ""
     is_chat_visible: bool = True
+    is_agent_text: bool = False
 
     @property
     def title(self) -> str:

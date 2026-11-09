@@ -18,6 +18,7 @@ class DeniedToolsRule(DriverRule):
     exempt = True
     denied_tools: ClassVar[Sequence[ToolType]] = ()
     refusal: ClassVar[NudgeDeclaration] = TOOL_RESTRICTION
+    refuses_one_action = "Refuses tool types a driver excludes, leaving other tools to their own rules"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool

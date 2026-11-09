@@ -1,6 +1,5 @@
 from core.base.listener.event_rows import EventRows
 from core.base.registry.registry import Registry
-from core.modules.docking.models.dock import Dock
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue

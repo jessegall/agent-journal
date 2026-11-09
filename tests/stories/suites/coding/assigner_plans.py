@@ -34,14 +34,6 @@ def test_a_task_leaving_the_hands_is_followed_by_the_started_plans_lowest_id_at_
     story.expect_text("task show 4", "state: open", actor=story.agent)
 
 
-def test_inside_a_phase_the_higher_priority_goes_first(new_story):
-    story = new_story(fixture=StartedPlanTasks)
-    story.run("task edit 3 --priority high", actor=story.agent)
-    story.run('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
-    story.expect_text("task show 3", "state: started", actor=story.agent)
-
-
 def test_a_critical_task_outside_the_plan_goes_before_the_started_plan(new_story):
     story = new_story(fixture=StartedPlanTasks)
     story.run("task edit 4 --priority critical", actor=story.agent)

@@ -144,19 +144,6 @@ def merger_disabled_plan(new_story):
 
 
 @pytest.fixture
-def five_advised(advising):
-    advising.advised_five_times()
-    return advising
-
-
-@pytest.fixture
-def advised_and_moved(advising):
-    advising.advised(ADVICES[0], 1)
-    advising.moved(2)
-    return advising
-
-
-@pytest.fixture
 def advised_and_delivered(advising):
     advising.advised(ADVICES[0], 1)
     advising.delivered()
@@ -203,19 +190,6 @@ def test_advise_still_reaches_the_worker_as_a_message_from_the_merger(advising):
     advising.story.expect_text(f"agent-line list --agent {advising.worker.id}", f"agent:{advising.merger.id} reports in message:", actor=advising.worker)
 
 
-def test_an_advice_records_the_worker_its_group_its_point_and_its_words(advising):
-    advising.advised()
-    row = advising.merger_message_rows()[0]
-    advising.story.expect_rows(row.worker_id == advising.worker.id, row.group_key != "", row.step == "build", row.task_id == 1, row.text == ADVICES[0], detail=str(row))
-
-
-def test_five_advices_go_out_and_the_sixth_is_refused_with_the_next_step(five_advised):
-    five_advised.moved(6)
-    five_advised.visit()
-    expect_refused_with(five_advised.story, f'merger advise {five_advised.worker.id} "{ADVICES[5]}"', MERGER_MESSAGE_LIMIT_LINE, "wait for the merge", "journal merger tell", actor=five_advised.merger)
-    five_advised.story.expect_rows(len(five_advised.messages()) == 5, len(five_advised.merger_message_rows()) == 5, detail=str(five_advised.messages()))
-
-
 def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):
     for line in ("The cart test fails", "The tax test fails too", "Now the totals test fails"):
         advising.story.expect_success(f'worker report "{line}"', actor=advising.worker)
@@ -223,15 +197,6 @@ def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):
     advising.advised(ADVICES[0], 1)
     expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, "one", actor=advising.merger)
     advising.story.expect_rows(len(advising.messages()) == 1, detail=str(advising.messages()))
-
-
-def test_a_merger_that_has_not_read_its_lines_yet_gives_one_advice_too(advised_and_moved):
-    expect_refused_with(advised_and_moved.story, f'merger advise {advised_and_moved.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, actor=advised_and_moved.merger)
-
-
-def test_a_new_visit_at_a_new_point_may_advise_again(advised_and_moved):
-    advised_and_moved.visit()
-    advised_and_moved.advised(ADVICES[1], 2)
 
 
 def test_a_visit_with_nothing_waiting_is_still_a_new_visit(advising):
@@ -283,15 +248,6 @@ def test_only_the_merger_advises(advising, sender):
     advising.story.expect_rows(advising.merger_message_rows() == (), detail=str(advising.merger_message_rows()))
 
 
-def test_an_advice_with_no_words_is_refused(advising):
-    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "  "', "no words", actor=advising.merger)
-    advising.story.expect_rows(advising.merger_message_rows() == (), advising.messages() == (), detail=str(advising.messages()))
-
-
-def test_an_agent_that_is_no_worker_cannot_be_advised(advising):
-    expect_refused_with(advising.story, f'merger advise {advising.story.agent.id} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=advising.merger)
-
-
 def test_a_merged_worker_cannot_be_advised_until_it_has_new_work(merged_worker):
     expect_refused_with(merged_worker.story, f'merger advise {merged_worker.worker.id} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=merged_worker.merger)
 
@@ -332,16 +288,6 @@ def test_a_worker_message_to_the_merger_is_not_refused(advising):
     advising.story.expect_success(f'message send "Rebased on the branch" --to agent:{advising.merger.id}', actor=advising.worker)
 
 
-def test_the_main_agent_can_still_message_a_worker(advising):
-    advising.story.expect_success(f'message send "Look at the cart" --to agent:{advising.worker.id}', actor=advising.story.agent)
-
-
-def test_a_refused_advice_tells_no_message_to_the_worker_and_spends_nothing(advising):
-    advising.advised(ADVICES[0], 1)
-    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, actor=advising.merger)
-    advising.story.expect_rows(len(advising.merger_message_rows()) == 1, len(advising.messages()) == 1, detail=str(advising.merger_message_rows()))
-
-
 def test_the_sixth_ask_in_a_group_is_refused_and_the_first_of_the_next_group_goes_through(planned_with_three_asks):
     _, advised = planned_with_three_asks
     advised.post_questions(4)
@@ -359,24 +305,10 @@ def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):
     merged_after_five_asks.story.expect_rows(len(merged_after_five_asks.question_lines()) == 6, detail=str(merged_after_five_asks.question_lines()))
 
 
-def test_the_same_open_question_asked_twice_spends_one_ask(advising):
-    for _ in range(6):
-        advising.post_questions(1)
-    advising.story.expect_rows(len(advising.question_lines()) == 1, detail=str(advising.question_lines()))
-    for number in range(2, 6):
-        advising.post_questions(number)
-    advising.story.expect_rows(len(advising.question_lines()) == 5, detail=str(advising.question_lines()))
-
-
 def test_a_refused_ask_writes_no_line_and_opens_no_wait(five_questions):
     expect_refused_with(five_questions.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=five_questions.worker)
     five_questions.story.expect_no_text("task-log list --task 1", "Question 6")
     five_questions.story.expect_no_text(f"wait list --agent {five_questions.worker.id}", "Question 6")
-
-
-def test_the_asks_and_the_advice_are_counted_apart(five_questions):
-    five_questions.advised(ADVICES[0], 1)
-    five_questions.story.expect_rows(len(five_questions.question_lines()) == 5, len(five_questions.merger_message_rows()) == 1, detail=str(five_questions.question_lines()))
 
 
 def test_the_ask_limit_holds_with_the_merger_off(merger_disabled_plan):

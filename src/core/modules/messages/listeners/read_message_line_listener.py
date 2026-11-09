@@ -1,10 +1,8 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
-from core.base.query.queries import Queries
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.waiting_message_lines import WaitingMessageLines
-from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.messages.support.message_targets import MessageTargets
 from core.base.change.updated import Updated
 

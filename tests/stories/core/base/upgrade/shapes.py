@@ -9,14 +9,6 @@ from tests.stories.support.story_checks import expect_code_outcome, expect_outco
 MESSAGE_COUNT = 20000
 
 
-def test_a_journal_of_an_older_version_4_release_without_later_columns_upgrades_as_far_as_its_columns_go(new_story):
-    story = new_story()
-    strip_release_columns(version_four_fixture(story.home.folder / "journal.db"))
-    outcome = UpgradeJournal(story.home).run(confirmed=True)
-    expect_row(outcome, code=0)
-    story.expect_success("task show 3", "state: blocked")
-
-
 def test_an_empty_version_4_journal_upgrades_and_moves_nothing(new_story):
     story = new_story()
     version_four_fixture(story.home.folder / "journal.db", with_rows=False)

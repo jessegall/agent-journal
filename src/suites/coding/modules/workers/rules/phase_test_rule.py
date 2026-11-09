@@ -30,6 +30,7 @@ class PhaseTestRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
+    refuses_one_action = "Allows counted tests within a phase and handles requests after the allowance is spent"
 
     def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, queries: Queries, settings: SettingValues) -> None:
         self.phases, self.commands, self.queries, self.settings = phases, commands, queries, settings

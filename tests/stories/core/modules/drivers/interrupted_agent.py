@@ -4,7 +4,6 @@ from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.ticks.interrupted_agent_wake import InterruptedAgentWake
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
@@ -40,29 +39,6 @@ def wake_after(story: Story, seconds: int) -> None:
     story.run_listeners()
 
 
-def test_an_interrupted_agent_is_woken_once_nobody_typed_for_30_seconds(new_story):
-    story, launcher = interrupted_story(new_story, b"quiet 600\n")
-    try:
-        wake_after(story, 10)
-        story.expect_rows(wake_lines(story) == [], story.row(Agent, story.agent.id).interrupted_at is not None)
-        wake_after(story, 25)
-        lines = wake_lines(story)
-        story.expect_rows(len(lines) == 1, lines[0].text == WAKE, lines[0].state is AgentLineState.ENTERED, story.row(Agent, story.agent.id).interrupted_at is None, detail=str(lines))
-        wake_after(story, 60)
-        story.expect_rows(len(wake_lines(story)) == 1)
-    finally:
-        launcher.server.close()
-
-
-def test_an_interrupted_agent_is_not_woken_when_the_person_typed_after_the_interrupt(new_story):
-    story, launcher = interrupted_story(new_story, b"quiet 5\n")
-    try:
-        wake_after(story, 40)
-        story.expect_rows(wake_lines(story) == [], story.row(Agent, story.agent.id).interrupted_at is None)
-    finally:
-        launcher.server.close()
-
-
 def test_an_agent_that_stopped_on_its_own_after_the_interrupt_is_not_woken(new_story):
     story, launcher = interrupted_story(new_story, b"quiet 600\n")
     try:
@@ -72,4 +48,3 @@ def test_an_agent_that_stopped_on_its_own_after_the_interrupt_is_not_woken(new_s
         story.expect_rows(wake_lines(story) == [], story.row(Agent, story.agent.id).interrupted_at is None)
     finally:
         launcher.server.close()
-

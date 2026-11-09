@@ -2,7 +2,6 @@ from core.base.refusal import Refusal
 from core.modules.viewer.guards.person_row_guard import PersonRowGuard
 from core.modules.viewer.models.person_preset import PersonPreset
 from core.base.change.changed import Changed
-from core.base.command.context import Context
 
 
 class PersonPresetOwnerGuard(PersonRowGuard[Changed[PersonPreset]]):

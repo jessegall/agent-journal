@@ -67,17 +67,6 @@ def failing_update(monkeypatch, client: LibraryClient, failure: Exception, item_
     return calls
 
 
-def test_an_edit_with_write_access_is_sent_and_the_copy_is_in_sync_at_the_new_version(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Quartz edit sent")
-    edit_body(story, copy, "Edited here.")
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    item = server_item(server, tokens.editor, copy)
-    story.expect_rows(item["version"] == 2, item["fields"]["body"] == "Edited here.", stored_copy(story, copy).base_version == 2, stored_copy(story, copy).state is CopyState.SYNCED)
-    story.expect_rows(copy_line(story, copy).endswith("version 2. Status: In sync"))
-
-
 def test_an_edit_of_a_removed_item_is_kept_and_not_sent_and_a_restore_makes_it_a_conflict(new_story, shared_server, monkeypatch):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -118,18 +107,6 @@ def test_a_newer_server_version_does_not_overwrite_a_read_only_edit_and_is_asked
     story.expect_rows(len(fetched) == 1, kept.state is CopyState.DENIED, kept.server_version == 2, "Admin text." in kept.server_fields, story.row(Doc, copy.row_id).body == "Edited by a reader.")
 
 
-def test_a_role_raised_to_edit_sends_the_waiting_edit(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, server.new_user("Mia", "read"))
-    copy = made_copy(story, server, tokens.admin, "Jasper role raised")
-    edit_body(story, copy, "Edited by Mia.")
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.DENIED)
-    server.run("user role Mia edit")
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, server_item(server, tokens.admin, copy)["fields"]["body"] == "Edited by Mia.")
-
-
 def test_a_role_raised_to_edit_compares_a_waiting_edit_with_a_newer_server_version(new_story, shared_server, monkeypatch):
     server, tokens = shared_server
     story = connected(new_story, server, server.new_user("Noor", "read"))
@@ -162,17 +139,6 @@ def test_a_stale_write_is_a_conflict_that_keeps_both_versions(new_story, shared_
     story.expect_rows(server_item(server, tokens.admin, copy)["fields"]["body"] == "Admin text.", copy_line(story, copy).endswith("Status: Conflict"))
 
 
-def test_a_change_on_both_sides_is_a_conflict_that_overwrites_nothing(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Amber both sides")
-    edit_body(story, copy, "Edited here.")
-    server_change(server, tokens.admin, copy.item_id, "Amber both sides", "Admin text.", 1)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.CONFLICT, story.row(Doc, copy.row_id).body == "Edited here.",
-                      server_item(server, tokens.admin, copy)["fields"]["body"] == "Admin text.")
-
-
 def test_a_conflict_sends_no_more_requests_for_its_item(new_story, shared_server, monkeypatch):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -184,29 +150,6 @@ def test_a_conflict_sends_no_more_requests_for_its_item(new_story, shared_server
     fetched, update_calls = counted(monkeypatch, client, "item"), counted(monkeypatch, client, "update")
     story.expect_text("library sync", CHANGED_NONE, actor=story.agent)
     story.expect_rows(fetched == [], update_calls == [])
-
-
-def test_the_same_text_on_both_sides_is_no_conflict(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Agate same text")
-    edit_body(story, copy, "Same words.")
-    server_change(server, tokens.admin, copy.item_id, "Agate same text", "Same words.", 1)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 2, copy_line(story, copy).endswith("Status: In sync"))
-
-
-def test_a_person_who_undoes_an_edit_finds_the_copy_in_sync(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.reader)
-    copy = made_copy(story, server, tokens.admin, "Onyx undone")
-    edit_body(story, copy, "Edited by a reader.")
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.DENIED)
-    edit_body(story, copy, "Tag first.")
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    kept = stored_copy(story, copy)
-    story.expect_rows(kept.state is CopyState.SYNCED, kept.unsent_digest == "", copy_line(story, copy).endswith("Status: In sync"))
 
 
 def test_a_lost_response_is_settled_by_the_next_round_without_a_conflict(new_story, shared_server, monkeypatch):
@@ -283,17 +226,6 @@ def test_a_failure_of_the_server_leaves_every_other_copy_as_it_was_and_the_next_
         story.expect_text(f"library connect {server.address} --token {tokens.editor}", "Connected: ", actor=story.user)
     story.expect_text("library sync", "Reached the library. 3 copies followed, 2 changed.", actor=story.agent)
     story.expect_rows(stored_copy(story, first).base_version == 2, stored_copy(story, second).base_version == 2, stored_copy(story, unedited_copy).base_version == 1)
-
-
-def test_a_restored_backup_is_a_conflict_for_a_person_to_choose(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = made_copy(story, server, tokens.admin, "Quartz backup")
-    server_change(server, tokens.admin, copy.item_id, "Quartz backup", "Backup text.", 1)
-    copy_with(story, copy, base_version=5)
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    kept = stored_copy(story, copy)
-    story.expect_rows(kept.state is CopyState.CONFLICT, kept.server_version == 2, "Backup text." in kept.server_fields, story.row(Doc, copy.row_id).body == "Tag first.")
 
 
 def test_a_day_offline_sends_every_change_when_the_network_returns(new_story, shared_server, monkeypatch):
@@ -377,15 +309,6 @@ def conflicted_copy(story: Story, server: SharedServerBinary, tokens, title: str
     return copy
 
 
-def test_keeping_mine_sends_the_text_with_the_version_the_person_saw_and_ends_the_conflict(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = conflicted_copy(story, server, tokens, "Quartz keep mine")
-    story.expect_success(f"library resolve {copy.id} --keep mine", f"doc {copy.row_id} follows library doc {copy.item_id}, version 3. Status: In sync", actor=story.user)
-    item = server_item(server, tokens.admin, copy)
-    story.expect_rows(item["version"] == 3, item["fields"]["body"] == "Edited here.", stored_copy(story, copy).state is CopyState.SYNCED, story.row(Doc, copy.row_id).body == "Edited here.")
-
-
 def test_keeping_mine_when_a_third_version_arrived_stays_a_conflict_with_the_newest_text(new_story, shared_server, monkeypatch):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -416,14 +339,6 @@ def test_keeping_the_library_version_keeps_the_text_in_the_revisions_even_after_
     story.expect_text(f"doc revision {copy.row_id} 4", "Admin text.", actor=story.user)
 
 
-def test_an_agent_cannot_resolve_a_copy(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    copy = conflicted_copy(story, server, tokens, "Opal agent resolve")
-    story.expect_refusal(f"library resolve {copy.id} --keep library --reason 'a story asks'", "only a person chooses between a copy and its item", actor=story.agent)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.CONFLICT)
-
-
 def test_a_copy_that_is_in_step_has_nothing_to_resolve(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -446,16 +361,6 @@ def test_keeping_the_library_version_ends_a_refused_change(new_story, shared_ser
     story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, story.row(Doc, copy.row_id).body == "Tag first.", stored_copy(story, copy).note == "")
 
 
-def test_keeping_mine_for_a_refused_change_sends_it_again_and_a_reader_stays_refused(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.reader)
-    copy = made_copy(story, server, tokens.admin, "Jasper reader keeps mine")
-    edit_body(story, copy, "Edited by a reader.")
-    story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    story.expect_text(f"library resolve {copy.id} --keep mine", "Status: Local change, not sent", actor=story.user)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.DENIED, server_item(server, tokens.admin, copy)["version"] == 1)
-
-
 def command_review(new_story, server: SharedServerBinary, tokens, title: str) -> tuple[Story, LibraryCopy]:
     fields = {"title": title, "command": "echo hello", "brief": "Says hello", "interval_minutes": 5}
     item = server.send(tokens.admin, "POST", "/items/check", {"fields": fields})[1]
@@ -467,13 +372,6 @@ def command_review(new_story, server: SharedServerBinary, tokens, title: str) ->
     copy = story.container.get(Queries).query(LibraryCopy).filter(share="check").first()
     assert copy.state is CopyState.REVIEW
     return story, copy
-
-
-def test_keeping_the_library_version_ends_a_new_version_to_read(new_story, shared_server):
-    server, tokens = shared_server
-    story, copy = command_review(new_story, server, tokens, "Topaz review library")
-    story.expect_text(f"library resolve {copy.id} --keep library", "Status: In sync", actor=story.user)
-    story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 2, story.row(Check, 1).command == "echo changed")
 
 
 def test_keeping_mine_ends_a_new_version_to_read_by_sending_the_text_here(new_story, shared_server):

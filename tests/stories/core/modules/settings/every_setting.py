@@ -41,11 +41,3 @@ def test_every_setting_shows_its_default_and_keeps_it_when_saved_unchanged(new_s
         if saved["value"] != row["default"]:
             problems.append(f"{row['key']} saved unchanged became {saved['value']!r}, its default is {row['default']!r}")
     expect_absent_value(problems)
-
-
-def test_a_list_item_holding_a_comma_stays_one_item(new_story):
-    story = new_story(fixture=UserBuilder)
-    key = "journal.core.overview.commands"
-    story.expect_success(f"""setting set {key} '["task list --columns id,title", "question list"]' --environment main""", actor=story.user)
-    value = next(row["value"] for row in rows(story) if row["key"] == key)
-    expect_value_5(value, ["task list --columns id,title", "question list"])

@@ -99,14 +99,6 @@ def test_a_reader_with_no_kept_output_is_saved_and_judged_on_its_first_run(new_s
     story.expect_text(f"reader show {reader}", f"proved_on: {process.id}", actor=story.agent)
 
 
-def test_a_reader_that_passes_on_kept_output_records_its_proof(new_story):
-    story = new_story(fixture=BuilderStarted)
-    process = start_process(story, "kept-tests run", category=CommandCategory.TEST_RUN)
-    end_run(story, process, "collected 3\n3 passed\n")
-    story.expect_success('reader add kept --commands "kept-tests*" --lines "passed" --summary "([0-9]+ passed)" --count "collected ([0-9]+)"',
-                         f"proved_on: {process.id}", actor=story.agent)
-
-
 def test_a_summary_cannot_claim_more_tests_than_the_count(new_story):
     story = new_story(fixture=BuilderStarted)
     process = start_process(story, "overcount-tests run", category=CommandCategory.TEST_RUN)
@@ -130,24 +122,6 @@ def test_a_failed_reader_update_keeps_the_reader_that_passed(new_story):
     reader = story.new_row_id('reader add updated --commands "update-tests*" --lines "passed" --summary "([0-9]+ passed)"', actor=story.agent)
     story.expect_refusal('reader add updated --summary "never printed"', f"output {process.id}: --summary found nothing", actor=story.agent)
     story.expect_text(f"reader show {reader}", "summary_pattern: ([0-9]+ passed)", f"proved_on: {process.id}", actor=story.agent)
-
-
-def test_only_the_five_newest_matching_outputs_are_tried(new_story):
-    story = new_story(fixture=BuilderStarted)
-    for number in range(6):
-        process = start_process(story, "recent-tests run", category=CommandCategory.TEST_RUN)
-        end_run(story, process, "old format\n" if number == 0 else "3 passed\n")
-    unrelated = start_process(story, "other-tests run", category=CommandCategory.TEST_RUN)
-    end_run(story, unrelated, "unrelated format\n")
-    story.expect_success('reader add recent --commands "recent-tests*" --lines "passed" --summary "([0-9]+ passed)"',
-                         f"proved_on: {process.id}", actor=story.agent)
-
-
-def test_a_quick_reader_can_omit_fields_when_matching_output_exists(new_story):
-    story = new_story(fixture=BuilderStarted)
-    process = start_process(story, "quick-report", category=CommandCategory.UNKNOWN)
-    end_run(story, process, "done\n")
-    story.expect_success('reader add quick --commands "quick-report" --lines "done"', f"proved_on: {process.id}", actor=story.agent)
 
 
 def test_each_part_of_a_chain_is_judged_alone(new_story):

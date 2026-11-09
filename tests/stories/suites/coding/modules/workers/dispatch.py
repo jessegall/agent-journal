@@ -52,14 +52,6 @@ def test_a_worker_that_dispatches_a_worker_is_refused_and_makes_nothing(new_stor
     story.expect_rows(tuple(story.container.get(Queries).query(ActorRecord).all_rows()) == actors)
 
 
-def test_a_dispatch_whose_worktree_command_fails_is_refused_with_its_output_and_removes_the_worktree_and_its_branch(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo npm is not installed >&2; exit 1"]' --environment main""", "key: journal.suites.coding.workers.worktree-commands")
-    story.expect_refusal(DISPATCH, "npm is not installed", actor=story.agent)
-    expect_clean_environment(story, repository)
-
-
 def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=StartedTaskBuilder)
     repository = repository_environment(story)

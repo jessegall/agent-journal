@@ -1,11 +1,10 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
 from types import MappingProxyType
 import html
 import json
 from time import perf_counter
 from dataclasses import asdict, replace
-from datetime import datetime, timezone
 from uuid import uuid4
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
@@ -20,9 +19,9 @@ from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
 from core.base.database.repeated_lines import RepeatedLines
 from core.base.change.event_pattern_error import EventPatternError
+from core.base.type_guards import is_list
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.line_answer import LineAnswer
-from server.viewer.line_route import REFUSED_CODE
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.window_data_request import KEYS_HEADER, WINDOW_HEADER, WindowDataRequest
 from server.viewer.viewer_lines_request import ViewerLinesRequest
@@ -279,7 +278,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if urlsplit(self.path).path == READ_RECEIPTS_ROUTE:
             try:
                 entries = json.loads(body or b"{}")["receipts"]
-                if not isinstance(entries, list):
+                if not is_list(entries):
                     raise ViewerRequestError("read receipts are a list")
                 receipts = tuple(ReadAttribution.parsed(entry) for entry in entries)
             except (KeyError, TypeError, ValueError, ViewerRequestError) as error:
@@ -345,23 +344,25 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.viewer().untrack_request()
         event_stream.follow(request, self.stream_message, shared)
 
-    def answer_window_data(self, viewer: ViewerServer, session: ViewerSession, person_id: int, query: str) -> None:
+    def parsed_request[Parsed](self, parse: Callable[[], Parsed]) -> Parsed | None:
         try:
-            request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query)
-            started_at, (received_at, request_id) = perf_counter(), self.stamped()
-            answer = viewer.routes.window_data.answer(request, person_id, session.shared)
+            return parse()
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
+            return None
+
+    def answer_window_data(self, viewer: ViewerServer, session: ViewerSession, person_id: int, query: str) -> None:
+        started_at, received_at, request_id = perf_counter(), viewer.routes.clock.timestamp().text, str(uuid4())
+        answer = self.parsed_request(lambda: viewer.routes.window_data.answer(WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query), person_id, session.shared))
+        if answer is None:
             return
         http = self.http_request(request_id, received_at, (perf_counter() - started_at) * 1000, 0, person_id)
         self.finish_request(viewer, asdict(answer.body()), request_id, [ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
                                                                             for index, (line, timed) in enumerate(zip(answer.lines, answer.answers, strict=True))])
 
     def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
-        try:
-            request = ViewerLinesRequest.parsed(json.loads(body or b"{}"))
-        except ViewerRequestError as error:
-            self.answer(400, {"error": str(error)})
+        request = self.parsed_request(lambda: ViewerLinesRequest.parsed(json.loads(body or b"{}")))
+        if request is None:
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
         received_at, request_id = self.stamped()
@@ -389,9 +390,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.wfile.flush()
         viewer.routes.request_log.record_viewers(records)
 
-    @staticmethod
-    def stamped() -> tuple[str, str]:
-        return datetime.now(timezone.utc).isoformat(), str(uuid4())
+    def stamped(self) -> tuple[str, str]:
+        return self.viewer().routes.clock.timestamp().text, str(uuid4())
 
     @staticmethod
     def http_request(request_id: str, received_at: str, duration_ms: float, body_bytes: int, person_id: int) -> ViewerHttpRequest:
@@ -510,8 +510,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_redirect(self, kept_query: list[tuple[str, str]], headers: dict[str, str]) -> None:
         self.send_response(303)
-        for name, value in headers.items():
-            self.send_header(name, value)
+        for name, text in headers.items():
+            self.send_header(name, text)
         self.send_header("Location", f"{VIEWER_ROOT}?{urlencode(kept_query)}" if kept_query else VIEWER_ROOT)
         self.send_header("Content-Length", "0")
         self.end_headers()
@@ -585,13 +585,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.answer(refusal.status, {"error": refusal.reason}, {"Connection": "close"})
         return True
 
-    def answer(self, status: int, value: dict[str, object], headers: Mapping[str, str] = MappingProxyType({})) -> None:
+    def answer(self, status: int, value: Mapping[str, object], headers: Mapping[str, str] = MappingProxyType({})) -> None:
         body = json.dumps(value).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
-        for name, value in headers.items():
-            self.send_header(name, value)
+        for name, text in headers.items():
+            self.send_header(name, text)
         self.end_headers()
         self.wfile.write(body)
 

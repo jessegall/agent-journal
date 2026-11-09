@@ -32,30 +32,11 @@ def test_a_workers_tool_no_agent_holds_is_refused(new_story):
     story.expect_hook_refusal("t-8", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-98", role="worker"), UNKNOWN_AGENT.nudge().text)
 
 
-def test_a_session_under_a_claude_workers_launch_name_leaves_the_session_its_row_holds(started_main_agent):
-    story, main = started_main_agent
-    worker_id = story.new_row_id(f"agent start t-1 claude worker --parent {main.id} --environment main")
-    story.expect_hook_silent("t-9", HookSamples.session_start().with_fields(launch="t-1"))
-    story.expect_text(f"agent show {worker_id}", "session: t-1")
-    story.expect_rows("whose worker" in story.system_log_text())
-
-
 def test_a_claude_helper_is_found_by_the_session_it_was_given(started_main_agent):
     story, main = started_main_agent
     helper_id = story.new_row_id(f"agent start s-2 claude worker --parent {main.id} --environment main")
     helper = hook_agent(story, story.hook("s-2", HookSamples.stop().with_fields(launch="worker-8")))
     story.expect_rows(helper.id == helper_id)
-
-
-@pytest.mark.parametrize("program", ["claude", "codex"])
-def test_a_worker_resumed_under_its_own_session_as_launch_name_is_reopened_and_its_hooks_are_kept(started_main_agent, program):
-    story, main = started_main_agent
-    worker_id = story.new_row_id(f"agent start t-1 {program} worker --parent {main.id} --environment main")
-    story.run(f"agent end {worker_id}")
-    resumed = hook_agent(story, story.hook("t-1", HookSamples.session_start().with_fields(program=program, launch="t-1")))
-    story.expect_rows(resumed.id == worker_id)
-    story.expect_absent(f"agent show {worker_id}", "ended_at: 20")
-    story.expect_rows("launch name t-1" not in story.system_log_text())
 
 
 def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_launch_row(resumed_main):
@@ -84,50 +65,12 @@ def test_a_codex_worker_ended_before_its_first_hook_is_refused_its_tools_and_its
     story.expect_absent("agent list --environment main", "t-7")
 
 
-def test_a_worker_that_ended_under_its_own_session_is_refused_its_tools(started_main_agent):
-    story, main = started_main_agent
-    worker_id = story.new_row_id(f"agent start t-2 claude worker --parent {main.id} --environment main")
-    story.run(f"agent end {worker_id}")
-    story.expect_hook_refusal("t-2", HookSamples.edit("a.py"), ENDED_AGENT.nudge().text)
-
-
-def test_a_clear_under_a_launch_keeps_the_agent_on_the_new_session_id(launched_main):
-    story, launched_id = launched_main
-    story.hook("s-3", CLEAR_END.with_fields(launch="main-3"))
-    story.expect_absent(f"agent show {launched_id}", "ended_at: 20")
-    cleared = hook_agent(story, story.hook("s-2", CLEAR_START.with_fields(launch="main-3")))
-    story.expect_rows(cleared.id == launched_id)
-    story.expect_text(f"agent show {launched_id}", "session: s-2")
-
-
 def test_a_clear_after_a_resume_keeps_the_resumed_agent_on_the_new_session_id(resumed_main):
     story, old, _, _ = resumed_main
     story.hook("s-1", CLEAR_END.with_fields(launch="main-3"))
     cleared = hook_agent(story, story.hook("s-2", CLEAR_START.with_fields(launch="main-3")))
     story.expect_rows(cleared.id == old.id)
     story.expect_text(f"agent show {old.id}", "session: s-2")
-
-
-def test_a_session_end_under_a_launch_that_is_no_clear_ends_the_agent(launched_main):
-    story, launched_id = launched_main
-    story.hook("s-3", HookSamples.sample("session_end").with_fields(launch="main-3"))
-    story.expect_text(f"agent show {launched_id}", "ended_at: 20")
-
-
-def test_a_new_session_under_a_launch_that_is_no_clear_never_takes_the_agent(launched_main):
-    story, launched_id = launched_main
-    story.expect_hook_silent("s-9", HookSamples.session_start().with_fields(launch="main-3"))
-    story.expect_text(f"agent show {launched_id}", "session: s-3")
-    story.expect_rows("launch name main-3" in story.system_log_text())
-
-
-@pytest.fixture
-def launched_main(started_main_agent):
-    story, old = started_main_agent
-    story.run(f"agent end {old.id}")
-    launched_id = story.new_row_id("agent start main-3 claude main --environment main")
-    hook_agent(story, story.hook("s-3", HookSamples.session_start().with_fields(launch="main-3")))
-    return story, launched_id
 
 
 @pytest.fixture

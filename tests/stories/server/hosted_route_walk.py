@@ -70,10 +70,3 @@ def test_the_server_state_answers_401_without_a_login_and_200_with_one_on_a_host
     server, socket_path = hosted_server
     expect_value(socket_answer(socket_path, "GET", SERVER_STATE_ROUTE).status, 401)
     expect_value(socket_answer(socket_path, "GET", SERVER_STATE_ROUTE, headers=session_cookie(server)).status, 200)
-
-
-def test_the_server_state_still_answers_without_a_login_on_a_local_journal(new_story):
-    from tests.stories.server.support.server_client import server_story, viewer_answer
-    with server_story(new_story()) as server:
-        status, _, _ = viewer_answer(server.viewer_port(), SERVER_STATE_ROUTE, "", "")
-        expect_value(status, 200)

@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.models.message import Message
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
@@ -53,3 +54,21 @@ def test_an_agent_messages_no_unrelated_agent_and_none_of_another_environment(ne
     story.expect_refusal(f'message send "Hello" --to agent:{alternate_folder.id}', "no agent", actor=story.agent)
     story.expect_refusal(f'message send "Hello" --to agent:{story.agent.id}', "sends no message to itself", actor=story.agent)
     story.expect_rows(sender_name(story, helper.id) is None)
+
+
+def test_a_main_agents_reply_to_a_helper_names_that_helper_as_its_recipient(new_story):
+    story = new_story(fixture=StartedHelper)
+    helper = helper_actor(story)
+    story.expect_success(f'message send "The total is wrong" --to agent:{story.agent.id}', actor=helper)
+    asked = sender_name(story, helper.id)
+    story.expect_success(f'message reply {asked.id} "Fixing it"', actor=story.agent)
+    reply = sender_name(story, story.agent.id)
+    story.expect_rows(reply.parent_id == asked.id, reply.recipient == story.container.get(Queries).query(Agent).find(helper.id).display_name, detail=reply.recipient)
+
+
+def test_a_main_agents_reply_to_a_person_names_no_recipient(new_story):
+    story = new_story(fixture=StartedHelper)
+    story.expect_success('message send "Fix the cart" --environment main', actor=story.user)
+    asked = story.container.get(Queries).query(Message).filter(creator_id=story.user.id).newest().first()
+    story.expect_success(f'message reply {asked.id} "On it"', actor=story.agent)
+    story.expect_rows(sender_name(story, story.agent.id).recipient == "")

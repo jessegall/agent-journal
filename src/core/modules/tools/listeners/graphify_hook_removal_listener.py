@@ -3,11 +3,11 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.provider.managed_hooks import ManagedHooks
 from core.modules.drivers.events.session_started import SessionStarted
 
-GRAPHIFY_SEARCH_HOOK = "graphify hook-guard"
+GRAPHIFY_SEARCH_HOOKS = ("graphify hook-guard", "graphify hook-check")
 
 
 class GraphifyHookRemovalListener(CommitListener[SessionStarted]):
-    """Removes the search hook an older Graphify install left, so the only reminder is the journal's own count."""
+    """Removes the search hooks an older Graphify install left, so the only reminder is the journal's own count."""
 
     name = "tools.graphify-hook-removal"
 
@@ -15,4 +15,5 @@ class GraphifyHookRemovalListener(CommitListener[SessionStarted]):
         self.hooks = hooks
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
-        self.hooks.removed_commands(GRAPHIFY_SEARCH_HOOK)
+        for command in GRAPHIFY_SEARCH_HOOKS:
+            self.hooks.removed_commands(command)

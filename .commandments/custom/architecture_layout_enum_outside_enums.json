@@ -1,0 +1,246 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/.+\\.py$"
+            },
+            {
+                "any": [
+                    {
+                        "typeKind": "enum"
+                    },
+                    {
+                        "extendsAny": "Enum"
+                    },
+                    {
+                        "extendsAny": "StrEnum"
+                    },
+                    {
+                        "extendsAny": "IntEnum"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)enums/[^/]+\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)(dist|node_modules|vendor)/"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/base/access.py"
+            },
+            {
+                "file": "src/core/base/actor_type.py"
+            },
+            {
+                "file": "src/core/base/agent_role.py"
+            },
+            {
+                "file": "src/core/base/chat/mark_click.py"
+            },
+            {
+                "file": "src/core/base/chat/mark_colouring.py"
+            },
+            {
+                "file": "src/core/base/chat/mark_group.py"
+            },
+            {
+                "file": "src/core/base/chat/mark_grouping.py"
+            },
+            {
+                "file": "src/core/base/chat/mark_outcome.py"
+            },
+            {
+                "file": "src/core/base/checkout_type.py"
+            },
+            {
+                "file": "src/core/base/connection_status.py"
+            },
+            {
+                "file": "src/core/base/driver/command_category.py"
+            },
+            {
+                "file": "src/core/base/driver/command_effect.py"
+            },
+            {
+                "file": "src/core/base/driver/foreign_outcome.py"
+            },
+            {
+                "file": "src/core/base/driver/hook_event_name.py"
+            },
+            {
+                "file": "src/core/base/driver/hook_wildcard.py"
+            },
+            {
+                "file": "src/core/base/driver/nudge_type.py"
+            },
+            {
+                "file": "src/core/base/driver/refusal_style.py"
+            },
+            {
+                "file": "src/core/base/driver/tool_type.py"
+            },
+            {
+                "file": "src/core/base/duration_unit.py"
+            },
+            {
+                "file": "src/core/base/file_status.py"
+            },
+            {
+                "file": "src/core/base/helper_role.py"
+            },
+            {
+                "file": "src/core/base/log_level.py"
+            },
+            {
+                "file": "src/core/base/log_source.py"
+            },
+            {
+                "file": "src/core/base/model/event_form.py"
+            },
+            {
+                "file": "src/core/base/module/layer_tier.py"
+            },
+            {
+                "file": "src/core/base/profile/model_tier.py"
+            },
+            {
+                "file": "src/core/base/provider/hook_decoder.py"
+            },
+            {
+                "file": "src/core/base/provider/hook_effect.py"
+            },
+            {
+                "file": "src/core/base/provider/hook_trust.py"
+            },
+            {
+                "file": "src/core/base/provider/managed_state.py"
+            },
+            {
+                "file": "src/core/base/registry/button_window.py"
+            },
+            {
+                "file": "src/core/base/registry/listener_timing.py"
+            },
+            {
+                "file": "src/core/base/role_group.py"
+            },
+            {
+                "file": "src/core/base/sandbox_level.py"
+            },
+            {
+                "file": "src/core/base/script_stop.py"
+            },
+            {
+                "file": "src/core/base/setting/setting_scope.py"
+            },
+            {
+                "file": "src/core/base/setting/setting_type.py"
+            },
+            {
+                "file": "src/core/base/tunnel/tunnel_state.py"
+            },
+            {
+                "file": "src/core/base/viewer/auto_scroll.py"
+            },
+            {
+                "file": "src/core/base/viewer/inspector_width.py"
+            },
+            {
+                "file": "src/core/base/viewer/key_loading.py"
+            },
+            {
+                "file": "src/core/base/viewer/panel_labels.py"
+            },
+            {
+                "file": "src/core/base/viewer/skeleton_shape.py"
+            },
+            {
+                "file": "src/core/base/viewer/skeleton_size.py"
+            },
+            {
+                "file": "src/core/base/viewer/window_icon.py"
+            },
+            {
+                "file": "src/core/base/viewer/window_loading.py"
+            },
+            {
+                "file": "src/core/base/viewer/window_place.py"
+            },
+            {
+                "file": "src/core/base/viewer/window_priority.py"
+            },
+            {
+                "file": "src/core/base/viewer/window_shows.py"
+            },
+            {
+                "file": "src/core/modules/agents/support/agent_session_state.py"
+            },
+            {
+                "file": "src/core/modules/agents/support/launch_answer.py"
+            },
+            {
+                "file": "src/core/modules/codex/providers/support/codex_hook_event.py"
+            },
+            {
+                "file": "src/core/modules/developer/support/private_data_category.py"
+            },
+            {
+                "file": "src/core/modules/documents/conditions/link_side.py"
+            },
+            {
+                "file": "src/core/modules/documents/support/work_context_order.py"
+            },
+            {
+                "file": "src/core/modules/plugins/support/plugin_event_state.py"
+            },
+            {
+                "file": "src/core/modules/plugins/support/plugin_file_place.py"
+            },
+            {
+                "file": "src/core/modules/processes/models/support/process_setting.py"
+            },
+            {
+                "file": "src/core/modules/skills/support/required_agents.py"
+            },
+            {
+                "file": "src/core/modules/tools/support/tool_setting.py"
+            },
+            {
+                "file": "src/core/modules/updates/models/support/update_setting.py"
+            },
+            {
+                "file": "src/core/modules/voices/support/address_form.py"
+            },
+            {
+                "file": "src/server/hook/queue_priority.py"
+            },
+            {
+                "file": "src/server/viewer/closed_service.py"
+            },
+            {
+                "file": "src/server/viewer/route_audience.py"
+            },
+            {
+                "file": "src/server/viewer/session_type.py"
+            },
+            {
+                "file": "src/suites/coding/support/coding_helper_role.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "enum-outside-enums",
+        "description": "An enum sits outside an enums folder.",
+        "rule": "Move the enum to the enums folder beside it, directly in that folder.",
+        "skill": "plain-code-words"
+    }
+}

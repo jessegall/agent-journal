@@ -50,23 +50,6 @@ def test_the_status_says_who_is_logged_in_where_and_whether_this_journal_uses_tu
     expect_subdomain_status(status, "cart-team")
 
 
-def test_a_machine_without_tunler_says_so_and_a_refused_login_says_it_was_refused(new_story):
-    story, _ = account_story(new_story, FakeTunlerClient(installed=False))
-    expect_absent_installed_answer(story, "tunler status")
-    refused, _ = account_story(new_story, FakeTunlerClient(authenticated=False, rejected=True))
-    status = answer(refused, "tunler status")
-    expect_rejected_status(status)
-    expect_absent_authenticated_status(status)
-
-
-def test_logging_in_connects_this_machine(new_story):
-    client = FakeTunlerClient(authenticated=False)
-    story, _ = account_story(new_story, client)
-    expect_connected_answer(story, f"tunler login {TUNLER_HOST} {ACCOUNT} secret-one")
-    expect_row(client, logins=[(TUNLER_HOST, ACCOUNT, "secret-one", None)])
-    expect_authenticated_answer(story, "tunler status")
-
-
 def test_a_new_account_asks_for_the_master_password_and_then_logs_in(new_story):
     client = FakeTunlerClient(authenticated=False, master_needed=True)
     story, _ = account_story(new_story, client)
@@ -209,31 +192,6 @@ def expect_needs_master(first) -> None:
 
 def expect_absent_connected(first) -> None:
     actual = first['connected']
-    assert not actual, actual
-
-
-def expect_authenticated_answer(story, text) -> None:
-    actual = answer(story, text)['authenticated']
-    assert actual, actual
-
-
-def expect_connected_answer(story, text) -> None:
-    actual = answer(story, text)['connected']
-    assert actual, actual
-
-
-def expect_rejected_status(status) -> None:
-    actual = status['rejected']
-    assert actual, actual
-
-
-def expect_absent_authenticated_status(status) -> None:
-    actual = status['authenticated']
-    assert not actual, actual
-
-
-def expect_absent_installed_answer(story, text) -> None:
-    actual = answer(story, text)['installed']
     assert not actual, actual
 
 

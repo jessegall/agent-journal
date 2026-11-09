@@ -1,5 +1,6 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, provide, ref, watch} from "vue";
+import {INSPECTOR_ACTIONS} from "../../kit/windowContextKey.js";
 import ButtonSlot from "../kit/ButtonSlot.vue";
 import InspectorActions from "../kit/InspectorActions.vue";
 import InspectorLinks from "../kit/InspectorLinks.vue";
@@ -34,8 +35,10 @@ const props = defineProps({
     embedded: Boolean,
 });
 const emit = defineEmits(["close", "back", "step", "open"]);
+const actionBar = ref(null);
+provide(INSPECTOR_ACTIONS, computed(() => actionBar.value?.$el ?? null));
 
-const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
+const TEXT_TERMS = new Set(["question", "memory", "rule"]);
 const listing = computed(() => props.catalogue.inspector(props.term) ?? {
     reads: `${props.term} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
     links: {categories: [], open: false, excludes_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false,
@@ -54,7 +57,7 @@ const title = computed(() => (row.value ? fill(listing.value.title, row.value, f
 const kindLabel = computed(() => (row.value ? inspectorLabel(listing.value, props.term, row.value, props.id) : ""));
 const label = computed(() => (kindLabel.value === title.value ? "" : kindLabel.value));
 const description = computed(() => (row.value ? fill(listing.value.description, row.value, filled.value) : ""));
-const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(props.term) ? row.value?.text : "") || "");
+const text = computed(() => row.value?.body || row.value?.brief || (TEXT_TERMS.has(props.term) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
 const fields = computed(() => fieldsOf(row.value, text.value, creator.value, owner.value));
 
@@ -66,6 +69,10 @@ const tabNames = computed(() => [...new Set(listing.value.components.map((compon
 const tabs = computed(() => (tabNames.value.length || commentsTab.value
     ? [{key: "details", label: "Details"}, ...tabNames.value.map((name) => ({key: name, label: name})), ...(commentsTab.value ? [{key: "comments", label: "Comments"}] : [])]
     : []));
+const linkOptions = computed(() => {
+    const links = listing.value.links;
+    return links ? {categories: links.categories, open: links.open, outsidePlan: links.excludes_plan, pageSize: links.page_size} : null;
+});
 const textComments = useTextComments(() => (listing.value.comments && row.value ? {term: props.term, id: props.id, title: row.value.title} : {}), (line) => props.read(line));
 
 async function load() {
@@ -126,7 +133,7 @@ onUnmounted(() => watcher?.disconnect());
             <div class="inspector-wait"><Skeleton /></div>
         </template>
         <template v-else>
-            <InspectorActions>
+            <InspectorActions ref="actionBar">
                 <ButtonSlot :name="`row.${term}`" :row="{...row, id, term}" :environment="environment" :read-only="readOnly" @done="load" />
             </InspectorActions>
             <div class="inspector-main">
@@ -163,17 +170,8 @@ onUnmounted(() => watcher?.disconnect());
                                 <InspectorSections :names="partsOf(tab)" :row="{...row, id, term}" />
                             </template>
                         </SwitchCase>
-                        <template v-if="listing.links">
-                            <InspectorLinks
-                                :model="term"
-                                :id="id"
-                                :read="read"
-                                :categories="listing.links.categories"
-                                :open="listing.links.open"
-                                :outside-plan="listing.links.excludes_plan"
-                                :page-size="listing.links.page_size"
-                                @open="emit('open', $event)"
-                            />
+                        <template v-if="linkOptions">
+                            <InspectorLinks :model="term" :id="id" :read="read" v-bind="linkOptions" @open="emit('open', $event)" />
                         </template>
                     </div>
                     <template v-if="listing.comments">

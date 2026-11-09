@@ -2,7 +2,7 @@ from dataclasses import dataclass, fields
 from typing import Generic, TypeVar
 
 from core.base.actor import Actor
-from core.base.change.changed import Changed
+from core.base.change.changed import Changed, is_changed_class
 from core.base.change.created import Created
 from core.base.change.deleted import Deleted
 from core.base.change.event_subscriber import EventSubscriber
@@ -73,6 +73,8 @@ class Change(Generic[M]):
 
     def typed_event(self, subscriber: type[EventSubscriber[object]]) -> object:
         declared = subscriber.event_type(self.event).event_class
+        if not is_changed_class(declared):
+            raise TypeError(f"{declared.__name__} is no row event")
         return (self.event_class() if declared is Changed else declared)(self.row, self.old_row, self.move)
 
     def event_class(self) -> type[Changed[Model]]:

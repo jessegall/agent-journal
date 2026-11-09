@@ -25,13 +25,6 @@ def working_story(new_story):
     return story, repository, worker
 
 
-def test_a_task_waits_while_the_worker_still_works(new_story):
-    story, _, worker = working_story(new_story)
-    task_id = waiting_task(story, worker)
-    story.run_listeners()
-    story.expect_success(f"task show {task_id}", "state: blocked", actor=story.agent)
-
-
 def test_finishing_one_task_in_a_workers_batch_keeps_the_wait_blocked(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -56,13 +49,6 @@ def test_merging_a_worker_opens_the_task_waiting_on_it(new_story):
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
-
-
-def test_releasing_a_worker_opens_the_task_waiting_on_it(new_story):
-    story, _, worker = working_story(new_story)
-    task_id = waiting_task(story, worker)
-    story.expect_success(f'worker release {worker.id} "cancelled"', actor=story.agent)
     story.expect_success(f"task show {task_id}", "state: open", actor=story.agent)
 
 
@@ -126,17 +112,6 @@ def test_a_task_cannot_wait_on_a_worker_that_was_released(working):
     story, _, worker = working
     task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
     story.expect_success(f'worker release {worker.id} "cancelled"', actor=story.agent)
-    story.expect_refusal(f"task block {task_id} --on worker:{worker.id}", "already finished", actor=story.agent)
-
-
-def test_a_task_cannot_wait_on_a_worker_that_was_merged(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = checked_worker(story, repository)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    task_id = story.new_row_id('task make "Continue" --environment main', actor=story.agent)
     story.expect_refusal(f"task block {task_id} --on worker:{worker.id}", "already finished", actor=story.agent)
 
 

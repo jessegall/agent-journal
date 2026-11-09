@@ -1,5 +1,4 @@
 from core.base.guard.guard import Guard
-from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.plans.models.plan_progress import PlanProgress

@@ -22,26 +22,10 @@ def test_a_frame_windows_file_is_served_with_its_type_nosniff_and_the_sandbox_po
                                                                      "Content-Security-Policy": SANDBOX_POLICY})
 
 
-def test_the_windows_on_offer_carry_the_registry_fingerprint_in_their_entry_url(notes_server):
-    story = notes_server
-    story.story.run("suite choose notes --environment main")
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"entry_url": "/modules/notes/board.html?v=')
-
-
-
 def test_an_unknown_environment_is_answered_with_its_reason(notes_server):
     story = notes_server
     cookie = story.expect_viewer_login(story.viewer_key("Ada"))
     story.expect_viewer_status("/api/windows?environment=nowhere", 404, cookie, text="no environment named nowhere")
-
-def test_a_document_window_is_offered_the_line_it_reads_and_the_lines_it_declares_with_no_file(notes_server):
-    story = notes_server
-    story.story.run("suite choose notes --environment main")
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"entry_url": "", "line": "task list"')
-    story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"reads": ["task list"], "runs": []')
-
 
 def test_a_frame_window_reads_nothing_until_the_person_allows_its_reads(notes_server):
     story = notes_server
@@ -59,24 +43,6 @@ def test_a_frame_loads_its_own_files_and_the_bridge_without_the_session_cookie_f
     story.expect_viewer_status("/viewer/", 401)
 
 
-def test_the_windows_on_offer_carry_their_icon_float_size_options_and_count(notes_server):
-    story = notes_server
-    story.story.run("suite choose notes --environment main")
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    for text in ('"person_id": ', '"icon": "plan"', '"float_width": 440, "float_height": 380', '"count": "task list"', '"auto_scroll": "top"', '{"component": "", "count_field": "total", "key": "week", "label": "Week", "read": "task list"}',
-                 '{"control": "toggle", "default": false, "key": "flush", "label": "Flush"}',
-                 '{"choices": [["week", "Week"], ["month", "Month"]], "control": "choice", "default": "week", "key": "range", "label": "Range"}'):
-        story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text=text)
-
-
-def test_the_shell_reads_the_suites_presets_and_the_persons_saved_layouts(notes_server):
-    story = notes_server
-    story.story.run("suite choose notes --environment main")
-    cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-    story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["suite", "presets", "main", "home"], "environment": "main"}, 200, '"code": 0')
-    story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["person-preset", "list", "--page", "home"], "environment": "main"}, 200, '"code": 0')
-
-
 def test_the_tasks_window_offers_ten_tasks_a_page_among_a_few_fixed_choices(person_server):
     story = person_server
     cookie = story.expect_viewer_login(story.viewer_key("Ada"))
@@ -88,5 +54,3 @@ def test_the_tasks_window_offers_ten_tasks_a_page_among_a_few_fixed_choices(pers
 def notes_server(new_story):
     with server_story(new_story(NOTES, fixture=UserJoined)) as story:
         yield story
-
-

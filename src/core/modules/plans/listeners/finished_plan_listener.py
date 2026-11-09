@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.base.change.moved import Moved
 from core.base.actor import Actor
@@ -27,6 +28,9 @@ class FinishedPlanListener(CommitListener[Moved[Task]]):
     def __init__(self, bus: Bus, queries: Queries, plans: TaskPlans) -> None:
         self.bus, self.queries = bus, queries
         self.plans = plans
+
+    def prepare(self, events: Sequence[LoggedEvent]) -> None:
+        self.plans.prepare([event.row_id for event in events])
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
         plan = self.plans.find(event.row.id)

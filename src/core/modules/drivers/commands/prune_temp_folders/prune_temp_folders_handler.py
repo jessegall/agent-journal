@@ -1,7 +1,7 @@
 import shutil
-import time
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.journal_home import JournalHome
@@ -21,8 +21,8 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
     command = PruneTempFolders
     runs_once = True
 
-    def __init__(self, queries: Queries, providers: Providers, home: JournalHome) -> None:
-        self.queries, self.providers, self.home = queries, providers, home
+    def __init__(self, queries: Queries, providers: Providers, home: JournalHome, clock: Clock) -> None:
+        self.queries, self.providers, self.home, self.clock = queries, providers, home, clock
 
     def handle(self, command: PruneTempFolders, context: Context) -> int:
         project = self.home.folder.resolve().parent
@@ -36,4 +36,4 @@ class PruneTempFoldersHandler(Handler[PruneTempFolders, int]):
         agents = tuple(self.queries.query(Agent).filter(session=session).all_rows())
         if agents:
             return all(agent.ended_at is not None for agent in agents)
-        return time.time() - folder.stat().st_mtime > UNKNOWN_SESSION_KEPT_SECONDS
+        return self.clock.epoch_seconds() - folder.stat().st_mtime > UNKNOWN_SESSION_KEPT_SECONDS

@@ -3,7 +3,6 @@ import hashlib
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.file_access import FileAccess

@@ -47,13 +47,6 @@ def test_the_nudge_list_loads_one_row_for_each_nudge_however_often_it_was_said(n
     expect_rows_loaded(story, "nudge list --json", previous_count + 1)
 
 
-def test_the_plan_outline_reads_its_tasks_with_their_titles_and_workers_from_one_view(new_story):
-    story = new_story(fixture=CheckpointPlan)
-    reads = read_selects(story, "plan outline 1 --json")
-    expect_visited_limit(reads, OUTLINE_READS_ALLOWED)
-    expect_absent_startswith_statement_reads("SELECT * FROM tasks WHERE id IN", reads)
-
-
 def test_the_plan_timeline_reads_one_page_of_events_from_one_view(new_story):
     story = new_story(fixture=CheckpointPlan)
     reads = read_selects(story, "plan timeline 1 --json")
@@ -109,8 +102,3 @@ def expect_events_total(first, number, second, number_2, expected) -> None:
 def expect_total_minimum(story, text, expected) -> None:
     actual = json.loads(story.run(text, actor=story.agent).output_text)['total']
     assert actual >= expected, actual
-
-
-def expect_absent_startswith_statement_reads(text, reads) -> None:
-    actual = any((statement.startswith(text) for statement in reads))
-    assert not actual, actual

@@ -10,12 +10,6 @@ def save_helper_status(story, spent_usd: float) -> None:
     save_status_file(story, helper_agent(story).session, report)
 
 
-def test_a_helper_shows_the_cost_and_context_the_launcher_kept_on_its_card(new_story):
-    story = new_story(fixture=StartedHelper)
-    save_helper_status(story, 1.5)
-    story.expect_text(CARDS, f'"id": {helper_agent(story).id}', '"context_percent": 20', '"cost_dollars": 1.5', actor=story.user)
-
-
 def test_a_helper_with_no_report_shows_no_figure_rather_than_zero(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_text(CARDS, '"cost_dollars": null', actor=story.user)

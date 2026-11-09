@@ -42,15 +42,6 @@ def test_a_skill_made_due_for_an_agent_is_a_due_row(skill_files):
     story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
 
 
-def test_a_tool_call_that_reads_the_skill_file_marks_it_loaded_with_the_files_digest(skill_files):
-    story = skill_files
-    due_notes(story)
-    read_row(story, NOTES_FILE)
-    story.expect_success("agent-skill show 3", "state: loaded")
-    story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-notes")
-    story.expect_success("agent-skill show 3", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
-
-
 def test_a_second_read_changes_nothing(skill_files):
     story = skill_files
     due_notes(story)

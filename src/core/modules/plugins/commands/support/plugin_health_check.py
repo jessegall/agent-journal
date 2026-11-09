@@ -11,6 +11,7 @@ class PluginHealthCheck:
         self.services, self.faults = services, faults
 
     def run(self, processes: ServiceProcesses) -> None:
-        misses = self.services.check_health(processes)
+        with processes.lock:
+            misses = self.services.check_health(processes)
         self.faults.record(misses)
         self.faults.clear(misses)

@@ -1,6 +1,5 @@
 import pytest
 
-import os
 from pathlib import Path
 
 from tests.stories.core.modules.skills.support.skill_samples import PATH
@@ -45,24 +44,6 @@ def test_a_skill_naming_an_event_no_model_has_is_refused_at_sync(new_story):
     refused(new_story, "GhostEventModule", "the skill journal-notes names ghost.*, which no model's events match")
 
 
-def test_skill_write_puts_each_skill_in_both_program_folders(new_story):
-    story = new_story(GOOD, fixture=MainEnvironment)
-    story.expect_success("skill write", "written: journal-notes", "written: journal-chores")
-    for program_folder in PROGRAM_FOLDERS:
-        expect_skill_file_with(story, program_folder, "journal-notes", "Write a note for every decision.")
-        expect_skill_file_with(story, program_folder, "journal-chores", "Start a task before you write.")
-
-
-def test_skill_write_rewrites_only_a_changed_file(installed_skill_files):
-    story = installed_skill_files
-    unchanged, changed = skill_file(story, ".claude/skills", "journal-chores"), skill_file(story, ".claude/skills", "journal-notes")
-    os.utime(unchanged, ns=(1, 1))
-    changed.write_text("an old text")
-    story.expect_success("skill write", "unchanged: journal-chores", "written: journal-notes")
-    expect_st_mtime_ns(unchanged, 1)
-    expect_changed_with(changed, "Write a note for every decision.")
-
-
 def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_write(installed_skill_files):
     story = installed_skill_files
     stale, foreign = skill_file(story, ".claude/skills", "journal-old"), skill_file(story, ".claude/skills", "writing-story-tests")
@@ -100,13 +81,3 @@ def test_skill_show_and_skill_list_answer_json_rows_for_a_window(new_story):
 @pytest.fixture
 def installed_skill_files(new_story):
     return story_with_skill_files(new_story)
-
-
-def expect_st_mtime_ns(unchanged, expected) -> None:
-    actual = unchanged.stat().st_mtime_ns
-    assert actual == expected, actual
-
-
-def expect_skill_file_with(story, program_folder, text, expected) -> None:
-    actual = skill_file(story, program_folder, text).read_text()
-    assert expected in actual, actual

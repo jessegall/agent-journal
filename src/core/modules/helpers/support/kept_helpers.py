@@ -8,6 +8,7 @@ from core.base.refusal import Refusal
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.program_state import ProgramState
 
@@ -33,10 +34,10 @@ class KeptHelpers:
     def query_kept(self, profile: str) -> tuple[Agent, ...]:
         return tuple(self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile).matching(IsNull("retired_at")).newest().all_rows())
 
-    def idle(self, profile: str, program: str, model: str) -> tuple[Agent, ...]:
-        kept = self.kept(profile)
-        open_jobs = self.with_open_jobs(profile)
-        return tuple(helper for helper in kept if self.is_available(helper, open_jobs, program, model))
+    def idle(self, selection: ProfileModel) -> tuple[Agent, ...]:
+        kept = self.kept(selection.profile)
+        open_jobs = self.with_open_jobs(selection.profile)
+        return tuple(helper for helper in kept if self.is_available(helper, open_jobs, selection.program, selection.model))
 
     def is_available(self, helper: Agent, open_jobs: set[int | None], program: str, model: str) -> bool:
         if helper.ended_at is None or helper.id in open_jobs or (program and helper.program != program) or (model and helper.program_model != model):

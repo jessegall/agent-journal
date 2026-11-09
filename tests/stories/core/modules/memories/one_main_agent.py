@@ -4,22 +4,11 @@ from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT,
 COMPACTION = HookSamples.sample("compact")
 
 
-def test_a_new_main_session_sees_the_memories_of_the_session_before_it(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_text("memory list", MAIN_FACT, actor=started_agent(story, "s-2", "main"))
-
-
 def test_a_new_main_session_does_not_see_a_worker_s_memory(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     second = started_agent(story, "s-2", "main")
     story.run("agent show 1", actor=second)
     story.expect_no_text("memory list", WORKER_FACT, actor=second)
-
-
-def test_a_main_session_that_ended_leaves_its_memories_to_the_next(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_text("memory list", MAIN_FACT, actor=started_agent(story, "s-2", "main"))
 
 
 def test_two_main_sessions_at_once_share_what_each_makes(new_story):

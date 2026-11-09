@@ -20,7 +20,9 @@ OUTPUT_ENDED = NudgeDeclaration("processes.output_ended", NudgeType.STEERING, 'o
 OUTPUT_TIMEOUT = NudgeDeclaration("processes.output_timed_out", NudgeType.STEERING,
                                   'output {output} timed out after {seconds} seconds and was stopped: its output is kept', wakes_agent=True)
 OUTPUT_STOPPED = NudgeDeclaration("processes.output_stopped", NudgeType.STEERING, 'output {output} was stopped part way: its output is kept, read it for what it printed so far')
-HUNG_RUN = NudgeDeclaration("processes.hung_run", NudgeType.STEERING, 'output {output} printed nothing and used no processor time for {seconds} seconds, so it was stopped: its output is kept', wakes_agent=True)
+HUNG_RUN = NudgeDeclaration("processes.hung_run", NudgeType.STEERING, 'output {output} printed nothing for {seconds} seconds, so it was stopped: its output is kept', wakes_agent=True)
+LOOK_AT_RUN = NudgeDeclaration("processes.look_at_run", NudgeType.STEERING, 'output {output} printed nothing for {seconds} seconds while it still uses processor time: read what it printed so far and decide whether it works or hangs, and stop it if it hangs',
+                               wakes_agent=True)
 READER_DRAFT = NudgeDeclaration("processes.draft_a_reader", NudgeType.STEERING, 'no reader reads {name} yet', required_command="journal reader add {name}")
 MONITOR_NOTE = NudgeDeclaration("processes.use_a_monitor", NudgeType.STEERING, 'do not ask again for output {output}: set a Monitor on its wait',
                                plural_text='do not ask again for outputs {output}: set a Monitor on each wait', id_field="output")

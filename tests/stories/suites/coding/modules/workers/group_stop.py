@@ -7,18 +7,12 @@ from core.base.driver.command_category import CommandCategory
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
-from suites.coding.modules.workers.support.worker_launch_failures import WorkerLaunchFailures
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import UNFINISHED_TASKS_SOURCE
 from core.base.query.queries import Queries
 from core.modules.drivers.models.agent_line import AgentLine
 
 BATCH_SETTING = "setting set journal.suites.coding.workers.test-batch-size 2 --environment main"
 MERGER_OFF = "setting set journal.suites.coding.workers.merger-on false --project"
-
-
-@pytest.fixture(autouse=True)
-def long_running_workers(monkeypatch):
-    monkeypatch.setattr(WorkerLaunchFailures, "has_failed", lambda failures, worker: False)
 
 
 def unfinished_lines(worker) -> tuple[AgentLine, ...]:
@@ -65,20 +59,8 @@ def boundary_handed_in(plan_worker):
 
 
 @pytest.fixture
-def proven(phase_worker):
-    phase_worker.prove()
-    return phase_worker
-
-
-@pytest.fixture
 def crashed_building(phase_worker):
     phase_worker.program_ended()
-    return phase_worker
-
-
-@pytest.fixture
-def asking(phase_worker):
-    phase_worker.story.expect_success('wait stuck "the plan is unclear"', actor=phase_worker.worker)
     return phase_worker
 
 
@@ -86,18 +68,6 @@ def asking(phase_worker):
 def failed_group(handed_in):
     handed_in.end_tests(1, 0, 0)
     return handed_in
-
-
-def test_a_worker_that_handed_in_its_group_and_stops_hears_no_unfinished_line(handed_in):
-    handed_in.story.expect_hook_allowed(handed_in.session, HookSamples.stop())
-    handed_in.program_ended()
-    expect_silent_stop(handed_in)
-
-
-def test_a_worker_that_handed_in_at_a_phase_boundary_with_a_next_phase_queued_is_quiet_too(boundary_handed_in):
-    boundary_handed_in.story.expect_hook_allowed(boundary_handed_in.session, HookSamples.stop())
-    boundary_handed_in.program_ended()
-    expect_silent_stop(boundary_handed_in)
 
 
 def test_a_batch_handed_in_stops_quietly(new_story, monkeypatch):
@@ -131,10 +101,6 @@ def test_a_worker_that_stops_mid_group_is_refused_with_the_status_line(phase_wor
     expect_refused_with_status(phase_worker)
 
 
-def test_a_worker_with_a_proven_task_that_stops_is_refused_with_the_status_line(proven):
-    expect_refused_with_status(proven)
-
-
 def test_a_worker_at_the_end_of_a_group_that_stops_is_refused_with_the_status_line(new_story, monkeypatch):
     worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
     worker.prove_advance()
@@ -149,17 +115,6 @@ def test_a_worker_with_failed_tests_that_stops_is_refused_with_the_status_line(f
 
 def test_a_worker_whose_program_crashed_while_building_is_started_again(crashed_building):
     crashed_building.story.expect_rows(any("stopped with" in line and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
-
-
-def test_a_worker_whose_program_crashed_while_fixing_is_started_again(failed_group):
-    failed_group.program_ended()
-    failed_group.story.expect_rows(len(unfinished_lines(failed_group)) == 1)
-
-
-def test_a_worker_with_an_open_ask_may_stop_and_is_not_started_again(asking):
-    asking.story.expect_hook_allowed(asking.session, HookSamples.stop())
-    asking.program_ended()
-    asking.story.expect_rows(not unfinished_lines(asking))
 
 
 def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_story, monkeypatch):

@@ -3,7 +3,6 @@ from core.base.change.moved import Moved
 from dataclasses import replace
 
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery

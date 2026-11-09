@@ -9,7 +9,6 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_nudges import APPROVED_PLAN_WAIT
-from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 
 class ApprovedPlanStopRule(DriverRule):
@@ -20,6 +19,7 @@ class ApprovedPlanStopRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
     priority = -10
+    refuses_one_action = "An approved plan waiting to start holds the main agent while a worker place is free"
 
     def __init__(self, plans: PlanQuery, worktrees: WorktreeQuery, settings: SettingValues, places: WorkerPlaces) -> None:
         self.places = places

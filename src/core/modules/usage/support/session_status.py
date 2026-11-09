@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.provider.context_window import ContextWindow
 from core.base.type_guards import is_mapping
 from core.modules.usage.support.plan_window import PlanWindow
 
@@ -29,7 +30,8 @@ class SessionStatus:
         spent = cost.get("total_cost_usd") if is_mapping(cost) else None
         windows = tuple(PlanWindow.reported(title, limits.get(key)) for key, title in WINDOW_TITLES.items() if is_mapping(limits.get(key))) if is_mapping(limits) else ()
         return cls(str(model.get("display_name", "")) if is_mapping(model) else "", round(used) if isinstance(used, int | float) else None,
-                   float(spent) if isinstance(spent, int | float) else None, windows, str(effort.get("level", "")) if is_mapping(effort) else "")
+                   float(spent) if isinstance(spent, int | float) else None, windows, str(effort.get("level", "")) if is_mapping(effort) else "",
+                   ContextWindow.number(context, "total_input_tokens"))
 
     @property
     def is_reported(self) -> bool:

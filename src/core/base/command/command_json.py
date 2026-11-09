@@ -1,8 +1,9 @@
 import json
 from dataclasses import fields, is_dataclass
 from importlib import import_module
+from typing import TypeIs
 
-from core.base.command.command import Command
+from core.base.command.command import Command, is_command_class
 
 TYPE_KEY = "type"
 FIELDS_KEY = "fields"
@@ -21,10 +22,10 @@ class CommandJson:
 
     @staticmethod
     def simple(command: Command[object], name: str) -> object:
-        value = getattr(command, name)
+        value: object = getattr(command, name)
         if isinstance(value, SIMPLE_TYPES):
             return value
-        if isinstance(value, tuple | list) and all(isinstance(item, SIMPLE_TYPES) for item in value):
+        if CommandJson.is_sequence(value) and all(isinstance(item, SIMPLE_TYPES) for item in value):
             return list(value)
         raise TypeError(f"{type(command).__name__}.{name} is a {type(value).__name__}, which an approval cannot keep: give the command only text, numbers, booleans and lists of them")
 
@@ -33,7 +34,18 @@ class CommandJson:
         stored = json.loads(text)
         module_name, _, class_name = str(stored[TYPE_KEY]).rpartition(".")
         command_type = getattr(import_module(module_name), class_name)
-        if not (isinstance(command_type, type) and issubclass(command_type, Command) and is_dataclass(command_type)):
+        if not (isinstance(command_type, type) and is_command_class(command_type) and is_dataclass(command_type)):
             raise TypeError(f"{stored[TYPE_KEY]} is no command")
-        values = {name: tuple(value) if isinstance(value, list) else value for name, value in stored[FIELDS_KEY].items()}
+        stored_fields: dict[str, object] = stored[FIELDS_KEY]
+        values = {name: CommandJson.loaded(value) for name, value in stored_fields.items()}
         return command_type(**values)
+
+    @staticmethod
+    def loaded(value: object) -> object:
+        if not CommandJson.is_sequence(value):
+            return value
+        return tuple(value)
+
+    @staticmethod
+    def is_sequence(value: object) -> TypeIs[list[object] | tuple[object, ...]]:
+        return isinstance(value, list | tuple)

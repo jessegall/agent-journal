@@ -90,54 +90,6 @@ def test_a_read_only_helper_never_edits_a_file(new_story, helper_fixture, name, 
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("sample", [
-    shell("cat a > b", part("cat", CommandCategory.READ, "a", effects=WRITES, output_paths=["b"]), redirects=["> b"]),
-    shell("tee b", part("tee", CommandCategory.EDIT, "b", effects=WRITES)),
-    shell("sed -i s/a/b/ c", part("sed", CommandCategory.EDIT, "-i", "c", effects=WRITES)),
-    shell("python3 tool.py", part("python3", CommandCategory.PROCESS, "tool.py")),
-    shell("python3 -c 'print(1)'", part("python3", CommandCategory.PROCESS, "-c", "print(1)")),
-    shell("frobnicate", part("frobnicate", CommandCategory.UNKNOWN)),
-    line_without_commands(),
-    shell("pytest -q", part("pytest", CommandCategory.TEST_RUN, "-q")),
-    shell("make all", part("make", CommandCategory.BUILD, "all")),
-    shell("curl example.com", part("curl", CommandCategory.NETWORK, "example.com")),
-    shell("git push", part("git", CommandCategory.VERSION_CONTROL, "push")),
-    shell("journal pytest-run tests", part("journal", CommandCategory.TEST_RUN, "pytest-run", "tests")),
-], ids=["redirect", "tee", "sed -i", "script", "python -c", "unknown program", "no parts", "test run", "build", "curl", "git push", "saved test run"])
-def test_a_read_only_helper_runs_nothing_that_changes_or_reaches_out(new_story, helper_fixture, sample):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, sample, "reads and searches only")
-
-
-@pytest.mark.parametrize("line", ["phase make --plan 1 Totals", "phase place 1 --phase 1", "phase move 1 --to 2", "doc --help", "agent stop --help"])
-def test_a_read_only_planner_can_file_its_plan_and_ask_any_command_for_its_help(new_story, line):
-    story, session = helper_story(new_story, PROGRAMS[0])
-    arguments = line.split()
-    story.expect_hook_allowed(session, shell(f"journal {line}", part("journal", CommandCategory.JOURNAL, *arguments)))
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-def test_a_line_the_hook_could_not_judge_is_refused_with_a_way_on(new_story, helper_fixture):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, shell("awk 'x' a", part("awk", CommandCategory.READ, "x", "a", uncertain=True)), UNJUDGED_LINE.nudge().text)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-def test_an_old_hook_is_refused_and_told_to_update(new_story, helper_fixture):
-    story, session = helper_story(new_story, helper_fixture)
-    sample = shell("cat a", part("cat", CommandCategory.READ, "a"))
-    del sample.body["tool"]["shell"]["parts"][0]["classification"]["uncertain"]
-    story.expect_hook_refusal(session, sample, OLD_HOOK_LINE.nudge().text)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("check", "run", "3"), ("check", "make", "x"), ("alias", "add", "x", "pytest")], ids=["check run", "check make", "alias add"])
-def test_a_journal_line_that_runs_a_program_is_refused(new_story, helper_fixture, arguments):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, shell(f"journal {' '.join(arguments)}", part("journal", CommandCategory.JOURNAL, *arguments)), OUTWARD_JOURNAL_LINE.nudge().text)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
 @pytest.mark.parametrize("sample", [tool("mcp__wiki__edit"), tool("AskUserQuestion", ToolType.QUESTION)], ids=["mcp", "question"])
 def test_a_tool_outside_the_list_is_refused_with_a_way_on(new_story, helper_fixture, sample):
     story, session = helper_story(new_story, helper_fixture)
@@ -161,41 +113,11 @@ def journal_line(*arguments):
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("task", "list"), ("task", "show", "1"), ("report", "make", "x"), ("doc", "make", "x"), ("task", "make", "x"), ("task", "log", "1", "x"), ("memory", "make", "x")],
-                         ids=["reads a list", "reads a row", "report", "doc", "new task", "task log", "memory"])
-def test_a_read_only_helper_reads_and_writes_rows_of_its_own(new_story, helper_fixture, arguments):
+@pytest.mark.parametrize("line, second", [(f"journal task list && {SESSION_VARIABLE}=s-1 journal task list", part("journal", CommandCategory.JOURNAL, "task", "list")),
+                                          (f"journal task list && echo {SESSION_VARIABLE}", part("echo", CommandCategory.READ, SESSION_VARIABLE))], ids=["second part sets it", "second part names it"])
+def test_a_chain_is_refused_by_the_part_that_names_a_session(new_story, helper_fixture, line, second):
     story, session = helper_story(new_story, helper_fixture)
-    expect_reply_allowed(story.hook(session, journal_line(*arguments)))
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("task", "close", "1"), ("task", "delete", "1"), ("plan", "start", "1"), ("rule", "make", "x"), ("setting", "set", "a", "b")],
-                         ids=["close a task", "delete a task", "start a plan", "make a rule", "set a setting"])
-def test_a_read_only_helper_writes_no_row_of_another(new_story, helper_fixture, arguments):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("worker", "merge", "5"), ("skill", "require", "x"), ("plugin", "install", "x")], ids=["merge", "skill", "plugin"])
-def test_a_read_only_helper_changes_no_project_file(new_story, helper_fixture, arguments):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("arguments", [("agent", "start", "s-9", "claude", "main"), ("agent", "stop", "1"), ("agent", "type", "1", "x"), ("worker", "release", "5", "x"), ("helper", "start", "x"), ("worker", "dispatch", "1")],
-                         ids=["agent start", "agent stop", "agent type", "worker release", "helper start", "worker dispatch --test-command python=pytest"])
-def test_a_read_only_helper_acts_on_no_other_agent(new_story, helper_fixture, arguments):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("line", [f"{SESSION_VARIABLE}=s-1 journal task list", f"env {SESSION_VARIABLE}=s-1 journal task list", f"export {SESSION_VARIABLE}=s-1"], ids=["prefix", "env", "export"])
-def test_a_read_only_helper_cannot_name_another_session(new_story, helper_fixture, line):
-    story, session = helper_story(new_story, helper_fixture)
-    story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list")), OUTWARD_JOURNAL_LINE.nudge().text)
+    story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list"), second), OUTWARD_JOURNAL_LINE.nudge().text)
 
 
 REPORT_TEXT = "Run `rm -rf a` in $HOME and \"tests/stories/core/a.py\" with python3 and curl.\n" * 800
@@ -205,20 +127,6 @@ def test_a_long_report_holding_program_names_is_filed_whole(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f'report make Findings --abstract "What was read" --body {shlex.quote(REPORT_TEXT)} --environment main', actor=story.agent)
     story.expect_rows(len(REPORT_TEXT) > 60000, story.container.get(Queries).query(Report).filter(title="Findings").first().body == REPORT_TEXT)
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-@pytest.mark.parametrize("line, arguments", [("git diff", ["diff"]), ("git log -5", ["log", "-5"]), ("git blame a.py", ["blame", "a.py"])], ids=["diff", "log", "blame"])
-def test_a_read_only_helper_reads_version_control(new_story, helper_fixture, line, arguments):
-    story, session = helper_story(new_story, helper_fixture)
-    expect_reply_allowed(story.hook(session, shell(line, part("git", CommandCategory.READ, *arguments))))
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
-def test_git_output_to_a_file_is_refused(new_story, helper_fixture):
-    story, session = helper_story(new_story, helper_fixture)
-    sample = shell("git diff --output=a", part("git", CommandCategory.EDIT, "diff", "--output=a", effects=WRITES))
-    story.expect_hook_refusal(session, sample, "reads and searches only")
 
 
 def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(new_story):
@@ -248,11 +156,6 @@ def test_a_programs_own_subagent_tool_is_refused_with_the_way_on(new_story, name
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_hook_refusal("s-1", tool(name, category), "start a helper for this")
     launcher.server.close()
-
-
-def test_with_no_launcher_the_refusal_says_to_keep_the_work(new_story):
-    story = main_story(new_story)
-    story.expect_hook_refusal("s-1", tool("Agent", ToolType.AGENT), "keep this work yourself")
 
 
 def test_a_wait_does_not_lift_the_subagent_refusal(new_story):

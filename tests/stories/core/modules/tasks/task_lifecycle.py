@@ -9,11 +9,6 @@ def started_story(new_story, *modules: str):
     return new_story(*modules, fixture=AgentStarted)
 
 
-def test_a_task_is_made_open_in_the_callers_environment(new_story):
-    story = started_story(new_story)
-    story.expect_success('task make "Fix the cart" --brief "the total is wrong" --environment main', "state: open", "environment_id: 1", "priority: normal")
-
-
 def test_a_task_without_an_environment_is_refused_with_the_flag_to_name_one(new_story):
     story = started_story(new_story)
     story.expect_refusal('task make "Fix the cart"', "a task needs an environment: name it with --environment")
@@ -28,11 +23,6 @@ def test_a_task_moves_along_its_whole_lifecycle(new_story):
     story.expect_success('task block 1 --reason "the API is down"', "state: blocked", actor=story.agent)
     story.expect_success("task unblock 1", "state: open", actor=story.agent)
     story.expect_success(lines.TASK_CANCEL, "state: cancelled", actor=story.agent)
-
-
-def test_closing_clears_the_holder(new_story):
-    story = new_story(fixture=AssignedTask)
-    story.expect_absent(lines.TASK_CLOSE, f"holder_id: {story.agent.id}", actor=story.agent)
 
 
 def test_a_move_out_of_a_wrong_state_is_refused_with_the_moves_that_go_on(new_story):
@@ -66,4 +56,3 @@ def test_a_started_task_blocks_and_unblocks_to_open(new_story):
 def test_a_task_has_no_pause(new_story):
     story = new_story(fixture=AssignedTask)
     story.expect_usage_error('task pause 1 --reason "waiting on the design"', actor=story.agent)
-

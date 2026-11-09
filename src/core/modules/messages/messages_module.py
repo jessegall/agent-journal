@@ -1,4 +1,5 @@
 from core.modules.messages.migrations.m020_message_parent_environment import MessageParentEnvironmentMigration
+from core.modules.messages.migrations.m022_message_agent_text import MessageAgentTextMigration
 from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_key import WindowKey
 from core.modules.messages.commands.message_conversations.message_conversations_subcommand import MessageConversationsSubcommand
@@ -108,6 +109,7 @@ from core.modules.messages.listeners.deleted_work_source_listener import Deleted
 from core.modules.messages.listeners.deleted_agent_work_source_listener import DeletedAgentWorkSourceListener
 from core.modules.messages.commands.work_source.work_source_subcommand import WorkSourceSubcommand
 from core.modules.messages.migrations.m019_work_source_selections import WorkSourceSelectionsMigration
+from core.modules.messages.support.message_settings import MESSAGE_SETTINGS
 from core.modules.messages.migrations.m021_message_hook_scan_indexes import MessageHookScanIndexesMigration
 
 
@@ -116,6 +118,7 @@ class MessagesModule(Module):
 
     name = "journal.core.messages"
     nudges = MESSAGE_NUDGES
+    settings = MESSAGE_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps"]
@@ -123,7 +126,7 @@ class MessagesModule(Module):
     bindings = {EnvironmentActivity: MessageEnvironmentActivity}
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MessageHookScanIndexesMigration, MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration]
+    migrations = [MessageHookScanIndexesMigration, MainMessageTargetsMigration, MessageSessionMigration, MessageTargetMigration, VisibleMessageIndexMigration, MessageReplyIndexMigration, MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration, MessageRecipientMigration, MessageHookIndexesMigration, MessageVisibilityMigration, MessageTypeIndexesMigration, MessageWorkSourcesMigration, WorkSourceSelectionsMigration, MessageParentEnvironmentMigration, MessageAgentTextMigration]
     guards = [OneReplyPerMessageGuard, RepeatedMessageGuard, QuestionMessageGuard]
     handlers = [RecordTypedPromptHandler, ResetMessageDeliveriesHandler, RecordParentReportHandler, RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, SendAgentMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler, ChooseWorkSourceHandler, ClearWorkSourceHandler, NoteMessageReadHandler]
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, ToolMessageRule, TranscriptMessageRule, TypedPromptRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]

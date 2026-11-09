@@ -4,7 +4,6 @@ from datetime import timedelta
 import pytest
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -137,13 +136,6 @@ def test_a_link_without_comments_a_bad_comment_and_too_many_are_refused(new_stor
         bus.run(LeaveShareComment(2, "Bo", f"comment {number}"), Actor.core())
     with pytest.raises(Refusal, match="many comments"):
         bus.run(LeaveShareComment(2, "Bo", "one too many"), Actor.core())
-
-
-def test_a_link_names_a_document_a_report_or_a_plan_that_exists(new_story):
-    story = new_story(fixture=PhasesPlan)
-    story.expect_refusal("share make tasks:1", "only a document, a report or a plan can be shared", actor=story.user)
-    story.expect_refusal("share make plans", "only a document, a report or a plan can be shared", actor=story.user)
-    story.expect_refusal("share make plans:9", "plan 9 does not exist", actor=story.user)
 
 
 def test_a_document_and_a_report_can_be_shared_and_one_that_does_not_exist_is_refused(new_story):

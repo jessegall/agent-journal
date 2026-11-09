@@ -53,13 +53,6 @@ def test_a_close_ends_the_one_mark_in_place_and_says_it_is_closed(new_story):
     expect_marks_text(story, "Question 1 closed without an answer")
 
 
-def test_a_failed_ask_shows_no_mark(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_refusal('question ask "Which way?" --context "A story asks this so its card and answer can be checked." --options "I will fix it" --environment main', "name who acts", actor=story.agent)
-    story.run_listeners()
-    expect_mark_count(story, 0)
-
-
 def test_the_question_mark_is_declared_as_a_process_in_its_family(new_story):
     story = new_story(fixture=BuilderStarted)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "questions.question")

@@ -22,6 +22,7 @@ from core.modules.documents.support.link_counterpart import LinkCounterpart
 from core.modules.documents.support.link_endpoint_reader import LinkEndpointReader
 from core.modules.documents.support.link_endpoint import LinkEndpoint
 from core.modules.documents.support.link_page import LinkPage
+from core.modules.documents.support.link_page_json_record import LinkPageJsonRecord
 from core.modules.documents.support.link_read import LinkRead
 from core.modules.documents.support.link_section import LinkSection
 from core.modules.documents.support.row_refs import RowRefs
@@ -113,7 +114,7 @@ class LinkPages:
         return Page(selected, arguments.page, size, total)
 
     @staticmethod
-    def payload(value: LinkPage, output: Output) -> dict[str, object]:
+    def payload(value: LinkPage, output: Output) -> LinkPageJsonRecord:
         rows = [{**output.values(row.link), "source_title": row.source.title, "target_title": row.target.title,
                  "source": asdict(row.source), "target": asdict(row.target)} for row in value.rows]
         return {"rows": rows, "counterparts": [asdict(counterpart) for counterpart in value.counterparts],

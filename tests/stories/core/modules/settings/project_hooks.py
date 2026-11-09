@@ -34,6 +34,7 @@ def test_the_project_hooks_query_reports_every_kind_without_importing_pending_en
     reply.expect_code(0)
     data = json.loads(reply.output_text)
     expect_managed_data(data, 1)
+    expect_journal_hooks_listed(data)
     expect_row(data["managed"][0]["history"], refused=1)
     expect_row(data["managed"][0]["history"]["last"], exit_code=2)
     expect_changed_last_history_managed(data, None)
@@ -82,3 +83,9 @@ def expect_changed_last_history_managed(data, expected) -> None:
 def expect_managed_data(data, expected) -> None:
     actual = len(data['managed'])
     assert actual == expected, actual
+
+
+def expect_journal_hooks_listed(data) -> None:
+    actual = {(entry['program'], entry['source']) for entry in data['journal']}
+    assert ('claude', '.claude/settings.local.json') in actual, actual
+    assert all(entry['timeout'] > 0 for entry in data['journal']), data['journal']

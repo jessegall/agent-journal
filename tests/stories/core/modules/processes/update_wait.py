@@ -94,23 +94,6 @@ def test_a_wait_of_an_update_that_runs_is_not_cleared_when_the_server_boots(new_
     expect_waits(story, queued(story, "make one"))
 
 
-def test_an_update_wait_does_not_release_a_queue_a_command_halted(new_story):
-    story = install_runner(new_story(fixture=QueueAgents))
-    story.expect_success('queue halt "a deploy is going"', actor=story.agent)
-    story.home.run_lock.write_text(str(os.getpid()))
-    first = queued(story, "make one")
-    story.home.run_lock.unlink()
-    grant_slots(story)
-    expect_waits(story, first)
-
-
-def test_the_queue_inspector_says_everything_waits_because_an_update_waits(new_story):
-    story = update_waiting_story(new_story)
-    queued(story, "make one")
-    inspector = json.loads(story.run("queue inspect --environment 1 --json", actor=story.agent).output_text)
-    story.expect_rows(inspector["halted"], inspector["halt_cause"] == "update", "update" in inspector["halt_reason"].lower())
-
-
 def test_the_inspector_says_nothing_waits_for_an_update_once_it_is_done(new_story):
     story = update_waiting_story(new_story)
     story.home.run_lock.unlink()

@@ -7,7 +7,7 @@ from core.base.registry.helper_type_entry import HelperTypeEntry
 
 MAIN_KEY = "main"
 HELPER_KEY = "helper"
-MAIN_TYPE = HelperTypeEntry("journal.core.agents", MAIN_KEY, "Main agent", "", Access.WRITING, False, "", "", None)
+MAIN_TYPE = HelperTypeEntry(module="journal.core.agents", key=MAIN_KEY, label="Main agent", access=Access.WRITING, separate_folder=False)
 
 
 class HelperTypeBook:

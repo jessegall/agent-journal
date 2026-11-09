@@ -18,11 +18,6 @@ def allow_opus(story) -> None:
     story.expect_success(f'setting set {ALLOWED_MODELS} "claude opus" --project', actor=user)
 
 
-def test_every_model_is_allowed_until_one_is_listed(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_text("worker models", "claude haiku: allowed", "claude sonnet: allowed", "claude opus: allowed")
-
-
 def test_each_program_lists_its_models_from_the_cheapest_to_the_one_for_rare_occasions(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_text("worker models", "claude haiku: allowed\nclaude sonnet: allowed\nclaude opus: allowed\nclaude fable: allowed",

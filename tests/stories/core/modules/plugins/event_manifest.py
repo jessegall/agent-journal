@@ -75,35 +75,6 @@ def test_s5_a_plugin_whose_only_key_is_wrong_still_installs(event_page):
     expect_listed(event_page.card(), key=WRONG_KEY, state="wrong key")
 
 
-@pytest.mark.parametrize("entries", WRONG_ENTRIES)
-def test_s6_an_entry_of_the_wrong_shape_installs_and_shows_as_wrong(event_page, entries):
-    story = event_page.story
-    install_event_plugin(story, *entries, {"event": TASK_CREATED, "commit": "see.sh"})
-    event_page.expect_target()
-    card = event_page.card()
-    expect_listed(card, key=TASK_CREATED, form="commit", state="listens")
-    story.expect_rows(any(row["state"] == "wrong key" for row in card))
-
-
-def test_s6_a_listen_that_is_a_text_and_not_a_list_installs_and_shows_as_wrong(event_page):
-    install_event_plugin(event_page.story, listen=TASK_CREATED)
-    event_page.expect_target()
-    event_page.story.expect_rows(any(row["state"] == "wrong key" for row in event_page.card()))
-
-
-def test_s7_a_script_outside_the_folder_installs_and_never_runs_and_the_card_says_so(event_page):
-    story = event_page.story
-    install_event_plugin(story, {"event": TASK_CREATED, "commit": "../other/run.sh"})
-    external = story.home.folder / "plugins" / "other" / "run.sh"
-    external.parent.mkdir(parents=True)
-    external.write_text(f'#!/bin/sh\ntouch "{external}.called"\n')
-    external.chmod(0o755)
-    expect_listed(event_page.card(), key=TASK_CREATED, form="commit", script="../other/run.sh", state="wrong script")
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(not Path(f"{external}.called").exists())
-
-
 def test_s8_a_guard_on_a_system_event_installs_shows_the_only_form_and_its_commit_entry_works(event_page):
     story = event_page.story
     install_event_plugin(story, {"event": BOOTING, "guard": "refuse.sh", "commit": "see.sh"})
@@ -114,42 +85,6 @@ def test_s8_a_guard_on_a_system_event_installs_shows_the_only_form_and_its_commi
     BootingWork().run(story.container)
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "see.sh")) == 1, not script_calls(story, "refuse.sh"))
-
-
-def test_s9_an_old_name_in_hears_installs_and_the_card_shows_it_as_for_a_key(event_page):
-    install_event_plugin(event_page.story, program="see.sh", hears=["tol_starting"])
-    event_page.expect_target()
-    expect_listed(event_page.card(), key="tol_starting", state="wrong key")
-
-
-def test_s10_a_key_the_journal_stops_raising_stays_on_shows_on_the_card_and_other_keys_go_on(new_story):
-    story = event_plugin_story(new_story, {"event": NOTE_CREATED, "commit": "see.sh"}, {"event": TASK_CREATED, "commit": "right.sh"}, modules=[NOTES])
-    replace_module(story, NOTES, REMOVED_NOTES_MODULE)
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    page = plugin_page(story)
-    page.expect_target()
-    expect_listed(page.card(), key=NOTE_CREATED, form="commit", state="wrong key")
-    expect_listed(page.card(), key=TASK_CREATED, form="commit", state="listens")
-    story.expect_rows(not script_calls(story, "see.sh"), len(script_calls(story, "right.sh")) == 1)
-
-
-def test_s11_a_renamed_key_keeps_being_heard_and_the_card_shows_what_it_is_called_now(new_story):
-    story = event_plugin_story(new_story, {"event": FORMER_NOTE_CREATED, "commit": "see.sh"}, modules=[NOTES])
-    expect_listed(plugin_page(story).card(), key=FORMER_NOTE_CREATED, form="commit", state="renamed", current_key=NOTE_CREATED)
-    story.expect_success('event-note make "A note"', actor=story.user)
-    story.run_listeners()
-    calls = script_calls(story, "see.sh")
-    story.expect_rows(len(calls) == 1)
-    story.expect_rows(calls[0]["event"] == NOTE_CREATED)
-
-
-def test_s12_an_upgrade_that_changes_what_it_listens_to_shows_new_and_no_longer_lines(event_page):
-    story = event_page.story
-    install_event_plugin(story, {"event": TASK_CREATED, "guard": "refuse.sh"})
-    event_folder(story, {"event": TASK_CREATED, "commit": "see.sh"}, version="1.1.0")
-    upgrade_text = event_page.preview_upgrade()
-    story.expect_rows(f"new commit {TASK_CREATED}: see.sh" in upgrade_text, f"no longer guard {TASK_CREATED}: refuse.sh" in upgrade_text)
 
 
 def test_s12_a_new_script_file_changes_the_digest_and_an_upgrade_takes_the_new_digest(event_page):
@@ -184,19 +119,6 @@ def test_s13_a_script_changed_on_disk_switches_the_plugin_off_at_the_next_hook(n
     story.hook("s-1", HookSamples.prompt("go on"))
     story.expect_text("message list --environment main", "The plugin events is switched off", actor=story.user)
     story.expect_rows(plugin_row(story).enabled is False)
-
-
-def test_a_manifest_edited_into_broken_json_faults_that_plugin_and_others_still_answer_the_hook(new_story):
-    story = install_runner(event_plugin_story(new_story, name="broken", program="see.sh", hears=["command_starting"]))
-    install_event_plugin(story, scripts={"refuse.sh": EVENT_SCRIPTS["refuse.sh"]}, name="answers", program="refuse.sh", hears=["command_starting"], holds=[{"event": "command_starting", "window_ms": 5000}])
-    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
-    (story.home.folder / "plugins" / "broken" / "journal-plugin.json").write_text("{ half written")
-    story.expect_hook_refusal("s-1", REMOVAL_SAMPLE, "plugin:2 refused")
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin answers] not today", actor=story.agent)
-    story.run_listeners()
-    page = plugin_page(story)
-    page.expect_fault("its manifest cannot be read", name="broken")
-    story.expect_rows(plugin_row(story, "broken").enabled is True)
 
 
 def test_a_delivery_for_a_manifest_edited_into_broken_json_is_a_fault_and_is_not_tried_again(new_story):

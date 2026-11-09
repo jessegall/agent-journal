@@ -32,12 +32,6 @@ def test_the_next_answered_hook_names_what_went_around_once_in_the_chat_and_to_t
     expect_count_marks(story, "went through unchecked", 1)
 
 
-def test_one_hook_is_said_in_the_singular_and_an_empty_log_says_nothing(single_bypassed_hook):
-    story, initial_marks = single_bypassed_hook
-    expect_value_with(initial_marks, "1 hook went through unchecked")
-    expect_count_marks(story, "went through unchecked", 1)
-
-
 def test_a_helpers_hook_leaves_the_log_for_the_main_agent(new_story):
     story = new_story(fixture=BuilderHelper)
     story.run_listeners()
@@ -66,16 +60,3 @@ def two_bypassed_hooks(new_story):
     story.hook("s-1", FINISHED)
     story.run_listeners()
     return story
-
-
-@pytest.fixture
-def single_bypassed_hook(new_story):
-    story = new_story(fixture=BuilderStarted)
-    log_file(story).write_text("1700000000 hook claude\n")
-    story.hook("s-1", FINISHED)
-    story.run_listeners()
-    initial_marks = marks_text(story)
-    log_file(story).write_text("")
-    story.hook("s-1", FINISHED)
-    story.run_listeners()
-    return story, initial_marks

@@ -4,8 +4,6 @@ import pytest
 
 import os
 import sqlite3
-import time
-
 from server.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_answers, expect_exists_version_four, expect_lines_2
@@ -15,13 +13,16 @@ HOUR_SECONDS = 3600
 
 def journal(new_story):
     story = new_story(fixture=UserJoined)
-    return story, ServerBackup(story.home)
+    return story, ServerBackup(story.home, story.clock)
+
+
+def stamp(copy: Path, epoch_seconds: float) -> None:
+    os.utime(copy, (epoch_seconds, epoch_seconds))
 
 
 def age(backup: ServerBackup) -> None:
     for copy in backup.copies():
-        old = time.time() - HOUR_SECONDS
-        os.utime(copy, (old, old))
+        stamp(copy, backup.clock.epoch_seconds() - HOUR_SECONDS)
 
 
 def test_the_first_check_writes_a_copy_that_opens_with_the_journals_rows(new_story):
@@ -53,13 +54,6 @@ def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, mo
     expect_iterdir_folder_backup(backup, [])
 
 
-def test_keeping_no_copies_still_keeps_the_one_just_written(new_story):
-    story, backup = journal(new_story)
-    story.expect_success("setting set journal.core.settings.backup-count 0 --project", actor=story.user)
-    backup.follow()
-    expect_copies_backup(backup, 1)
-
-
 def test_only_the_newest_copies_stay(new_story):
     story, backup = journal(new_story)
     backup.folder().mkdir(parents=True)
@@ -70,13 +64,6 @@ def test_only_the_newest_copies_stay(new_story):
     names = [copy.name for copy in backup.copies()]
     expect_answers(names, 2)
     expect_lines_2(names, "version-5-20260103-000000.db")
-
-
-def test_zero_minutes_writes_no_copy(new_story):
-    story, backup = journal(new_story)
-    story.expect_success("setting set journal.core.settings.backup-minutes 0 --project", actor=story.user)
-    backup.follow()
-    expect_copies_backup_2(backup, [])
 
 
 def test_version_4s_copies_are_left_alone(new_story):

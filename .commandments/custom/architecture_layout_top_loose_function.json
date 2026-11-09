@@ -1,0 +1,74 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "topLevel": true
+            },
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|core/testing|server|install|tunnels)/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)(__init__|[a-z_]+_(module|suite))\\.py$"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/journal.py"
+            },
+            {
+                "file": "src/core/testing/expect_reply.py"
+            },
+            {
+                "file": "src/core/testing/expect_row.py"
+            },
+            {
+                "file": "src/core/testing/full_run_records.py"
+            },
+            {
+                "file": "src/core/testing/pytest_plugin.py"
+            },
+            {
+                "file": "src/core/testing/sample_nudge.py"
+            },
+            {
+                "file": "src/core/testing/story.py"
+            },
+            {
+                "file": "src/core/testing/template_cache.py"
+            },
+            {
+                "file": "src/server/client_disconnected.py"
+            },
+            {
+                "file": "src/server/journal_round.py"
+            },
+            {
+                "file": "src/server/request_log.py"
+            },
+            {
+                "file": "src/server/server.py"
+            },
+            {
+                "file": "src/server/server_files.py"
+            },
+            {
+                "file": "src/server/server_instance.py"
+            },
+            {
+                "file": "src/server/socket_peer.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "top-loose-function",
+        "description": "A function sits loose directly in a top folder of src, so it belongs to no folder.",
+        "rule": "Move it into the folder of its area under a top folder of src. Every class, function and value sits in a folder named for its sort: errors, enums, models, support or the folder of its area.",
+        "skill": "plain-code-words"
+    }
+}

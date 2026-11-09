@@ -12,6 +12,7 @@ class ProcessPart(Model):
     """One part of a process's line as the runner ran it, with its own end: part of its process."""
 
     model_name = "process_part"
+    events_expire = True
     cli_name = "process-part"
 
     process_id: int

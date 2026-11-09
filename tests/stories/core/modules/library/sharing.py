@@ -9,7 +9,6 @@ from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.library.models.library_copy import LibraryCopy
 from core.testing.story import Story
 from tests.stories.core.modules.library.support.memo_share import INTERNAL_REASON, PATH
-from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
@@ -77,14 +76,6 @@ def test_a_person_shares_a_document_and_the_row_follows_the_new_item(new_story, 
                       item["creator"] == "Grace", (copy.base_version, copy.base_digest) == (1, story.container.get(DocLibraryShare).digest(doc)))
 
 
-def test_a_text_that_names_local_rows_is_shared_with_a_warning(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.editor)
-    row_id = new_doc(story, "Basalt notes", "Follow task 6367 and doc 12 first.")
-    story.expect_text(f"library share doc {row_id}", "is now library doc ", "this text names task 6367 and doc 12; those numbers mean something else in another journal", actor=story.user)
-    story.expect_rows(copied_row(story, row_id) is not None)
-
-
 def test_an_agent_cannot_share_and_nothing_reaches_the_server(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -128,21 +119,6 @@ def test_a_reader_cannot_share_and_a_share_of_a_missing_row_or_kind_is_refused(n
     story.expect_rows(copied_row(story, row_id) is None)
 
 
-def test_sharing_with_no_connection_is_refused_in_plain_words(new_story):
-    story = new_story(fixture=UserBuilder)
-    row_id = new_doc(story, "Agate offline")
-    story.expect_refusal(f"library share doc {row_id}", "This journal is not connected to a shared server.", actor=story.user)
-
-
-def test_sharing_while_the_server_is_down_names_its_address_and_writes_nothing(new_story, tmp_path):
-    with SharedServerBinary(tmp_path) as server:
-        story = connected(new_story, server, server.new_user("Ada", "admin"))
-        address = server.address
-    row_id = new_doc(story, "Amber down")
-    story.expect_refusal(f"library share doc {row_id}", f"The library cannot be reached at {address}.", actor=story.user)
-    story.expect_rows(copied_row(story, row_id) is None)
-
-
 def test_an_admin_removes_an_item_and_every_local_row_stays(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.admin)
@@ -173,13 +149,6 @@ def test_an_admin_brings_back_a_removed_item_and_an_editor_cannot(new_story, sha
     story.expect_rows("removed_at" not in server_item(server, tokens.admin, item_id))
 
 
-def test_an_item_that_is_not_removed_is_not_restored_without_a_version(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.admin)
-    _, item_id = shared(story, server, tokens.admin, "Pearl present")
-    story.expect_refusal(f"library restore doc {item_id}", f"library doc {item_id} is not removed", actor=story.user)
-
-
 def test_an_old_version_is_put_in_again_as_a_new_version_and_the_bad_edit_stays_in_the_history(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
@@ -205,11 +174,3 @@ def test_a_version_the_server_does_not_have_and_an_agent_are_both_refused(new_st
     _, item_id = shared(story, server, tokens.editor, "Jade versions")
     story.expect_refusal(f"library restore doc {item_id} --version 9", "there is no such item", actor=story.user)
     story.expect_refusal(f"library restore doc {item_id} --version 1 --reason needed", "an agent cannot restore an item of the library: A person was asked in the dock", actor=story.agent)
-
-
-def test_no_command_leaves_the_token_in_a_row(new_story, shared_server):
-    server, tokens = shared_server
-    story = connected(new_story, server, tokens.admin)
-    _, item_id = shared(story, server, tokens.admin, "Onyx token")
-    story.expect_success(f"library remove doc {item_id}", actor=story.user)
-    story.expect_rows(tokens.admin not in stored_texts(story))

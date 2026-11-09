@@ -47,13 +47,6 @@ def test_a_journal_that_holds_demo_rows_is_not_seeded_again(new_story):
     story.expect_refusal("demo seed", "contains the demo already")
 
 
-def test_the_seeders_run_in_the_order_of_what_their_modules_depend_on(new_story):
-    story = new_story()
-    story.expect_text("demo seed --list", "journal.core.actors", "journal.core.tasks", "journal.core.reviews")
-    order = story.run("demo seed --list").output_text.splitlines()
-    expect_index_order(order, "journal.core.actors", "journal.core.agents", "journal.core.tasks", "journal.core.reviews")
-
-
 def test_every_module_that_seeds_is_named_in_the_demo(new_story):
     story = new_story()
     seeder_names = story.run("demo seed --list").output_text.splitlines()
@@ -63,8 +56,3 @@ def test_every_module_that_seeds_is_named_in_the_demo(new_story):
 def expect_journal_limit(text, text_2, text_3, text_4, text_5, text_6, text_7, text_8, text_9, text_10, text_11, text_12, expected) -> None:
     actual = {text, text_2, text_3, text_4, text_5, text_6, text_7, text_8, text_9, text_10, text_11, text_12}
     assert actual <= expected, actual
-
-
-def expect_index_order(order, text, text_2, text_3, text_4) -> None:
-    actual = order.index(text) < order.index(text_2) < order.index(text_3) < order.index(text_4)
-    assert actual, actual

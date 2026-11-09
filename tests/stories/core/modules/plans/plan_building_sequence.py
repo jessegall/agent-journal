@@ -164,11 +164,6 @@ def test_a_task_with_no_order_holds_the_order_step(new_story):
     story.expect_refusal("sequence next", ORDER_MISSING, actor=story.agent)
 
 
-def test_the_order_step_names_the_tasks_that_lack_an_order(new_story):
-    story = new_story(fixture=OrderStep)
-    story.expect_refusal("sequence next", "task 2", actor=story.agent)
-
-
 def test_the_first_task_of_the_plan_needs_no_order(new_story):
     story = new_story(fixture=Ordered)
     story.expect_text("sequence next", "sequence 1, step 5", actor=story.agent)

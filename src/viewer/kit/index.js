@@ -62,7 +62,7 @@ export const VoiceFigure = defineAsyncComponent(() => import("../src/chat/VoiceF
 export {fetchDockDeclarations} from "../src/domain/dockRegistry.js";
 export {shownMarks} from "../src/domain/markFamilies.js";
 export {foldedMarks, interleaved, reachMessages} from "../src/domain/chatTimeline.js";
-export {age, ago, perHour} from "../src/format/time.js";
+export {age, ago, dated, perHour} from "../src/format/time.js";
 export {SHORT_CHAT, dockOpening} from "../src/domain/dockFold.js";
 export {usePoll} from "./usePoll.js";
 export {coalesced} from "../src/composables/coalesced.js";
@@ -88,7 +88,7 @@ export {default as TabBody} from "./TabBody.vue";
 export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";
 export {useOpenRow} from "./useOpenRow.js";
-export {OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
+export {INSPECTOR_ACTIONS, OPEN_VIEW, WINDOW_CONTEXT, provideDockCard, useDockCard, useWindow} from "./windowContextKey.js";
 export {eventAboutRows, eventChildOf, eventMayBeChildOf} from "./eventRows.js";
 export {loadWindowComponent} from "./loadWindowComponent.js";
 
@@ -103,6 +103,8 @@ export {default as Dialog} from "../src/kit/Dialog.vue";
 export {default as DiffCard} from "../src/kit/DiffCard.vue";
 export {highlight} from "../src/text/highlight.js";
 export {default as HoverTip} from "../src/kit/HoverTip.vue";
+export {default as AgentTip} from "./AgentTip.vue";
+export {seenWords, sinceWords} from "./agentTipWords.js";
 export {default as MenuItem} from "../src/kit/MenuItem.vue";
 export {default as DropList} from "../src/kit/DropList.vue";
 export {default as MenuLabel} from "../src/kit/MenuLabel.vue";

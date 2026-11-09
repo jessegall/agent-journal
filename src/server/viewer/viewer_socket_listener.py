@@ -27,17 +27,17 @@ class ViewerSocketListener(ViewerEndpoint, UnixStreamServer):
 
     def __init__(self, login: ViewerLogin, routes: ViewerRoutes, socket_path: Path, group: str, public_origin: str, proxy_uid: int,
                  inherited_socket: socket.socket | None = None) -> None:
-        self.group, self.public_host = group, urlparse(public_origin).netloc
+        self.group, self.public_host, self.socket_path = group, urlparse(public_origin).netloc, socket_path
         super().__init__(str(socket_path), ViewerSocketRequestHandler, inherited_socket=inherited_socket)
         self.attach(login, routes, HostedDoor(public_origin, proxy_uid), HostedHeaders(public_origin), HostedClosedDoors())
 
     def server_bind(self) -> None:
         if self.inherited_socket is None:
-            Path(self.server_address).unlink(missing_ok=True)
+            self.socket_path.unlink(missing_ok=True)
         super().server_bind()
         if self.inherited_socket is None:
-            os.chmod(self.server_address, SOCKET_MODE)
-            shutil.chown(self.server_address, group=self.group)
+            os.chmod(self.socket_path, SOCKET_MODE)
+            shutil.chown(self.socket_path, group=self.group)
 
     @property
     def port(self) -> int:

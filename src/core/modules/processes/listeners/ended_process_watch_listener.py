@@ -1,9 +1,7 @@
 from core.modules.processes.events.process_ended import ProcessEnded
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.modules.processes.models.enums.watch_state import WatchState
-from core.modules.processes.models.process import Process
 from core.modules.processes.queries.watch_query import WatchQuery
 from core.base.command.context import Context
 

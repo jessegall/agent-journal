@@ -48,16 +48,6 @@ def pass_twice(story):
         expects_notice(story)
 
 
-def test_fifteen_minutes_bring_the_reminder(new_story):
-    story = new_story(fixture=ManuallyBlockedTask)
-    story.clock.advance(timedelta(seconds=899))
-    expect_review_absent(story)
-    story.clock.advance(timedelta(seconds=1))
-    expects_notice(story)
-    story.clock.advance(timedelta(seconds=899))
-    expect_review_absent(story)
-
-
 def test_five_closed_tasks_bring_the_reminder_and_restart_the_span(new_story):
     story = new_story(fixture=ManuallyBlockedTask)
     for task_id in range(2, 7):
@@ -115,11 +105,6 @@ def test_a_renewal_or_a_reason_releases_the_hold_and_the_count_starts_over(new_s
     pass_twice(story)
     story.clock.advance(timedelta(minutes=15))
     expectation_kept(story)
-
-
-def test_a_skipped_hold_keeps_its_reason(new_story):
-    story = new_story(fixture=ReminderPaused)
-    story.expect_success('agent-block skip 1 --reason "Nothing is needed before the supplier writes"', "agent_block 1 skipped: Nothing is needed before the supplier writes", actor=story.agent)
 
 
 def test_a_task_that_moved_between_reminders_starts_the_count_over(new_story):

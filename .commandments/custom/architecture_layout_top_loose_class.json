@@ -1,0 +1,326 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "^(\\.commandments/custom/samples/layout/)?src/(core|core/testing|server|install|tunnels)/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)(__init__|[a-z_]+_(module|suite))\\.py$"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "file": "src/core/testing/fake_launcher.py"
+            },
+            {
+                "file": "src/core/testing/fixed_process_table.py"
+            },
+            {
+                "file": "src/core/testing/folder_stat.py"
+            },
+            {
+                "file": "src/core/testing/full_run_record.py"
+            },
+            {
+                "file": "src/core/testing/full_run_records.py"
+            },
+            {
+                "file": "src/core/testing/heavy_run_gate.py"
+            },
+            {
+                "file": "src/core/testing/helper_expectation.py"
+            },
+            {
+                "file": "src/core/testing/helper_started.py"
+            },
+            {
+                "file": "src/core/testing/hook_sample.py"
+            },
+            {
+                "file": "src/core/testing/hook_samples.py"
+            },
+            {
+                "file": "src/core/testing/line_outcome.py"
+            },
+            {
+                "file": "src/core/testing/manual_clock.py"
+            },
+            {
+                "file": "src/core/testing/run_cpu.py"
+            },
+            {
+                "file": "src/core/testing/run_size.py"
+            },
+            {
+                "file": "src/core/testing/shell_part.py"
+            },
+            {
+                "file": "src/core/testing/story.py"
+            },
+            {
+                "file": "src/core/testing/story_body.py"
+            },
+            {
+                "file": "src/core/testing/story_budget.py"
+            },
+            {
+                "file": "src/core/testing/story_fixture.py"
+            },
+            {
+                "file": "src/core/testing/story_helper_programs.py"
+            },
+            {
+                "file": "src/core/testing/story_journal.py"
+            },
+            {
+                "file": "src/core/testing/story_line_run.py"
+            },
+            {
+                "file": "src/core/testing/story_login_path.py"
+            },
+            {
+                "file": "src/core/testing/story_main_agent_skills.py"
+            },
+            {
+                "file": "src/core/testing/story_overlap.py"
+            },
+            {
+                "file": "src/core/testing/story_overview_first.py"
+            },
+            {
+                "file": "src/core/testing/story_path.py"
+            },
+            {
+                "file": "src/core/testing/story_shell_sandbox.py"
+            },
+            {
+                "file": "src/core/testing/story_skill_requirement.py"
+            },
+            {
+                "file": "src/core/testing/story_state.py"
+            },
+            {
+                "file": "src/core/testing/story_steps.py"
+            },
+            {
+                "file": "src/core/testing/story_task_brief_requirement.py"
+            },
+            {
+                "file": "src/core/testing/temp_folders.py"
+            },
+            {
+                "file": "src/core/testing/template.py"
+            },
+            {
+                "file": "src/core/testing/template_adaptation.py"
+            },
+            {
+                "file": "src/core/testing/template_cache.py"
+            },
+            {
+                "file": "src/core/testing/template_databases.py"
+            },
+            {
+                "file": "src/core/testing/working_journal.py"
+            },
+            {
+                "file": "src/install/backup_mismatch_error.py"
+            },
+            {
+                "file": "src/install/backup_result.py"
+            },
+            {
+                "file": "src/install/backup_write_error.py"
+            },
+            {
+                "file": "src/install/built_bundle.py"
+            },
+            {
+                "file": "src/install/built_bundles.py"
+            },
+            {
+                "file": "src/install/chat_update_steps.py"
+            },
+            {
+                "file": "src/install/code_handover.py"
+            },
+            {
+                "file": "src/install/code_replacement.py"
+            },
+            {
+                "file": "src/install/hook_switch.py"
+            },
+            {
+                "file": "src/install/hook_writer.py"
+            },
+            {
+                "file": "src/install/install_journal.py"
+            },
+            {
+                "file": "src/install/launcher_replacement.py"
+            },
+            {
+                "file": "src/install/restore_version_four.py"
+            },
+            {
+                "file": "src/install/run_drain.py"
+            },
+            {
+                "file": "src/install/server_lock.py"
+            },
+            {
+                "file": "src/install/server_stop.py"
+            },
+            {
+                "file": "src/install/server_wont_stop_error.py"
+            },
+            {
+                "file": "src/install/stray_version_four_error.py"
+            },
+            {
+                "file": "src/install/update_steps.py"
+            },
+            {
+                "file": "src/install/upgrade_journal.py"
+            },
+            {
+                "file": "src/install/upgrade_outcome.py"
+            },
+            {
+                "file": "src/install/upgrade_report_file.py"
+            },
+            {
+                "file": "src/install/upgrade_text.py"
+            },
+            {
+                "file": "src/install/version_four.py"
+            },
+            {
+                "file": "src/install/version_four_backup.py"
+            },
+            {
+                "file": "src/install/version_four_files.py"
+            },
+            {
+                "file": "src/install/working_tree_install.py"
+            },
+            {
+                "file": "src/server/booting_work.py"
+            },
+            {
+                "file": "src/server/code_folders.py"
+            },
+            {
+                "file": "src/server/code_sync_work.py"
+            },
+            {
+                "file": "src/server/code_version.py"
+            },
+            {
+                "file": "src/server/handover_descriptors.py"
+            },
+            {
+                "file": "src/server/hosted_journal_door.py"
+            },
+            {
+                "file": "src/server/journal_door.py"
+            },
+            {
+                "file": "src/server/journal_round.py"
+            },
+            {
+                "file": "src/server/journal_server.py"
+            },
+            {
+                "file": "src/server/listener_thread.py"
+            },
+            {
+                "file": "src/server/listener_wake.py"
+            },
+            {
+                "file": "src/server/listener_work.py"
+            },
+            {
+                "file": "src/server/local_journal_door.py"
+            },
+            {
+                "file": "src/server/ordinary_listener_work.py"
+            },
+            {
+                "file": "src/server/plugin_listener_work.py"
+            },
+            {
+                "file": "src/server/program_stop_listener_work.py"
+            },
+            {
+                "file": "src/server/request_handler.py"
+            },
+            {
+                "file": "src/server/request_log.py"
+            },
+            {
+                "file": "src/server/request_log_entry.py"
+            },
+            {
+                "file": "src/server/request_log_settings.py"
+            },
+            {
+                "file": "src/server/round_work.py"
+            },
+            {
+                "file": "src/server/server_backup.py"
+            },
+            {
+                "file": "src/server/server_context.py"
+            },
+            {
+                "file": "src/server/server_files.py"
+            },
+            {
+                "file": "src/server/server_files_error.py"
+            },
+            {
+                "file": "src/server/server_plugin_services.py"
+            },
+            {
+                "file": "src/server/server_tunnel.py"
+            },
+            {
+                "file": "src/server/socket_peer.py"
+            },
+            {
+                "file": "src/server/successor_proof.py"
+            },
+            {
+                "file": "src/server/successor_start.py"
+            },
+            {
+                "file": "src/server/tick_handler_work.py"
+            },
+            {
+                "file": "src/server/ticker.py"
+            },
+            {
+                "file": "src/server/tracked_requests.py"
+            },
+            {
+                "file": "src/server/urgent_listener_work.py"
+            },
+            {
+                "file": "src/server/waiting_server.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "top-loose-class",
+        "description": "A class sits loose directly in a top folder of src, so it belongs to no folder.",
+        "rule": "Move it into the folder of its area under a top folder of src. Every class, function and value sits in a folder named for its sort: errors, enums, models, support or the folder of its area.",
+        "skill": "plain-code-words"
+    }
+}

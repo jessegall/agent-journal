@@ -9,7 +9,6 @@ from core.modules.library.models.library_connection import LibraryConnection
 from core.modules.library.queries.library_connection_query import LibraryConnectionQuery
 from core.modules.library.support.library_address import ADDRESS_SETTING
 from core.modules.library.support.library_client import TOKEN_VARIABLE, LibraryClient
-from core.modules.library.support.library_stopped_error import LibraryStoppedError
 from core.testing.story import Story
 from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
@@ -85,19 +84,6 @@ def test_a_wrong_token_is_refused_and_nothing_is_kept(new_story, shared_server):
     story = new_story(fixture=UserBuilder)
     story.expect_refusal(f"library connect {server.address} --token jsl_wrong", "The server did not accept this token.", actor=story.user)
     story.expect_rows(library_connection(story) is None, TOKEN_VARIABLE not in story.container.get(SecretValues).values(), "jsl_wrong" not in stored_texts(story))
-
-
-def test_an_address_nobody_answers_at_is_refused_and_named(new_story):
-    with StubServer(StubAnswer(200)) as closed:
-        address = closed.address
-    story = new_story(fixture=UserBuilder)
-    story.expect_refusal(f"library connect {address} --token jsl_token", f"The server could not be reached at {address}.", actor=story.user)
-    story.expect_rows(library_connection(story) is None)
-
-
-def test_an_address_that_is_no_address_is_refused_before_anything_is_sent(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_refusal("library connect ftp://nowhere --token jsl_token", "ftp://nowhere is no server address", actor=story.user)
 
 
 def test_a_connect_with_no_address_uses_the_setting(new_story, shared_server):

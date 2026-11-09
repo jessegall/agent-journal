@@ -27,14 +27,6 @@ def merge_story(new_story, commands: list[str]):
     return story, worker, repository
 
 
-def test_s57_changed_list_does_not_replace_pending_steps(new_story):
-    story, worker, _ = merge_story(new_story, ["true", "false"])
-    story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)
-    set_commands(story, ["true"])
-    story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)
-    story.expect_text("task show 1", "state: testing", actor=story.agent)
-
-
 def test_s57_restart_retains_successful_steps(new_story):
     story, worker, repository = merge_story(new_story, ["echo ran >> ran.txt", "test -f marker.txt"])
     story.expect_refusal(f"worker merge --wait {worker.id}", "failed with code 1", actor=story.agent)

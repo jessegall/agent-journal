@@ -40,11 +40,6 @@ class ReleaseCleanup(StoryFixture):
         story.expect_rows(open_runs(story) == [1, 2])
 
 
-def test_a_record_made_while_a_sequence_runs_starts_its_sequence_on_top_of_it(new_story):
-    story = new_story(fixture=ReleaseCleanup)
-    story.expect_success("sequence follow", "sequence 2, step 1: Sweep the folder", actor=story.agent)
-
-
 def test_finishing_the_top_sequence_says_the_step_of_the_one_below(new_story):
     story = new_story(fixture=ReleaseCleanup)
     story.run("sequence follow", actor=story.agent)

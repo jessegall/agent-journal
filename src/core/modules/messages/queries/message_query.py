@@ -29,11 +29,11 @@ class MessageQuery(Query[Message]):
         return self.kept.read(self.table.name, self.filter(creator_id=creator_id, type=MessageType.AGENT).newest().first,
                               "creator_id = ? AND type = ?", [creator_id, MessageType.AGENT], name="messages.latest_agent_message")
 
-    def latest_turn_message(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> Message | None:
-        return self.agent_messages().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).newest().first()
+    def latest_turn_reply(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> Message | None:
+        return self.agent_replies().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).newest().first()
 
-    def turn_messages(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> tuple[Message, ...]:
-        return tuple(self.agent_messages().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).oldest().all_rows())
+    def turn_replies(self, creator_id: int, start_at: Timestamp, end_at: Timestamp) -> tuple[Message, ...]:
+        return tuple(self.agent_replies().filter(creator_id=creator_id).matching(Minimum("created_at", start_at.text)).matching(Maximum("created_at", end_at.text)).oldest().all_rows())
 
     def recent_agent_messages(self, creator_id: int, cutoff_at: Timestamp) -> tuple[Message, ...]:
         return tuple(self.agent_messages().filter(creator_id=creator_id).matching(Minimum("created_at", cutoff_at.text)).newest().all_rows())
@@ -58,6 +58,9 @@ class MessageQuery(Query[Message]):
 
     def agent_messages(self) -> Self:
         return self.filter(type=MessageType.AGENT)
+
+    def agent_replies(self) -> Self:
+        return self.agent_messages().filter(is_agent_text=False)
 
     def addressed(self, agent_id: int) -> Self:
         return self.matching(MessageTarget(agent_id))

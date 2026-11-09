@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 
 from core.base.model.model import Model
@@ -17,3 +18,7 @@ class Setting(Model):
     creator_id: int
     key: str
     value: str
+
+    def value_text(self) -> str:
+        decoded = json.loads(self.value)
+        return decoded if isinstance(decoded, str) else json.dumps(decoded)

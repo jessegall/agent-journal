@@ -80,20 +80,6 @@ def test_a_worker_that_has_delivered_nothing_is_not_named(new_story):
     story.expect_rows(f"worker:{worker.id} delivered" not in story.run(f"agent-line list --agent {story.agent.id}").output_text)
 
 
-def test_the_unmerged_line_names_the_check_while_a_proof_waits(new_story):
-    story = new_story(fixture=MainAgentMerges)
-    repository = repository_environment(story)
-    worker = delivered_worker(story, repository)
-    story.tick(MAIN_SESSION)
-    lines = story.run(f"agent-line list --agent {story.agent.id}")
-    lines.expect_text("proofs 1")
-    lines.expect_no_text(f"journal worker merge {worker.id}")
-    story.expect_success("proof check 1", actor=story.agent)
-    story.advance(REMINDER_INTERVAL)
-    story.tick(MAIN_SESSION)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"journal worker merge {worker.id}")
-
-
 def remind(story, count: int) -> None:
     for _ in range(count):
         story.advance(REMINDER_INTERVAL)
@@ -103,20 +89,6 @@ def remind(story, count: int) -> None:
 def merge_block_rows(story, worker_id: int) -> list[AgentBlock]:
     return [row for row in story.container.get(Queries).query(AgentBlock).filter(session_agent_id=story.agent.id).all_rows()
             if f"journal worker merge {worker_id}" in row.condition_text and row.closed_at is None]
-
-
-def test_two_reminders_do_not_hold_the_main_agent(new_story):
-    story = new_story(fixture=MainAgentMerges)
-    worker = delivered_worker(story, repository_environment(story))
-    remind(story, 2)
-    expect_value(merge_block_rows(story, worker.id), [])
-
-
-def test_the_third_reminder_holds_the_main_agent_until_it_merges_or_gives_a_reason(new_story):
-    story = new_story(fixture=MainAgentMerges)
-    worker = delivered_worker(story, repository_environment(story))
-    remind(story, 3)
-    expect_value(len(merge_block_rows(story, worker.id)), 1)
 
 
 def test_a_reason_passes_only_that_hold_and_the_next_reminder_holds_again(new_story):

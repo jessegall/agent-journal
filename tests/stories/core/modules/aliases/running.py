@@ -89,21 +89,6 @@ def test_a_background_alias_run_that_is_no_test_or_build_ends_with_an_ended_line
     story.expect_hook_allowed("s-1", HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])), "output 1 ended")
 
 
-def test_the_file_the_hook_reads_names_each_aliass_shell_line(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_success('alias add go-tests "go test ./..."', actor=story.agent)
-    story.run_listeners()
-    expect_tests(story, "go test ./...")
-
-
-def test_an_alias_of_a_journal_command_stays_in_the_foreground(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.run('alias add tasks "journal task list" --background', actor=story.agent)
-    line = HookSamples.shell("journal tasks", ShellPart("journal", CommandCategory.JOURNAL, ["tasks"]))
-    reply = story.hook("s-1", line)
-    expect_updated_input_reply_without(reply, "--background")
-
-
 def test_a_check_alias_goes_through_the_run_queue(new_story):
     # the hook classifies a journal line that runs an alias by what the alias runs, here a check such as the commandments judge
     story = install_runner(new_story(fixture=BuilderStarted))

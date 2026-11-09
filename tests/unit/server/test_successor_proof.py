@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 import json
 import sqlite3
 
@@ -21,7 +22,7 @@ def home(tmp_path, monkeypatch) -> JournalHome:
 def test_new_migrations_leave_a_database_copy_to_go_back_to(home, monkeypatch):
     monkeypatch.setattr(SuccessorProof, "has_pending_migrations", lambda proof: True)
     SuccessorProof(home).run()
-    assert len(ServerBackup(home).copies()) == 1
+    assert len(ServerBackup(home, Clock()).copies()) == 1
 
 
 def test_a_listed_module_that_refuses_the_new_core_fails_the_proof_on_the_empty_database(tmp_path):
@@ -45,4 +46,4 @@ def test_both_proof_homes_hold_the_listed_modules(home, monkeypatch, tmp_path_fa
 def test_no_new_migrations_write_no_copy(home, monkeypatch):
     monkeypatch.setattr(SuccessorProof, "has_pending_migrations", lambda proof: False)
     SuccessorProof(home).run()
-    assert ServerBackup(home).copies() == []
+    assert ServerBackup(home, Clock()).copies() == []

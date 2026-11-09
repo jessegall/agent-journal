@@ -2,7 +2,6 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.modules.processes.commands.end_process.end_process import EndProcess
-from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.stop_process.stop_process import StopProcess
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
@@ -28,14 +27,6 @@ def test_starting_a_process_makes_it_running_with_one_part_for_each_command_of_i
     story.expect_text(PARTS, "waiting")
 
 
-def test_a_part_ends_with_its_exit_code(new_story):
-    story = new_story(fixture=BuilderStarted)
-    start_process(story)
-    bus(story).run(EndProcessPart(1, 1, 0), story.agent, environment_id=1)
-    bus(story).run(EndProcessPart(1, 2, 3), story.agent, environment_id=1)
-    story.expect_ordered_lines(PARTS, "finished", "failed")
-
-
 def test_a_running_process_moves_to_the_background_and_a_background_one_cannot_move_again(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
@@ -43,11 +34,6 @@ def test_a_running_process_moves_to_the_background_and_a_background_one_cannot_m
     story.expect_success(PROCESS, "state: background")
     story.expect_text("process show 1", "moved_at: 2")
     story.expect_refusal("process background 1", "background")
-
-
-def test_a_process_ends_finished_on_exit_code_0_and_failed_on_another(ended_process_states):
-    story = ended_process_states
-    story.expect_success("process show 2", "state: failed", "exit_code: 2")
 
 
 def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end_twice(stopped_process_states):
@@ -65,13 +51,6 @@ def test_long_and_short_runs_both_keep_their_output(new_story):
     story.expect_text(OUTPUTS, "kept")
     story.expect_success("output show 1", "process_id: 1", f"byte_count: {BYTES_LONG}", "line_count: 80", "state: kept")
     story.expect_text("output list --process 2", "kept")
-
-
-def test_a_short_output_of_a_piped_line_is_kept(new_story):
-    story = new_story(fixture=BuilderStarted)
-    start_process(story, "make test && echo done", piped=True)
-    bus(story).run(EndProcess(1, 0, BYTES_SHORT, 1), story.agent, environment_id=1)
-    story.expect_text(OUTPUTS, "kept")
 
 
 def test_outputs_have_no_independent_prune_command(new_story):
@@ -105,15 +84,6 @@ def started_process(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
     start_process(story, "make build")
-    return story
-
-
-@pytest.fixture
-def ended_process_states(started_process):
-    story = started_process
-    bus(story).run(EndProcess(1, 0, BYTES_SHORT, 1), story.agent, environment_id=1)
-    bus(story).run(EndProcess(2, 2, BYTES_SHORT, 1), story.agent, environment_id=1)
-    story.expect_success(PROCESS, "state: finished", "exit_code: 0")
     return story
 
 

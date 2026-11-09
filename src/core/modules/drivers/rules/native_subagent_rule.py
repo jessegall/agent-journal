@@ -20,6 +20,7 @@ class NativeSubagentRule(DeniedToolsRule):
     drivers = ["*"]
     overlay_proof = True
     denied_tools = tuple([ToolType.AGENT])
+    refuses_one_action = "A program's own subagent tool runs a child no rule sees, so it is refused on every program and under every"
 
     def __init__(self, launcher: LauncherLink, providers: Providers) -> None:
         self.launcher, self.providers = launcher, providers

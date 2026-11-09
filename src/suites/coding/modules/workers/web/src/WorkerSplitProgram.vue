@@ -1,5 +1,5 @@
 <script setup>
-import {Btn} from "@journal/window-kit";
+import {Btn, dated} from "@journal/window-kit";
 defineProps({row: {type: Object, required: true}, share: {type: Number, required: true}, disabled: Boolean});
 defineEmits(["share", "save", "back", "out"]);
 </script>
@@ -10,8 +10,8 @@ defineEmits(["share", "save", "back", "out"]);
         <label class="share">Share <input type="range" min="0" max="100" step="5" :value="share" :aria-label="`${row.title} share`" :disabled="disabled" @input="$emit('share', Number($event.target.value))" @change="$emit('save')" /><output>{{ share }}%</output></label>
         <small>{{ row.recent }} recent worker tasks · {{ row.helpers_recent }} recent read-only helper tasks</small>
         <template v-for="line in row.windows" :key="line"><small>{{ line }}</small></template>
-        <template v-if="!row.is_ready"><p>{{ row.line }}<template v-if="row.ends_at"> · Until {{ row.ends_at }}</template></p></template>
-        <template v-if="row.outage && row.outage_reason !== row.line"><p>{{ row.outage_reason }} · Until {{ row.outage_ends_at }}</p></template>
+        <template v-if="!row.is_ready"><p>{{ row.line }}<template v-if="row.ends_at"> · Until {{ dated(row.ends_at) }}</template></p></template>
+        <template v-if="row.outage && row.outage_reason !== row.line"><p>{{ row.outage_reason }} · Until {{ dated(row.outage_ends_at) }}</p></template>
         <div class="actions">
             <template v-if="row.outage"><Btn small :disabled="disabled" @click="$emit('back')">Back now</Btn></template>
             <Btn small :disabled="disabled" @click="$emit('out')">Mark out</Btn>

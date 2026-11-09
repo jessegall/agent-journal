@@ -3,6 +3,7 @@ import {computed, inject, ref, useAttrs} from "vue";
 import {WINDOW_CONTEXT} from "../../kit/windowContextKey.js";
 import FoldSign from "./FoldSign.vue";
 import Icon from "./Icon.vue";
+import AgentTip from "../../kit/AgentTip.vue";
 import MarkAction from "./MarkAction.vue";
 import MarkIcon from "./MarkIcon.vue";
 import TextDisplay from "./TextDisplay.vue";
@@ -98,6 +99,7 @@ const status = computed(() =>
 );
 // a figure that is a duration with a decimal, such as 10.5 s, shows the decimal on its own so it can be drawn smaller
 const figureParts = computed(() => /^(\d+)(\.\d+)(.*)$/.exec(props.mark.figure ?? ""));
+const symbol = computed(() => (props.mark.markIcon ? {component: MarkIcon, props: {class: "ico", name: props.mark.markIcon}} : {component: Icon, props: {name: props.mark.icon || "dot"}}));
 const hover = computed(() => [props.mark.title, props.mark.time ? clock(props.mark.time) : ""].filter(Boolean).join(" · "));
 const tint = computed(() => ({
     ...(shade.value ? {"--mark": shade.value} : {}),
@@ -140,11 +142,13 @@ const tint = computed(() => ({
             :type="live ? 'button' : undefined"
             :aria-expanded="opens ? String(Boolean(isOpen)) : undefined"
         >
-            <template v-if="mark.markIcon">
-                <MarkIcon class="ico" :name="mark.markIcon" />
+            <template v-if="mark.agentId">
+                <AgentTip :agent-id="mark.agentId" :label="mark.label" class="agent-icon" data-mark-agent>
+                    <component :is="symbol.component" v-bind="symbol.props" />
+                </AgentTip>
             </template>
             <template v-else>
-                <Icon :name="mark.icon || 'dot'" />
+                <component :is="symbol.component" v-bind="symbol.props" />
             </template>
             <template v-if="mark.worker">
                 <span class="worker">{{ mark.worker }}</span>
@@ -452,6 +456,11 @@ const tint = computed(() => ({
     .mark:not(.open) .fold {
         display: none;
     }
+}
+
+.mark .agent-icon {
+    display: inline-flex;
+    align-self: start;
 }
 
 .mark .ico {

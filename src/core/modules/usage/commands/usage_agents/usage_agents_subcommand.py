@@ -13,9 +13,9 @@ from core.base.clock import Clock
 from core.base.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.base.journal_home import JournalHome
+from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
 from core.base.query.conditions.greater import Greater
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -97,9 +97,9 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         return next((line.strip()[:100] for line in card.helper_job_brief.splitlines() if line.strip()), "")
 
     def context_percent(self, card: AgentCard, status: SessionStatus) -> int | None:
-        if status.is_reported and status.context_percent is None:
-            return None
-        return self.share.percent(card.program, card.session)
+        if not status.is_reported:
+            return self.share.percent(card.program, card.session)
+        return None if status.context_percent is None else self.share.reading(ContextWindow(status.context_percent, status.context_tokens)).percent
 
     def reported_model(self, card: AgentCard) -> str:
         return self.providers.reported_model(card.program, self.home, card.session)

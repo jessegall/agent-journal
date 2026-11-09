@@ -19,6 +19,7 @@ class WorkerTestCountRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
+    refuses_one_action = "Refuses a worker's command when its latest counted output exceeds the test limit"
 
     def __init__(self, listings: WorkerTestListings, settings: SettingValues) -> None:
         self.listings, self.settings = listings, settings

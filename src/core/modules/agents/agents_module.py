@@ -70,7 +70,6 @@ from core.modules.agents.migrations.m009_agent_access import AgentAccessMigratio
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
 from core.modules.agents.commands.record_agent_launch_failure.record_agent_launch_failure_handler import RecordAgentLaunchFailureHandler
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
-from core.base.access import Access
 from core.base.helper_type import HelperType
 from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.window_search import WindowSearch
@@ -101,11 +100,11 @@ from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS
 
 
 CARD_READS = ["agent limits", "setting show", "agent cards", "agent list", "agent programs", "usage agents", "usage tool", "agent transcript", "message agent-reports", "hook-call feed", "output hook-page", "task show", "task list", "process-part list"]
-CARD_EVENTS = ["setting.*", "agent.*", "hook_call.*", "task.*", "process_part.*", "message.*"]
+CARD_EVENTS = ["setting.*", "agent.*", "agent_block.*", "hook_call.*", "task.*", "process_part.*", "message.*"]
 CARD_TABS = [WindowTab("tasks", "Tasks", "usage agents", "tasks"), WindowTab("reports", "Reports", "message agent-reports", "reports"), WindowTab("transcript", "Transcript", "agent transcript")]
 CARD_KEYS = [WindowKey("reports", "message agent-reports", tab="reports", events=["message.*"], arguments=["agent"]),
-             WindowKey("agents", "agent cards", events=["agent.*", "task.*", "hook_call.*"], arguments=["show", "search", "limit", "roles", "profiles", "programs"]),
-             WindowKey("card.*", "agent cards --show all --include-main --id {id}", events=["agent.*", "task.*", "hook_call.*"]),
+             WindowKey("agents", "agent cards", events=["agent.*", "agent_block.*", "task.*"], arguments=["show", "search", "limit", "roles", "profiles", "programs"]),
+             WindowKey("card.*", "agent cards --show all --include-main --id {id}", events=["agent.*", "agent_block.*", "task.*", "hook_call.*"], event_column="session_agent_id"),
              WindowKey("filters", "agent cards --options", events=["agent.*"]),
              WindowKey("programs", "agent programs"),
              WindowKey("tool", "usage tool", loading=KeyLoading.REQUESTED, arguments=["agent"]),
