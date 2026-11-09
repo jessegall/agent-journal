@@ -18,9 +18,9 @@ OPEN_STATES = tuple(state for state in PlanState if state not in CLOSED_STATES)
 
 
 class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
-    """`journal plan board [--environment <name>] [--closed] [--page <n>]`: a page of plan cards
-    with their progress, open ones unless closed ones are asked for, and how many there are of
-    each."""
+    """`journal plan board [--environment <name>] [--closed | --started] [--before-id <id>]`: a page of
+    plan cards with their progress, open ones unless closed or started ones are asked for, and how many
+    there are of each. Started plans come in the order of their last change, newest first."""
 
     cli_name = "plan"
     name = "board"
@@ -35,18 +35,22 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         return (*OPEN_STATES, *added)
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--closed", action="store_true")
+        sides = parser.add_mutually_exclusive_group()
+        sides.add_argument("--closed", action="store_true")
+        sides.add_argument("--started", action="store_true")
         parser.add_argument("--before-id", type=int, default=None, help="the plans older than this one")
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanBoard:
         plans = self.queries.query(PlanCard)
         opened, closed = plans.matching(Among("state", self.open_states())), plans.matching(Among("state", CLOSED_STATES))
+        started = plans.matching(Among("state", (PlanState.STARTED,)))
+        if arguments.started:
+            return PlanBoard(opened.count(), started.count(), closed.count(), tuple(started.descending("changed_at", "id").limited(arguments.limit)))
         shown = closed if arguments.closed else opened
         older = shown.matching(Less("id", arguments.before_id)) if arguments.before_id is not None else shown
-        cards = tuple(older.newest().limited(arguments.limit))
-        return PlanBoard(opened.count(), closed.count(), cards)
+        return PlanBoard(opened.count(), started.count(), closed.count(), tuple(older.newest().limited(arguments.limit)))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanBoard):
-            output.write(f"{value.open_total} open, {value.closed_total} closed", value.json())
+            output.write(f"{value.open_total} open, {value.started_total} started, {value.closed_total} closed", value.json())

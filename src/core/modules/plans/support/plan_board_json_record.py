@@ -7,5 +7,6 @@ class PlanBoardJsonRecord(TypedDict):
     """The JSON form of PlanBoard.json."""
 
     open_total: int
+    started_total: int
     closed_total: int
     plans: list[PlanCardJsonRecord]
