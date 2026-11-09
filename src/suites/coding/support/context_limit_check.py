@@ -18,7 +18,7 @@ class ContextLimitCheck:
         if not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return None
         agent = self.agents.find(agent_id)
-        tokens = self.providers.provider(agent.program).context_tokens(self.home, agent.session)
+        tokens = self.providers.context_tokens(agent.program, self.home, agent.session)
         return tokens if tokens is not None and tokens >= self.settings.number(CONTEXT_LIMIT_TOKENS) else None
 
     def action(self) -> str:

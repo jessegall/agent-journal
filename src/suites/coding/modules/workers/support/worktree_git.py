@@ -203,10 +203,10 @@ class WorktreeGit:
 
     def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
         name = self.built_name(path)
-        if name is None:
-            return False
-        siblings = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
-        return name in {self.built_name(sibling) for sibling in siblings}
+        return name is not None and name in {self.built_name(sibling) for sibling in self.siblings(worktree, path)}
+
+    def siblings(self, worktree: Worktree, path: str) -> list[str]:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
 
     @staticmethod
     def built_name(path: str) -> str | None:

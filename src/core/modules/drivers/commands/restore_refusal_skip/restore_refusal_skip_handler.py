@@ -1,5 +1,4 @@
 from core.base.user_approval_refusal import UserApprovalRefusal
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -20,7 +19,7 @@ class RestoreRefusalSkipHandler(Handler[RestoreRefusalSkip, RefusalSkip]):
 
     def handle(self, command: RestoreRefusalSkip, context: Context) -> RefusalSkip:
         agent = self.queries.query(Agent).find(command.agent_id)
-        if context.actor.type is ActorType.AGENT and agent.parent_id != context.actor.id:
+        if agent.is_child_of_another_agent(context.actor):
             raise UserApprovalRefusal(f"Restore the refusal skip for agent {agent.id}?", command=command)
         skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent.id).newest().first()
         if skip is None:
