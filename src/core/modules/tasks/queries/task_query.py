@@ -10,6 +10,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.conditions.less import Less
 from core.base.query.query import Query
 from core.base.query.condition import Condition
 from core.base.query.conditions.subquery_match import SubqueryMatch
@@ -96,9 +97,14 @@ class TaskQuery(Query[Task]):
         return SubqueryMatch("id", Select("phase_tasks").matching(SubqueryMatch("phase_id", unapproved_phases)).column("task_id"), negated=True)
 
     def next_open(self, excluded_id: int | None, exclusion: Condition) -> Task | None:
-        free_tasks = self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion)
+        free_tasks = self.free_tasks(exclusion)
         return (free_tasks if excluded_id is None else free_tasks.matching(Among("id", [excluded_id], negated=True))).descending("priority").ordered("id").first()
 
+    def next_simple(self, most_complexity: int, exclusion: Condition) -> Task | None:
+        return self.free_tasks(exclusion).matching(Less("complexity", most_complexity + 1)).descending("priority").ordered("id").first()
+
+    def free_tasks(self, exclusion: Condition) -> Self:
+        return self.open_tasks().matching(IsNull("delegated_to")).matching(self.no_open_dependency()).matching(exclusion)
 
     def closed_counts(self, starts: Sequence[Timestamp]) -> list[int]:
         if not starts:

@@ -1,5 +1,6 @@
 from core.base.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
+from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -27,8 +28,8 @@ class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
         WorkerCommandRequest.arguments(parser)
         differences_flag(parser)
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, guidance: WorkerGuidance) -> None:
-        self.guidance = guidance
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, guidance: WorkerGuidance, run_answer: WorkerRunAnswer) -> None:
+        self.guidance, self.run_answer = guidance, run_answer
         self.requests = requests
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
 
@@ -41,7 +42,7 @@ class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
                                      ["worker", "deliver", "--differences", differences], arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
-        if WorkerCommandRequest.write_output(value, output):
+        if self.run_answer.write(value, output):
             return
         if not isinstance(value, Task):
             return

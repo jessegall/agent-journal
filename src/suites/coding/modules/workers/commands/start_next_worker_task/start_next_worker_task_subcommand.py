@@ -1,5 +1,6 @@
 from core.base.command.command import Command
 from suites.coding.modules.workers.support.worker_command_request import WorkerCommandRequest
+from suites.coding.modules.workers.support.worker_run_answer import WorkerRunAnswer
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -25,7 +26,8 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
     name = "next"
     outward = True
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, next_task: WorkerNextTask, guidance: WorkerGuidance) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, next_task: WorkerNextTask, guidance: WorkerGuidance, run_answer: WorkerRunAnswer) -> None:
+        self.run_answer = run_answer
         self.guidance = guidance
         self.requests, self.next_task = requests, next_task
         self.worktrees, self.step_check, self.phases = worktrees, step_check, phases
@@ -43,7 +45,7 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
                                      ["worker", "next", "--differences", differences], arguments, caller)
 
     def write_output(self, value: object, output: Output) -> None:
-        if WorkerCommandRequest.write_output(value, output):
+        if self.run_answer.write(value, output):
             return
         if isinstance(value, Task) and value.state is TaskState.STARTED:
             output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}\n{self.guidance.line(value.delegated_to)}")
