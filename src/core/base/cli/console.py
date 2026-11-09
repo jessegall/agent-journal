@@ -94,7 +94,7 @@ class Console:
         approval = refusal.original
         if not isinstance(approval, UserApprovalRefusal):
             return None
-        line = WriteFlags.without_reason(argv) if getattr(parsed, "reason_is_ours", False) else tuple(argv)
+        line = WriteFlags.without_reason(argv) if getattr(parsed, "reason_flag_added", False) else tuple(argv)
         why = getattr(parsed, "reason", "")
         arguments = approval.arguments or (() if approval.command is not None else line)
         self.bus.run(CheckApprovalWorks(approval, arguments), caller.actor, environment_id=caller.environment_id)

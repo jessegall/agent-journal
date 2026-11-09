@@ -57,7 +57,8 @@ def main() -> None:
     folder = Path(tempfile.mkdtemp())
     try:
         (folder / "templates").mkdir()
-        story = TemplateDatabases(folder / "templates").story(folder / "journal", (), fixture_class(options.fixture))
+        databases = TemplateDatabases(folder / "templates")
+        story = databases.story(folder / "journal", (), fixture_class(options.fixture))
         try:
             for line in (TOUR_SETTING, *options.setup):
                 outcome = story.run(line)

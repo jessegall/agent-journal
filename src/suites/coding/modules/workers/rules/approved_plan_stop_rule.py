@@ -27,7 +27,7 @@ class ApprovedPlanStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not self.places.can_start_new():
-            return RuleAnswer.allowed("no new worker can start")
+            return RuleAnswer.allowed(f"no new worker can start")
         plan = self.plans.filter(state=PlanState.APPROVED).oldest().first()
         if plan is None:
             return RuleAnswer.allowed("no approved plan waits to start")
