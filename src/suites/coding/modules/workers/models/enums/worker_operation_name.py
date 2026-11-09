@@ -14,6 +14,8 @@ WORKER_OPERATION_MERGED = NudgeDeclaration("workers.operation_merged", NudgeType
     'worker:{worker} merged: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_JOB = NudgeDeclaration("workers.operation_job", NudgeType.STEERING,
     'worker:{worker} has the job: output {output}', turn_limited=False, wakes_agent=True)
+WORKER_OPERATION_PAUSED = NudgeDeclaration("workers.operation_paused", NudgeType.STEERING,
+    'worker:{worker} is paused, so the job waits: journal agent resume {worker}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_DELIVERED = NudgeDeclaration("workers.operation_delivered", NudgeType.STEERING,
     'worker:{worker} handed in its task: output {output}', turn_limited=False, wakes_agent=True)
 

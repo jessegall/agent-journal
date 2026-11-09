@@ -2,7 +2,7 @@ from core.base.driver.nudge import Nudge
 from core.modules.processes.models.process import Process
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
-from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName, WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT
+from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName, WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT, WORKER_OPERATION_PAUSED
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
@@ -64,4 +64,6 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
                 return WORKER_OPERATION_TESTS.nudge(task=task.id, output=process.id)
         if operation.name is WorkerOperationName.MERGE and worktree is not None:
             return WORKER_OPERATION_CONFLICT.nudge(worker=operation.worker_id, output=process.id)
+        if operation.name is WorkerOperationName.JOB and self.agents.find(operation.worker_id).paused_at is not None:
+            return WORKER_OPERATION_PAUSED.nudge(worker=operation.worker_id)
         return operation.name.finished_nudge(operation.worker_id, process.id)

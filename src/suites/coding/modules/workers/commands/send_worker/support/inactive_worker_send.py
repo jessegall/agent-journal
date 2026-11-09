@@ -7,14 +7,16 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.support.nudger import Nudger
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.queue_worker_operation.queue_worker_operation import QueueWorkerOperation
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
-from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
+from suites.coding.modules.workers.models.enums.worker_operation_name import WORKER_OPERATION_PAUSED, WorkerOperationName
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.support.coding_helper_role import CodingHelperRole
 
@@ -25,14 +27,17 @@ class InactiveWorkerSend:
     an open one whose program has ended. A busy worker takes the task as its next one by itself."""
 
     def __init__(self, rows: EventRows, tasks: TaskQuery, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue,
-                 operations: WorkerOperationQuery, bus: Bus) -> None:
+                 operations: WorkerOperationQuery, bus: Bus, nudger: Nudger) -> None:
         self.rows, self.tasks, self.worktrees, self.proof_queue = rows, tasks, worktrees, proof_queue
-        self.operations, self.bus = operations, bus
+        self.operations, self.bus, self.nudger = operations, bus, nudger
 
     def send(self, task: Task, context: Context) -> None:
         if task.delegated_to is None:
             return
         worker = self.rows.required(Agent, task.delegated_to)
+        if worker.paused_at is not None and worker.parent_id is not None:
+            self.nudger.send(worker.parent_id, WORKER_OPERATION_PAUSED, WORKER_JOB_SOURCE, context, worker=worker.id)
+            return
         if not self.is_idle(worker):
             return
         operation_line = shlex.join(["worker", "send", str(worker.id), "--task", str(task.id), "--wait"])

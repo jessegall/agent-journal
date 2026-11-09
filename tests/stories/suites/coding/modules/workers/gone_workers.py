@@ -233,7 +233,7 @@ def test_a_send_to_a_paused_worker_says_it_waits_for_the_resume(running_worker):
     worker = running_worker.worker
     running_worker.expect_success(f"agent pause {worker.id}", actor=running_worker.agent)
     running_worker.use_processes()
-    running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "is paused: the job waits until it is resumed", actor=running_worker.agent)
+    running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "is paused: the job waits until journal agent resume", actor=running_worker.agent)
 
 
 def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
