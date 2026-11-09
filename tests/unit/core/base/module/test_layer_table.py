@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 
 from core.base.module.layer import Layer
@@ -6,6 +9,9 @@ from core.base.module.layer_rules import LayerRules
 from core.base.module.layer_table import LayerTable
 from core.base.module.layer_tier import LayerTier
 from core.base.module.module import Module
+
+
+CONFIG_FILE = Path(__file__).resolve().parents[5] / ".commandments" / "config.json"
 
 
 def declared(name, folder, dependencies=()):
@@ -143,3 +149,7 @@ def test_a_listed_import_does_not_count_towards_a_loop(tmp_path):
     module_folder(tmp_path, "core.modules.plans", "plans")
     listed = "src/core/modules/tasks/tasks_module.py imports core module plans, which core module tasks may not use"
     assert failures(tmp_path, declared("tasks", "core.modules.tasks"), declared("plans", "core.modules.plans", ["tasks"]), allow_list=[listed]) == []
+
+
+def test_no_hand_written_layer_is_left():
+    assert "python/NamespaceDependencyDetector" not in json.loads(CONFIG_FILE.read_text())["configure"]
