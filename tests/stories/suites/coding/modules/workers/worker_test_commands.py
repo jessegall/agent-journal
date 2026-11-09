@@ -175,6 +175,16 @@ def test_a_test_line_beside_a_worker_test_is_refused(worker_with_commands):
     expect_value_with(reply.refusal, "your test commands")
 
 
+@pytest.mark.parametrize("program, category, arguments", [
+    ("sh", CommandCategory.PROCESS, ["hidden.sh"]), ("bash", CommandCategory.PROCESS, ["hidden.sh"]), ("python3", CommandCategory.PROCESS, ["hidden.py"]),
+    ("python3", CommandCategory.PROCESS, ["-c", "import pytest; pytest.main([])"]), ("node", CommandCategory.PROCESS, ["node_modules/vitest/vitest.mjs", "run"]),
+    ("coverage", CommandCategory.UNKNOWN, ["run", "-m", "pytest"]), ("./hidden.sh", CommandCategory.UNKNOWN, []),
+])
+def test_a_test_hidden_in_a_script_or_an_interpreter_is_refused_with_the_program(worker_with_commands, program, category, arguments):
+    reply = worker_with_commands.run_line(" ".join([program, *arguments]), ShellPart(program, category, arguments))
+    expect_value_with(reply.refusal, f"a worker here runs no {category.value} command")
+
+
 def test_a_line_with_no_test_is_left_alone(worker_with_commands):
     reply = worker_with_commands.run_line("ls tests", ShellPart("ls", CommandCategory.READ, ["tests"]))
     expect_value(reply.refusal, "")
