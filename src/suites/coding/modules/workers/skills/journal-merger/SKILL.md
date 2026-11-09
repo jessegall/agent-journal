@@ -20,8 +20,8 @@ A line from `journal worker ask` holds the worker's point, its last refusal, its
 | Refused for sins outside the worker's own files | `journal merger scope <worker>` | Tell the worker to go on. Pass one backlog line to the main agent once, not as a fault of the worker. |
 | Refused for sins in its own files | `journal merger scope <worker>` | Tell the worker to fix those files at their source. |
 | A .venv or node_modules is missing, or a test tool cannot start | `journal merger repair <worker>` | The worker is told when something came back. |
-| A worker asks to run a test | `journal merger allow <request>` | A run that is needed and names its test files is allowed. Refuse the rest with `--refuse "<why>"`. |
-| A worker's test count went over its limit, or the count could not be made | The output named in its line | Tell the worker which test files to run, or allow one named run. |
+| A worker asks to run a test | `journal helper grant <worker> <program> "<test files>"` | A run that is needed and names its test files is granted; the worker runs it with `journal helper run`. Tell the worker why when you do not grant it. |
+| A worker's test count went over its limit, or the count could not be made | The output named in its line | Tell the worker which test files to run, or grant one named run. |
 | A task already built, or passed on from a worker that left | The commits named in its refusal | Tell the worker to prove each point with where it is and hand in with `--differences "already built: <where>"`. |
 | A clash | The files in its line | Name the files to the worker and let it settle them. Two workers renaming one thing: tell the one that came second. |
 | Slow tests | The tests each proof ran against the minutes they took | Remark on it to the worker. Slow tests never stop a merge. |

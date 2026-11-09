@@ -1,4 +1,286 @@
 {
+  "core.accounts.audit_entry.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "detail",
+      "device",
+      "event_type",
+      "person_id"
+    ]
+  },
+  "core.accounts.audit_entry.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "detail",
+      "device",
+      "event_type",
+      "person_id"
+    ]
+  },
+  "core.accounts.audit_entry.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "detail",
+      "device",
+      "event_type",
+      "person_id"
+    ]
+  },
+  "core.accounts.login_attempt.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "attempted_at",
+      "creator_id",
+      "name"
+    ]
+  },
+  "core.accounts.login_attempt.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "attempted_at",
+      "creator_id",
+      "name"
+    ]
+  },
+  "core.accounts.login_attempt.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "attempted_at",
+      "creator_id",
+      "name"
+    ]
+  },
+  "core.accounts.person_factor.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "factor_type",
+      "label",
+      "person_id",
+      "removed_at"
+    ]
+  },
+  "core.accounts.person_factor.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "factor_type",
+      "label",
+      "person_id",
+      "removed_at"
+    ]
+  },
+  "core.accounts.person_factor.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "factor_type",
+      "label",
+      "person_id",
+      "removed_at"
+    ]
+  },
+  "core.accounts.person_login.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "person_id"
+    ]
+  },
+  "core.accounts.person_login.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "person_id"
+    ]
+  },
+  "core.accounts.person_login.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "name",
+      "person_id"
+    ]
+  },
+  "core.accounts.person_session.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "device",
+      "ended_at",
+      "expires_at",
+      "factor_checked_at",
+      "last_active_at",
+      "person_id"
+    ]
+  },
+  "core.accounts.person_session.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "device",
+      "ended_at",
+      "expires_at",
+      "factor_checked_at",
+      "last_active_at",
+      "person_id"
+    ]
+  },
+  "core.accounts.person_session.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "address",
+      "creator_id",
+      "device",
+      "ended_at",
+      "expires_at",
+      "factor_checked_at",
+      "last_active_at",
+      "person_id"
+    ]
+  },
+  "core.accounts.recovery_code.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "person_id",
+      "used_at"
+    ]
+  },
+  "core.accounts.recovery_code.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "person_id",
+      "used_at"
+    ]
+  },
+  "core.accounts.recovery_code.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "person_id",
+      "used_at"
+    ]
+  },
+  "core.accounts.setup_code.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "used_at"
+    ]
+  },
+  "core.accounts.setup_code.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "used_at"
+    ]
+  },
+  "core.accounts.setup_code.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "creator_id",
+      "expires_at",
+      "used_at"
+    ]
+  },
   "core.actors.actor.created": {
     "forms": [
       "commit",
@@ -1210,6 +1492,7 @@
       "closed_at",
       "condition_name",
       "condition_text",
+      "countdown_from",
       "countdown_key",
       "countdown_text",
       "creator_id",
@@ -1234,6 +1517,7 @@
       "closed_at",
       "condition_name",
       "condition_text",
+      "countdown_from",
       "countdown_key",
       "countdown_text",
       "creator_id",
@@ -1258,6 +1542,7 @@
       "closed_at",
       "condition_name",
       "condition_text",
+      "countdown_from",
       "countdown_key",
       "countdown_text",
       "creator_id",
@@ -1413,6 +1698,48 @@
       "state",
       "text",
       "wakes_agent"
+    ]
+  },
+  "core.drivers.countdown.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "creator_id",
+      "key",
+      "subject",
+      "used_count"
+    ]
+  },
+  "core.drivers.countdown.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "creator_id",
+      "key",
+      "subject",
+      "used_count"
+    ]
+  },
+  "core.drivers.countdown.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "actor_id",
+      "creator_id",
+      "key",
+      "subject",
+      "used_count"
     ]
   },
   "core.drivers.helper_job.created": {
@@ -2194,6 +2521,48 @@
       "name",
       "test",
       "test_agent_id"
+    ]
+  },
+  "core.helpers.helper_grant.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "arguments",
+      "environment_id",
+      "helper_id",
+      "program",
+      "subcommands"
+    ]
+  },
+  "core.helpers.helper_grant.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "arguments",
+      "environment_id",
+      "helper_id",
+      "program",
+      "subcommands"
+    ]
+  },
+  "core.helpers.helper_grant.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "arguments",
+      "environment_id",
+      "helper_id",
+      "program",
+      "subcommands"
     ]
   },
   "core.helpers.provider_outage.created": {
@@ -5499,6 +5868,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5521,6 +5891,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5543,6 +5914,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5565,6 +5937,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5587,6 +5960,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5609,6 +5983,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5631,6 +6006,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5653,6 +6029,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5675,6 +6052,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5697,6 +6075,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5719,6 +6098,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -5741,6 +6121,7 @@
       "delegated_to",
       "environment_id",
       "holder_id",
+      "independence_reason",
       "outcome",
       "priority",
       "reason",
@@ -6941,8 +7322,10 @@
       "group_key",
       "read_at",
       "read_output_id",
+      "returned_at",
       "text",
       "topic",
+      "visit_id",
       "worker_id"
     ]
   },
@@ -6958,8 +7341,10 @@
       "group_key",
       "read_at",
       "read_output_id",
+      "returned_at",
       "text",
       "topic",
+      "visit_id",
       "worker_id"
     ]
   },
@@ -6975,8 +7360,10 @@
       "group_key",
       "read_at",
       "read_output_id",
+      "returned_at",
       "text",
       "topic",
+      "visit_id",
       "worker_id"
     ]
   },
@@ -6987,6 +7374,7 @@
       "listen"
     ],
     "fields": [
+      "closed_at",
       "environment_id"
     ]
   },
@@ -6997,6 +7385,7 @@
       "listen"
     ],
     "fields": [
+      "closed_at",
       "environment_id"
     ]
   },
@@ -7007,6 +7396,7 @@
       "listen"
     ],
     "fields": [
+      "closed_at",
       "environment_id"
     ]
   },
@@ -7547,104 +7937,6 @@
       "source",
       "task_id",
       "test_name",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.allow": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.refuse": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.restore": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
-      "worker_id"
-    ]
-  },
-  "suites.coding.workers.worker_test_request.use": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "command",
-      "reason",
-      "state",
-      "task_id",
       "worker_id"
     ]
   },

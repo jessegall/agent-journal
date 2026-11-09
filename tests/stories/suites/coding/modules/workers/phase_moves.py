@@ -13,9 +13,8 @@ from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWork
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_folder, story_repository
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, asking_main, dispatched_story_worker, planned_story, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PLAN_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, start_planned_worker
 
-FLAG = "--ask-main"
 MAIN_SESSION = "s-1"
 PLAN_BLOCK = 'plan block 1 --reason "the supplier is late"'
 
@@ -218,13 +217,6 @@ def test_a_task_of_a_plan_and_then_a_task_outside_it_each_follow_their_own_flow(
 
 def test_a_proof_with_no_test_on_a_phase_does_not_refuse_the_main_agents_stop(advanced_without_test):
     advanced_without_test.story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
-
-
-def test_a_proof_with_no_test_can_be_read_and_sent_back_which_gives_the_worker_the_failure_state(advanced_without_test):
-    advanced_without_test.story.expect_text("proof show 1", "cart.py:1", actor=advanced_without_test.story.agent)
-    advanced_without_test.story.expect_success('proof short 1 "the total is missing"', actor=advanced_without_test.story.agent)
-    expect_reply_allowed(advanced_without_test.run_test())
-    expect_reply_refusal(advanced_without_test.run_test(asking_main(TEST_LINE, "the total")), "need not ask")
 
 
 def test_a_person_sees_a_task_moved_past_as_testing(advanced_without_test):

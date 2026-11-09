@@ -34,9 +34,9 @@ stays kept on the same agent number and session until retired.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
   worker takes it when it opens, sent to it at once when the worker is idle. A new worker needs one open task to start on.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
-  phase needs no check from you; you can still read it and send it back. When a worker asks to run one test, you get
-  one line with the command and the reason: `journal worker allow-test <request>` lets it run that command once. To
-  decline, do nothing: the worker goes on and the request stays on the task's log.
+  phase needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`.
+  `journal helper grant <worker> <program> "<subcommands>" "<arguments>"` says what it may run, alternatives split by a bar; it runs that with
+  `journal helper run <program> ...`, and a later grant for the same program replaces the earlier one. To decline, grant nothing.
 - Give a worker many tasks at once: a large batch runs long and bothers you less than many small dispatches.
 - `journal worker models` lists each program's models from the cheapest to the strongest.
 - With no program flags, a dispatch follows the first matching route, then the split, then your own program.
@@ -174,8 +174,8 @@ An open question lets you stop; the answer wakes you. Going on with other work e
   - Inside a phase or batch `journal worker next` commits your task and gives you the next one at once. A proof may have no test.
   - The journal runs your proofs' tests when you hand in and returns any failures. Run a test yourself only if you
     really need it. Each worker has three test commands per phase or batch by default, set by `worker-phase-test-runs`.
-    Each counted command says how many remain. A fourth is refused; only then ask with `--ask-main "<why>"`.
-    An allowed request runs once without the flag and does not use the phase allowance. The count starts anew
+    Each counted command says how many remain. A fourth is refused; only then ask with `journal worker ask --about tests`.
+    A granted line runs with `journal helper run` and does not use the phase allowance. The count starts anew
     in the next phase or batch. After failed tests come back, runs are free until the next hand-in.
   - At a phase or batch end, `journal worker next` or `journal worker deliver` after your last runs the tests
     of all tasks waiting for that hand-in, plus a phase's own test when set. You may go on working meanwhile. All failures come back

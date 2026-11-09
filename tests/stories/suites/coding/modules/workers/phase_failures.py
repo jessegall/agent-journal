@@ -2,9 +2,8 @@ import pytest
 
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_refusal
-from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, TEST_LINE, asking_main, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, TEST_LINE, start_planned_worker
 
-FLAG = "--ask-main"
 
 
 def delivered_tests(worker, delivery_line: str):
@@ -78,15 +77,6 @@ def test_a_failure_on_the_last_task_only_puts_the_worktree_on_the_last_task(last
     last_failed.story.expect_rows(last_failed.worktree_task() == 3)
     expect_task_state(last_failed, 3, "started")
     last_failed.story.expect_text("proof show 1", "state: checked", actor=last_failed.story.agent)
-
-
-def test_after_a_failure_a_plain_test_run_passes_with_no_request(first_failed):
-    expect_reply_allowed(first_failed.run_test())
-    first_failed.story.expect_rows(first_failed.run_requests() == ())
-
-
-def test_the_flag_after_a_failure_is_refused_with_no_need_to_ask(two_failed):
-    expect_reply_refusal(two_failed.run_test(asking_main(TEST_LINE, "the rounding")), "need not ask")
 
 
 def test_free_runs_end_at_the_next_hand_in(first_failed):
