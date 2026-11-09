@@ -49,12 +49,12 @@ def saved(new_story):
 
 
 @pytest.fixture(params=[SavedRun, SavedCheck], ids=["build", "check"])
-def saved_by_category(new_story, request):
+def saved_command(new_story, request):
     return saved_run(new_story, request.param)
 
 
-def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(saved_by_category):
-    story, process = saved_by_category
+def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(saved_command):
+    story, process = saved_command
     story.expect_absent(MARKS, "processes.command", actor=story.user)
     part_started(story, process)
     story.expect_text(MARKS, "processes.command", "process:1", "running", actor=story.user)
