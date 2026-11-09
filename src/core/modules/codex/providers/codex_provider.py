@@ -1,4 +1,6 @@
 from core.base.provider.context_window import ContextWindow
+from core.base.provider.control_choice import ControlChoice
+from core.base.provider.control_group import ControlGroup
 from core.base.provider.program_server_file import ProgramServerFile
 from core.modules.codex.providers.support.codex_server_file import CodexServerFile
 from dataclasses import replace
@@ -62,6 +64,7 @@ class CodexProvider(Provider):
     safe_tools = ("webrun", "list_mcp_resources", "create_goal", "update_goal", "clocksleep", "clockcurr_time")
     monitor_tool = ToolType.SHELL
     decoder = HookDecoder.CODEX
+    controls = (ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear"))),)
     matchers = {"PreToolUse": "tool_name", "PostToolUse": "tool_name", "SessionStart": "source", "SessionEnd": "reason",}
     hook_files = tuple([Path(".codex/hooks.json")])
     worktree_hook_files = hook_files
