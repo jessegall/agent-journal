@@ -3,7 +3,7 @@ import {computed, ref, watch} from "vue";
 import {Btn, Icon, InnerTabs, Skeleton, StateBadge, TabBody, TaskBar, WindowRoom, afterSkeletonMinimum, peekRef, stateLook, useWindow} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
-// plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
+// plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open, the started and the closed; one read brings a tab's cards and the counts
 const view = useWindow();
 const PAGE_ROWS = 25;
 view.state.tab = view.shared ? "shared" : view.tabs[0].key;
@@ -27,6 +27,7 @@ watch(() => active.value.data.value, (value) => {
 async function more() {
     if (!board.value.plans.length) return;
     const asked = tab.value;
+    if (asked.key === "started") return void (await growStarted());
     const pageKey = `older-${asked.key}`;
     view.state[`${pageKey}.before-id`] = Math.min(...board.value.plans.map((plan) => plan.id));
     await view.reload(pageKey);
@@ -36,6 +37,12 @@ async function more() {
     const shown = new Set(board.value.plans.map((plan) => plan.id));
     board.value = {...page.data.value, plans: [...board.value.plans, ...page.data.value.plans.filter((plan) => !shown.has(plan.id))]};
     if (board.value.plans.length > PAGE_ROWS) view.state[`${asked.key}.limit`] = board.value.plans.length;
+}
+
+// started plans are ordered by their last change, which no id follows, so more of them is a longer first page
+async function growStarted() {
+    view.state["started.limit"] = board.value.plans.length + PAGE_ROWS;
+    await view.reload("started");
 }
 
 const choose = (chosen) => {

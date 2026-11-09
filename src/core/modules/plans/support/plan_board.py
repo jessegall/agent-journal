@@ -9,15 +9,16 @@ from core.modules.plans.support.plan_card_json_record import PlanCardJsonRecord
 
 @dataclass(frozen=True)
 class PlanBoard:
-    """What the plans window draws: how many plans are open and closed, and the page of cards of the side
+    """What the plans window draws: how many plans are open, started and closed, and the page of cards of the side
     asked for."""
 
     open_total: int
+    started_total: int
     closed_total: int
     plans: tuple[PlanCard, ...]
 
     def json(self) -> PlanBoardJsonRecord:
-        return {"open_total": self.open_total, "closed_total": self.closed_total, "plans": [self.card_json(plan) for plan in self.plans]}
+        return {"open_total": self.open_total, "started_total": self.started_total, "closed_total": self.closed_total, "plans": [self.card_json(plan) for plan in self.plans]}
 
     @staticmethod
     def card_json(plan: PlanCard) -> PlanCardJsonRecord:

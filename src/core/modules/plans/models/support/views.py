@@ -21,6 +21,8 @@ PLAN_PROGRESS_SELECT = (
 PLAN_CARDS_SELECT = (
     "SELECT plans.id, plans.environment_id, plans.title, plans.state,"
     " plan_progress.task_count, plan_progress.completed_count, plan_progress.testing_count, plan_progress.current_phase,"
+    " max(plans.updated_at, coalesce((SELECT max(tasks.updated_at) FROM plan_tasks JOIN tasks ON tasks.id = plan_tasks.task_id"
+    " WHERE plan_tasks.plan_id = plans.id), plans.updated_at)) AS changed_at,"
     " (SELECT json_group_array(json_object('id', helper.id, 'name', coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id), 'main', helper.role = 'main', 'task_id', tasks.id, 'task_title', tasks.title))"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"
