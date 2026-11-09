@@ -85,3 +85,22 @@ def test_a_change_of_the_base_to_an_instruction_file_merges_into_a_worktree_that
     expect_value("You are a worker" in worktree_file_text(repository, worker, "AGENTS.md"), True)
     expect_value(repository.git("show", "HEAD:AGENTS.md", folder=worktree).stdout, "The base changed its agent file.\n")
     repository.expect_clean(worker.id)
+
+
+@pytest.mark.real_git
+def test_a_worker_commit_that_touches_its_instruction_files_merges_without_changing_the_branch_s_copies(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = project_with_instructions(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    repository.changed(worker.id, "CLAUDE.md", "The worker rewrote its file.\n")
+    repository.changed(worker.id, "AGENTS.md", "The worker rewrote its file.\n")
+    story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
+    story.expect_success(DELIVERY, actor=worker)
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    repository.expect_file(ENVIRONMENT_BRANCH, "CLAUDE.md", PROJECT_TEXT)
+    repository.expect_file(ENVIRONMENT_BRANCH, "AGENTS.md", PROJECT_TEXT)
