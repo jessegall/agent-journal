@@ -21,6 +21,7 @@ class WorkerMarkVariant(StrEnum):
     HELP_REQUEST = "help request"
     TEST_REQUEST = "test request"
     TEST_ALLOWED = "test allowed"
+    MERGER_QUESTION = "merger question"
 
     ROUTE = "route"
     SPLIT = "split"

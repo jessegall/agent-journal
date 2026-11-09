@@ -8,6 +8,7 @@ SHELL_OPERATORS = {"|", ";", "&", "&&", "||", ">", ">>", "<"}
 SHELL_MARKS = ("`", "$(")
 ROOT_OPTIONS = ("-C", "--rootdir", "--prefix", "--cwd", "--config")
 PARENT_FOLDER = ".."
+FULL_SUITE_REFUSAL = "name each test file the run covers, never the whole suite"
 
 
 class WorkerTestArguments:
@@ -19,8 +20,12 @@ class WorkerTestArguments:
         for argument in test_arguments:
             if cls.is_forbidden(argument):
                 raise Refusal(f"{argument} cannot change the program or leave the worktree", "give only test files and plain options")
-        if not any(cls.is_test_file(argument) for argument in test_arguments):
-            raise Refusal("name each test file the run covers, never the whole suite", "journal worker test <name> <test files>")
+        if cls.is_full_suite(test_arguments):
+            raise Refusal(FULL_SUITE_REFUSAL, "journal worker test <name> <test files>")
+
+    @classmethod
+    def is_full_suite(cls, test_arguments: Sequence[str]) -> bool:
+        return not any(cls.is_test_file(argument) for argument in test_arguments)
 
     @classmethod
     def is_forbidden(cls, argument: str) -> bool:

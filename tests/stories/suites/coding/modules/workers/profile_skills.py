@@ -6,6 +6,7 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.support.coding_helper_role import CodingHelperRole
+from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
 
@@ -57,3 +58,8 @@ def test_the_worker_skill_says_how_to_ask_and_what_to_do_for_each_topic(new_stor
     worker = dispatched_worker(story)
     text = (repository.worktree_folder(worker.id) / SKILLS_FOLDER / "journal-workers" / "SKILL.md").read_text()
     story.expect_rows("journal worker ask" in text, "When this happens" in text, "journal wait stuck" not in text, all(topic.waiting_work() in text for topic in AskTopic), detail=text)
+
+
+def test_the_merger_profile_carries_the_case_book_skill():
+    merger = next(profile for profile in HELPER_PROFILES if profile.name == "journal-merger")
+    assert "journal-merger" in merger.skills and "journal-workers" in merger.skills

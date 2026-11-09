@@ -1,3 +1,5 @@
+import shlex
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -15,13 +17,15 @@ from suites.coding.modules.workers.commands.allow_worker_test.allow_worker_test 
 from suites.coding.modules.workers.models.enums.worker_test_request_state import WorkerTestRequestState
 from suites.coding.modules.workers.models.lifecycles.worker_test_request_lifecycle import WorkerTestRequestLifecycle
 from suites.coding.modules.workers.models.worker_test_request import WorkerTestRequest
+from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TEST_ALLOWED
+from suites.coding.modules.workers.support.worker_test_arguments import FULL_SUITE_REFUSAL, WorkerTestArguments
 
 
 class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
-    """Allows a request that was asked, for the main agent of the worker's environment or a person only, logs it
-    on the task and tells the worker."""
+    """Allows a request that was asked, for the main agent of the worker's environment, the merger or a person
+    only, logs it on the task and tells the worker. A run of the whole suite is never allowed."""
 
     command = AllowWorkerTest
     disabled_scopes = [ActorScope]
@@ -32,6 +36,8 @@ class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
     def handle(self, command: AllowWorkerTest, context: Context) -> WorkerTestRequest:
         request = self.queries.query(WorkerTestRequest).find(command.request_id)
         self.verify_allowed(request, context.actor)
+        if WorkerTestArguments.is_full_suite(shlex.split(request.command)[1:]):
+            raise Refusal(FULL_SUITE_REFUSAL, "journal worker-test-request list shows the requests")
         if request.state is not WorkerTestRequestState.REQUESTED:
             raise Refusal(f"request {request.id} is already {request.state}", "journal worker-test-request list shows the requests")
         allowed = self.repository.save_change(request, request.moved(WorkerTestRequestLifecycle.allow), context)
@@ -44,5 +50,5 @@ class AllowWorkerTestHandler(Handler[AllowWorkerTest, WorkerTestRequest]):
         if actor.type is ActorType.USER or actor.id == worker.parent_id:
             return
         caller = self.queries.query(Agent).find(actor.id)
-        if caller.role != AgentRole.MAIN or caller.environment_id != worker.environment_id:
-            raise Refusal(f"only the main agent of worker {request.worker_id} or a person allows request {request.id}")
+        if (caller.role != AgentRole.MAIN and caller.profile != MERGER_PROFILE) or caller.environment_id != worker.environment_id:
+            raise Refusal(f"only the main agent of worker {request.worker_id}, the merger or a person allows request {request.id}")

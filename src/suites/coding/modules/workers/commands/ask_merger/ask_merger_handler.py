@@ -30,7 +30,7 @@ class AskMergerHandler(Handler[AskMerger, str]):
 
     def handle(self, command: AskMerger, context: Context) -> str:
         point = self.guidance.point(command.worker_id)
-        if point.round.worktree is None and not point.round.started:
+        if point.round.has_no_work():
             raise Refusal("you hold no task to ask about", "journal worker status shows your work")
         focus = f"{command.topic}: {command.text}"
         if not self.is_open(command.worker_id, focus):

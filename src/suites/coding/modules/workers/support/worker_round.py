@@ -18,3 +18,6 @@ class WorkerRound:
     is_asking: bool
     conflict: AgentLine | None
     group: WorkerTestGroup | None
+
+    def has_no_work(self) -> bool:
+        return self.worktree is None and not self.started

@@ -10,10 +10,12 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.commands.run_worker_test.run_worker_test import RunWorkerTest
+from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_test_arguments import WorkerTestArguments
 from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
+from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
 
 TEST_LIMIT_SECONDS = 3600
 
@@ -24,13 +26,16 @@ class RunWorkerTestHandler(Handler[RunWorkerTest, Process]):
     command = RunWorkerTest
     disabled_scopes = [ActorScope]
 
-    def __init__(self, worktrees: WorktreeQuery, names: WorkerTestNames, bus: Bus) -> None:
-        self.worktrees, self.names, self.bus = worktrees, names, bus
+    def __init__(self, worktrees: WorktreeQuery, names: WorkerTestNames, bus: Bus, libraries: WorktreeLibraries) -> None:
+        self.worktrees, self.names, self.bus, self.libraries = worktrees, names, bus, libraries
 
     def handle(self, command: RunWorkerTest, context: Context) -> Process:
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:
             raise Refusal("only a worker with a worktree out runs a named test", "journal worker dispatch gives a worker its test commands")
+        missing = self.libraries.missing(worktree)
+        if missing:
+            raise Refusal(f"{', '.join(missing)} is missing from your worktree", AskTopic.TOOL.hint("the merger can relink it"))
         test_arguments = tuple(shlex.split(WorkerTestFlag.arguments_flag(command.name, command.name, command.test_arguments).command))[1:]
         WorkerTestArguments.check(test_arguments)
         line = self.names.line(worktree.session_agent_id, command.name, test_arguments)
