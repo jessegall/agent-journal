@@ -6,19 +6,22 @@ from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 from core.base.leftover_process import STOP_LIMIT_SECONDS
+from core.modules.plugins.support.service_retries import ServiceRetries
 
 
 class ServiceProcesses:
     """The plugin services this journal runs, by plugin and service name, the digest of the plugin's files each
-    was started with, when the condition of each one that did not start was checked, and those paused by request.
-    The journal's server holds one set for its home, which a command that changes a plugin's files may start
-    services into once the server has said it keeps them; the lock keeps such a command from a round on its timer."""
+    was started with, when the condition of each one that did not start was checked, how each one that failed
+    to run is tried again, and those paused by request. The journal's server holds one set for its home, which
+    a command that changes a plugin's files may start services into once the server has said it keeps them;
+    the lock keeps such a command from a round on its timer."""
 
     def __init__(self) -> None:
         self.serving = False
         self.running: dict[tuple[str, str], ChildProcess | AdoptedProcess] = {}
         self.digests: dict[tuple[str, str], str] = {}
         self.skipped: dict[tuple[str, str], Timestamp] = {}
+        self.retries = ServiceRetries()
         self.paused: set[tuple[str, str]] = set()
         self.lock = RLock()
 

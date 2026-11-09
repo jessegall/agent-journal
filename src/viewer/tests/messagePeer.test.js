@@ -27,3 +27,17 @@ test("any other message is a bubble", async () => {
     expect(element.querySelector(".growing-card")).toBeNull();
     expect(element.querySelector("[data-message]")).not.toBeNull();
 });
+
+const REPLY = {...MESSAGE, id: 2, type: "agent", parent_id: 1, text: "Fixing it"};
+
+test("a reply to another agent's message is the between-agents card naming that agent", async () => {
+    const element = await mounted(MessageCard, context({}), {message: {...REPLY, recipient: "Merger 7"}});
+    expect(element.querySelector(".growing-card-title").textContent).toBe("Message sent to Merger 7");
+    expect(element.querySelector("[data-message]")).toBeNull();
+});
+
+test("a reply to the user is the bubble it was", async () => {
+    const element = await mounted(MessageCard, context({}), {message: REPLY});
+    expect(element.querySelector(".growing-card")).toBeNull();
+    expect(element.querySelector("[data-message]")).not.toBeNull();
+});

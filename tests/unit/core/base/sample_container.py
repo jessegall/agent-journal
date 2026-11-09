@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -25,7 +26,7 @@ def sample_container(folder: Path, registry: Registry) -> Container:
     """A container on a temporary database with the core's tables and an items table, for unit tests of the core."""
     home = JournalHome(folder)
     database = Database.opened(home)
-    Schema(database, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(database, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     database.update(Statement(ITEMS))
     database.update(Statement(AGENTS))
     container = Container()

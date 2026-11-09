@@ -20,6 +20,7 @@ class ApprovedPlanStopRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
     priority = -10
+    refuses_one_action = "An approved plan waiting to start holds the main agent while a worker place is free"
 
     def __init__(self, plans: PlanQuery, worktrees: WorktreeQuery, settings: SettingValues, places: WorkerPlaces) -> None:
         self.places = places

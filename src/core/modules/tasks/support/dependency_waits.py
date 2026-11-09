@@ -35,8 +35,7 @@ class DependencyWaits:
         pairs = [pair for pair in self.pairs() if pair.task_id in task_ids or pair.dependency_id in task_ids]
         open_ids = {row.id for row in self.queries.query(OpenDependency).matching(Among("id", tuple(pair.id for pair in pairs))).all_rows()}
         task_ids_waiting = tuple({pair.task_id for pair in pairs})
-        self.rows.prepare(Task, task_ids_waiting)
-        tasks = {task_id: self.rows.required(Task, task_id) for task_id in task_ids_waiting}
+        tasks = self.rows.required_by_id(Task, task_ids_waiting)
         ended: list[TaskWait] = []
         for pair in pairs:
             if pair.id in open_ids:

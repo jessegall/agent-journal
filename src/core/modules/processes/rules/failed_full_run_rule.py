@@ -15,6 +15,7 @@ class FailedFullRunRule(DriverRule):
     name = "processes.failed-full-run"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "Refuses a full test run while the agent's last one failed and no test run has passed since"
 
     def __init__(self, processes: ProcessQuery) -> None:
         self.processes = processes

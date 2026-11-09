@@ -12,7 +12,6 @@ from core.base.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.tool_type import ToolType
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.project_paths import ProjectPaths
 from core.base.journal_home import JournalHome
@@ -43,10 +42,12 @@ from core.base.driver.search_category import SearchCategory
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.base.module.driver_entries import DRIVERS_MODULE
 
+LOG_LINE_CHARACTERS = 240
+
 
 class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     """Keeps the answers of a hook's rules in one transaction: their history and the hook call,
-    gives the agent its waiting lines, and runs each command the rules returned alone, so a refused one rolls
+    logs the rules that refused a stop in one short line, gives the agent its waiting lines, and runs each command the rules returned alone, so a refused one rolls
     back by itself; a tick's lines wait for the agent's next hook."""
 
     command = RecordHookCall
@@ -91,7 +92,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             metadata.update({DISPLAYED_PART: command.event.displayed_part, DISPLAYED_MESSAGE_ID: command.event.displayed_message_id})
         if tool is not None and command.event.event == HookEventName.PRE_TOOL_USE:
             metadata.update({"journal_commands": list(tool.journal_commands), "program": command.event.program, "transcript_path": command.event.transcript.text})
-        if self.is_monitoring(command):
+        if command.event.is_monitor_tool():
             metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command, displayed_text),
@@ -100,8 +101,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join(nudge.text for nudge in lines), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: metadata})), context)
-        if answers.stop_checks:
-            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} agent {agent.id} {call.answer.value}: {json.dumps([asdict(check) for check in answers.stop_checks])}")
+        refusing = [check.refusal_text for check in answers.stop_checks if check.is_refusal]
+        if refusing:
+            self.system_log.write(LogLevel.INFORMATION, f"stop {call.id} agent {agent.id} refused: {'; '.join(refusing)}"[:LOG_LINE_CHARACTERS])
         self.nudges.write(agent.id, answers, context)
         self.required_commands.open(agent.id, answers.delivered_nudges, context)
         self.timing.stamp("call_saved")
@@ -147,13 +149,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         return build([command_value for rule, _, command_value in outcomes if rule == rewriter.name])
 
     @staticmethod
-    def is_monitoring(command: RecordHookCall) -> bool:
+    def summary(command: RecordHookCall, displayed_text: str) -> str:
         tool = command.event.tool
-        return tool is not None and tool.category is ToolType.MONITOR
-
-    def summary(self, command: RecordHookCall, displayed_text: str) -> str:
-        tool = command.event.tool
-        if self.is_monitoring(command):
+        if command.event.is_monitor_tool():
             return str(command.event.tool_input().get("command", ""))[:SUMMARY_CHARACTERS]
         if tool is not None and tool.shell is not None:
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]

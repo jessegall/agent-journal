@@ -82,7 +82,7 @@ class ViewerLogin:
     def share_session(self, cookie: str) -> ViewerSession | None:
         token, _, key = cookie.partition(COOKIE_SEPARATOR)
         link = self.shares.link(token) if token else None
-        if link is None or not link.is_open() or self.shares.is_locked(link, token, key):
+        if link is None or not self.shares.is_open(link) or self.shares.is_locked(link, token, key):
             return None
         return ViewerSession(SessionType.SHARE, person_id=link.creator_id, share_id=link.id, ends_at=link.expires_at, shared=link.shared, comments=link.comments)
 

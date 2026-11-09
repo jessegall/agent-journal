@@ -18,6 +18,7 @@ class AllowedCommandTypesRule(DriverRule):
     exempt = True
     allowed_commands: ClassVar[Sequence[CommandCategory]] = tuple(CommandCategory)
     refusal: ClassVar[NudgeDeclaration] = COMMAND_RESTRICTION
+    refuses_one_action = "Allows journal commands and the command categories a driver declares or reads from its settings"
 
     def command_types(self, hook: AgentHook) -> Sequence[str]:
         return tuple(category.value for category in self.allowed_commands)

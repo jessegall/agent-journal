@@ -10,5 +10,8 @@ class Clock:
     def timestamp(self) -> Timestamp:
         return Timestamp(datetime.now(timezone.utc))
 
+    def epoch_seconds(self) -> float:
+        return self.timestamp().value.timestamp()
+
     def sleep(self, seconds: float) -> None:
         time.sleep(seconds)

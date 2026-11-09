@@ -10,4 +10,4 @@ def test_project_hooks_window_reads_its_groups_through_the_key(new_story):
         status, answer = window_data(server, cookie, window="settings.project-hooks")
         hooks = answer["keys"]["hooks"]
         story.expect_rows(status == 200, hooks["code"] == 0,
-                          {"managed", "pending", "unmanaged", "fallback"} <= set(hooks["value"]))
+                          {"managed", "journal", "pending", "unmanaged", "fallback"} <= set(hooks["value"]))

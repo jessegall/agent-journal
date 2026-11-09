@@ -19,6 +19,7 @@ class BlockedWorkRule(DriverRule):
     hook = HookEventName.STOP
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+    refuses_one_action = "A stop with nothing in hand while tasks are blocked is refused once, to name them"
 
     def __init__(self, tasks: TaskQuery, calls: HookCallQuery, current: CurrentTasks) -> None:
         self.tasks, self.calls = tasks, calls

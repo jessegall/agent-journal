@@ -68,7 +68,8 @@ class JsonSchema:
     def additional_properties(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         if not is_mapping(value):
             return []
-        declared = schema["properties"] if "properties" in schema and is_mapping(schema["properties"]) else {}
+        properties = schema.get("properties")
+        declared = properties if is_mapping(properties) else {}
         return [problem for name, inner in value.items() if name not in declared for problem in self.checked(rule, inner, f"{pointer}/{name}")]
 
     def items(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:

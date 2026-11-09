@@ -179,6 +179,7 @@ from core.modules.processes.commands.set_output_timeout.set_output_timeout_subco
 from core.modules.processes.commands.stop_timed_process.stop_timed_process_handler import StopTimedProcessHandler
 from core.modules.processes.ticks.run_timeouts import RunTimeouts
 from core.modules.processes.ticks.hang_watch import HangWatch
+from core.modules.processes.commands.ask_agent_to_look.ask_agent_to_look_handler import AskAgentToLookHandler
 from core.modules.processes.commands.stop_hung_process.stop_hung_process_handler import StopHungProcessHandler
 from core.modules.processes.ticks.output_checks import OutputChecks
 from core.modules.processes.commands.check_output.check_output_handler import CheckOutputHandler
@@ -265,6 +266,6 @@ class ProcessesModule(Module):
                                        WindowKey("output.*", "output page {id}", arguments=["after", "before"], loading=KeyLoading.REQUESTED)],
                                  runs=WINDOW_RUNS, events=WINDOW_EVENTS),
                WindowDeclaration("processes.queue-body", "Process queue", "queue-body.js", WindowLoading.COMPONENT, place=WindowPlace.SECTION, icon=WindowIcon.TERMINAL, skeleton=[SkeletonPart.line()],
-                                 reads=["queue list", "output page"], runs=["setting set"])]
+                                 reads=["queue list", "output page"], runs=["setting set"], events=["output.*"])]
     inspectors = [QUEUE_INSPECTOR]
     seeders = [ProcessesSeeder]

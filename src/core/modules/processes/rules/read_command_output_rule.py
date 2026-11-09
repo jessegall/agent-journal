@@ -12,6 +12,7 @@ class ReadCommandOutputRule(DriverRule):
     name = "processes.read-command-output"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "Keeps the output of commands that count as reading in the agent's tool response"
 
     def __init__(self, commands: ReadCommands) -> None:
         self.commands = commands

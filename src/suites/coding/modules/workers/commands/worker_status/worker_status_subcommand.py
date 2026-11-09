@@ -52,7 +52,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         worker = self.queries.query(Agent).find(worker_id)
         skills = tuple(self.files.agent_instruction(name, worker) for name in self.unread_skills.names(worker_id))
         current_task = self.queries.query(Task).find(worktree.task_id)
-        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.task_phase(current_task, worker_id), worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, self.guidance.point(worker_id))
+        return WorkerStatus(worker_id, current_task, tests, assignments, skills, self.task_phase(current_task, worker_id), worker.program, self.resume.program_state(worker) if worker.ended_at is not None else None, self.guidance.point(worker_id), worker.paused_at is not None)
 
     def task_phase(self, task: Task, worker_id: int) -> WorkerStatusPhase | None:
         phase = self.phases.phase(task)
@@ -63,7 +63,8 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
             super().write_output(value, output)
             return
         phase_lines = () if value.phase is None else (f"Current phase: phase {value.phase.phase.id} ({value.phase.phase.title})", f"Tasks waiting for its end: {value.phase.tasks_waiting}")
-        lines = [value.point.line, f"Point: {value.point.step}", f"Tasks left in the group: {value.point.open_task_count}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_id}", f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}", *phase_lines,
+        pause_lines = (f"Paused: it takes no job until journal agent resume {value.worker_id}",) if value.is_paused else ()
+        lines = [value.point.line, f"Point: {value.point.step}", f"Tasks left in the group: {value.point.open_task_count}", f"Own test runs left: {value.runs_text}", f"Worker: {value.worker_id}", *pause_lines, f"Current task: {value.current_task.id} ({value.current_task.state}) {value.current_task.title}", *phase_lines,
                  f"Tests waiting: {value.tests.total}", *(f"  proof {proof.id} ({proof.state}): {proof.test_command}" for proof in value.tests.rows),
                  f"Assignments remaining: {value.assignments.total}", *(f"  task {task.id} ({task.state}): {task.title}" for task in value.assignments.rows),
                  f"Skills to load: {len(value.skills)}", *(f"  {skill}" for skill in value.skills)]
@@ -76,7 +77,7 @@ class WorkerStatusSubcommand(ReadSubcommand[WorkerStatus | Refusal]):
         data: dict[str, object] = {"step": value.point.step, "guidance": value.point.line, "group": value.point.group, "open_task_count": value.point.open_task_count, "test_runs_available": value.point.test_runs_available, "worker_id": value.worker_id, "current_task": output.values(value.current_task),
                                    "tests": self.page_json(value.tests, output), "assignments": self.page_json(value.assignments, output),
                                    "phase": value.phase.listed() if value.phase is not None else None,
-                                   "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None}
+                                   "program": value.program, "program_state": value.program_state.listed() if value.program_state is not None else None, "paused": value.is_paused}
         output.write("\n".join(lines), data)
 
     def page_json(self, page: Page[Proof] | Page[Task], output: Output) -> WorkerStatusPageJson:

@@ -13,6 +13,7 @@ __all__ = ["graphify_enabled"]
 
 SKILL = Path("src/core/modules/tools/skills/journal-graphify/SKILL.md")
 GUARD_COMMAND = "graphify hook-guard search"
+CHECK_COMMAND = "/Users/someone/.local/bin/graphify hook-check"
 SESSION = "s-graphify"
 
 
@@ -59,6 +60,15 @@ def test_a_session_start_removes_graphifys_own_search_hook_and_keeps_the_others(
     story.run_listeners()
     commands = managed_commands(story)
     story.expect_rows(GUARD_COMMAND not in commands, "other-project-hook" in commands, detail=str(commands))
+
+
+def test_a_session_start_also_removes_graphifys_check_hook_that_adds_a_line_to_every_tool_use(graphify_enabled):
+    story = graphify_enabled
+    story.container.get(ManagedHooks).added([managed_hook(CHECK_COMMAND, "check"), managed_hook("other-project-hook", "other")])
+    story.hook(SESSION, HookSamples.session_start())
+    story.run_listeners()
+    commands = managed_commands(story)
+    story.expect_rows(CHECK_COMMAND not in commands, "other-project-hook" in commands, detail=str(commands))
 
 
 def test_a_session_with_no_graphify_hook_changes_no_hook(graphify_enabled):

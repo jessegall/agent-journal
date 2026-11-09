@@ -15,6 +15,7 @@ class NoFullTestRunRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     exempt = True
     refusal: ClassVar[NudgeDeclaration] = FULL_TEST_RESTRICTION
+    refuses_one_action = "Refuses a shell line containing a full test run, while allowing named tests"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

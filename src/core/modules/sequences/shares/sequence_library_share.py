@@ -6,7 +6,7 @@ from core.base.library.library_share import Fields, LibraryShare
 from core.base.repository.repository import Repository
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.rules.sequence_trigger_rule import EMPTY_TRIGGERS
+from core.modules.sequences.queries.sequence_query import EMPTY_TRIGGERS
 from core.modules.sequences.shares.sequence_columns import SequenceColumns
 
 

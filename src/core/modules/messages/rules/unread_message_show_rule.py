@@ -17,6 +17,7 @@ class UnreadMessageShowRule(DriverRule):
     exempt = True
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "Showing a person's unread message is refused: the main agent reads it with journal message read"
 
     def __init__(self, messages: MessageQuery) -> None:
         self.messages = messages

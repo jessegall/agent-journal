@@ -131,8 +131,11 @@ class ShellLine:
     def has_part_running(self, command: str) -> bool:
         return any(part.text.strip("() ") == command or part.text.strip("() ").startswith(f"{command} ") for part in self.parts)
 
-    def contains_fragment(self, fragments: Sequence[str]) -> bool:
-        return any(fragment in self._source_line for fragment in fragments)
+    def has_part_naming(self, names: Sequence[str]) -> bool:
+        return any(part.names_any(names) for part in self.parts)
+
+    def is_permitted_line(self, action: str) -> bool:
+        return action == self._source_line
 
     def runs_journal_command(self, *commands: str) -> bool:
         lines = [*(part.arguments for part in self.parts if part.program == JOURNAL_PROGRAM), *(nested for part in self.parts for nested in part.nested_journal_commands)]

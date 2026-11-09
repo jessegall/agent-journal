@@ -1,7 +1,10 @@
+from collections.abc import Sequence
+
 from core.base.database.database import Database
 from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.query import Query
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.less import Less
 from suites.coding.modules.workers.models.worktree import Worktree
 
@@ -25,6 +28,9 @@ class WorktreeQuery(Query[Worktree]):
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))
+
+    def in_folders(self, folders: Sequence[str]) -> tuple[Worktree, ...]:
+        return tuple(self.with_removed().matching(Among("folder", folders)).oldest().all_rows())
 
     def all_worktrees(self) -> tuple[Worktree, ...]:
         return self.kept.scoped_read(self.table.name, lambda: tuple(self.with_removed().oldest().all_rows()), name="workers.all_worktrees")

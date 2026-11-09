@@ -22,8 +22,8 @@ class WorkerAssignmentMarkListener(MarkListener[Created[WorkerAssignment]]):
         assignment = event.row
         worker = self.event_rows.required(Agent, assignment.worker_id)
         ids = json.loads(assignment.task_ids)
-        self.event_rows.prepare(Task, ids)
-        tasks = [self.event_rows.required(Task, task_id) for task_id in ids]
+        rows = self.event_rows.required_by_id(Task, ids)
+        tasks = [rows[task_id] for task_id in ids]
         name = worker.given_name or f"Worker {worker.id}"
         given = f"task {tasks[0].id}" if len(tasks) == 1 else f"{len(tasks)} tasks"
         detail = "\n".join(f"Task {task.id}: {task.title}" for task in tasks)

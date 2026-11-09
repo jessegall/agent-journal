@@ -8,7 +8,7 @@
                 "text": "init"
             },
             {
-                "fileMatches": "(^|/)tests/(stories|unit)/"
+                "fileMatches": "(^|/)tests/(stories|unit|install)/"
             }
         ],
         "reject": [

@@ -63,6 +63,9 @@ class Agent(EnvironmentScoped, Model):
     def retired(self, timestamp: Timestamp, reason: str, actor_id: int) -> "Agent":
         return self.changed(retired_at=timestamp, retirement_reason=reason, retiring_actor_id=actor_id)
 
+    def has_other_parent_than(self, actor: Actor) -> bool:
+        return actor.type is ActorType.AGENT and self.parent_id != actor.id
+
     @property
     def activity(self) -> AgentActivity:
         if self.ended_at is not None:

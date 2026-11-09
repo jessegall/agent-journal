@@ -1,6 +1,6 @@
 from collections.abc import Sequence
 from dataclasses import fields
-from datetime import datetime, timezone
+from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
@@ -18,8 +18,8 @@ VIEWS = Statement("SELECT name FROM sqlite_master WHERE type = 'view'", scan_rea
 class Schema:
     """Updates the database's tables, views and checks to match the code."""
 
-    def __init__(self, database: Database, tables: Tables) -> None:
-        self.database, self.tables = database, tables
+    def __init__(self, database: Database, tables: Tables, clock: Clock) -> None:
+        self.database, self.tables, self.clock = database, tables, clock
 
     def migrate(self, ordered: Sequence[ModuleMigrations]) -> list[str]:
         self.database.update(Statement(MIGRATIONS_TABLE))
@@ -42,7 +42,7 @@ class Schema:
         return [migration for migration in sorted(module.migrations, key=lambda migration: migration.number) if (module.module, migration.number) not in applied]
 
     def run_one(self, module: str, migration: Migration) -> None:
-        record = Statement("INSERT INTO migrations (module, number, ran_at) VALUES (?, ?, ?)", (module, migration.number, datetime.now(timezone.utc).isoformat()))
+        record = Statement("INSERT INTO migrations (module, number, ran_at) VALUES (?, ?, ?)", (module, migration.number, self.clock.timestamp().text))
         if isinstance(migration, RebuildMigration):
             self.drop_views()
             migration.run(self.database)

@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 import pytest
 
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
@@ -16,7 +17,7 @@ def database(tmp_path):
 
 
 def test_a_fresh_database_gets_every_bookkeeping_table_once(database):
-    schema = Schema(database, Tables())
+    schema = Schema(database, Tables(), Clock())
     assert schema.migrate([CORE_MIGRATIONS]) == ["core 1", "core 2", "core 3", "core 4"]
     assert schema.migrate([CORE_MIGRATIONS]) == []
     names = [row["name"] for row in database.rows(Statement("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"))]
@@ -24,5 +25,5 @@ def test_a_fresh_database_gets_every_bookkeeping_table_once(database):
 
 
 def test_the_core_migrations_make_the_core_actor_for_the_rows_modules_seed(database):
-    Schema(database, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(database, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     assert [tuple(row) for row in database.rows(Statement("SELECT id, type, name FROM actors"))] == [(1, "core", "core")]

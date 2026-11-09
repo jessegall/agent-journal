@@ -10,23 +10,24 @@ from core.modules.chat.listeners.mark_listener import MarkListener
 from core.modules.chat.models.enums.chat_mark_type import ChatMarkType
 from core.modules.chat.models.enums.chat_mark_variant import ChatMarkVariant
 from core.modules.chat.models.journal_exception import JournalException
+from core.modules.chat.support.chat_settings import EXCEPTION_MARK_SECONDS
+from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.change.created import Created
 
 LISTENER_SOURCE = "listener"
-BACKLOG_LIMIT_SECONDS = 60
 
 
 class JournalExceptionMarkListener(MarkListener[Created[JournalException]]):
     """When an exception is recorded, the chat shows an exception mark with what went wrong and where; one older
-    than a minute when this listener reaches it is a backlog and shows nothing."""
+    than the exception mark seconds when this listener reaches it is a backlog and shows nothing."""
 
     name = "chat.exception-mark"
     disabled_scopes = [ActorScope]
     module_name = "journal.core.chat"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, clock: Clock, event_rows: EventRows) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, clock: Clock, event_rows: EventRows, settings: SettingValues) -> None:
         super().__init__(bus, actors, queries, event_rows)
-        self.clock = clock
+        self.clock, self.settings = clock, settings
 
     @staticmethod
     def variant(source: str) -> ChatMarkVariant:
@@ -36,7 +37,7 @@ class JournalExceptionMarkListener(MarkListener[Created[JournalException]]):
 
     def handle(self, event: Created[JournalException], logged: LoggedEvent) -> None:
         exception = event.row
-        if exception.creation_timestamp().elapsed_seconds(self.clock.timestamp()) > BACKLOG_LIMIT_SECONDS:
+        if self.settings.seconds(EXCEPTION_MARK_SECONDS).has_elapsed(exception.creation_timestamp(), self.clock.timestamp()):
             return
         variant = self.variant(exception.source)
         self.show(logged, ChatMarkType.EXCEPTION, variant, f"{exception.message} ({exception.source})", None, "journal-exception", exception.id)

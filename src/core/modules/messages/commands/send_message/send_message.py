@@ -15,3 +15,4 @@ class SendMessage(Command[Message]):
     commented_row: tuple[str, int] | None = None
     target_agent_id: int | None = None
     is_chat_visible: bool = True
+    is_agent_text: bool = False

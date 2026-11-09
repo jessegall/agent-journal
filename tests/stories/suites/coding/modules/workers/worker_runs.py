@@ -10,8 +10,6 @@ from core.base.database.database import Database
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.hook_event import HookEvent
-from core.base.query.queries import Queries
-from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.rules.stopped_worker_run_rule import StoppedWorkerRunRule
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.start_process.start_process import StartProcess
@@ -173,6 +171,35 @@ def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_
     story.expect_text(f"agent-line list --agent {story.agent.id}", line)
 
 
+def stopped_twice(story, worker, session, tool_use_between: bool) -> None:
+    story.advance(timedelta(minutes=1))
+    story.run(f"agent end {worker.id}", actor=worker)
+    story.hook(session, HookSamples.session_start())
+    story.advance(timedelta(minutes=1))
+    if tool_use_between:
+        story.hook(session, HookSamples.edit("cart.py"))
+        story.advance(timedelta(minutes=1))
+    story.run(f"agent end {worker.id}", actor=worker)
+
+
+def test_a_worker_that_used_a_tool_since_its_last_restart_is_started_again_past_the_restart_limit(new_story, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    stopped_twice(story, worker, worker_session(story, worker), tool_use_between=True)
+    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 2)
+
+
+def test_a_worker_that_did_nothing_since_its_last_restart_is_not_started_past_the_restart_limit(new_story, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    stopped_twice(story, worker, worker_session(story, worker), tool_use_between=False)
+    expect_count_output_2(story, f"agent-line list --agent {worker.id}", "you ended with tasks left", 1)
+
+
 def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
     story = new_story(fixture=OpenTaskOrchestrator)
@@ -183,7 +210,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
     story.run(f"agent end {worker.id}", actor=worker)
     story.hook(session, HookSamples.session_start())
     story.run(f"agent end {worker.id}", actor=worker)
-    story.expect_rows(any(f"worker:{worker.id} ended with task:1" in line.text for line in story.container.get(Queries).query(MergerLine).all_rows()))
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} ended with task:1")
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
     story.expect_success('task block 1 --reason "waits on a person"', actor=worker)

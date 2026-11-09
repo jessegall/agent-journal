@@ -384,3 +384,46 @@ def test_lost_reaction_text_reaches_chat_when_its_first_following_hook_is_a_tool
     text = "I will check the cart now."
     run_hook(builder, transcript(tmp_path, agent_row(builder, text)), TOOL_FINISHED)
     expect_chat_count(builder, text, 1)
+
+
+def thinking_row(story, thought: str, text: str = "") -> dict[str, object]:
+    blocks = [{"type": "thinking", "thinking": thought, "signature": "sig"}, *([{"type": "text", "text": text}] if text else [])]
+    return {"type": "assistant", "timestamp": entry_timestamp(story, timedelta()), "message": {"role": "assistant", "content": blocks}}
+
+
+def test_text_written_before_a_tool_and_the_closing_text_of_a_turn_with_no_reply_both_reach_the_chat(builder):
+    parsed = "The parser read 12 files and found 3 faults in the cart code."
+    closing = "I fixed the 3 faults and the cart stories pass."
+    builder.hook("s-1", HookSamples.prompt("look at the parser"))
+    builder.hook("s-1", HookSamples.message_display(parsed))
+    builder.hook("s-1", TOOL_FINISHED)
+    builder.hook("s-1", HookSamples.message_display(closing))
+    builder.hook("s-1", HookSamples.stop())
+    expect_chat_count(builder, parsed, 1)
+    expect_chat_count(builder, closing, 1)
+
+
+def test_text_that_repeats_the_reply_the_agent_sent_by_command_is_not_said_twice(builder):
+    reply = "The parser read 12 files and found 3 faults in the cart code."
+    builder.run('message send "what did the parser find" --environment main', actor=builder.user)
+    builder.hook("s-1", HookSamples.prompt("go on"))
+    builder.advance(HOOK_DELAY)
+    builder.run(f'message reply 1 "{reply}"', actor=builder.agent)
+    builder.hook("s-1", HookSamples.message_display(reply))
+    builder.hook("s-1", TOOL_FINISHED)
+    builder.hook("s-1", HookSamples.stop())
+    expect_chat_count(builder, reply, 1)
+
+
+def test_a_thinking_block_never_reaches_the_chat_and_the_text_beside_it_does(builder, tmp_path):
+    thought = "I should quietly weigh the options before I answer."
+    run_hook(builder, transcript(tmp_path, thinking_row(builder, thought, AGENT_TEXT)))
+    expect_chat_count(builder, thought, 0)
+    expect_chat_count(builder, AGENT_TEXT, 1)
+
+
+def test_a_row_of_only_thinking_makes_no_message(builder, tmp_path):
+    thought = "I should quietly weigh the options before I answer."
+    run_hook(builder, transcript(tmp_path, thinking_row(builder, thought)), TOOL_FINISHED)
+    expect_chat_count(builder, thought, 0)
+    builder.expect_text("message list --environment main", "nothing found", actor=builder.user)

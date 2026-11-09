@@ -3,6 +3,7 @@ from core.base.file_version import FileVersion
 from collections.abc import Generator
 from contextlib import contextmanager
 
+from core.base.clock import Clock
 from core.base.journal_home import JournalHome
 from core.base.server_restart_state import ServerRestartState
 
@@ -14,7 +15,7 @@ class PerformanceState:
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
-        self.restart = ServerRestartState(home)
+        self.restart = ServerRestartState(home, Clock())
         self.tests = home.system_log.parent / TESTS_RUNNING_FILE
         self.starting = home.folder / "performance-starting"
         self.reloading = home.folder / "performance-reloading"

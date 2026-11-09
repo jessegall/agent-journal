@@ -4,6 +4,7 @@ from core.base.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_start_state import HelperStartState
+from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.helpers.support.kept_helpers import KeptHelpers
@@ -30,7 +31,7 @@ class HelperAvailability:
             self.programs.installed(selected_program)
             model = self.limits.checked_model(selected_program, self.providers.provider(selected_program).profile_model(selected_profile))
             self.limits.checked_running(profile)
-            idle = self.kept.idle(profile, selected_program, model)
+            idle = self.kept.idle(ProfileModel(selected_program, model, profile))
             try:
                 self.limits.checked_kept(profile)
             except Refusal as refusal:

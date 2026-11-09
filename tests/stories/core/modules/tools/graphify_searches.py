@@ -60,6 +60,15 @@ def test_searches_without_graphify_are_nudged_at_ten_and_again_at_twenty(nine_se
     expect_value(bool(is_nudged(search(story))), True)
 
 
+def test_twenty_five_searches_deliver_at_most_three_graphify_lines_and_other_tool_uses_and_prompts_none(graphify_enabled):
+    story = graphify_enabled
+    others = [story.hook(SESSION, HookSamples.prompt("go on")), story.hook(SESSION, HookSamples.edit("src/cart.py"))]
+    graphify_lines = [line for _ in range(25) for line in search(story, SHELL_SEARCH).lines if "graphify" in line.lower()]
+    others.append(story.hook(SESSION, HookSamples.edit("src/cart.py")))
+    story.expect_rows(len(graphify_lines) <= 3, detail=str(graphify_lines))
+    story.expect_rows(not any("graphify" in line.lower() for reply in others for line in reply.lines), detail=str([reply.lines for reply in others]))
+
+
 def test_after_twenty_five_searches_every_search_that_is_not_graphify_is_refused_and_other_tools_still_pass(blocked):
     story = blocked
     story.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))

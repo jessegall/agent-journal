@@ -115,3 +115,19 @@ def test_a_failed_selected_test_counts_as_a_failure(selected_tests_delivered):
     selected_tests_delivered.end_test(first_answer, 1)
     selected_tests_delivered.story.expect_rows(any(str(first_answer) in line for line in selected_tests_delivered.worker_lines()))
     expect_reply_allowed(selected_tests_delivered.run_test())
+
+
+@pytest.fixture
+def plan_two_failed(new_story, monkeypatch):
+    worker = delivered_tests(start_planned_worker(new_story, monkeypatch), "worker next --wait --differences none")
+    worker.end_tests(1, 1)
+    return worker
+
+
+def test_two_failed_tasks_of_a_phase_are_handed_in_again_with_no_skip(plan_two_failed):
+    plan_two_failed.story.expect_text("worker next --wait --differences none", "queued", actor=plan_two_failed.worker)
+    expect_task_state(plan_two_failed, 1, "testing")
+    expect_task_state(plan_two_failed, 3, "testing")
+    plan_two_failed.end_test(plan_two_failed.started[-2])
+    plan_two_failed.end_test(plan_two_failed.started[-1])
+    plan_two_failed.story.expect_rows(plan_two_failed.current_task() == 4)

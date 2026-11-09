@@ -22,6 +22,7 @@ from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.support.helper_started import HelperStarted
 from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from core.modules.helpers.support.helper_limits import HelperLimits
+from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.helpers.support.profile_models import ProfileModels
 from core.modules.helpers.support.helper_program import HelperProgram
 from core.base.profile.model_tier import ModelTier
@@ -127,12 +128,12 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         return f"{program} is out{availability}: {state.line}; started as requested"
 
     def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
-        model = self.limits.checked_profile_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name)
+        model = self.limits.checked_profile_model(ProfileModel(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name))
         self.programs.checked(program, self.folders.folder(parent))
         return model
 
     def check_idle(self, profile: AgentProfile, program: str, model: str) -> None:
-        idle_helpers = self.kept.idle(profile.name, program, model)
+        idle_helpers = self.kept.idle(ProfileModel(program, model, profile.name))
         if idle_helpers:
             raise self.kept.idle_refusal(idle_helpers)
 

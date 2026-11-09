@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 from dataclasses import replace
 from datetime import datetime, timezone
 
@@ -27,7 +28,7 @@ CONTEXT = Context(Actor(7, ActorType.AGENT), FIXED_TIME, MakeItem(title="Dune"),
 def log(tmp_path):
     database = Database.opened(JournalHome(tmp_path))
     tables = Tables()
-    Schema(database, tables).migrate([CORE_MIGRATIONS])
+    Schema(database, tables, Clock()).migrate([CORE_MIGRATIONS])
     yield EventLog(database, tables)
     database.close()
 

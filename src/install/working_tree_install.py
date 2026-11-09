@@ -6,6 +6,7 @@ from contextlib import suppress
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from install.built_bundles import BuiltBundles
 from install.code_handover import CodeHandover
 from install.code_replacement import CodeReplacement
 from install.run_drain import RunDrain
@@ -25,6 +26,7 @@ class WorkingTreeInstall(CodeHandover):
         super().__init__(home, ChatUpdateSteps(home))
 
     def run(self, source: Path) -> float:
+        BuiltBundles(source).require_current()
         RunDrain(self.home).wait()
         try:
             return super().run(source)

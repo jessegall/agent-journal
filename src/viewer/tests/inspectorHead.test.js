@@ -39,6 +39,15 @@ test("the number of the row sits in the band of the buttons, and the title and a
     expect(element.querySelector(".resource-heading [data-resource-title]").textContent).toBe("A better journal");
 });
 
+test("a head with no label puts its title in the band of the buttons, so the close button does not stand alone", () => {
+    const element = head({label: "", title: "Process queue", description: ""});
+    const band = element.querySelector(".inspector-icons");
+    expect(band.querySelector("[data-resource-title]").textContent).toBe("Process queue");
+    expect(band.querySelector("[data-resource-close]")).not.toBeNull();
+    expect(element.querySelector(".resource-heading [data-resource-title]")).toBeNull();
+    expect(element.textContent.split("Process queue").length - 1).toBe(1);
+});
+
 test("a stacked inspector adds Back, and its X says it closes every row", () => {
     expect(titles(head({backed: true}))).toEqual(["Back", "Close all rows"]);
 });

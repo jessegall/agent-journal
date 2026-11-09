@@ -101,17 +101,27 @@ test("opening another card closes the one that was open", async () => {
     expect(element.querySelectorAll("[data-agent-more]").length).toBe(1);
 });
 
-test("starting a search closes the open card and lists every match", async () => {
+test("a search lists every match", async () => {
     const element = await drawn();
-    cardOf(element, 3).click();
-    await settle();
     const box = element.querySelector("[data-search-input]");
     box.value = "worker";
     box.dispatchEvent(new Event("input", {bubbles: true}));
     await settle();
     await vi.waitFor(() => expect(cards(element)).toEqual([4, 5]));
-    expect(element.querySelector("[data-agent-more]")).toBeNull();
     expect(band(element)).toBeNull();
+});
+
+test("the search bar is gone while an agent card is open and back after closing it", async () => {
+    const element = await drawn();
+    expect(element.querySelector("[data-agents-search]")).not.toBeNull();
+    cardOf(element, 3).click();
+    await settle();
+    await vi.waitFor(() => expect(cards(element)).toEqual([3]));
+    expect(element.querySelector("[data-agents-search]")).toBeNull();
+    cardOf(element, 3).querySelector(".agent-back").click();
+    await settle();
+    await vi.waitFor(() => expect(cards(element)).toEqual([2, 3, 4, 5]));
+    expect(element.querySelector("[data-agents-search]")).not.toBeNull();
 });
 
 test("a clicked card inside the open one, such as a tab, does not close it", async () => {

@@ -20,6 +20,7 @@ const props = defineProps({
 const emit = defineEmits(["close", "back", "step"]);
 const address = computed(() => `${props.opened.table}:${props.opened.id}`);
 const canShare = computed(() => props.shareable && !props.readOnly);
+const titleOnBand = computed(() => !props.label && Boolean(props.title));
 const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
 </script>
 
@@ -35,7 +36,8 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
                     <Btn variant="icon" title="Next" aria-label="Next" data-inspector-step="next" @click="emit('step', 1)"><Icon name="down" :size="13" /></Btn>
                 </template>
             </span>
-            <p class="inspector-label" data-resource-type>{{ label }}</p>
+            <h2 v-if="titleOnBand" class="inspector-band-title" data-resource-title>{{ title }}</h2>
+            <p v-else class="inspector-label" data-resource-type>{{ label }}</p>
             <span class="inspector-icons-end">
                 <template v-if="embedded">
                     <Btn variant="icon" title="Open in the inspector" aria-label="Open in the inspector" data-inspector-open @click="peekRef(address)"><Icon name="open" :size="13" /></Btn>
@@ -48,7 +50,7 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
                 </template>
             </span>
         </div>
-        <ResourceHeading :title="title" :abstract="description" />
+        <ResourceHeading :title="titleOnBand ? '' : title" :abstract="description" />
     </header>
 </template>
 
@@ -73,6 +75,18 @@ const closing = computed(() => (props.backed ? "Close all rows" : "Close"));
     overflow: hidden;
     color: var(--text-3);
     font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.inspector-band-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
     text-overflow: ellipsis;
     white-space: nowrap;
 }

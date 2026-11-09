@@ -1,4 +1,5 @@
 <script setup>
+import {checkOutcomeLabel, ruleLabel} from "./labels.js";
 defineProps({checks: {type: Array, required: true}});
 </script>
 
@@ -7,7 +8,7 @@ defineProps({checks: {type: Array, required: true}});
         <summary>Stop checks</summary>
         <template v-for="check in checks" :key="`${check.rule}:${check.layer || ''}`">
             <div class="check" data-stop-check>
-                <strong>{{ check.rule }}</strong><span>{{ check.outcome }}</span>
+                <strong>{{ ruleLabel(check.rule) }}</strong><span>{{ checkOutcomeLabel(check.outcome) }}</span>
                 <template v-if="!check.applied"><span class="note">Not applied</span></template>
                 <p>{{ check.reason }}</p>
             </div>

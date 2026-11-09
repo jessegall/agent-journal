@@ -1,11 +1,10 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from contextlib import nullcontext
 from types import MappingProxyType
 import html
 import json
 from time import perf_counter
 from dataclasses import asdict, replace
-from datetime import datetime, timezone
 from uuid import uuid4
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
@@ -345,23 +344,27 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.viewer().untrack_request()
         event_stream.follow(request, self.stream_message, shared)
 
-    def answer_window_data(self, viewer: ViewerServer, session: ViewerSession, person_id: int, query: str) -> None:
+    def parsed_request[Parsed](self, parse: Callable[[], Parsed]) -> Parsed | None:
         try:
             request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query)
             started_at, (received_at, request_id) = perf_counter(), self.stamped()
             answer = viewer.routes.window_data.answer(request, person_id, session.shared)
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
+            return None
+
+    def answer_window_data(self, viewer: ViewerServer, session: ViewerSession, person_id: int, query: str) -> None:
+        started_at, received_at, request_id = perf_counter(), viewer.routes.clock.timestamp().text, str(uuid4())
+        answer = self.parsed_request(lambda: viewer.routes.window_data.answer(WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query), person_id, session.shared))
+        if answer is None:
             return
         http = self.http_request(request_id, received_at, (perf_counter() - started_at) * 1000, 0, person_id)
         self.finish_request(viewer, asdict(answer.body()), request_id, [ViewerRequestRecord(http, line, index, timed.duration_ms, 0.0, timed.answer.code, timed.points)
                                                                             for index, (line, timed) in enumerate(zip(answer.lines, answer.answers, strict=True))])
 
     def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
-        try:
-            request = ViewerLinesRequest.parsed(json.loads(body or b"{}"))
-        except ViewerRequestError as error:
-            self.answer(400, {"error": str(error)})
+        request = self.parsed_request(lambda: ViewerLinesRequest.parsed(json.loads(body or b"{}")))
+        if request is None:
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
         received_at, request_id = self.stamped()

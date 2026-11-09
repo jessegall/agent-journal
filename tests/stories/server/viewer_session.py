@@ -3,7 +3,6 @@ from tests.stories.server.support.server_fixtures import person_server
 import pytest
 
 import os
-import time
 
 from core.base.server_restart_state import RESTART_LIMIT_SECONDS
 from core.base.journal_version import JOURNAL_VERSION
@@ -46,7 +45,7 @@ def test_a_dead_installers_file_and_an_old_restart_file_end_the_cover(person_ser
     files = ServerFiles(story.story.home)
     files.maintenance.write_text(str(DEAD_PID))
     files.mark_restart()
-    old = time.time() - RESTART_LIMIT_SECONDS - 1
+    old = story.story.clock.epoch_seconds() - RESTART_LIMIT_SECONDS - 1
     os.utime(files.restart_mark, (old, old))
     story.expect_viewer_status("/api/server-state", 200, text='"restarting": false')
     story.expect_viewer_status("/api/server-state", 200, text='"updating": false')

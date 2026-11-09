@@ -5,6 +5,7 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.git.hook_files_git import GIT_LIMIT_SECONDS
 from core.base.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -28,8 +29,8 @@ class GraphifyTool:
     """Graphify as the journal runs it: installed with its install command, and refreshing one folder's graph
     in the background with its incremental update, never two at once for the folder."""
 
-    def __init__(self, settings: SettingValues) -> None:
-        self.settings = settings
+    def __init__(self, settings: SettingValues, clock: Clock) -> None:
+        self.settings, self.clock = settings, clock
 
     def command(self) -> list[str]:
         return shlex.split(self.settings.project.text(ToolSetting.GRAPHIFY_COMMAND.key))
@@ -65,7 +66,7 @@ class GraphifyTool:
     def status(self, folder: Path, is_started: bool = False) -> GraphStatus:
         files = GraphFiles(folder)
         stamp = files.stamp()
-        return GraphStatus(self.head(folder), stamp.commit if stamp else "", stamp.refreshed_at if stamp else "", files.is_running(), is_started)
+        return GraphStatus(self.head(folder), stamp.commit if stamp else "", stamp.refreshed_at if stamp else "", files.is_running(self.clock), is_started)
 
     def is_failed(self, folder: Path) -> bool:
         commit = self.head(folder)

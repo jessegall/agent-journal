@@ -260,3 +260,27 @@ test("an event of a key with ids reloads the ids that were read", async () => {
     await vi.advanceTimersByTimeAsync(60);
     expect(asked.map((request) => request.only)).toEqual([["rounds.3"]]);
 });
+
+const CARD_KEY = {tab: null, events: ["hook_call.*"], reload_seconds: 0, loading: "first", page_size: 0, event_column: "session_agent_id"};
+
+async function heldCards(declared) {
+    const mount = mounted({answer: (request) => ({ok: true, value: {declared, keys: Object.fromEntries(request.only.map((name) => [name, {ok: true, value: name}]))}})});
+    await settled();
+    await Promise.all([mount.data.reload(["card.3", "card.4"]), vi.advanceTimersByTimeAsync(5)]);
+    mount.asked.length = 0;
+    return mount;
+}
+
+test("a hook call reads the card of its own agent alone, and never the list", async () => {
+    const {asked, followed} = await heldCards({agents: {tab: null, events: ["agent.*"], reload_seconds: 0, loading: "first", page_size: 0}, "card.*": CARD_KEY});
+    followed[0].heard({event: "hook_call.create", row_id: 900, changed_ids: {session_agent_id: [4]}});
+    await vi.advanceTimersByTimeAsync(60);
+    expect(asked.map((request) => request.only)).toEqual([["card.4"]]);
+});
+
+test("a hook call update that does not say whose it is reads every held card", async () => {
+    const {asked, followed} = await heldCards({"card.*": CARD_KEY});
+    followed[0].heard({event: "hook_call.update", row_id: 900, changed_ids: {answer: []}});
+    await vi.advanceTimersByTimeAsync(60);
+    expect(asked.map((request) => request.only)).toEqual([["card.3", "card.4"]]);
+});

@@ -70,20 +70,28 @@ class PluginServices:
     def is_checkable(self, processes: ServiceProcesses, key: tuple[str, str]) -> bool:
         if key in processes.paused:
             return False
-        return key not in processes.skipped or self.clock.timestamp().value - processes.skipped[key].value > CONDITION_RECHECK
+        is_condition_due = key not in processes.skipped or self.clock.timestamp().value - processes.skipped[key].value > CONDITION_RECHECK
+        return is_condition_due and processes.retries.is_due(key, self.clock.timestamp().value)
 
     def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str) -> list[str]:
         process = processes.running.get(key)
-        if process is not None and (process.running() or service.restart is ServiceRestart.STOPPED_END or (service.restart is ServiceRestart.FAILED_END and process.exit_code() == 0)):
+        if process is not None and process.running():
+            processes.retries.steady(key, self.clock.timestamp().value)
             return []
+        if process is not None and (service.restart is ServiceRestart.STOPPED_END or (service.restart is ServiceRestart.FAILED_END and process.exit_code() == 0)):
+            return []
+        faults: list[str] = []
         if process is not None:
             self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} restarted after exit {process.exit_code()}")
             processes.running.pop(key)
+            faults.extend(self.failure(processes, key, service, f"it ended with exit {process.exit_code()}"))
+            if not processes.retries.is_due(key, self.clock.timestamp().value):
+                return faults
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
         previous_pid = int(FileAccess.shared().read(pid_file)) if process is None and pid_file.is_file() else None
         if previous_pid is not None and self.is_kept(previous_pid, pid_file, program, digest):
             processes.running[key], processes.digests[key] = AdoptedProcess(previous_pid, program), digest
-            return []
+            return faults
         environment = self.environment(key, manifest)
         if process is None and service.condition:
             limit_seconds = self.setting_values.project.number(CONDITION_LIMIT_SETTING)
@@ -91,14 +99,28 @@ class PluginServices:
                 passed = subprocess.run(["sh", "-c", service.condition], cwd=folder, env=environment, capture_output=True, timeout=limit_seconds).returncode == 0
             except subprocess.TimeoutExpired:
                 processes.skipped[key] = self.clock.timestamp()
-                return [f"the condition of its service {service.name} ran past {limit_seconds} s"]
+                return [*faults, f"the condition of its service {service.name} ran past {limit_seconds} s"]
             if not passed:
                 processes.skipped[key] = self.clock.timestamp()
-                return []
+                return faults
             processes.skipped.pop(key, None)
-        self.sockets.folder.mkdir(parents=True, exist_ok=True)
         if previous_pid is not None:
             LeftoverProcess.stop(previous_pid, program)
+        try:
+            self.start(processes, key, folder, service, manifest, digest, environment)
+        except OSError as error:
+            self.system_log.write(LogLevel.WARNING, f"plugin {key[0]} service {key[1]} could not start: {error}")
+            return [*faults, *self.failure(processes, key, service, f"it could not start: {error}")]
+        processes.retries.started(key, self.clock.timestamp().value)
+        return faults
+
+    def failure(self, processes: ServiceProcesses, key: tuple[str, str], service: ManifestService, reason: str) -> list[str]:
+        is_repeated_failure = processes.retries.failed(key, self.clock.timestamp().value)
+        return [f"its service {service.name} keeps failing to run: {reason}"] if is_repeated_failure else []
+
+    def start(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str, environment: dict[str, str]) -> None:
+        program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)
+        self.sockets.folder.mkdir(parents=True, exist_ok=True)
         for stale in (self.sockets.answers(*key), self.sockets.health(*key)):
             stale.unlink(missing_ok=True)
         log = self.folders.service_log(*key)
@@ -114,7 +136,6 @@ class PluginServices:
             self.poll_socket(self.sockets.answers(*key), processes.running[key])
         if manifest.health:
             self.poll_socket(self.sockets.health(*key), processes.running[key])
-        return []
 
     def is_kept(self, pid: int, pid_file: Path, program: str, digest: str) -> bool:
         digest_file = self.digest_file(pid_file)

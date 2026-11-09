@@ -2,6 +2,7 @@ import sqlite3
 from contextlib import contextmanager
 from dataclasses import asdict
 from collections.abc import Callable, Sequence
+from core.base.clock import Clock
 from core.base.container import Container
 from threading import RLock
 from uuid import uuid4
@@ -34,9 +35,9 @@ def is_database_busy(error: sqlite3.Error) -> bool:
 class RequestLog:
     """Records requests without waiting for a database writer."""
 
-    def __init__(self, home: JournalHome) -> None:
+    def __init__(self, home: JournalHome, clock: Clock) -> None:
         self.home = home
-        self.system_log = SystemLogWriter(home)
+        self.system_log = SystemLogWriter(home, clock)
         self.priorities = WindowPriorities(home)
         self.epoch = str(uuid4())
         self.lock = RLock()

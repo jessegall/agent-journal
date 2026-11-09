@@ -1,9 +1,9 @@
+from core.base.clock import Clock
 from core.base.file_access import FileAccess
 import os
 import shutil
 import signal
 import tempfile
-import time
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -17,13 +17,13 @@ class DemoFolders:
     whose demo no longer runs is removed, whether it ended or crashed. A folder too recent to have a server
     yet stays."""
 
-    def __init__(self, roots: Sequence[Path] = (Path(tempfile.gettempdir()), Path(SCRATCH_ROOT))) -> None:
-        self.roots = roots
+    def __init__(self, clock: Clock, roots: Sequence[Path] = (Path(tempfile.gettempdir()), Path(SCRATCH_ROOT))) -> None:
+        self.clock, self.roots = clock, roots
 
     def prune(self) -> int:
         removed = 0
         for folder in (folder for root in self.roots for folder in root.glob("journal-demo-*")):
-            age_seconds = time.time() - folder.stat().st_mtime
+            age_seconds = self.clock.epoch_seconds() - folder.stat().st_mtime
             pid = self.running_pid(folder)
             if pid is not None and age_seconds > DEMO_LIFE_SECONDS:
                 os.kill(pid, signal.SIGTERM)

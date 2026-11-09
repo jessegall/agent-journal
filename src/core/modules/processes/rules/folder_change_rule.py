@@ -14,6 +14,7 @@ class FolderChangeRule(DriverRule):
     name = "processes.folder-change"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
+    refuses_one_action = "An agent does not move to another folder with cd"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None

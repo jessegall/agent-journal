@@ -1,6 +1,9 @@
+from core.base.file_access import FileAccess
+from core.base.provider.status_file_fields import StatusFileFields
 from core.base.timestamp import Timestamp
-from core.base.type_guards import is_list, is_mapping
+from core.base.type_guards import is_mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Mapping
 
 
@@ -11,6 +14,13 @@ class ContextWindow:
     used_percentage: int | None
     total_input_tokens: int | None
     read_at: Timestamp | None = None
+
+    @classmethod
+    def read_status_file(cls, path: Path) -> "ContextWindow":
+        if not path.is_file():
+            return cls(None, None)
+        version = FileAccess.shared().version(path)
+        return cls.parsed(StatusFileFields.read(path, version), version.modified_timestamp())
 
     @classmethod
     def parsed(cls, fields: Mapping[str, object], read_at: Timestamp) -> "ContextWindow":

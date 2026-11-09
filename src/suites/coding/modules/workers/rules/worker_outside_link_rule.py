@@ -18,6 +18,7 @@ class WorkerOutsideLinkRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
+    refuses_one_action = "A worker may not link a folder from outside its worktree into it"
 
     def __init__(self, worktrees: WorktreeQuery) -> None:
         self.worktrees = worktrees

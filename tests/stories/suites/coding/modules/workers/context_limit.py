@@ -13,7 +13,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
-LIMIT = 400_000
+LIMIT_TOKENS = 400_000
 HARD = 600_000
 SESSION = "s-1"
 COMPACTION_START = HookSamples.session_start().with_raw({"source": "compact"})
@@ -44,7 +44,7 @@ class LimitEnabled(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        enabled_time(story, LIMIT)
+        enabled_time(story, LIMIT_TOKENS)
 
 
 class TaskOwner(StoryFixture):
@@ -122,10 +122,10 @@ def test_an_agent_is_compacted_at_its_stop_once_its_context_reaches_the_limit(li
     agent = limited
     idle_turn(agent)
     agent.expect_rows(agent.typing.typed == [], detail="no size reported")
-    has_context(agent, LIMIT - 1)
+    has_context(agent, LIMIT_TOKENS - 1)
     idle_turn(agent)
     agent.expect_rows(agent.typing.typed == [], detail="under the limit")
-    has_context(agent, LIMIT)
+    has_context(agent, LIMIT_TOKENS)
     idle_turn(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
     agent.advance(timedelta(minutes=1))
@@ -136,7 +136,7 @@ def test_an_agent_is_compacted_at_its_stop_once_its_context_reaches_the_limit(li
 def test_with_clear_chosen_the_limit_clears_the_context_and_a_cleared_agent_is_woken_to_go_on(limited):
     agent = limited
     set_value(agent, CONTEXT_LIMIT_ACTION, "clear")
-    has_context(agent, LIMIT)
+    has_context(agent, LIMIT_TOKENS)
     stops(agent)
     agent.expect_rows(agent.typing.typed == ["/clear"], detail=str(agent.typing.typed))
     agent.hook(SESSION, CLEAR_START)
@@ -173,7 +173,7 @@ def test_an_automatic_compaction_is_not_woken_at_once_because_its_turn_goes_on(l
 
 def test_a_tick_never_compacts_an_agent(agent):
     agent.hook(SESSION, HookSamples.stop())
-    enabled_time(agent, LIMIT)
+    enabled_time(agent, LIMIT_TOKENS)
     has_context(agent, 900_000)
     agent.advance(timedelta(minutes=10))
     agent.tick(SESSION)
@@ -182,8 +182,8 @@ def test_a_tick_never_compacts_an_agent(agent):
 
 def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(task_worker):
     agent = task_worker
-    enabled_time(agent, LIMIT)
-    has_context(agent, LIMIT + 1)
+    enabled_time(agent, LIMIT_TOKENS)
+    has_context(agent, LIMIT_TOKENS + 1)
     idle_turn(agent)
     agent.expect_rows(agent.typing.typed == [])
     agent.expect_success('task close 1 --outcome "Done"', actor=agent.agent)
@@ -194,7 +194,7 @@ def test_an_agent_finishes_its_task_first_and_is_compacted_when_it_ends(task_wor
 def test_past_the_second_limit_an_agent_is_compacted_even_with_a_task_in_hand(agent):
     has_context(agent, HARD)
     set_value(agent, CONTEXT_LIMIT_HARD_TOKENS, HARD)
-    enabled_time(agent, LIMIT)
+    enabled_time(agent, LIMIT_TOKENS)
     started_task(agent)
     idle_turn(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
@@ -227,8 +227,8 @@ def test_between_the_limits_a_tool_with_a_task_in_hand_is_not_refused(hard_limit
 def test_with_finishing_first_switched_off_a_task_in_hand_does_not_hold_it_back(agent):
     set_value(agent, CONTEXT_LIMIT_FINISH_TASK, "false")
     started_task(agent)
-    enabled_time(agent, LIMIT)
-    has_context(agent, LIMIT)
+    enabled_time(agent, LIMIT_TOKENS)
+    has_context(agent, LIMIT_TOKENS)
     idle_turn(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
 
@@ -240,14 +240,14 @@ def stops(story):
 
 def test_an_agent_with_no_task_in_hand_is_compacted_the_moment_it_stops(limited):
     agent = limited
-    has_context(agent, LIMIT)
+    has_context(agent, LIMIT_TOKENS)
     stops(agent)
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
 
 
 def test_an_agent_that_stops_with_a_task_in_hand_is_not_compacted_at_the_stop(limited_worker):
     agent = limited_worker
-    has_context(agent, LIMIT)
+    has_context(agent, LIMIT_TOKENS)
     agent.hook(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [], detail=str(agent.typing.typed))
 
@@ -298,8 +298,8 @@ def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_give
     agent = task_worker
     agent.expect_success('task make "Fix the basket" --brief "It drops items"', actor=agent.agent)
     agent.expect_success("setting set journal.suites.coding.auto-mode true --environment main", actor=agent.user)
-    enabled_time(agent, LIMIT)
-    has_context(agent, LIMIT)
+    enabled_time(agent, LIMIT_TOKENS)
+    has_context(agent, LIMIT_TOKENS)
     agent.expect_success('task close 1 --outcome "Done"', actor=agent.agent)
     agent.run_listeners()
     agent.expect_success("task show 2", "state: open", actor=agent.agent)
@@ -307,3 +307,30 @@ def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_give
     agent.expect_success('memory skip "nothing to keep"', actor=agent.agent)
     agent.hook(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+
+
+def test_a_compaction_typed_by_one_rule_is_not_typed_again_by_another_while_the_size_is_as_it_was(hard_limited_worker):
+    agent = hard_limited_worker
+    has_context(agent, HARD)
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.hook(SESSION, COMPACTION_START)
+    agent.advance(timedelta(minutes=1))
+    stops(agent)
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+
+
+@pytest.fixture
+def compacted_agent(limited):
+    has_context(limited, LIMIT_TOKENS)
+    idle_turn(limited)
+    return limited
+
+
+def test_a_compaction_is_typed_again_once_the_context_has_passed_the_limit_anew(compacted_agent):
+    agent = compacted_agent
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    has_context(agent, LIMIT_TOKENS + 5000)
+    agent.advance(timedelta(minutes=1))
+    agent.hook(SESSION, HookSamples.stop())
+    agent.expect_rows(agent.typing.typed == [COMPACT, COMPACT], detail=str(agent.typing.typed))

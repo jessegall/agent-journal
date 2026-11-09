@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import os
 import select
+import shutil
 import signal
 from datetime import timedelta
 
@@ -32,7 +33,8 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.event_stories import plugin_row
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE, start_counter
-from tests.stories.core.modules.plugins.support.service_samples import service_plugin_folder
+from tests.stories.core.modules.plugins.support.service_samples import SERVICE, service_plugin_folder
+from core.modules.plugins.models.plugin import Plugin
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -494,3 +496,109 @@ def test_a_plugin_an_agent_installs_through_the_persons_approval_has_its_service
         story.expect_rows(list(processes.running) == [("served", "answers")])
     finally:
         processes.close()
+
+
+FAILING_SERVICE = "#!/bin/sh\nexit 1\n"
+
+
+def rewritten_service(story, text: str) -> None:
+    path = story.container.get(PluginFolders).code("served") / "serve.py"
+    path.write_text(text)
+    path.chmod(0o755)
+
+
+def failed_round(story) -> None:
+    running = story.processes.running.get(("served", "answers"))
+    if running is not None:
+        running.wait(END_LIMIT_SECONDS)
+    story.services.run(story.processes)
+
+
+def test_a_service_that_fails_again_and_again_is_tried_after_a_growing_pause_and_the_user_hears_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
+    rewritten_service(story, FAILING_SERVICE)
+    story.services, story.processes = story.container.get(PluginServiceRound), ServiceProcesses()
+    try:
+        story.services.run(story.processes)
+        failed_round(story)
+        first_retry = story.processes.running[("served", "answers")]
+        failed_round(story)
+        story.expect_rows(("served", "answers") not in story.processes.running, detail="a second failure in a row waits before the next try")
+        story.advance(timedelta(seconds=31))
+        failed_round(story)
+        story.expect_rows(story.processes.running[("served", "answers")].pid != first_retry.pid)
+        failed_round(story)
+        story.run_listeners()
+        story.expect_text("plugin list", "last fault: its service answers keeps failing to run: it ended with exit 1", actor=story.user)
+        for _ in range(3):
+            story.advance(timedelta(minutes=11))
+            failed_round(story)
+        story.run_listeners()
+        story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
+        rewritten_service(story, SERVICE)
+        failed_round(story)
+        story.advance(timedelta(minutes=11))
+        story.services.run(story.processes)
+        story.expect_rows(story.processes.running[("served", "answers")].running())
+    finally:
+        story.processes.close()
+
+
+def test_a_service_that_cannot_start_does_not_stop_the_round_and_is_told_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
+    (story.container.get(PluginFolders).code("served") / "serve.py").unlink()
+    story.services, story.processes = story.container.get(PluginServiceRound), ServiceProcesses()
+    try:
+        for _ in range(4):
+            story.services.run(story.processes)
+            story.advance(timedelta(minutes=11))
+        story.run_listeners()
+        story.expect_rows(("served", "answers") not in story.processes.running)
+        story.expect_text("plugin list", "keeps failing to run: it could not start", actor=story.user)
+        story.expect_rows(story.container.get(Queries).query(Plugin).first().fault_count == 1)
+    finally:
+        story.processes.close()
+
+
+def changed_plugin_files(story) -> None:
+    code = story.container.get(PluginFolders).code("served")
+    (code / "journal-plugin.json").write_text((code / "journal-plugin.json").read_text() + "\n")
+    upgraded = PluginDigest.digest(code, PluginManifest.read(code))
+    story.container.get(Database).update(Statement("UPDATE plugins SET files_digest = ?, version = version + 1 WHERE name = 'served'", [upgraded]))
+
+
+def test_a_restart_with_a_changed_plugin_leaves_one_service_running(new_story):
+    story = served_story(new_story)
+    leftover = story.processes.running[("served", "answers")]
+    changed_plugin_files(story)
+    after_restart = ServiceProcesses()
+    try:
+        story.services.follow(after_restart)
+        current = after_restart.running[("served", "answers")]
+        story.expect_rows(current.running(), current.pid != leftover.pid, not is_running(leftover.pid))
+    finally:
+        after_restart.close()
+        story.processes.close()
+
+
+def test_a_restart_with_the_plugin_folder_replaced_leaves_one_service_running(new_story):
+    story = served_story(new_story)
+    leftover = story.processes.running[("served", "answers")]
+    code = story.container.get(PluginFolders).code("served")
+    replaced = code.with_name(f"{code.name}.old")
+    shutil.copytree(code, replaced)
+    shutil.rmtree(code)
+    shutil.copytree(replaced, code)
+    changed_plugin_files(story)
+    after_restart = ServiceProcesses()
+    try:
+        story.services.follow(after_restart)
+        current = after_restart.running[("served", "answers")]
+        story.expect_rows(current.running(), current.pid != leftover.pid, not is_running(leftover.pid))
+    finally:
+        after_restart.close()
+        story.processes.close()

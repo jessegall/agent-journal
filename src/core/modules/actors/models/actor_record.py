@@ -16,3 +16,6 @@ class ActorRecord(Model):
     type: ActorType
     name: str
     creator_id: int | None = None
+
+    def is_agent(self) -> bool:
+        return self.type is ActorType.AGENT

@@ -36,7 +36,5 @@ class SearchResult:
         return ["the library could not be reached, so these are local results only"] if self.library.is_unreachable else []
 
     def json(self) -> dict[str, object]:
-        listed: dict[str, object] = {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in self.hits], "total": self.total}
-        if self.is_closest:
-            listed["closest"] = True
+        listed: dict[str, object] = {"hits": [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in self.hits], "total": self.total, **({"closest": True} if self.is_closest else {})}
         return {**listed, "library": [hit.json() for hit in self.library.entries], "library_unreachable_error": self.library.is_unreachable} if self.library.entries or self.library.is_unreachable else listed

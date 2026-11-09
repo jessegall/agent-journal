@@ -2,9 +2,7 @@ from core.base.provider.program_server_file import ProgramServerFile
 from core.modules.claude_code.providers.support.claude_server_file import ClaudeServerFile
 from dataclasses import replace
 from core.base.profile.agent_profile import AgentProfile
-from core.base.file_access import FileAccess
 from core.base.provider.context_window import ContextWindow
-from core.base.provider.status_file_fields import StatusFileFields
 import json
 import os
 import re
@@ -209,11 +207,7 @@ class ClaudeCodeProvider(Provider):
         return self.context_window(home, session).total_input_tokens
 
     def context_window(self, home: JournalHome, session: str) -> ContextWindow:
-        path = home.status_file(session)
-        if not path.is_file():
-            return ContextWindow(None, None)
-        version = FileAccess.shared().version(path)
-        return ContextWindow.parsed(StatusFileFields.read(path, version), version.modified_timestamp())
+        return ContextWindow.read_status_file(home.status_file(session))
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))

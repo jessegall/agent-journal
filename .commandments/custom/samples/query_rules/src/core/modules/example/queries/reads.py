@@ -9,6 +9,21 @@ def read_rows(query, ids):
     for row_id in ids:
         # @sin architecture_queries_read_in_a_loop
         row = query.find(row_id)
+    for row_id in ids:
+        # @sin architecture_queries_read_in_a_loop
+        row = rows.required(Task, row_id)
+    for row_id in ids:
+        # @sin architecture_queries_read_in_a_loop
+        known = query.filter(id=row_id).exists()
+    for row_id in ids:
+        # @sin architecture_queries_read_in_a_loop
+        total = query.matching(row_id).count()
+    # @righteous architecture_queries_read_in_a_loop
+    held = [row for row in query.filter(id=1).all_rows()]
+    # @righteous architecture_queries_read_in_a_loop
+    present = [path for path in paths if path.exists()]
+    # @righteous architecture_queries_read_in_a_loop
+    by_id = rows.required_by_id(Task, ids)
     # @righteous architecture_queries_read_in_a_loop
     tasks = query.find_many(ids)
     # @righteous architecture_queries_read_in_a_loop

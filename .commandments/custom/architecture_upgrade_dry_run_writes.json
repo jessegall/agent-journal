@@ -27,7 +27,7 @@
                         {
                             "nameIn": [
                                 "preview",
-                                "rehearse"
+                                "dry_run"
                             ]
                         }
                     ]

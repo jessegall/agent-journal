@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:While",
+        "where": [
+            {"fileMatches": "(^|/)src/"},
+            {"descendant": {"all": [{"is": "member-access"}, {"name": "monotonic"}]}},
+            {"descendant": {"all": [{"is": "member-access"}, {"name": "sleep"}]}}
+        ],
+        "reject": [
+            {"testCode": true},
+            {"fileMatches": "(^|/)src/core/base/clock\\.py$"},
+            {"fileMatches": "(^|/)src/core/testing/"}
+        ]
+    },
+    "sin": {
+        "name": "poll-with-deadline",
+        "description": "A loop waits for something by reading time.monotonic and calling time.sleep until a deadline, so each place that waits writes its own copy of the same wait.",
+        "rule": "Write the wait once, as a helper that takes what to wait for, the limit and the pause between looks, and call it from each place; a story can then move its clock.",
+        "skill": "plain-code-words"
+    }
+}

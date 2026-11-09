@@ -46,11 +46,11 @@ def test_turning_graphify_off_removes_its_managed_hooks(new_story, tmp_path):
 
 def test_a_new_commit_starts_one_incremental_update_in_the_checkout(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
-    story.expect_text(f"{TICK} {repo.folder}", "no graph yet", actor=story.agent)
+    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
     story.expect_rows(repo.call_count() == 1, f"{repo.folder} update ." in repo.calls.read_text())
     repo.commit("second")
-    story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
+    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
 
@@ -63,13 +63,14 @@ def test_the_graph_folder_is_ignored_by_git(new_story, tmp_path):
     story.expect_rows("graphify-out" not in status, detail=status)
 
 
-def test_no_update_starts_while_no_commit_has_landed_and_the_agent_is_told_the_graph_is_current(new_story, tmp_path):
+def test_no_update_starts_while_no_commit_has_landed_and_the_tick_tells_the_agent_nothing(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
-    story.expect_text(f"{TICK} {repo.folder}", f"current as of commit {repo.head()[:7]}", actor=story.agent)
-    story.expect_text(f"{TICK} {repo.folder}", "graphify-out", actor=story.agent)
+    story.expect_no_text(f"{TICK} {repo.folder}", "Graphify", "graphify-out", "commit", actor=story.agent)
+    story.expect_no_text(f"{TICK} {repo.folder}", "Graphify", "graphify-out", "commit", actor=story.agent)
     story.expect_rows(repo.call_count() == 1)
+    story.expect_text(f"tool refresh graphify --folder {repo.folder}", f"commit {repo.head()[:7]}", actor=story.agent)
 
 
 def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
@@ -78,7 +79,7 @@ def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_calls(1)
     repo.commit("second")
-    story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
+    story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     story.expect_text(f"tool refresh graphify --folder {repo.folder}", "refreshing", actor=story.agent)
     story.expect_rows(repo.call_count() == 1)
     repo.release_graphify()

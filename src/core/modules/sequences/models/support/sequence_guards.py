@@ -20,5 +20,8 @@ class SequenceGuards:
 
     @staticmethod
     def step_guard(text: str, step_number: int) -> SequenceGuard:
-        guards = SequenceGuards.parsed(text)
+        return SequenceGuards.picked(SequenceGuards.parsed(text), step_number)
+
+    @staticmethod
+    def picked(guards: tuple[SequenceGuard, ...], step_number: int) -> SequenceGuard:
         return guards[step_number - 1] if step_number <= len(guards) else SequenceGuard()

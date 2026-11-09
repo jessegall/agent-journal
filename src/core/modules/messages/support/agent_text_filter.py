@@ -30,7 +30,7 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         if prompt is None:
             return False
-        reply = self.messages.latest_turn_message(agent_id, prompt.creation_timestamp(), created_at)
+        reply = self.messages.latest_turn_reply(agent_id, prompt.creation_timestamp(), created_at)
         return reply is not None and not self.messages.has_person_message_after(reply.id) and not self.hook_calls.refused_stop_exists(agent_id, reply.creation_timestamp(), created_at)
 
     def is_duplicate_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
@@ -49,7 +49,7 @@ class AgentTextFilter:
         prompt = self.hook_calls.latest_prompt(agent_id, created_at)
         if prompt is None:
             return False
-        replies = self.messages.turn_messages(agent_id, prompt.creation_timestamp(), created_at)
+        replies = self.messages.turn_replies(agent_id, prompt.creation_timestamp(), created_at)
         reply_text = " ".join(reply.text for reply in replies).lower()
         text = text.lower()
         tokens = [token for token in TOKENS.findall(text) if len(token) >= 3 or token.isdecimal()]

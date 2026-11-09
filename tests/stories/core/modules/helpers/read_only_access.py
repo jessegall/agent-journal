@@ -198,6 +198,20 @@ def test_a_read_only_helper_cannot_name_another_session(new_story, helper_fixtur
     story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list")), OUTWARD_JOURNAL_LINE.nudge().text)
 
 
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+@pytest.mark.parametrize("line, second", [(f"journal task list && {SESSION_VARIABLE}=s-1 journal task list", part("journal", CommandCategory.JOURNAL, "task", "list")),
+                                          (f"journal task list && echo {SESSION_VARIABLE}", part("echo", CommandCategory.READ, SESSION_VARIABLE))], ids=["second part sets it", "second part names it"])
+def test_a_chain_is_refused_by_the_part_that_names_a_session(new_story, helper_fixture, line, second):
+    story, session = helper_story(new_story, helper_fixture)
+    story.expect_hook_refusal(session, shell(line, part("journal", CommandCategory.JOURNAL, "task", "list"), second), OUTWARD_JOURNAL_LINE.nudge().text)
+
+
+@pytest.mark.parametrize("helper_fixture", PROGRAMS)
+def test_a_chain_whose_parts_name_no_session_is_judged_by_its_parts(new_story, helper_fixture):
+    story, session = helper_story(new_story, helper_fixture)
+    expect_reply_allowed(story.hook(session, shell("cat a && ls", part("cat", CommandCategory.READ, "a"), part("ls", CommandCategory.READ))))
+
+
 REPORT_TEXT = "Run `rm -rf a` in $HOME and \"tests/stories/core/a.py\" with python3 and curl.\n" * 800
 
 

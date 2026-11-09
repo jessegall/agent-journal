@@ -145,7 +145,7 @@ class MemoryWorktreeGit(WorktreeGit):
         return [committed for committed in self.committed_tree(worktree.folder) if str(Path(committed).parent) == str(Path(path).parent)]
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
-        if any(change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative for change in changes.changes):
+        if any(change.deleted_under(BUILT_FOLDER) for change in changes.changes):
             raise GitStoryRequired("a story about deleted built files builds its repository with real git")
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:

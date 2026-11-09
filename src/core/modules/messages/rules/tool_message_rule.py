@@ -28,7 +28,7 @@ class ToolMessageRule(DriverRule):
         if hook.event.tool is None:
             return RuleAnswer.allowed()
         calls = self.hook_calls.display_calls_after_turn(hook.agent_id)
-        return RuleAnswer.allowed().running(*(SendMessage(call.displayed_text) for call in calls if self.should_send(hook, call)))
+        return RuleAnswer.allowed().running(*(SendMessage(call.displayed_text, is_agent_text=True) for call in calls if self.should_send(hook, call)))
 
     def should_send(self, hook: AgentHook, call: HookCall) -> bool:
         text, displayed_at = call.displayed_text, call.creation_timestamp()

@@ -19,7 +19,8 @@ test("system logs show time, source, level and escaped messages through one read
     const element = await mounted(SystemLogs, window);
     expect(window.reads).toEqual(["developer system-logs --page 1"]);
     expect(element.querySelector("time").dateTime).toBe("2026-11-06T12:00:00+00:00");
-    expect(element.querySelector("[data-log-line]").textContent).toContain("serverinfo<script>sample</script>");
+    expect(element.querySelector("[data-log-line]").textContent).toContain("ServerInfo<script>sample</script>");
+    expect(element.querySelector("[data-log-line] time").textContent).not.toContain("2026-11-06T12:00");
     expect(element.querySelector("script")).toBeNull();
     expect(element.textContent).toContain("Page 1 of 2");
 });

@@ -8,10 +8,7 @@
                 "textMatches": "^(${mark_types})$"
             },
             {
-                "any": [
-                    {"file": "src/viewer/src/chat/**"},
-                    {"file": "src/viewer/src/domain/thread.js"}
-                ]
+                "file": "src/viewer/src/chat/**"
             }
         ],
         "reject": [

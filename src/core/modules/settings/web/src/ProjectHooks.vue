@@ -130,6 +130,23 @@ context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
           </template>
         </HookGroup>
         <HookGroup
+          title="Journal"
+          :count="value.journal.length"
+          empty="No journal hooks"
+        >
+          <template
+            v-for="entry in value.journal"
+            :key="`${entry.program}:${entry.event}`"
+          >
+            <div class="journal-hook" :data-journal-hook="`${entry.program}:${entry.event}`">
+              <strong>{{ entry.program }}</strong>
+              <span>{{ entry.event }}</span>
+              <code>{{ entry.source }}</code>
+              <span>Time limit {{ entry.timeout }} seconds</span>
+            </div>
+          </template>
+        </HookGroup>
+        <HookGroup
           title="Pending"
           :count="value.pending.length"
           empty="No pending commands"
@@ -192,9 +209,18 @@ context.follow(["hook_call.*"], coalesced(load, READ_RATES.projectHooks));
   font-size: 12px;
 }
 .pending-hook,
+.journal-hook,
 .unmanaged-hook {
   padding: 12px 0;
   border-bottom: 1px solid var(--line);
+}
+.journal-hook {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }
 .unmanaged-hook {
   color: var(--text-2);

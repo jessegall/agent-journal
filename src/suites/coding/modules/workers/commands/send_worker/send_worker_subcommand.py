@@ -95,10 +95,10 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             output.line(self.answer(self.agents.find(value.session_agent_id)))
 
     def answer(self, worker: Agent) -> str:
+        if worker.paused_at is not None:
+            return f"worker {worker.id} is paused: the job waits until journal agent resume {worker.id}"
         if worker.ended_at is None:
             return f"worker {worker.id} takes the job" if worker.pid is not None else f"worker {worker.id} takes the job at its next hook; its process is not recorded, so the journal cannot say whether it runs: journal worker status {worker.id}"
-        if worker.paused_at is not None:
-            return f"worker {worker.id} is paused: the job waits until it is resumed"
         if not self.home.socket(LAUNCHER_SOCKET).exists():
             return f"worker {worker.id} is not running and has the job waiting; an ended worker needs the launcher to start again"
         return f"worker {worker.id} was not running: the job waits until it starts, and you are told if it does not"

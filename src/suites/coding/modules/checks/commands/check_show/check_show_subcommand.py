@@ -29,7 +29,7 @@ class CheckShowSubcommand(LibraryAwareShow, ReadSubcommand[Check | LibraryReadin
     def local(self, arguments: Namespace, caller: Caller) -> Check:
         return self.queries.query(Check).find(arguments.id)
 
-    def write_output(self, value: object, output: Output) -> None:
+    def write_output(self, value: Check | LibraryReading, output: Output) -> None:
         if isinstance(value, LibraryReading):
             self.write_library(value, output)
             return

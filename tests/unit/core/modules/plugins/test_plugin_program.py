@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 from contextlib import nullcontext
 from types import SimpleNamespace
 import json
@@ -64,7 +65,7 @@ UNQUEUED_PLACES = SimpleNamespace(queue_place=lambda *values: SimpleNamespace(wa
 
 def program_at(tmp_path: Path, body: str, script: str = "") -> tuple[PluginProgram, PluginCall]:
     home = JournalHome(tmp_path / "journal")
-    folders = PluginFolders(home)
+    folders = PluginFolders(home, Clock())
     folder = folders.code("late")
     folder.mkdir(parents=True)
     (folder / "journal-plugin.json").write_text(json.dumps({"name": "late", "title": "Late", "version": "1", "program": "run.sh"}))

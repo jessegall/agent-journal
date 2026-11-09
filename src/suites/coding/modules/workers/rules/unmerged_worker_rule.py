@@ -10,7 +10,9 @@ from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.span_queries import SpanQueries
 from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -35,8 +37,8 @@ class UnmergedWorkerRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: NudgeRecords, settings: SettingValues, queries: Queries) -> None:
-        self.settings, self.queries = settings, queries
+    def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: NudgeRecords, settings: SettingValues, queries: Queries, spans: SpanQueries) -> None:
+        self.settings, self.queries, self.spans = settings, queries, spans
         self.delivered, self.tasks, self.proofs, self.records = delivered, tasks, proofs, records
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -63,7 +65,7 @@ class UnmergedWorkerRule(DriverRule):
             return False
         if worktree.tests_passed_at is None:
             return True
-        return worktree.tests_passed_at.elapsed_seconds(hook.timestamp) < self.settings.minutes(MERGER_WAIT_MINUTES).count
+        return not Interval(self.settings.minutes(MERGER_WAIT_MINUTES)).has_passed(self.spans, hook.agent_id, worktree.tests_passed_at, hook.timestamp)
 
     def delivered_reminder_count(self, agent_id: int, key: str) -> int:
         record = self.records.newest_row(agent_id, key)

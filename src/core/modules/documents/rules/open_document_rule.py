@@ -18,6 +18,7 @@ class OpenDocumentRule(DriverRule):
     exempt = True
     overlay_proof = True
     priority = 100
+    refuses_one_action = "An open document refuses file edits and commands that edit, and lets reads through"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

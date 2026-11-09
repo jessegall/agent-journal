@@ -7,10 +7,12 @@ import shlex
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.support.story_checks import expect_value
 
 
 class ReleaseSequence(StoryFixture):
@@ -176,6 +178,36 @@ def test_a_step_that_holds_edits_refuses_them_until_the_next_step(new_story):
     story.run("sequence next", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
+
+
+def test_a_hook_with_no_change_to_the_sequences_reads_no_sequence_rows(new_story):
+    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"}, guards=[{"file_edits_allowed": False, "allowed_commands": []}])
+    story.run("sequence run 1", actor=story.agent)
+    story.hook("s-1", HookSamples.prompt("carry on"))
+    story.hook("s-1", HookSamples.edit("a.py"))
+    database = story.container.get(Database)
+    start = database.repeated_work.points()
+    story.hook("s-1", HookSamples.prompt("carry on"))
+    story.hook("s-1", HookSamples.edit("a.py"))
+    expect_value(database.repeated_work.points().minus(start).tables["sequences"], 0)
+
+
+def test_a_trigger_changed_between_two_hooks_is_seen_on_the_next_hook(new_story):
+    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
+    story.hook("s-1", HookSamples.prompt("ship it"))
+    expect_absent_running(story)
+    story.run(f"sequence edit 1 --triggers {shlex.quote(json.dumps([{'trigger_type': 'phrase', 'text': 'ship it'}]))}", actor=story.user)
+    story.hook("s-1", HookSamples.prompt("ship it"))
+    expect_running(story)
+
+
+def test_a_step_guard_changed_between_two_hooks_is_seen_on_the_next_hook(new_story):
+    story = triggered_story(new_story)
+    story.run("sequence run 1", actor=story.agent)
+    story.run("sequence follow", actor=story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
+    story.run(f"sequence edit 1 --step-guards {shlex.quote(json.dumps([{'file_edits_allowed': False, 'allowed_commands': []}]))}", actor=story.user)
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), "holds file edits")
 
 
 def test_step_guards_that_do_not_read_are_refused_when_written(new_story):

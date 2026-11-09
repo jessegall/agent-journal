@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from core.base.file_access import FileAccess
+
 REPORT = "upgrade-report.txt"
 PREVIOUS = "upgrade-report.1.txt"
 
@@ -15,4 +17,4 @@ class UpgradeReportFile:
         current = self.journal / REPORT
         if current.exists():
             current.replace(self.journal / PREVIOUS)
-        current.write_text(text + "\n")
+        FileAccess.shared().write(current, text + "\n")

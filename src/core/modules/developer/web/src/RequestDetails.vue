@@ -1,5 +1,6 @@
 <script setup>
 import {highlight} from "@journal/window-kit";
+import {requestOutcomeLabel} from "./labels.js";
 
 defineProps({request: {type: Object, default: null}});
 const shown = (value) => highlight(JSON.stringify(value, null, 2), "json").join("\n");
@@ -13,7 +14,7 @@ const durationOf = (row) => `${Math.round(row.duration_ms)} ms`;
         <div data-hook-request-detail>
             <div class="detail-head">
                 <h2>{{ request.event }}</h2>
-                <span :class="{slow: isSlow(request), refused: isRefused(request)}">{{ request.sender }} · queued {{ Math.round(request.queued_ms) }} ms · {{ request.outcome }} · {{ durationOf(request) }}</span>
+                <span :class="{slow: isSlow(request), refused: isRefused(request)}">{{ request.sender }} · queued {{ Math.round(request.queued_ms) }} ms · {{ requestOutcomeLabel(request.outcome) }} · {{ durationOf(request) }}</span>
             </div>
             <h3 class="heading">Headers</h3>
             <pre data-hook-request-headers v-html="shown(request.headers)" />

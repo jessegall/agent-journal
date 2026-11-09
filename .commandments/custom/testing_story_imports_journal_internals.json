@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "textMatches": "^\\s*(from|import)\\s+(core|suites|server|install|tunnels)\\b"
+            },
+            {
+                "fileMatches": "(^|/)tests/stories/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "_browser\\.py$"
+            },
+            {
+                "textMatches": "^\\s*(from|import)\\s+core\\.testing\\b"
+            }
+        ]
+    },
+    "sin": {
+        "name": "story-imports-journal-internals",
+        "description": "A story imports a package of the journal other than core.testing.",
+        "rule": "A story imports only core.testing and tests.stories support code; add what it needs to core.testing so every story can use it.",
+        "skill": "stories-stay-in-the-story-kit"
+    }
+}

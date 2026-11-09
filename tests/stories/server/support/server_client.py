@@ -2,7 +2,6 @@ from collections.abc import Callable
 from core.base.database.reported_findings import ReportedFindings
 import http.client
 import json
-from datetime import datetime, timezone
 import os
 import shlex
 import subprocess
@@ -10,6 +9,7 @@ import socket
 import time
 from unittest.mock import patch
 from core.base.caller.process_table import ProcessTable
+from core.base.clock import Clock
 from core.testing.fixed_process_table import FixedProcessTable
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -23,7 +23,6 @@ from core.base.journal_home import JournalHome
 from core.base.journal_container import synced_database_container
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
-from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.testing.hook_samples import HookSamples
@@ -58,6 +57,7 @@ from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from scripts.timing_report import logged_timings, report
 
+SYSTEM_CLOCK = Clock()
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
 STORY_HOOK_LIMIT_SECONDS = 0.5
@@ -348,18 +348,18 @@ def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
 def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
     without_start_skills(story)
     story.run("setting make journal.core.voices.avatar false")
-    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door, story.clock) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
-    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door, clock) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor(), clock: Clock = SYSTEM_CLOCK):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
@@ -368,10 +368,10 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         listener_round = JournalRound(home, "listener thread", ListenerWork(), queue=hook_database.queue)
         listener_thread = ListenerThread(listener_round.run, listener_round.report)
         phones = PhoneSessions(home, listener_thread)
-        login = ViewerLogin(phones, ShareSessions(phones.journal_output))
+        login = ViewerLogin(phones, ShareSessions(phones.journal_output, clock))
         reported = ReportedFindings()
-        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
+        context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, clock.timestamp(), listener_thread,
+                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue, clock)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
         context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_log.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue

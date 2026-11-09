@@ -1,6 +1,7 @@
 import os
 from datetime import timedelta
 
+from core.base.driver.command_category import CommandCategory
 from core.base.module.module_finder import ModuleFinder
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
@@ -11,6 +12,8 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 MISSING_GROUP = 999999
 HANG_SECONDS = 300
+LOOK_SECONDS = 900
+LOOK_LINE = "processes.look"
 
 
 class FakeGroupCpuTime(GroupCpuTime):
@@ -18,8 +21,13 @@ class FakeGroupCpuTime(GroupCpuTime):
 
     def __init__(self, seconds: float | None) -> None:
         self.used = seconds
+        self.listings = 0
 
-    def seconds(self, group: int) -> float | None:
+    def listing(self) -> str:
+        self.listings += 1
+        return ""
+
+    def seconds(self, listing: str, group: int) -> float | None:
         return self.used
 
 
@@ -30,6 +38,15 @@ class ActiveBuild(StoryFixture):
 
     def steps(self, story: Story) -> None:
         moved_run(story, "make build")
+
+
+class ActiveTestRun(StoryFixture):
+    """The main agent's go test runs in the background."""
+
+    parent = BuilderStarted
+
+    def steps(self, story: Story) -> None:
+        moved_run(story, "go test ./...", CommandCategory.TEST_RUN)
 
 
 def watch_tick(story: Story) -> None:
@@ -52,7 +69,7 @@ def test_an_idle_silent_run_is_stopped_and_its_agent_told_which_run_and_for_how_
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     watch_tick(story)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "output 1 printed nothing and used no processor time for 301 seconds, so it was stopped: its output is kept", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "output 1 printed nothing for 301 seconds, so it was stopped: its output is kept", actor=story.agent)
 
 
 def test_a_silent_run_whose_processor_time_rises_is_left_alone(new_story):
@@ -84,3 +101,87 @@ def test_a_run_with_no_process_tree_is_left_alone(new_story):
     story.advance(timedelta(seconds=HANG_SECONDS + 30))
     watch_tick(story)
     story.expect_text("process show 1", "state: background", actor=story.agent)
+
+
+def expect_looks(story: Story, asked: int) -> None:
+    lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
+    story.expect_rows(lines.count(LOOK_LINE) == asked, detail=f"{asked} asks expected in:\n{lines}")
+
+
+def busy_for(story: Story, tree: FakeGroupCpuTime, seconds: int) -> None:
+    story.advance(timedelta(seconds=seconds))
+    tree.used += 1
+    watch_tick(story)
+
+
+def test_a_silent_test_run_that_keeps_using_processor_time_has_its_agent_asked_to_look_at_the_ceiling(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    tree = started_tree(story, 12.0)
+    for seconds in (400, 400):
+        busy_for(story, tree, seconds)
+    expect_looks(story, 0)
+    busy_for(story, tree, 200)
+    expect_looks(story, 1)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+
+
+def test_a_silent_build_that_keeps_using_processor_time_is_never_asked_about(new_story):
+    story = new_story(fixture=ActiveBuild)
+    tree = started_tree(story, 12.0)
+    for seconds in (500, 500, 500):
+        busy_for(story, tree, seconds)
+    expect_looks(story, 0)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+
+
+def test_the_ask_repeats_after_the_hang_seconds_and_the_run_is_stopped_after_the_third_one(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    tree = started_tree(story, 12.0)
+    busy_for(story, tree, LOOK_SECONDS + 1)
+    busy_for(story, tree, HANG_SECONDS - 1)
+    expect_looks(story, 1)
+    busy_for(story, tree, 2)
+    expect_looks(story, 2)
+    busy_for(story, tree, HANG_SECONDS)
+    expect_looks(story, 3)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+    busy_for(story, tree, HANG_SECONDS)
+    story.expect_text("process show 1", "state: stopped", actor=story.agent)
+
+
+def test_a_test_run_whose_agent_read_its_output_is_not_stopped_and_is_asked_again_after_the_look_seconds(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    tree = started_tree(story, 12.0)
+    busy_for(story, tree, LOOK_SECONDS + 1)
+    busy_for(story, tree, HANG_SECONDS + 1)
+    expect_looks(story, 2)
+    story.expect_success("output read 1 --summary", actor=story.agent)
+    for _ in range(2):
+        busy_for(story, tree, HANG_SECONDS + 1)
+    expect_looks(story, 2)
+    busy_for(story, tree, LOOK_SECONDS)
+    expect_looks(story, 3)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
+
+
+def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it_goes_silent_again(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    tree = started_tree(story, 12.0)
+    busy_for(story, tree, LOOK_SECONDS + 5)
+    folder = story.container.get(OutputFolder)
+    folder.write_start(1, "go test ./...", ["go test ./..."])
+    folder.write_output(1, 1, "ok\n")
+    printed_at = story.clock.timestamp().value.timestamp()
+    os.utime(folder.home.folder / "processes" / "1" / "1.out", (printed_at, printed_at))
+    busy_for(story, tree, HANG_SECONDS + 1)
+    expect_looks(story, 1)
+
+
+def test_one_listing_of_the_processes_serves_every_run_of_a_tick(new_story):
+    story = new_story(fixture=ActiveBuild)
+    moved_run(story, "make test")
+    story.container.get(OutputFolder).write_pid(2, MISSING_GROUP)
+    tree = started_tree(story, 12.0)
+    tree.listings = 0
+    watch_tick(story)
+    story.expect_rows(tree.listings == 1)

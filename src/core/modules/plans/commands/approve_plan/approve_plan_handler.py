@@ -31,4 +31,4 @@ class ApprovePlanHandler(Handler[ApprovePlan, Plan]):
         if message_text:
             message = self.bus.dispatch(CommentText(Plan, plan.id, message_text), context)
             metadata = PlanApproval.with_message(plan, message.id)
-        return self.repository.save_change(plan, plan.moved(self.command.move, metadata=metadata), context)
+        return self.repository.save_change(plan, plan.moved(command.move, metadata=metadata), context)

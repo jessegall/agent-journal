@@ -1302,9 +1302,6 @@
     "file_reads_conflicts_stream_lines": [
         "src/core/base/conflict_files.py"
     ],
-    "file_reads_shell_uses_nonblocking_budget": [
-        "src/suites/coding/support/shell_file_state.py"
-    ],
     "file_reads_shell_handoff_streams_child_output": [
         "src/core/base/cli/shell_handoff.py"
     ],

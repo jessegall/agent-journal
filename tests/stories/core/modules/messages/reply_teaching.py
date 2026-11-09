@@ -198,3 +198,14 @@ class AnnouncedCartMessage(StoryFixture):
     def steps(self, story):
         story.run('message send "Fix the cart first" --environment main', actor=story.user)
         story.hook('s-1', HookSamples.stop())
+
+
+def test_a_takeover_holds_the_new_agent_only_for_messages_it_read_itself(read_message):
+    story, _ = read_message
+    story.hook("s-2", HookSamples.session_start())
+    story.expect_absent_hook_line("s-2", VIEW_LINE, "answer message 1")
+    story.run('message send "Then the totals" --environment main', actor=story.user)
+    story.hook("s-2", HookSamples.stop())
+    story.hook("s-2", journal_line("journal message read 2").with_fields(event="post_tool_use"))
+    story.expect_hook_allowed("s-2", VIEW_LINE, "answer message 2 before you go on")
+    story.expect_absent_hook_line("s-2", VIEW_LINE, "answer message 1")

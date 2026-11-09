@@ -1,7 +1,7 @@
 import os
-import time
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.process_ids import ProcessIds
 from core.base.file_access import FileAccess
 from core.modules.tools.support.graph_stamp import GraphStamp
@@ -39,11 +39,11 @@ class GraphFiles:
         path = self.output / FAILED_FILE
         return FileAccess.shared().read(path).strip() if path.is_file() else ""
 
-    def is_running(self) -> bool:
+    def is_running(self, clock: Clock) -> bool:
         if not self.running_path.is_file():
             return False
         text = FileAccess.shared().read(self.running_path).strip()
-        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
+        is_claimed = clock.epoch_seconds() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
         if not is_claimed:
             self.running_path.unlink(missing_ok=True)
         return is_claimed
