@@ -22,7 +22,6 @@ class ContextStopNowRule(DriverRule):
     name = "workers.context-limit-stop-now"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    history = True
     roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
     disabled_scopes = [ActorScope]
 

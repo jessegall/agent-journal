@@ -27,7 +27,6 @@ class CacheRefreshRule(DriverRule):
     name = "workers.cache-keepalive"
     hook = HookEventName.TICK
     drivers = ["*"]
-    history = True
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
