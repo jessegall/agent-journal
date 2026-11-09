@@ -15,6 +15,7 @@ export function taskLine({tasks, inHand, perHour}) {
     return {
         number: inHand.id,
         title: inHand.title,
+        plan: inHand.plan_id ?? 0,
         count: `${done} of ${all.length}`,
         taskTip: `${done} of its ${all.length} tasks done${stage ? `. This one is ${stage.words}.` : "."}`,
         countTip: finished ? `All ${all.length} tasks done` : `${done} done, 1 in hand, ${left} to go`,
