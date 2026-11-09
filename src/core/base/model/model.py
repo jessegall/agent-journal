@@ -29,6 +29,7 @@ class Model:
     shown_properties: ClassVar[Sequence[str]] = ()
     change_names: ClassVar[Sequence[str]] = ()
     event_forms: ClassVar[tuple[EventForm, ...]] = tuple(EventForm)
+    events_expire: ClassVar[bool] = False
 
     id: int = 0
     version: int = 0
