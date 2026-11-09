@@ -55,20 +55,17 @@ def judge_worker(new_story):
 def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(judge_worker):
     story, _, worker = judge_worker
     line = HookSamples.shell('journal task log 1 "I will run journal sins next"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "log", "1", "I will run journal sins next"], subcommand="task"))
-    expect_absent_reply_refusal(story.hook(worker_session(story, worker), line), "a worker never runs the judge")
+    expect_absent_reply_refusal(story.hook(worker_session(story, worker), line), "a worker judges only its own changes")
 
 
-def plugin_judge_sample(*arguments: str):
-    return HookSamples.shell(f"commandments-release judge {' '.join(arguments)}", ShellPart("commandments-release", CommandCategory.CHECK, ["judge", *arguments]))
-
-
-def test_a_worker_runs_no_judge_in_any_form_and_the_main_agent_still_does(judge_worker):
+def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_worker):
     story, _, worker = judge_worker
     session = worker_session(story, worker)
-    for sample in (judge_sample("src"), judge_sample(), judge_sample("--changes"), judge_sample("--branch"), plugin_judge_sample(), plugin_judge_sample("--changes"), plugin_judge_sample("--branch")):
-        story.expect_hook_refusal(session, sample, "a worker never runs the judge")
-    for sample in (judge_sample("src"), judge_sample("--changes"), plugin_judge_sample("--branch")):
-        story.expect_hook_allowed("s-1", sample)
+    story.expect_hook_refusal(session, judge_sample("src"), "a worker judges only its own changes")
+    story.expect_hook_refusal(session, judge_sample(), "a worker judges only its own changes")
+    story.expect_hook_allowed(session, judge_sample("--changes"))
+    story.expect_hook_allowed(session, judge_sample("--branch"))
+    story.expect_hook_allowed("s-1", judge_sample("src"))
 
 
 def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):
