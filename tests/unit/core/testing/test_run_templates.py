@@ -33,7 +33,7 @@ def test_no_run_builds_a_template_before_it_starts(first_process, target):
     pytest_plugin.pytest_cmdline_main(run_config(target))
 
 
-def test_whole_suite_run_builds_templates(first_process):
+def test_whole_suite_run_chooses_its_template_folder(first_process):
     assert chooses_template_folder(run_config())
 
 

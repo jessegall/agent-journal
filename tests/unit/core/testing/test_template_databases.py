@@ -74,6 +74,28 @@ def test_two_processes_build_one_complete_template(tmp_path):
         answers.close()
 
 
+def test_a_template_is_built_when_a_story_first_uses_it_and_not_before(tmp_path):
+    folder = tmp_path / "templates"
+    folder.mkdir()
+    builds = tmp_path / "builds"
+    templates = SampleTemplateDatabases(folder, builds)
+    assert not builds.exists()
+    templates.template((), None)
+    assert builds.read_text().splitlines() == ["build"]
+    templates.template((), None)
+    assert builds.read_text().splitlines() == ["build"]
+
+
+def test_a_template_saved_by_one_run_is_reused_by_the_next_run(tmp_path):
+    folder = tmp_path / "templates"
+    folder.mkdir()
+    builds = tmp_path / "builds"
+    SampleTemplateDatabases(folder, builds).template((), None)
+    next_run = SampleTemplateDatabases(folder, builds).template((), None)
+    assert next_run.home.database.read_text() == "complete"
+    assert builds.read_text().splitlines() == ["build"]
+
+
 def test_an_interrupted_state_write_never_publishes_a_partial_template(tmp_path, monkeypatch):
     folder = tmp_path / "templates"
     folder.mkdir()
