@@ -20,5 +20,5 @@ QUEUE_INSPECTOR = InspectorDeclaration(
     ),
     components=tuple([InspectorComponent("processes.queue-body")]),
     links=None,
-    named="test-queue",
+    labelled="test-queue",
 )
