@@ -10,10 +10,10 @@ afterEach(() => (document.body.innerHTML = ""));
 const PLAN = {
     id: 3, title: "Move the cart", brief: "Why the cart moves", state: "started", reason: "", total: 3, finished: 1, current_phase: 2, delegated: false,
     phases: [
-        {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 7, title: "Fix the totals", state: "completed", priority: 200, complexity: null, tags: [], reason: "", automatic: false, delegated_to: null, delegated_is_main: false}]},
+        {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 7, title: "Fix the totals", state: "completed", priority: 200, complexity: null, tags: [], reason: "", automatic: false, delegated_to: null, main_delegate: false}]},
         {id: 2, title: "Second", goal: "", checkpoint: false, tasks: [
-            {id: 8, title: "Move the cart", state: "started", priority: 300, complexity: 3, tags: ["cart"], reason: "", automatic: false, delegated_to: 12, delegated_is_main: false, helper_id: 12, helper_name: "Lovelace"},
-            {id: 9, title: "Check it", state: "blocked", priority: 200, complexity: null, tags: [], reason: "waits on task 8", automatic: false, delegated_to: null, delegated_is_main: false},
+            {id: 8, title: "Move the cart", state: "started", priority: 300, complexity: 3, tags: ["cart"], reason: "", automatic: false, delegated_to: 12, main_delegate: false, helper_id: 12, helper_name: "Lovelace"},
+            {id: 9, title: "Check it", state: "blocked", priority: 200, complexity: null, tags: [], reason: "waits on task 8", automatic: false, delegated_to: null, main_delegate: false},
         ]},
     ],
 };

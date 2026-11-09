@@ -4,7 +4,7 @@ from core.base.driver.block_check import BlockCheck
 from core.base.module.block_conditions import BlockConditions
 from dataclasses import dataclass
 
-from core.base.driver.count_down import COUNTDOWN_FROM
+from core.base.driver.count_down import COUNTDOWN_LINE_BELOW
 from core.base.driver.interval import Interval
 from core.base.driver.seconds import Seconds
 from core.base.model.model import Model
@@ -37,7 +37,7 @@ class AgentBlock(Model):
     blocks_stop: bool = False
     strict: bool = False
     is_skippable: bool = False
-    countdown_from: int = COUNTDOWN_FROM
+    countdown_from: int = COUNTDOWN_LINE_BELOW
 
     def is_finished(self, conditions: BlockConditions, hook: AgentHook, container: Container) -> bool:
         return conditions.built(self.condition_name, self.condition_text).is_true(BlockCheck(hook, self.creation_timestamp(), container))

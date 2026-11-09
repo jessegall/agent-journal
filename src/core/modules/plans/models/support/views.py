@@ -48,7 +48,7 @@ PLAN_OUTLINE_TASKS_SELECT = (
     " tasks.complexity, tasks.reason, tasks.delegated_to,"
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic,"
-    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS delegated_is_main,"
+    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS main_delegate,"
     " helper.id AS helper_id, coalesce(nullif(helper.given_name, ''), 'Agent ' || helper.id) AS helper_name"
     " FROM plan_tasks"
     " JOIN tasks ON tasks.id = plan_tasks.task_id"

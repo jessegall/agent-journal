@@ -26,8 +26,8 @@ SHARED_COLUMNS = ["id", "creator_id", "version", "metadata", "created_at", "upda
 ])
 def test_a_new_journal_has_every_accounts_table_with_every_column(new_story, table, columns):
     story = new_story(fixture=UserJoined)
-    found = [row["name"] for row in story.container.get(Database).connection.execute(f"PRAGMA table_info({table})").fetchall()]
-    expect_value(sorted(found), sorted([*SHARED_COLUMNS, *columns]))
+    table_columns = [row["name"] for row in story.container.get(Database).connection.execute(f"PRAGMA table_info({table})").fetchall()]
+    expect_value(sorted(table_columns), sorted([*SHARED_COLUMNS, *columns]))
 
 
 @pytest.mark.parametrize("model", [PersonLogin, PersonSession, LoginAttempt, PersonFactor, RecoveryCode, AuditEntry, SetupCode])
