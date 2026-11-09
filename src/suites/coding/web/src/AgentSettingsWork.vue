@@ -1,7 +1,8 @@
 <script setup>
 import {computed, reactive, ref, watch} from "vue";
-import {Segmented, Switch, useWindow} from "@journal/window-kit";
+import {Segmented, useWindow} from "@journal/window-kit";
 import SettingRow from "./SettingRow.vue";
+import SettingSwitchRow from "./SettingSwitchRow.vue";
 import SettingsFoot from "./SettingsFoot.vue";
 
 const CONTROLS = [
@@ -72,20 +73,12 @@ const usePreset = (name) => send(`work-settings preset ${name} --revision ${base
             <SettingRow label="Workflow" help="A preset sets the switches below at once; Custom is any other mix." data-work-flow>
                 <Segmented :options="PRESETS" :value="workflow" @pick="usePreset" />
             </SettingRow>
-            <template v-for="control in taking" :key="control.key">
-                <SettingRow :label="control.label" :help="control.line" :data-control="control.key">
-                    <Switch :on="draft[control.key]" :disabled="view.readOnly" @change="draft[control.key] = !draft[control.key]" /><span class="sw-word">{{ draft[control.key] ? "On" : "Off" }}</span>
-                </SettingRow>
-            </template>
+            <SettingSwitchRow v-for="control in taking" :key="control.key" :control="control" :on="draft[control.key]" :disabled="view.readOnly" @change="draft[control.key] = !draft[control.key]" />
         </div>
         <div class="section">
             <p class="section-title">How the main agent works</p>
             <p class="section-help">Your models, maximums and tests stay as you set them.</p>
-            <template v-for="control in working" :key="control.key">
-                <SettingRow :label="control.label" :help="control.line" :data-control="control.key">
-                    <Switch :on="draft[control.key]" :disabled="view.readOnly" @change="draft[control.key] = !draft[control.key]" /><span class="sw-word">{{ draft[control.key] ? "On" : "Off" }}</span>
-                </SettingRow>
-            </template>
+            <SettingSwitchRow v-for="control in working" :key="control.key" :control="control" :on="draft[control.key]" :disabled="view.readOnly" @change="draft[control.key] = !draft[control.key]" />
             <template v-if="nothingStarts"><p class="section-help warn" data-work-hint>With Auto off and no workers, nothing starts the work: a person starts tasks or turns one of them on.</p></template>
         </div>
         <SettingsFoot :changes="changed.length" :pending="pending" :problem="problem" :blocked="stale" @cancel="reset" @apply="apply" />
@@ -97,5 +90,4 @@ const usePreset = (name) => send(`work-settings preset ${name} --revision ${base
 .section-title { margin: 0 0 2px; color: var(--text); font-size: 12.5px; font-weight: 600; }
 .section-help { margin: 0 0 6px; color: var(--text-3); font-size: 12px; text-wrap: pretty; }
 .section-help.warn { margin-top: 8px; color: var(--warn); }
-.sw-word { color: var(--text-2); font-size: 12px; }
 </style>
