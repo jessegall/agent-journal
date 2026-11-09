@@ -5,8 +5,32 @@ from tests.unit.core.testing.support.overlap_cases import configure_hooks, confi
 pytest_plugins = ["pytester"]
 
 
-def test_different_hooks_before_identical_reads_are_different_story_steps(pytester, monkeypatch):
+def test_hooks_that_differ_only_in_their_file_are_the_same_story_path(pytester, monkeypatch):
     configure_hooks(pytester, monkeypatch, "tax.py")
+    pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
+    assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
+    pytest_run.assert_outcomes(passed=2, failed=1)
+    assert "100% of their steps" in pytest_run.stdout.str()
+
+
+def test_hooks_of_another_type_before_identical_reads_are_another_story_path(pytester, monkeypatch):
+    configure_run(pytester, monkeypatch)
+    pytester.makepyfile(test_shared='''
+from core.testing.hook_samples import HookSamples
+from tests.stories.core.support.fixtures import UserJoined
+
+def test_first(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.edit("cart.py"))
+    story.expect_success("actor list")
+    story.expect_success("actor list")
+
+def test_second(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.prompt("hello"))
+    story.expect_success("actor list")
+    story.expect_success("actor list")
+''')
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.OK
     pytest_run.assert_outcomes(passed=2)
@@ -17,7 +41,7 @@ def test_identical_hooks_are_detected_despite_generated_firing_ids(pytester, mon
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
     pytest_run.assert_outcomes(passed=2, failed=1)
-    assert "stories::shared_first_steps" in pytest_run.stdout.str()
+    assert "stories::overlapping_steps" in pytest_run.stdout.str()
 
 
 def test_common_setup_in_a_pytest_fixture_is_not_a_story_prefix(pytester, monkeypatch):
