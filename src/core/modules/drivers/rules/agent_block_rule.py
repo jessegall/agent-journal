@@ -66,7 +66,7 @@ class AgentBlockRule(DriverRule):
         return finished_blocks
 
     def refuses(self, block: AgentBlock, tool: Tool) -> bool:
-        return not tool.is_skill_read if block.strict else not tool.block_exempt
+        return not tool.block_exempt or (block.strict and bool(tool.journal_commands))
 
     def countdown(self, block: AgentBlock, tool_uses: int) -> Nudge | None:
         if not block.countdown_text or not block.grace_tool_uses:
