@@ -21,6 +21,9 @@ FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
 DELIVERY = "worker deliver --wait --differences none"
 
 
+SAVED_TEST_COMMAND = 'alias add cart-test "pytest tests/cart.py" --category "test run"'
+
+
 def repository_folder(story: Story) -> Path:
     return story.home.folder.parent / "project"
 
@@ -29,6 +32,7 @@ def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH, real_
     repository = GitRepository.sample(repository_folder(story)) if real_git or REAL_GIT.get() else memory_repository(story)
     branch_flag = f" --branch {branch}" if branch else ""
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))}{branch_flag}", f"folder: {repository.folder}")
+    story.expect_success(SAVED_TEST_COMMAND)
     return repository
 
 

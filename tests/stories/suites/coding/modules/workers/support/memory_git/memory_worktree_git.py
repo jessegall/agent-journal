@@ -25,6 +25,9 @@ class MemoryWorktreeGit(WorktreeGit):
         self.history = history
         self.skipped: dict[Path, set[str]] = {}
 
+    def test_checkout(self, worktree: Worktree) -> str:
+        return worktree.folder
+
     def folder_files(self, folder: str | Path) -> MemoryFolder:
         return MemoryFolder(self.history.root, Path(folder))
 

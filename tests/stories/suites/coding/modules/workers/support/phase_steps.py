@@ -85,7 +85,7 @@ class StoryWorker:
         return self.run_line(line, *(shell_test_part(text) for text in line.split(" && ")))
 
     def save_test_alias(self, line: str = TEST_LINE) -> None:
-        self.story.expect_success(f'alias add {TEST_ALIAS} "{line}" --category "test run"', actor=self.story.agent)
+        self.story.expect_success(f'alias edit {TEST_ALIAS} --line "{line}"', actor=self.story.agent)
         self.story.run_listeners()
 
     def run_test_with_saved_commands_known(self, line: str = TEST_LINE) -> HookReply:

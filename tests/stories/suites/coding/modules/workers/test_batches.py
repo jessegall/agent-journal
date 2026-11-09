@@ -26,7 +26,6 @@ def batch(new_story, monkeypatch):
     for title in ("Tax", "Totals", "Shipping", "Release"):
         story.expect_success(f'task make "{title}" --brief "Check {title}"', actor=story.agent)
     worker = dispatched_story_worker(story, "worker dispatch --model sonnet 1 2 3 4 5", monkeypatch)
-    worker.save_test_alias()
     configure(worker, BATCH, "4")
     return worker
 

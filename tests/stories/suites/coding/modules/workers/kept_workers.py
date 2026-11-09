@@ -1,4 +1,5 @@
 import pytest
+from core.base.provider.context_window import ContextWindow
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.support.nudger import Nudger
 from core.base.command.context import Context
@@ -266,7 +267,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     worker = merged_kept_worker(story, repository_environment(story))
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
-    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: (80, None))
+    monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: ContextWindow(80, None))
     stopped(story, worker)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     dispatched_worker(story, f"worker dispatch --model sonnet {task_id}")
