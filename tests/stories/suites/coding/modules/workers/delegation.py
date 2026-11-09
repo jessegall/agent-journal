@@ -18,7 +18,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask,
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from core.testing.expect_reply import expect_absent_reply_refusal
-from tests.stories.support.story_checks import expect_id_cancelled
+from tests.stories.support.story_checks import expect_value
 
 
 def delegated_story(new_story):
@@ -315,17 +315,15 @@ def test_the_assigner_leaves_a_delegated_task_alone(new_story):
     expect_next_open_tasks(tasks, 1, "closed_at", None)
 
 
-def test_the_board_lists_tasks_delegated_to_a_worker_in_a_group_of_their_own_apart_from_the_states(new_story):
+def test_the_board_lists_a_task_delegated_to_a_worker_under_its_state_and_has_no_delegated_group(new_story):
     story, _, worker = delegated_story(new_story)
     story.run('task make "My own job" --environment main', actor=story.agent)
     groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
-    expect_id_delegated_groups(groups, [1, 2])
-    expect_total_delegated_groups(groups, 2)
-    expect_delegated_groups(groups, {worker.id})
-    expect_total_started_groups(groups, 0)
-    expect_id_open_groups(groups, [3])
-    page = json.loads(story.run("task board --environment main --state delegated --before-id 2 --json", actor=story.user).output_text)["groups"][0]
-    expect_id_cancelled(page, [])
+    delegated = [row for group in groups.values() for row in group["rows"] if row["delegated_to"] is not None]
+    expect_value((sorted(row["id"] for row in delegated), {row["delegated_to"] for row in delegated}), ([1, 2], {worker.id}))
+    expect_value("delegated" in groups, False)
+    expect_total_started_groups(groups, 1)
+    expect_id_open_groups(groups, [3, 2])
 
 
 
@@ -373,21 +371,6 @@ def expect_total_started_groups(groups, expected) -> None:
 
 def expect_id_open_groups(groups, expected) -> None:
     actual = [row['id'] for row in groups['open']['rows']]
-    assert actual == expected, actual
-
-
-def expect_delegated_groups(groups, expected) -> None:
-    actual = {row['delegated_to'] for row in groups['delegated']['rows']}
-    assert actual == expected, actual
-
-
-def expect_id_delegated_groups(groups, expected) -> None:
-    actual = [row['id'] for row in groups['delegated']['rows']]
-    assert actual == expected, actual
-
-
-def expect_total_delegated_groups(groups, expected) -> None:
-    actual = groups['delegated']['total']
     assert actual == expected, actual
 
 
