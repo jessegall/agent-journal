@@ -1,4 +1,5 @@
 from core.base.journal_home import JournalHome
+from core.base.provider.context_window import ContextWindow
 from core.base.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.context_reading import ContextReading
@@ -16,7 +17,9 @@ class ContextShare:
         self.settings, self.providers, self.home = settings, providers, home
 
     def usage(self, program: str, session: str) -> ContextReading:
-        window = self.providers.provider(program).context_window(self.home, session)
+        return self.reading(self.providers.provider(program).context_window(self.home, session))
+
+    def reading(self, window: ContextWindow) -> ContextReading:
         window_percent, tokens = window.used_percentage, window.total_input_tokens
         if tokens is None or not self.settings.flag(CONTEXT_LIMIT_ENABLED):
             return ContextReading(window_percent, tokens, None)
