@@ -13,14 +13,18 @@ from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
+from suites.coding.support.shipped_profiles import DESIGN_SKILLS, HELPER_PROFILES, HELPER_SKILLS, PLANNER_SKILLS, PLAN_REVIEW_SKILLS, WORKER_PROFILES, WORKER_SKILLS
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.support.story_checks import expect_absent_value
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 PLANNING = "journal-planning"
 WORKERS = "journal-workers"
 DESIGN = "journal-functional-design"
 RESEARCHER_SESSION = "s-researcher"
+WORKER_SKILL = "journal-worker"
+HELPER_SKILL = "journal-helper"
+SKILL_GROUPS = {"WORKER_SKILLS": WORKER_SKILLS, "HELPER_SKILLS": HELPER_SKILLS, "PLANNER_SKILLS": PLANNER_SKILLS, "DESIGN_SKILLS": DESIGN_SKILLS, "PLAN_REVIEW_SKILLS": PLAN_REVIEW_SKILLS}
 PLAN_LIST = HookSamples.shell("journal plan list", ShellPart("journal", CommandCategory.JOURNAL, ["plan", "list"], subcommand="plan"))
 
 
@@ -48,6 +52,17 @@ def test_every_skill_a_shipped_profile_names_exists_and_every_profile_names_some
     unknown = {profile.name: set(profile.skills) - recorded for profile in SHIPPED_PROFILES if set(profile.skills) - recorded}
     anonymous = [profile.name for profile in SHIPPED_PROFILES if not profile.skills]
     story.expect_rows(not unknown, not anonymous, detail=f"{unknown} {anonymous}")
+
+
+@pytest.mark.parametrize("skill, owner", [(WORKER_SKILL, "WORKER_SKILLS"), (HELPER_SKILL, "HELPER_SKILLS")])
+def test_a_skill_for_one_audience_is_in_that_group_and_no_other(skill, owner):
+    missing = [f"{skill} does not exist in {owner}"] if skill not in SKILL_GROUPS[owner] else []
+    expect_absent_value(missing + [f"{name} holds {skill}" for name, group in SKILL_GROUPS.items() if name != owner and skill in group])
+
+
+@pytest.mark.parametrize("owner, sender_skill", [("WORKER_SKILLS", WORKERS), ("HELPER_SKILLS", "journal-helpers")])
+def test_a_group_no_longer_holds_the_skill_of_the_agent_that_sends_it(owner, sender_skill):
+    expect_absent_value([f"{owner} still holds {sender_skill}"] if sender_skill in SKILL_GROUPS[owner] else [])
 
 
 def test_a_command_of_a_skill_the_profile_leaves_out_does_not_wait_for_that_skill(new_story):
