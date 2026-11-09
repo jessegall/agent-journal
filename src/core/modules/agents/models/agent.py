@@ -3,6 +3,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import END_CHANGE, Model
+from core.base.model.model_error import ModelError
 from core.base.timestamp import Timestamp
 from core.base.agent_policy import AgentPolicy
 from core.modules.agents.models.enums.agent_activity import AgentActivity
@@ -51,9 +52,14 @@ class Agent(EnvironmentScoped, Model):
     interrupted_at: Timestamp | None = None
     launched_at: Timestamp | None = None
 
-    def change_name(self, old_row: "Agent | None") -> str | None:
-        newly_ended = old_row is not None and old_row.ended_at is None and self.ended_at is not None
+    def change_name(self, old_row: Model | None) -> str | None:
+        newly_ended = isinstance(old_row, Agent) and old_row.ended_at is None and self.ended_at is not None
         return END_CHANGE if newly_ended else None
+
+    def ended_timestamp(self) -> Timestamp:
+        if self.ended_at is None:
+            raise ModelError(f"agent {self.id} has not ended")
+        return self.ended_at
 
     def ended(self, timestamp: Timestamp, policy: AgentPolicy) -> "Agent":
         return self.changed(ended_at=timestamp, paused_at=self.paused_at if self.role in policy.pause_retention_roles else None)

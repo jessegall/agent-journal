@@ -31,7 +31,8 @@ LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.STEERING, "that 
 
 AGENT_RESUMED = NudgeDeclaration("drivers.resumed", NudgeType.STEERING, "the user resumed you: carry on where you stopped")
 REQUIRED_COMMAND_TOOL_USES = 5
-REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", ToolUseSpan(REQUIRED_COMMAND_TOOL_USES))
+REQUIRED_COMMAND_SPAN = ToolUseSpan(REQUIRED_COMMAND_TOOL_USES)
+REQUIRED_COMMAND_COUNTDOWN = CountDown("drivers.required_command_countdown", "{subject}", REQUIRED_COMMAND_SPAN)
 REQUIRED_COMMAND_REFUSAL = NudgeDeclaration("drivers.required_command_refusal", NudgeType.REFUSAL, '{subject} is due: do it, or skip block {block} with a reason')
 JOURNAL_STARTED = NudgeDeclaration("drivers.journal_started", NudgeType.STEERING, "the journal started: go on with your work", turn_limited=False, wakes_agent=True)
 AGENT_NOTICE = NudgeDeclaration("drivers.agent_notice", NudgeType.STEERING, "{text}", turn_limited=False, path_fields=("text",), full_text=True)

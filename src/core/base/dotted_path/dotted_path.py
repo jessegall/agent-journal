@@ -20,7 +20,7 @@ class DottedPath:
     def class_path(cls, class_type: type) -> "DottedPath":
         return cls(f"{class_type.__module__}:{class_type.__qualname__}")
 
-    def loaded(self) -> type:
+    def loaded(self) -> type[object]:
         target = self.value()
         if not isinstance(target, type):
             raise DottedPathError(f"{self.text} names no class")

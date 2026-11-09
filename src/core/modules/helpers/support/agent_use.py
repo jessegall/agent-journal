@@ -40,9 +40,11 @@ class AgentUse:
         oldest_created_at = (self.clock.timestamp().value - timedelta(days=self.settings.number(AGENT_USE_DAYS))).isoformat()
         counts: dict[int, int] = defaultdict(int)
         for job in self.queries.query(HelperJob).matching(Greater("created_at", oldest_created_at)).all_rows():
-            counts[job.helper_id] += 1
+            if job.helper_id is not None:
+                counts[job.helper_id] += 1
         for task in self.queries.query(Task).matching(Greater("created_at", oldest_created_at)).all_rows():
-            counts[task.delegated_to] += 1
+            if task.delegated_to is not None:
+                counts[task.delegated_to] += 1
         return counts
 
     def retire_suggestion(self, agent_type: str) -> str:
@@ -55,7 +57,7 @@ class AgentUse:
                 f"{self.age(agent)}, and {selected.model} ran {selected.jobs} jobs with {len(selected.agents)} kept")
 
     def age(self, agent: Agent) -> str:
-        seconds = int(agent.ended_at.elapsed_seconds(self.clock.timestamp()))
+        seconds = int(agent.ended_timestamp().elapsed_seconds(self.clock.timestamp()))
         return f"{seconds // DAY_SECONDS}d" if seconds >= DAY_SECONDS else f"{seconds // DurationUnit.HOUR.seconds}h"
 
     def report(self) -> str:

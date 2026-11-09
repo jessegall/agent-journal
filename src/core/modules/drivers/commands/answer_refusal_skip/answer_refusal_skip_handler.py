@@ -37,8 +37,8 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         if not tried or tried == skip.reason:
             raise Refusal("name what you tried before skipping, not the reason again", "--tried '<what you tried instead>'")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
-        waits = agent.role != AgentRole.MAIN and agent.parent_id is not None and self.settings.flag(SKIPS_NEED_APPROVAL)
-        confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=waits)
-        if waits:
-            self.nudger.send(agent.parent_id, SKIP_NEEDS_APPROVAL, SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
+        approver_id = agent.parent_id if agent.role != AgentRole.MAIN and self.settings.flag(SKIPS_NEED_APPROVAL) else None
+        confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=approver_id is not None)
+        if approver_id is not None:
+            self.nudger.send(approver_id, SKIP_NEEDS_APPROVAL, SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
         return confirmed

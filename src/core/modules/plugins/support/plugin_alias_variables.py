@@ -1,7 +1,6 @@
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin
-from core.modules.plugins.support.plugin_alias_environment import PluginAliasEnvironment
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
@@ -16,7 +15,7 @@ class PluginAliasVariables:
     def __init__(self, queries: Queries, folders: PluginFolders, settings: PluginSettings, program: PluginProgram) -> None:
         self.queries, self.folders, self.settings, self.program = queries, folders, settings, program
 
-    def variables(self, plugin_id: int, environment_id: int | None) -> PluginAliasEnvironment:
+    def variables(self, plugin_id: int, environment_id: int | None) -> dict[str, str]:
         plugin = self.queries.query(Plugin).find(plugin_id)
         environment = self.queries.query(Environment).find(environment_id).name if environment_id is not None else ""
         manifest = PluginManifest.read(self.folders.code(plugin.name))

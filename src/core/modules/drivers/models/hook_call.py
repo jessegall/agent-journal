@@ -7,6 +7,7 @@ from core.base.driver.hook_transcript import HookTranscript
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm
 from core.base.metadata import Metadata
+from core.base.type_guards import is_list, is_text_mapping
 from core.base.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.type_guards import is_list, is_mapping
@@ -23,7 +24,7 @@ DISPLAYED_MESSAGE_ID = "displayed_message_id"
 MONITOR_DESCRIPTION = "monitor_description"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
-HOOK_CHANGE_NAMES = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
+HOOK_CHANGE_NAMES: dict[str, str] = {HookEventName.COMPACT: COMPACTION, HookEventName.SESSION_START: SESSION_START, HookEventName.PROMPT: PROMPT}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -58,7 +59,7 @@ class HookCall(EnvironmentScoped, Model):
     def summarize(text: str) -> str:
         return text.split("\n", 1)[0][:SUMMARY_CHARACTERS]
 
-    def change_name(self, old_row: "HookCall | None") -> str | None:
+    def change_name(self, old_row: Model | None) -> str | None:
         if old_row is not None:
             return None
         if self.hook == HookEventName.STOP:
@@ -71,7 +72,8 @@ class HookCall(EnvironmentScoped, Model):
 
     @property
     def refused_rules(self) -> tuple[Mapping[str, object], ...]:
-        return tuple(row for row in self.metadata.module_part(DRIVERS_MODULE).get("rules", []) if row.get("outcome") == "refused")
+        rules = self.metadata.module_part(DRIVERS_MODULE).get("rules", [])
+        return tuple(row for row in rules if is_text_mapping(row) and row.get("outcome") == "refused") if is_list(rules) else ()
 
     @property
     def terminal(self) -> str:

@@ -54,8 +54,8 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
                 ends_at = Timestamp(self.clock.timestamp().value + timedelta(minutes=OUTAGE_MINUTES))
                 self.bus.run(MakeProviderOutage(agent.program, problem, ends_at), Actor.core(), environment_id=agent.environment_id)
         job = self.jobs.open_job(agent.id)
-        if job is not None and self.needs_exit_report(agent):
-            self.report_exit(agent, job, command, actor, terminal)
+        if job is not None and agent.parent_id is not None and self.has_no_waiting_job(agent):
+            self.report_exit(agent, agent.parent_id, job, command, actor, terminal)
         if agent.ended_at is None:
             self.bus.run(EndAgent(agent.id), actor, environment_id=agent.environment_id)
 
@@ -65,14 +65,14 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         self.system_log.write(LogLevel.INFORMATION, f"agent {agent.id}: the exit of process {command.pid} changed nothing, since process {agent.pid} runs now")
         return True
 
-    def needs_exit_report(self, agent: Agent) -> bool:
+    def has_no_waiting_job(self, agent: Agent) -> bool:
         has_waiting_job = self.queries.query(AgentLine).filter(session_agent_id=agent.id, state=AgentLineState.WAITING, source=HELPER_JOB_SOURCE).exists()
-        return agent.parent_id is not None and not has_waiting_job
+        return not has_waiting_job
 
-    def report_exit(self, agent: Agent, job: HelperJob, command: RecordProgramExit, actor: Actor, terminal: str) -> None:
+    def report_exit(self, agent: Agent, parent_id: int, job: HelperJob, command: RecordProgramExit, actor: Actor, terminal: str) -> None:
         transcript_text = self.providers.provider(agent.program).last_reply(self.folders.folder(agent), agent.session)
         text = transcript_text or self.reasons.reason(agent, command.exit_code, command.launch_ended, terminal)
-        self.bus.run(RecordParentReport(agent.id, agent.parent_id, text, job.id), actor, environment_id=agent.environment_id)
+        self.bus.run(RecordParentReport(agent.id, parent_id, text, job.id), actor, environment_id=agent.environment_id)
         if not command.exit_code:
             return
         profile = self.profiles.registered(agent.profile)

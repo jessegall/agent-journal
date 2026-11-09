@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import replace
 
 from core.base.command.context import Context
@@ -26,7 +27,7 @@ class RuleHistoryWriter:
 
     def record(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         answered = [record for record in answers.rules if record.history or record.outcome in ANSWERED_OUTCOMES]
-        stored = self.histories.rows(agent_id) if answered else {}
+        stored: Mapping[tuple[str, str], RuleHistory] = self.histories.rows(agent_id) if answered else {}
         for record in answered:
             self.write(agent_id, record, stored.get((record.name, record.layer)), context)
         self.history.clear()

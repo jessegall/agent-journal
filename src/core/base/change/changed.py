@@ -24,3 +24,6 @@ class Changed(Generic[M]):
 
 def is_changed_class(class_type: type) -> TypeIs[type[Changed[Model]]]:
     return issubclass(class_type, Changed)
+
+
+RowChange = TypeVar("RowChange", bound=Changed[Model], contravariant=True)

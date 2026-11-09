@@ -37,7 +37,7 @@ class SavedCommandRule(DriverRule):
                 if part.timeout_duration is None:
                     continue
                 Duration.parse(part.timeout_duration)
-        except DurationError as error:
+        except DurationError:
             return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge())
         if not shell.aliases_loaded:
             return RuleAnswer.allowed()

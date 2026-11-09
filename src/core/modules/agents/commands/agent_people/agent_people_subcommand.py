@@ -25,8 +25,10 @@ class AgentPeopleSubcommand(ReadSubcommand[AgentPeople]):
         parser.add_argument("--owner", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> AgentPeople:
-        rows = {agent.id: agent for agent in self.queries.query(Agent).matching(Among("id", tuple(number for number in (arguments.creator, arguments.owner) if number is not None))).all_rows()}
-        return AgentPeople(self.queries.query(ActorRecord).filter(id=arguments.creator).first() if arguments.creator is not None else None, rows.get(arguments.creator), rows.get(arguments.owner))
+        creator: int | None = arguments.creator
+        owner: int | None = arguments.owner
+        rows = {agent.id: agent for agent in self.queries.query(Agent).matching(Among("id", tuple(number for number in (creator, owner) if number is not None))).all_rows()}
+        return AgentPeople(self.queries.query(ActorRecord).filter(id=creator).first() if creator is not None else None, rows.get(creator) if creator is not None else None, rows.get(owner) if owner is not None else None)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentPeople):

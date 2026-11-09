@@ -21,11 +21,12 @@ class InterruptedAgents:
         self.bus, self.launcher, self.hook_calls = bus, launcher, hook_calls
 
     def watch(self, agent: Agent, timestamp: Timestamp) -> None:
-        if agent.interrupted_at is None:
+        interrupted_at = agent.interrupted_at
+        if interrupted_at is None:
             return
-        if self.stopped_normally(agent):
+        if self.stopped_normally(agent, interrupted_at):
             return self.clear_pending(agent)
-        waited = agent.interrupted_at.elapsed_seconds(timestamp)
+        waited = interrupted_at.elapsed_seconds(timestamp)
         if waited < IDLE_SECONDS:
             return
         idle = self.launcher.idle_seconds(agent.terminal_id)
@@ -35,9 +36,9 @@ class InterruptedAgents:
         if idle >= waited:
             self.bus.run(WakeInterruptedAgent(agent.id), Actor.core(), environment_id=agent.environment_id)
 
-    def stopped_normally(self, agent: Agent) -> bool:
+    def stopped_normally(self, agent: Agent, interrupted_at: Timestamp) -> bool:
         stop = self.hook_calls.agent(agent.id).filter(hook=HookEventName.STOP).newest().first()
-        return stop is not None and stop.answer is HookAnswer.ALLOWED and stop.creation_timestamp().value > agent.interrupted_at.value
+        return stop is not None and stop.answer is HookAnswer.ALLOWED and stop.creation_timestamp().value > interrupted_at.value
 
     def clear_pending(self, agent: Agent) -> None:
         self.bus.run(RecordAgentInterrupt(agent.id, False), Actor.core(), environment_id=agent.environment_id)

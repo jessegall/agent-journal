@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from collections.abc import Callable
 from typing import ClassVar
 
 from core.base.caller.caller import Caller
@@ -21,7 +20,7 @@ class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
     text."""
 
     model: ClassVar[type[TextRow]]
-    id_type: ClassVar[Callable[[str], object]] = staticmethod(int)
+    id_type: ClassVar[staticmethod[[str], object]] = staticmethod(int)
     name = "show"
 
     def __init__(self, queries: Queries, links: RowLinks) -> None:

@@ -13,7 +13,8 @@ class ModelUse:
     agents: tuple[Agent, ...]
 
     def idle(self) -> tuple[Agent, ...]:
-        return tuple(sorted((agent for agent in self.agents if agent.ended_at is not None), key=lambda agent: agent.ended_at.value))
+        ended = [(agent.ended_at, agent) for agent in self.agents if agent.ended_at is not None]
+        return tuple(agent for _, agent in sorted(ended, key=lambda pair: pair[0].value))
 
     @property
     def job_agent_ratio(self) -> float:

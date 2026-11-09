@@ -9,7 +9,7 @@ from pathlib import Path
 
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.program_hooks import ProgramHooks
-from core.base.type_guards import is_list, is_mapping
+from core.base.type_guards import is_list, is_mapping, is_text_mapping
 from core.modules.codex.providers.support.codex_hook_definition import CodexHookDefinition
 from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent
 
@@ -70,7 +70,7 @@ class CodexTrust:
                 if not is_mapping(block) or not is_list(entries := block.get("hooks")):
                     continue
                 definitions.update({f"{hook_file}:{event.key}:{group}:{index}": CodexHookDefinition(event, block.get("matcher"), entry).current_hash()
-                                    for index, entry in enumerate(entries) if is_mapping(entry) and ProgramHooks.is_journals(entry)})
+                                    for index, entry in enumerate(entries) if is_text_mapping(entry) and ProgramHooks.is_journals(entry)})
         return definitions
 
     def record_generated(self, hook_file: Path, hooks: Mapping[str, object]) -> None:

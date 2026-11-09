@@ -25,7 +25,7 @@ class LogFileLines:
         for position, text in self.raw_lines():
             match = STAMPED_LINE.match(text)
             recorded_at = self.parsed_time(match[1]) if match else None
-            if recorded_at is None:
+            if match is None or recorded_at is None:
                 waiting.append((position, text))
                 continue
             yield from (self.output_line(line_position, line_text, recorded_at) for line_position, line_text in waiting)
@@ -44,7 +44,7 @@ class LogFileLines:
             parts = (block + tail).split(b"\n")
             tail = parts[0] if start > 0 else b""
             offset = start + len(parts[0]) + 1
-            positions = []
+            positions: list[tuple[int, bytes]] = []
             for part in parts[1:]:
                 positions.append((offset, part))
                 offset += len(part) + 1
