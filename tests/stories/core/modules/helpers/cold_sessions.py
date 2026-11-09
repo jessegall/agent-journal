@@ -96,7 +96,7 @@ def with_job(story, monkeypatch, minutes, percent):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     aged(story, minutes, percent)
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -168,7 +168,7 @@ def limited_helper(ended_helper):
 def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_helper, monkeypatch):
     story, helper = limited_helper, helper_agent(limited_helper)
     resumable_session(story, helper, monkeypatch)
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"started 701\n")
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"started 701\n")
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
@@ -177,7 +177,7 @@ def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_hel
 
 def test_a_limited_helper_starts_its_new_session_again_when_the_launcher_still_holds_its_program(limited_helper):
     story = limited_helper
-    launcher = FakeLauncher(story.home.socket("launcher"), request_count=2, answers=(b"running\n", b"started 701\n"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=2, answers=(b"running\n", b"started 701\n"))
     resume = story.container.get(HelperResume)
     resume.resume(helper_agent(story), JOB)
     resume.resume(helper_agent(story), JOB)

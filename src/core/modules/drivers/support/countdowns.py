@@ -7,7 +7,7 @@ from core.base.repository.repository import Repository
 from core.modules.drivers.models.countdown import Countdown
 
 
-def not_ended() -> bool:
+def condition_unmet() -> bool:
     return False
 
 
@@ -19,7 +19,7 @@ class Countdowns:
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def tick(self, count_down: CountDown, actor_id: int, subject: str, context: Context, stop_condition: Callable[[], bool] = not_ended) -> int:
+    def tick(self, count_down: CountDown, actor_id: int, subject: str, context: Context, stop_condition: Callable[[], bool] = condition_unmet) -> int:
         if stop_condition():
             self.reset(count_down, actor_id, context)
             return count_down.remaining_after(0)

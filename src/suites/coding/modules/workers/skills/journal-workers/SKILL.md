@@ -32,7 +32,7 @@ stays kept on the same agent number and session until retired.
   to give the same work to a kept worker. The plan shows as delegated, and phase tests run at each phase's end.
   Completed, started and already assigned tasks are left alone.
 - Any blocked task can go to a worker, alone, in a phase or in a whole plan: it stays assigned while it waits, and the
-  worker takes it when it opens, sent to it at once when the worker is idle. A new worker needs one open task to start on.
+  worker takes it when it opens, sent to it at once when the worker is idle. A new worker given only blocked tasks is made and not started; it starts by itself when one of them opens.
 - By default, a started plan runs the tests of a phase at its end, and you hear nothing until then. A proof with no test on a
   phase needs no check from you; you can still read it and send it back. A worker out of test runs asks with `journal worker ask --about tests`.
   `journal helper grant <worker> <program> "<subcommands>" "<arguments>"` says what it may run, alternatives split by a bar; it runs that with
@@ -182,7 +182,7 @@ An open question lets you stop; the answer wakes you. Going on with other work e
     together, and only failed tests run at the next hand-in.
   - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
     flag until you hand in again, which runs only what failed.
-- A test or build, also `journal worker test`, holds your call for the setting `worker-run-wait-seconds` (30 by default), queued or
+- A test or build, also `journal worker test`, holds your call for the setting `worker-run-wait-seconds` (60 by default), queued or
   running. If it ends in time you get its output at once; if not you get its output number and may go on or stop.
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
   next tool call, or stop and be started again when it ends.

@@ -117,7 +117,7 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story.run(f"process background {process.id}", actor=worker)
     story.run(f"agent end {worker.id}", actor=worker)
     story.run_listeners()
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
     story.container.get(OutputFolder).write_output(process.id, 1, "collected 8 items\n")
     OutputReading()(story.container)
     story.run_listeners()

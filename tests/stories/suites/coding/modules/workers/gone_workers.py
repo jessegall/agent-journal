@@ -24,7 +24,7 @@ RUNNING_PROGRAM = ProcessRow(WORKER_PID, 1, Timestamp(datetime(2026, 10, 31, 9, 
 def start_launcher(story, answer: bytes, request_count: int = 1) -> FakeLauncher:
     path = story.home.socket(LAUNCHER_SOCKET)
     path.unlink(missing_ok=True)
-    return FakeLauncher(path, answer=answer, request_count=request_count)
+    return FakeLauncher.listening(path, answer=answer, request_count=request_count)
 
 
 def expect_restart(story, launcher: FakeLauncher) -> None:
@@ -93,7 +93,7 @@ def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_
     story = ended_worker
     path = story.home.socket(LAUNCHER_SOCKET)
     path.unlink(missing_ok=True)
-    launcher = FakeLauncher(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))
+    launcher = FakeLauncher.listening(path, request_count=3, answers=(b"running\n", b"running\n", b"stopped\n"))
     story.run_listeners()
     stop = {"agent_id": story.worker.id, "stop": True}
     story.expect_rows("command" in launcher.requests[0], launcher.requests[-1] == stop, launcher.requests.count(stop) == 1, detail=str(launcher.requests))
@@ -102,7 +102,7 @@ def test_a_resume_the_launcher_refuses_leaves_the_stop_of_the_end_to_land(ended_
 def replaced_launcher(story, *answers: bytes) -> FakeLauncher:
     path = story.home.socket(LAUNCHER_SOCKET)
     path.unlink(missing_ok=True)
-    return FakeLauncher(path, request_count=len(answers), answers=answers)
+    return FakeLauncher.listening(path, request_count=len(answers), answers=answers)
 
 
 @pytest.fixture
@@ -165,7 +165,7 @@ def test_a_worker_whose_end_hook_was_lost_is_ended_at_a_tick(ended_worker):
     ended_worker.expect_text(f"agent show {ended_worker.worker.id}", "ended_at: 2026")
 
 
-def test_a_running_worker_is_not_ended_at_a_tick(running_worker):
+def test_a_running_worker_is_condition_unmet_at_a_tick(running_worker):
     running_worker.tick(MAIN_SESSION)
     running_worker.expect_no_text(f"agent show {running_worker.worker.id}", "ended_at:")
 
