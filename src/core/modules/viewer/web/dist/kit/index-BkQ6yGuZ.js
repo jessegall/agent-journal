@@ -5363,7 +5363,7 @@ const xv = /* @__PURE__ */ Object.assign({ name: "SkeletonParts" }, {
     ]));
   }
 }, lo = /* @__PURE__ */ U(_v, [["__scopeId", "data-v-52f66b64"]]), Ki = {
-  runningTool: 1e3,
+  runningTool: 500,
   agentCommand: 5e3,
   planCard: 3e3,
   openPanel: 5e3,
@@ -14397,7 +14397,7 @@ function UC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const GC = uu(() => import("./VoiceFigure-EAh_Tk1Q.js").then((e) => e.V)), VC = "1.2.0", KC = "3.5";
+const GC = uu(() => import("./VoiceFigure-CenLEHIy.js").then((e) => e.V)), VC = "1.2.0", KC = "3.5";
 export {
   Qf as $,
   Oe as A,

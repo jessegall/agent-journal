@@ -13,15 +13,16 @@ from core.modules.plans.models.plan import Plan
 from core.modules.plans.support.plan_assignee import PlanAssignee
 from core.modules.plans.support.plan_outlines import PlanOutlines
 from core.modules.tasks.commands.assign_task.assign_task import AssignTask
-from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.enums.task_state import UNSTARTED_STATES
 
 ENDED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 
 
 class AssignPlanHandler(Handler[AssignPlan, Plan]):
-    """Keeps the agent a plan is assigned to on the plan and moves the open tasks of the plan or of one phase
-    to it; with no agent named they are left free for the main agent to pick. A phase changes only its own
-    tasks, never who the plan is assigned to. A person or a main agent may assign a plan, a helper may not."""
+    """Keeps the agent a plan is assigned to on the plan and moves the open and blocked tasks of the plan or
+    of one phase to it; with no agent named they are left free for the main agent to pick. A phase changes
+    only its own tasks, never who the plan is assigned to. A person or a main agent may assign a plan, a
+    helper may not."""
 
     command = AssignPlan
 
@@ -36,7 +37,7 @@ class AssignPlanHandler(Handler[AssignPlan, Plan]):
         assignee = self.assignee(command)
         for phase in self.outlines.outline(plan.id).chosen(command.phase_id):
             for task in phase.tasks:
-                if task.state == TaskState.OPEN.value:
+                if task.state in UNSTARTED_STATES:
                     self.bus.run_with_context(AssignTask(task.id, assignee.id, command.agent_id is not None), context)
         if command.phase_id is not None:
             return plan
