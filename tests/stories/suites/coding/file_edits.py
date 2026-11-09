@@ -3,6 +3,7 @@ import json
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
+from suites.coding.commands.record_file_edit import record_file_edit_handler
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
@@ -112,3 +113,15 @@ def test_a_scan_is_kept_for_the_agent_of_its_session_whatever_environment_it_wor
     alternate_folder = story.new_row_id("agent start s-9 claude worker --environment elsewhere")
     scanned_edit(story, "s-9", "src/cart.py", 2, 0)
     story.expect_success("file-edit show 1", "path: src/cart.py", f"session_agent_id: {alternate_folder}")
+
+
+def test_the_log_keeps_the_newest_1000_file_edits(new_story, monkeypatch):
+    expect_value(record_file_edit_handler.ROWS_KEPT, 1000)
+    monkeypatch.setattr(record_file_edit_handler, "ROWS_KEPT", 3)
+    story = new_story(fixture=BuilderStarted)
+    for number in range(1, 6):
+        scanned_edit(story, "s-1", f"src/part{number}.py")
+    story.expect_refusal("file-edit show 1", "no")
+    story.expect_refusal("file-edit show 2", "no")
+    story.expect_text("file-edit show 3", "path: src/part3.py")
+    story.expect_text("file-edit show 5", "path: src/part5.py")

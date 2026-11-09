@@ -155,6 +155,7 @@ To say you could not judge something, answer with a `tell`, and put the reason i
 | `journal plugin config <name> --set <pointer>=<json value>` or `--stdin` | Changes it: checked against the schema, refused naming each wrong place, written whole. | A plugin, a person or an agent that may write. |
 | `journal plugin file <relative> [--from checkout, project or base]` | The text of a file. A name that is not there exits with code 4. | The same; an agent reads the project only in declared folders. |
 | `journal plugin run [--agent <n>] [--read-only] -- <command>` | Runs a command at the root of a checkout with the sandbox of its agent. | A plugin or a person, never an agent. |
+| `journal plugin log <name> [--level info, warning or error] "<text>"` | Writes a line to the system log as `plugin <name>: <text>` at that level, `info` when none is given. Developer mode shows it with the rest of the log, which rolls like the rest. | Anyone. |
 
 A plugin's own alias or command run by an agent gets `JOURNAL_CHECKOUT_TYPE`, `JOURNAL_CHECKOUT_ROOT`, `JOURNAL_PROJECT_ROOT`, `JOURNAL_BRANCH`, `JOURNAL_BASE_BRANCH` and `JOURNAL_BASE_COMMIT` in its environment, so it needs no git call to learn where it runs.
 

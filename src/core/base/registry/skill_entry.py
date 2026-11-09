@@ -25,6 +25,7 @@ class SkillEntry:
     modified_at: int | None = None
     types: Sequence[str] = ()
     groups: Sequence[str] = ()
+    required_setting: str | None = None
 
     @cached_property
     def event_patterns(self) -> tuple[EventPattern, ...]:
@@ -36,4 +37,4 @@ class SkillEntry:
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "SkillEntry":
         return cls(stored["folder"], stored["module"], stored["description"], tuple(stored["keywords"]), tuple(stored["commands"]), tuple(stored["events"]),
-                   stored["digest"], stored["path"], stored["shipped"], types=tuple(stored.get("types", ())))
+                   stored["digest"], stored["path"], stored["shipped"], types=tuple(stored.get("types", ())), required_setting=stored.get("required_setting"))

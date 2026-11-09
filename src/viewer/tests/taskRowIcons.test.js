@@ -26,7 +26,7 @@ test("a row shows its tags in full as outlined chips after the title", async () 
 });
 
 test("a task assigned to a main agent shows the solid purple user icon and any other agent keeps its icon", async () => {
-    const element = await drawn([task({id: 1, state: "started", delegated_to: 78, delegated_name: "Main", delegated_is_main: true}), task({id: 2, state: "started", delegated_to: 12, delegated_name: "Joan Clarke", delegated_is_main: false})]);
+    const element = await drawn([task({id: 1, state: "started", delegated_to: 78, delegated_name: "Main", main_delegate: true}), task({id: 2, state: "started", delegated_to: 12, delegated_name: "Joan Clarke", main_delegate: false})]);
     const main = cell(element, 1, "data-task-agent");
     const worker = cell(element, 2, "data-task-agent");
     expect(main.querySelector("[data-task-main-agent] svg")).not.toBeNull();

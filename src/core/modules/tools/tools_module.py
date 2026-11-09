@@ -13,7 +13,10 @@ from core.modules.tools.commands.set_tool.set_tool_handler import SetToolHandler
 from core.modules.tools.commands.set_tool.set_tool_off_subcommand import SetToolOffSubcommand
 from core.modules.tools.commands.set_tool.set_tool_state_subcommand import SetToolStateSubcommand
 from core.modules.tools.commands.tool_list.tool_list_subcommand import ToolListSubcommand
+from core.base.skill.skill_declaration import SkillDeclaration
+from core.modules.tools.listeners.graphify_hook_removal_listener import GraphifyHookRemovalListener
 from core.modules.tools.rules.graphify_search_rule import GraphifySearchRule
+from core.modules.tools.support.tool_catalogue import GRAPHIFY
 from core.modules.tools.support.skeletons import TOOLS_TOOLS_SKELETON
 from core.modules.tools.support.tool_catalogue import ToolCatalogue
 from core.modules.tools.support.tool_nudges import TOOL_NUDGES
@@ -34,6 +37,8 @@ class ToolsModule(Module):
     settings = [*TOOL_SETTINGS, *(tool.settings for tool in ToolCatalogue().all() if tool.settings is not None)]
     nudges = TOOL_NUDGES
     driver_rules = [GraphifySearchRule]
+    listeners = [GraphifyHookRemovalListener]
+    skills = [SkillDeclaration("journal-graphify", "Find code through the project's knowledge graph with graphify query, explain and path, using names from the code instead of questions; read it before you search the code while Graphify is on", keywords=["graphify"], required_setting=GRAPHIFY.settings_key)]
     handlers = [SetToolHandler, InstallToolHandler, RefreshToolHandler]
     subcommands = [ToolListSubcommand, SetToolStateSubcommand, SetToolOffSubcommand, InstallToolSubcommand, RefreshToolSubcommand, RefreshToolTickSubcommand]
     windows = [WindowDeclaration("tools.tools", "Tools", "tools.js", WindowLoading.COMPONENT, skeleton=TOOLS_TOOLS_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,

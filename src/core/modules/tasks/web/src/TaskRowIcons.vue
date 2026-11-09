@@ -11,7 +11,7 @@ const props = defineProps({row: {type: Object, required: true}});
 const emit = defineEmits(["priority"]);
 const held = computed(() => HELD_STATES.has(props.row.state));
 const named = computed(() => namedPriority(props.row.priority));
-const agentLabel = computed(() => (props.row.delegated_is_main ? "Main agent" : `Worker ${props.row.delegated_to}`));
+const agentLabel = computed(() => (props.row.main_delegate ? "Main agent" : `Worker ${props.row.delegated_to}`));
 const open = ref(false);
 const levels = PRIORITY_LEVELS.toReversed();
 
@@ -24,8 +24,8 @@ function pick(key) {
 <template>
     <span class="icons" data-task-icons @click.stop @keydown.enter.stop>
         <template v-if="row.delegated_to">
-            <HoverTip as="button" :class="['cell', 'agent', {queued: !held, main: row.delegated_is_main}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="agentLabel" @click="peekRef(`agents:${row.delegated_to}`)">
-                <template v-if="row.delegated_is_main">
+            <HoverTip as="button" :class="['cell', 'agent', {queued: !held, main: row.main_delegate}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="agentLabel" @click="peekRef(`agents:${row.delegated_to}`)">
+                <template v-if="row.main_delegate">
                     <span class="mark" data-task-main-agent><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="8" cy="4.8" r="3.3" /><path d="M1.8 14.6c0-3.4 2.8-5.6 6.2-5.6s6.2 2.2 6.2 5.6c0 .4-.3.7-.7.7H2.5c-.4 0-.7-.3-.7-.7z" /></svg></span>
                 </template>
                 <template v-else>

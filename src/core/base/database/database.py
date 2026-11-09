@@ -78,6 +78,19 @@ class Database:
             raise
 
     @contextmanager
+    def snapshot(self):
+        """Reads inside it see the database as it was at the first mark taken, so that mark matches the rows read."""
+        if self.has_transaction:
+            yield
+            return
+        self.connection.execute("BEGIN")
+        try:
+            yield
+        finally:
+            if self.connection.in_transaction:
+                self.connection.execute("COMMIT")
+
+    @contextmanager
     def savepoint(self, label: str):
         if len(self.nested) >= NESTING_LIMIT_LEVELS:
             raise NestingError((*self.nested, label))

@@ -7,7 +7,7 @@ from core.base.repository.repository import Repository
 from core.modules.drivers.models.countdown import Countdown
 
 
-def never() -> bool:
+def not_ended() -> bool:
     return False
 
 
@@ -19,17 +19,17 @@ class Countdowns:
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def tick(self, count_down: CountDown, actor_id: int, subject: str, context: Context, until: Callable[[], bool] = never) -> int:
-        if until():
+    def tick(self, count_down: CountDown, actor_id: int, subject: str, context: Context, stop_condition: Callable[[], bool] = not_ended) -> int:
+        if stop_condition():
             self.reset(count_down, actor_id, context)
-            return count_down.left_after(0)
+            return count_down.remaining_after(0)
         kept = self.kept(count_down, actor_id)
         used_count = kept.used_count + 1 if kept is not None and kept.subject == subject else 1
         if kept is None:
             self.repository.save(Countdown(actor_id=actor_id, creator_id=context.actor.id, key=count_down.key, subject=subject, used_count=used_count), context)
         else:
             self.repository.update(kept, context, subject=subject, used_count=used_count)
-        return count_down.left_after(used_count)
+        return count_down.remaining_after(used_count)
 
     def reset(self, count_down: CountDown, actor_id: int, context: Context) -> None:
         kept = self.kept(count_down, actor_id)

@@ -9,6 +9,7 @@ from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.drivers.support.countdowns import Countdowns
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
+from core.modules.processes.support.held_runs import LOOKED_MARK
 from core.modules.processes.support.output_folder import OutputFolder
 
 RUNNING_OUTPUT_READS = CountDown("processes.running_output_reads", "stop reading output", TimesSpan(3), is_silent=True)
@@ -27,7 +28,7 @@ class RepeatReads:
         if context.actor.type is not ActorType.AGENT:
             return
         has_ended = self.has_ended(command.process_id)
-        if not self.countdowns.tick(RUNNING_OUTPUT_READS, context.actor.id, str(command.process_id), context, until=lambda: has_ended):
+        if not self.countdowns.tick(RUNNING_OUTPUT_READS, context.actor.id, str(command.process_id), context, stop_condition=lambda: has_ended):
             raise Refusal(f"output {command.process_id} is still running: stop polling it", f"a main agent sets a monitor with journal output monitor {command.process_id}; a helper goes idle: the journal wakes you when it ends")
         if not has_ended or command.is_repeat_allowed:
             return
@@ -35,8 +36,12 @@ class RepeatReads:
             raise Refusal(f"you read output {command.process_id} this way already and it is still in your context", "add --again to read it anyway")
 
     def note(self, command: ReadOutput, actor: Actor, read_at: str) -> None:
-        if actor.type is ActorType.AGENT and self.has_ended(command.process_id):
+        if actor.type is not ActorType.AGENT:
+            return
+        if self.has_ended(command.process_id):
             self.folder.write_read_mark(command.process_id, self.mark(command, actor), read_at)
+        else:
+            self.folder.write_read_mark(command.process_id, LOOKED_MARK, read_at)
 
     def mark(self, command: ReadOutput, actor: Actor) -> str:
         return f"{actor.id}-{command.summary}-{command.all}-{command.lines}-{command.tail}-{command.reader}"

@@ -210,9 +210,6 @@ class MemoryWorktreeGit(WorktreeGit):
     def has_unmerged_branch(self, folder: str, worktree: Worktree) -> bool:
         return self.history.has_branch(worktree.branch) and not self.is_merged(folder, worktree.base_branch, worktree.branch)
 
-    def has_uncommitted_files(self, worktree: Worktree) -> bool:
-        return Path(worktree.folder).exists() and bool(self.uncommitted_names(worktree.folder))
-
     def is_merged(self, folder: str, base_branch: str, branch: str | None) -> bool:
         if not base_branch or branch is None or not self.history.has_branch(branch) or not self.history.has_branch(base_branch):
             return False

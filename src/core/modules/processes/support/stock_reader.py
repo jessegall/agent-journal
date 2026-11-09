@@ -157,4 +157,7 @@ STOCK_READERS = (
                   r"tests passed, ([0-9]+ tests failed out of [0-9]+)", count=r"^[0-9]+/([0-9]+) Test +#", step=r"(?m)^[0-9]+/[0-9]+ Test +#[0-9]+: \S+ \.+\s*(?:(?P<passed>Passed)|(?P<failed>\*\*\*Failed))"),
     StockReader("bazel-test", "bazel test*", "Bazel tests", r"^//\S+\s+(?:\(cached\) )?(?:PASSED|FAILED)|^Executed [0-9]+ out of|^FAIL: |^INFO: Build completed", finished=r"^Executed [0-9]+ out of", failed=r"\sFAILED in |^FAIL: |^INFO: Build completed, [0-9]+ tests? FAILED",
                   summary=r"^Executed [0-9]+ out of [0-9]+ tests?.*", count=r"^Executed [0-9]+ out of ([0-9]+) tests?", step=r"(?m)^//\S+\s+(?:\(cached\) )?(?:(?P<passed>PASSED)|(?P<failed>FAILED))"),
+    StockReader("judge", "journal sins*", "Judging the changes", r"^(?:[a-z][\w/-]*  \([0-9]+\)$|[0-9]+ sins? across|↳ checklist written|No sins found|Nothing to judge|✓ |✗ |⚠ |· this run refuses)",
+                  progress=r"^(?:parsing|reading|detector) (\d+)/(\d+)$", finished=r"^(?:\d+ sins? across \d+ skills?\.$|✓ |↳ checklist written to )", failed=r"^(?:✗ |⚠ |· this run refuses)",
+                  summary=r"(No sins found|Nothing to judge|[0-9]+ sins? across|this run refuses to read).*"),
 )

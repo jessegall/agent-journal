@@ -1,4 +1,5 @@
 from argparse import Namespace
+from collections.abc import Sequence
 from dataclasses import asdict
 
 from core.base.page import Page
@@ -19,8 +20,10 @@ from core.modules.documents.models.link import Link
 from core.modules.documents.references.row_ref import RowRef
 from core.modules.documents.support.link_counterpart import LinkCounterpart
 from core.modules.documents.support.link_endpoint_reader import LinkEndpointReader
+from core.modules.documents.support.link_endpoint import LinkEndpoint
 from core.modules.documents.support.link_page import LinkPage
 from core.modules.documents.support.link_read import LinkRead
+from core.modules.documents.support.link_section import LinkSection
 from core.modules.documents.support.row_refs import RowRefs
 
 
@@ -32,6 +35,14 @@ class LinkPages:
         self.queries, self.row_refs, self.endpoints = queries, row_refs, endpoints
 
     def read(self, arguments: Namespace) -> LinkPage:
+        return self.read_many((arguments,))[0]
+
+    def read_many(self, argument_list: Sequence[Namespace]) -> tuple[LinkPage, ...]:
+        sections = tuple(self.section(arguments) for arguments in argument_list)
+        endpoints = self.endpoints.read({reference for section in sections for reference in section.endpoint_references})
+        return tuple(self.page_of(section, endpoints) for section in sections)
+
+    def section(self, arguments: Namespace) -> LinkSection:
         size = min(arguments.page_size, 50)
         if arguments.page < 1 or size < 1 or arguments.page > 9223372036854775807 // size:
             raise Refusal("use a positive link page and page size within the supported range")
@@ -48,12 +59,14 @@ class LinkPages:
             query = query.matching(ExcludesPlan(reference))
         counts = LinkTargetCounts(query.scoped(query.select), reference).statement()
         target_counts = {str(row[0]): int(row[1]) for row in query.database.rows(counts)}
+        target_model_name = ""
         if arguments.target_model:
             model = self.row_refs.model(arguments.target_model)
             if model is None:
                 raise Refusal(f"unknown link kind: {arguments.target_model}")
-            query = query.matching(LinkTarget(reference, model.model_name))
-        counterparts = ()
+            target_model_name = model.model_name
+            query = query.matching(LinkTarget(reference, target_model_name))
+        counterparts: tuple[RowRef, ...] = ()
         if arguments.group_counterparts:
             page = self.counterpart_page(query.matching(FirstLinkCounterpart(query.select, reference)), reference, arguments, size)
             counterparts = tuple(scope.counterpart(link) for link in page.rows)
@@ -63,23 +76,26 @@ class LinkPages:
                 raise Refusal("a first counterpart needs --group-counterparts")
             page = query.oldest().page(arguments.page, size)
             links = page.rows
-        references = {end for link in links for end in (RowRef(link.source_model, link.source_id), RowRef(link.target_model, link.target_id))}
-        endpoints = self.endpoints.read(references)
+        return LinkSection(links, counterparts, scope, page, reference, side.value, size, types, target_model_name, target_counts, arguments.group_counterparts,
+                           arguments.first_counterpart, arguments.excludes_plan, arguments.page)
+
+    def page_of(self, section: LinkSection, endpoints: dict[RowRef, LinkEndpoint]) -> LinkPage:
+        links, scope = section.links, section.scope
         rows = tuple(LinkRead(link, endpoints[RowRef(link.source_model, link.source_id)], endpoints[RowRef(link.target_model, link.target_id)]) for link in links)
         groups = tuple(LinkCounterpart(endpoints[counterpart],
                        tuple(sorted({str(link.link_type) for link in links if scope.counterpart(link) == counterpart})),
-                       tuple(link.id for link in links if scope.counterpart(link) == counterpart)) for counterpart in counterparts)
-        command = f"journal link list --{side} {reference.text} --page {arguments.page + 1} --page-size {size}"
-        command += "".join(f" --type {link_type}" for link_type in types)
-        if arguments.group_counterparts:
+                       tuple(link.id for link in links if scope.counterpart(link) == counterpart)) for counterpart in section.counterparts)
+        command = f"journal link list --{section.side} {section.reference.text} --page {section.page_number + 1} --page-size {section.size}"
+        command += "".join(f" --type {link_type}" for link_type in section.types)
+        if section.grouped:
             command += " --group-counterparts"
-        if arguments.first_counterpart:
-            command += f" --first-counterpart {arguments.first_counterpart}"
-        if arguments.excludes_plan:
+        if section.first_counterpart:
+            command += f" --first-counterpart {section.first_counterpart}"
+        if section.excludes_plan:
             command += " --outside-plan"
-        if arguments.target_model:
-            command += f" --kind {model.model_name}"
-        return LinkPage(rows, groups, arguments.page, size, page.total, None if page.is_last else command, target_counts)
+        if section.target_model_name:
+            command += f" --kind {section.target_model_name}"
+        return LinkPage(rows, groups, section.page_number, section.size, section.page.total, None if section.page.is_last else command, section.target_counts)
 
     def counterpart_page(self, query: Query[Link], reference: RowRef, arguments: Namespace, size: int) -> Page[Link]:
         if not arguments.first_counterpart:

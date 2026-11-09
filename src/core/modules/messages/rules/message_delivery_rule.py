@@ -34,9 +34,8 @@ class MessageDeliveryRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.accepts_lines or hook.event.event == HookEventName.TICK:
             return RuleAnswer.allowed()
-        undelivered = self.messages.unread(hook.agent_id).matching(IsNull("delivered_at")).oldest()
-        messages = undelivered.limited(LISTED_MESSAGES)
-        waiting = undelivered.count() if len(messages) == LISTED_MESSAGES else len(messages)
+        undelivered = sorted(self.messages.unread(hook.agent_id).matching(IsNull("delivered_at")).all_rows(), key=lambda message: message.id)
+        messages, waiting = undelivered[:LISTED_MESSAGES], len(undelivered)
         if not messages or self.queries.query(AgentLine).filter(session_agent_id=hook.agent_id, source=WAITING_MESSAGE_SOURCE, state=AgentLineState.TYPING).exists():
             return RuleAnswer.allowed()
         heading = NEW_MESSAGE.nudge(message=messages[0].id) if waiting == 1 else NEW_MESSAGES.nudge(count=waiting)

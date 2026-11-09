@@ -184,8 +184,8 @@ def expect_plugin_notice(story, sample, text):
     expect_reply_allowed(reply)
     expect_absent_reply_line(reply, text)
     saved = next((line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if text in line.text), None)
-    assert saved is not None
+    assert saved is not None, [(line.source, line.text) for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()]
     story.expect_text(f"agent-line show {saved.id}", text, actor=story.agent)
     next_reply = story.hook("s-1", LISTING_SAMPLE)
-    story.expect_rows(any("agent-line" in line for line in next_reply.lines), text not in "\n".join(next_reply.lines))
-    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, saved.nudge.text)
+    story.expect_rows(any(text in line for line in next_reply.lines), not any(f"agent-line:{saved.id}" in line for line in next_reply.lines))
+    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, text)

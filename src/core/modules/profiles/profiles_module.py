@@ -32,7 +32,7 @@ class ProfilesModule(Module):
     handlers = [ResetProfileHandler, RemoveProfileHandler, SaveProfileHandler, CountProfileUseHandler]
     subcommands = [ResetProfileSubcommand, RemoveProfileSubcommand, ProfileListSubcommand, ProfileSkillsSubcommand, SaveProfileSubcommand]
     listeners = [ProfilePublishListener]
-    windows = [WindowDeclaration("profiles.profiles", "Agent profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "agent_type", "model", "codex_model")),
+    windows = [WindowDeclaration("profiles.profiles", "Profiles", "profiles.js", WindowLoading.COMPONENT, skeleton=PROFILES_PROFILES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.AGENT, search=WindowReadSearch("profile list", "Find a profile", ("name", "description", "agent_type", "model", "codex_model")),
                                  reads=["agent programs", "helper availability", "profile list", "profile skills"],
                                  keys=[WindowKey("programs", "agent programs"), WindowKey("profiles", "profile list"), WindowKey("skills", "profile skills", arguments=["profile"], loading=KeyLoading.REQUESTED), WindowKey("availability", "helper availability", arguments=["profile", "program"], loading=KeyLoading.REQUESTED)],
                                  runs=["helper start", "helper send", "profile save", "profile reset", "profile remove"])]

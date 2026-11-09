@@ -27,7 +27,7 @@ TEST_RUN = "worker test python tests/cart.py"
 BUILD_LINE = "make build"
 BUILD_SHELL = HookSamples.shell(BUILD_LINE, ShellPart("make", CommandCategory.BUILD, ["build"]))
 SEARCH_SHELL = HookSamples.shell("grep -r cart src", ShellPart("grep", CommandCategory.SEARCH, ["-r", "cart", "src"]))
-TOLD_THE_NUMBER = "go on with task 1, you hear when it ends"
+OUTPUT_NUMBER_LINE = "go on with task 1, you hear when it ends"
 SECONDS_SET = f"setting set {WORKER_RUN_WAIT} {{seconds}} --environment main"
 
 
@@ -61,7 +61,7 @@ def newest_run(story) -> Process:
     return story.container.get(Queries).query(Process).newest().first()
 
 
-def end_while_held(story, text: str, exit_code: int = 0, after_sleeps: int = 1) -> None:
+def end_run_during_wait(story, text: str, exit_code: int = 0, after_sleeps: int = 1) -> None:
     def ended() -> None:
         process = newest_run(story)
         folder = story.container.get(OutputFolder)
@@ -130,22 +130,22 @@ def test_a_negative_wait_is_refused(worker):
 
 
 def test_a_named_test_that_ends_in_time_answers_with_its_output(worker):
-    end_while_held(worker.story, "3 passed\n")
+    end_run_during_wait(worker.story, "3 passed\n")
     outcome = worker.story.run(TEST_RUN, actor=worker.worker)
     expect_value_with(outcome.output_text, "3 passed")
     expect_value_with(outcome.output_text, "ended with exit code 0")
-    expect_value_without(outcome.output_text, TOLD_THE_NUMBER)
+    expect_value_without(outcome.output_text, OUTPUT_NUMBER_LINE)
 
 
 def test_a_named_test_that_fails_in_time_says_so(worker):
-    end_while_held(worker.story, "1 failed\n", exit_code=1)
+    end_run_during_wait(worker.story, "1 failed\n", exit_code=1)
     outcome = worker.story.run(TEST_RUN, actor=worker.worker)
     expect_value_with(outcome.output_text, "1 failed")
     expect_value_with(outcome.output_text, "ended with exit code 1")
 
 
 def test_a_named_test_that_ends_near_the_end_of_the_wait_still_answers_with_its_output(worker):
-    end_while_held(worker.story, "late pass\n", after_sleeps=59)
+    end_run_during_wait(worker.story, "late pass\n", after_sleeps=59)
     expect_value_with(worker.story.run(TEST_RUN, actor=worker.worker).output_text, "late pass")
 
 
@@ -153,7 +153,7 @@ def test_a_named_test_past_the_wait_tells_the_output_number(worker):
     outcome = worker.story.run(TEST_RUN, actor=worker.worker)
     process = newest_run(worker.story)
     expect_value_with(outcome.output_text, f"output {process.id}")
-    expect_value_with(outcome.output_text, TOLD_THE_NUMBER)
+    expect_value_with(outcome.output_text, OUTPUT_NUMBER_LINE)
 
 
 def test_a_named_test_past_the_wait_asks_its_run_to_go_to_the_background(worker):
@@ -162,31 +162,31 @@ def test_a_named_test_past_the_wait_asks_its_run_to_go_to_the_background(worker)
 
 
 def test_a_named_test_that_ends_in_time_is_not_asked_to_move(worker):
-    end_while_held(worker.story, "ok\n")
+    end_run_during_wait(worker.story, "ok\n")
     worker.story.run(TEST_RUN, actor=worker.worker)
     expect_value(worker.story.container.get(OutputFolder).has_move_request(newest_run(worker.story).id), False)
 
 
 def test_a_changed_setting_changes_how_long_a_named_test_holds(worker):
     set_seconds(worker.story, 5)
-    before = worker.story.clock.slept_seconds
+    start_seconds = worker.story.clock.slept_seconds
     worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.clock.slept_seconds - before, 5)
+    expect_value(worker.story.clock.slept_seconds - start_seconds, 5)
 
 
 def test_the_default_holds_a_named_test_for_thirty_seconds(worker):
-    before = worker.story.clock.slept_seconds
+    start_seconds = worker.story.clock.slept_seconds
     worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.clock.slept_seconds - before, 30)
+    expect_value(worker.story.clock.slept_seconds - start_seconds, 30)
 
 
 def test_at_zero_a_named_test_launches_in_the_background_and_tells_the_output_number_at_once(worker, launches):
     set_seconds(worker.story, 0)
-    before = worker.story.clock.slept_seconds
+    start_seconds = worker.story.clock.slept_seconds
     outcome = worker.story.run(TEST_RUN, actor=worker.worker)
     worker.story.run_listeners()
-    expect_value_with(outcome.output_text, TOLD_THE_NUMBER)
-    expect_value(worker.story.clock.slept_seconds, before)
+    expect_value_with(outcome.output_text, OUTPUT_NUMBER_LINE)
+    expect_value(worker.story.clock.slept_seconds, start_seconds)
     expect_value_with(launches[0], "--background")
 
 

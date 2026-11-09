@@ -129,10 +129,10 @@ def test_install_runs_the_install_command_and_the_card_shows_installed(new_story
     story.expect_text("tool install graphify", "installed", actor=story.user)
     story.expect_rows(installed.is_file())
     calls = [line.split(" ", 1)[1] for line in repo.calls.read_text().splitlines()]
-    story.expect_rows(calls == ["install", "claude install", "codex install"], detail=str(calls))
+    story.expect_rows(calls == ["install"], detail=str(calls))
 
 
-def test_the_hook_an_agent_install_writes_comes_under_management(new_story, tmp_path):
+def test_installing_graphify_writes_no_search_hook_for_an_agent_program(new_story, tmp_path):
     story, _ = story_with_graphify(new_story, tmp_path)
     writer = tmp_path / "hook-writing-graphify"
     settings = {"hooks": {"PreToolUse": [{"matcher": "Grep", "hooks": [{"type": "command", "command": "graphify-guard"}]}]}}
@@ -142,13 +142,13 @@ def test_the_hook_an_agent_install_writes_comes_under_management(new_story, tmp_
     story.expect_success(f"setting set {INSTALL_SETTING} true --project", actor=story.user)
     story.expect_success("tool install graphify", actor=story.user)
     commands = [hook.command for hook in story.container.get(ManagedHooks).all()]
-    story.expect_rows("graphify-guard" in commands, detail=str(commands))
+    story.expect_rows("graphify-guard" not in commands, detail=str(commands))
 
 
-def test_an_agent_install_that_fails_is_refused_with_its_last_line(new_story, tmp_path):
+def test_graphifys_own_install_that_fails_is_refused_with_its_last_line(new_story, tmp_path):
     story, _ = story_with_graphify(new_story, tmp_path)
     failing = tmp_path / "failing-graphify"
-    failing.write_text('#!/bin/sh\nif [ "$1" = claude ]; then echo no settings file >&2; exit 4; fi\n')
+    failing.write_text('#!/bin/sh\nif [ "$1" = install ]; then echo no settings file >&2; exit 4; fi\n')
     failing.chmod(0o755)
     story.expect_success(f"setting set {COMMAND_SETTING} {failing} --project", actor=story.user)
     story.expect_success(f"setting set {INSTALL_SETTING} true --project", actor=story.user)
@@ -182,6 +182,16 @@ def test_a_new_worktree_gets_a_copy_of_the_graph_only_while_graphify_is_on(new_s
     story.expect_success("tool on graphify", actor=story.user)
     story.expect_rows(tools.worktree_graph(str(source), str(target)) == ["graphify-out"], (target / "graphify-out/graph.json").read_text() == "graph",
                       not (target / "graphify-out/.journal-running").exists())
+
+
+def test_a_removed_worktree_folder_is_not_made_again_for_the_graph(new_story, tmp_path):
+    story, repo = story_with_graphify(new_story, tmp_path)
+    source = tmp_path / "source"
+    target = tmp_path / "removed"
+    (source / "graphify-out").mkdir(parents=True)
+    (source / "graphify-out/graph.json").write_text("graph")
+    story.expect_success("tool on graphify", actor=story.user)
+    story.expect_rows(story.container.get(Tools).worktree_graph(str(source), str(target)) == [], not target.exists())
 
 
 def test_the_tools_window_is_a_project_page_that_reads_the_list_and_runs_its_buttons(new_story):

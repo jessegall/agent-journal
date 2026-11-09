@@ -104,3 +104,11 @@ def test_a_worker_commit_that_touches_its_instruction_files_merges_without_chang
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
     repository.expect_file(ENVIRONMENT_BRANCH, "CLAUDE.md", PROJECT_TEXT)
     repository.expect_file(ENVIRONMENT_BRANCH, "AGENTS.md", PROJECT_TEXT)
+
+
+@pytest.mark.real_git
+def test_a_send_reads_each_instruction_file_of_the_worktree_once(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    project_with_instructions(story)
+    worker = dispatched_worker(story)
+    story.expect_success(f'worker send --wait {worker.id} "Go on with the job"', actor=story.agent)

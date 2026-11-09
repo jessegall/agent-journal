@@ -235,6 +235,7 @@ test("a card folded to its title line shows only a small bar with the percent in
     expect([...time.children].map((child) => child.className)).toEqual(["output-dock-percent"]);
     expect(time.querySelector("[data-output-percent]").title).toBe("42%");
     expect(time.querySelector("[data-output-percent] i").style.width).toBe("42%");
+    expect(time.querySelector("[data-output-percent] i").style.background).toBe("var(--tone-work)");
     expect(time.textContent).toBe("");
     expect(time.textContent).not.toMatch(/passed|failed|Steps/);
     expect(head.textContent).not.toMatch(/passed|failed|Steps/);
