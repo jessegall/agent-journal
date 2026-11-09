@@ -3,8 +3,8 @@ import fcntl
 import os
 import time
 from collections.abc import Callable
+from contextlib import ExitStack
 from pathlib import Path
-from typing import IO
 
 from core.base.process_ids import ProcessIds
 from core.base.file_access import FileAccess
@@ -24,7 +24,7 @@ class HeavyRunGate:
 
     def __init__(self, folder: Path = GATE_FOLDER) -> None:
         self.folder = folder
-        self.lock_handle: IO[str] | None = None
+        self.lock_holder: ExitStack | None = None
 
     def enter(self, announce: Callable[[str], None]) -> None:
         self.folder.mkdir(parents=True, exist_ok=True)
@@ -48,26 +48,26 @@ class HeavyRunGate:
         atexit.register(self.leave)
 
     def leave(self) -> None:
-        if self.lock_handle is not None:
-            fcntl.flock(self.lock_handle, fcntl.LOCK_UN)
-            self.lock_handle.close()
-            self.lock_handle = None
+        if self.lock_holder is not None:
+            self.lock_holder.close()
+            self.lock_holder = None
 
     def try_lock(self) -> bool:
-        lock = os.fdopen(os.open(self.folder / HOLDER_FILE, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644), "a")
+        holder = ExitStack()
+        lock = holder.enter_context(FileAccess.shared().writer(self.folder / HOLDER_FILE, "a"))
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            lock.close()
+            holder.close()
             return False
-        self.lock_handle = lock
+        self.lock_holder = holder
         return True
 
     @staticmethod
     def active_tickets(tickets: Path) -> list[Path]:
         active = []
         for ticket in sorted(tickets.iterdir()):
-            if ProcessIds.exists(int(ticket.name.rpartition("-")[2])):
+            if ProcessIds.text_exists(ticket.name.rpartition("-")[2]):
                 active.append(ticket)
             else:
                 ticket.unlink(missing_ok=True)

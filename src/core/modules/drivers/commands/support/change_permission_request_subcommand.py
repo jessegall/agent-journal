@@ -8,7 +8,7 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 PermissionCommand = TypeVar("PermissionCommand", bound=Command[PermissionRequest])
 
 
-class PermissionRequestSubcommand(Subcommand[PermissionCommand, PermissionRequest]):
+class ChangePermissionRequestSubcommand(Subcommand[PermissionCommand, PermissionRequest]):
     """A subcommand that answers with the permission request it changed."""
 
     def write_output(self, value: object, output: Output) -> None:

@@ -1,4 +1,4 @@
-from core.modules.drivers.commands.support.agent_wake_handler import WakeAgentHandler
+from core.modules.drivers.commands.support.wake_agent_handler import WakeAgentHandler
 from core.modules.drivers.commands.wake_compacted_agent.wake_compacted_agent import WakeCompactedAgent
 from core.modules.drivers.support.driver_nudges import AGENT_COMPACTED
 from core.modules.drivers.support.waiting_line_typing import COMPACTED_WAKE_SOURCE

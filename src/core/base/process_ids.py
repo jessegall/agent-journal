@@ -13,3 +13,7 @@ class ProcessIds:
         except PermissionError:
             return True
         return True
+
+    @staticmethod
+    def text_exists(text: str) -> bool:
+        return text.isdigit() and ProcessIds.exists(int(text))

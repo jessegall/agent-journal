@@ -2,7 +2,7 @@ WORKER_WORK_REVIEW_SELECT = """
 SELECT worktree.session_agent_id AS agent_id, worktree.environment_id,
        CASE
            WHEN worktree.state = 'cut' THEN 'changes requested'
-           WHEN worktree.handed_to_main_at IS NOT NULL THEN 'with the main agent'
+           WHEN worktree.returned_at IS NOT NULL THEN 'with the main agent'
            WHEN EXISTS (SELECT 1 FROM proofs JOIN processes ON processes.id = proofs.process_id
                         WHERE proofs.worktree_id = worktree.id AND proofs.state = 'running' AND processes.queued_at IS NULL) THEN 'tests running'
            WHEN EXISTS (SELECT 1 FROM proofs WHERE proofs.worktree_id = worktree.id AND proofs.state IN ('queued', 'running')) THEN 'tests queued'

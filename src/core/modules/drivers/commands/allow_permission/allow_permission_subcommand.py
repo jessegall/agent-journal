@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.modules.drivers.commands.allow_permission.allow_permission import AllowPermission
-from core.modules.drivers.commands.support.permission_request_subcommand import PermissionRequestSubcommand
+from core.modules.drivers.commands.support.change_permission_request_subcommand import ChangePermissionRequestSubcommand
 
 
-class AllowPermissionSubcommand(PermissionRequestSubcommand[AllowPermission]):
+class AllowPermissionSubcommand(ChangePermissionRequestSubcommand[AllowPermission]):
     """`journal permission allow <request>`: the main agent, or a person, answers an agent's request for leave once."""
 
     cli_name = "permission"

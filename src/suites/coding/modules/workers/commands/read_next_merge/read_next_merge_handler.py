@@ -56,7 +56,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     @staticmethod
     def waits(worktree: Worktree) -> bool:
-        return worktree.state is WorktreeState.DELIVERED and worktree.tests_passed_at is not None and worktree.handed_to_main_at is None
+        return worktree.state is WorktreeState.DELIVERED and worktree.tests_passed_at is not None and worktree.returned_at is None
 
     @staticmethod
     def task_section(task, summary: str, proofs: list[Proof]) -> str:

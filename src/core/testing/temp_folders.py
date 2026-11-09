@@ -46,7 +46,7 @@ class TempFolders:
     def remove_dead_runs(self) -> None:
         for folder in self.folders(RUNNING_PREFIX):
             process = folder.name.rsplit("-", 1)[-1]
-            if process.isdigit() and not ProcessIds.exists(int(process)):
+            if process.isdigit() and not ProcessIds.text_exists(process):
                 shutil.rmtree(folder, ignore_errors=True)
 
     def remove_old(self) -> None:

@@ -38,9 +38,11 @@ class ReaderFile:
         return line.startswith(NOTE_MARK) and not line.startswith("#!")
 
     @classmethod
-    def title_place(cls, lines: list[str], is_script: bool) -> int | None:
-        if is_script:
-            return next((index for index, line in enumerate(lines) if cls.is_note(line)), None)
+    def script_title_place(cls, lines: list[str]) -> int | None:
+        return next((index for index, line in enumerate(lines) if cls.is_note(line)), None)
+
+    @staticmethod
+    def pattern_title_place(lines: list[str]) -> int | None:
         return 0 if lines and lines[0].startswith(NOTE_MARK) else None
 
     @classmethod
@@ -49,7 +51,7 @@ class ReaderFile:
         declared = [line.removeprefix(NOTE_MARK).strip() if is_script else line for line in lines]
         if any(line.startswith(TITLE_PREFIX) for line in declared):
             return lines
-        place = cls.title_place(lines, is_script)
+        place = cls.script_title_place(lines) if is_script else cls.pattern_title_place(lines)
         if place is None:
             return lines
         comment = lines[place].removeprefix(NOTE_MARK).strip()

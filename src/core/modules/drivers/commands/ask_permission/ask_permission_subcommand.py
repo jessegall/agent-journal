@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission
-from core.modules.drivers.commands.support.permission_request_subcommand import PermissionRequestSubcommand
+from core.modules.drivers.commands.support.change_permission_request_subcommand import ChangePermissionRequestSubcommand
 
 
-class AskPermissionSubcommand(PermissionRequestSubcommand[AskPermission]):
+class AskPermissionSubcommand(ChangePermissionRequestSubcommand[AskPermission]):
     """`journal permission ask "<command or file>" --reason "<why>" [--person]`: asks for leave to do that one
     thing once."""
 
