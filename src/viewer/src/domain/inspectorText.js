@@ -11,5 +11,5 @@ export function fill(template, row, extra = {}) {
     });
 }
 
-// the label an inspector shows: the listed one filled from the row, otherwise the noun, the id and the state
-export const inspectorLabel = (listing, noun, row, id) => fill(listing.label, row, {row_id: id, id}) || headingOf(noun, row, id);
+// the label an inspector shows: the listed one filled from the row, otherwise the term, the id and the state
+export const inspectorLabel = (listing, term, row, id) => fill(listing.label, row, {row_id: id, id}) || headingOf(term, row, id);

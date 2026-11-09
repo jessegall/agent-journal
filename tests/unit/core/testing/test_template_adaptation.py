@@ -48,4 +48,4 @@ def test_a_path_inside_the_pickled_story_state_is_replaced_too(tmp_path):
 @dataclass(frozen=True)
 class PathState:
     folder: str
-    more: tuple[str, ...]
+    extra: tuple[str, ...]

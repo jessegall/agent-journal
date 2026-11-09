@@ -108,14 +108,14 @@ def test_the_queue_inspector_says_everything_waits_because_an_update_waits(new_s
     story = update_waiting_story(new_story)
     queued(story, "make one")
     inspector = json.loads(story.run("queue inspect --environment 1 --json", actor=story.agent).output_text)
-    story.expect_rows(inspector["halted"], inspector["halt_kind"] == "update", "update" in inspector["halt_reason"].lower())
+    story.expect_rows(inspector["halted"], inspector["halt_reason"] == "update", "update" in inspector["halt_reason"].lower())
 
 
 def test_the_inspector_says_nothing_waits_for_an_update_once_it_is_done(new_story):
     story = update_waiting_story(new_story)
     story.home.run_lock.unlink()
     inspector = json.loads(story.run("queue inspect --environment 1 --json", actor=story.agent).output_text)
-    story.expect_rows(not inspector["halted"], inspector["halt_kind"] == "")
+    story.expect_rows(not inspector["halted"], inspector["halt_reason"] == "")
 
 
 def test_the_main_agent_is_told_an_update_waits_and_for_which_runs(new_story):

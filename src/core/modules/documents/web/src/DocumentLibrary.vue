@@ -16,13 +16,13 @@ const ORDERS = [
     {key: "title", label: "A to Z"},
 ];
 
-const noun = ref("doc");
+const term = ref("doc");
 const state = ref("open");
 const order = ref("newest");
 const words = ref("");
 const chosen = ref(null);
 const view = useWindow();
-view.state["library.type"] = noun.value;
+view.state["library.type"] = term.value;
 view.state["library.state"] = state.value;
 const library = view.props.library;
 const rows = ref([]);
@@ -36,36 +36,36 @@ const drafting = ref(false);
 const draft = ref({title: "", abstract: "", body: ""});
 const refusal = ref("");
 const groups = computed(() => grouped(sorted(searched(rows.value, words.value), order.value), order.value));
-const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
+const label = computed(() => (term.value === "doc" ? "Document" : "Report"));
 
 // the first page of the type chosen, in one read; a page more is asked for after the last number held
 async function load() {
-    const type = noun.value;
+    const type = term.value;
     const shown = state.value;
     view.state["library.type"] = type;
     view.state["library.state"] = shown;
     delete view.state["library.after"];
     const refreshed = await view.reload("library");
-    if (type !== noun.value || shown !== state.value) return;
+    if (type !== term.value || shown !== state.value) return;
     rows.value = refreshed && !failure.value ? library.data.value.rows : [];
     total.value = refreshed && !failure.value ? library.data.value.total : 0;
     loaded.value = true;
 }
 
 async function more() {
-    const type = noun.value;
+    const type = term.value;
     const shown = state.value;
     view.state["library.after"] = String(Math.max(...rows.value.map((row) => row.id)));
     const refreshed = await view.reload("library");
     delete view.state["library.after"];
     if (!refreshed || failure.value) return;
-    if (type === noun.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
+    if (type === term.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
 }
 
 // a row opens in the panel, as every other row does
 function open(row) {
     chosen.value = row.id;
-    peekRef(`${noun.value === "doc" ? "docs" : "reports"}:${row.id}`);
+    peekRef(`${term.value === "doc" ? "docs" : "reports"}:${row.id}`);
 }
 
 async function create() {
@@ -136,7 +136,7 @@ onUnmounted(() => stopFollowing?.());
                     <p class="library-note">{{ failure }}</p>
                 </template>
                 <template v-else-if="loaded && !groups.length">
-                    <p class="library-note">{{ words ? "Nothing matches the search" : `No ${LIBRARIES.find((type) => type.key === noun).label.toLowerCase()} yet` }}</p>
+                    <p class="library-note">{{ words ? "Nothing matches the search" : `No ${LIBRARIES.find((type) => type.key === term).label.toLowerCase()} yet` }}</p>
                     <template v-if="words">
                         <Btn small data-library-clear @click="words = ''">Clear the search</Btn>
                     </template>

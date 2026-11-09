@@ -45,7 +45,7 @@ def test_only_the_addressed_main_agent_can_relay_the_request(helper_request):
     story.expect_success(f"approval relay {approval.id}", actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     items = tuple(story.container.get(Queries).query(DockItem).filter(target_model="approval", target_id=approval.id, state=DockItemState.DOCKED).all_rows())
-    story.expect_rows(saved.recipient_agent_id is None, saved.relayed_by_id == story.agent.id, len(items) == 1)
+    story.expect_rows(saved.recipient_agent_id is None, saved.relayer_id == story.agent.id, len(items) == 1)
     story.expect_refusal("phone pair --reason needed", "A person was asked", actor=helper)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.recipient_agent_id is None)
@@ -62,4 +62,4 @@ def test_main_answers_the_helper_without_a_person_or_a_protected_action(helper_r
     story.expect_success(line, actor=story.agent)
     saved = story.container.get(Queries).query(ApprovalRequest).find(approval.id)
     story.expect_rows(saved.state is ApprovalState.CLOSED, saved.review_answer == "Use the existing paired phone",
-                      saved.answered_by_id == story.agent.id, not tuple(story.container.get(Queries).query(PhoneCode).all_rows()))
+                      saved.responder_id == story.agent.id, not tuple(story.container.get(Queries).query(PhoneCode).all_rows()))

@@ -88,7 +88,7 @@ test("a connection over plain HTTP says it is not encrypted", async () => {
     expect(element.querySelector("[data-teams-role]").textContent).toBe("Role: Read-only");
 });
 
-test("a stopped sync shows why, with the connect form and no library", async () => {
+test("a stopped sync shows justification, with the connect form and no library", async () => {
     const element = await mounted(TeamsPage, window({stopped: "The address changed. Connect again to send your token to it."}));
     expect(element.querySelector("[data-teams-stopped]").textContent).toBe("The address changed. Connect again to send your token to it.");
     expect(element.querySelector("[data-library-connect]")).not.toBeNull();

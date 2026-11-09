@@ -25,7 +25,7 @@ class InspectorEntry:
 
     def listing(self, fingerprint: str, shareable: bool) -> InspectorListing:
         declaration = self.declaration
-        links = {"kinds": list(declaration.links.kinds), "open": declaration.links.open, "outside_plan": declaration.links.outside_plan,
+        links = {"categories": list(declaration.links.categories), "open": declaration.links.open, "excludes_plan": declaration.links.excludes_plan,
                  "page_size": declaration.links.page_size} if declaration.links is not None else None
         return InspectorListing(declaration.model_name, self.module, fingerprint, declaration.reads or f"{declaration.model_name} show {{row_id}}",
                                 declaration.label, declaration.title, declaration.description, declaration.width.value,

@@ -549,7 +549,7 @@ test("a worker with nothing started takes the first task queued for it as its jo
 });
 
 
-test("a blocked agent's dot says why in its tooltip, and the row carries no Blocked words", async () => {
+test("a blocked agent's dot says justification in its tooltip, and the row carries no Blocked words", async () => {
     const worker = {id: 4, session: "s-worker", program: "claude", role: "worker", ended_at: null, state: "running"};
     const lines = {"usage tool --agent 4": {ok: true, value: {tool: "", note: ""}}};
     const shown = async (facts) => mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, tasks: [], ...facts}})}, context(lines));

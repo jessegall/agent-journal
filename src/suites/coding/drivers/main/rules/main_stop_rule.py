@@ -23,9 +23,9 @@ class MainStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         available = self.work.answer(hook.agent_id)
-        if available.own_task is not None:
-            return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=available.own_task.id)).running(StartTask(available.own_task.id))
-        if available.delegatable and self.options.options().keeps_going:
+        if available.assigned_task is not None:
+            return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=available.assigned_task.id)).running(StartTask(available.assigned_task.id))
+        if available.delegatable and self.options.options().continues_work:
             return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=", ".join(str(task_id) for task_id in available.delegatable)))
         if available.delegatable:
             notice = FREE_WORKER_PLACE.nudge(count=available.free_places, tasks=", ".join(str(task_id) for task_id in available.delegatable))

@@ -30,7 +30,7 @@ test("the details say the state, the phase it is in, how far it has come and the
     expect(element.querySelector("[data-resource-text]").textContent).toContain("Why the cart moves");
 });
 
-test("a blocked plan says what it waits on, and a cancelled one why", async () => {
+test("a blocked plan says what it waits on, and a cancelled one justification", async () => {
     expect(drawn(PlanDetails, {plan: {...PLAN, state: "blocked", reason: "the review"}}).querySelector("[data-plan-reason]").textContent).toContain("Blocked, waiting on");
     expect(drawn(PlanDetails, {plan: {...PLAN, state: "cancelled", reason: "no longer needed"}}).querySelector("[data-plan-reason]").textContent).toContain("Why it was cancelled");
 });

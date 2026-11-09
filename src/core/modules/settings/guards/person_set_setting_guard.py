@@ -26,8 +26,8 @@ class PersonSetSettingGuard(Guard[Changed[Setting]]):
     def check(self, event: Changed[Setting], context: Context) -> None:
         if context.actor.type is ActorType.AGENT and self.declared.is_person_set(event.row.key):
             entry = self.declared.value(event.row.key)
-            owner = self.actors.row_owner(context.actor.id) if entry.main_agent_only else None
-            if entry.main_agent_only and (owner is None or not owner.is_main):
+            owner = self.actors.row_owner(context.actor.id) if entry.requires_main_agent else None
+            if entry.requires_main_agent and (owner is None or not owner.is_main):
                 raise Refusal("only the main agent can ask to change this setting")
             raise UserApprovalRefusal(f"Change {entry.title}?", self.arguments(event.row))
 

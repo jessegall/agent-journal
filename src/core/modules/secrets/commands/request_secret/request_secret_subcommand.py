@@ -24,7 +24,7 @@ class RequestSecretSubcommand(Subcommand[MakeSecret, Secret]):
         parser.add_argument("--brief", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeSecret:
-        return MakeSecret(arguments.title, arguments.brief, SecretType.lookup(arguments.type), tuple(arguments.field), arguments.why)
+        return MakeSecret(arguments.title, arguments.brief, SecretType.lookup(arguments.type), tuple(arguments.field), arguments.justification)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Secret):

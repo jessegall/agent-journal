@@ -28,7 +28,7 @@ def limited_story(new_story) -> Story:
 
 def halted(story: Story) -> bool:
     UsageLimitMarker()(story.container)
-    return story.row(Agent, story.agent.id).limited_until is not None
+    return story.row(Agent, story.agent.id).usage_limit_ends_at is not None
 
 
 def test_a_fixed_limit_on_the_5_hour_window_halts_the_agents_at_its_point_and_a_raised_limit_lets_them_go_on(new_story):

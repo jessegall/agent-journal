@@ -16,4 +16,4 @@ class PluginOutput(Model):
     session_agent_id: int | None = None
     creator_id: int
     output: str
-    shows_in_environment: bool = False
+    is_environment_visible: bool = False

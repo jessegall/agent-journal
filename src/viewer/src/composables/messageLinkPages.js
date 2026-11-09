@@ -80,8 +80,8 @@ function pagesFor(context) {
         for (let first = 0; first < states.length; first += RECEIPTS_AT_MOST) readFirstPages(states.slice(first, first + RECEIPTS_AT_MOST));
     }
 
-    function queue(state, kinds = [WORK, SENT]) {
-        for (const kind of kinds) state.dirty.add(kind);
+    function queue(state, categories = [WORK, SENT]) {
+        for (const kind of categories) state.dirty.add(kind);
         if (!visible(state)) return;
         pending.add(state.id);
         timer ??= setTimeout(flush, 0);
@@ -90,12 +90,12 @@ function pagesFor(context) {
     function invalidate(event) {
         const sources = event.sources ?? (event.source_model && Number.isInteger(event.source_id) ? [{model: event.source_model, id: event.source_id}] : []);
         const types = event.link_types ?? (event.link_type ? [event.link_type] : []);
-        const kinds = types.length ? [WORK, SENT].filter((kind) => kind === WORK ? types.some((type) => ["about", "edited"].includes(type)) : types.includes("sent_to")) : [WORK, SENT];
+        const categories = types.length ? [WORK, SENT].filter((kind) => kind === WORK ? types.some((type) => ["about", "edited"].includes(type)) : types.includes("sent_to")) : [WORK, SENT];
         if (!kinds.length) return;
         const states = sources.length
             ? [...new Set(sources.filter((source) => source.model === "message").map((source) => source.id))].map((id) => entries.get(id)).filter(Boolean)
             : [...entries.values()].filter(visible).slice(0, VISIBLE_PAGE);
-        for (const state of states) queue(state, kinds);
+        for (const state of states) queue(state, categories);
     }
 
     const stop = context.follow?.(["link.*"], invalidate);

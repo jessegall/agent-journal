@@ -24,7 +24,7 @@ class Watch(Model):
     given_percent: int = 0
     state: WatchState = WatchState.OPEN
     confirmed_count: int = 0
-    woke_at: Timestamp | None = None
+    notified_at: Timestamp | None = None
     awaits_confirm: bool = False
 
     def end(self, timestamp: Timestamp, actor: Actor) -> "Watch":

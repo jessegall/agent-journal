@@ -15,7 +15,7 @@ UPDATE_FLAG = "JOURNAL_UPDATE_PLUGIN_CONTRACT"
 
 def test_legacy_named_events_are_read_from_a_module():
     class LegacyModule(Module):
-        plugin_times = ["tool_starting"]
+        plugin_timestamps = ["tool_starting"]
 
     assert LegacyModule.plugin_event_names() == ["tool_starting"]
 

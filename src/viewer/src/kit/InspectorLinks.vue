@@ -10,7 +10,7 @@ const props = defineProps({
     id: {type: Number, required: true},
     read: {type: Function, required: true},
     documentId: {type: Number, default: 0},
-    kinds: {type: Array, default: () => []},
+    categories: {type: Array, default: () => []},
     open: Boolean,
     outsidePlan: Boolean,
     pageSize: {type: Number, default: 10},

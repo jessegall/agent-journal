@@ -63,8 +63,8 @@ def test_a_start_folder_holds_only_the_skills_of_the_helpers_profile(started_fol
     for name in ("journal-helpers", "journal-planning"):
         (skills / name).mkdir(parents=True, exist_ok=True)
         (skills / name / "SKILL.md").write_text(f"# {name}\n")
-    retained = prepared(started_folder) / ".claude" / "skills"
-    started_folder.expect_rows((retained / "journal-helpers" / "SKILL.md").is_file(), not (retained / "journal-planning").exists(), not retained.is_symlink(), (retained / "journal-helpers").is_symlink())
+    stored_folders = prepared(started_folder) / ".claude" / "skills"
+    started_folder.expect_rows((stored_folders / "journal-helpers" / "SKILL.md").is_file(), not (stored_folders / "journal-planning").exists(), not stored_folders.is_symlink(), (stored_folders / "journal-helpers").is_symlink())
 
 
 def test_a_start_folder_made_with_the_whole_skills_folder_is_narrowed(started_folder):

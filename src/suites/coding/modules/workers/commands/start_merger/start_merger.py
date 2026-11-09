@@ -13,4 +13,4 @@ class StartMerger(Command[None]):
     lock = False
 
     fallback_line: str | Nudge
-    since: Timestamp | None = None
+    started_at: Timestamp | None = None

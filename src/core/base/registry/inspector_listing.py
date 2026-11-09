@@ -9,7 +9,7 @@ class InspectorListing:
     it, its links section (none for a row without one), whether its row can be shared, whether it lists the
     row's fields and whether a part of it draws the row's text."""
 
-    noun: str
+    term: str
     module: str
     fingerprint: str
     reads: str

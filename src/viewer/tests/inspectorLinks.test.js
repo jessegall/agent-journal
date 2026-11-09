@@ -4,7 +4,7 @@ import InspectorLinks from "../src/kit/InspectorLinks.vue";
 import {settle} from "./support/windowContext.js";
 
 const ROW = (model, id) => ({endpoint: {model, id, title: `${model} ${id}`, open_ref: `${model}s:${id}`}, relations: ["linked"]});
-const ANSWER = {ok: true, value: {total: 4, kinds: {doc: 2, message: 1, task: 1}, counterparts: [ROW("doc", 1), ROW("doc", 2), ROW("message", 3), ROW("task", 4)]}};
+const ANSWER = {ok: true, value: {total: 4, categories: {doc: 2, message: 1, task: 1}, counterparts: [ROW("doc", 1), ROW("doc", 2), ROW("message", 3), ROW("task", 4)]}};
 const mounted = [];
 
 function section(read, props = {}) {
@@ -44,14 +44,14 @@ test("pressing it opens it", async () => {
 });
 
 test("an empty row draws no section", async () => {
-    const element = section(answering({ok: true, value: {total: 0, kinds: {}, counterparts: []}}));
+    const element = section(answering({ok: true, value: {total: 0, categories: {}, counterparts: []}}));
     await settle();
     expect(element.querySelector("[data-inspector-links]")).toBeNull();
     expect(element.textContent).toBe("");
 });
 
-test("the kinds option limits the tabs", async () => {
-    const element = section(answering(ANSWER), {kinds: ["doc", "message"], open: true});
+test("the categories option limits the tabs", async () => {
+    const element = section(answering(ANSWER), {categories: ["doc", "message"], open: true});
     await settle();
     const tabs = element.querySelector("[data-inspector-links-body]").textContent;
     expect(tabs).toContain("Documents");

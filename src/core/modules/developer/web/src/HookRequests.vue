@@ -7,7 +7,7 @@ import {toggleFeedPause} from "./toggleFeedPause.js";
 import {usePausedProp} from "./usePausedProp.js";
 
 const key = "journal.hook-requests.filters";
-const emptyFilters = () => ({kind: [], family: [], sender: []});
+const emptyFilters = () => ({category: [], family: [], sender: []});
 function savedFilters() {
     try { return {...emptyFilters(), ...JSON.parse(localStorage.getItem(key) || "{}")}; }
     catch { return emptyFilters(); }
@@ -18,7 +18,7 @@ const options = ref({family: ["process bookkeeping"], sender: []});
 const count = computed(() => Object.values(filters.value).reduce((sum, values) => sum + values.length, 0));
 const view = useWindow();
 const {data: requests, failure, loaded, reload: load} = usePausedProp(view, "requests", paused);
-const filterArguments = {kind: "kinds", family: "families", sender: "senders"};
+const filterArguments = {category: "kinds", family: "families", sender: "senders"};
 function setFilters(value) {
     for (const [name, values] of Object.entries(value)) view.state[`requests.${filterArguments[name]}`] = JSON.stringify(values);
 }
@@ -58,7 +58,7 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value)
                     <Btn small data-request-queue-open @click="queueOpen = true">Request queue</Btn>
                     <template v-if="filterAnchor"><MenuPanel :anchor="filterAnchor" align="start" :min-width="220" :max-width="320" @close="filterAnchor = null">
                         <MenuLabel>Type</MenuLabel>
-                        <template v-for="kind in ['hook', 'viewer', 'command line']" :key="kind"><MenuItem :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.kind.includes(kind)" :aria-checked="filters.kind.includes(kind)" @click="toggle('kind', kind)">{{ kind }}</MenuItem></template>
+                        <template v-for="kind in ['hook', 'viewer', 'command line']" :key="kind"><MenuItem :data-filter-kind="kind" role="menuitemcheckbox" :checked="filters.category.includes(category)" :aria-checked="filters.category.includes(category)" @click="toggle('kind', category)">{{ category }}</MenuItem></template>
                         <MenuLabel>Event or command</MenuLabel>
                         <template v-for="family in options.family" :key="family"><MenuItem :data-filter-family="family" role="menuitemcheckbox" :checked="filters.family.includes(family)" :aria-checked="filters.family.includes(family)" @click="toggle('family', family)">{{ family }}</MenuItem></template>
                         <MenuLabel>Sender</MenuLabel>

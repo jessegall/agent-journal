@@ -9,7 +9,7 @@ const props = defineProps({model: {type: String, required: true}, id: {type: Num
     grouped: Boolean, pinned: Boolean, onlyKinds: {type: Array, default: () => []}, linkAttribute: {type: String, default: "data-resource-link"}, empty: {type: String, default: ""}});
 const emit = defineEmits(["open"]);
 const rows = ref([]);
-const kinds = ref({});
+const categories = ref({});
 const total = ref(0);
 const kind = ref("");
 const nextPage = ref(null);
@@ -18,10 +18,10 @@ const failure = ref("");
 let reading = 0;
 const labels = {doc: "Documents", message: "Messages", task: "Tasks", phase: "Phases"};
 const kindLabel = (value) => labels[value] || `${value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase())}s`;
-const options = computed(() => [{key: "", label: "All", count: Object.values(kinds.value).reduce((sum, count) => sum + count, 0)},
-    ...Object.entries(kinds.value).filter(([key]) => !props.onlyKinds.length || props.onlyKinds.includes(key)).map(([key, count]) => ({key, label: kindLabel(key), count}))]);
+const options = computed(() => [{key: "", label: "All", count: Object.values(categories.value).reduce((sum, count) => sum + count, 0)},
+    ...Object.entries(categories.value).filter(([key]) => !props.onlyKinds.length || props.onlyKinds.includes(key)).map(([key, count]) => ({key, label: kindLabel(key), count}))]);
 const groups = computed(() => {
-    const counts = Object.keys(kinds.value).length ? kinds.value : Object.fromEntries([...new Set(rows.value.map((row) => row.endpoint.model))].map((model) => [model, rows.value.filter((row) => row.endpoint.model === model).length]));
+    const counts = Object.keys(categories.value).length ? categories.value : Object.fromEntries([...new Set(rows.value.map((row) => row.endpoint.model))].map((model) => [model, rows.value.filter((row) => row.endpoint.model === model).length]));
     const order = {doc: 0, task: 1, message: 2};
     return Object.entries(counts).sort(([left], [right]) => (order[left] ?? 3) - (order[right] ?? 3)).map(([model, count]) => ({model, count, rows: rows.value.filter((row) => row.endpoint.model === model)}));
 });
@@ -47,7 +47,7 @@ async function load(page = 1) {
         const incoming = answer.value.counterparts ?? [];
         const combined = page === 1 ? incoming : [...rows.value, ...incoming];
         rows.value = [...new Map(combined.map((row) => [`${row.endpoint.model}:${row.endpoint.id}`, row])).values()];
-        kinds.value = answer.value.kinds ?? {};
+        categories.value = answer.value.categories ?? {};
         total.value = answer.value.total;
         nextPage.value = answer.value.next_page ?? null;
     } catch (error) {

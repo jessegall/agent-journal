@@ -22,7 +22,7 @@ class UsageLimitMarker:
             if container.get(UsageLimits).stale_hourly(program.name, states.windows(program.name), container.get(Clock).timestamp()):
                 bus.run(RefreshHourlyLimits(program.name), Actor.core())
             resets_at = states.limit_reset_timestamp(program.name)
-            for agent in (agent for agent in agents if agent.program == program.name and agent.limited_until != resets_at):
+            for agent in (agent for agent in agents if agent.program == program.name and agent.usage_limit_ends_at != resets_at):
                 bus.run(SetAgentUsageLimit(agent.id, resets_at), Actor.core(), environment_id=agent.environment_id)
                 if resets_at is None:
                     bus.run(TypeWaitingLines(agent.id), Actor.core(), environment_id=agent.environment_id)

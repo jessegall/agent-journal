@@ -32,6 +32,6 @@ PLAN_INSPECTOR = InspectorDeclaration(
                           fields=tuple([TextField("reason", "Why is it cancelled?")])),
     ),
     components=(InspectorComponent("plans.plan-details"), InspectorComponent("plans.plan-phases"), InspectorComponent("plans.plan-timeline", tab="Timeline")),
-    links=InspectorLinks(outside_plan=True),
+    links=InspectorLinks(excludes_plan=True),
     draws_text=True,
 )

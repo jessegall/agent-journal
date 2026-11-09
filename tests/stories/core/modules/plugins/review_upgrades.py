@@ -77,9 +77,9 @@ def test_an_alias_of_a_switched_off_plugin_is_refused_and_runs_again_once_it_is_
     story.expect_success("judge", actor=story.user)
 
 
-def plugin_program_line(plugin, *words):
+def plugin_program_line(plugin, *text_parts):
     program = f"/project/.journal/plugins/{plugin}/bin/judge"
-    return HookSamples.shell(" ".join((program, *words)), ShellPart(program, CommandCategory.CHECK, list(words)))
+    return HookSamples.shell(" ".join((program, *text_parts)), ShellPart(program, CommandCategory.CHECK, list(text_parts)))
 
 
 def test_a_program_of_a_switched_off_plugin_is_refused_and_runs_again_once_it_is_on(new_story):

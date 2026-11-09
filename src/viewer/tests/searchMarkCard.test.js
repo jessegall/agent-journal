@@ -18,7 +18,7 @@ afterEach(() => {
     location.hash = "";
 });
 
-test("an opened search mark has a child for each row found, with its noun, number and passage", async () => {
+test("an opened search mark has a child for each row found, with its term, number and passage", async () => {
     const element = await card({terms: ["cart"], total: 2, hits: hits(2)});
     const children = [...element.querySelectorAll("[data-search-child]")].map((child) => `${child.querySelector(".search-child-name").textContent} ${child.querySelector(".search-child-excerpt").textContent}`);
     expect(children).toEqual(["task 1 passage 1 around cart", "doc 2 passage 2 around cart"]);

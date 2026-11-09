@@ -23,7 +23,7 @@ class ToolHooks:
     def command(self, tool: ToolDefinition) -> str:
         return f'"{self.home.project_folder}/.journal/bin/journal" {self.stamp(tool)}--folder "$PWD"'
 
-    def is_on(self, tool: ToolDefinition) -> bool:
+    def enabled(self, tool: ToolDefinition) -> bool:
         return any(self.stamp(tool) in hook.command for hook in self.managed.all())
 
     def add(self, tool: ToolDefinition) -> None:

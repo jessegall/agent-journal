@@ -14,7 +14,7 @@ const failure = ref("");
 const complete = computed(() => props.button.fields.every((field) => values.value[field.name].trim().length > 0));
 const heading = computed(() => {
     if (!props.row) return props.button.label;
-    const model = meta(tableOfWord(props.row.noun))?.title || "Item";
+    const model = meta(tableOfWord(props.row.term))?.title || "Item";
     return `${props.button.label} · ${model} ${props.row.id}`;
 });
 

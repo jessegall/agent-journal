@@ -23,5 +23,5 @@ class KeptSkillsListener(SaveListener[Created[HookCall]]):
         if call.hook != HookEventName.PRE_TOOL_USE or self.agents.find(call.session_agent_id).role not in self.suites.agent_policy().prompt_roles:
             return
         names = self.unread_skills.names(call.session_agent_id)
-        for load in self.kept.loads(call.session_agent_id, call.transcript, names) if names else ():
-            self.bus.dispatch(load, context)
+        for skill_command in self.kept.loads(call.session_agent_id, call.transcript, names) if names else ():
+            self.bus.dispatch(skill_command, context)

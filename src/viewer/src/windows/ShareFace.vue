@@ -9,7 +9,7 @@ import ShareTimeline from "./ShareTimeline.vue";
 import WindowHost from "./WindowHost.vue";
 
 const WIDE_SCREEN = 760;
-const LOOKS = {plan: {noun: "plan", icon: "plan"}, doc: {noun: "document", icon: "file"}, report: {noun: "report", icon: "file"}};
+const LOOKS = {plan: {term: "plan", icon: "plan"}, doc: {term: "document", icon: "file"}, report: {term: "report", icon: "file"}};
 
 const props = defineProps({
     session: {type: Object, default: null},
@@ -88,7 +88,7 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
             <template v-if="reconnecting">
                 <Notice role="status">Reconnecting…</Notice>
             </template>
-            <ShareStrip :icon="look.icon" :noun="look.noun" :facts="facts" :ends="ends" :read="readProgress" />
+            <ShareStrip :icon="look.icon" :term="look.term" :facts="facts" :ends="ends" :read="readProgress" />
             <template v-if="isText">
                 <main class="share-text" data-share-text>
                     <template v-if="text">

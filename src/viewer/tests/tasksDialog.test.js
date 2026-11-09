@@ -10,7 +10,7 @@ const BOARD = {ok: true, value: {groups: [
 ]}};
 const inspection = (id) => ({ok: true, value: {id, title: id === 7 ? "Fix the cart" : "Fix the totals", brief: "What done looks like", state: id === 7 ? "started" : "open", priority: "normal", reason: "", outcome: "", holder_id: 2, created_at: "2026-11-01T10:00:00Z", updated_at: "2026-11-01T10:00:00Z", waits: [{id: 9, title: "Order the parts", state: "open"}], logs: [{id: 1, line: "Found the rounding"}]}});
 const TASK_LISTING = {reads: "task inspect {row_id}", label: "Task {id} · {state}", title: "{title}", description: "", width: "medium", components: [], comments: false, events: ["task.*"],
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false};
+    links: {categories: [], open: false, excludes_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false};
 
 globalThis.ResizeObserver ??= class {
     observe() {}

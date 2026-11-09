@@ -21,11 +21,11 @@ class RefusalSkip(Model):
     used_at: Timestamp | None = None
     restored_at: Timestamp | None = None
     confirmed_at: Timestamp | None = None
-    withdrawn_at: Timestamp | None = None
+    cancelled_at: Timestamp | None = None
     tried: str = ""
-    waits_for_approval: bool = False
+    needs_approval: bool = False
     approved_at: Timestamp | None = None
 
     @property
     def is_answered(self) -> bool:
-        return self.confirmed_at is not None or self.withdrawn_at is not None
+        return self.confirmed_at is not None or self.cancelled_at is not None

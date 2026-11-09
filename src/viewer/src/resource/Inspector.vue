@@ -22,7 +22,7 @@ import {useResourceEvents} from "./resourceEvents.js";
 // the one layout of an inspector, with no veil and no width of its own so the overlay and the tasks dialog both mount it: the head, the actions of the
 // row's model, the text and fields of the row, the parts the declaration names, the comments and the links, all read from the declared listing
 const props = defineProps({
-    noun: {type: String, required: true},
+    term: {type: String, required: true},
     id: {type: Number, required: true},
     read: {type: Function, required: true},
     catalogue: {type: Object, required: true},
@@ -36,9 +36,9 @@ const props = defineProps({
 const emit = defineEmits(["close", "back", "step", "open"]);
 
 const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
-const listing = computed(() => props.catalogue.inspector(props.noun) ?? {
-    reads: `${props.noun} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false,
+const listing = computed(() => props.catalogue.inspector(props.term) ?? {
+    reads: `${props.term} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
+    links: {categories: [], open: false, excludes_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false,
 });
 const row = ref(null);
 const creator = ref("");
@@ -50,11 +50,11 @@ const drawnWidth = ref(0);
 let reading = 0;
 
 const filled = computed(() => ({row_id: props.id, id: props.id}));
-const title = computed(() => (row.value ? fill(listing.value.title, row.value, filled.value) || titleOf(props.noun, row.value, props.id) : ""));
-const kindLabel = computed(() => (row.value ? inspectorLabel(listing.value, props.noun, row.value, props.id) : ""));
+const title = computed(() => (row.value ? fill(listing.value.title, row.value, filled.value) || titleOf(props.term, row.value, props.id) : ""));
+const kindLabel = computed(() => (row.value ? inspectorLabel(listing.value, props.term, row.value, props.id) : ""));
 const label = computed(() => (kindLabel.value === title.value ? "" : kindLabel.value));
 const description = computed(() => (row.value ? fill(listing.value.description, row.value, filled.value) : ""));
-const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(props.noun) ? row.value?.text : "") || "");
+const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(props.term) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
 const fields = computed(() => fieldsOf(row.value, text.value, creator.value, owner.value));
 
@@ -66,7 +66,7 @@ const tabNames = computed(() => [...new Set(listing.value.components.map((compon
 const tabs = computed(() => (tabNames.value.length || commentsTab.value
     ? [{key: "details", label: "Details"}, ...tabNames.value.map((name) => ({key: name, label: name})), ...(commentsTab.value ? [{key: "comments", label: "Comments"}] : [])]
     : []));
-const textComments = useTextComments(() => (listing.value.comments && row.value ? {noun: props.noun, id: props.id, title: row.value.title} : {}), (line) => props.read(line));
+const textComments = useTextComments(() => (listing.value.comments && row.value ? {term: props.term, id: props.id, title: row.value.title} : {}), (line) => props.read(line));
 
 async function load() {
     const turn = ++reading;
@@ -82,7 +82,7 @@ async function load() {
 }
 
 // a different row starts again; an event reload keeps what is drawn, so an open action form or a comment draft stays as typed
-watch(() => `${props.noun}:${props.id}`, () => {
+watch(() => `${props.term}:${props.id}`, () => {
     row.value = null;
     creator.value = "";
     owner.value = "";
@@ -114,7 +114,7 @@ onUnmounted(() => watcher?.disconnect());
             :embedded="embedded"
             :shareable="listing.shareable"
             :read-only="readOnly"
-            :opened="{table: table || `${noun}s`, id}"
+            :opened="{table: table || `${term}s`, id}"
             @close="emit('close')"
             @back="emit('back')"
             @step="emit('step', $event)"
@@ -127,7 +127,7 @@ onUnmounted(() => watcher?.disconnect());
         </template>
         <template v-else>
             <InspectorActions>
-                <ButtonSlot :name="`row.${noun}`" :row="{...row, id, noun}" :environment="environment" :read-only="readOnly" @done="load" />
+                <ButtonSlot :name="`row.${term}`" :row="{...row, id, term}" :environment="environment" :read-only="readOnly" @done="load" />
             </InspectorActions>
             <div class="inspector-main">
                 <div class="inspector-column">
@@ -145,7 +145,7 @@ onUnmounted(() => watcher?.disconnect());
                                         <ResourceFields :fields="fields" @peek="emit('open', $event)" />
                                     </template>
                                 </div>
-                                <InspectorSections :slot-name="`inspector.${noun}`" :names="partsOf('')" :row="{...row, id, noun}" />
+                                <InspectorSections :slot-name="`inspector.${term}`" :names="partsOf('')" :row="{...row, id, term}" />
                             </template>
                             <template #comments>
                                 <CommentSide
@@ -160,7 +160,7 @@ onUnmounted(() => watcher?.disconnect());
                                 />
                             </template>
                             <template #default>
-                                <InspectorSections :names="partsOf(tab)" :row="{...row, id, noun}" />
+                                <InspectorSections :names="partsOf(tab)" :row="{...row, id, term}" />
                             </template>
                         </SwitchCase>
                         <template v-if="listing.links">
@@ -168,9 +168,9 @@ onUnmounted(() => watcher?.disconnect());
                                 :model="noun"
                                 :id="id"
                                 :read="read"
-                                :kinds="listing.links.kinds"
+                                :categories="listing.links.categories"
                                 :open="listing.links.open"
-                                :outside-plan="listing.links.outside_plan"
+                                :outside-plan="listing.links.excludes_plan"
                                 :page-size="listing.links.page_size"
                                 @open="emit('open', $event)"
                             />

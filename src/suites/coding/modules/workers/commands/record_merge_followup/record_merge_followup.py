@@ -10,7 +10,7 @@ class RecordMergeFollowup(Command[MergeFollowup]):
 
     worktree_id: int
     folder: str
-    commit_before: str
+    previous_commit: str
     commit_after: str
     revision: str
     commands: tuple[str, ...]

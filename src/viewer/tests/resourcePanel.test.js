@@ -21,7 +21,7 @@ function answering(rows, lines = []) {
 }
 
 const CATALOGUE = {
-    inspector: (noun) => ({noun, module: "acme", fingerprint: "a", reads: `${noun} inspect {row_id}`, label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}),
+    inspector: (term) => ({term, module: "acme", fingerprint: "a", reads: `${term} inspect {row_id}`, label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}),
     window: () => null,
     sectionsAt: () => [],
 };
@@ -102,7 +102,7 @@ test("Escape closes an open action form first, then the top row, then the panel"
 });
 
 test("an inspector closes on Escape and on a click on the veil, and Back unpeeks", async () => {
-    const catalogue = {inspector: () => ({noun: "plan", module: "journal.core.plans", fingerprint: "a", reads: "plan inspect {row_id}", label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}), window: () => null, sectionsAt: () => []};
+    const catalogue = {inspector: () => ({term: "plan", module: "journal.core.plans", fingerprint: "a", reads: "plan inspect {row_id}", label: "", title: "{title}", description: "", width: "medium", components: [], comments: false, events: [], links: null, shareable: false}), window: () => null, sectionsAt: () => []};
     location.hash = "#?open=memories:3,plans:5";
     await later();
     const element = document.createElement("div");

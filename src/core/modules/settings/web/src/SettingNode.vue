@@ -38,7 +38,7 @@ function shownAs(text) {
     return text;
 }
 
-// the row shows the new value at once, and the refusal says why it went back
+// the row shows the new value at once, and the refusal says justification it went back
 async function saveValue(text) {
     const line = ["setting", "set", props.row.key, String(text), ...scopeFlag.value];
     const result = await props.save(line, props.row.secret ? null : {key: props.row.key, value: shownAs(String(text))});

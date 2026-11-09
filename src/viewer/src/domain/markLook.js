@@ -1,6 +1,6 @@
 import {go, peekRef} from "../route.js";
 
-// the marks of something that stopped short, whose detail says why
+// the marks of something that stopped short, whose detail says justification
 export const STOPPED_VARIANTS = new Set(["failed", "stopped", "lost", "blocked", "cancelled", "orphaned"]);
 import {actionLabel, refAction} from "./markAction.js";
 

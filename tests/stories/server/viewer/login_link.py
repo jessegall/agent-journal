@@ -35,9 +35,9 @@ def test_a_person_gets_a_link_from_the_viewer_and_it_logs_another_browser_in_onc
     link = json.loads(body)["link"]
     story.expect_rows(status == 200, link.startswith(f"http://127.0.0.1:{server.viewer_port()}/?key="))
     opened, headers, _ = viewer_answer(server.viewer_port(), link_path(link), "", "")
-    other = headers["Set-Cookie"].split(";", 1)[0]
+    alternate = headers["Set-Cookie"].split(";", 1)[0]
     story.expect_rows(opened == 303, "HttpOnly" in headers["Set-Cookie"])
-    session_status, _, session = viewer_answer(server.viewer_port(), "/api/session", other, "")
+    session_status, _, session = viewer_answer(server.viewer_port(), "/api/session", alternate, "")
     story.expect_rows(session_status == 200, json.loads(session)["person_id"] == json.loads(viewer_answer(server.viewer_port(), "/api/session", cookie, "")[2])["person_id"])
     second, _, page = viewer_answer(server.viewer_port(), link_path(link), "", "")
     story.expect_rows(second == 401, "spent or unknown" in page, "Log in another browser" in page)

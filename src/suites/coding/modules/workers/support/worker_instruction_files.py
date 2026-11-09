@@ -70,8 +70,8 @@ class WorkerInstructionFiles:
         profile = self.profile(profile_name)
         if profile is None or not self.settings.flag(WORKER_INSTRUCTION_FILES_SETTING):
             return
-        parts = [profile.body.strip(), *(injection.text for injection in self.injections(profile) if injection.is_on and injection.text)]
-        if profile.keeps_project_instructions:
+        parts = [profile.body.strip(), *(injection.text for injection in self.injections(profile) if injection.enabled and injection.text)]
+        if profile.uses_project_instructions:
             parts.append("The project's own instruction files are kept beside these, named with .original before .md.")
         text = "\n\n".join(part for part in parts if part) + "\n"
         original_texts = {name: self.file_text(Path(folder) / name) for name in INSTRUCTION_FILES}
@@ -81,7 +81,7 @@ class WorkerInstructionFiles:
         restored: list[str] = []
         for name in INSTRUCTION_FILES:
             path = Path(folder) / name
-            if originals and profile.keeps_project_instructions and original_texts[name] is not None:
+            if originals and profile.uses_project_instructions and original_texts[name] is not None:
                 original = path.with_name(f"{path.stem}{ORIGINAL_SUFFIX}{path.suffix}")
                 FileAccess.shared().write(original, original_texts[name])
                 restored.append(original.name)

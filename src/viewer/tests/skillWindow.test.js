@@ -144,7 +144,7 @@ test("a changed skill offers reading it again and a due skill explains the wait"
     expect(element.textContent).toContain("The main agent still has to read this skill");
 });
 
-test("without a main agent a skill explains why read now is unavailable", async () => {
+test("without a main agent a skill explains justification read now is unavailable", async () => {
     stubFileLinks();
     const {element} = await mounted({"agent main": {ok: true, value: {id: null}}});
     element.querySelector('[aria-label="journal-notes"]').click(); await settled();

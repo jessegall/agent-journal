@@ -34,9 +34,9 @@ const cardKey = computed(() => `dock.${props.item.id}`);
 const card = computed(() => view.props[cardKey.value].data.value);
 // a card that draws its own head names the item by what it holds, as its card says, and by the dock's generic title only until it has read
 const shownTitle = computed(() => titleOf(props.item, declaration.value, card.value));
-const noun = computed(() => cliOf(props.item.target_model ?? ""));
+const term = computed(() => cliOf(props.item.target_model ?? ""));
 const rowWord = computed(() => declaration.value?.word ?? "");
-const row = computed(() => ({...card.value, id: props.item.target_id, noun: noun.value}));
+const row = computed(() => ({...card.value, id: props.item.target_id, term: term.value}));
 const reloadCard = () => declaration.value?.reads?.length && view.reload(cardKey.value);
 provideDockCard(provide, {data: card, reload: reloadCard, readOutput: readOutputProp(view)});
 
@@ -44,7 +44,7 @@ watch(
     () => [props.item.type, props.item.target_model, props.item.target_id, declaration.value],
     (_, previous, cleanup) => {
         reloadCard();
-        const stop = view.followUndeclared?.([`${noun.value.replaceAll("-", "_")}.*`], (event) => {
+        const stop = view.followUndeclared?.([`${term.value.replaceAll("-", "_")}.*`], (event) => {
             if (!event.row_id || event.row_id === props.item.target_id) reloadCard();
         });
         cleanup(() => stop?.());

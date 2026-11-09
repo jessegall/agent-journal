@@ -17,7 +17,7 @@ import {numbered} from "./documentMarks.js";
 
 // the body of a document or a report: its tabs, its text with the comments beside it, and at the foot the comment box; the head, the actions and the links belong to the shared inspector layout
 const NARROW_WIDTH = 760;
-const props = defineProps({noun: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true}});
+const props = defineProps({term: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true}});
 const panel = ref(null);
 const width = useMeasuredWidth(panel);
 const narrow = computed(() => width.value !== null && width.value < NARROW_WIDTH);
@@ -38,7 +38,7 @@ const words = ref(null);
 const composer = ref(null);
 let reading = 0;
 
-const textComments = useTextComments(() => row.value ? {noun: props.noun, id: props.id, title: row.value.title} : {}, (line) => props.read(line));
+const textComments = useTextComments(() => row.value ? {term: props.term, id: props.id, title: row.value.title} : {}, (line) => props.read(line));
 const comments = computed(() => numbered(textComments.comments.value));
 const annotations = computed(() => notesMode.value === "questions" ? numbered(questions.value) : comments.value);
 const annotationTotal = computed(() => notesMode.value === "questions" ? annotations.value.length : textComments.total.value);
@@ -51,12 +51,12 @@ const rowsOf = (answer) => (answer.ok ? answer.value.rows ?? [] : []);
 
 async function load() {
     const turn = ++reading;
-    const answer = await props.read([props.noun, "inspect", String(props.id)]);
+    const answer = await props.read([props.term, "inspect", String(props.id)]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
-    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${props.noun}:${props.id}`]);
-    const revisionsAnswer = props.noun === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
+    const questionsAnswer = await props.read(["question", "list", "--all", "--row", `${props.term}:${props.id}`]);
+    const revisionsAnswer = props.term === "doc" ? await props.read(["doc", "revisions", String(props.id)]) : null;
     if (turn !== reading) return;
     questions.value = rowsOf(questionsAnswer);
     questionFailure.value = questionsAnswer.ok ? "" : questionsAnswer.error;
@@ -65,7 +65,7 @@ async function load() {
 
 async function send(words) {
     const flags = selection.value ? ["--quote", selection.value.quote, "--position", String(selection.value.position), "--selection-type", selection.value.selection_type] : [];
-    const answer = await props.read([props.noun, "comment", String(props.id), ...flags, "--", words]);
+    const answer = await props.read([props.term, "comment", String(props.id), ...flags, "--", words]);
     if (!answer.ok) throw new Error(answer.error);
     selection.value = null;
     await Promise.all([load(), textComments.load()]);
@@ -103,7 +103,7 @@ function saved() {
     load();
 }
 
-watch(() => `${props.noun}:${props.id}`, () => {
+watch(() => `${props.term}:${props.id}`, () => {
     row.value = null;
     tab.value = "text";
     hot.value = 0;
@@ -179,7 +179,7 @@ watch(notesMode, () => {
             <CommentComposer ref="composer" v-model:draft="draft" :selection="selection" :send="send" :narrow="narrow" @clear="selection = null" />
         </template>
         <template v-if="editing">
-            <DocumentEditDialog :noun="noun" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
+            <DocumentEditDialog :term="noun" :id="id" :row="row" :read="read" @close="editing = false" @saved="saved" />
         </template>
     </div>
 </template>

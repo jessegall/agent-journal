@@ -19,7 +19,7 @@ class CloseTextSubcommand(Subcommand[CloseText, TextRow]):
         parser.add_argument("--why", required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> CloseText:
-        return CloseText(self.model, arguments.id, arguments.why)
+        return CloseText(self.model, arguments.id, arguments.justification)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TextRow):

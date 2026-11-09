@@ -30,7 +30,7 @@ class ProfileFormat:
                 fields[name] = ""
         if fields.get("agent_type") == "subagent":
             fields["agent_type"] = "helper"
-        for name in ("independent", "program_if_possible", "keeps_project_instructions"):
+        for name in ("independent", "preferred_program", "uses_project_instructions"):
             if name not in fields:
                 continue
             value = fields[name]

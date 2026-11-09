@@ -86,7 +86,7 @@ test("a migrated comment keeps a native button for its original target", async (
 async function documentRequests() {
     const requests = [];
     const element = await mounted(DocumentBody, context({}), {
-        noun: "doc", id: 4,
+        term: "doc", id: 4,
         read: async (line) => {
             requests.push(line);
             if (line[1] === "inspect") return {ok: true, value: {id: 4, title: "Cart", abstract: "Totals", body: "Use cents", revision: 1, comments: []}};

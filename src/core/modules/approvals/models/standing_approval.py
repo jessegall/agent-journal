@@ -18,7 +18,7 @@ class StandingApproval(EnvironmentScoped, Model):
     environment_id: int = 0
     creator_id: int
     scope: StandingScope
-    kind: str
+    category: str
     target: str
-    same_key: str
+    match_key: str
     text: str

@@ -7,7 +7,7 @@ import {startButtons} from "../src/domain/buttons.js";
 import {AllowancePrompts} from "../src/windows/allowancePrompts.js";
 import {perLine, pickButton, settle, typeInto} from "./support/windowContext.js";
 
-const ROW = {id: 12, noun: "plan", title: "A better journal", state: "ready"};
+const ROW = {id: 12, term: "plan", title: "A better journal", state: "ready"};
 const BASE = {name: "plans.review", slots: ["row.plan"], label: "Critique", runs: "plan review {row_id}", fields: [], menu: [], icon: "", primary: false, condition: null, tip: ""};
 const FIELDS = [
     {name: "size", label: "Size", choices: [{key: "short", label: "Short"}, {key: "full", label: "Full"}], default: ""},

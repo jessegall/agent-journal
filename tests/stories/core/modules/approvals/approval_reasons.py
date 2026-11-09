@@ -20,7 +20,7 @@ def test_an_agent_that_gives_a_reason_has_it_on_the_card_under_the_question(new_
     story = new_story(fixture=UserJoined)
     story.expect_refusal(f'{SAVE_MERGER} --reason "{REASON}"', "A person was asked in the dock", actor=story.agent)
     requested = cards(story)
-    story.expect_rows(len(requested) == 1, requested[0].why == REASON, detail=str(requested))
+    story.expect_rows(len(requested) == 1, requested[0].justification == REASON, detail=str(requested))
     story.expect_text(f"approval show {requested[0].id}", REASON, actor=story.user)
 
 

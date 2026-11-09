@@ -8,7 +8,7 @@ import {cliOf} from "../domain/resourceNouns.js";
 const props = defineProps({read: {type: Function, required: true}, catalogue: {type: Object, required: true}, environment: {type: String, required: true}, readOnly: Boolean});
 
 const opened = computed(() => route.value.open);
-const noun = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
+const term = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const fullyOpen = ref(false);
 
 const close = () => opening([]);
@@ -33,10 +33,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 <template>
     <Teleport to="body">
         <Transition name="side" appear @before-enter="fullyOpen = false" @after-enter="fullyOpen = true">
-            <div v-if="opened" :class="['veil', {fades: noun === 'test-queue'}]" @click.self="close">
+            <div v-if="opened" :class="['veil', {fades: term === 'test-queue'}]" @click.self="close">
                 <InspectorPanel
                     ref="panel"
-                    :noun="noun"
+                    :term="noun"
                     :id="opened.id"
                     :table="opened.table"
                     :read="read"

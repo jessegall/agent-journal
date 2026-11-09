@@ -9,4 +9,4 @@ class InstructionInjection:
     key: str
     title: str
     text: str
-    is_on: bool
+    enabled: bool

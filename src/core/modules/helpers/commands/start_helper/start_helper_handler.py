@@ -89,7 +89,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
             model = self.checked_start(preferred, command.program_model, profile, parent, command.tier)
             return HelperProgram(preferred, model, self.availability_note(command, preferred))
         except Refusal as refusal:
-            if not (profile.program_if_possible and profile.program and not command.program):
+            if not (profile.preferred_program and profile.program and not command.program):
                 raise
             for fallback_program in profile.fallbacks_after(preferred, [provider.name for provider in self.providers.all()]):
                 try:

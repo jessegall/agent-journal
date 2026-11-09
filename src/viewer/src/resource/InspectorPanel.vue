@@ -7,7 +7,7 @@ import InspectorHead from "./InspectorHead.vue";
 
 // the side panel of a declared inspector: the dialog with the width its declaration asks for, over the shared layout
 const props = defineProps({
-    noun: {type: String, required: true},
+    term: {type: String, required: true},
     id: {type: Number, required: true},
     table: {type: String, required: true},
     read: {type: Function, required: true},
@@ -18,7 +18,7 @@ const props = defineProps({
     opening: Boolean,
 });
 const emit = defineEmits(["close", "back", "open"]);
-const listing = computed(() => props.catalogue.inspector(props.noun));
+const listing = computed(() => props.catalogue.inspector(props.term));
 const root = ref(null);
 defineExpose({focus: () => root.value?.focus()});
 </script>
@@ -30,7 +30,7 @@ defineExpose({focus: () => root.value?.focus()});
         :class="['panel', 'declared', {opening}]"
         :style="{'--inspector-width': inspectorWidth(listing?.width)}"
         role="dialog"
-        :aria-label="`${noun} ${id}`"
+        :aria-label="`${term} ${id}`"
         data-resource-panel
     >
         <template v-if="opening">
@@ -38,7 +38,7 @@ defineExpose({focus: () => root.value?.focus()});
         </template>
         <template v-if="listing">
             <Inspector
-                :noun="noun"
+                :term="noun"
                 :id="id"
                 :table="table"
                 :read="read"

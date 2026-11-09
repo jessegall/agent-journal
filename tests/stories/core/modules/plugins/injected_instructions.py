@@ -23,10 +23,10 @@ def plugin_with_text(story, name):
     folder = event_plugin_folder(story.home.folder.parent, [], {}, name=name, injected_instructions=["instructions/briefing.md"])
     (folder / "instructions").mkdir()
     (folder / "instructions" / "briefing.md").write_text(f"{PLUGIN_TEXT}\n")
-    ran(story, f"plugin install {folder} --yes")
+    executed(story, f"plugin install {folder} --yes")
 
 
-def ran(story, line):
+def executed(story, line):
     story.expect_success(line, actor=story.user)
     story.run_listeners()
 
@@ -34,8 +34,8 @@ def ran(story, line):
 def test_injected_instructions_are_written_on_enable(new_story):
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "enabled")
-    ran(story, "plugin disable enabled")
-    ran(story, "plugin enable enabled")
+    executed(story, "plugin disable enabled")
+    executed(story, "plugin enable enabled")
     text = journal_text(story)
     expect_value(bool(LAW in text and PLUGIN_TEXT in text), True)
 
@@ -44,7 +44,7 @@ def test_injected_instructions_are_removed_on_disable(new_story):
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "disabled")
     expect_value(PLUGIN_TEXT in journal_text(story), True)
-    ran(story, "plugin disable disabled")
+    executed(story, "plugin disable disabled")
     text = journal_text(story)
     expect_value(bool(LAW in text and PLUGIN_TEXT not in text), True)
 
@@ -52,8 +52,8 @@ def test_injected_instructions_are_removed_on_disable(new_story):
 def test_injected_instructions_are_removed_when_deleted(new_story):
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "deleted")
-    ran(story, "plugin disable deleted")
-    ran(story, "plugin remove deleted")
+    executed(story, "plugin disable deleted")
+    executed(story, "plugin remove deleted")
     expect_value(PLUGIN_TEXT not in journal_text(story), True)
 
 
@@ -61,7 +61,7 @@ def test_injected_instructions_are_removed_when_deleted_without_disabling_first(
     story = new_story(fixture=UserJoined)
     plugin_with_text(story, "direct")
     expect_value(PLUGIN_TEXT in journal_text(story), True)
-    ran(story, "plugin remove direct")
+    executed(story, "plugin remove direct")
     expect_value(PLUGIN_TEXT not in journal_text(story), True)
 
 

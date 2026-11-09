@@ -9,7 +9,7 @@ defineProps({
     rows: {type: Array, required: true},
     failure: {type: String, default: ""},
     loaded: {type: Boolean, required: true},
-    noun: {type: String, required: true},
+    term: {type: String, required: true},
     icon: {type: String, required: true},
     head: {type: Function, required: true},
     title: {type: Function, required: true},
@@ -21,8 +21,8 @@ const emit = defineEmits(["new", "open"]);
 <template>
     <div class="cards-page">
         <div class="cards-bar">
-            <span class="cards-count">{{ rows.length }} {{ rows.length === 1 ? noun : `${noun}s` }}</span>
-            <Btn small bordered v-bind="{[`data-${noun}-new`]: ''}" @click="emit('new')"><Icon name="plus" :size="12" /> New {{ noun }}</Btn>
+            <span class="cards-count">{{ rows.length }} {{ rows.length === 1 ? term : `${term}s` }}</span>
+            <Btn small bordered v-bind="{[`data-${term}-new`]: ''}" @click="emit('new')"><Icon name="plus" :size="12" /> New {{ term }}</Btn>
         </div>
         <div class="cards">
             <template v-if="!loaded">
@@ -32,7 +32,7 @@ const emit = defineEmits(["new", "open"]);
                 <p class="cards-note">{{ failure }}</p>
             </template>
             <template v-else-if="!rows.length">
-                <p class="cards-note">No {{ noun }}s yet</p>
+                <p class="cards-note">No {{ term }}s yet</p>
             </template>
             <template v-for="row in rows" :key="row.id">
                 <button type="button" class="card" :data-row="row.id" @click="emit('open', row)">

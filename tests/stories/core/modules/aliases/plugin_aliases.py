@@ -142,9 +142,9 @@ def test_a_manifest_alias_for_agents_is_open_to_a_worker_on_install(new_story):
 
 def test_a_plugin_s_alias_reads_the_settings_of_the_environment_it_runs_in(new_story):
     story = plugin_with_aliases(new_story, [{"name": "show-level", "line": "bin/show"}])
-    show = story.plugin_folder / "bin" / "show"
-    show.write_text('#!/bin/sh\necho "env=$JOURNAL_ENV settings=$(cat "$JOURNAL_SETTINGS")"\n')
-    show.chmod(0o755)
+    display = story.plugin_folder / "bin" / "display"
+    display.write_text('#!/bin/sh\necho "env=$JOURNAL_ENV settings=$(cat "$JOURNAL_SETTINGS")"\n')
+    display.chmod(0o755)
     story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
     story.expect_success("plugin configure sample level 5", actor=story.user)
     story.expect_success("plugin configure sample level 9 --environment main", actor=story.user)

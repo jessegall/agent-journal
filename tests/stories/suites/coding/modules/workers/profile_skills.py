@@ -13,7 +13,7 @@ LISTED = "journal,journal-etiquette,journal-tasks"
 MAIN_SKILL = "journal-dumps"
 
 
-def held(repository, worker, skill: str) -> bool:
+def stored(repository, worker, skill: str) -> bool:
     return (repository.worktree_folder(worker.id) / SKILLS_FOLDER / skill / "SKILL.md").is_file()
 
 
@@ -23,14 +23,14 @@ def test_a_worker_s_worktree_holds_only_the_skills_of_its_profile(new_story):
     repository = repository_environment(story)
     story.expect_success(f'profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --skills {LISTED}', actor=story.user)
     worker = dispatched_worker(story, DISPATCH.replace("--model sonnet", "--model sonnet --profile notes-worker"))
-    story.expect_rows(held(repository, worker, "journal-tasks"), not held(repository, worker, "journal-memory"), not held(repository, worker, MAIN_SKILL))
+    story.expect_rows(stored(repository, worker, "journal-tasks"), not stored(repository, worker, "journal-memory"), not stored(repository, worker, MAIN_SKILL))
 
 
 def test_a_worker_with_no_list_of_its_own_gets_the_skills_made_for_its_type_and_for_every_type(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_rows(held(repository, worker, "journal-tasks"), held(repository, worker, "journal-memory"), not held(repository, worker, MAIN_SKILL))
+    story.expect_rows(stored(repository, worker, "journal-tasks"), stored(repository, worker, "journal-memory"), not stored(repository, worker, MAIN_SKILL))
 
 
 def test_the_skills_of_a_profile_are_listed_with_the_ones_made_for_its_type_and_a_saved_list_changes_them(new_story):

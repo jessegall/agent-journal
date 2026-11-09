@@ -87,7 +87,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
         blocked_reason = AgentBlocked(self.settings.number(BLOCK_CARD_SECONDS)).reason(card, self.clock.timestamp(), policy)
         return AgentFacts(card.id, status.model or self.reported_model(card) or card.program_model or card.job_model, self.context_percent(card, status), status.cost_dollars, card.started_task_id, card.started_task_title,
                           tuple(json.loads(card.tasks)), self.waiting_state(card, blocked_reason), card.profile or card.job_profile, card.given_name or card.job_description.split(",", 1)[0],
-                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.limited_until.text if card.limited_until is not None else None)
+                          card.job_instruction, status.effort or self.session_effort(card), card.role in policy.job_roles, card.job_returned, card.last_activity, self.helper_job(card), titles.get(card.profile or card.job_profile, card.profile or card.job_profile), blocked_reason, work_status, not sandboxed, status.windows or account, card.usage_limit_ends_at.text if card.usage_limit_ends_at is not None else None)
 
     @staticmethod
     def helper_job(card: AgentCard) -> str:
@@ -111,7 +111,7 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     def waiting_state(card: AgentCard, blocked_reason: str) -> str:
         if blocked_reason:
             return BLOCKED_STATE
-        if card.limited_until is not None:
+        if card.usage_limit_ends_at is not None:
             return USAGE_LIMIT_STATE
         return WAITING_STATE if card.paused_at is not None else ""
 

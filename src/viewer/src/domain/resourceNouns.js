@@ -5,10 +5,10 @@ const HIDDEN = new Set(["id", "version", "metadata", "title", "brief", "body", "
 const firstUpper = (words) => words.charAt(0).toUpperCase() + words.slice(1);
 const fieldLabel = (name) => firstUpper(name.replace(/_at$/, "").replaceAll("_", " "));
 
-export const titleOf = (noun, row, id) => row?.title || row?.name || `${noun} ${id}`;
+export const titleOf = (term, row, id) => row?.title || row?.name || `${term} ${id}`;
 
 // what the panel's head says of a row with no page of its own: its type and number, then its state
-export const headingOf = (noun, row, id) => [firstUpper(`${noun} ${id}`), row?.state && firstUpper(row.state)].filter(Boolean).join(" · ");
+export const headingOf = (term, row, id) => [firstUpper(`${term} ${id}`), row?.state && firstUpper(row.state)].filter(Boolean).join(" · ");
 
 // an agent by name: the one it was given, otherwise its role and number, such as Worker 412
 const agentNameOf =(agent) => agent.given_name || `${wordLabel(agent.role)} ${agent.id}`;

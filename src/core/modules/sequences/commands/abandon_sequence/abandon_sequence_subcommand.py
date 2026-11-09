@@ -17,4 +17,4 @@ class AbandonSequenceSubcommand(RunMoveSubcommand):
         parser.add_argument("--sure", action="store_true")
 
     def command(self, arguments: Namespace, caller: Caller) -> MoveSequenceRun:
-        return MoveSequenceRun(self.action, reason=arguments.why, sure=arguments.sure)
+        return MoveSequenceRun(self.action, reason=arguments.justification, sure=arguments.sure)

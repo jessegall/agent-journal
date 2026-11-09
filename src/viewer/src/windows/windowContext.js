@@ -99,7 +99,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         signal: requests.signal,
         subscriptions,
         follow: (patterns, heard) => followShown([patterns].flat().filter((pattern) => events.some((declared) => matches(declared, pattern))), heard),
-        // for a dock of the chat, whose row's noun the window cannot declare ahead
+        // for a dock of the chat, whose row's term the window cannot declare ahead
         followUndeclared: followShown,
         open,
         face: document.documentElement.classList.contains("phone") ? "phone" : "person",

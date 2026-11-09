@@ -3,7 +3,7 @@ from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WOR
 from suites.coding.support.coding_settings import AUTO_MODE_SETTING, DESIGNER_ENABLED_SETTING, KEEP_RUNNING_SETTING, STARTS_HELPERS_SETTING, WRITES_CODE_SETTING
 from suites.coding.support.main_options import MainOptions
 
-CONTROL_KEYS = {"auto": AUTO_MODE_SETTING, "sends_workers": DISPATCHES_WORKERS_SETTING, "keeps_going": KEEP_RUNNING_SETTING, "merger": MERGER_ENABLED,
+CONTROL_KEYS = {"auto": AUTO_MODE_SETTING, "sends_workers": DISPATCHES_WORKERS_SETTING, "continues_work": KEEP_RUNNING_SETTING, "merger": MERGER_ENABLED,
                 "helpers": STARTS_HELPERS_SETTING, "designer": DESIGNER_ENABLED_SETTING, "may_merge": MAIN_MERGES_WORKERS, "writes_code": WRITES_CODE_SETTING}
 
 

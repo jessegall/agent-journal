@@ -105,7 +105,7 @@ def test_the_card_shows_installed_on_and_the_last_refresh_and_refresh_now_update
     project.poll_refresh()
     story.expect_success("tool on graphify", actor=story.user)
     card = json.loads(story.run("tool list --json", actor=story.user).output_text)["tools"][0]
-    story.expect_rows(card["is_installed"] is True, card["is_on"] is True)
+    story.expect_rows(card["is_installed"] is True, card["enabled"] is True)
 
 
 def test_refresh_now_is_refused_while_graphify_is_not_installed(new_story, tmp_path):

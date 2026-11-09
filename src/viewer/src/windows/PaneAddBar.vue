@@ -2,7 +2,7 @@
 import Btn from "../kit/Btn.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 
-// the windows a pane can add: a click adds one here, a drag places it; one that is unavailable says why
+// the windows a pane can add: a click adds one here, a drag places it; one that is unavailable says justification
 defineProps({windows: {type: Array, required: true}});
 const emit = defineEmits(["grab", "add"]);
 </script>

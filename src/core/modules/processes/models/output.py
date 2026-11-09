@@ -24,7 +24,7 @@ class Output(Model):
     reader_id: int | None = None
     reader_position: int = 0
     read_offset: int = 0
-    seen_offset: int = 0
+    displayed_offset: int = 0
     read_lines: int = 0
     reader_lines: int = 0
     reader_summary: str = ""

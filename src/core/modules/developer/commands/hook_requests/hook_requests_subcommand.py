@@ -22,11 +22,11 @@ class HookRequestsSubcommand(ReadSubcommand[tuple[HookRequest, ...]]):
         parser.add_argument("--kind", action="append", default=[])
         parser.add_argument("--family", action="append", default=[])
         parser.add_argument("--sender", action="append", default=[])
-        for name in ("kinds", "families", "senders"):
+        for name in ("categories", "families", "senders"):
             parser.add_argument(f"--{name}", type=json_text_list, default=[])
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[HookRequest, ...]:
-        return tuple(self.log.filtered([*arguments.kind, *arguments.kinds], [*arguments.family, *arguments.families], [*arguments.sender, *arguments.senders]))
+        return tuple(self.log.filtered([*arguments.category, *arguments.categories], [*arguments.family, *arguments.families], [*arguments.sender, *arguments.senders]))
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):

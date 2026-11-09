@@ -33,7 +33,7 @@ function drawn(comments = [onWords, whole], width = 980) {
     };
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(DocumentBody, {noun: "doc", id: 4, read})}).mount(element);
+    createApp({render: () => h(DocumentBody, {term: "doc", id: 4, read})}).mount(element);
     return {element, ran};
 }
 
@@ -85,7 +85,7 @@ test("a comment is sent with its selection, and with none it is on the whole doc
     expect(ran).toContainEqual(["doc", "comment", "4", "--", "Good"]);
 });
 
-test("a refused comment keeps its words and says why", async () => {
+test("a refused comment keeps its words and says justification", async () => {
     const {element} = drawn([]);
     await settle();
     typeInto(element.querySelector("[data-comment-input]"), "no");

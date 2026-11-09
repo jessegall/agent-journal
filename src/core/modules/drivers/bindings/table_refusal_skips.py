@@ -26,7 +26,7 @@ class TableRefusalSkips(RefusalSkips):
         self.queries, self.bus, self.registry, self.refusals = queries, bus, registry, refusals
 
     def waiting(self, agent_id: int, rule: str) -> Command[object] | None:
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, used_at=None, withdrawn_at=None, waits_for_approval=False).matching(HasValue("confirmed_at")).newest().first()
+        skip = self.queries.query(RefusalSkip).filter(session_agent_id=agent_id, name=rule, used_at=None, cancelled_at=None, needs_approval=False).matching(HasValue("confirmed_at")).newest().first()
         return UseRefusalSkip(skip.id) if skip is not None else None
 
     def has_refused(self, agent_id: int, rule: str) -> bool:

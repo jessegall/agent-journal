@@ -17,7 +17,7 @@ class StandingApprovals:
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def kind(self, request: ApprovalRequest) -> str:
+    def category(self, request: ApprovalRequest) -> str:
         if request.command_json:
             return str(json.loads(request.command_json)[TYPE_KEY]).rpartition(".")[2]
         return " ".join(request.arguments[:COMMAND_TYPE_LENGTH])
@@ -29,15 +29,15 @@ class StandingApprovals:
         return request.arguments[COMMAND_TYPE_LENGTH] if len(request.arguments) > COMMAND_TYPE_LENGTH else ""
 
     @staticmethod
-    def same_key(request: ApprovalRequest) -> str:
+    def match_key(request: ApprovalRequest) -> str:
         return json.dumps([list(request.arguments), request.command_json, list(request.refused_arguments), list(request.continued_arguments)])
 
     def build_standing(self, request: ApprovalRequest, scope: StandingScope, creator_id: int) -> StandingApproval:
-        kind, target = self.kind(request), self.target(request)
-        text = f"{kind} {target}".strip() if scope is StandingScope.LIKE else f"{kind}: {request.text}"
-        return StandingApproval(environment_id=request.environment_id, creator_id=creator_id, scope=scope, kind=kind, target=target, same_key=self.same_key(request), text=text)
+        category, target = self.category(request), self.target(request)
+        text = f"{category} {target}".strip() if scope is StandingScope.LIKE else f"{category}: {request.text}"
+        return StandingApproval(environment_id=request.environment_id, creator_id=creator_id, scope=scope, category=category, target=target, match_key=self.match_key(request), text=text)
 
     def covering(self, request: ApprovalRequest) -> StandingApproval | None:
-        kind, target, same_key = self.kind(request), self.target(request), self.same_key(request)
-        standing = self.queries.query(StandingApproval).filter(environment_id=request.environment_id, kind=kind).oldest().all_rows()
-        return next((row for row in standing if row.scope is StandingScope.LIKE and row.target == target or row.scope is StandingScope.EXACT and row.same_key == same_key), None)
+        category, target, match_key = self.category(request), self.target(request), self.match_key(request)
+        standing = self.queries.query(StandingApproval).filter(environment_id=request.environment_id, category=category).oldest().all_rows()
+        return next((row for row in standing if row.scope is StandingScope.LIKE and row.target == target or row.scope is StandingScope.EXACT and row.match_key == match_key), None)

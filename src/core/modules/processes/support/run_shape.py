@@ -8,7 +8,7 @@ class RunShape:
     it, and whether the output states a total."""
 
     label: str
-    found: re.Pattern[str]
+    located: re.Pattern[str]
     flag: str
     pattern: str
     states_total: bool
@@ -20,4 +20,4 @@ class RunShape:
 
     def reader_options(self) -> str:
         count = f' --count "{self.count}"' if self.count else ""
-        return f'--lines "{self.found.pattern}" --summary "(?i)passed|failed|done" --{self.flag} "{self.pattern}"{count}'
+        return f'--lines "{self.located.pattern}" --summary "(?i)passed|failed|done" --{self.flag} "{self.pattern}"{count}'

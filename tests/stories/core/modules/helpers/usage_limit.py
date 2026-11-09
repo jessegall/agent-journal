@@ -52,12 +52,12 @@ def test_agents_of_a_program_at_its_usage_limit_are_marked_and_get_no_lines_unti
         report_window(story, 100)
         UsageLimitMarker()(story.container)
         limited = read_agent(story)
-        story.expect_rows(limited.limited_until is not None, limited.activity is AgentActivity.USAGE_LIMITED, detail=str(limited.limited_until))
+        story.expect_rows(limited.usage_limit_ends_at is not None, limited.activity is AgentActivity.USAGE_LIMITED, detail=str(limited.usage_limit_ends_at))
         line = waiting_line(story)
         story.expect_rows(story.row(AgentLine, line.id).state is AgentLineState.WAITING)
         story.advance(timedelta(seconds=LIMIT_SECONDS + 10))
         UsageLimitMarker()(story.container)
-        story.expect_rows(read_agent(story).limited_until is None, read_agent(story).activity is AgentActivity.WORKING)
+        story.expect_rows(read_agent(story).usage_limit_ends_at is None, read_agent(story).activity is AgentActivity.WORKING)
         story.expect_rows(story.row(AgentLine, line.id).state is AgentLineState.ENTERED)
     finally:
         launcher.server.close()
@@ -67,7 +67,7 @@ def test_a_window_below_its_limit_marks_no_agent(new_story):
     story = limited_story(new_story)
     report_window(story, 98)
     UsageLimitMarker()(story.container)
-    story.expect_rows(read_agent(story).limited_until is None)
+    story.expect_rows(read_agent(story).usage_limit_ends_at is None)
 
 
 def test_the_agent_card_says_it_is_at_the_usage_limit_and_when_the_allowance_starts_again(new_story):
@@ -75,7 +75,7 @@ def test_the_agent_card_says_it_is_at_the_usage_limit_and_when_the_allowance_sta
     report_window(story, 100)
     UsageLimitMarker()(story.container)
     card = json.loads(story.run("agent cards --include-main --json", actor=story.agent).output_text)["rows"][0]
-    story.expect_rows(card["facts"]["state"] == "at usage limit", card["facts"]["limited_until"] == read_agent(story).limited_until.text, detail=str(card["facts"]))
+    story.expect_rows(card["facts"]["state"] == "at usage limit", card["facts"]["usage_limit_ends_at"] == read_agent(story).usage_limit_ends_at.text, detail=str(card["facts"]))
 
 
 def test_a_program_with_a_window_used_up_in_full_takes_no_new_agent_whatever_the_window_setting_says(new_story):

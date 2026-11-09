@@ -5,7 +5,7 @@ import {startButtons} from "../src/domain/buttons.js";
 import {AllowancePrompts} from "../src/windows/allowancePrompts.js";
 import {perLine, settle} from "./support/windowContext.js";
 
-const ROW = {id: 12, noun: "task", title: "A task", state: "open"};
+const ROW = {id: 12, term: "task", title: "A task", state: "open"};
 const BASE = {name: "tasks.lock", slots: ["row.task"], label: "Lock the task", runs: "task lock {row_id}", fields: [], menu: [], icon: "lock", primary: false, condition: null, tip: "", confirm: "", danger: false};
 const mounted = [];
 let offers, writes;

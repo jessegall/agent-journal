@@ -81,4 +81,4 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
 
     @staticmethod
     def needs_fault_notice(profile: AgentProfile | None, command: RecordProgramExit) -> bool:
-        return bool(command.exit_code) and profile is not None and not profile.reports_to_parent
+        return bool(command.exit_code) and profile is not None and not profile.has_parent_report

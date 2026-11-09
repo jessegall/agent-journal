@@ -77,7 +77,7 @@ test("Cancel drops what was typed and Save applies all of it at once", async () 
     await vi.waitFor(() => expect(ran).toEqual([["secret", "fill", "3", "key", "new-value"], ["secret", "allow", "3", "--helpers"], ["secret", "update", "3", "--title", "Shop token", "--brief", "For the shop"]]));
 });
 
-test("a refused change keeps the dialog open and says why", async () => {
+test("a refused change keeps the dialog open and says justification", async () => {
     const {element} = await drawn();
     const window = context({"secret list --deleted": page([]), "secret list": page([SECRET])});
     window.run = async () => ({ok: false, error: "the value is too long"});

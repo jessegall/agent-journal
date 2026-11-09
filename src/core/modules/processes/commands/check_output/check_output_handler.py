@@ -33,4 +33,4 @@ class CheckOutputHandler(Handler[CheckOutput, Watch]):
             return watch
         minutes = round(watch.creation_timestamp().elapsed_seconds(context.timestamp) / MINUTE_SECONDS)
         self.nudger.send(agent.id, OUTPUT_CHECK, "processes.output_check", context, output=process.id, minutes=minutes)
-        return self.repository.update(watch, context, woke_at=context.timestamp, awaits_confirm=True)
+        return self.repository.update(watch, context, notified_at=context.timestamp, awaits_confirm=True)

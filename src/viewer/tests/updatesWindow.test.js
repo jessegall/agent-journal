@@ -72,7 +72,7 @@ test("what changed lists the releases and older ones come after the button", asy
     expect(element.querySelector("[data-update-older]")).toBeNull();
 });
 
-test("notes that cannot be read say why and the rest of the window stays", async () => {
+test("notes that cannot be read say justification and the rest of the window stays", async () => {
     const element = await mounted(UpdatesPanel, updates({line: "up to date", tag: "", is_current: true}, {ok: false, error: "could not be read"}));
     expect(element.querySelector("[data-update-notes-failure]").textContent).toBe("could not be read");
     expect(element.textContent).toContain("up to date");

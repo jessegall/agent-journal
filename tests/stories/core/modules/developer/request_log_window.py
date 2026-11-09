@@ -24,7 +24,7 @@ def test_request_filters_reach_the_key_and_the_queue_is_requested_separately(req
     status, answer = window_data(server, cookie, window="developer.hook-requests", query=query)
     rows = answer["keys"]["requests"]["value"]["rows"]
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"requests"}, bool(rows),
-                             all(row["kind"] == "viewer" and row["family"] == "task" for row in rows))
+                             all(row["category"] == "viewer" and row["family"] == "task" for row in rows))
     status, queue = window_data(server, cookie, keys="queue", window="developer.hook-requests")
     server.story.expect_rows(status == 200, set(queue["keys"]) == {"queue"}, queue["keys"]["queue"]["code"] == 0)
 

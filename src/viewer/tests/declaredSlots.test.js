@@ -12,8 +12,8 @@ import {dockWindow} from "./support/dockWindow.js";
 
 const BUTTON = {name: "plans.approve", module: "journal.core.plans", slots: ["dock.plans.waiting", "row.plan"], label: "Approve", runs: "plan approve {row_id}", fields: [], menu: [], condition: {field: "state", values: ["ready"]}};
 const mounted = [];
-const LISTING = (noun) => ({noun, reads: noun === "plan" ? "plan inspect {row_id}" : `${noun} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false});
+const LISTING = (term) => ({term, reads: term === "plan" ? "plan inspect {row_id}" : `${term} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
+    links: {categories: [], open: false, excludes_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false});
 const CATALOGUE = {inspector: LISTING, window: () => null, sectionsAt: () => []};
 
 afterEach(() => {

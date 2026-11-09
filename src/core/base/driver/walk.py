@@ -34,7 +34,7 @@ class Walk:
         if not self.layers or self.layers[0] == layer.row.ref:
             self.delays_lines = overlay.delays_lines and not self.has_ended_layer
         self.is_silenced = self.is_silenced or (overlay.exclusive and not self.has_ended_layer)
-        self.holds_wakes = self.holds_wakes or (overlay.exclusive and not overlay.lets_wakes_through and not self.has_ended_layer)
+        self.holds_wakes = self.holds_wakes or (overlay.exclusive and not overlay.allows_wakes and not self.has_ended_layer)
         self.delays_notices = self.delays_notices or (overlay.delays_notices and not self.has_ended_layer)
         self.has_ended_layer = False
 

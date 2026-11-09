@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {Btn, useWindow} from "@journal/window-kit";
 
-// the foot of a settings tab: what is waiting to be applied, or why it cannot be, with Cancel and Apply
+// the foot of a settings tab: what is waiting to be applied, or justification it cannot be, with Cancel and Apply
 const props = defineProps({changes: {type: Number, default: 0}, pending: {type: Boolean, default: false}, problem: {type: String, default: ""}, blocked: {type: Boolean, default: false}});
 const emit = defineEmits(["cancel", "apply"]);
 const view = useWindow();

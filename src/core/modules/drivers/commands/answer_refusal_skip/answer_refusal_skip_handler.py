@@ -32,13 +32,13 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, RefusalSkip]):
         if skip.is_answered:
             raise Refusal(f"skip {skip.id} was answered already, and its answer is final", "make a new skip if the refusal meets you again")
         if not command.is_confirmed:
-            return self.repository.update(skip, context, withdrawn_at=context.timestamp)
+            return self.repository.update(skip, context, cancelled_at=context.timestamp)
         tried = command.tried.strip()
         if not tried or tried == skip.reason:
             raise Refusal("name what you tried before skipping, not the reason again", "--tried '<what you tried instead>'")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
         waits = agent.role != AgentRole.MAIN and agent.parent_id is not None and self.settings.flag(SKIPS_NEED_APPROVAL)
-        confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, waits_for_approval=waits)
+        confirmed = self.repository.update(skip, context, confirmed_at=context.timestamp, tried=tried, needs_approval=waits)
         if waits:
             self.nudger.send(agent.parent_id, SKIP_NEEDS_APPROVAL, SKIP_SOURCE, context, agent=agent.id, refusal=skip.id)
         return confirmed

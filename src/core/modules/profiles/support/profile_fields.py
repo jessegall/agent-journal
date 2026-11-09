@@ -12,14 +12,14 @@ class ProfileFields(TypedDict, total=False):
     agent_type: str
     access: Access
     program: str
-    program_if_possible: bool
+    preferred_program: bool
     fallback_programs: tuple[str, ...]
     model: str
     tier: ModelTier | None
     codex_model: str
     program_models: dict[str, str]
     independent: bool
-    keeps_project_instructions: bool
+    uses_project_instructions: bool
     injections: dict[str, bool]
     mcp_tools: tuple[str, ...]
     writable_folders: tuple[str, ...]

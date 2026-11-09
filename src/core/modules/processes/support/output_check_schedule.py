@@ -17,5 +17,5 @@ class OutputCheckSchedule:
         return STEP_MINUTES[min(watch.confirmed_count, len(STEP_MINUTES) - 1)] * MINUTE_SECONDS
 
     def wait_elapsed(self, watch: Watch, timestamp: Timestamp) -> bool:
-        wait_start = watch.woke_at or watch.creation_timestamp()
+        wait_start = watch.notified_at or watch.creation_timestamp()
         return wait_start.elapsed_seconds(timestamp) >= self.wait_seconds(watch)

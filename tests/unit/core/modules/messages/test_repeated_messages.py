@@ -2,16 +2,16 @@ from core.modules.messages.support.repeated_messages import RepeatedMessages
 from tests.unit.core.modules.messages.repeated_message_pairs import DIFFERENT, REPEATS
 
 
-def held(pairs: list[tuple[str, str]]) -> int:
+def stored(pairs: list[tuple[str, str]]) -> int:
     return sum(RepeatedMessages.repeats_previous(previous, text) for previous, text in pairs)
 
 
 def test_most_real_repeats_from_the_journal_are_held():
-    assert held(REPEATS) >= 10, f"{held(REPEATS)} of {len(REPEATS)} repeats held"
+    assert stored(REPEATS) >= 10, f"{stored(REPEATS)} of {len(REPEATS)} repeats held"
 
 
 def test_few_real_messages_on_another_subject_are_held():
-    assert held(DIFFERENT) <= 4, f"{held(DIFFERENT)} of {len(DIFFERENT)} different messages held"
+    assert stored(DIFFERENT) <= 4, f"{stored(DIFFERENT)} of {len(DIFFERENT)} different messages held"
 
 
 def test_a_new_number_is_something_new():

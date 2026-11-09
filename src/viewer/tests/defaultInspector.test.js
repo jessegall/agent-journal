@@ -6,8 +6,8 @@ import {AllowancePrompts} from "../src/windows/allowancePrompts.js";
 import {perLine, settle} from "./support/windowContext.js";
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 60));
-const LISTING = (noun, extra = {}) => ({noun, module: "acme", fingerprint: "a", reads: `${noun} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [], shareable: false,
-    links: {kinds: [], open: false, outside_plan: false, page_size: 10}, lists_fields: true, draws_text: false, ...extra});
+const LISTING = (term, extra = {}) => ({term, module: "acme", fingerprint: "a", reads: `${term} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [], shareable: false,
+    links: {categories: [], open: false, excludes_plan: false, page_size: 10}, lists_fields: true, draws_text: false, ...extra});
 const BUTTONS = [{name: "rules.approve", slots: ["row.rule"], label: "Approve the rule", runs: "rule approve {row_id}", fields: [], menu: [], icon: "check", primary: true, condition: null, tip: "", confirm: "", danger: false}];
 const MEMORY = {id: 4, text: "Keep it **short**", state: "active", weight: 9, creator_id: 78, created_at: "2026-11-01T10:00:00Z"};
 let app = null;
@@ -32,8 +32,8 @@ afterEach(async () => {
 
 async function opened(hash, listings, answers) {
     await startButtons("main", new AllowancePrompts(async () => ({ok: true}))).load();
-    const catalogue = {inspector: (noun) => listings[noun] ?? null, window: () => null, sectionsAt: () => []};
-    const read = async (line) => answers[line.join(" ")] ?? {ok: true, value: {rows: [], total: 0, kinds: {}, counterparts: []}};
+    const catalogue = {inspector: (term) => listings[noun] ?? null, window: () => null, sectionsAt: () => []};
+    const read = async (line) => answers[line.join(" ")] ?? {ok: true, value: {rows: [], total: 0, categories: {}, counterparts: []}};
     location.hash = hash;
     await later();
     const element = document.createElement("div");
@@ -49,7 +49,7 @@ async function opened(hash, listings, answers) {
 test("a memory opens with its text, fields and links in the shared layout", async () => {
     const panel = await opened("#?open=memories:4", {memory: LISTING("memory", {label: "Memory {id} · {state}"})}, {
         "memory show 4": {ok: true, value: MEMORY},
-        "link list --row memory:4 --group-counterparts --page-size 1": {ok: true, value: {total: 2, kinds: {task: 2}, counterparts: []}},
+        "link list --row memory:4 --group-counterparts --page-size 1": {ok: true, value: {total: 2, categories: {task: 2}, counterparts: []}},
     });
     expect(panel.textContent).toContain("Memory 4 · active");
     expect(panel.querySelector("[data-resource-text]").innerHTML).toContain("<strong>short</strong>");
@@ -64,7 +64,7 @@ test("a rule opens in the shared layout with its own buttons", async () => {
     expect(panel.querySelector("[data-inspector-actions] [data-button='rules.approve']").textContent).toContain("Approve the rule");
 });
 
-test("a row whose noun has no inspector shows the failure line, never a blank panel", async () => {
+test("a row whose term has no inspector shows the failure line, never a blank panel", async () => {
     const panel = await opened("#?open=secret:1", {}, {});
     expect(panel.querySelector("[data-resource-failure]").textContent).toBe("This row has no inspector.");
     expect(panel.querySelector("[data-resource-close]")).not.toBeNull();

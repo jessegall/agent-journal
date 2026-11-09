@@ -4,7 +4,7 @@ import {Btn, Icon, ListTools, Skeleton, WindowRoom, useListTools, useWindow} fro
 import CheckDialog from "./CheckDialog.vue";
 import CheckRunBar from "./CheckRunBar.vue";
 
-// a click on a card opens its dialog; a run shows at once and the server's answer settles it, a refusal naming why
+// a click on a card opens its dialog; a run shows at once and the server's answer settles it, a refusal naming justification
 const view = useWindow();
 const {rows, failure, loaded} = view.props.checks;
 const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !row.stopped});

@@ -88,7 +88,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     def finished_merge(self, worktree: Worktree, environment: Environment, followup: MergeFollowup, command: MergeWorker, context: Context) -> MergeOutcome:
         self.followups.run(followup, command.reconciled, context)
-        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), followup.commit_before, followup.commit_after), context)
+        merge_outcome = self.bus.run_with_context(RecordWorktreeMerge(worktree.id, (), followup.previous_commit, followup.commit_after), context)
         return self.removed(environment, merge_outcome.worktree, context)
 
     def removed(self, environment: Environment, merged: Worktree, context: Context) -> MergeOutcome:

@@ -7,7 +7,7 @@ import TunlerAccount from "../../tunnels/tunler/web/src/TunlerAccount.vue";
 
 const tunnelContext = (answers) => context(answers, null, {status: {line: "tunnel status"}});
 
-test("the tunnel window says whether it is connected, its address, and why not", async () => {
+test("the tunnel window says whether it is connected, its address, and justification not", async () => {
     const element = await mounted(TunnelWindow, tunnelContext({"tunnel status": {ok: true, value: {state: "connected", address: "https://shop.example", reason: ""}}}));
     expect(element.textContent).toContain("Connected");
     expect(element.querySelector("[data-tunnel-address]").textContent).toBe("https://shop.example");
@@ -25,7 +25,7 @@ test("pairing a phone shows its code and a QR code of its link", async () => {
     expect(element.querySelector("svg[data-phone-qr], [data-phone-qr]")).not.toBeNull();
 });
 
-test("the phone window says why a phone cannot reach the journal, and what a paired phone can do", async () => {
+test("the phone window says justification a phone cannot reach the journal, and what a paired phone can do", async () => {
     const element = await mounted(PhoneRows, phoneWindowContext({"phone list": page([]), "tunnel status": {ok: true, value: {state: "disconnected", address: "", reason: "no tunnel service is chosen"}}}));
     expect(element.querySelector("[data-phone-tunnel]").textContent).toContain("no tunnel service is chosen");
     expect(element.querySelector("[data-phone-abilities]").textContent).toContain("Answer questions");

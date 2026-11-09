@@ -48,7 +48,7 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
         return (*lines, *(TreeLine(setting, 0) for setting in kept if setting is not None))
 
     def is_hidden(self, entry: SettingEntry) -> bool:
-        return any(self.declared.entry(key).type == GROUP_TYPE and self.values.current(key).value is False for key in entry.depends_on)
+        return any(self.declared.entry(key).type == GROUP_TYPE and self.values.current(key).value is False for key in entry.required_settings)
 
     def line(self, entry: SettingEntry, depth: int) -> TreeLine:
         return TreeLine(self.values.current(entry.key), depth)

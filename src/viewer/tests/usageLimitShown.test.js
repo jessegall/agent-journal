@@ -25,7 +25,7 @@ test("the status bar shows the percent and the reset time below the limit", asyn
 
 test("an agent card at the usage limit says so with the time the allowance starts again", async () => {
     const limited = new Date(RESET * 1000).toISOString();
-    const facts = {job_enabled: true, tasks: [], state: "at usage limit", limited_until: limited};
+    const facts = {job_enabled: true, tasks: [], state: "at usage limit", usage_limit_ends_at: limited};
     const row = {id: 6, role: "worker", access: "writing", state: "running", session: "s-6", program: "claude", created_at: new Date().toISOString()};
     const element = await mounted({render: () => h(AgentCard, {row, facts})}, context({}));
     expect(element.textContent).toContain(`At usage limit: starts again ${new Date(limited).toLocaleString()}`);

@@ -63,7 +63,7 @@ test("a new environment needs its name and folder, and is made with its branch",
     expect(made).toEqual(["review"]);
 });
 
-test("a refused environment says why and stays open", async () => {
+test("a refused environment says justification and stays open", async () => {
     const made = [];
     drawn(NewEnvironment, {run: async () => ({ok: false, error: "that name is taken"}), onMade: (name) => made.push(name)});
     await nextTick();

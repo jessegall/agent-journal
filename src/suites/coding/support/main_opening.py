@@ -22,7 +22,7 @@ class MainOpening:
         options = self.options
         lines = [CODE_ALLOWED if options.auto else CODE_FORBIDDEN,
                   SENDS_WORKERS if options.sends_workers else WORKERS_DISABLED_LINE,
-                  CONTINUE_LINE if options.keeps_going else "",
+                  CONTINUE_LINE if options.continues_work else "",
                   HELPERS if options.helpers else "",
                   DESIGNER if options.designer else "",
                   MERGES if options.may_merge else "",

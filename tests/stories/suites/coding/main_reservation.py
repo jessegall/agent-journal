@@ -15,7 +15,7 @@ SHIP_PHASE_TASK = 4
 
 def assigned_task(story):
     with scope_line(story):
-        return story.container.get(AvailableWork).answer(story.agent.id).own_task
+        return story.container.get(AvailableWork).answer(story.agent.id).assigned_task
 
 
 def plan_tasks(story) -> dict[int, dict[str, object]]:

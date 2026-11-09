@@ -13,7 +13,7 @@ const emit = defineEmits(["more"]);
 const CHIPS_UP_TO = 3;
 const TASK = "task";
 const count = computed(() => props.total || props.links.length);
-const noun = computed(() => (props.links.every((link) => link.endpoint.model === TASK) ? "tasks" : "items"));
+const term = computed(() => (props.links.every((link) => link.endpoint.model === TASK) ? "tasks" : "items"));
 const open = ref(false);
 const line = ref(null);
 useOutside(line, () => (open.value = false));
@@ -38,7 +38,7 @@ function go(link) {
         <template v-if="count >= CHIPS_UP_TO">
             <span class="message-links-many">
                 <button type="button" class="message-links-count" data-message-links-count :aria-expanded="open" @click="toggle">
-                    {{ count }} linked {{ noun }}
+                    {{ count }} linked {{ term }}
                     <FoldSign :open="open" />
                 </button>
             </span>

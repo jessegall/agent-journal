@@ -8,7 +8,7 @@ class InspectorLinks:
     kind the row has), whether it starts open, whether it leaves out the rows of the row's own plan and how
     many rows load per page."""
 
-    kinds: Sequence[str] = ()
+    categories: Sequence[str] = ()
     open: bool = False
-    outside_plan: bool = False
+    excludes_plan: bool = False
     page_size: int = 10

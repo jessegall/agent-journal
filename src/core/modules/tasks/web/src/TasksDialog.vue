@@ -148,7 +148,7 @@ onUnmounted(() => {
                     </div>
                 </div>
                 <template v-if="inspecting && selected">
-                    <HostedInspector noun="task" stepped embedded :id="selected" :read="view.run" :environment="view.environment" @step="step" @open="(row) => peekRef(`${row.table}:${row.id}`)" />
+                    <HostedInspector term="task" stepped embedded :id="selected" :read="view.run" :environment="view.environment" @step="step" @open="(row) => peekRef(`${row.table}:${row.id}`)" />
                 </template>
             </div>
         </div>

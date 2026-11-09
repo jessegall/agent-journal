@@ -20,6 +20,6 @@ class RecordMergeFollowupHandler(Handler[RecordMergeFollowup, MergeFollowup]):
     def handle(self, command: RecordMergeFollowup, context: Context) -> MergeFollowup:
         worktree = self.rows.required(Worktree, command.worktree_id)
         return self.repository.save(MergeFollowup(worktree_id=worktree.id, worker_id=worktree.session_agent_id, creator_id=context.actor.id,
-                                                  folder=command.folder, target_branch=worktree.base_branch, commit_before=command.commit_before,
+                                                  folder=command.folder, target_branch=worktree.base_branch, previous_commit=command.previous_commit,
                                                   commit_after=command.commit_after, revision=command.revision, commands=command.commands,
                                                   results=tuple(PENDING_STEP for _ in command.commands)), context)

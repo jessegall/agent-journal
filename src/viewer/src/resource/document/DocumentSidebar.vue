@@ -47,7 +47,7 @@ const host = inject(INSPECTOR_HOST, null);
                             <p class="question-answer">Answered: {{ question.answer }}</p>
                         </template>
                         <InspectorSections :names="['questions.question-options']" :row="question" />
-                        <ButtonSlot name="row.question" :row="{...question, noun: 'question'}" :environment="host?.environment ?? ''" @done="$emit('changed')" />
+                        <ButtonSlot name="row.question" :row="{...question, term: 'question'}" :environment="host?.environment ?? ''" @done="$emit('changed')" />
                     </section>
                 </template>
             </aside>

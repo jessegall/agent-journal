@@ -12,13 +12,13 @@ export function useTextComments(source, read) {
 
     const words = (row) => {
         if (typeof row.body === "string") return row.body;
-        const {noun, id, title} = source();
-        const named = `On ${noun} ${id}, ${title}: `;
+        const {term, id, title} = source();
+        const named = `On ${term} ${id}, ${title}: `;
         return row.text.startsWith(named) ? row.text.slice(named.length) : row.text;
     };
 
     async function load(page = 1) {
-        const {noun, id} = source();
+        const {term, id} = source();
         if (!id) return;
         const turn = ++reading;
         loading.value = true;
@@ -43,14 +43,14 @@ export function useTextComments(source, read) {
     }
 
     async function send(text) {
-        const {noun, id} = source();
-        const selected = `${noun}:${id}`;
+        const {term, id} = source();
+        const selected = `${term}:${id}`;
         const shown = {id: `sending-${++sent}`, text};
         comments.value = [...comments.value, shown];
         total.value++;
         open.value = true;
         const answer = await read([noun, "comment", String(id), text]);
-        if (selected !== `${source().noun}:${source().id}`) return;
+        if (selected !== `${source().term}:${source().id}`) return;
         if (!answer.ok) {
             comments.value = comments.value.filter((row) => row.id !== shown.id);
             total.value = Math.max(0, total.value - 1);
@@ -62,7 +62,7 @@ export function useTextComments(source, read) {
     }
 
     const loadMore = () => !loading.value && nextPage.value && load(nextPage.value);
-    watch(() => `${source().noun}:${source().id}`, () => {
+    watch(() => `${source().term}:${source().id}`, () => {
         open.value = false;
         comments.value = [];
         nextPage.value = null;

@@ -31,7 +31,7 @@ class InspectorDeclaration:
     comments: bool = False
     events: Sequence[str] = ()
     links: InspectorLinks | None = InspectorLinks()
-    named: str = ""
+    labelled: str = ""
     lists_fields: bool = False
     draws_text: bool = False
 
@@ -42,13 +42,13 @@ class InspectorDeclaration:
 
     @property
     def model_name(self) -> str:
-        return self.named or self.model.cli_name
+        return self.labelled or self.model.cli_name
 
     def read_line(self) -> str:
         return " ".join(self.reads.split()[:2]) if self.reads else f"{self.model_name} show"
 
     def read_model_name(self) -> str:
-        return self.model.cli_name if self.named else self.read_line().split()[0]
+        return self.model.cli_name if self.labelled else self.read_line().split()[0]
 
     def slotted_actions(self) -> tuple[ButtonDeclaration, ...]:
         slot = f"row.{self.model_name}"
@@ -60,10 +60,10 @@ class InspectorDeclaration:
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "InspectorDeclaration":
         links = stored.get("links")
-        return cls(model=DottedPath(stored["model"]).checked_class(ViewModel if stored.get("named") else Model), reads=stored.get("reads", ""), label=stored.get("label", ""),
+        return cls(model=DottedPath(stored["model"]).checked_class(ViewModel if stored.get("labelled") else Model), reads=stored.get("reads", ""), label=stored.get("label", ""),
                    title=stored.get("title", "{title}"), description=stored.get("description", ""), width=InspectorWidth(stored.get("width", InspectorWidth.SMALL)),
                    actions=tuple(ButtonDeclaration.restored(action) for action in stored.get("actions", ())),
                    components=tuple(InspectorComponent(**component) for component in stored.get("components", ())),
                    comments=stored.get("comments", False), events=tuple(stored.get("events", ())),
-                   links=InspectorLinks(**{**links, "kinds": tuple(links["kinds"])}) if links is not None else None, named=stored.get("named", ""),
+                   links=InspectorLinks(**{**links, "categories": tuple(links["categories"])}) if links is not None else None, labelled=stored.get("labelled", ""),
                    lists_fields=stored.get("lists_fields", False), draws_text=stored.get("draws_text", False))

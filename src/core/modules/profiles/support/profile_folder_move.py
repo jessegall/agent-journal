@@ -89,7 +89,7 @@ class ProfileFolderMove:
 
     @staticmethod
     def personal_fields(profile, fields: ProfileFields) -> ProfileFields:
-        values: ProfileFields = {name: getattr(profile, name) for name in ("description", "body", "agent_type", "access", "program", "program_if_possible", "model", "codex_model", "independent", "mcp_tools")}
+        values: ProfileFields = {name: getattr(profile, name) for name in ("description", "body", "agent_type", "access", "program", "preferred_program", "model", "codex_model", "independent", "mcp_tools")}
         if fields.get("legacy_writing") == "true":
             values["legacy_writing"] = "true"
         return values

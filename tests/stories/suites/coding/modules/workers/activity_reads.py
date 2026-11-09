@@ -149,4 +149,4 @@ def test_a_tick_reads_again_if_the_output_changes_after_its_batch_read(four_work
     with patch.object(bus, "run", side_effect=change_during_read):
         OutputReading().read(story.container)
     output = story.container.get(OutputQuery).process_output(process.id)
-    story.expect_rows(changed, output.title == "Building the project", output.seen_offset == folder.total_bytes(process.id))
+    story.expect_rows(changed, output.title == "Building the project", output.displayed_offset == folder.total_bytes(process.id))

@@ -24,8 +24,8 @@ def test_the_tip_of_a_plan_under_review_says_who_still_reads_and_who_reported_wi
     report = max(row.id for row in story.container.get(Queries).query(Report).all_rows())
     lines = tip_lines(story)
     name = first.given_name or first.profile or first.role
-    other = second.given_name or second.profile or second.role
-    story.expect_rows(lines == ["2 reviewers: 1 reported, 1 still reading", f"{name}: report {report}", f"{other}: still reading"])
+    alternate = second.given_name or second.profile or second.role
+    story.expect_rows(lines == ["2 reviewers: 1 reported, 1 still reading", f"{name}: report {report}", f"{alternate}: still reading"])
 
 
 def test_the_tip_says_so_when_no_reviewer_has_started(new_story):

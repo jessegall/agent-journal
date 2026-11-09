@@ -27,6 +27,7 @@ from core.modules.approvals.migrations.m002_approval_recipients import ApprovalR
 from core.modules.approvals.migrations.m003_approval_commands import ApprovalCommandsMigration
 from core.modules.approvals.migrations.m004_standing_approvals import StandingApprovalsMigration
 from core.modules.approvals.migrations.m005_approval_why import ApprovalWhyMigration
+from core.modules.approvals.migrations.m006_plain_column_names import PlainColumnNamesMigration
 from core.modules.approvals.commands.check_approval_works.check_approval_works_handler import CheckApprovalWorksHandler
 from core.modules.approvals.models.standing_approval import StandingApproval
 from core.modules.approvals.guards.standing_approval_guard import StandingApprovalGuard
@@ -55,7 +56,7 @@ class ApprovalsModule(Module):
     seed_reason = "the demo has no pending approval requests"
     dependencies = ["journal.core.agents", "journal.core.actors", "journal.core.environments", "journal.core.docking", "journal.core.viewer", "journal.core.chat"]
     models = [ModelDeclaration(ApprovalRequest, excluded_subcommands=["make", "edit", "delete", "begin", "accept", "refuse", "retry", "close"]), ModelDeclaration(StandingApproval, excluded_subcommands=["make", "edit"])]
-    migrations = [ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
+    migrations = [PlainColumnNamesMigration, ApprovalRequestsMigration, ApprovalRecipientsMigration, ApprovalCommandsMigration, StandingApprovalsMigration, ApprovalWhyMigration]
     handlers = [AcceptCoveredApprovalHandler, MakeStandingApprovalHandler, CheckApprovalWorksHandler, RequestUserApprovalHandler, MoveApprovalHandler, AnswerApprovalHandler, CloseUserApprovalHandler, RelayApprovalHandler, AnswerAgentApprovalHandler, RecoverApprovalsHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=30), RecoverApprovalsTick(), "recover approvals", starts_immediately=True)]
     subcommands = [AcceptApprovalSubcommand, DenyApprovalSubcommand, PendingApprovalsSubcommand, RelayApprovalSubcommand, AnswerAgentApprovalSubcommand]

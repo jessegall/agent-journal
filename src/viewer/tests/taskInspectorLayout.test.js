@@ -8,7 +8,7 @@ import {INSPECTOR_HOST} from "../src/windows/windowContext.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {perLine, settle} from "./support/windowContext.js";
 
-const TASK = {noun: "task", module: "journal.core.tasks", fingerprint: "a", reads: "task inspect {row_id}", label: "Task {id} · {state}", title: "{title}", description: "", width: "medium", components: [], comments: true, events: ["task.*"],
+const TASK = {term: "task", module: "journal.core.tasks", fingerprint: "a", reads: "task inspect {row_id}", label: "Task {id} · {state}", title: "{title}", description: "", width: "medium", components: [], comments: true, events: ["task.*"],
     links: null, shareable: false};
 const ROW = {id: 7, title: "Fix the totals", state: "started"};
 let app = null;
@@ -35,7 +35,7 @@ async function dialogInspector(props = {}) {
     document.body.append(element);
     const host = {catalogue: {inspector: () => TASK, window: () => null, sectionsAt: () => []}, subscriptions: new WindowSubscriptions(), environment: "main", prompts: null, shellRead: null};
     const read = async (line) => (line.join(" ") === "task inspect 7" ? {ok: true, value: ROW} : {ok: true, value: {rows: [], total: 0}});
-    app = createApp({render: () => h(HostedInspector, {noun: "task", id: 7, read, environment: "main", stepped: true, embedded: true, ...props})});
+    app = createApp({render: () => h(HostedInspector, {term: "task", id: 7, read, environment: "main", stepped: true, embedded: true, ...props})});
     app.directive("tip", {});
     app.provide(INSPECTOR_HOST, host);
     app.provide(RESOURCE_SUBSCRIPTIONS, host.subscriptions);

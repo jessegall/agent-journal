@@ -27,7 +27,7 @@ class HookRequestLog:
 
     def filtered(self, categories: list[str], families: list[str], senders: list[str]) -> list[HookRequest]:
         query = self.queries.query(HookRequest).descending("id")
-        for column, values in (("kind", categories), ("family", families), ("sender", senders)):
+        for column, values in (("category", categories), ("family", families), ("sender", senders)):
             if values:
                 query = query.matching(Among(column, values))
         if not families:

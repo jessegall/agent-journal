@@ -37,7 +37,7 @@ class LinkReceiptsSubcommand(ReadSubcommand[tuple[MessageReceipt, ...]]):
     @staticmethod
     def link_arguments(number: int, types: tuple[LinkType, ...], size: int, grouped: bool) -> Namespace:
         return Namespace(source=f"message:{number}", target=None, row=None, page=1, page_size=size, type=list(types), group_counterparts=grouped,
-                         first_counterpart=None, outside_plan=False, target_model=None)
+                         first_counterpart=None, excludes_plan=False, target_model=None)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, tuple):

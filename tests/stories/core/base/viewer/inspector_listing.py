@@ -7,13 +7,13 @@ from tests.stories.support.story_checks import expect_value
 
 
 def read_inspectors(story):
-    return {listing.noun: listing for listing in WindowsRoute(story.home).inspectors("main")}
+    return {listing.term: listing for listing in WindowsRoute(story.home).inspectors("main")}
 
 
 def test_a_model_without_a_declaration_is_listed_with_the_default_inspector(new_story):
     task = read_inspectors(new_story(fixture=MainEnvironment))["pin"]
     expect_value((task.reads, task.label, task.title, task.description, task.width, task.components, task.comments, task.events), ("pin show {row_id}", "", "{title}", "", "small", [], False, []))
-    expect_value(task.links, {"kinds": [], "open": False, "outside_plan": False, "page_size": 10})
+    expect_value(task.links, {"categories": [], "open": False, "excludes_plan": False, "page_size": 10})
 
 
 def test_a_declared_inspector_is_listed_with_its_width_and_components(new_story):

@@ -39,7 +39,7 @@ class ShareApprovalListener(CommitListener[Created[ShareLink] | Moved[ShareLink]
             shared = self.targets.shared_row(link)
             approval = UserApprovalRefusal(f"Share {shared.title} with a read-only link?", arguments,
                                     ("share", "deny", str(link.id)), source_version=link.version, returns_output=True,
-                                    why=f"Agent {link.creator_id} made a link that lets anyone who has it read {shared.title}.")
+                                    justification=f"Agent {link.creator_id} made a link that lets anyone who has it read {shared.title}.")
             self.bus.run(RequestUserApproval(approval, arguments, link.creator_id), actor,
                          cause_id=cause_id, environment_id=link.environment_id)
             return

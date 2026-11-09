@@ -24,10 +24,10 @@ class FirstMessageDelivered(StoryFixture):
     parent = UserJoined
 
     def steps(self, story: Story) -> None:
-        sent(story, FIRST)
+        delivered(story, FIRST)
 
 
-def sent(story, text: str) -> None:
+def delivered(story, text: str) -> None:
     story.advance(timedelta(seconds=1))
     story.expect_success(f'message send "{text}"', "type: agent", actor=story.agent)
 
@@ -43,22 +43,22 @@ def test_a_reworded_repeat_of_one_of_the_last_five_messages_is_held(new_story):
 
 def test_a_different_message_and_a_short_one_pass(new_story):
     story = new_story(fixture=FirstMessageDelivered, environment="main")
-    sent(story, DIFFERENT)
-    sent(story, "Done, installed.")
-    sent(story, "Done, installed now.")
+    delivered(story, DIFFERENT)
+    delivered(story, "Done, installed.")
+    delivered(story, "Done, installed now.")
 
 
 def test_a_message_on_the_same_subject_with_its_points_elsewhere_in_the_text_passes(new_story):
     story = new_story(fixture=UserJoined, environment="main")
-    sent(story, SINGLE_SUBJECT)
-    sent(story, DUPLICATE_SUBJECT)
+    delivered(story, SINGLE_SUBJECT)
+    delivered(story, DUPLICATE_SUBJECT)
 
 
 def test_only_the_last_five_messages_are_compared(new_story):
     story = new_story(fixture=FirstMessageDelivered, environment="main")
     for filler in FILLERS:
-        sent(story, filler)
-    sent(story, REWORDED)
+        delivered(story, filler)
+    delivered(story, REWORDED)
 
 
 def test_closing_words_much_like_an_earlier_turns_message_are_held_and_the_agent_is_told(new_story):

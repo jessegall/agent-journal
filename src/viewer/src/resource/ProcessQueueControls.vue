@@ -36,7 +36,7 @@ async function save(key, value) {
         <div class="control"><div><label id="main-spots-label">Count the main agent</label><p>Its commands always start right away, but each one takes a place, so fewer workers run at once.</p></div>
             <button type="button" role="switch" aria-labelledby="main-spots-label" :aria-checked="queue.count_main_runs" :disabled="saving" data-queue-main-spots @click="save(queue.main_spots_setting, queue.count_main_runs ? 'off' : 'on')"><span /></button>
         </div>
-        <template v-if="queue.halt_kind === 'update'"><p class="note halted" role="status" data-queue-update-waits><Icon name="pause" :size="13" />An update waits for the running commands to end. Every command that waits stays in the queue, in order, and gets its place once the update is done.</p></template>
+        <template v-if="queue.halt_reason === 'update'"><p class="note halted" role="status" data-queue-update-waits><Icon name="pause" :size="13" />An update waits for the running commands to end. Every command that waits stays in the queue, in order, and gets its place once the update is done.</p></template>
         <template v-else-if="queue.halted"><p class="note halted" role="status" data-queue-held><Icon name="pause" :size="13" />The queue is paused. No waiting command gets a place until it is resumed. {{ queue.halt_reason }}</p></template>
         <template v-if="failure"><p class="note failure" role="alert">{{ failure }}</p></template>
     </div>

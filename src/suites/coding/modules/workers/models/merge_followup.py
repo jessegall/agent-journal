@@ -24,7 +24,7 @@ class MergeFollowup(EnvironmentScoped, Model):
     creator_id: int
     folder: str
     target_branch: str
-    commit_before: str
+    previous_commit: str
     commit_after: str
     revision: str
     commands: tuple[str, ...]

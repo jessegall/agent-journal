@@ -123,12 +123,12 @@ def test_a_script_that_was_stopped_is_a_fault_that_says_so_and_does_not_count(tm
 
 def test_a_call_past_the_most_that_may_wait_on_a_service_is_refused_and_a_finished_one_frees_its_place(tmp_path):
     waits, path = PluginServiceWaits(), tmp_path / "service.sock"
-    retained = [waits.held(path) for _ in range(MOST_WAITING_CALLS)]
-    for place in retained:
+    stored_rows = [waits.stored(path) for _ in range(MOST_WAITING_CALLS)]
+    for place in stored_rows:
         place.__enter__()
     with pytest.raises(PluginLateError):
-        with waits.held(path):
+        with waits.stored(path):
             pass
-    retained[0].__exit__(None, None, None)
-    with waits.held(path):
+    stored_rows[0].__exit__(None, None, None)
+    with waits.stored(path):
         pass

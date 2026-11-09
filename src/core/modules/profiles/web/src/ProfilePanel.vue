@@ -11,7 +11,7 @@ const TIERS = [{key: "", label: "Profile models"}, {key: "fast", label: "Fast"},
 const PROGRAM_CHOICES = [{key: "always", label: "Always this program"}, {key: "possible", label: "This program if possible"}];
 const programs = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "program_if_possible", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"];
 
 const draft = ref({});
 watch(
@@ -71,9 +71,9 @@ const canSave = computed(() => dirty.value && /^[a-z0-9_-]+$/i.test(draft.value.
             </FormField>
             <template v-if="draft.program">
                 <FormField label="When it cannot start" for="profile-program-choice" help="If possible: a start uses the other program, on its model, when this one is not installed or not ready, and says so.">
-                    <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.program_if_possible ? 'possible' : 'always'" @pick="draft.program_if_possible = $event === 'possible'" />
+                    <Segmented data-profile-program-choice :options="PROGRAM_CHOICES" :value="draft.preferred_program ? 'possible' : 'always'" @pick="draft.preferred_program = $event === 'possible'" />
                 </FormField>
-                <template v-if="draft.program_if_possible">
+                <template v-if="draft.preferred_program">
                     <FormField label="Programs to try instead" for="profile-fallbacks" help="Program names in the order to try them, separated by commas. Blank tries every other program.">
                         <TextInput id="profile-fallbacks" :value="draft.fallback_programs" data-profile-fallbacks @input="draft.fallback_programs = $event.target.value" />
                     </FormField>

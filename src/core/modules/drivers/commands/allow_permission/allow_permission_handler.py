@@ -19,4 +19,4 @@ class AllowPermissionHandler(Handler[AllowPermission, PermissionRequest]):
     def handle(self, command: AllowPermission, context: Context) -> PermissionRequest:
         request = self.queries.query(PermissionRequest).find(command.request_id)
         self.answerers.check(request, context)
-        return self.repository.save_change(request, request.moved(PermissionLifecycle.allow, answered_by_id=context.actor.id), context)
+        return self.repository.save_change(request, request.moved(PermissionLifecycle.allow, responder_id=context.actor.id), context)

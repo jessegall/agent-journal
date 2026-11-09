@@ -22,11 +22,11 @@ class Tools:
 
     def card(self, tool: ToolDefinition) -> ToolCard:
         status = self.graphify.status(self.home.project_folder)
-        return ToolCard(tool.name, tool.title, tool.description, self.graphify.is_installed(), self.hooks.is_on(tool), status.is_running,
+        return ToolCard(tool.name, tool.title, tool.description, self.graphify.is_installed(), self.hooks.enabled(tool), status.is_running,
                         self.graphify.is_failed(self.home.project_folder), status.refreshed_at, status.graph_commit)
 
-    def set_on(self, tool: ToolDefinition, is_on: bool) -> ToolCard:
-        if is_on:
+    def set_on(self, tool: ToolDefinition, enabled: bool) -> ToolCard:
+        if enabled:
             self.hooks.add(tool)
         else:
             self.hooks.remove(tool)
@@ -43,7 +43,7 @@ class Tools:
         return self.graphify.tick(Path(folder) if folder else self.home.project_folder)
 
     def worktree_graph(self, source: str, folder: str) -> list[str]:
-        if not any(self.hooks.is_on(tool) for tool in self.catalogue.all()):
+        if not any(self.hooks.enabled(tool) for tool in self.catalogue.all()):
             return []
         self.graphify.copy_graph(Path(source), Path(folder))
         return [OUTPUT_FOLDER]

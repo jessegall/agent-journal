@@ -33,7 +33,7 @@ test("a task dock draws an added state by its declared label", async () => {
 
 test("shared state rows draw an added state for their declared model", async () => {
     const window = context({"task list": page([{id: 3, state: "reviewing", title: "Check the cart"}])});
-    const element = await mounted(StateRows, window, {noun: "task", line: "task list", events: [], empty: "No tasks yet"});
+    const element = await mounted(StateRows, window, {term: "task", line: "task list", events: [], empty: "No tasks yet"});
     await settle();
     expect(element.querySelector(".state").textContent).toBe("Under review");
 });

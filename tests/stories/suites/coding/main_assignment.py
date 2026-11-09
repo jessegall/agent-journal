@@ -18,14 +18,14 @@ def available(story):
 def test_s03_auto_on_hands_the_open_task_to_the_main_agent_and_it_may_not_stop(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     answer = available(story)
-    expect_value((answer.own_task.id, answer.may_stop), (1, False))
+    expect_value((answer.assigned_task.id, answer.may_stop), (1, False))
 
 
 def test_s04_auto_off_hands_nothing_to_the_main_agent_but_the_task_can_be_delegated(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     story.expect_success(f"setting set {AUTO} off --environment main")
     answer = available(story)
-    expect_value((answer.own_task, answer.delegatable, answer.may_stop), (None, tuple([1]), False))
+    expect_value((answer.assigned_task, answer.delegatable, answer.may_stop), (None, tuple([1]), False))
 
 
 def test_s47_no_worker_permission_or_no_place_leaves_nothing_to_do_and_the_main_agent_may_stop(new_story):
@@ -41,7 +41,7 @@ def test_s47_no_worker_permission_or_no_place_leaves_nothing_to_do_and_the_main_
 def test_s48_a_task_the_main_agent_already_holds_is_not_handed_out_again(new_story):
     story = new_story(fixture=OpenTaskBuilder)
     story.expect_success("task start 1", actor=story.agent)
-    expect_value(available(story).own_task, None)
+    expect_value(available(story).assigned_task, None)
 
 
 CONTINUE_SETTING = "journal.suites.coding.continue-while-delegatable"

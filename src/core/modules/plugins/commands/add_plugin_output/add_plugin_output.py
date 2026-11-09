@@ -14,4 +14,4 @@ class AddPluginOutput(Command[PluginOutput]):
     plugin_id: int
     agent_id: int | None
     output: str
-    shows_in_environment: bool = False
+    is_environment_visible: bool = False

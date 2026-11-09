@@ -9,4 +9,4 @@ class SetTool(Command[ToolCard]):
     """Turns one supported tool on or off."""
 
     name: str
-    is_on: bool
+    enabled: bool

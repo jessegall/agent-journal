@@ -24,15 +24,15 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
 
     def handle(self, command: JudgeRefusalSkip, context: Context) -> RefusalSkip:
         skip = self.queries.query(RefusalSkip).find(command.skip_id)
-        if not skip.waits_for_approval:
+        if not skip.needs_approval:
             raise Refusal(f"skip {skip.id} waits for no approval", "journal refusal show names its state")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
         if context.actor.type is ActorType.AGENT and agent.parent_id != context.actor.id:
             raise Refusal(f"skip {skip.id} is for agent {agent.parent_id} to answer", "only the agent's parent or a person answers it")
         if command.is_approved:
-            answered = self.repository.update(skip, context, waits_for_approval=False, approved_at=context.timestamp)
+            answered = self.repository.update(skip, context, needs_approval=False, approved_at=context.timestamp)
             self.nudger.send(agent.id, SKIP_APPROVED, SKIP_SOURCE, context, refusal=skip.id)
             return answered
-        answered = self.repository.update(skip, context, waits_for_approval=False, withdrawn_at=context.timestamp)
+        answered = self.repository.update(skip, context, needs_approval=False, cancelled_at=context.timestamp)
         self.nudger.send(agent.id, SKIP_DECLINED, SKIP_SOURCE, context, refusal=skip.id)
         return answered

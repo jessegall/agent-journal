@@ -27,5 +27,5 @@ class SettingDeclaration:
     target: str = ""
     person_set: bool = False
     rule: str = ""
-    main_agent_only: bool = False
-    depends_on: Sequence[str] = ()
+    requires_main_agent: bool = False
+    required_settings: Sequence[str] = ()

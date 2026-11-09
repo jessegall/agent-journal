@@ -28,8 +28,8 @@ GRAPHIFY_GROUP = f"{MODULE_KEY}.graphify"
 
 GRAPHIFY_SETTINGS = SettingGroup("graphify", "Graphify", "The settings of Graphify, switched on and off with the tool.", toggleable=True, enabled=False, children=[
     SettingValue("nudge-after", "Searches before a nudge", "At this many searches of the code without Graphify an agent is told to use it.",
-                 SettingType.NUMBER, default=10, scope=SettingScope.PROJECT, rule=NumberRule(1), depends_on=[GRAPHIFY_GROUP]),
+                 SettingType.NUMBER, default=10, scope=SettingScope.PROJECT, rule=NumberRule(1), required_settings=[GRAPHIFY_GROUP]),
     SettingValue("block-after", "Searches before a block", "After this many searches of the code without Graphify, others are refused until the agent uses it.",
-                 SettingType.NUMBER, default=25, scope=SettingScope.PROJECT, rule=NumberRule(1), depends_on=[GRAPHIFY_GROUP])])
+                 SettingType.NUMBER, default=25, scope=SettingScope.PROJECT, rule=NumberRule(1), required_settings=[GRAPHIFY_GROUP])])
 GRAPHIFY_NUDGE_AFTER = f"{GRAPHIFY_GROUP}.nudge-after"
 GRAPHIFY_BLOCK_AFTER = f"{GRAPHIFY_GROUP}.block-after"

@@ -81,6 +81,7 @@ from core.modules.plugins.listeners.plugin_skill_publish_listener import PluginS
 from core.modules.plugins.listeners.stale_managed_hooks_listener import StaleManagedHooksListener
 from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.migrations.m002_plugin_queue_index import PluginQueueIndexMigration
+from core.modules.plugins.migrations.m009_plain_column_names import PlainColumnNamesMigration
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.models.plugin_output import PluginOutput
@@ -125,7 +126,7 @@ class PluginsModule(Module):
                                        WindowKey("dashboard", "plugin dashboard {plugin}", tab="dashboard"),
                                        WindowKey("dashboard-poll", "plugin dashboard {plugin}", tab="dashboard-poll", reload_seconds=60)],
                                  runs=["plugin upgrade", "plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
-    migrations = [PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration]
+    migrations = [PlainColumnNamesMigration, PluginConfigMigration, PluginOutputEnvironmentMigration, PluginEventDeliveriesMigration, PluginSessionMigration, PluginOutputIndexMigration, PluginsTablesMigration, PluginQueueIndexMigration, PluginSettingEnvironmentsMigration]
     handlers = [RefreshPluginConfigHandler, PrunePluginDeliveriesHandler, RunPluginCommandHandler, SendPluginStepLineHandler, DeliverFileEditHandler, UpgradePluginHandler, InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
                 ClearPluginQueueFileHandler]

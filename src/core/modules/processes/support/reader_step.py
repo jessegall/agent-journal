@@ -40,7 +40,7 @@ class ReaderStep:
         received_offset = offset + cut_bytes + len(raw)
         listing_status = self.folder.progress_count_status(process.id)
         listing_ready = listing_status is not None and not self.folder.progress_count_read(process.id)
-        if (not raw or (not ready_bytes and received_offset == output.seen_offset)) and not listing_ready:
+        if (not raw or (not ready_bytes and received_offset == output.displayed_offset)) and not listing_ready:
             return None
         text = ColourCodes.removed(ready_bytes.decode(errors="replace"))
         unfinished = ColourCodes.removed(raw[len(ready_bytes):].decode(errors="replace"))
@@ -74,6 +74,6 @@ class ReaderStep:
             return advanced
         text = self.folder.reader_text(process.id, output.reader_position)
         if advanced is None:
-            advanced = ReaderAdvance([], output.read_offset, output.read_lines, output.seen_offset, output.reader_summary, output.progress,
+            advanced = ReaderAdvance([], output.read_offset, output.read_lines, output.displayed_offset, output.reader_summary, output.progress,
                                      steps_passed=output.steps_passed, steps_failed=output.steps_failed, test_count=output.test_count)
         return replace(advanced, lines=self.run.lines(reader, text, process.state.value), replaces=True)

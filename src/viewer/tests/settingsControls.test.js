@@ -80,7 +80,7 @@ test("the environments tab lists them with the current one first, which cannot b
     expect(element.querySelector("[data-environment='main'] [data-environment-remove]").disabled).toBe(true);
 });
 
-test("removing an environment asks first, and a refusal says why", async () => {
+test("removing an environment asks first, and a refusal says justification", async () => {
     const ran = [];
     const element = await environments(ran);
     element.querySelector("[data-environment='staging'] [data-environment-remove]").click();

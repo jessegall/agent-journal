@@ -21,4 +21,4 @@ class RelayApprovalHandler(Handler[RelayApproval, ApprovalRequest]):
             raise Refusal("only the main agent addressed by this request can relay it to a person")
         if request.state is not ApprovalState.OPEN:
             raise Refusal("only an open approval can be relayed")
-        return self.repository.update(request, context, recipient_agent_id=None, relayed_by_id=context.actor.id)
+        return self.repository.update(request, context, recipient_agent_id=None, relayer_id=context.actor.id)

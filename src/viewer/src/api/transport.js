@@ -80,7 +80,7 @@ class Transport {
         return [...this.flights].filter((flight) => window === null || flight.window === window).map((flight) => ({...flight}));
     }
 
-    // how many requests a window has sent, by noun and verb
+    // how many requests a window has sent, by term and verb
     sentCounts(window) {
         return Object.fromEntries(this.lineCounts.get(window) ?? []);
     }
@@ -124,7 +124,7 @@ class Transport {
         this.noticeRepeatedLines(window, asked, line);
     }
 
-    // a window that sends one noun and verb for many ids in a short time should read them in one line: it is a fault of the window, told to the developer once
+    // a window that sends one term and verb for many ids in a short time should read them in one line: it is a fault of the window, told to the developer once
     noticeRepeatedLines(window, asked, line) {
         const key = `${window} ${asked}`;
         const now = Date.now();

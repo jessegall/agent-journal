@@ -115,14 +115,14 @@ def test_the_sources_are_read_only_once_in_a_process(tmp_path, monkeypatch):
 
 def test_a_folder_a_running_process_holds_is_never_removed_by_age_or_size(tmp_path):
     cache = TemplateCache(tmp_path / "cache", limit_bytes=1)
-    retained = cache.root / "held"
-    retained.mkdir(parents=True)
-    (retained / "data").write_bytes(b"x" * 500)
-    (retained / f".in-use-{os.getpid()}").touch()
+    stored_rows = cache.root / "held"
+    stored_rows.mkdir(parents=True)
+    (stored_rows / "data").write_bytes(b"x" * 500)
+    (stored_rows / f".in-use-{os.getpid()}").touch()
     expired_at = time.time() - UNUSED_FOLDER_SECONDS - 1
-    os.utime(retained, (expired_at, expired_at))
+    os.utime(stored_rows, (expired_at, expired_at))
     cache.drop_expired()
-    assert retained.is_dir()
+    assert stored_rows.is_dir()
 
 
 def test_a_lease_of_a_process_that_is_gone_holds_nothing(tmp_path):

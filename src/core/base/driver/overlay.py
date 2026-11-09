@@ -13,7 +13,7 @@ class Overlay:
 
     name: ClassVar[str]
     exclusive: ClassVar[bool] = False
-    lets_wakes_through: ClassVar[bool] = False
+    allows_wakes: ClassVar[bool] = False
     delays_lines: ClassVar[bool] = False
     delays_notices: ClassVar[bool] = False
     drivers: ClassVar[Sequence[str]] = ["*"]

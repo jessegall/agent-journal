@@ -14,7 +14,7 @@ class OverviewOverlay(Overlay):
 
     name = "overview.waiting"
     exclusive = True
-    lets_wakes_through = True
+    allows_wakes = True
     delays_lines = True
     delays_notices = True
 

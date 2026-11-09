@@ -25,7 +25,7 @@ const STATUS_BUTTONS = {
 };
 const ROLE_WORDS = {admin: "Admin", edit: "Edit", read: "Read-only"};
 
-// one item that follows an item of the library: its status as a label and a value, the line that says why, and the buttons that status allows
+// one item that follows an item of the library: its status as a label and a value, the line that says justification, and the buttons that status allows
 const props = defineProps({copy: {type: Object, required: true}, role: {type: String, required: true}});
 const emit = defineEmits(["choose"]);
 

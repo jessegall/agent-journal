@@ -7,7 +7,7 @@ import AgentSettingsAgents from "./AgentSettingsAgents.vue";
 import AgentSettingsTests from "./AgentSettingsTests.vue";
 import AgentSettingsWork from "./AgentSettingsWork.vue";
 
-// the agent settings, by tab under the viewer's tabs, which stay at the top: the Agents tab names how many kinds of agent are at a maximum;
+// the agent settings, by tab under the viewer's tabs, which stay at the top: the Agents tab names how many categories of agent are at a maximum;
 // a viewer who may only read sees a note that only a person changes them
 const view = useWindow();
 const tab = ref("work");

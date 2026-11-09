@@ -34,7 +34,7 @@ async function remove() {
 </script>
 
 <template>
-    <RowCards noun="sequence" icon="list" :rows="rows" :failure="failure" :loaded="loaded" :head="(row) => `Sequence ${row.id}`" :title="(row) => row.title" :foot="footOf" @new="drafting = true" @open="open">
+    <RowCards term="sequence" icon="list" :rows="rows" :failure="failure" :loaded="loaded" :head="(row) => `Sequence ${row.id}`" :title="(row) => row.title" :foot="footOf" @new="drafting = true" @open="open">
         <template v-if="drafting">
             <NewSequence @close="drafting = false" />
         </template>

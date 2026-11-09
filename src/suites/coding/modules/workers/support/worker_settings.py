@@ -42,7 +42,7 @@ WORKERS_START_HELPERS = f"{MODULE_KEY}.workers-start-read-only-helpers"
 WORKER_SANDBOX = f"{MODULE_KEY}.worker-sandbox"
 PROTECTED_FOLDERS = f"{MODULE_KEY}.protected-folders"
 WORKER_SETTING_VALUES = [
-    SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, depends_on=[MERGER_ENABLED]),
+    SettingValue("idle-worker-minutes", "Worker idle warning", "Minutes without activity before a worker with work left is reported.", SettingType.NUMBER, default=15, person_set=True, required_settings=[MERGER_ENABLED]),
     SettingValue("idle-worker-repeat-minutes", "Worker idle warning repeat", "Minutes between warnings about a worker with work left.", SettingType.NUMBER, default=5, person_set=True),
     SettingValue("test-at-phase-end", "Test at phase end", "Test plan tasks together at the end of each phase. Off tests each task when handed in.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("test-batch-size", "Tasks per test batch", "Tasks outside a plan to finish before testing together. The last task also ends a batch.", SettingType.NUMBER, default=1, person_set=True),
@@ -53,15 +53,15 @@ WORKER_SETTING_VALUES = [
     SettingValue("worker-run-most-tests", "Test limit per worker command", "A worker command running more tests than this is refused or stopped. 0 means no limit. Journal runs do not count.", SettingType.NUMBER, default=25, person_set=True),
     SettingValue("hand-in-failures-to-flag", "Failed hand-ins to flag", "Failed hand-ins of a task after which the main agent must read a line about it.", SettingType.NUMBER, default=3, person_set=True),
     SettingValue("own-test-failures-to-flag", "Failed own tests to flag", "Failures of one test file in a worker's own runs after which the main agent must read a line about it.", SettingType.NUMBER, default=5, person_set=True),
-    SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True, depends_on=[DISPATCHES_WORKERS_SETTING]),
+    SettingValue("merger-on", "Merger takes in workers", "A helper merges workers whose tests passed, and passes on what the main agent must judge.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING]),
     SettingValue("merger-wait-minutes", "Merger wait minutes", "Minutes the merger has to take in a worker whose tests passed, before the main agent is told to merge it.", SettingType.NUMBER, default=15, person_set=True),
-    SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, depends_on=[MERGER_ENABLED]),
+    SettingValue("merger-commands", "Merger commands", "Lines the merger runs after each merge, sending what they find to the worker. {commit} is the commit before it.", SettingType.LIST, default=(), person_set=True, required_settings=[MERGER_ENABLED]),
     SettingValue("main-dispatches-workers", "Main agent sends workers", "Whether the main agent may send workers to do tasks.", SettingType.FLAG, default=True, person_set=True),
-    SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True, depends_on=[DISPATCHES_WORKERS_SETTING]),
+    SettingValue("main-agent-may-merge", "Main agent may merge workers", "Whether the main agent may merge the work of a worker itself.", SettingType.FLAG, default=True, person_set=True, required_settings=[DISPATCHES_WORKERS_SETTING]),
     SettingValue("resume-silent-agents", "Resume silent agents", "Whether a helper with unfinished work that has gone silent is resumed.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("workers-start-read-only-helpers", "Workers may use read-only helpers", "Whether a worker may start read-only helpers for the task it works on.", SettingType.FLAG, default=True, person_set=True),
     SettingValue("worker-sandbox", "Worker sandbox", "Workers run their commands in a sandbox that lets them write only in the working folder of the worker.", SettingType.FLAG, default=True, person_set=True),
-    SettingValue("protected-folders", "Protected folders", "Paths or globs workers may not change.", SettingType.LIST, default=(), person_set=True, main_agent_only=True),
+    SettingValue("protected-folders", "Protected folders", "Paths or globs workers may not change.", SettingType.LIST, default=(), person_set=True, requires_main_agent=True),
     SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True),
     SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
     SettingValue("worker-instruction-files", "Instruction files for a worker's profile", "A worker's worktree gets CLAUDE.md and AGENTS.md written for its profile, not the project's copies.", SettingType.FLAG, default=True, scope=SettingScope.PROJECT),

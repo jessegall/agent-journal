@@ -1,7 +1,7 @@
 <script setup>
 import {Skeleton, WindowRoom, useWindow} from "@journal/window-kit";
 
-// whether phones and share links can reach this viewer from outside: the tunnel's state, its address, and why not
+// whether phones and share links can reach this viewer from outside: the tunnel's state, its address, and justification not
 const WORDS = {connected: "Connected", disconnected: "Not connected", reconnecting: "Reconnecting"};
 const view = useWindow();
 const {data: status, failure} = view.props.status;

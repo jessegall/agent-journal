@@ -22,8 +22,8 @@ class GraphifyRepo:
         self.git("init", "-q")
         self.commit("first")
 
-    def git(self, *words: str) -> None:
-        subprocess.run(["git", "-C", str(self.folder), "-c", "user.name=Stand In", "-c", "user.email=none", *words], check=True, capture_output=True)
+    def git(self, *text_parts: str) -> None:
+        subprocess.run(["git", "-C", str(self.folder), "-c", "user.name=Stand In", "-c", "user.email=none", *text_parts], check=True, capture_output=True)
 
     def commit(self, message: str) -> None:
         (self.folder / "work.txt").write_text(message)

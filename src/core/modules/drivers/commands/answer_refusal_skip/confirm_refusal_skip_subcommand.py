@@ -22,4 +22,4 @@ class ConfirmRefusalSkipSubcommand(Subcommand[AnswerRefusalSkip, RefusalSkip]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, RefusalSkip):
-            output.line(f"skip {value.id} of {value.name} confirmed: " + ("it waits for your main agent's approval" if value.waits_for_approval else "try again"))
+            output.line(f"skip {value.id} of {value.name} confirmed: " + ("it waits for your main agent's approval" if value.needs_approval else "try again"))

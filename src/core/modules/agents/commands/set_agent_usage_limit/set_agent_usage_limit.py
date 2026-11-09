@@ -10,4 +10,4 @@ class SetAgentUsageLimit(Command[Agent]):
     """Marks an agent as at its program's usage limit until the allowance starts again, or clears the mark."""
 
     agent_id: int
-    limited_until: Timestamp | None
+    usage_limit_ends_at: Timestamp | None

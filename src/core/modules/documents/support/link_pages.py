@@ -13,7 +13,7 @@ from core.modules.documents.conditions.link_scope import LinkScope
 from core.modules.documents.conditions.link_side import LinkSide
 from core.modules.documents.conditions.link_target import LinkTarget
 from core.modules.documents.conditions.link_target_counts import LinkTargetCounts
-from core.modules.documents.conditions.outside_plan import OutsidePlan
+from core.modules.documents.conditions.excludes_plan import OutsidePlan
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.references.row_ref import RowRef
@@ -37,14 +37,14 @@ class LinkPages:
             raise Refusal("use a positive link page and page size within the supported range")
         side = next(side for side in LinkSide if getattr(arguments, side.value))
         reference = self.row_refs.parsed(getattr(arguments, side.value))
-        if arguments.outside_plan and reference.model != "plan":
+        if arguments.excludes_plan and reference.model != "plan":
             raise Refusal("--outside-plan requires a plan")
         scope = LinkScope(reference, side)
         query = self.queries.query(Link).matching(scope)
         types = tuple(dict.fromkeys(arguments.type))
         if types:
             query = query.matching(Among("link_type", types))
-        if arguments.outside_plan:
+        if arguments.excludes_plan:
             query = query.matching(OutsidePlan(reference))
         counts = LinkTargetCounts(query.scoped(query.select), reference).statement()
         target_counts = {str(row[0]): int(row[1]) for row in query.database.rows(counts)}
@@ -75,7 +75,7 @@ class LinkPages:
             command += " --group-counterparts"
         if arguments.first_counterpart:
             command += f" --first-counterpart {arguments.first_counterpart}"
-        if arguments.outside_plan:
+        if arguments.excludes_plan:
             command += " --outside-plan"
         if arguments.target_model:
             command += f" --kind {model.model_name}"
@@ -103,7 +103,7 @@ class LinkPages:
         return {"rows": rows, "counterparts": [asdict(counterpart) for counterpart in value.counterparts],
                 "page": value.page, "page_size": value.page_size, "total": value.total, "has_more": value.next_command is not None,
                 "next_page": value.page + 1 if value.next_command is not None else None, "next_command": value.next_command,
-                "kinds": value.target_counts}
+                "categories": value.target_counts}
 
     @staticmethod
     def lines(value: LinkPage) -> list[str]:

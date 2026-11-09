@@ -29,7 +29,7 @@ const refreshed = (tool) => tool.refreshed_at ? `Last refresh ${new Date(tool.re
 const status = (tool) => {
     if (tool.is_running) return "Refreshing";
     if (tool.is_failed) return "The last refresh failed";
-    return tool.is_on ? "On" : "Off";
+    return tool.enabled ? "On" : "Off";
 };
 </script>
 
@@ -51,7 +51,7 @@ const status = (tool) => {
                   <template v-if="!tool.is_installed">
                     <Btn bordered :disabled="readOnly || busy !== ''" data-tool-install @click="act(tool, ['tool', 'install', tool.name])">Install</Btn>
                   </template>
-                  <Btn bordered :disabled="readOnly || busy !== ''" data-tool-switch @click="act(tool, ['tool', tool.is_on ? 'off' : 'on', tool.name])">{{ tool.is_on ? "Turn off" : "Turn on" }}</Btn>
+                  <Btn bordered :disabled="readOnly || busy !== ''" data-tool-switch @click="act(tool, ['tool', tool.enabled ? 'off' : 'on', tool.name])">{{ tool.enabled ? "Turn off" : "Turn on" }}</Btn>
                   <Btn bordered :disabled="readOnly || busy !== '' || !tool.is_installed || tool.is_running" data-tool-refresh @click="act(tool, ['tool', 'refresh', tool.name])">Refresh now</Btn>
               </div>
               <template v-if="failed.name === tool.name && failed.text">

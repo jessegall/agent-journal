@@ -15,5 +15,5 @@ class GrownOutputs:
 
     def has_new_output(self, output: Output) -> bool:
         process_id = output.process_id
-        return output.reader_id is not None and (self.folder.total_bytes(process_id) + self.folder.cut_bytes(process_id) != output.seen_offset
+        return output.reader_id is not None and (self.folder.total_bytes(process_id) + self.folder.cut_bytes(process_id) != output.displayed_offset
                 or (self.folder.progress_count_status(process_id) is not None and not self.folder.progress_count_read(process_id)))

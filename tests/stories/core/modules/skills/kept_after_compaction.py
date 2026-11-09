@@ -45,7 +45,7 @@ def kept_skill_records(folder: Path, skills: dict[str, str], is_recorded: bool =
     return [*boundary, {"attachment": {"type": "invoked_skills", "skills": kept}}] if is_recorded else boundary
 
 
-def late_compaction_record(story, folder: Path, skills: dict[str, str], program: str = "claude", written_after: tuple[dict[str, object], ...] = (),
+def late_compaction_record(story, folder: Path, skills: dict[str, str], program: str = "claude", later_files: tuple[dict[str, object], ...] = (),
                                             previous_value: tuple[dict[str, object], ...] = (), is_recorded: bool = True) -> None:
     """The real order: the session start hook of a compaction runs first, and only then does the program write its
     record of the skills it put back; the agent's first tool use comes after that."""
@@ -55,7 +55,7 @@ def late_compaction_record(story, folder: Path, skills: dict[str, str], program:
     story.hook("s-1", HookSamples.session_start().with_fields(program=program).with_raw(raw))
     story.run_listeners()
     expect_due(story, *skills)
-    transcript.write_text("".join(json.dumps(record) + "\n" for record in (*previous_value, *kept_skill_records(folder, skills, is_recorded), *written_after)))
+    transcript.write_text("".join(json.dumps(record) + "\n" for record in (*previous_value, *kept_skill_records(folder, skills, is_recorded), *later_files)))
     story.hook("s-1", FIRST_TOOL_USE.with_fields(program=program).with_raw({"transcript_path": str(transcript)}))
     story.run_listeners()
 
@@ -70,7 +70,7 @@ def test_a_skill_claude_code_put_back_after_a_compaction_counts_as_loaded_at_the
 def test_a_skill_put_back_counts_with_most_of_a_megabyte_written_between_the_record_and_the_first_tool_use(new_story, tmp_path):
     story = new_story(DUE, fixture=CompactingClaude)
     ranged_rows = tuple({"attachment": {"type": "deferred_tools", "text": "x" * 40_000}} for _ in range(20))
-    late_compaction_record(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, written_after=ranged_rows)
+    late_compaction_record(story, tmp_path, {"journal-notes": skill_body(story, "journal-notes")}, later_files=ranged_rows)
     expect_skills_absent(story, "journal-notes")
 
 

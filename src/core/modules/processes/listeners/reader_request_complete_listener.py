@@ -45,6 +45,6 @@ class ReaderRequestCompleteListener(SaveListener[Changed[Reader]]):
             self.requests.remove_completed(completed)
             for waiting in self.queries.query(ProcessPart).filter(reader_request_id=request.id).all_rows():
                 for output in self.queries.query(Output).filter(process_id=waiting.process_id, ended_at=None).all_rows():
-                    self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0, seen_offset=0,
+                    self.repository.save(replace(output, reader_id=reader.id, reader_position=waiting.position, read_offset=0, displayed_offset=0,
                                                  title=RunTitle.title(reader, waiting.command or waiting.text)), context)
             self.bus.dispatch(GrantRunSlots(), context)

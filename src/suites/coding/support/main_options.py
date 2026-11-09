@@ -13,7 +13,7 @@ class MainOptions:
 
     auto: bool
     sends_workers: bool
-    keeps_going: bool
+    continues_work: bool
     merger: bool
     helpers: bool
     designer: bool
@@ -24,7 +24,7 @@ class MainOptions:
 
     @property
     def bundle(self) -> tuple[bool, ...]:
-        return (self.auto, self.sends_workers, self.keeps_going, self.merger, self.helpers, self.designer, self.may_merge, self.writes_code)
+        return (self.auto, self.sends_workers, self.continues_work, self.merger, self.helpers, self.designer, self.may_merge, self.writes_code)
 
     @property
     def workflow(self) -> str:

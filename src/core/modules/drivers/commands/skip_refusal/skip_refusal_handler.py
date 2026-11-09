@@ -64,7 +64,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         return skip
 
     def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> RefusalSkip:
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, withdrawn_at=None, waits_for_approval=False).matching(HasValue("confirmed_at")).newest().first()
+        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, cancelled_at=None, needs_approval=False).matching(HasValue("confirmed_at")).newest().first()
         if skip is None:
             raise Refusal(f"{name} has no confirmed skip of yours: a skip is held until you confirm it with what you tried",
                           f"journal refusal skip {name} --reason '<why it is wrong here>', then confirm it")
@@ -107,4 +107,4 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     @staticmethod
     def restoration_approval(agent_id: int) -> UserApprovalRefusal:
         return UserApprovalRefusal(f"Agent {agent_id} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
-                            ("refusal", "restore", str(agent_id)), why=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")
+                            ("refusal", "restore", str(agent_id)), justification=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")

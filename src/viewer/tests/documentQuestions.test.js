@@ -30,7 +30,7 @@ async function inspector(width = 980) {
     };
     const element = document.createElement("div");
     document.body.append(element);
-    const app = createApp({render: () => h(DocumentBody, {noun: "doc", id: 4, read})});
+    const app = createApp({render: () => h(DocumentBody, {term: "doc", id: 4, read})});
     apps.push(app);
     app.mount(element);
     await settle();

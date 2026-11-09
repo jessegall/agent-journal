@@ -299,7 +299,7 @@ test("a write always finishes, also when its window has gone", async () => {
     expect((await asked).failure).toBe("cancelled");
 });
 
-test("a window sending one noun and verb for many ids in a short time is reported once", async () => {
+test("a window sending one term and verb for many ids in a short time is reported once", async () => {
     const server = heldServer();
     for (const id of Array.from({length: 12}, (_, index) => index)) lineResult("a.b", ["process", "card", String(id)], "main", undefined, true);
     await settled();

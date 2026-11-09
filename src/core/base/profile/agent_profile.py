@@ -15,7 +15,7 @@ class AgentProfile:
     agent_type: str = "helper"
     access: Access | None = None
     program: str = ""
-    program_if_possible: bool = True
+    preferred_program: bool = True
     fallback_programs: tuple[str, ...] = ()
     model: str = ""
     codex_model: str = ""
@@ -34,10 +34,10 @@ class AgentProfile:
     uses: int = 0
     last_used: int = 0
     title: str = ""
-    reports_to_parent: bool = True
+    has_parent_report: bool = True
     messages_siblings: bool = False
     program_models: Mapping[str, str] = field(default_factory=dict)
-    keeps_project_instructions: bool = False
+    uses_project_instructions: bool = False
     injections: Mapping[str, bool] = field(default_factory=dict)
     skills: tuple[str, ...] = ()
 

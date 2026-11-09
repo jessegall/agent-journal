@@ -120,8 +120,8 @@ class HookCall(EnvironmentScoped, Model):
 
     @property
     def search_category(self) -> str:
-        kind = self.metadata.module_part(DRIVERS_MODULE).get("search")
-        return kind if isinstance(kind, str) else ""
+        category = self.metadata.module_part(DRIVERS_MODULE).get("search")
+        return category if isinstance(category, str) else ""
 
     @property
     def is_compaction_start(self) -> bool:

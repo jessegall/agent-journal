@@ -3,7 +3,7 @@ import Icon from "../kit/Icon.vue";
 
 defineProps({
     icon: {type: String, required: true},
-    noun: {type: String, required: true},
+    term: {type: String, required: true},
     facts: {type: Array, default: () => []},
     ends: {type: String, default: ""},
     read: {type: Number, default: -1},
@@ -13,7 +13,7 @@ defineProps({
 <template>
     <header class="share-strip">
         <span class="badge"><Icon :name="icon" :size="13" /></span>
-        <span class="noun">Shared {{ noun }}</span>
+        <span class="noun">Shared {{ term }}</span>
         <template v-for="fact in facts" :key="fact">
             <span class="fact">{{ fact }}</span>
         </template>
@@ -54,7 +54,7 @@ defineProps({
     color: var(--type);
 }
 
-.noun {
+.term {
     flex: none;
     color: var(--text);
     font-size: 13px;

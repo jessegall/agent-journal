@@ -15,4 +15,4 @@ class SetAgentUsageLimitHandler(Handler[SetAgentUsageLimit, Agent]):
         self.agents, self.repository = agents, repository
 
     def handle(self, command: SetAgentUsageLimit, context: Context) -> Agent:
-        return self.repository.update(self.agents.find(command.agent_id), context, limited_until=command.limited_until)
+        return self.repository.update(self.agents.find(command.agent_id), context, usage_limit_ends_at=command.usage_limit_ends_at)

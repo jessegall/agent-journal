@@ -37,4 +37,4 @@ class RecordParentReportHandler(Handler[RecordParentReport, Message]):
             return False
         agent = self.rows.required(Agent, command.agent_id)
         profile = self.profiles.registered(agent.profile)
-        return profile is None or profile.reports_to_parent
+        return profile is None or profile.has_parent_report

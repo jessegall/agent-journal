@@ -14,7 +14,7 @@ class InjectionList:
 
     @property
     def rows(self) -> Sequence[Mapping[str, object]]:
-        return [{"key": injection.key, "title": injection.title, "state": "on" if injection.is_on else "off"} for injection in self.injections]
+        return [{"key": injection.key, "title": injection.title, "state": "on" if injection.enabled else "off"} for injection in self.injections]
 
     def json(self) -> Mapping[str, object]:
         return {"profile": self.profile, "rows": list(self.rows)}

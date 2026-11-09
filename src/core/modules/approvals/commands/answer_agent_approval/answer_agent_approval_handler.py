@@ -22,5 +22,5 @@ class AnswerAgentApprovalHandler(Handler[AnswerAgentApproval, ApprovalRequest]):
             raise Refusal("only the main agent addressed by this request can answer it")
         if request.state is not ApprovalState.OPEN or not command.text.strip():
             raise Refusal("answer an open request with the guidance the asking agent needs")
-        answered = request.moved(ApprovalLifecycle.close, review_answer=command.text.strip(), answered_by_id=context.actor.id)
+        answered = request.moved(ApprovalLifecycle.close, review_answer=command.text.strip(), responder_id=context.actor.id)
         return self.repository.save_change(request, answered, context)

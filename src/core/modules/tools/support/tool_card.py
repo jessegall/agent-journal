@@ -11,7 +11,7 @@ class ToolCard:
     title: str
     description: str
     is_installed: bool
-    is_on: bool
+    enabled: bool
     is_running: bool
     is_failed: bool
     refreshed_at: str
@@ -19,7 +19,7 @@ class ToolCard:
 
     def lines(self) -> Sequence[str]:
         refreshed = f"last refresh {self.refreshed_at}" if self.refreshed_at else "never refreshed"
-        return [f"{self.name}: {'on' if self.is_on else 'off'}, {'installed' if self.is_installed else 'not installed'}, {refreshed}"]
+        return [f"{self.name}: {'on' if self.enabled else 'off'}, {'installed' if self.is_installed else 'not installed'}, {refreshed}"]
 
     def json(self) -> Mapping[str, object]:
         return asdict(self)

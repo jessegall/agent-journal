@@ -111,7 +111,7 @@ test("opening a command reads one output page and closing it hides the output", 
     expect(window.reads).toEqual(["output hook-page 504"]);
 });
 
-test("opening a refused command shows why it was refused instead of an empty output", async () => {
+test("opening a refused command shows justification it was refused instead of an empty output", async () => {
     const window = terminalWindowContext({"output hook-page 9": {ok: true, value: {lines: [], first_byte: 0, last_byte: 0, total: 0, cut_bytes: 0, command: "rm -rf build"}}}, 7);
     const read = window.read;
     window.read = async (line) => line.startsWith("hook-call feed") ? {ok: true, value: {rows: [{id: 9, agent_id: 7, hook: "pre_tool_use", tool: "Bash", summary: "rm -rf build", answer: "refuse", refusal: "not in this folder"}]}} : read(line);

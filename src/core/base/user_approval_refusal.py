@@ -9,7 +9,7 @@ class UserApprovalRefusal(BlockRefusal):
 
     def __init__(self, question: str, arguments: tuple[str, ...] = (), refused_arguments: tuple[str, ...] = (),
                  required_person_id: int | None = None, continued_arguments: tuple[str, ...] = (), source_version: int | None = None,
-                 returns_output: bool = False, command: Command[object] | None = None, why: str = "") -> None:
+                 returns_output: bool = False, command: Command[object] | None = None, justification: str = "") -> None:
         super().__init__(question, "A person was asked in the dock.")
         self.arguments, self.refused_arguments = arguments, refused_arguments
         self.required_person_id = required_person_id
@@ -17,4 +17,4 @@ class UserApprovalRefusal(BlockRefusal):
         self.source_version = source_version
         self.returns_output = returns_output
         self.command = command
-        self.why = why
+        self.justification = justification

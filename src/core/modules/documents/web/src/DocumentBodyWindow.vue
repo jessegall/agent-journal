@@ -9,5 +9,5 @@ const read = (line) => (RUNS.has(line.slice(0, 2).join(" ")) ? view.run(line) : 
 </script>
 
 <template>
-    <DocumentBody :noun="row.noun" :id="row.id" :read="read" />
+    <DocumentBody :term="row.term" :id="row.id" :read="read" />
 </template>

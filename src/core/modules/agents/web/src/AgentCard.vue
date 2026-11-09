@@ -31,8 +31,8 @@ const UNFINISHED_STATES = new Set(["open", "started", "testing"]);
 const pendingWork = computed(() => props.facts?.work_status);
 const stoppedWithWork = computed(() => Boolean(props.row.ended_at) && props.row.role !== "main" && tasks.value.some((task) => UNFINISHED_STATES.has(task.state)));
 // an agent whose program's plan allowance is used up waits at the usage limit until it starts again
-const limited = computed(() => props.row.state === "running" && props.facts?.state === "at usage limit" && Boolean(props.facts?.limited_until));
-const limitText = computed(() => `At usage limit: starts again ${new Date(props.facts.limited_until).toLocaleString()}`);
+const limited = computed(() => props.row.state === "running" && props.facts?.state === "at usage limit" && Boolean(props.facts?.usage_limit_ends_at));
+const limitText = computed(() => `At usage limit: starts again ${new Date(props.facts.usage_limit_ends_at).toLocaleString()}`);
 const dotState = computed(() => (props.row.retired_at || props.row.state === "retired" ? "retired" : limited.value || pendingWork.value || props.waitReason || stoppedWithWork.value ? "waiting" : props.row.state === "running" ? props.facts?.state || props.row.state : props.row.state));
 const workStatus = computed(() => limited.value ? limitText.value : pendingWork.value ? `Status: ${pendingWork.value}` : props.waitReason ? `Waiting: ${props.waitReason}` : dotState.value === "blocked" ? (props.facts?.blocked_reason ? `Blocked: ${props.facts.blocked_reason}` : "Blocked") : stoppedWithWork.value ? "Stopped with work left" : "");
 const completedCount = computed(() => props.progress?.completed_count ?? tasks.value.filter((task) => task.state === "completed").length);

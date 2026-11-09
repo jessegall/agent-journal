@@ -10,7 +10,7 @@ const tool = (fields = {}) => ({
     title: "Graphify",
     description: "Keeps a graph of the project's code in graphify-out.",
     is_installed: true,
-    is_on: false,
+    enabled: false,
     is_running: false,
     is_failed: false,
     refreshed_at: "2026-11-03T12:00:00Z",
@@ -59,7 +59,7 @@ test("the switch turns an off tool on", async () => {
 });
 
 test("the switch turns an on tool off and refresh now runs the refresh", async () => {
-    const {element, ran} = await drawn({is_on: true});
+    const {element, ran} = await drawn({enabled: true});
     expect(element.querySelector("[data-tool-state]").textContent).toBe("On");
     element.querySelector("[data-tool-refresh]").click();
     await settle();
@@ -70,7 +70,7 @@ test("the switch turns an on tool off and refresh now runs the refresh", async (
 });
 
 test("a running refresh is shown and cannot be started again", async () => {
-    const {element} = await drawn({is_on: true, is_running: true});
+    const {element} = await drawn({enabled: true, is_running: true});
     expect(element.querySelector("[data-tool-state]").textContent).toBe("Refreshing");
     expect(element.querySelector("[data-tool-refresh]").disabled).toBe(true);
 });

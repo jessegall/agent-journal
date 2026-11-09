@@ -21,7 +21,7 @@ class ProposePluginSubcommand(ReadSubcommand[PluginManifest]):
 
     def read(self, arguments: Namespace, caller: Caller) -> PluginManifest:
         manifest = PluginManifest.read(Path(arguments.source))
-        raise UserApprovalRefusal(f"Install {manifest.title}?\n{arguments.why}", ("plugin", "install", arguments.source, "--yes"))
+        raise UserApprovalRefusal(f"Install {manifest.title}?\n{arguments.justification}", ("plugin", "install", arguments.source, "--yes"))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginManifest):

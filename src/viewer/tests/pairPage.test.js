@@ -37,7 +37,7 @@ test("with no code in the link the page asks for one and pairs with what is type
     expect(opened).toHaveBeenCalledOnce();
 });
 
-test("a refused code shows why and leaves the page open", async () => {
+test("a refused code shows justification and leaves the page open", async () => {
     const {element, opened} = page({code: "ABCD-EFGH", answer: {ok: false, error: "this code pairs no phone"}});
     await settled();
     expect(element.textContent).toContain("this code pairs no phone");
