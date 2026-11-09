@@ -10,6 +10,7 @@ from tests.stories.support.story_checks import expect_value
 PLAN_TASKS = (1, 2, 3, 4)
 BLOCKED_BUILD_TASK = 2
 SHIP_TASK = 4
+LONG_PLAN_EXTRA_TASKS = 12
 
 
 def story_with_two_workers(new_story):
@@ -120,6 +121,17 @@ def test_a_started_task_stays_with_its_agent(new_story):
     story.expect_success(f"plan assign 1 --to {first.id}", actor=story.user)
     story.expect_text(f"task show {BLOCKED_BUILD_TASK}", f"holder_id: {story.agent.id}", "state: started", actor=story.agent)
     story.expect_absent(f"task show {BLOCKED_BUILD_TASK}", f"delegated_to: {first.id}", actor=story.agent)
+
+
+def test_a_long_plan_is_assigned_with_each_task_read_once(new_story):
+    story = planned_story(new_story)
+    previous_task = SHIP_TASK
+    for number in range(LONG_PLAN_EXTRA_TASKS):
+        task = story.new_row_id(f'task make "Extra {number}" --phase 2 --environment main', actor=story.user)
+        story.expect_success(f"task depend {task} --on {previous_task}", actor=story.user)
+        previous_task = task
+    story.expect_success(f"plan assign 1 --to {story.agent.id}", actor=story.user)
+    expect_blocked_with(story, previous_task, story.agent)
 
 
 def test_assigning_no_agent_frees_the_blocked_tasks(new_story):

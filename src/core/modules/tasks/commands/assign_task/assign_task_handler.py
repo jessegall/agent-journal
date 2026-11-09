@@ -24,9 +24,7 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
     def handle(self, command: AssignTask, context: Context) -> Task:
         task = self.queries.query(Task).find(command.task_id)
         agent = self.queries.query(Agent).find(command.agent_id)
-        if agent.ended_at is not None:
-            raise Refusal(f"agent {agent.id} has ended", "journal agent list shows who is running")
-        self.assignees.check(agent)
+        self.assignees.check_running(agent)
         delegated_to = agent.id if command.reserved else None
         is_undelegated_holder = task.holder_id == agent.id and task.delegated_to is None
         if task.state in UNSTARTED_STATES or is_undelegated_holder:
