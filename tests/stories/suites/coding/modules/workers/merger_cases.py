@@ -306,8 +306,8 @@ def test_a_pass_shows_a_mark_in_the_chat(case):
     case.story.expect_rows("The merger left" in case.marks(), detail=case.marks())
 
 
-def test_a_message_from_the_merger_to_a_worker_shows_no_ask_mark(case):
-    case.story.expect_success(f'message send "Look at the cart" --to agent:{case.worker.id}', actor=case.merger)
+def test_an_advice_from_the_merger_to_a_worker_shows_no_ask_mark(case):
+    case.story.expect_success(f'merger advise {case.worker.id} "Look at the cart"', actor=case.merger)
     case.story.expect_rows("The merger asks" not in case.marks(), detail=case.marks())
 
 

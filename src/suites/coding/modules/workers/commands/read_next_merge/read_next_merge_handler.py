@@ -11,6 +11,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.base.query.conditions.is_null import IsNull
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.models.merger_visit import MergerVisit
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -31,6 +32,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
 
     def handle(self, command: ReadNextMerge, context: Context) -> str:
         require_merger(self.agents, context)
+        self.repository.save(MergerVisit(), context)
         lines = tuple(self.queries.query(MergerLine).matching(IsNull("read_at")).oldest().all_rows())
         nudges = [Nudge(line.fallback_source, NudgeType.NOTICE, line.text) if line.nudge_json is None else NudgeDeclaration.restore(line.nudge_json) for line in lines]
         messages = "\n".join(f"line: {nudge.text}" for nudge in Nudge.collapsed(nudges))

@@ -10,6 +10,8 @@ from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.enums.wait_type import WaitType
 from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.commands.ask_merger.ask_merger import AskMerger
+from suites.coding.modules.workers.models.merger_line import MergerLine
+from suites.coding.modules.workers.support.group_message_limit import GROUP_MESSAGE_LIMIT_COUNT
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_ask_facts_query import WorkerAskFactsQuery
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
@@ -41,7 +43,11 @@ class AskMergerHandler(Handler[AskMerger, str]):
         return self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN, type=WaitType.ANSWER, focus=focus).exists()
 
     def send(self, command: AskMerger, point: WorkerPoint, focus: str, context: Context) -> None:
+        group = point.counted_group_key()
+        if self.queries.query(MergerLine).filter(worker_id=command.worker_id, group_key=group).count() >= GROUP_MESSAGE_LIMIT_COUNT:
+            raise Refusal(f"{GROUP_MESSAGE_LIMIT_COUNT} of {GROUP_MESSAGE_LIMIT_COUNT} asks used in this group", "wait for the merge; the merger has your earlier asks")
         facts = self.facts_query.read(point)
         self.bus.dispatch(MakeTaskLog(facts.task, f"worker {command.worker_id} asked the merger about {command.topic}: {command.text}"), context)
-        self.inbox.send(f"worker {command.worker_id} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}", QUESTION_SOURCE, context, command.topic, facts.json_text())
+        text = f"worker {command.worker_id} asks about {command.topic} on task {facts.task}: {command.text}\n{facts.text()}"
+        self.inbox.deliver(MergerLine(text=text, fallback_source=QUESTION_SOURCE, topic=command.topic, facts_json=facts.json_text(), worker_id=command.worker_id, group_key=group), context)
         self.bus.dispatch(OpenWait(WaitType.ANSWER, focus), context)

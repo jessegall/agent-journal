@@ -205,7 +205,7 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
         story.home.socket("launcher").unlink(missing_ok=True)
     merger = Actor(merger_agent(story).id, ActorType.AGENT)
     second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
-    story.expect_success(f'message send "Rebase on main first" --to agent:{worker.id}', actor=merger)
+    story.expect_success(f'merger advise {worker.id} "Rebase on main first"', actor=merger)
     story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{merger.id} reports in message:", actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{merger.id}', actor=worker)
     story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{worker.id} reports in message:", actor=merger)

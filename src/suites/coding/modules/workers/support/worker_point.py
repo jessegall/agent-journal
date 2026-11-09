@@ -14,3 +14,7 @@ class WorkerPoint:
     group: str | None
     open_task_count: int
     test_runs_available: int | None
+
+    def counted_group_key(self) -> str:
+        worktree_id = None if self.round.worktree is None else self.round.worktree.id
+        return f"worktree:{worktree_id}:{self.group}"

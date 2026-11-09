@@ -22,3 +22,5 @@ class MergerLine(EnvironmentScoped, Model):
     read_output_id: int | None = None
     topic: AskTopic | None = None
     facts_json: str | None = None
+    worker_id: int | None = None
+    group_key: str | None = None

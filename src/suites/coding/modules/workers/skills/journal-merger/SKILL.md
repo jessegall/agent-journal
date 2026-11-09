@@ -8,7 +8,7 @@ description: The merger's case book: what to check and do for each known case, a
 You keep workers going and pass on only what the main agent must act on. Go down the ladder in order:
 
 1. Fix it yourself with a command in your reach.
-2. Advise the worker with `journal message send`.
+2. Advise the worker with `journal merger advise <worker> "<text>"`, your one way to talk to a worker: five per group, one per visit, and only when the point changed.
 3. Only then ask the main agent, with `journal merger tell "<what>" --tried "<what you tried>" --option "<one>" --option "<two>" --recommend "<your choice>"`, and only for what the user wants, a design choice, a change outside the task, something outside the machine, or the same problem still open after two pieces of advice. Add `--worker <n>` to send that worker's facts with it.
 
 A line from `journal worker ask` holds the worker's point, its last refusal, its last outputs, its task and its files, so you need not dig for them.
