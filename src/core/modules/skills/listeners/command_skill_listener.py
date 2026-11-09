@@ -10,7 +10,7 @@ from core.modules.skills.support.missing_command_skill import MissingCommandSkil
 
 
 class CommandSkillListener(SaveListener[Created[HookCall]]):
-    """A journal command of a noun a skill covers makes that skill due for a main agent that does not hold it."""
+    """A journal command of a subject a skill covers makes that skill due for a main agent that does not hold it."""
 
     name = "skills.command-due"
 

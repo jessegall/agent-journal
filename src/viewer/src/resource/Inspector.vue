@@ -38,7 +38,7 @@ const emit = defineEmits(["close", "back", "step", "open"]);
 const actionBar = ref(null);
 provide(INSPECTOR_ACTIONS, computed(() => actionBar.value?.$el ?? null));
 
-const TEXT_NOUNS = new Set(["question", "memory", "rule"]);
+const TEXT_TERMS = new Set(["question", "memory", "rule"]);
 const listing = computed(() => props.catalogue.inspector(props.term) ?? {
     reads: `${props.term} show {row_id}`, label: "", title: "{title}", description: "", width: "small", components: [], comments: false, events: [],
     links: {categories: [], open: false, excludes_plan: false, page_size: 10}, shareable: false, lists_fields: true, draws_text: false,
@@ -57,7 +57,7 @@ const title = computed(() => (row.value ? fill(listing.value.title, row.value, f
 const kindLabel = computed(() => (row.value ? inspectorLabel(listing.value, props.term, row.value, props.id) : ""));
 const label = computed(() => (kindLabel.value === title.value ? "" : kindLabel.value));
 const description = computed(() => (row.value ? fill(listing.value.description, row.value, filled.value) : ""));
-const text = computed(() => row.value?.body || row.value?.brief || (TEXT_NOUNS.has(props.term) ? row.value?.text : "") || "");
+const text = computed(() => row.value?.body || row.value?.brief || (TEXT_TERMS.has(props.term) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
 const fields = computed(() => fieldsOf(row.value, text.value, creator.value, owner.value));
 
