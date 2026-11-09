@@ -15,6 +15,7 @@ from server.server_files_error import ServerFilesError
 
 
 SOCKET_FILE_MODE = 0o600
+HOSTED_VIEWER_SOCKET = Path("/run/journal/viewer.sock")
 LOCK_POLL_SECONDS = 0.05
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
@@ -29,6 +30,7 @@ class ServerFiles:
 
     def __init__(self, home: JournalHome) -> None:
         self.socket = socket_path(home)
+        self.viewer_socket = HOSTED_VIEWER_SOCKET
         self.lock = home.folder / "server.lock"
         self.pid_file = home.folder / "server.pid"
         self.log = home.system_log

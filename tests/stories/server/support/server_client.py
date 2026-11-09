@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from core.base.database.reported_findings import ReportedFindings
 import http.client
 import json
@@ -36,6 +37,8 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
+from server.journal_door import JournalDoor
+from server.local_journal_door import LocalJournalDoor
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
 from server.hook.hook_database import HookDatabase
@@ -46,6 +49,7 @@ from server.listener_wake import ListenerWake
 from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
+from server.viewer.viewer_endpoint import ViewerEndpoint
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_sessions import ShareSessions
@@ -333,22 +337,29 @@ def without_start_skills(story: Story) -> None:
         story.expect_success(f"agent-skill delete {row.id}")
 
 
+ViewerFactory = Callable[[ViewerLogin, ViewerRoutes], ViewerEndpoint]
+
+
+def local_viewer(login: ViewerLogin, routes: ViewerRoutes) -> ViewerEndpoint:
+    return ViewerListener(login, routes)
+
+
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
     without_start_skills(story)
     story.run("setting make journal.core.voices.avatar false")
-    with started_server(story.home, code_folders, listener_thread_started) as (socket_path, context):
+    with started_server(story.home, code_folders, listener_thread_started, viewer_factory, journal_door) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
-    with running_server(home, code_folders, listener_thread_started) as (_, socket_path, context):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
+    with running_server(home, code_folders, listener_thread_started, viewer_factory, journal_door) as (_, socket_path, context):
         yield socket_path, context
 
 
 @contextmanager
-def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True, viewer_factory: ViewerFactory = local_viewer, journal_door: JournalDoor = LocalJournalDoor()):
     with patch.object(ProcessTable, "rows", FixedProcessTable([]).rows):
         files = ServerFiles(home)
         assert files.acquire_lock(), "a server already holds the lock of this journal"
@@ -360,7 +371,7 @@ def running_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         login = ViewerLogin(phones, ShareSessions(phones.journal_output))
         reported = ReportedFindings()
         context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                                hook_database, ViewerListener(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
+                                hook_database, viewer_factory(login, ViewerRoutes(home, listener_thread, login, reported, hook_database.queue)), ServerTunnel(home), reported, journal_door, STORY_HOOK_LIMIT_SECONDS, STORY_HOOK_LIMIT_SECONDS)
         context.request_log.refresh(synced_database_container(home, hook_database.databases[0]))
         context.viewer.routes.line_route = StoryLineRoute(home, listener_thread, reported, completion_callback=context.request_log.completed)
         context.viewer.routes.line_route.line_run.request_queue = hook_database.queue
