@@ -4,9 +4,15 @@
     "find": {
         "select": "call",
         "where": [
-            {"nameIn": ["find", "first"]},
             {"fileMatches": "(^|/)src/(core/modules|suites)/"},
             {"of": "child:func", "is": "member-access"},
+            {"any": [
+                {"nameIn": ["find", "first", "required"]},
+                {"all": [
+                    {"nameIn": ["exists", "count"]},
+                    {"descendant": {"all": [{"is": "member-access"}, {"nameIn": ["filter", "matching", "query"]}]}}
+                ]}
+            ]},
             {"inside": {"any": [{"kind": "For"}, {"kind": "AsyncFor"}, {"kind": "ListComp"}, {"kind": "SetComp"}, {"kind": "DictComp"}, {"kind": "GeneratorExp"}]}}
         ],
         "reject": [
@@ -17,8 +23,8 @@
     },
     "sin": {
         "name": "read-in-a-loop",
-        "description": "A loop reads one row on each turn.",
-        "rule": "Read the rows together with find_many before the loop, then work on the held rows. PluginCardReading is left out: it claims one queued card file at a time and the claim holds the file's lock until the next turn, so the agent ids of the cards are not known before the loop. SearchHit and UsageAgentsSubcommand are left out: their find is str.find and a find in an in-memory registry, not a row read.",
+        "description": "A loop reads one row, or asks one question of the rows, on each turn.",
+        "rule": "Read the rows together before the loop, with find_many, EventRows.required_by_id or one Among condition, then work on the held rows or a set of their keys. PluginCardReading is left out: it claims one queued card file at a time and the claim holds the file's lock until the next turn, so the agent ids of the cards are not known before the loop. SearchHit and UsageAgentsSubcommand are left out: their find is str.find and a find in an in-memory registry, not a row read.",
         "skill": "plain-code-words"
     }
 }
