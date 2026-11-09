@@ -10,7 +10,7 @@ from suites.coding.modules.workers.commands.send_merger_report.send_merger_repor
 
 
 class SendMergerReportHandler(Handler[SendMergerReport, None]):
-    """Sends the main agent a message of the merger through the message route, which wakes it."""
+    """Sends the latest main agent a message of the merger, which the next main agent gets when that one has ended."""
 
     command = SendMergerReport
     disabled_scopes = [ActorScope]
@@ -20,5 +20,6 @@ class SendMergerReportHandler(Handler[SendMergerReport, None]):
 
     def handle(self, command: SendMergerReport, context: Context) -> None:
         text = command.text.text if isinstance(command.text, Nudge) else command.text
-        for main_agent in MainAgentFinder.rows(self.queries):
+        main_agent = MainAgentFinder.latest(self.queries)
+        if main_agent is not None:
             self.bus.run(SendAgentMessage(main_agent.id, text), context.actor, environment_id=context.environment_id)

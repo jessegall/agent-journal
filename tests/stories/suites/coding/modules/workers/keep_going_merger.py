@@ -13,7 +13,12 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
+from core.testing.hook_samples import HookSamples
+from core.base.agent_role import AgentRole
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
+from tests.stories.suites.coding.modules.workers.merger_cases import merger_case
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
+from tests.stories.support.story_checks import expect_value_with
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import merger_can_start, running_launcher
 from tests.stories.suites.coding.modules.workers.worker_ask import asking_worker
@@ -141,3 +146,27 @@ def test_a_line_that_came_back_once_is_not_returned_a_second_time(merger_that_re
     worker.story.expect_success("merger next", actor=second)
     retry_after_the_merger_ended(worker.story)
     expect_unread_lines(worker.story, 0)
+
+
+@pytest.fixture
+def merger_with_ended_main(new_story, monkeypatch):
+    merger_can_start(monkeypatch)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    case = merger_case(story, repository_environment(story))
+    story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
+    story.expect_success('merger tell "Which rounding applies?" --tried "Read the brief" --option "Up" --option "Down" --recommend "Up"', actor=case.merger)
+    return case
+
+
+def newest_main_agent_id(story) -> int:
+    return story.container.get(Queries).query(Agent).filter(role=AgentRole.MAIN).newest().first().id
+
+
+def test_a_tell_with_no_main_agent_running_reaches_the_next_main_agent(merger_with_ended_main):
+    story = merger_with_ended_main.story
+    ended_main_agent_id = newest_main_agent_id(story)
+    story.hook("s-next", HookSamples.session_start())
+    story.run_listeners()
+    next_main_agent_id = newest_main_agent_id(story)
+    story.expect_rows(next_main_agent_id != ended_main_agent_id)
+    expect_value_with(story.run(f"agent-line list --agent {next_main_agent_id}").output_text, "reports in message:")
