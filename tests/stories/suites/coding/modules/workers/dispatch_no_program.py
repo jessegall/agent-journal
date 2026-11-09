@@ -21,7 +21,7 @@ def person(story) -> Actor:
 def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hooks_are_the_workers(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     try:
         worker = Actor(story.new_row_id(MISSING_PROGRAM, actor=person(story)), ActorType.AGENT)
         story.run_listeners()

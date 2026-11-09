@@ -66,7 +66,7 @@ def test_a_named_program_whose_hooks_are_not_trusted_has_them_written_and_truste
     settings = hooks.settings()
     settings['hooks']['PreToolUse'][0]['hooks'][0]['command'] += ' --foreign'
     ProgramHooks.store(hooks.path, settings)
-    FakeLauncher(story.home.socket('launcher'))
+    FakeLauncher.listening(story.home.socket('launcher'))
     story.expect_success(f'{START} --program codex', actor=story.agent)
 
 
@@ -127,7 +127,7 @@ def test_helper_goes_by_the_split_reuse_still_goes_first(new_story):
     story = new_story(fixture=EndedHelper)
     helper_id = helper_agent(story).id
     set_split(story, 'codex 100,claude 0')
-    FakeLauncher(story.home.socket('launcher'))
+    FakeLauncher.listening(story.home.socket('launcher'))
     story.expect_refusal(FILE_START, f'journal helper send {helper_id}', actor=story.agent)
 
 
@@ -136,7 +136,7 @@ def test_helper_goes_by_the_split_named_out_program_is_started_with_warning(help
     ends_at = (story.clock.timestamp().value + timedelta(minutes=15)).isoformat(timespec='microseconds')
     story.expect_success(f'provider-outage make codex "rate limit" --ends-at {ends_at}', actor=story.agent)
     real_program_states(story)
-    launcher = FakeLauncher(story.home.socket('launcher'))
+    launcher = FakeLauncher.listening(story.home.socket('launcher'))
     answer = story.run(f'{START} --program codex', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()

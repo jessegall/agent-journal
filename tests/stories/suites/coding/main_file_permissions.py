@@ -30,7 +30,7 @@ def sed_edit(line: str):
 
 
 def refused_with_launcher(story, line, reason, actor):
-    launcher = FakeLauncher(story.home.socket("launcher"), request_count=1)
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=1)
     story.expect_refusal(line, reason, actor=actor)
     launcher.server.close()
     story.home.socket("launcher").unlink()

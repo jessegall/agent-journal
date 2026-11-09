@@ -39,7 +39,7 @@ def read_checkout(story, agent_id: int) -> Checkout:
 
 
 def worker_helper(story) -> Agent:
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(HELPER_START, actor=story.worker)
     story.run_listeners()
     launcher.drain_requests()

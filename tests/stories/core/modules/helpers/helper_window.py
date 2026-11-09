@@ -59,7 +59,7 @@ def test_a_start_with_no_launcher_says_what_to_do(new_story):
 
 def test_a_start_with_no_main_agent_says_what_to_do(new_story):
     story = new_story(fixture=UserJoined)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run(f"agent end {story.agent.id}", actor=story.user)
     story.expect_text("helper availability --environment main", "main agent", actor=story.user)
     launcher.server.close()
@@ -67,7 +67,7 @@ def test_a_start_with_no_main_agent_says_what_to_do(new_story):
 
 def test_a_start_at_the_limit_says_so(new_story):
     story = new_story(fixture=StartedHelper)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.run(f"setting set {HELPER_RUN_LIMIT} 1 --project", actor=story.user)
     story.expect_text("helper availability --profile journal-researcher --environment main", "1 of journal-researcher run", actor=story.user)
     launcher.server.close()

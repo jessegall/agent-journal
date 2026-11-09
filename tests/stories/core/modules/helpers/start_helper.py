@@ -41,7 +41,7 @@ class OneHelperAllowed(StoryFixture):
 
 
 def fake_launcher(story, requests=1):
-    return FakeLauncher(story.home.socket("launcher"), request_count=requests)
+    return FakeLauncher.listening(story.home.socket("launcher"), request_count=requests)
 
 
 def helpers(story):
@@ -181,7 +181,7 @@ def test_a_long_brief_arrives_whole(new_story):
 
 def test_a_failed_launch_ends_the_helper_and_tells_the_parent(new_story):
     story = new_story(fixture=LauncherRuns)
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"failed\n")
+    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"failed\n")
     helper_id = story.new_row_id(f"{START} --model opus", actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
