@@ -15,7 +15,7 @@ class ProtectedFolders:
     def match(self, root: str, path: str) -> str:
         checkout = Path(root).resolve()
         absolute = Path(abspath(checkout / path))
-        names = []
+        names: list[str] = []
         for candidate in (absolute, absolute.resolve()):
             if not candidate.is_relative_to(checkout):
                 continue

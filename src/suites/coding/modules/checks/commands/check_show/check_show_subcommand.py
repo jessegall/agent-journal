@@ -1,6 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from typing import cast
-
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
 from core.base.library.library_lookup import LibraryLookup
@@ -29,11 +27,12 @@ class CheckShowSubcommand(LibraryAwareShow[Check], ReadSubcommand[Check | Librar
     def local(self, arguments: Namespace, caller: Caller) -> Check:
         return self.queries.query(Check).find(arguments.id)
 
-    def write_output(self, value: Check | LibraryReading, output: Output) -> None:
+    def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, LibraryReading):
             self.write_library(value, output)
             return
-        self.write_check(cast(Check, value), output)
+        if isinstance(value, Check):
+            self.write_check(value, output)
 
     def write_check(self, check: Check, output: Output) -> None:
         values = {**output.values(check), "state": check.state}

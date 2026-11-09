@@ -19,9 +19,12 @@ class ProgramState:
     def unavailable(cls, line: str, ends_at: Timestamp | None = None) -> "ProgramState":
         return cls(False, line, ends_at)
 
+    @property
+    def ends_text(self) -> str | None:
+        return self.ends_at.text if self.ends_at is not None else None
+
     def listed(self) -> dict[str, object]:
-        return {"is_ready": self.is_ready, "line": self.line,
-                "ends_at": self.ends_at.text if self.ends_at is not None else None}
+        return {"is_ready": self.is_ready, "line": self.line, "ends_at": self.ends_text}
 
     @property
     def wait_line(self) -> str:

@@ -23,4 +23,5 @@ class MakeWorkerRouteHandler(Handler[MakeWorkerRoute, WorkerRoute]):
             raise Refusal("a route needs an environment", "add --environment <name>")
         return self.repository.save(WorkerRoute(creator_id=context.actor.id,
                                                position=self.positions.next_position(WorkerRoute, "environment_id", context.environment_id),
-                                               **command.field_values(())), context)
+                                               program=command.program, tags=command.tags, minimum_complexity=command.minimum_complexity,
+                                               maximum_complexity=command.maximum_complexity, tier=command.tier, strict=command.strict), context)

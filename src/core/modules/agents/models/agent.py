@@ -50,6 +50,7 @@ class Agent(EnvironmentScoped, Model):
     retiring_actor_id: int | None = None
     usage_limit_ends_at: Timestamp | None = None
     interrupted_at: Timestamp | None = None
+    launched_at: Timestamp | None = None
 
     def change_name(self, old_row: Model | None) -> str | None:
         newly_ended = isinstance(old_row, Agent) and old_row.ended_at is None and self.ended_at is not None

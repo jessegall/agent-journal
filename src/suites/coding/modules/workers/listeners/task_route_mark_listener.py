@@ -17,5 +17,5 @@ class TaskRouteMarkListener(TaskRouteChangeListener[Updated[Task] | Moved[Task]]
         if "complexity" not in logged.data and ROUTE_GUARD not in logged.skipped_guards:
             return
         route_tasks = self.routes.task_matches([event.row])
-        route = route_tasks.first_match(event.row) or route_tasks.first_match(event.old_row)
+        route = route_tasks.first_match(event.row) or route_tasks.first_match(event.previous)
         self.show_route(event.row, route, logged)

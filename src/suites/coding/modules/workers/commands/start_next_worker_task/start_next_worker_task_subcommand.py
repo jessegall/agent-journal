@@ -48,6 +48,6 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
         if self.run_answer.write(value, output):
             return
         if isinstance(value, Task) and value.state is TaskState.STARTED:
-            output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}\n{self.guidance.line(value.delegated_to)}")
+            output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}\n{self.guidance.task_line(value)}")
         elif isinstance(value, Task):
-            output.line(self.guidance.line(value.delegated_to))
+            output.line(self.guidance.task_line(value))

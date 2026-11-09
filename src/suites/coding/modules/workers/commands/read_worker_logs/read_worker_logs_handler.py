@@ -43,4 +43,4 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
     def reviews_logs(self, context: Context) -> bool:
         if context.actor.type is not ActorType.AGENT:
             return False
-        return self.environments.grants(context.environment_id, context.actor.id) or self.agents.is_main(context.actor.id)
+        return self.environments.grants(context.required_environment_id(), context.actor.id) or self.agents.is_main(context.actor.id)

@@ -22,7 +22,7 @@ class MainReservationGuard(Guard[Updated[Task] | Moved[Task]]):
 
     def check(self, event: Updated[Task] | Moved[Task], context: Context) -> None:
         task = event.row
-        if task.delegated_to is None or task.delegated_to == event.old_row.delegated_to or task.delegated_to == task.holder_id:
+        if task.delegated_to is None or task.delegated_to == event.previous.delegated_to or task.delegated_to == task.holder_id:
             return
         if self.rows.required(Agent, task.delegated_to).role == AgentRole.MAIN and not self.options.options().writes_code:
             raise Refusal(f"task {task.id} goes to a worker", "the main agent writes no code here; leave it open for a worker")

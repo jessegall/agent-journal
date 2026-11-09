@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from core.modules.settings.bindings.support.context_share import ContextShare
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.kept_helpers import FULL_SESSION_PERCENT
@@ -25,6 +27,6 @@ class AvailableWorkers:
         if last is None or self.git.has_unmerged_branch(folder, last):
             return False
         provider = self.providers.provider(worker.program)
-        if not provider.session_matches_folder(last.folder, worker.session):
+        if not provider.session_matches_folder(Path(last.folder), worker.session):
             return False
         return (self.share.percent(worker.program, worker.session) or 0) < FULL_SESSION_PERCENT
