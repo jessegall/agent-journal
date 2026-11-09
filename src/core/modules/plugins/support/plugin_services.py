@@ -100,7 +100,7 @@ class PluginServices:
         log = self.folders.service_log(*key)
         log.parent.mkdir(parents=True, exist_ok=True)
         self.trim_log(log)
-        with log.open("ab") as output:
+        with FileAccess.shared().writer(log, "ab") as output:
             started = subprocess.Popen([program, *service.command[1:]], cwd=folder, env=environment, stdin=subprocess.DEVNULL, stdout=output, stderr=subprocess.STDOUT, start_new_session=True)
         processes.running[key] = ChildProcess(started)
         FileAccess.shared().write(pid_file, str(processes.running[key].pid))
