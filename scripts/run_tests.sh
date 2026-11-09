@@ -20,7 +20,7 @@ for test_id in "$@"; do
 done
 status=0
 if [ -n "$python_ids" ]; then
-    .venv/bin/python -m pytest -q $python_ids || status=1
+    .venv/bin/python -u -m pytest -q $python_ids || status=1
 fi
 if [ -n "$hook_packages" ]; then
     (cd tools/journal-hook && go test -timeout 300s $hook_packages) || status=1
