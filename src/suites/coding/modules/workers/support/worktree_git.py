@@ -332,16 +332,22 @@ class WorktreeGit:
         uncommitted = {line[3:] for line in self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.splitlines()}
         return tuple(sorted(changed & uncommitted))
 
+    def branch_contains(self, worktree: Worktree, commit: str) -> bool:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "merge-base", "--is-ancestor", commit, worktree.branch).returncode == 0
+
     def merge(self, folder: str, worktree: Worktree, message: str) -> None:
-        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "--no-commit", worktree.branch)
+        self.merge_revision(folder, worktree.branch, message)
+
+    def merge_revision(self, folder: str, revision: str, message: str) -> None:
+        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "--no-commit", revision)
         if not self.is_merging(folder):
             if finished.returncode != 0:
-                raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+                raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
             return
         self.keep_instruction_files(folder)
         if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip():
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
-            raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+            raise Refusal(f"git merge of {revision} failed in {folder}", (finished.stderr or finished.stdout).strip())
         self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message)
 
     def keep_instruction_files(self, folder: str) -> None:
