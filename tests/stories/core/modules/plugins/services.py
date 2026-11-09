@@ -37,6 +37,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 END_LIMIT_SECONDS = 5
+SERVED = ("served", "answers")
 REMOVAL_PART = ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.DELETES_FILES])
 
 
@@ -203,6 +204,117 @@ def test_a_switched_off_plugins_services_are_stopped(new_story):
         story.expect_rows(not process.running(), ("served", "answers") not in story.processes.running)
     finally:
         story.processes.close()
+
+
+def server_kept_story(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.run(f"plugin install {service_plugin_folder(story.home.folder.parent)} --yes", actor=story.user)
+    story.run("setting set journal.core.plugins.hold_window_ms 5000 --project", actor=story.user)
+    story.services, story.processes = story.container.get(PluginServices), ServiceProcesses.shared(story.home)
+    story.processes.serving = True
+    story.services.follow(story.processes)
+    return story
+
+
+@pytest.fixture
+def controlled_service(new_story):
+    story = server_kept_story(new_story)
+    yield story
+    story.processes.close()
+
+
+def test_stopping_a_service_ends_it_and_says_it_stopped(controlled_service):
+    story = controlled_service
+    process = story.processes.running[SERVED]
+    story.expect_text("plugin service stop served answers", "served answers: stopped", actor=story.user)
+    process.wait(5)
+    story.expect_rows(not process.running(), SERVED not in story.processes.running)
+    story.expect_text("plugin services", "served answers: stopped", actor=story.user)
+
+
+def test_a_stopped_service_stays_stopped_through_the_next_round(controlled_service):
+    story = controlled_service
+    story.run("plugin service stop served answers", actor=story.user)
+    story.services.follow(story.processes)
+    story.services.check_health(story.processes)
+    story.expect_rows(SERVED not in story.processes.running)
+
+
+def test_starting_a_stopped_service_runs_it_at_once(controlled_service):
+    story = controlled_service
+    story.run("plugin service stop served answers", actor=story.user)
+    story.expect_text("plugin service start served answers", "served answers: running", actor=story.user)
+    story.expect_rows(story.processes.running[SERVED].running())
+    story.services.follow(story.processes)
+    story.expect_rows(story.processes.running[SERVED].running())
+
+
+def test_restarting_a_running_service_gives_it_a_new_process(controlled_service):
+    story = controlled_service
+    first = story.processes.running[SERVED]
+    story.expect_text("plugin service restart served answers", "served answers: running", actor=story.user)
+    second = story.processes.running[SERVED]
+    story.expect_rows(second.pid != first.pid, second.running(), not first.running())
+
+
+def test_restarting_a_stopped_service_starts_it(controlled_service):
+    story = controlled_service
+    story.run("plugin service stop served answers", actor=story.user)
+    story.expect_text("plugin service restart served answers", "served answers: running", actor=story.user)
+    story.expect_rows(story.processes.running[SERVED].running())
+
+
+def test_starting_a_service_that_runs_leaves_its_process_alone(controlled_service):
+    story = controlled_service
+    first = story.processes.running[SERVED]
+    story.expect_text("plugin service start served answers", "served answers: running", actor=story.user)
+    story.expect_rows(story.processes.running[SERVED].pid == first.pid, first.running())
+
+
+def test_stopping_a_stopped_service_changes_nothing(controlled_service):
+    story = controlled_service
+    story.run("plugin service stop served answers", actor=story.user)
+    story.expect_text("plugin service stop served answers", "served answers: stopped", actor=story.user)
+
+
+@pytest.mark.parametrize("line, reason", [
+    ("plugin service stop served missing", "plugin served has no running service missing"),
+    ("plugin service restart absent answers", "plugin absent has no running service answers"),
+])
+def test_a_service_the_journal_does_not_run_is_refused(controlled_service, line, reason):
+    story = controlled_service
+    story.expect_refusal(line, reason, actor=story.user)
+    story.expect_rows(story.processes.running[SERVED].running())
+
+
+def test_a_service_cannot_be_changed_without_the_server(new_story):
+    story = served_story(new_story)
+    try:
+        story.expect_refusal("plugin service stop served answers", "the journal's server keeps the services", actor=story.user)
+        story.expect_rows(story.processes.running[SERVED].running())
+    finally:
+        story.processes.close()
+
+
+def test_switching_a_plugin_off_and_on_starts_its_stopped_service(controlled_service):
+    story = controlled_service
+    story.run("plugin service stop served answers", actor=story.user)
+    story.run("plugin disable served", actor=story.user)
+    story.services.follow(story.processes)
+    story.run("plugin enable served", actor=story.user)
+    story.services.follow(story.processes)
+    story.expect_rows(story.processes.running[SERVED].running())
+
+
+def test_the_person_stops_and_restarts_a_service_from_the_plugins_window(controlled_service):
+    story = controlled_service
+    first = story.processes.running[SERVED]
+    with viewer_client(story) as viewer:
+        viewer.value("plugins.plugins", ["plugin", "service", "stop", "served", "answers"])
+        story.expect_rows(SERVED not in story.processes.running)
+        viewer.value("plugins.plugins", ["plugin", "service", "restart", "served", "answers"])
+    story.expect_rows(story.processes.running[SERVED].running(), story.processes.running[SERVED].pid != first.pid)
 
 
 def test_a_service_that_answers_its_health_check_leaves_the_plugin_without_a_fault(new_story):

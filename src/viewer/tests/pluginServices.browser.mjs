@@ -31,11 +31,24 @@ try {
         assert.equal(boxes.pageOverflows, false, `the page does not overflow at ${width}px`);
         assert.equal(await window.locator("[data-plugin-service-terminal]").count(), 0);
         await service.click();
-        const terminal = window.locator("[data-plugin-service-terminal]");
+        const terminal = page.locator("[role=dialog] [data-plugin-service-terminal]");
         await terminal.waitFor();
         await terminal.getByText("answers service ready").waitFor();
         assert.equal(await terminal.evaluate((element) => element.scrollWidth > element.clientWidth), false, `the terminal does not overflow at ${width}px`);
-        await service.click();
+        const heights = await terminal.evaluate((element) => ({
+            terminal: element.getBoundingClientRect().height, body: element.closest(".dialog-body").getBoundingClientRect().height,
+            bar: element.querySelector("[data-plugin-service-bar]").getBoundingClientRect().height, log: element.querySelector("pre.output-lines").getBoundingClientRect().height,
+        }));
+        assert.ok(Math.abs(heights.terminal - heights.body) < 2, `the terminal fills its dialog at ${width}px: ${JSON.stringify(heights)}`);
+        assert.ok(Math.abs(heights.bar + heights.log - heights.terminal) < 2, `the log fills what the bar leaves at ${width}px: ${JSON.stringify(heights)}`);
+        if (width === 1280) {
+            const bar = terminal.locator("[data-plugin-service-bar]");
+            await terminal.locator('[data-plugin-service-action="stop"]').click();
+            await bar.getByText("Stopped").waitFor();
+            await terminal.locator('[data-plugin-service-action="start"]').click();
+            await bar.getByText("Running").waitFor();
+        }
+        await page.mouse.click(4, 4);
         await terminal.waitFor({state: "detached"});
     }
 } finally {

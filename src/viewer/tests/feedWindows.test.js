@@ -1,6 +1,8 @@
 import {readFileSync, readdirSync, statSync} from "node:fs";
 import {join, resolve} from "node:path";
+import {createApp, h, nextTick, ref} from "vue";
 import {expect, test, vi} from "vitest";
+import OutputLines from "../src/kit/OutputLines.vue";
 import {context, mounted} from "./support/windowContext.js";
 import {context as agentContext} from "./support/agentWindowContext.js";
 import {AGENT_EDIT_KEYS, fileFeedWindowContext} from "./support/fileFeedWindowContext.js";
@@ -86,6 +88,20 @@ test("the whole output reads the newest page on open and one earlier page when s
         await vi.waitFor(() => expect(element.textContent).toContain("newest"));
         return {element, reads: window.reads};
     }, {pane: (element) => element.querySelector("pre.output-lines")});
+});
+
+test("output lines that are replaced by as many new ones stay at the end", async () => {
+    const lines = ref(["one", "two"]);
+    const host = document.createElement("div");
+    createApp({render: () => h(OutputLines, {lines: lines.value})}).mount(host);
+    await nextTick();
+    const box = host.querySelector("pre.output-lines");
+    Object.defineProperty(box, "scrollHeight", {configurable: true, value: 900});
+    box.scrollTop = 0;
+    lines.value = ["two", "three"];
+    await nextTick();
+    await nextTick();
+    expect(box.scrollTop).toBe(900);
 });
 
 // every window that scrolls a feed passes the paginator to the pane that shows it; the panes that are not a feed are named here with why
