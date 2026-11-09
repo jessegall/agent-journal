@@ -1,3 +1,4 @@
+from core.testing.story import Story
 from datetime import timedelta
 
 import pytest
@@ -13,6 +14,19 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_reply_line
 from tests.stories.support.story_checks import expect_lines_reply_line
+
+
+
+@pytest.fixture(autouse=True)
+def listeners_run_before_each_hook(monkeypatch):
+    original = Story.hook
+
+    def hook_after_listeners(story, *arguments, **options):
+        story.run_listeners()
+        story.advance(timedelta(seconds=1))
+        return original(story, *arguments, **options)
+
+    monkeypatch.setattr(Story, "hook", hook_after_listeners)
 
 
 def journal_line(line):
@@ -46,7 +60,9 @@ def read_story(new_story):
 
 @pytest.fixture
 def read_message(new_story):
-    return read_story(new_story)
+    story, reply = read_story(new_story)
+    story.run_listeners()
+    return story, reply
 
 
 def test_a_session_start_says_what_a_journal_line_is_and_to_keep_the_journal_out_of_the_chat(new_story):
@@ -93,8 +109,8 @@ def test_a_countdown_comes_before_tool_calls_wait(reply_countdown):
 
 def test_a_chained_command_lowers_the_countdown_by_one_whatever_parts_it_holds(chained_reply_countdown):
     story = chained_reply_countdown
-    story.expect_hook_allowed("s-1", CHAINED_LINE, "reply to message 1 due: 3 tool uses")
-    story.expect_hook_allowed("s-1", VIEW_LINE, "reply to message 1 due: 2 tool uses")
+    story.expect_hook_allowed("s-1", CHAINED_LINE, "reply to message 1 due: 2 tool uses")
+    story.expect_hook_allowed("s-1", VIEW_LINE, "reply to message 1 due: 1 tool uses")
 
 
 def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chained_reply_countdown):
@@ -107,7 +123,7 @@ def test_a_chained_command_is_held_only_after_ten_tool_uses_and_not_before(chain
 
 def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_through(new_story):
     story = new_story(SAMPLES, fixture=AnnouncedCartMessage)
-    for _ in range(20):
+    for _ in range(21):
         story.hook("s-1", VIEW_LINE)
     story.expect_hook_refusal("s-1", HookSamples.edit("a.txt"), "1 unread messages: read them")
     story.expect_hook_allowed("s-1", VIEW_LINE)
@@ -155,7 +171,7 @@ def test_a_reply_line_by_any_path_goes_through_the_hold(reply_required):
 @pytest.fixture
 def chained_reply_countdown(read_message):
     story, _ = read_message
-    for _ in range(7):
+    for _ in range(8):
         story.hook("s-1", CHAINED_LINE)
     return story
 
@@ -163,7 +179,7 @@ def chained_reply_countdown(read_message):
 @pytest.fixture
 def reply_countdown(read_message):
     story, _ = read_message
-    for _ in range(7):
+    for _ in range(8):
         story.hook("s-1", VIEW_LINE)
     return story
 

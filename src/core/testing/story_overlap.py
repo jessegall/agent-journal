@@ -3,6 +3,7 @@ from itertools import combinations, groupby
 
 OVERLAP_LIMIT_STEPS = 2
 
+CLOCK_AND_LISTENER_STEPS = ("listeners", "advance ")
 
 class StoryOverlap:
     """Remembers the command lines each story ran, and names the stories of one file that begin with the same
@@ -12,7 +13,7 @@ class StoryOverlap:
         self.stories: dict[str, list[str]] = {}
 
     def add(self, test_id: str, lines: Sequence[str]) -> None:
-        self.stories[test_id] = list(lines)
+        self.stories[test_id] = [line for line in lines if not line.startswith(CLOCK_AND_LISTENER_STEPS)]
 
     def report_lines(self) -> list[str]:
         lines: list[str] = []
