@@ -9,6 +9,7 @@ from core.modules.drivers.support.context_resets import ContextResets
 from core.modules.drivers.support.countdowns import Countdowns
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.process import Process
+from core.modules.processes.support.held_runs import LOOKED_MARK
 from core.modules.processes.support.output_folder import OutputFolder
 
 RUNNING_OUTPUT_READS = CountDown("processes.running_output_reads", "stop reading output", TimesSpan(3), is_silent=True)
@@ -35,8 +36,12 @@ class RepeatReads:
             raise Refusal(f"you read output {command.process_id} this way already and it is still in your context", "add --again to read it anyway")
 
     def note(self, command: ReadOutput, actor: Actor, read_at: str) -> None:
-        if actor.type is ActorType.AGENT and self.has_ended(command.process_id):
+        if actor.type is not ActorType.AGENT:
+            return
+        if self.has_ended(command.process_id):
             self.folder.write_read_mark(command.process_id, self.mark(command, actor), read_at)
+        else:
+            self.folder.write_read_mark(command.process_id, LOOKED_MARK, read_at)
 
     def mark(self, command: ReadOutput, actor: Actor) -> str:
         return f"{actor.id}-{command.summary}-{command.all}-{command.lines}-{command.tail}-{command.reader}"
