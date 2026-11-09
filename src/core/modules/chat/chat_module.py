@@ -20,6 +20,7 @@ from core.modules.chat.migrations.m001_chat_marks import ChatMarkTableMigration
 from core.modules.chat.migrations.m008_chat_mark_all_key_index import ChatMarkAnyEnvironmentKeyIndexMigration
 from core.modules.chat.queries.chat_mark_query import ChatMarkQuery
 from core.modules.chat.models.chat_mark import ChatMark
+from core.modules.chat.support.chat_settings import CHAT_SETTINGS
 
 
 class ChatModule(Module):
@@ -29,7 +30,8 @@ class ChatModule(Module):
     seed_reason = "its marks come from the rows of the other modules"
     move_reason = "version 4 kept its chat as messages, which the messages module moves"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings"]
+    settings = CHAT_SETTINGS
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalException, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ChatMarkSessionMigration, JournalExceptionCreatedIndexMigration, ChatMarkAgentIndexMigration, ChatMarkTableMigration, JournalExceptionTableMigration, ChatMarkKeyIndexMigration, JournalExceptionRenameMigration, ChatMarkAnyEnvironmentKeyIndexMigration]
     handlers = [ShowMarkHandler, RecordJournalExceptionHandler]

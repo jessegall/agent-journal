@@ -2,9 +2,10 @@ import pytest
 
 from datetime import timedelta
 
-from core.modules.tasks.rules.inactive_task_reminder_rule import INACTIVE_MINUTES
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
+
+INACTIVE_MINUTES = 15
 
 
 def test_a_builder_quiet_with_its_task_in_hand_is_reminded_on_a_tick(task_turn):
@@ -40,6 +41,14 @@ def test_a_builder_is_reminded_once_per_quiet_stretch(task_turn):
     story.tick("s-1")
     reply = story.hook("s-1", HookSamples.prompt("and on"))
     story.expect_rows(sum("nothing has happened" in line for line in reply.lines) == 1)
+
+def test_the_quiet_minutes_setting_sets_how_long_a_builder_may_be_quiet(new_story):
+    story = new_story(fixture=StartedTaskBuilder)
+    story.expect_success("setting set journal.core.tasks.quiet-task-minutes 5 --environment main")
+    story.hook("s-1", HookSamples.prompt("go on"))
+    story.advance(timedelta(minutes=5))
+    story.tick("s-1")
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "nothing has happened for 5 minutes", "tasks.quiet-task")
 
 
 @pytest.fixture

@@ -13,7 +13,6 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent, resumable_session
 from tests.stories.core.modules.processes.support.process_samples import start_process
-from suites.coding.modules.workers.rules.unstarted_worker_rule import START_SECONDS
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
@@ -23,6 +22,8 @@ MAIN_SESSION = "s-1"
 GRACE_MINUTES = 15
 REPEAT_MINUTES = 5
 HELPER_PROMPT = HookSamples.prompt("Read the cart")
+
+START_SECONDS = 60
 
 
 def minutes(count: int) -> timedelta:

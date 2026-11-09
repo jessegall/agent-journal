@@ -130,6 +130,7 @@ from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 from core.modules.tasks.support.task_counts import TASK_COUNT_PERIODS
 from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
 from core.modules.tasks.support.skeletons import TASKS_TASKS_SKELETON
+from core.modules.tasks.support.task_settings import TASK_SETTINGS
 
 TASK_COMMANDS = (BlockTask, CloseTask, CancelTask, ReleaseTask)
 
@@ -140,6 +141,7 @@ class TasksModule(Module):
 
     name = "journal.core.tasks"
     nudges = TASK_NUDGES
+    settings = TASK_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [TaskStopped, TaskStarted, TaskClosed, StartedTaskExists, TaskLogged, TaskBriefRead, TaskBlocksReviewed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]

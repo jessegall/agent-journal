@@ -108,6 +108,7 @@ from core.modules.messages.listeners.deleted_work_source_listener import Deleted
 from core.modules.messages.listeners.deleted_agent_work_source_listener import DeletedAgentWorkSourceListener
 from core.modules.messages.commands.work_source.work_source_subcommand import WorkSourceSubcommand
 from core.modules.messages.migrations.m019_work_source_selections import WorkSourceSelectionsMigration
+from core.modules.messages.support.message_settings import MESSAGE_SETTINGS
 
 
 class MessagesModule(Module):
@@ -115,6 +116,7 @@ class MessagesModule(Module):
 
     name = "journal.core.messages"
     nudges = MESSAGE_NUDGES
+    settings = MESSAGE_SETTINGS
     requires_core = ">=5,<6"
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.pins", "journal.core.drivers", "journal.core.dumps"]

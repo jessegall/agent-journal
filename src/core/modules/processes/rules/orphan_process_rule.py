@@ -2,7 +2,9 @@ from core.modules.processes.support.process_nudges import PROCESS_MISSING
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.interval import Interval
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.span_queries import SpanQueries
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
@@ -13,13 +15,11 @@ from core.modules.processes.rules.support.run_folder_ends import RunFolderEnds
 
 
 TICK_INTERVAL_SECONDS = 150
-# How long after its last sign a run whose runner pid is gone counts as lost, room for the runner to write its end.
-PID_MISSING_SECONDS = 10
 
 
 class OrphanProcessRule(DriverRule):
     """On each tick, a run the agent started whose shell has given no sign of life for longer than the limit, or
-    whose runner pid is gone, is ended lost and the agent is told; a run whose folder holds an end the server
+    whose runner pid is gone for the lost runner seconds, is ended lost and the agent is told; a run whose folder holds an end the server
     never heard of is ended from the folder. The first tick after a long gap, a machine that slept, ends
     nothing lost, since no heartbeat could have been written either."""
 
@@ -27,8 +27,8 @@ class OrphanProcessRule(DriverRule):
     hook = HookEventName.TICK
     drivers = ["*"]
 
-    def __init__(self, processes: ProcessQuery, ends: RunFolderEnds, folder: OutputFolder, settings: ProcessSettings) -> None:
-        self.processes, self.ends, self.folder, self.settings = processes, ends, folder, settings
+    def __init__(self, processes: ProcessQuery, ends: RunFolderEnds, folder: OutputFolder, settings: ProcessSettings, spans: SpanQueries) -> None:
+        self.processes, self.ends, self.folder, self.settings, self.spans = processes, ends, folder, settings, spans
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
@@ -43,7 +43,7 @@ class OrphanProcessRule(DriverRule):
             return answer.running(*ended)
         last_sign = self.folder.heartbeat(process.id) or process.created_at
         pid_missing = self.folder.pid(process.id) is not None and not self.folder.has_leader_process(process.id)
-        limit_seconds = PID_MISSING_SECONDS if pid_missing else self.settings.integer(ProcessSetting.ORPHAN_SECONDS)
-        if restarted or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= limit_seconds:
+        limit = Interval(self.settings.seconds(ProcessSetting.LOST_RUNNER_SECONDS if pid_missing else ProcessSetting.ORPHAN_SECONDS))
+        if restarted or last_sign is None or not limit.has_passed(self.spans, hook.agent_id, last_sign, hook.timestamp):
             return answer
         return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_MISSING.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])

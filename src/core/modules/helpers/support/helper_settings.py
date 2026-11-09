@@ -19,13 +19,15 @@ PROGRAM_SPLIT = f"{MODULE_KEY}.program-split"
 AGENT_OPTIONS = f"{MODULE_KEY}.agent-options"
 HELPER_INSTRUCTION_FILES = f"{MODULE_KEY}.read-only-helper-instruction-files"
 COLD_SESSION_MINUTES = f"{MODULE_KEY}.cold-session-minutes"
+UNSTARTED_HELPER_SECONDS = f"{MODULE_KEY}.unstarted-helper-seconds"
 COLD_SESSION_CONTEXT_PERCENT = f"{MODULE_KEY}.cold-session-context-percent"
 CONTEXT_LIMIT_FINISH_TASK = f"{MODULE_KEY}.context-limit-finish-task"
 CONTEXT_LIMIT_HARD_TOKENS = f"{MODULE_KEY}.context-limit-hard-tokens"
 SKIPS_NEED_APPROVAL = f"{MODULE_KEY}.skips-need-approval"
 CONTEXT_LIMIT_ACTION = f"{MODULE_KEY}.context-limit-action"
 CONTEXT_ACTIONS = ("compact", "clear")
-HELPER_SETTING_VALUES = [SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
+HELPER_SETTING_VALUES = [SettingValue("unstarted-helper-seconds", "Seconds before a helper counts as failed", "Seconds after a helper starts with no sign of its program before its launch counts as failed.", SettingType.NUMBER, default=60),
+                   SettingValue("agent-use-days", "Days of agent use counted", "Days of jobs counted when suggesting which kept agent to retire.", SettingType.NUMBER, default=14),
                    SettingValue("read-only-helper-run-limit", "Read-only helpers running, per profile", "Read-only helpers of each profile that run at once; six profiles at 4 make 24. At 0 none run.", SettingType.NUMBER, default=4, person_set=True),
                    SettingValue("read-only-helper-kept-limit", "Read-only helpers kept, per profile", "Read-only helpers kept of each profile, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True),
                    SettingValue("read-only-helper-profile-limits", "Read-only helper limits for one profile", "Entries of profile:run:kept, each winning for its profile. An environment list replaces the project list.", SettingType.LIST, default=(), person_set=True),

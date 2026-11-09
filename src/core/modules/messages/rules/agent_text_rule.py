@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -7,11 +5,12 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_entries import TranscriptEntries
-from core.base.timestamp import Timestamp
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
 from core.modules.messages.support.message_nudges import CLOSING_LINE_HIDDEN, REPEATED_CLOSING
+from core.modules.messages.support.message_settings import TRANSCRIPT_LOOKBACK_SECONDS
 from core.modules.messages.support.repeated_messages import RepeatedMessages
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AgentTextRule(DriverRule):
@@ -23,8 +22,8 @@ class AgentTextRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, texts: AgentTextFilter, providers: Providers, transcripts: TranscriptEntries, repeats: RepeatedMessages) -> None:
-        self.texts, self.providers, self.transcripts, self.repeats = texts, providers, transcripts, repeats
+    def __init__(self, texts: AgentTextFilter, providers: Providers, transcripts: TranscriptEntries, repeats: RepeatedMessages, settings: SettingValues) -> None:
+        self.texts, self.providers, self.transcripts, self.repeats, self.settings = texts, providers, transcripts, repeats, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         text = self.complete_text(hook)
@@ -46,6 +45,6 @@ class AgentTextRule(DriverRule):
         path = provider.transcript_path(hook.event)
         if path is None or not text:
             return text
-        cutoff_at = Timestamp(hook.timestamp.value - timedelta(seconds=60))
+        cutoff_at = self.settings.seconds(TRANSCRIPT_LOOKBACK_SECONDS).before(hook.timestamp)
         rows = self.transcripts.recent(provider, path, cutoff_at)
         return next((row.text.strip() for row in rows[-1:] if not row.is_prompt and row.text.strip().endswith("\n" + text)), text)

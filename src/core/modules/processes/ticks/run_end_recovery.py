@@ -13,8 +13,6 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.base.scope.scopes import Scopes
 from core.modules.processes.support.process_settings import ProcessSettings
 
-LEADER_MISSING_SECONDS = 10
-
 
 class RunEndRecovery:
     """Ends each run whose shell is gone and whose end the server never heard of, any agent that ran it, so a
@@ -47,7 +45,7 @@ class RunEndRecovery:
         last_sign = folder.heartbeat(process.id) or process.created_at
         has_pid = folder.pid(process.id) is not None
         with container.get(Scopes).read_scope((), None, process.environment_id):
-            limit_seconds = LEADER_MISSING_SECONDS if has_pid else container.get(ProcessSettings).integer(ProcessSetting.ORPHAN_SECONDS)
-        if last_sign is None or last_sign.elapsed_seconds(container.get(Clock).timestamp()) <= limit_seconds:
+            limit = container.get(ProcessSettings).seconds(ProcessSetting.LOST_RUNNER_SECONDS if has_pid else ProcessSetting.ORPHAN_SECONDS)
+        if last_sign is None or not limit.has_elapsed(last_sign, container.get(Clock).timestamp()):
             return []
         return [OrphanProcess(process.id)]

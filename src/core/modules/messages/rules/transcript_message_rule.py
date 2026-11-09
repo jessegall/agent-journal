@@ -1,4 +1,3 @@
-from datetime import timedelta
 from pathlib import Path
 
 from core.base.agent_role import AgentRole
@@ -23,10 +22,8 @@ from core.modules.messages.commands.record_typed_prompt.record_typed_prompt impo
 from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.messages.commands.edit_message_text.edit_message_text import EditMessageText
 from core.modules.messages.support.agent_text_filter import AgentTextFilter
-
-HOOK_DELAY = timedelta(seconds=15)
-HOOK_LOOKBACK = timedelta(seconds=60)
-MAX_ENTRY_AGE = timedelta(hours=1)
+from core.modules.messages.support.message_settings import TRANSCRIPT_LOOKBACK_SECONDS, TRANSCRIPT_OLDEST_MINUTES, TRANSCRIPT_WAIT_SECONDS
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class TranscriptMessageRule(DriverRule):
@@ -39,16 +36,16 @@ class TranscriptMessageRule(DriverRule):
     overlay_proof = True
     is_notice = True
 
-    def __init__(self, queries: Queries, providers: Providers, transcripts: TranscriptEntries, hook_calls: HookCallQuery, texts: AgentTextFilter) -> None:
-        self.queries, self.providers, self.transcripts, self.hook_calls, self.texts = queries, providers, transcripts, hook_calls, texts
+    def __init__(self, queries: Queries, providers: Providers, transcripts: TranscriptEntries, hook_calls: HookCallQuery, texts: AgentTextFilter, settings: SettingValues) -> None:
+        self.queries, self.providers, self.transcripts, self.hook_calls, self.texts, self.settings = queries, providers, transcripts, hook_calls, texts, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
         path = self.session_file(hook, provider)
-        rows = self.transcripts.read_ready(provider, path, Timestamp(hook.timestamp.value - HOOK_DELAY)) if path is not None else []
+        rows = self.transcripts.read_ready(provider, path, self.settings.seconds(TRANSCRIPT_WAIT_SECONDS).before(hook.timestamp)) if path is not None else []
         if not rows:
             return RuleAnswer.allowed()
-        earliest_at = max(Timestamp(hook.timestamp.value - MAX_ENTRY_AGE), self.queries.query(Agent).find(hook.agent_id).creation_timestamp())
+        earliest_at = max(self.settings.minutes(TRANSCRIPT_OLDEST_MINUTES).before(hook.timestamp), self.queries.query(Agent).find(hook.agent_id).creation_timestamp())
         return RuleAnswer.allowed().running(*(command for row in rows if row.created_at >= earliest_at for command in self.commands(hook, row)))
 
     def session_file(self, hook: AgentHook, provider: Provider) -> Path | None:
@@ -57,7 +54,7 @@ class TranscriptMessageRule(DriverRule):
         return provider.transcript(Path(self.queries.query(Environment).find(hook.environment_id).folder), hook.event.session)
 
     def commands(self, hook: AgentHook, row: TranscriptEntry) -> list[Command[object]]:
-        cutoff_at = Timestamp(row.created_at.value - HOOK_LOOKBACK)
+        cutoff_at = self.settings.seconds(TRANSCRIPT_LOOKBACK_SECONDS).before(row.created_at)
         if row.is_prompt:
             has_hook = self.hook_calls.has_call_after(hook.agent_id, HookEventName.PROMPT, HookCall.summarize(row.text), cutoff_at)
             return [] if has_hook else [RecordMissingPrompt(row.text), RecordTypedPrompt(row.text.strip())]
