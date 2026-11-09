@@ -1,7 +1,7 @@
 import os
 
 from server.viewer.hosted_door import ANONYMOUS_BODY_BYTES
-from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, hosted_viewer_factory, socket_answer, socket_path
+from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, hosted_viewer_factory, session_cookie, socket_answer, socket_path
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 
@@ -45,5 +45,5 @@ def test_a_large_post_from_someone_not_logged_in_gets_413_and_its_body_is_never_
 
 
 def test_a_get_without_origin_headers_is_answered(hosted_server):
-    _, socket_path = hosted_server
-    expect_value(socket_answer(socket_path, "GET", "/api/server-state").status, 200)
+    server, socket_path = hosted_server
+    expect_value(socket_answer(socket_path, "GET", "/api/server-state", headers=session_cookie(server)).status, 200)

@@ -12,10 +12,16 @@ from tests.stories.server.support.server_client import raw_answer, read_answer, 
 
 PUBLIC_ORIGIN = "https://journal.example.com"
 PUBLIC_HOST = "journal.example.com"
+SESSION_COOKIE = "__Host-journal_viewer"
 
 
 def group_name() -> str:
     return grp.getgrgid(os.getgid()).gr_name
+
+
+def session_cookie(server) -> dict[str, str]:
+    login = server.context.viewer.login
+    return {"Cookie": f"{SESSION_COOKIE}={login.session_token(login.new_key(1))}"}
 
 
 def socket_raw(socket_path: Path, method: str, route: str, host: str = PUBLIC_HOST, headers: dict[str, str] | None = None, body: str = "",
@@ -62,8 +68,8 @@ def local_server(new_story):
 @pytest.fixture
 def stale_file_server(new_story, socket_path):
     socket_path.write_text("left by a server that died")
-    with server_story(new_story(), viewer_factory=hosted_viewer_factory(socket_path, os.getuid())):
-        yield socket_path
+    with server_story(new_story(), viewer_factory=hosted_viewer_factory(socket_path, os.getuid())) as server:
+        yield server, socket_path
 
 
 @pytest.fixture
