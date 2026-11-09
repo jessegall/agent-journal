@@ -80,15 +80,24 @@ class HelperLimits:
         self.admission.checked_resume("helper", helper.profile)
         self.admission.checked_model("helper", helper.profile, helper.program, helper.program_model)
 
-    def checked_model(self, program: str, model: str, profile: str = "") -> str:
-        if not model:
-            raise Refusal(f"this profile has no model for {program}", "add --model <model>")
-        if profile:
-            self.admission.checked_provider("helper", profile, program)
-        names = self.models.allowed(self.providers.provider(program), "helper" if profile else "", profile)
+    def checked_model(self, program: str, model: str) -> str:
+        return self.listed_model(program, model, self.models.allowed(self.providers.provider(program)))
+
+    def checked_profile_model(self, program: str, model: str, profile: str) -> str:
+        self.require_model(program, model)
+        self.admission.checked_provider("helper", profile, program)
+        return self.listed_model(program, model, self.models.allowed_for(self.providers.provider(program), "helper", profile))
+
+    def listed_model(self, program: str, model: str, names: list[str]) -> str:
+        self.require_model(program, model)
         if model not in names:
             raise Refusal(f"choose a model {program} may run: {', '.join(names)}", "add --model <model>")
         return model
+
+    @staticmethod
+    def require_model(program: str, model: str) -> None:
+        if not model:
+            raise Refusal(f"this profile has no model for {program}", "add --model <model>")
 
     def next_step_text(self) -> str:
         return TERMINAL_LIMIT_TEXT if self.launcher.is_running else NEXT_HOOK_LIMIT_TEXT
