@@ -1,5 +1,6 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.accounts.guards.account_rows_guard import AccountRowsGuard
 from core.modules.accounts.migrations.m001_accounts_tables import AccountsTablesMigration
 from core.modules.accounts.models.person_login import PersonLogin
 from core.modules.accounts.models.person_session import PersonSession
@@ -25,6 +26,7 @@ class AccountsModule(Module):
               ModelDeclaration(RecoveryCode, excluded_subcommands=HIDDEN_SUBCOMMANDS),
               ModelDeclaration(AuditEntry, excluded_subcommands=HIDDEN_SUBCOMMANDS),
               ModelDeclaration(SetupCode, excluded_subcommands=HIDDEN_SUBCOMMANDS)]
+    guards = [AccountRowsGuard]
     migrations = [AccountsTablesMigration]
     move_reason = "version 4 had no logins, sessions or second factors to carry over"
     seed_reason = "password digests and session tokens are never shown in a demo"
