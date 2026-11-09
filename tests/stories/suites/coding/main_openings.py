@@ -1,4 +1,4 @@
-from suites.coding.support.main_opening import CODE_ALLOWED, CODE_FORBIDDEN, KEEP_GOING_LINE, WORKERS_DISABLED_LINE, MainOpening
+from suites.coding.support.main_opening import CODE_ALLOWED, CODE_FORBIDDEN, CONTINUE_LINE, WORKERS_DISABLED_LINE, MainOpening
 from suites.coding.support.main_options import BUILDER, ORCHESTRATOR, MainOptions
 from tests.stories.support.story_checks import expect_value
 
@@ -9,12 +9,12 @@ def read_options(bundle: tuple[bool, ...]) -> MainOptions:
 
 def test_s46_the_builder_opening_allows_code_and_has_no_orchestrator_paragraph():
     lines = MainOpening(read_options(BUILDER)).lines()
-    expect_value((CODE_ALLOWED in lines, CODE_FORBIDDEN in lines, KEEP_GOING_LINE in lines), (True, False, False))
+    expect_value((CODE_ALLOWED in lines, CODE_FORBIDDEN in lines, CONTINUE_LINE in lines), (True, False, False))
 
 
 def test_s46_the_orchestrator_opening_forbids_code_and_keeps_going():
     lines = MainOpening(read_options(ORCHESTRATOR)).lines()
-    expect_value((CODE_FORBIDDEN in lines, CODE_ALLOWED in lines, KEEP_GOING_LINE in lines), (True, False, True))
+    expect_value((CODE_FORBIDDEN in lines, CODE_ALLOWED in lines, CONTINUE_LINE in lines), (True, False, True))
 
 
 def test_s46_a_custom_opening_follows_each_control_and_never_names_a_work_preference():
