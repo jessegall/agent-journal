@@ -6,11 +6,18 @@ CLOSED_STATES = ("completed", "cancelled")
 
 @dataclass(frozen=True)
 class OutlineTask:
-    """A plan's task summary and the helper it is queued for or held by."""
+    """A plan's task as the task rows show it, and the helper it is queued for or held by."""
 
     id: int
     title: str
     state: str
+    priority: int
+    complexity: int | None
+    tags: tuple[str, ...]
+    reason: str
+    automatic: bool
+    delegated_to: int | None
+    delegated_is_main: bool
     helper_id: int | None = None
     helper_name: str | None = None
 
