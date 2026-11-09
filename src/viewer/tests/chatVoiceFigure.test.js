@@ -66,7 +66,7 @@ test("the figure is given what the chat reads: the tool, what the agent waits fo
 test("the status line of the chat says what a stopped agent waits for, as a Monitor it started describes it", async () => {
     const element = await chat({facts: {wait_target: "release v7.18.14 build"}});
     expect(element.querySelector("[data-running-command]").textContent).toBe("waiting for release v7.18.14 build");
-    expect((await chat()).querySelector("[data-running-command]").textContent).toBe("waiting");
+    expect((await chat()).querySelector("[data-running-command]").textContent).toBe("idle");
 });
 
 test("a journal that cannot say the voice shows no figure", async () => {

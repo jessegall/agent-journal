@@ -58,14 +58,19 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     def agent_tool(self, agent_id: int, question_lines: Sequence[str]) -> ToolFacts:
         latest_call = self.queries.query(HookCall).filter(session_agent_id=agent_id).matching(Among("hook", TURN_HOOKS)).newest().first()
         if latest_call is not None and latest_call.hook == HookEventName.PRE_TOOL_USE:
-            return ToolFacts(" ".join(part for part in (latest_call.tool, ProjectPaths.short_paths(self.running_part_text(latest_call) or latest_call.summary), self.line_changes(latest_call)) if part))
+            latest_run = self.run_after(latest_call)
+            text = " ".join(part for part in (latest_call.tool, ProjectPaths.short_paths(self.running_part_text(latest_run) or latest_call.summary), self.line_changes(latest_call)) if part)
+            return ToolFacts(text, running=latest_run is not None and latest_run.ended_at is None)
         wait_target = " and ".join(dict.fromkeys((*self.monitor_descriptions(agent_id), *self.running_titles(agent_id), *question_lines)))
         has_run_command = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.PRE_TOOL_USE).exists()
         return ToolFacts(wait_target=wait_target, note="" if wait_target or has_run_command else IDLE_NOTE, thinking=latest_call is not None and latest_call.hook == HookEventName.PROMPT, asking=bool(question_lines))
 
-    def running_part_text(self, call: HookCall) -> str:
+    def run_after(self, call: HookCall) -> Process | None:
         latest_run = self.processes.agent(call.session_agent_id).newest().first()
-        if latest_run is None or latest_run.creation_timestamp().value < call.creation_timestamp().value:
+        return None if latest_run is None or latest_run.creation_timestamp().value < call.creation_timestamp().value else latest_run
+
+    def running_part_text(self, latest_run: Process | None) -> str:
+        if latest_run is None:
             return ""
         if latest_run.queued_at is not None:
             return QUEUE_LINE
@@ -99,4 +104,4 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ToolFacts):
-            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else value.note), {"tool": value.tool, "wait_target": value.wait_target, "note": value.note, "thinking": value.thinking, "asking": value.asking})
+            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else value.note), {"tool": value.tool, "wait_target": value.wait_target, "note": value.note, "thinking": value.thinking, "asking": value.asking, "running": value.running})

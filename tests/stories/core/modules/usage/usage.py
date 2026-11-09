@@ -13,7 +13,7 @@ from core.modules.usage.support.status_files import StatusFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.usage.support.status_files import FIVE_HOURS_RESET, SEVEN_DAYS_RESET, full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, BuilderHelper
@@ -177,6 +177,15 @@ def test_the_tool_of_a_chain_that_ended_names_its_last_part_and_never_the_whole_
     bus.run(EndProcessPart(process.id, 2, 0), story.agent, environment_id=process.environment_id)
     story.expect_text("usage tool --environment main", "Bash sed -n 1,2p notes", actor=story.user)
     story.expect_absent("usage tool --environment main", "cat notes", actor=story.user)
+
+
+def test_the_tool_says_whether_its_command_still_runs(new_story):
+    story = install_runner(new_story(fixture=UserJoined))
+    story.hook("s-1", HookSamples.shell("sleep 9", ShellPart("sleep", CommandCategory.READ, ["9"])))
+    process = start_process(story, "sleep 9")
+    story.expect_text("usage tool --environment main --json", '"running": true', actor=story.user)
+    end_run(story, process, "")
+    story.expect_text("usage tool --environment main --json", '"running": false', actor=story.user)
 
 
 def test_the_tool_of_an_edit_shows_the_lines_it_adds_and_removes(new_story):
