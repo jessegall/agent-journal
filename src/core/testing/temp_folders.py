@@ -5,6 +5,7 @@ import tempfile
 import time
 from pathlib import Path
 
+from core.base.process_ids import ProcessIds
 from core.testing.folder_stat import FolderStat
 
 USER_FOLDER_LIMIT_BYTES = 2 * 1024 ** 3
@@ -45,18 +46,8 @@ class TempFolders:
     def remove_dead_runs(self) -> None:
         for folder in self.folders(RUNNING_PREFIX):
             process = folder.name.rsplit("-", 1)[-1]
-            if process.isdigit() and not self.is_running(int(process)):
+            if process.isdigit() and not ProcessIds.exists(int(process)):
                 shutil.rmtree(folder, ignore_errors=True)
-
-    @staticmethod
-    def is_running(process: int) -> bool:
-        try:
-            os.kill(process, 0)
-        except ProcessLookupError:
-            return False
-        except PermissionError:
-            return True
-        return True
 
     def remove_old(self) -> None:
         limit = time.time() - RUNNING_FOLDER_SECONDS

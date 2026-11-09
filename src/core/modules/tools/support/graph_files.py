@@ -2,6 +2,7 @@ import os
 import time
 from pathlib import Path
 
+from core.base.process_ids import ProcessIds
 from core.base.file_access import FileAccess
 from core.modules.tools.support.graph_stamp import GraphStamp
 
@@ -42,7 +43,7 @@ class GraphFiles:
         if not self.running_path.is_file():
             return False
         text = FileAccess.shared().read(self.running_path).strip()
-        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else text.isdigit() and self.process_exists(int(text))
+        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else text.isdigit() and ProcessIds.exists(int(text))
         if not is_claimed:
             self.running_path.unlink(missing_ok=True)
         return is_claimed
@@ -61,13 +62,3 @@ class GraphFiles:
 
     def release(self) -> None:
         self.running_path.unlink(missing_ok=True)
-
-    @staticmethod
-    def process_exists(pid: int) -> bool:
-        try:
-            os.kill(pid, 0)
-        except ProcessLookupError:
-            return False
-        except PermissionError:
-            return True
-        return True
