@@ -8,7 +8,7 @@ import pytest
 
 from server.hosted_journal_door import HostedJournalDoor
 from server.viewer.viewer_socket_listener import ViewerSocketListener
-from tests.stories.server.support.server_client import answer_from as parsed_answer, raw_answer, server_story
+from tests.stories.server.support.server_client import raw_answer, read_answer, server_story
 
 PUBLIC_ORIGIN = "https://journal.example.com"
 PUBLIC_HOST = "journal.example.com"
@@ -28,7 +28,7 @@ def socket_raw(socket_path: Path, method: str, route: str, host: str = PUBLIC_HO
 
 def socket_answer(socket_path: Path, method: str, route: str, host: str = PUBLIC_HOST, headers: dict[str, str] | None = None, body: str = "",
                   declared_bytes: int | None = None):
-    return parsed_answer(socket_raw(socket_path, method, route, host, headers, body, declared_bytes))
+    return read_answer(socket_raw(socket_path, method, route, host, headers, body, declared_bytes))
 
 
 def reply_headers(raw: bytes) -> dict[str, str]:
