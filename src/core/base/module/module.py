@@ -32,8 +32,7 @@ from core.base.viewer.window_extension import WindowExtension
 from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.library.library_share import LibraryShare
-from core.base.model.model import Model
+from core.base.library.library_share_class import LibraryShareClass
 from core.base.query.shared_rows import SharedRows
 from core.base.setting.setting_node import SettingNode
 from core.base.ticker.tick_handler import TickHandler
@@ -45,7 +44,7 @@ from core.base.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 
-ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
+ListenerClass = type[DeletionListener[Never]] | type[SaveListener[Never]] | type[CommitListener[Never]]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
 HandlerClass = type[Handler[Never, object]]
 
@@ -65,7 +64,7 @@ class Module:
     views: ClassVar[list[type[ViewModel]]] = []
     handlers: ClassVar[list[HandlerClass]] = []
     subcommands: ClassVar[list[SubcommandClass]] = []
-    guards: ClassVar[list[type[Guard]]] = []
+    guards: ClassVar[list[type[Guard[Never]]]] = []
     listeners: ClassVar[list[ListenerClass]] = []
     file_events: ClassVar[list[str]] = []
     former_event_keys: ClassVar[dict[str, str]] = {}
@@ -96,7 +95,7 @@ class Module:
     settings: ClassVar[Sequence[SettingNode]] = []
     tunnels: ClassVar[list[type[Tunnel]]] = []
     shared_rows: ClassVar[list[type[SharedRows]]] = []
-    library_shares: ClassVar[list[type[LibraryShare[Model]]]] = []
+    library_shares: ClassVar[list[type[LibraryShareClass]]] = []
     skills: ClassVar[list[SkillDeclaration]] = []
     seeders: ClassVar[list[type[Seeder]]] = []
     moves: ClassVar[list[type[VersionFourMove]]] = []

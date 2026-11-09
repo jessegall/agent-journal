@@ -1,4 +1,4 @@
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -31,7 +31,7 @@ class WorkSources:
         self.authorized_sources: dict[tuple[int, int | None], WorkSourceCopy] = {}
 
     @contextmanager
-    def source_scope(self, source: WorkSourceCopy, actor: Actor) -> Iterator[None]:
+    def source_scope(self, source: WorkSourceCopy, actor: Actor) -> Generator[None]:
         key = (actor.id, source.environment_id)
         previous = self.authorized_sources.get(key)
         self.authorized_sources[key] = source
@@ -55,16 +55,16 @@ class WorkSources:
             raise Refusal("select a person request from this environment")
         if not self.messages.addressed(context.actor.id).filter(id=message.id).exists():
             raise Refusal("this message is addressed to another agent", "read your messages with journal message unread")
-        return self.store(message, origin, context)
+        return self.store(message, origin, context, context.environment_id)
 
-    def store(self, message: Message, origin: WorkSourceOrigin, context: Context) -> MessageWorkSource:
+    def store(self, message: Message, origin: WorkSourceOrigin, context: Context, environment_id: int) -> MessageWorkSource:
         selected = self.current(context)
         provisional = origin is WorkSourceOrigin.READ
         if selected is not None:
             return self.repository.update(selected, context, message_id=message.id, origin=origin, provisional=provisional,
                                           used=False, selection_number=selected.selection_number + 1)
         return self.repository.save(MessageWorkSource(creator_id=context.actor.id, agent_id=context.actor.id,
-                                                     environment_id=context.environment_id, message_id=message.id,
+                                                     environment_id=environment_id, message_id=message.id,
                                                      origin=origin, provisional=provisional), context)
 
     def select_first(self, message: Message, context: Context) -> None:
@@ -73,7 +73,7 @@ class WorkSources:
         selected = self.current(context)
         if selected is not None and selected.message_id is not None:
             return
-        self.store(message, WorkSourceOrigin.READ, context)
+        self.store(message, WorkSourceOrigin.READ, context, context.environment_id)
 
     def clear(self, context: Context) -> None:
         if context.actor.type is not ActorType.AGENT or context.environment_id is None:

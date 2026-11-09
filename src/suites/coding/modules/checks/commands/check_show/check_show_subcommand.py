@@ -12,7 +12,7 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.checks.models.check import Check
 
-class CheckShowSubcommand(LibraryAwareShow, ReadSubcommand[Check | LibraryReading]):
+class CheckShowSubcommand(LibraryAwareShow[Check], ReadSubcommand[Check | LibraryReading]):
     """`journal check show <n or library:n>`: a check of this journal in full, or one of the team's library read
     live, with its command."""
 

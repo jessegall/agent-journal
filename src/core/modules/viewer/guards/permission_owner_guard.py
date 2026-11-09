@@ -11,3 +11,6 @@ class PermissionOwnerGuard(PersonRowGuard[Changed[WindowPermission]]):
     name = "viewer.permission-owner"
     refusal = Refusal("these permissions belong to another person")
     question = "Change these window permissions?"
+
+    def person_id(self, event: Changed[WindowPermission]) -> int:
+        return event.row.person_id

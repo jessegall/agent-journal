@@ -5,6 +5,7 @@ from core.base.page import Page
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.query.query import Query
+from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -46,6 +47,8 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
 
     def read(self, arguments: Namespace, caller: Caller) -> ProcessQueuePage:
         environment_id = self.queries.database.scope_environment_id
+        if environment_id is None:
+            raise Refusal(self.environment_refusal)
         main_spots = self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
         query = self.queries.query(ProcessQueueRow)
         active = tuple(query.matching(IsNull("ended_at")).oldest().all_rows())

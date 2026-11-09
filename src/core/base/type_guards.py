@@ -20,3 +20,7 @@ def is_mapping(value: object) -> TypeIs[Mapping[object, object]]:
 
 def is_text_list(value: object) -> TypeIs[list[str]]:
     return is_list(value) and all(isinstance(item, str) for item in value)
+
+
+def is_object_mapping(value: object) -> TypeIs[Mapping[str, object]]:
+    return isinstance(value, Mapping)

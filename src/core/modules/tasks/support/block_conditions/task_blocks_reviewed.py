@@ -20,7 +20,7 @@ class TaskBlocksReviewed(BlockCondition):
     def is_true(self, check: BlockCheck) -> bool:
         numbers = self.numbers
         tasks = check.container.get(Queries).query(TaskBlockReview).filter(session_agent_id=check.hook.agent_id).matching(Among("task_id", numbers[::2])).all_rows()
-        return not self.pending(tasks)
+        return not self.pending(tuple(tasks))
 
     def pending(self, tasks: Sequence[TaskBlockReview]) -> bool:
         versions = dict(zip(self.numbers[::2], self.numbers[1::2]))

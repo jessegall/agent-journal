@@ -47,7 +47,10 @@ class MessageQuery(Query[Message]):
     def remember(self, message: Message) -> None:
         if message.type is not MessageType.AGENT:
             return
-        self.kept.update(self.table.name, lambda previous: message if previous is None or message.id >= previous.id else previous,
+        def newest(previous: Message | None) -> Message:
+            return message if previous is None or message.id >= previous.id else previous
+
+        self.kept.update(self.table.name, newest,
                          "creator_id = ? AND type = ?", [message.creator_id, MessageType.AGENT], name="messages.latest_agent_message")
 
     def replies(self, message_id: int) -> Self:

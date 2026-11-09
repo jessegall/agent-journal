@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
@@ -13,9 +14,8 @@ class ServerInfo:
 
     @classmethod
     def parsed(cls, body: object) -> "ServerInfo":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(str(body["server_key"]), str(body["name"]), str(body["protocol"]))
+            return cls(str(fields["server_key"]), str(fields["name"]), str(fields["protocol"]))
         except KeyError as error:
             raise LibraryUnreachableError.unreadable() from error

@@ -5,7 +5,7 @@ from core.base.driver.interval import Interval
 from core.base.driver.nudge import Nudge
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
-from core.modules.processes.support.process_nudges import READER_REQUEST, READER_REQUEST_COUNTDOWN, READER_REQUEST_REFUSAL
+from core.modules.processes.support.process_nudges import READER_REQUEST, READER_REQUEST_COUNTDOWN, READER_REQUEST_REFUSAL, READER_REQUEST_SPAN
 
 
 class ReaderRequestText:
@@ -19,4 +19,4 @@ class ReaderRequestText:
         refusal = READER_REQUEST_REFUSAL.nudge(request=request.id, command=request.command, block="{block}")
         countdown = READER_REQUEST_COUNTDOWN.nudge("{left}", command=request.command)
         return BlockUntil(agent_id, replace(refusal, key=f"{refusal.key}.{request.id}"), ReaderRequestCompleted(request.id),
-                          after=Interval(READER_REQUEST_COUNTDOWN.span), countdown=countdown)
+                          after=Interval(READER_REQUEST_SPAN), countdown=countdown)

@@ -10,3 +10,6 @@ class PersonPresetOwnerGuard(PersonRowGuard[Changed[PersonPreset]]):
     name = "viewer.person-preset-owner"
     refusal = Refusal("this layout preset belongs to another person")
     question = "Change this saved layout preset?"
+
+    def person_id(self, event: Changed[PersonPreset]) -> int:
+        return event.row.person_id

@@ -29,8 +29,10 @@ class TargetResolutionListener(SaveListener[Changed[Model]]):
         row = event.row
         if isinstance(row, WaitTarget):
             pending = tuple([row]) if row.resolved_at is None and not isinstance(event, Deleted) else ()
-            self.kept.update("wait_targets", lambda targets: tuple(sorted([target for target in targets if target.id != row.id] + list(pending), key=lambda target: target.id)),
-                             "resolved_at IS NULL", name="waits.open_targets")
+            def with_pending(targets: tuple[WaitTarget, ...]) -> tuple[WaitTarget, ...]:
+                return tuple(sorted([target for target in targets if target.id != row.id] + list(pending), key=lambda target: target.id))
+
+            self.kept.update("wait_targets", with_pending, "resolved_at IS NULL", name="waits.open_targets")
             return
         lifecycle = self.book.lifecycle(type(row))
         if isinstance(row, Wait) or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:

@@ -66,8 +66,8 @@ class ReaderJudge:
         return self.tested_samples(reader, self.samples(reader))
 
     def tested_samples(self, reader: Reader, parts: Sequence[ProcessPart]) -> ReaderJudgement:
-        sampled_ids = []
-        missed = []
+        sampled_ids: list[int] = []
+        missed: list[str] = []
         for part in islice(parts, SAMPLE_OUTPUTS):
             text = self.output_text(part.process_id, part.position)
             if self.is_rejected(part.exit_code, text):

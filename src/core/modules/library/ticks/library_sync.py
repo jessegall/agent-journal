@@ -114,12 +114,12 @@ class LibrarySync:
         share = self.shares.lookup(copy.share)
         if share.fields_digest(item.fields) == digest:
             return self.save(UpdateLibraryCopy.synced(copy.id, item.version, digest))
-        stored = dict(unsent_digest=digest, server_version=item.version, server_fields=item.fields_text)
         if digest != copy.base_digest or item.version < copy.base_version:
-            return self.save(UpdateLibraryCopy(copy.id, CopyState.CONFLICT if role.may_write else CopyState.DENIED, **stored))
+            return self.save(UpdateLibraryCopy(copy.id, CopyState.CONFLICT if role.may_write else CopyState.DENIED, unsent_digest=digest, server_version=item.version,
+                                               server_fields=item.fields_text))
         reason = share.needs_reading(row, item.fields)
         if reason:
-            return self.save(UpdateLibraryCopy(copy.id, CopyState.REVIEW, note=reason, **stored))
+            return self.save(UpdateLibraryCopy(copy.id, CopyState.REVIEW, note=reason, unsent_digest=digest, server_version=item.version, server_fields=item.fields_text))
         return self.save(MergeLibraryItem(copy.id, item, row.version))
 
     def mark(self, copy: LibraryCopy, copy_state: CopyState) -> bool:
