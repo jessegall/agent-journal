@@ -12,6 +12,5 @@ class WorkerRefusalCount(Model):
 
     worktree_id: int
     creator_id: int
-    count: int = 0
     notice_at: Timestamp | None = None
     refusal_text: str | None = None
