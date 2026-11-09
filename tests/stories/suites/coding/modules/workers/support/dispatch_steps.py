@@ -3,6 +3,8 @@ from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.container import UNBUILT_MODULES, needed_values
+from core.base.query.queries import Queries
+from core.modules.drivers.models.agent_line import AgentLine
 from core.base.actor_type import ActorType
 from core.testing.story import Story
 from tests.stories.core.support import story_lines as lines
@@ -74,6 +76,11 @@ def checked_worker(story: Story, repository: GitRepository, line: str = DISPATCH
 def worker_session(story: Story, worker: Actor) -> str:
     details = story.run(f"agent show {worker.id}").output_text.splitlines()
     return next(line for line in details if line.startswith("session: ")).removeprefix("session: ")
+
+
+def merged_worker_lines(story: Story, worker: Actor) -> list[AgentLine]:
+    lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows()
+    return [line for line in lines if line.text == f"worker:{worker.id} was merged"]
 
 
 def expect_clean_environment(story: Story, repository: GitRepository) -> None:

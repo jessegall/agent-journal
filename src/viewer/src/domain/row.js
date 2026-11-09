@@ -6,7 +6,7 @@ export const seconds = (at) => (typeof at === "number" ? at : at ? Date.parse(at
 
 export const refOf = (row) => `${row.table}:${row.id}`;
 
-const firstLine = (text) => (text || "").split("\n").find((line) => line.trim()) || "";
+export const firstLine = (text) => (text || "").split("\n").find((line) => line.trim()) || "";
 
 export const TITLE_CHARACTERS = 80;
 

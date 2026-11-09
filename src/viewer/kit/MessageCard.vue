@@ -11,6 +11,7 @@ import {useTextRender} from "../src/text/useTextRender.js";
 import {peekChip, peekRef} from "../src/route.js";
 import {meta, tableOfWord} from "../src/domain/tables.js";
 import {foldOf} from "../src/domain/messageFold.js";
+import {firstLine} from "../src/domain/row.js";
 import Folded from "../src/kit/Folded.vue";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
@@ -44,13 +45,14 @@ const render = useTextRender();
 const html = computed(() => render(props.message.text ?? ""));
 const edges = computed(() => JSON.parse(props.message.flowchart_edges || "[]"));
 const chartOpen = ref(false);
-const quoteHtml = computed(() => render(props.quote || EARLIER));
+const excerpt = computed(() => firstLine(props.quote));
+const quoteHtml = computed(() => render(excerpt.value || EARLIER));
 function goToQuoted() {
     const shown = document.querySelector(`[data-ref="message:${props.message.parent_id}"]`);
     if (shown) shown.scrollIntoView({block: "center", behavior: "smooth"});
     else peekRef(`messages:${props.message.parent_id}`);
 }
-useFittedBubble(bubble, () => `${props.message.text} ${props.quote}`);
+useFittedBubble(bubble, () => `${props.message.text} ${excerpt.value}`);
 const COPIED_MS = 1500;
 const EARLIER = "An earlier message";
 const IMAGE = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;

@@ -34,7 +34,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, queued_story, recording_launch
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -42,7 +42,12 @@ from suites.coding.modules.workers.support.merger_nudges import MERGER_PASSED
 
 
 
-def merger_of(story):
+class MergerStartError(RuntimeError):
+    def __init__(self) -> None:
+        super().__init__("merger start failed")
+
+
+def merger_agent(story):
     agents = story.container.get(Queries).query(Agent).filter(profile="journal-merger").all_rows()
     return next(iter(agents), None)
 
@@ -55,20 +60,18 @@ def test_when_the_merger_cannot_start_the_main_agent_hears_what_waits(new_story,
     def fail(*_args):
         reached.append(failure)
         if failure == "unexpected error":
-            raise RuntimeError("merger start failed")
+            raise MergerStartError()
         raise Refusal(failure)
 
-    if failure == "sandbox":
-        monkeypatch.setattr(story.container.get(ShellSandbox), "check", fail)
+    failures = {
+        "sandbox": lambda: monkeypatch.setattr(story.container.get(ShellSandbox), "check", fail),
+        "no main agent": lambda: monkeypatch.setattr(AgentRows, "main_agent", lambda _rows: None),
+        "limit": lambda: monkeypatch.setattr(HelperLimits, "checked_new_place", fail),
+        "outage": lambda: monkeypatch.setattr(StartHelperHandler, "startable_program", fail),
+        "unexpected error": lambda: monkeypatch.setattr(StartHelperHandler, "prepare", fail),
+    }
     monkeypatch.setattr(HelperLimits, "checked_launcher", lambda _limits: None)
-    if failure == "no main agent":
-        monkeypatch.setattr(AgentRows, "main_agent", lambda _rows: None)
-    elif failure == "limit":
-        monkeypatch.setattr(HelperLimits, "checked_new_place", fail)
-    elif failure == "outage":
-        monkeypatch.setattr(StartHelperHandler, "startable_program", fail)
-    elif failure == "unexpected error":
-        monkeypatch.setattr(StartHelperHandler, "prepare", fail)
+    failures[failure]()
     ended(story, started[0], 0)
     story.expect_rows(failure == "no main agent" or reached == [failure])
     lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
@@ -112,14 +115,14 @@ def test_a_retry_that_fails_again_does_not_repeat_the_line_once_the_main_agent_h
     story.expect_rows(lines.count(f"the tests of worker:{worker.id} all pass") == 1, detail=lines)
 
 
-@pytest.mark.parametrize("merger_on", [True, False])
-def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_on):
+@pytest.mark.parametrize("merger_enabled", [True, False])
+def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_story, monkeypatch, merger_enabled):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
     story = new_story(fixture=OrchestratorWithOpenTask)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(merger_on).lower()} --project", actor=story.user)
+    story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(merger_enabled).lower()} --project", actor=story.user)
     repository = repository_environment(story)
     started = recording_launch(monkeypatch)
     worker = dispatched_worker(story)
@@ -134,12 +137,12 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
     story.expect_rows(not started)
-    if merger_on:
-        merger = merger_of(story)
+    if merger_enabled:
+        merger = merger_agent(story)
         story.expect_rows(merger is not None)
         story.expect_text("merger next", f"worker {worker.id}", actor=Actor(merger.id, ActorType.AGENT))
     else:
-        story.expect_rows(merger_of(story) is None)
+        story.expect_rows(merger_agent(story) is None)
         story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
 
 
@@ -147,7 +150,7 @@ def test_with_the_setting_off_the_main_agent_hears_that_the_tests_passed(new_sto
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
-    story.expect_rows(merger_of(story) is None)
+    story.expect_rows(merger_agent(story) is None)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
 
@@ -158,7 +161,7 @@ def test_only_the_merger_runs_its_commands(new_story):
     story.expect_refusal('merger pass 1 "odd"', "only the merger runs this", actor=story.agent)
 
 
-def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent_hears_one_line(new_story, monkeypatch):
+def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent_is_nudged_once(new_story, monkeypatch):
     monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
@@ -169,7 +172,7 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = merger_of(story)
+    merger = merger_agent(story)
     story.expect_rows(merger is not None, merger.access == Access.READ)
     actor = Actor(merger.id, ActorType.AGENT)
     story.expect_text("merger next", f"worker {worker.id}", "brief:", "proof 1", actor=actor)
@@ -179,11 +182,8 @@ def test_the_merger_reads_a_worker_merges_it_with_a_chat_mark_and_the_main_agent
     story.expect_text("merger next", "no worker waits", actor=actor)
     expect_marks_text(story, f"Worker {worker.id} had")
     story.hook(merger.session, HookSamples.stop())
-    lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
-    merged_rows = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text]
-    merged = next(iter(merged_rows), None)
-    story.expect_rows(len(merged_rows) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
-    story.expect_rows(merged is not None and f"the merger merged worker:{worker.id}" in merged.text, f"agent:{merger.id} reports in message:{merged.id}" in lines, detail=lines)
+    merged_lines = merged_worker_lines(story, worker)
+    story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
     story.expect_success(f'merger findings {worker.id} "Fix the merged code"', actor=actor)
     story.run_listeners()
     mark = story.container.get(Queries).query(ChatMark).filter(text=f"The merger sent Worker {worker.id} back").first()
@@ -203,13 +203,13 @@ def test_the_merger_and_a_worker_message_each_other_but_two_workers_do_not(new_s
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = Actor(merger_of(story).id, ActorType.AGENT)
-    other = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
+    second_agent = Actor(story.new_row_id(f"agent start s-other claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(f'message send "Rebase on main first" --to agent:{worker.id}', actor=merger)
     story.expect_text(f"agent-line list --agent {worker.id}", f"agent:{merger.id} reports in message:", actor=worker)
     story.expect_success(f'message send "Rebased" --to agent:{merger.id}', actor=worker)
     story.expect_text(f"agent-line list --agent {merger.id}", f"agent:{worker.id} reports in message:", actor=merger)
-    story.expect_refusal(f'message send "Hello" --to agent:{other.id}', "not yours to message", actor=worker)
+    story.expect_refusal(f'message send "Hello" --to agent:{second_agent.id}', "not yours to message", actor=worker)
 
 
 def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent_what_it_must_act_on(new_story, monkeypatch):
@@ -227,14 +227,14 @@ def test_a_workers_report_goes_to_the_merger_and_the_merger_tells_the_main_agent
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
     story.expect_rows("Converted the window" not in story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text)
-    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
     story.expect_text("merger next", "reports: Converted the window", actor=merger)
     story.expect_success('merger tell "Worker asks which reader to keep"', actor=merger)
-    told = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id, text="Worker asks which reader to keep").first()
+    reported_message = story.container.get(Queries).query(Message).filter(session_agent_id=merger.id, text="Worker asks which reader to keep").first()
     line = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).newest().first()
-    story.expect_rows(told is not None, line.state is AgentLineState.WAITING, line.wakes_agent, f"in message:{told.id}" in line.text,
+    story.expect_rows(reported_message is not None, line.state is AgentLineState.WAITING, line.wakes_agent, f"in message:{reported_message.id}" in line.text,
                       "Worker asks which reader to keep" not in line.text, detail=f"{line.state} {line.text}")
-    story.expect_text(f"message read {told.id}", "Worker asks which reader to keep", actor=story.agent)
+    story.expect_text(f"message read {reported_message.id}", "Worker asks which reader to keep", actor=story.agent)
 
     story.expect_success(f'merger findings {worker.id} "The tax is added twice"', actor=merger)
     expect_marks_text(story, f"The merger sent Worker {worker.id} back")
@@ -270,7 +270,7 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
     launcher = FakeLauncher(story.home.socket("launcher"))
     try:
         ended(story, started[0], 0)
-        merger = merger_of(story)
+        merger = merger_agent(story)
         actor = Actor(merger.id, ActorType.AGENT)
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_text("merger next", f"worker {worker.id}", actor=actor)
@@ -285,8 +285,8 @@ def test_a_blocked_merge_waits_until_the_checkout_is_committed(new_story, monkey
         MergerRetry()(story.container)
         MergerRetry()(story.container)
         story.expect_rows(len(jobs.helper_jobs(merger.id)) == job_count)
-        told = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "The merge waits for cart.py to be committed" in row.text]
-        story.expect_rows(len(told) == 1, detail=str(told))
+        reported_messages = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "The merge waits for cart.py to be committed" in row.text]
+        story.expect_rows(len(reported_messages) == 1, detail=str(reported_messages))
         repository.git("add", "cart.py")
         repository.git("commit", "-m", "Commit main change")
         repository.checkout("main")
@@ -316,7 +316,7 @@ def test_the_merger_pass_shows_the_reason_on_the_worker_mark(new_story, monkeypa
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
     reason = "The main agent must decide which reader to keep"
     story.expect_success(f'merger pass {worker.id} "{reason}"', actor=merger)
     story.expect_success(f'merger pass {worker.id} "Another decision"', actor=merger)
@@ -337,7 +337,7 @@ def test_the_merger_ending_without_a_report_does_not_notify_the_main_agent(new_s
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = merger_of(story)
+    merger = merger_agent(story)
     story.expect_success(exit_line.format(agent=merger.id), actor=Actor(merger.id, ActorType.AGENT))
     story.run_listeners()
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "It ended without a report")
@@ -357,7 +357,7 @@ def test_a_worker_left_to_the_main_agent_is_not_reported_as_stopped(new_story, m
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = Actor(merger_of(story).id, ActorType.AGENT)
+    merger = Actor(merger_agent(story).id, ActorType.AGENT)
     story.expect_success(f'merger pass {worker.id} "A decision is needed"', actor=merger)
     story.expect_success(f"agent end {worker.id}", actor=worker)
     story.advance(timedelta(minutes=20))
@@ -379,7 +379,7 @@ def test_long_merger_lines_wait_until_the_output_is_read_whole(new_story, monkey
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = merger_of(story)
+    merger = merger_agent(story)
     main = story.agent
     story.agent = Actor(merger.id, ActorType.AGENT)
     process = start_process(story, "journal merger next && echo done")
@@ -412,7 +412,7 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = merger_of(story)
+    merger = merger_agent(story)
     install_runner(story)
     repository.checkout(ENVIRONMENT_BRANCH)
     line = f"journal merger merge {worker.id}"
@@ -423,8 +423,7 @@ def test_a_merge_the_merger_starts_runs_in_the_foreground_and_is_reported_once_a
     story.expect_text("merger next", f"worker {worker.id}", actor=actor)
     story.expect_text(f"merger merge {worker.id}", f"worker {worker.id} merged into", actor=actor)
     story.expect_text("merger next", "no worker waits", actor=actor)
-    reports = [row for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows() if "the merger merged" in row.text]
-    story.expect_rows(len(reports) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
+    story.expect_rows(len(merged_worker_lines(story, worker)) == 1, not any("could not be confirmed" in row.text for row in story.container.get(Queries).query(Message).filter(session_agent_id=merger.id).all_rows()))
 
 
 def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_after_the_wait(new_story, monkeypatch):
@@ -438,7 +437,7 @@ def test_a_worker_the_merger_ended_without_taking_in_is_named_to_the_main_agent_
     finally:
         launcher.server.close()
         story.home.socket("launcher").unlink(missing_ok=True)
-    merger = merger_of(story)
+    merger = merger_agent(story)
     story.expect_success(f"agent end {merger.id}", actor=Actor(merger.id, ActorType.AGENT))
     story.run_listeners()
     reminder = f"worker:{worker.id} delivered"

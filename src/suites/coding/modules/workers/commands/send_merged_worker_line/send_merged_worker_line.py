@@ -1,0 +1,10 @@
+from dataclasses import dataclass
+
+from core.base.command.command import Command
+
+
+@dataclass(frozen=True)
+class SendMergedWorkerLine(Command[None]):
+    """Tells the main agent that a worker's work was merged, and wakes it if it sits idle."""
+
+    worker_id: int
