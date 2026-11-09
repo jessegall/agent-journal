@@ -1,13 +1,11 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
 from core.modules.drivers.commands.allow_permission.allow_permission import AllowPermission
-from core.modules.drivers.models.permission_request import PermissionRequest
+from core.modules.drivers.commands.support.permission_request_subcommand import PermissionRequestSubcommand
 
 
-class AllowPermissionSubcommand(Subcommand[AllowPermission, PermissionRequest]):
+class AllowPermissionSubcommand(PermissionRequestSubcommand[AllowPermission]):
     """`journal permission allow <request>`: the main agent, or a person, answers an agent's request for leave once."""
 
     cli_name = "permission"
@@ -18,7 +16,3 @@ class AllowPermissionSubcommand(Subcommand[AllowPermission, PermissionRequest]):
 
     def command(self, arguments: Namespace, caller: Caller) -> AllowPermission:
         return AllowPermission(arguments.request_id)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, PermissionRequest):
-            output.line(f"permission request {value.id}: {value.state.value}")

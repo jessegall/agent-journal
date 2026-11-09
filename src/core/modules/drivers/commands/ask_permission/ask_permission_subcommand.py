@@ -1,13 +1,11 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.output import Output
-from core.base.subcommand.subcommand import Subcommand
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission
-from core.modules.drivers.models.permission_request import PermissionRequest
+from core.modules.drivers.commands.support.permission_request_subcommand import PermissionRequestSubcommand
 
 
-class AskPermissionSubcommand(Subcommand[AskPermission, PermissionRequest]):
+class AskPermissionSubcommand(PermissionRequestSubcommand[AskPermission]):
     """`journal permission ask "<command or file>" --reason "<why>" [--person]`: asks for leave to do that one
     thing once."""
 
@@ -21,7 +19,3 @@ class AskPermissionSubcommand(Subcommand[AskPermission, PermissionRequest]):
 
     def command(self, arguments: Namespace, caller: Caller) -> AskPermission:
         return AskPermission(arguments.action, arguments.reason, arguments.needs_person)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, PermissionRequest):
-            output.line(f"permission request {value.id}: {value.state.value}")
