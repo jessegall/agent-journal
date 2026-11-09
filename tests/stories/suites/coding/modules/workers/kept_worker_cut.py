@@ -50,10 +50,8 @@ def test_a_task_sent_to_a_worker_whose_merged_worktree_is_still_open_gets_a_work
     story.expect_rows((folder / "cart.py").is_file(), (folder / ".git").exists(), detail=str(sorted(path.name for path in folder.iterdir())))
 
 
-def test_releasing_a_worker_whose_worktree_is_merged_puts_its_open_task_back(open_merged_worktree):
+def test_releasing_a_worker_whose_worktree_is_merged_removes_the_worktree(open_merged_worktree):
     story, repository, worker = open_merged_worktree.story, open_merged_worktree.repository, open_merged_worktree.worker
-    task_id = story.new_row_id('task make "The next task" --brief "Keep the total in cents"', actor=story.agent)
-    story.expect_success(f"task assign {task_id} --to {worker.id}", actor=story.agent)
-    story.expect_success(f'worker release {worker.id} "the worker cannot start"', actor=story.agent)
-    story.expect_success(f"task show {task_id}", "state: open")
-    story.expect_text("worker-worktree list", "removed")
+    story.expect_success(f'worker release {worker.id} "the worker is not needed"', actor=story.agent)
+    story.expect_absent("worker-worktree list", "merged")
+    story.expect_rows(not repository.worktree_folder(worker.id).exists())
