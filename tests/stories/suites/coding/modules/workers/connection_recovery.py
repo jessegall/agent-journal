@@ -409,10 +409,18 @@ def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_fr
     story.expect_rows(len(recovery.launches) > 0)
 
 
-def test_a_message_to_a_stopped_worker_starts_it(recovery):
+@pytest.fixture
+def stopped_by_person(recovery):
     story, worker = recovery.story, recovery.worker
+    recovery.launches.clear()
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"agent end {worker.id}", actor=person)
+    return recovery
+
+
+def test_a_message_to_a_stopped_worker_starts_it(stopped_by_person):
+    recovery = stopped_by_person
+    story, worker = recovery.story, recovery.worker
     recovery.launches.clear()
     recovery.advance(1)
     story.expect_success(f'message send "Look again" --to agent:{worker.id}', actor=story.agent)
@@ -422,10 +430,9 @@ def test_a_message_to_a_stopped_worker_starts_it(recovery):
     story.expect_rows(len(recovery.launches) > 0)
 
 
-def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_frees(recovery):
+def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_frees(stopped_by_person):
+    recovery = stopped_by_person
     story, worker = recovery.story, recovery.worker
-    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"agent end {worker.id}", actor=person)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
     recovery.launches.clear()
     recovery.advance(1)
@@ -438,11 +445,9 @@ def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_fre
     story.expect_rows(len(recovery.launches) > 0)
 
 
-def test_a_worker_stopped_by_a_person_is_not_restarted_for_its_old_job(recovery):
+def test_a_worker_stopped_by_a_person_is_not_restarted_for_its_old_job(stopped_by_person):
+    recovery = stopped_by_person
     story, worker = recovery.story, recovery.worker
-    recovery.launches.clear()
-    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"agent end {worker.id}", actor=person)
     recovery.advance(20 * 60)
     WorkerResumeRetry()(story.container)
     story.expect_rows(not recovery.launches, detail=str(recovery.launches))

@@ -1,3 +1,5 @@
+import pytest
+
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.start_process_part.start_process_part import StartProcessPart
@@ -8,6 +10,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 MARKS = "chat-mark list --environment 1 --oldest"
+NEWEST_MARKS = "chat-mark list --environment 1"
 
 
 class SavedRun(StoryFixture):
@@ -30,8 +33,13 @@ def part_started(story, process, position: int = 1) -> None:
     story.run_listeners()
 
 
-def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(new_story):
-    story, process = saved_run(new_story)
+@pytest.fixture
+def saved(new_story):
+    return saved_run(new_story)
+
+
+def test_a_run_that_is_saved_shows_no_mark_until_its_part_starts(saved):
+    story, process = saved
     story.expect_absent(MARKS, "processes.command", actor=story.user)
     part_started(story, process)
     story.expect_text(MARKS, "processes.command", "process:1", "running", actor=story.user)
@@ -65,13 +73,13 @@ def test_a_line_shows_its_mark_when_its_named_part_starts_not_its_first(new_stor
     story.expect_text(MARKS, "processes.command", actor=story.user)
 
 
-def test_a_started_run_that_ends_keeps_one_mark_with_its_outcome(new_story):
-    story, process = saved_run(new_story)
+def test_a_started_run_that_ends_keeps_one_mark_with_its_outcome(saved):
+    story, process = saved
     part_started(story, process)
     end_run(story, process, "done\n")
     story.run_listeners()
-    story.expect_text(MARKS, "process:1", "ended", actor=story.user)
-    story.expect_absent(MARKS, "process:2", actor=story.user)
+    story.expect_text(NEWEST_MARKS, "process:1", "ended", actor=story.user)
+    story.expect_absent(NEWEST_MARKS, "process:2", actor=story.user)
 
 
 def test_a_run_whose_start_report_was_lost_still_shows_its_end(new_story):

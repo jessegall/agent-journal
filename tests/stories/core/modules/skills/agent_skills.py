@@ -59,9 +59,14 @@ def test_a_second_read_changes_nothing(skill_files):
     story.expect_success("agent-skill show 3", "version: 2", "state: loaded")
 
 
-def test_a_skill_whose_text_changed_since_it_was_read_counts_as_unread(skill_files):
-    story = skill_files
-    due_notes(story)
+@pytest.fixture
+def due_skill_files(skill_files):
+    due_notes(skill_files)
+    return skill_files
+
+
+def test_a_skill_whose_text_changed_since_it_was_read_counts_as_unread(due_skill_files):
+    story = due_skill_files
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "the-digest-of-an-older-text"), story.agent)
     story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
 
@@ -98,9 +103,8 @@ def skill_files(new_story):
     return started(new_story)
 
 
-def test_a_shell_line_naming_one_skill_in_many_parts_reads_its_row_once(skill_files):
-    story = skill_files
-    due_notes(story)
+def test_a_shell_line_naming_one_skill_in_many_parts_reads_its_row_once(due_skill_files):
+    story = due_skill_files
     connection = story.container.get(Database).connection
     statements: list[str] = []
     connection.set_trace_callback(statements.append)

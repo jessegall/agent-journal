@@ -52,12 +52,18 @@ def test_a_batch_waits_for_the_fourth_task_then_runs_all_its_proofs(submitted):
         submitted.story.expect_text(f"task show {task}", "state: completed", actor=submitted.story.agent)
 
 
-def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch):
+@pytest.fixture
+def batch_of_checked_proofs(batch):
     for _ in range(4):
         batch.edit_prove(TEST_LINE)
         task = batch.current_task()
         batch.story.expect_success(f"proof check {task}", actor=batch.story.agent)
         batch.story.expect_success("worker next --wait --differences none", actor=batch.worker)
+    return batch
+
+
+def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(batch_of_checked_proofs):
+    batch = batch_of_checked_proofs
     batch.story.expect_rows(batch.current_task() == 5, not batch.started)
 
 

@@ -23,7 +23,7 @@ def listeners_run_before_each_hook(monkeypatch):
 
     def hook_after_listeners(story, *arguments, **options):
         story.run_listeners()
-        story.advance(timedelta(seconds=1))
+        story.clock.advance(timedelta(seconds=1))
         return original(story, *arguments, **options)
 
     monkeypatch.setattr(Story, "hook", hook_after_listeners)

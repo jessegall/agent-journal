@@ -1,3 +1,5 @@
+import pytest
+
 import json
 
 from core.base.driver.command_category import CommandCategory
@@ -105,12 +107,20 @@ def compacted_story(new_story):
     return story
 
 
-def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(new_story):
+@pytest.fixture
+def compacted(new_story):
     story = compacted_story(new_story)
+    typing = KeptTyping()
+    story.container.bind(TerminalTyping, typing)
     compaction_lines = story.hook("s-1", PRE_COMPACT).lines
     story.run_listeners()
     start_lines = story.hook("s-1", COMPACTION).lines
     story.run_listeners()
+    return story, typing, compaction_lines, start_lines
+
+
+def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(compacted):
+    story, _, compaction_lines, start_lines = compacted
     expect_value(list(compaction_lines), [])
     expect_value(list(start_lines), ["read the overview"])
     story.expect_hook_silent("s-1", SKILL_READ)
@@ -119,12 +129,8 @@ def test_a_whole_compaction_tells_the_agent_only_to_run_the_overview(new_story):
     story.expect_hook_allowed("s-1", EDIT, "new message 1")
 
 
-def test_nothing_is_typed_to_an_agent_that_starts_again_after_a_compaction(new_story):
-    story = compacted_story(new_story)
-    typing = KeptTyping()
-    story.container.bind(TerminalTyping, typing)
-    story.hook("s-1", PRE_COMPACT)
-    story.hook("s-1", COMPACTION)
+def test_nothing_is_typed_to_an_agent_that_starts_again_after_a_compaction(compacted):
+    story, typing, _, _ = compacted
     story.run('message send "One more thing" --environment main', actor=story.user)
     story.run_listeners()
     expect_value(typing.typed, [])

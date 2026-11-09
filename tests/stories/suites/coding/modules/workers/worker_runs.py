@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import timedelta
 
 from core.base.actor import Actor
@@ -77,12 +79,22 @@ def test_a_worker_that_has_open_help_request_stays_stopped_when_its_run_ends(new
     story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
 
 
-def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(new_story, monkeypatch):
-    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+@pytest.fixture
+def second_job_worker(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, f"{DISPATCH} 2")
+    return story, dispatched_worker(story, f"{DISPATCH} 2")
+
+
+@pytest.fixture
+def worker_with_a_run(new_story):
+    return worker_with_background_run(new_story)
+
+
+def test_a_worker_past_its_restarts_on_old_tasks_is_restarted_for_a_queued_task(second_job_worker, monkeypatch):
+    monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
+    story, worker = second_job_worker
     session = worker_session(story, worker)
     story.advance(timedelta(minutes=1))
     story.run(f"agent end {worker.id}", actor=worker)
@@ -145,9 +157,9 @@ def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_show
     story.expect_absent("chat-mark list --environment 1", "stopped with")
 
 
-def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(new_story, monkeypatch):
+def test_a_worker_past_its_restarts_that_stops_with_a_run_going_leaves_the_main_agent_no_line_until_it_stops_with_none(worker_with_a_run, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 1)
-    story, worker, run, bus = worker_with_background_run(new_story)
+    story, worker, run, bus = worker_with_a_run
     session = worker_session(story, worker)
     line = f"worker:{worker.id} ended with"
     for _ in range(3):
