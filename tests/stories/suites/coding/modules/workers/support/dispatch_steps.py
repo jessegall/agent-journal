@@ -21,7 +21,7 @@ FIRST_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart total story"'
 DELIVERY = "worker deliver --wait --differences none"
 
 
-SAVED_TEST_COMMAND = 'alias add cart-test "pytest tests/cart.py" --category "test run"'
+SAVED_TEST_COMMAND = 'alias add cart-test "pytest tests/" --category "test run"'
 
 
 def repository_folder(story: Story) -> Path:

@@ -1,3 +1,4 @@
+from core.modules.agents.support.agent_conversations import AgentConversations
 from datetime import timedelta
 from pathlib import Path
 import json
@@ -55,6 +56,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
         return original(access, file)
 
     monkeypatch.setattr(FileAccess, "binary", read_hook_file)
+    monkeypatch.setattr(AgentConversations, "exists", lambda conversations, agent: True)
     launches = []
     original_hand = AgentLauncher.hand
 
