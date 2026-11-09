@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-454d052c3bd2")) { const style = document.createElement("style"); style.id = "window-styles-454d052c3bd2"; style.textContent = ".helper-start[data-v-6827197a]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-6827197a]{margin:0;font-size:14px;font-weight:600}.field[data-v-6827197a]{display:grid;gap:4px}.field>span[data-v-6827197a]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-6827197a],.notice[data-v-6827197a]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-6827197a]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-skills[data-v-915d5f21]{display:flex;flex-direction:column;gap:8px}.profile-skill[data-v-915d5f21]{display:flex;gap:10px;align-items:flex-start}.profile-skill-text[data-v-915d5f21]{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:13px}.profile-skill-own[data-v-915d5f21]{color:var(--accent);font-size:11.5px}.profile-skill-about[data-v-915d5f21],.profile-skills-note[data-v-915d5f21]{margin:0;color:var(--text-3);font-size:12px}.profile-panel[data-v-830fab69]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-830fab69]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-830fab69]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-830fab69]{flex:1}.profiles[data-v-9ff2dc75]{padding:0 0 40px}.bar[data-v-9ff2dc75]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-9ff2dc75]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-9ff2dc75]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-9ff2dc75]{color:var(--danger)}.empty[data-v-9ff2dc75]{margin:40px auto;max-width:480px}.rows[data-v-9ff2dc75]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-9ff2dc75]{text-align:left}.profile-meta[data-v-9ff2dc75]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-9ff2dc75]{color:var(--text-2)}.profile-used[data-v-9ff2dc75]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-9ff2dc75]{color:var(--tone-warn)}.profile-used.never[data-v-9ff2dc75]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-9ff2dc75]{flex:1 1 100%}.profile-meta[data-v-9ff2dc75]{display:none}}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-71b799cced9a")) { const style = document.createElement("style"); style.id = "window-styles-71b799cced9a"; style.textContent = ".helper-start[data-v-07b9fb47]{display:grid;gap:12px;padding:0 0 20px;margin-bottom:20px;border-bottom:1px solid var(--border-2)}h3[data-v-07b9fb47]{margin:0;font-size:14px;font-weight:600}.field[data-v-07b9fb47]{display:grid;gap:4px}.field>span[data-v-07b9fb47]{color:var(--text-2);font-size:12px;font-weight:500}.reason[data-v-07b9fb47],.notice[data-v-07b9fb47]{margin:0;color:var(--text-3);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.idle-helper[data-v-07b9fb47]{display:flex;align-items:center;justify-content:space-between;gap:12px}.profile-skills[data-v-b841f884]{display:flex;flex-direction:column;gap:8px}.profile-skill[data-v-b841f884]{display:flex;gap:10px;align-items:flex-start}.profile-skill-text[data-v-b841f884]{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:13px}.profile-skill-own[data-v-b841f884]{color:var(--accent);font-size:11.5px}.profile-skill-about[data-v-b841f884],.profile-skills-note[data-v-b841f884]{margin:0;color:var(--text-3);font-size:12px}.profile-panel[data-v-e75926a1]{display:flex;flex-direction:column;gap:14px}.profile-panel-note[data-v-e75926a1]{margin:0;color:var(--text-3);font-size:12.5px}.profile-panel-check[data-v-e75926a1]{display:flex;gap:8px;align-items:center;font-size:13px}.profile-panel-grow[data-v-e75926a1]{flex:1}.profiles[data-v-dd5707e1]{padding:0 0 40px}.bar[data-v-dd5707e1]{flex-wrap:wrap;gap:8px 12px;color:var(--text-2)}.count[data-v-dd5707e1]{margin-left:auto;color:var(--text-3);font-size:12.5px}.notice[data-v-dd5707e1]{font-size:12px;color:var(--text-2)}.notice.failed[data-v-dd5707e1]{color:var(--danger)}.empty[data-v-dd5707e1]{margin:40px auto;max-width:480px}.rows[data-v-dd5707e1]{display:flex;flex-direction:column;padding:8px 14px 0 22px}.profile-open[data-v-dd5707e1]{text-align:left}.profile-meta[data-v-dd5707e1]{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px}.profile-model[data-v-dd5707e1]{color:var(--text-2)}.profile-used[data-v-dd5707e1]{color:var(--text-3);white-space:nowrap}.profile-warning[data-v-dd5707e1]{color:var(--tone-warn)}.profile-used.never[data-v-dd5707e1]{color:var(--text-4)}@media(max-width:640px){.profiles-find[data-v-dd5707e1]{flex:1 1 100%}.profile-meta[data-v-dd5707e1]{display:none}}\n"; document.head.appendChild(style); }
 import { ref as C, computed as S, watch as G, openBlock as s, createElementBlock as d, withModifiers as oe, createElementVNode as g, createVNode as u, unref as t, withDirectives as Z, Fragment as O, renderList as q, toDisplayString as k, vModelSelect as se, withCtx as p, createTextVNode as B, createCommentVNode as h, createBlock as x, renderSlot as re, vModelCheckbox as ne, normalizeClass as ie } from "vue";
 import { useWindow as K, TextArea as Y, Btn as M, TextInput as D, Switch as ue, SidePanel as pe, FormField as I, Segmented as U, ModelPicker as de, DiffCard as fe, matchesSearch as ve, SearchBar as me, EmptyState as z, ListRow as ce, ago as ye } from "@journal/window-kit";
 const H = (v, R) => {
@@ -126,7 +126,7 @@ const H = (v, R) => {
       P.value ? (s(), d("p", Ce, k(P.value), 1)) : h("", !0)
     ], 32));
   }
-}, xe = /* @__PURE__ */ H(Te, [["__scopeId", "data-v-6827197a"]]), Ie = {
+}, xe = /* @__PURE__ */ H(Te, [["__scopeId", "data-v-07b9fb47"]]), Ie = {
   class: "profile-skills",
   "data-profile-skills": ""
 }, Pe = {
@@ -173,7 +173,7 @@ const H = (v, R) => {
       ], 8, je))), 128))
     ]));
   }
-}, Be = /* @__PURE__ */ H(We, [["__scopeId", "data-v-915d5f21"]]), Ee = {
+}, Be = /* @__PURE__ */ H(We, [["__scopeId", "data-v-b841f884"]]), Ee = {
   class: "profile-panel",
   "data-profile-panel": ""
 }, Me = { key: 0 }, Oe = {
@@ -496,7 +496,7 @@ const H = (v, R) => {
       _: 3
     }, 8, ["title", "abstract"]));
   }
-}, Ue = /* @__PURE__ */ H(qe, [["__scopeId", "data-v-830fab69"]]), De = {
+}, Ue = /* @__PURE__ */ H(qe, [["__scopeId", "data-v-e75926a1"]]), De = {
   class: "profiles",
   "data-profiles": ""
 }, Ge = {
@@ -659,7 +659,7 @@ const H = (v, R) => {
       }, 8, ["programs", "types", "profile", "used"])) : h("", !0)
     ]));
   }
-}, ll = /* @__PURE__ */ H(Xe, [["__scopeId", "data-v-9ff2dc75"]]);
+}, ll = /* @__PURE__ */ H(Xe, [["__scopeId", "data-v-dd5707e1"]]);
 export {
   ll as default
 };
