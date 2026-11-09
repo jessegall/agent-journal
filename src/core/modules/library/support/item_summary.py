@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 
 from core.base.library.library_hit import LibraryHit
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
@@ -23,11 +24,10 @@ class ItemSummary:
 
     @classmethod
     def parsed(cls, body: object) -> "ItemSummary":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(str(body["kind"]), int(body["id"]), int(body["version"]), str(body["title"]), str(body.get("abstract", "")), str(body.get("excerpt", "")),
-                       str(body.get("creator", "")), str(body.get("updated_by", "")), str(body.get("updated_at", "")))
+            return cls(str(fields["kind"]), LibraryAnswer.number(fields["id"]), LibraryAnswer.number(fields["version"]), str(fields["title"]), str(fields.get("abstract", "")),
+                       str(fields.get("excerpt", "")), str(fields.get("creator", "")), str(fields.get("updated_by", "")), str(fields.get("updated_at", "")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

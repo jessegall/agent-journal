@@ -19,7 +19,7 @@ PROGRESS_PATTERN = re.compile(r"\b(tests? (queued|passed|running)|nothing left|s
 PROGRESS_LOG = "where it stands"
 
 
-class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
+class SendWorkerReportSubcommand(Subcommand[RecordParentReport | SendMergerInput, Message]):
     """Sends a worker's report to its main agent while the worker continues its task."""
 
     cli_name = "worker"

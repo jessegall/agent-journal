@@ -7,8 +7,10 @@ from core.base.query.query import Query
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
+from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.replaced_rows import replaced_rows
 
 
 class WorktreeQuery(Query[Worktree]):
@@ -21,6 +23,18 @@ class WorktreeQuery(Query[Worktree]):
     def worker_worktree(self, agent_id: int) -> Worktree | None:
         return self.kept.read(self.table.name, self.filter(session_agent_id=agent_id).first,
                               "session_agent_id = ? AND removed_at IS NULL", [agent_id], name="workers.worker_worktree")
+
+    def required_worker_worktree(self, agent_id: int) -> Worktree:
+        worktree = self.worker_worktree(agent_id)
+        if worktree is None:
+            raise Refusal(f"worker {agent_id} has no worktree", "journal worker-worktree list shows the worktrees")
+        return worktree
+
+    def required_newest_worktree(self, agent_id: int) -> Worktree:
+        worktree = self.newest_worktree(agent_id)
+        if worktree is None:
+            raise Refusal(f"worker {agent_id} has had no worktree", "journal worker-worktree list shows the worktrees")
+        return worktree
 
     def is_first_worktree(self, worktree: Worktree) -> bool:
         return not self.with_removed().filter(session_agent_id=worktree.session_agent_id).matching(Less("id", worktree.id)).exists()
@@ -50,7 +64,12 @@ class WorktreeQuery(Query[Worktree]):
         active = [row for row in present if row.removed_at is None]
         self.kept.update(self.table.name, lambda previous: next(iter(active), None), "session_agent_id = ? AND removed_at IS NULL",
                          [worktree.session_agent_id], name="workers.worker_worktree")
-        self.kept.scoped_update(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(active), key=lambda row: row.id)),
-                                  "removed_at IS NULL", name="workers.open_worktrees")
-        self.kept.scoped_update(self.table.name, lambda worktrees: tuple(sorted([row for row in worktrees if row.id != worktree.id] + list(present), key=lambda row: row.id)),
-                                  name="workers.all_worktrees")
+
+        def with_active(worktrees: tuple[Worktree, ...]) -> tuple[Worktree, ...]:
+            return replaced_rows(worktrees, worktree.id, active)
+
+        def with_present(worktrees: tuple[Worktree, ...]) -> tuple[Worktree, ...]:
+            return replaced_rows(worktrees, worktree.id, present)
+
+        self.kept.scoped_update(self.table.name, with_active, "removed_at IS NULL", name="workers.open_worktrees")
+        self.kept.scoped_update(self.table.name, with_present, name="workers.all_worktrees")

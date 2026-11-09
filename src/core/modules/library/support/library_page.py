@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
 
 from core.base.library.library_hit import LibraryHit
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.item_summary import ItemSummary
 
@@ -17,10 +18,10 @@ class LibraryPage:
 
     @classmethod
     def parsed(cls, body: object) -> "LibraryPage":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(int(body["page"]), int(body["size"]), int(body["total"]), tuple(ItemSummary.parsed(row) for row in body["rows"]))
+            return cls(LibraryAnswer.number(fields["page"]), LibraryAnswer.number(fields["size"]), LibraryAnswer.number(fields["total"]),
+                       tuple(ItemSummary.parsed(row) for row in LibraryAnswer.members(fields, "rows")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import replace
 
 from core.base.actor import CORE_ACTOR_ID
@@ -31,7 +32,14 @@ class UpdateStockReadersHandler(Handler[UpdateStockReaders, None]):
             updated = self.reader(stock, reader)
             if updated != reader:
                 saved = self.repository.save_change(reader, updated, context)
-                self.kept.update("readers", lambda rows: rows.saved(saved), name="processes.stock_readers")
+                self.kept.update("readers", self.with_saved(saved), name="processes.stock_readers")
+
+    @staticmethod
+    def with_saved(saved: Reader) -> Callable[[StockReaderRows], StockReaderRows]:
+        def updated(rows: StockReaderRows) -> StockReaderRows:
+            return rows.saved(saved)
+
+        return updated
 
     def loaded_rows(self) -> StockReaderRows:
         readers = {reader.name: reader for reader in self.readers.all_rows()}

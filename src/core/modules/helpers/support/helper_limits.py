@@ -17,6 +17,7 @@ from core.modules.helpers.support.agent_use import AgentUse
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
 from core.modules.helpers.support.kept_helpers import KeptHelpers
+from core.modules.helpers.support.profile_model import ProfileModel
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
@@ -55,8 +56,8 @@ class HelperLimits:
             raise Refusal("a helper needs the launcher, which is not running", "keep your work and start the journal with journal launch")
 
     def checked_running(self, profile: str) -> None:
-        running_ids = {helper.id for helper in self.helpers(profile).matching(IsNull("ended_at")).all_rows()} | (self.kept.with_open_jobs(profile) - {None})
-        limit = self.limits.lookup(HelperRole.HELPER, profile).run
+        running_ids = {helper.id for helper in self.helpers(profile).matching(IsNull("ended_at")).all_rows()} | self.kept.with_open_jobs(profile)
+        limit = self.helper_limits(profile).run
         if len(running_ids) >= limit:
             names = ", ".join(f"agent:{helper_id}" for helper_id in sorted(running_ids))[:RUNNING_NAMES_CHARACTERS]
             raise Refusal(f"{limit} of {profile} run: {names}", self.next_step_text())
@@ -66,9 +67,15 @@ class HelperLimits:
         self.checked_kept(profile)
 
     def checked_kept(self, profile: str) -> None:
-        limit = self.limits.lookup(HelperRole.HELPER, profile).kept
+        limit = self.helper_limits(profile).kept
         if limit != UNLIMITED_AGENT_COUNT and self.helpers(profile).matching(IsNull("retired_at")).count() >= limit:
             raise Refusal(f"{limit} of {profile} exist, which is the limit", self.use.retire_suggestion(profile) or TypeLimits.retirement_instruction(self.kept.kept(profile)))
+
+    def helper_limits(self, profile: str) -> TypeLimits:
+        limits = self.limits.lookup(HelperRole.HELPER, profile)
+        if limits is None:
+            raise Refusal("no limits are declared for helpers", "a module declares the helper type with its limit settings")
+        return limits
 
     def helpers(self, profile: str) -> Query[Agent]:
         return self.queries.query(Agent).filter(role=HelperRole.HELPER, profile=profile)

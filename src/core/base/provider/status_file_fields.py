@@ -5,6 +5,7 @@ from typing import Mapping
 
 from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
+from core.base.type_guards import is_text_mapping
 
 
 STATUS_CACHE_SIZE = 64
@@ -16,5 +17,5 @@ class StatusFileFields:
     @staticmethod
     @lru_cache(maxsize=STATUS_CACHE_SIZE)
     def read(path: Path, version: FileVersion) -> Mapping[str, object]:
-        fields = json.loads(FileAccess.shared().read(path) or "{}")
-        return fields if isinstance(fields, dict) else {}
+        fields: object = json.loads(FileAccess.shared().read(path) or "{}")
+        return fields if is_text_mapping(fields) else {}

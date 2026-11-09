@@ -31,7 +31,8 @@ class AutoNextTaskListener(CommitListener[Moved[Task]]):
         assigner = self.assigners.assigner()
         if assigner is None or not assigner.is_automatic():
             return
-        holder_id = event.old_row.holder_id
+        previous = event.old_row
+        holder_id = None if previous is None else previous.holder_id
         if holder_id is None:
             return
         holder = self.rows.required(Agent, holder_id)

@@ -1,5 +1,5 @@
 from argparse import Namespace
-from typing import ClassVar
+from typing import ClassVar, Generic, TypeVar
 
 from core.base.caller.caller import Caller
 from core.base.library.library_lookup import LibraryLookup
@@ -8,7 +8,10 @@ from core.base.library.library_ref import LibraryRef
 from core.base.refusal import Refusal
 
 
-class LibraryAwareShow:
+L = TypeVar("L")
+
+
+class LibraryAwareShow(Generic[L]):
     """What a show command of a shared type adds to reading its own rows: an item of the team's library read live
     by its library number, and, when a plain number names no row here, the library item with that number. The
     command gives its own reading of a row in `local`."""
@@ -17,10 +20,10 @@ class LibraryAwareShow:
     cli_name: str
     lookup: LibraryLookup
 
-    def local(self, arguments: Namespace, caller: Caller) -> object:
+    def local(self, arguments: Namespace, caller: Caller) -> L:
         raise NotImplementedError
 
-    def read(self, arguments: Namespace, caller: Caller) -> object:
+    def read(self, arguments: Namespace, caller: Caller) -> L | LibraryReading:
         if isinstance(arguments.id, LibraryRef):
             return self.library_reading(arguments)
         try:

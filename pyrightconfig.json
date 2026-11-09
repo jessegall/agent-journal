@@ -2,8 +2,10 @@
     "include": [
         "src/core",
         "src/engine",
+        "src/install",
         "src/server",
-        "src/suites"
+        "src/suites",
+        "src/tunnels"
     ],
     "pythonVersion": "3.14",
     "typeCheckingMode": "strict",

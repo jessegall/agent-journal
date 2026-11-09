@@ -7,8 +7,8 @@ from suites.coding.modules.workers.support.worker_step_text import step_line
 FACTS = WorkerStepFacts(task_id=7, open_task_count=2, test_runs_available=1, label="phase 3", deliver_command="journal worker next", conflict_files="cart.py")
 
 
-def test_only_wait_and_asked_may_stop():
-    assert {step for step in WorkerStep if step.may_stop()} == {WorkerStep.WAIT, WorkerStep.QUESTION}
+def test_only_wait_asked_and_blocked_may_stop():
+    assert {step for step in WorkerStep if step.may_stop()} == {WorkerStep.WAIT, WorkerStep.QUESTION, WorkerStep.BLOCKED}
 
 
 @pytest.mark.parametrize("step", list(WorkerStep))
@@ -40,4 +40,4 @@ def test_no_step_says_say_you_are_stuck(step):
 
 
 def test_step_values_are_stable():
-    assert [step.value for step in WorkerStep] == ["build", "task-proven", "group-end", "wait", "fix", "conflict", "question"]
+    assert [step.value for step in WorkerStep] == ["build", "task-proven", "group-end", "wait", "fix", "conflict", "question", "blocked"]

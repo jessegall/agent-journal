@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 import json
 
 from core.base.command.context import Context
@@ -32,7 +33,7 @@ class AllowWindowHandler(Handler[AllowWindow, WindowPermission]):
         return self.repository.merge(permission, WindowPermission(person_id=context.actor.id, creator_id=context.actor.id,
                                                                       subject=command.window, type=command.type, lines=json.dumps(sorted({*allowed, *declared}))), context)
 
-    def declared(self, command: AllowWindow) -> tuple[str, ...]:
+    def declared(self, command: AllowWindow) -> Sequence[str]:
         button_lines = self.registry.subject_button_lines(command.window)
         if button_lines and command.type is WindowPermissionType.RUNS:
             return button_lines

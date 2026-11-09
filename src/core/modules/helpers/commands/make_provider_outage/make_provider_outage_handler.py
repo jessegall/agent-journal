@@ -16,4 +16,4 @@ class MakeProviderOutageHandler(Handler[MakeProviderOutage, ProviderOutage]):
 
     def handle(self, command: MakeProviderOutage, context: Context) -> ProviderOutage:
         self.access.check(context.actor)
-        return self.repository.save(ProviderOutage(creator_id=context.actor.id, **command.model_fields()), context)
+        return self.repository.save(ProviderOutage(creator_id=context.actor.id, program=command.program, reason=command.reason, ends_at=command.ends_at), context)

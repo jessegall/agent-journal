@@ -7,6 +7,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
+from core.base.timestamp import Timestamp
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
@@ -72,16 +73,17 @@ class UsageAgentSubcommand(ReadSubcommand[AgentInspection]):
     def recent_moves(self, agent_id: int) -> tuple[AgentMove, ...]:
         finished_tasks = self.queries.query(Task).filter(delegated_to=agent_id, state=TaskState.COMPLETED).matching(Greater("closed_at", "")).descending("closed_at").limited(LATEST_MOVE_COUNT)
         runs = self.failed_run_query(agent_id).descending("ended_at").limited(LATEST_MOVE_COUNT)
-        moves = (*(self.finished_task_move(task) for task in finished_tasks), *(self.failed_run_move(run) for run in runs))
+        moves = (*(self.finished_task_move(task, task.closed_at) for task in finished_tasks if task.closed_at is not None),
+                 *(self.failed_run_move(run, run.ended_at) for run in runs if run.ended_at is not None))
         return tuple(sorted(moves, key=lambda move: move.time, reverse=True)[:LATEST_MOVE_COUNT])
 
     @staticmethod
-    def finished_task_move(task: Task) -> AgentMove:
-        return AgentMove(task.closed_at.text, f"Finished task {task.id}: {task.title}", GOOD_TONE, TASKS_TABLE, task.id)
+    def finished_task_move(task: Task, closed_at: Timestamp) -> AgentMove:
+        return AgentMove(closed_at.text, f"Finished task {task.id}: {task.title}", GOOD_TONE, TASKS_TABLE, task.id)
 
     @staticmethod
-    def failed_run_move(run: Process) -> AgentMove:
-        return AgentMove(run.ended_at.text, f"{FAILED_RUN_TEXTS[run.state]}: {run.line}", BAD_TONE, UNLINKED_TABLE, run.id)
+    def failed_run_move(run: Process, ended_at: Timestamp) -> AgentMove:
+        return AgentMove(ended_at.text, f"{FAILED_RUN_TEXTS[run.state]}: {run.line}", BAD_TONE, UNLINKED_TABLE, run.id)
 
     def task_plan(self, task: Task) -> AgentPlan | None:
         place = self.queries.query(PlanTask).filter(task_id=task.id).first()

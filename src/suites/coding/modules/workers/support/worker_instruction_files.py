@@ -81,11 +81,12 @@ class WorkerInstructionFiles:
         restored: list[str] = []
         for name in INSTRUCTION_FILES:
             path = Path(folder) / name
-            if originals and profile.uses_project_instructions and original_texts[name] is not None:
+            original_text = original_texts[name]
+            if originals and profile.uses_project_instructions and original_text is not None:
                 original = path.with_name(f"{path.stem}{ORIGINAL_SUFFIX}{path.suffix}")
-                FileAccess.shared().write(original, original_texts[name])
+                FileAccess.shared().write(original, original_text)
                 restored.append(original.name)
-            if original_texts[name] != text:
+            if original_text != text:
                 FileAccess.shared().write(path, text)
             if name in untracked_after:
                 restored.append(name)

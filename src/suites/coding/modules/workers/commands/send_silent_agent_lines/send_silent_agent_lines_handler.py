@@ -8,7 +8,6 @@ from core.base.internet_connection import InternetConnection
 from core.base.journal_home import JournalHome
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
-from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
@@ -16,22 +15,13 @@ from core.modules.drivers.models.agent_activity import AgentActivity
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.drivers.support.main_agent_line import MainAgentLine
-from core.modules.processes.models.reader_request import ReaderRequest
-from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.reviews.models.review import Review
-from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.waits.models.wait import Wait
-from core.modules.waits.models.enums.wait_state import WaitState
 from suites.coding.modules.workers.commands.send_silent_agent_lines.send_silent_agent_lines import SendSilentAgentLines
 from suites.coding.modules.workers.commands.report_silent_agent.report_silent_agent import ReportSilentAgent
-from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
+from suites.coding.modules.workers.support.main_agent_work import MainAgentWork
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE, RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_places import WorkerPlaces
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
@@ -53,23 +43,20 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     disabled_scopes = [ActorScope]
 
     def __init__(self, home: JournalHome, queries: Queries, settings: SettingValues,
-                 processes: ProcessQuery, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery) -> None:
+                 work: MainAgentWork, nudger: Nudger, bus: Bus, stop: WorkerStop, main_line: MainAgentLine, places: WorkerPlaces, task_query: TaskQuery) -> None:
         self.task_query = task_query
         self.home, self.queries, self.settings = home, queries, settings
-        self.processes, self.nudger, self.bus, self.stop, self.main_line, self.places = processes, nudger, bus, stop, main_line, places
+        self.work, self.nudger, self.bus, self.stop, self.main_line, self.places = work, nudger, bus, stop, main_line, places
 
     def handle(self, command: SendSilentAgentLines, context: Context) -> None:
         agents = tuple(self.queries.query(Agent).all_rows())
         agent_ids = tuple(agent.id for agent in agents)
         activities = {row.id: row for row in self.queries.query(AgentActivity).matching(Among("id", agent_ids)).all_rows()}
-        tasks = self.queries.query(Task).matching(Among("state", [TaskState.OPEN, TaskState.STARTED]))
-        assigned_tasks = tasks.matching(Among("holder_id", agent_ids)).all_rows()
-        delegated = tasks.matching(Among("delegated_to", agent_ids)).all_rows()
-        working = {agent_id for task in (*assigned_tasks, *delegated) for agent_id in [task.holder_id, task.delegated_to] if agent_id is not None}
+        working = set(self.work.unfinished_tasks(agent_ids))
         tasks_remain = self.task_query.open_tasks().matching(IsNull("delegated_to")).matching(self.task_query.unapproved_plan_exclusion()).exists()
         worktrees = tuple(self.queries.query(Worktree).all_rows())
         workers = {row.session_agent_id for row in worktrees}
-        excluded = self.waiting(agent_ids, context)
+        excluded = self.work.waiting_agents(agent_ids, context.timestamp)
         self.report_idle_workers(context, agents, activities, working, worktrees, excluded)
         connection = InternetConnection.shared(self.home)
         if connection.status is not ConnectionStatus.ONLINE:
@@ -127,11 +114,3 @@ class SendSilentAgentLinesHandler(Handler[SendSilentAgentLines, None]):
     def is_automatic(self, agent: Agent) -> bool:
         with self.bus.scopes.read_scope((), None, agent.environment_id):
             return self.settings.flag(AUTO_MODE_SETTING)
-
-    def waiting(self, agent_ids: tuple[int, ...], context: Context) -> set[int]:
-        excluded = {row.session_agent_id for row in self.processes.running().all_rows()}
-        excluded.update(row.session_agent_id for row in self.queries.query(Wait).matching(Among("session_agent_id", agent_ids)).filter(state=WaitState.OPEN).all_rows())
-        excluded.update(row.creator_id for row in self.queries.query(Proof).matching(Among("creator_id", agent_ids)).matching(Among("state", TEST_WAITING_STATES)).all_rows())
-        excluded.update(row.requester_id for row in self.queries.query(Review).matching(Among("state", [ReviewState.QUEUED, ReviewState.REVIEWING])).all_rows())
-        excluded.update(row.creator_id for row in self.queries.query(ReaderRequest).matching(Among("creator_id", agent_ids)).filter(completed_at=None).matching(Greater("expires_at", context.timestamp.text)).all_rows())
-        return excluded

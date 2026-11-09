@@ -24,7 +24,7 @@ class WorkerRouteGuard(Guard[Updated[Task] | Moved[Task]]):
 
     def check(self, event: Updated[Task] | Moved[Task], context: Context) -> None:
         task = event.row
-        if context.actor.type is ActorType.USER or task.delegated_to is None or task.delegated_to == event.old_row.delegated_to or task.delegated_to == task.holder_id:
+        if context.actor.type is ActorType.USER or task.delegated_to is None or task.delegated_to == event.previous.delegated_to or task.delegated_to == task.holder_id:
             return
         if isinstance(context.command, RecordWorktreeCut):
             return

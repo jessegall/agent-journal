@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
+from core.base.type_guards import is_tuple
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plan_reviews.support.plan_round import PlanRound
 from core.modules.plan_reviews.support.plan_rounds import PlanRounds
@@ -26,5 +27,5 @@ class PlanRoundsSubcommand(ReadSubcommand[tuple[PlanRound, ...]]):
         return self.rounds.rounds(self.queries.query(Plan).find(arguments.plan_id))
 
     def write_output(self, value: object, output: Output) -> None:
-        rounds = value if isinstance(value, tuple) else ()
+        rounds = tuple(review_round for review_round in value if isinstance(review_round, PlanRound)) if is_tuple(value) else ()
         output.write("\n".join(review_round.line() for review_round in rounds) or "no review rounds", {"rows": [review_round.json() for review_round in rounds]})

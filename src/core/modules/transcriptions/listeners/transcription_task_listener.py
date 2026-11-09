@@ -36,7 +36,7 @@ class TranscriptionTaskListener(SaveListener[Changed[Transcription]]):
         if isinstance(event, Deleted):
             return
         row, old_row = event.row, event.old_row
-        has_new_text = old_row is None or (old_row is not None and old_row.text != row.text and context.actor.type is ActorType.USER)
+        has_new_text = old_row is None or (old_row.text != row.text and context.actor.type is ActorType.USER)
         if not has_new_text or not row.text.strip():
             return
         with self.scopes.row_scope(row):

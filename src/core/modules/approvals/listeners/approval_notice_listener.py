@@ -26,12 +26,13 @@ class ApprovalNoticeListener(CommitListener[Changed[ApprovalRequest]]):
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
         created = isinstance(event, Created)
-        routed = not created and event.old_row.recipient_agent_id != request.recipient_agent_id
+        routed = event.old_row is not None and event.old_row.recipient_agent_id != request.recipient_agent_id
         if not created and not routed and request.state not in (ApprovalState.ACCEPTED, ApprovalState.REFUSED, ApprovalState.CLOSED):
             return
         pending = request.state in (ApprovalState.OPEN, ApprovalState.RUNNING)
-        review = pending and request.recipient_agent_id is not None
-        recipient = request.recipient_agent_id if review else request.requester_id
+        reviewer = request.recipient_agent_id if pending else None
+        review = reviewer is not None
+        recipient = reviewer if reviewer is not None else request.requester_id
         agent = self.rows.find(Agent, recipient)
         if agent is None:
             return

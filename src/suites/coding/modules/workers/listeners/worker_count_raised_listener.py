@@ -1,7 +1,6 @@
 import json
 
 from core.base.listener.save_listener import SaveListener
-from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
@@ -46,7 +45,7 @@ class WorkerCountRaisedListener(SaveListener[Changed[Setting]]):
                 self.nudger.send(agent.id, WORKER_LIMIT_RAISED, self.name, context, limit=limit, workers=len(self.worktrees.open_worktrees()), count=self.undelegated())
 
     # The limit the row replaces: its own old value, else what an environment's row falls back to, the project's.
-    def previous_limit(self, old: Model | None, setting: Setting) -> int:
+    def previous_limit(self, old: Setting | None, setting: Setting) -> int:
         if old is not None:
             return int(json.loads(old.value))
         if setting.environment_id is None:

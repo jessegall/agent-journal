@@ -7,6 +7,7 @@ from core.modules.library.support.library_item_removed_error import LibraryItemR
 from core.modules.library.support.library_rejected_error import LibraryRejectedError
 from core.modules.library.support.library_stale_error import LibraryStaleError
 from core.modules.library.support.library_stopped_error import LibraryStoppedError
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 STALE_CODE = 409
@@ -25,7 +26,7 @@ class LibraryFailures:
             answer = json.loads(body)
         except ValueError:
             return LibraryUnreachableError.unreadable_page(code)
-        if not isinstance(answer, dict):
+        if not LibraryAnswer.is_object(answer):
             return LibraryUnreachableError.unreadable_page(code)
         reason, suggestion = str(answer.get("error", f"the server answered {code}")), str(answer.get("hint", ""))
         if code == STALE_CODE:

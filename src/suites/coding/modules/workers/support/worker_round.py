@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.refusal import Refusal
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -18,6 +19,11 @@ class WorkerRound:
     is_asking: bool
     conflict: AgentLine | None
     group: WorkerTestGroup | None
+
+    def required_worktree(self) -> Worktree:
+        if self.worktree is None:
+            raise Refusal(f"worker {self.worker_id} has no worktree", "journal worker-worktree list shows the worktrees")
+        return self.worktree
 
     def has_no_work(self) -> bool:
         return self.worktree is None and not self.started

@@ -28,7 +28,7 @@ class WorkerStartedWork:
 
     def workers(self) -> list[Agent]:
         holders = {task.holder_id for task in self.queries.query(Task).filter(state=TaskState.STARTED).all_rows() if task.holder_id is not None}
-        assigned = {task.delegated_to for task in self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("delegated_to")).all_rows()}
+        assigned = {task.delegated_to for task in self.queries.query(Task).filter(state=TaskState.OPEN).matching(HasValue("delegated_to")).all_rows() if task.delegated_to is not None}
         return [worker for worker in self.queries.query(Agent).find_many(sorted(holders | assigned)) if self.is_abandoned(worker)]
 
     def is_abandoned(self, worker: Agent) -> bool:

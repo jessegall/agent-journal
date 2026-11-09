@@ -21,7 +21,7 @@ class RemoveOrphanWorktreesHandler(Handler[RemoveOrphanWorktrees, tuple[str, ...
         self.queries, self.worktrees, self.git = queries, worktrees, git
 
     def handle(self, command: RemoveOrphanWorktrees, context: Context) -> tuple[str, ...]:
-        environment = self.queries.query(Environment).find(context.environment_id)
+        environment = self.queries.query(Environment).find(context.required_environment_id())
         occupied = {str(Path(row.folder).resolve()) for row in self.worktrees.matching(IsNull("removed_at")).all_rows()}
         root = (Path(environment.folder) / WORKTREES_FOLDER).resolve()
         orphans: list[tuple[str, str | None]] = []

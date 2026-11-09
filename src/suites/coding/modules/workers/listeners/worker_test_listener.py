@@ -43,19 +43,21 @@ class WorkerTestListener(CommitListener[Moved[Proof] | Moved[Process] | Created[
         if logged.event == QUEUED_EVENT:
             self.start_next(logged)
             return
+        row = event.row
         if logged.event == RUN_EVENT:
-            self.launched(event.row)
+            if isinstance(row, Proof):
+                self.launched(row)
             return
         if logged.row_table == "processes":
-            self.ended(event.row, logged)
+            if isinstance(row, Process):
+                self.ended(row, logged)
             return
-        first_answer = event.row
         if logged.event == "affected_test.create":
             self.start_next(logged)
             return
-        if first_answer.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or first_answer.process_id is None:
+        if not isinstance(row, AffectedTest) or row.state not in (AffectedTestState.PICKING, AffectedTestState.TESTING) or row.process_id is None:
             return
-        process = self.rows.required(Process, first_answer.process_id)
+        process = self.rows.required(Process, row.process_id)
         self.launch.start(process, process.line, self.rows.required(Agent, process.session_agent_id).session)
 
     def start_next(self, logged: LoggedEvent) -> None:

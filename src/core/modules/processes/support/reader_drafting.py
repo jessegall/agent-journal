@@ -51,7 +51,7 @@ class ReaderDrafting:
         for field, patterns in (("lines_pattern", candidates.lines), ("progress_pattern", candidates.progress),
                                 ("summary_pattern", candidates.summary), ("count_pattern", candidates.count)):
             for pattern in patterns:
-                candidate = replace(reader, **{field: pattern})
+                candidate = reader.changed(**{field: pattern})
                 misses = self.judge.misses(candidate, request.category, text)
                 flag = "--" + field.removesuffix("_pattern")
                 if re.search(pattern, text, re.MULTILINE) and not any(miss.startswith(flag) for miss in misses):

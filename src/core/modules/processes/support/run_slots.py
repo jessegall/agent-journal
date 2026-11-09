@@ -47,9 +47,10 @@ class RunSlots:
             self.remember(saved)
 
     def remember(self, process: Process) -> None:
-        self.kept.scoped_update("processes", lambda runs: tuple(sorted([run for run in runs if run.id != process.id]
-                                  + ([process] if process.state in RUNNING_STATES else []), key=lambda run: run.id)),
-                                  "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
+        def with_process(runs: tuple[Process, ...]) -> tuple[Process, ...]:
+            return tuple(sorted([run for run in runs if run.id != process.id] + ([process] if process.state in RUNNING_STATES else []), key=lambda run: run.id))
+
+        self.kept.scoped_update("processes", with_process, "state IN (?, ?)", [*RUNNING_STATES], name="processes.slot_runs")
 
     def running(self) -> tuple[Process, ...]:
         return self.kept.scoped_read("processes", lambda: tuple(self.queries.query(Process).matching(Among("state", RUNNING_STATES)).oldest().all_rows()),

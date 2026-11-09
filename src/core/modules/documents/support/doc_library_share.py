@@ -1,8 +1,16 @@
+from typing import TypedDict
+
 from core.base.command.context import Context
 from core.base.library.library_share import Fields, LibraryShare
 from core.base.repository.repository import Repository
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_revisions import DocRevisions
+
+
+class DocText(TypedDict):
+    title: str
+    abstract: str
+    body: str
 
 
 class DocLibraryShare(LibraryShare[Doc]):
@@ -30,5 +38,5 @@ class DocLibraryShare(LibraryShare[Doc]):
         return doc
 
     @staticmethod
-    def columns(fields: Fields) -> dict[str, str]:
+    def columns(fields: Fields) -> DocText:
         return {"title": str(fields["title"]), "abstract": str(fields["abstract"]), "body": str(fields["body"])}

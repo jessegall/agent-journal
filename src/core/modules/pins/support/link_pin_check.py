@@ -73,7 +73,7 @@ class LinkPinCheck:
         links = dict.fromkeys(url.rstrip(".,;:/") for url in LINK.findall(text) if self.is_complete_link(url) and DESIGN_ADDRESS.fullmatch(url))
         pins = list(self.queries.query(Pin).matching(Prefix("link", "https://claude.ai/design/")).all_rows()) if links else []
         existing = {self.design_key(pin.link) for pin in pins}
-        made = []
+        made: list[MakePin] = []
         for url in links:
             project, filename = self.design_key(url)
             if self.is_project_root(project, filename) or (project, filename) in existing or (not filename and any(key[0] == project for key in existing)):

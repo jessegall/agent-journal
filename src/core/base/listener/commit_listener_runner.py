@@ -12,7 +12,7 @@ from core.base.log_level import LogLevel
 from core.base.system_log_writer import SystemLogWriter
 from core.base.exception_sink import ExceptionSink
 from core.base.listener.round_yield import RoundYield
-from core.base.listener.commit_listener import CommitListener
+from core.base.listener.commit_listener import is_commit_listener_class
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
@@ -131,7 +131,7 @@ class CommitListenerRunner:
     @staticmethod
     def run_order(entry: ListenerEntry) -> int:
         listener_class = entry.path.loaded()
-        return listener_class.run_order if issubclass(listener_class, CommitListener) else 0
+        return listener_class.run_order if is_commit_listener_class(listener_class) else 0
 
     def run_listener(self, entry: ListenerEntry, round_events: list[LoggedEvent]) -> bool:
         position = self.positions[entry.name]
@@ -158,7 +158,7 @@ class CommitListenerRunner:
 
     def prepare_rows(self, entry: ListenerEntry, events: list[LoggedEvent]) -> None:
         listener_class = entry.path.loaded()
-        if not issubclass(listener_class, CommitListener):
+        if not is_commit_listener_class(listener_class):
             return
         groups: dict[tuple[EventType, int | None, int | None], list[LoggedEvent]] = {}
         for event in events:
@@ -174,7 +174,7 @@ class CommitListenerRunner:
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:
         listener_class = entry.path.loaded()
-        if not issubclass(listener_class, CommitListener):
+        if not is_commit_listener_class(listener_class):
             raise CommitListenerError(f"{entry.path.text} is no commit listener")
         tools = self.container.get(PerformanceCosts)
         start_points = tools.begin()

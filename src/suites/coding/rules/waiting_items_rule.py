@@ -28,7 +28,6 @@ class WaitingItemsRule(DriverRule):
         self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        environment_id = hook.environment_id
         counts = (("open tasks", self.queries.query(Task).filter(state=TaskState.OPEN).count()),
                   ("unread messages", self.queries.query(Message).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).count()),
                   ("open questions", self.queries.query(Question).filter(state=QuestionState.OPEN).count()))

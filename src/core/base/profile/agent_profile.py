@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from collections.abc import Mapping, Sequence
 from typing import Any
 from core.base.access import Access
@@ -36,9 +36,9 @@ class AgentProfile:
     title: str = ""
     has_parent_report: bool = True
     messages_siblings: bool = False
-    program_models: Mapping[str, str] = field(default_factory=dict)
+    program_models: Mapping[str, str] = field(default_factory=dict[str, str])
     uses_project_instructions: bool = False
-    injections: Mapping[str, bool] = field(default_factory=dict)
+    injections: Mapping[str, bool] = field(default_factory=dict[str, bool])
     skills: tuple[str, ...] = ()
     required_skills: tuple[str, ...] = ()
 
@@ -57,4 +57,4 @@ class AgentProfile:
     def parsed(cls, fields: Mapping[str, Any]) -> "AgentProfile":
         access = Access(fields["access"]) if fields["access"] is not None else None
         tier = ModelTier.automatic(fields["tier"]) if fields.get("tier") is not None else None
-        return cls(**{**fields, "access": access, "tier": tier, "mcp_tools": tuple(fields["mcp_tools"]), "writable_folders": tuple(fields.get("writable_folders", ())), "skills": tuple(fields.get("skills", ())), "required_skills": tuple(fields.get("required_skills", ())), "fallback_programs": tuple(fields.get("fallback_programs", ())), "changed": tuple(fields["changed"]), "notes": tuple(fields.get("notes", ()))})
+        return replace(cls(**fields), access=access, tier=tier, mcp_tools=tuple(fields["mcp_tools"]), writable_folders=tuple(fields.get("writable_folders", ())), skills=tuple(fields.get("skills", ())), required_skills=tuple(fields.get("required_skills", ())), fallback_programs=tuple(fields.get("fallback_programs", ())), changed=tuple(fields["changed"]), notes=tuple(fields.get("notes", ())))

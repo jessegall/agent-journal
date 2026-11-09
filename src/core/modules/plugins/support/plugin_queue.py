@@ -6,7 +6,7 @@ import re
 from collections.abc import Collection, Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
-from typing import TextIO
+from typing import IO
 
 from core.base.clock import Clock
 from core.base.type_guards import is_mapping
@@ -144,7 +144,7 @@ class PluginQueue:
             return
 
     @contextmanager
-    def lock_file(self, path: Path) -> Generator[TextIO | None]:
+    def lock_file(self, path: Path) -> Generator[IO[str] | None]:
         stack = ExitStack()
         try:
             source = stack.enter_context(FileAccess.shared().writer(path, "r+"))

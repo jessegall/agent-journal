@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.foreign_answer import ForeignAnswer
@@ -43,7 +45,7 @@ class ForeignHooksRule(DriverRule):
                           dropped_lines=len(lines) if hook.event.event not in provider.line_events else 0,
                           terminal="\n".join(answer.terminal for answer in answers if answer.terminal))
 
-    def new_lines(self, hook: AgentHook, name: str, reported: list[str]) -> list[str]:
+    def new_lines(self, hook: AgentHook, name: str, reported: Sequence[str]) -> list[str]:
         prefix = f"{name}: "
         last = self.queries.query(HookCall).filter(session_agent_id=hook.agent_id).matching(ContainsSome(["lines"], [prefix])).newest().first()
         previous_lines = last.lines.splitlines() if last is not None else []

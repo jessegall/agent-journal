@@ -5,6 +5,7 @@ from pathlib import Path
 
 from core.base.database.database_text_replacement import DatabaseTextReplacement
 from core.base.file_access import FileAccess
+from core.base.type_guards import is_frozenset, is_list, is_mapping, is_set, is_tuple
 
 CHECKOUT_FILE = "checkout"
 REWRITTEN_FILES = ("module_list", "program_table")
@@ -43,9 +44,15 @@ class TemplateAdaptation:
     def adapted_value(self, value: object, builder: str) -> object:
         if type(value) is str:
             return value.replace(builder, self.checkout)
-        if type(value) in (list, tuple, set, frozenset):
-            return type(value)(self.adapted_value(item, builder) for item in value)
-        if type(value) is dict:
+        if is_list(value) and type(value) is list:
+            return [self.adapted_value(item, builder) for item in value]
+        if is_tuple(value) and type(value) is tuple:
+            return tuple(self.adapted_value(item, builder) for item in value)
+        if is_set(value) and type(value) is set:
+            return {self.adapted_value(item, builder) for item in value}
+        if is_frozenset(value) and type(value) is frozenset:
+            return frozenset(self.adapted_value(item, builder) for item in value)
+        if is_mapping(value) and value.__class__ is dict:
             return {self.adapted_value(key, builder): self.adapted_value(item, builder) for key, item in value.items()}
         if dataclasses.is_dataclass(value) and not isinstance(value, type):
             return dataclasses.replace(value, **{field.name: self.adapted_value(getattr(value, field.name), builder) for field in dataclasses.fields(value) if field.init})

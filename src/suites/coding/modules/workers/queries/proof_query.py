@@ -7,6 +7,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.query import Query
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.support.replaced_rows import replaced_rows
 from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 
 
@@ -27,6 +28,9 @@ class ProofQuery(Query[Proof]):
     def has_short_proof(self, worktree_id: int) -> bool:
         return self.kept.read(self.table.name, self.worktree_proofs(worktree_id).filter(state=ProofState.SHORT).exists, "worktree_id = ? AND state = ?", [worktree_id, ProofState.SHORT], name="workers.short_proof")
 
+    def has_waiting_proofs(self, worktree_id: int) -> bool:
+        return self.kept.read(self.table.name, self.waiting_proofs(worktree_id).exists, "worktree_id = ? AND state = ?", [worktree_id, ProofState.SHOWN], name="workers.waiting_proofs")
+
     def untested_proofs(self, worktree_id: int) -> Self:
         return self.waiting_proofs(worktree_id).filter(test_command="")
 
@@ -41,10 +45,13 @@ class ProofQuery(Query[Proof]):
                               "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
 
     def remember_test(self, proof: Proof) -> None:
-        self.kept.update(self.table.name, lambda rows: tuple(sorted([row for row in rows if row.id != proof.id] +
-                         ([proof] if proof.state in TEST_WAITING_STATES else []), key=lambda row: row.id)),
-                         "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
+        def with_proof(rows: tuple[Proof, ...]) -> tuple[Proof, ...]:
+            return replaced_rows(rows, proof.id, [proof] if proof.state in TEST_WAITING_STATES else [])
+
+        self.kept.update(self.table.name, with_proof, "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
 
     def remove_test(self, proof: Proof) -> None:
-        self.kept.update(self.table.name, lambda rows: tuple(row for row in rows if row.id != proof.id),
-                         "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
+        def without_proof(rows: tuple[Proof, ...]) -> tuple[Proof, ...]:
+            return replaced_rows(rows, proof.id, [])
+
+        self.kept.update(self.table.name, without_proof, "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")

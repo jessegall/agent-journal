@@ -73,11 +73,12 @@ class WorkerResume:
         return permitted and self.program_state(worker).is_ready
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
-        if self.resume(worker, actor) is not LaunchAnswer.RUNNING:
+        ended_at = worker.ended_at
+        if ended_at is None or self.resume(worker, actor) is not LaunchAnswer.RUNNING:
             return
         self.program.stop(worker)
         if self.resume(worker, actor) is LaunchAnswer.RUNNING:
-            self.reports.report(worker, self.running_program_reason(worker), worker.ended_at)
+            self.reports.report(worker, self.running_program_reason(worker), ended_at)
 
     @staticmethod
     def running_program_reason(worker: Agent) -> str:

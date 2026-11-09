@@ -32,7 +32,8 @@ class MessageTokens:
 
     @classmethod
     def word_parts(cls, text: str) -> defaultdict[str, set[int]]:
-        tokens, parts = cls.content_tokens(text), defaultdict(set)
+        tokens = cls.content_tokens(text)
+        parts: defaultdict[str, set[int]] = defaultdict(set)
         for place, word in enumerate(tokens):
             parts[word].add(cls.part(place, len(tokens)))
         return parts

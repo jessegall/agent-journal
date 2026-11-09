@@ -20,7 +20,7 @@ class ButtonLine:
     module: str
     template: str
     shipped: bool
-    fields: Mapping[str, ButtonField] = field(default_factory=dict)
+    fields: Mapping[str, ButtonField] = field(default_factory=dict[str, ButtonField])
     label: str = ""
 
     @property

@@ -1,4 +1,6 @@
+from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
+from core.base.type_guards import is_list, is_tuple
 from core.base.registry.helper_type_entry import HelperTypeEntry
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.agents.support.type_limits import TypeLimits
@@ -18,12 +20,19 @@ class AgentTypeLimits:
             return None
         return self.read(entry, profile)
 
+    def required(self, role: str, profile: str = "") -> TypeLimits:
+        limits = self.lookup(role, profile)
+        if limits is None:
+            raise Refusal(f"{role} agents have no limit", "a module declares a helper type with its run limit")
+        return limits
+
     def read(self, entry: HelperTypeEntry, profile: str = "") -> TypeLimits:
         profile_limits = entry.profile_limits_key and self.profile_limits(entry.profile_limits_key, profile)
         return profile_limits or TypeLimits(self.settings.number(entry.run_limit_key), self.settings.number(entry.kept_limit_key))
 
     def profile_limits(self, key: str, profile: str) -> TypeLimits | None:
-        for item in self.settings.value(key) or ():
+        stored = self.settings.value(key)
+        for item in stored if is_list(stored) or is_tuple(stored) else ():
             name, _, numbers = str(item).partition(":")
             run, _, kept = numbers.partition(":")
             if name == profile and run.isdigit() and kept.isdigit():

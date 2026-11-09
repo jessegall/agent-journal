@@ -21,8 +21,12 @@ class TestRunMarkerListener(CommitListener[Changed[Process]]):
     def handle(self, event: Changed[Process], logged: LoggedEvent) -> None:
         process = event.row
         is_running_test = not isinstance(event, Deleted) and process.state in OPEN and process.category is CommandCategory.TEST_RUN
-        active_ids = {process.id} if is_running_test else set()
-        self.kept.update("processes", lambda ids: (ids - {process.id}) | active_ids,
+        active_ids = {process.id} if is_running_test else set[int]()
+
+        def updated(ids: set[int]) -> set[int]:
+            return (ids - {process.id}) | active_ids
+
+        self.kept.update("processes", updated,
                          "state IN (?, ?) AND category = ?", [*OPEN, CommandCategory.TEST_RUN], name="processes.running_tests")
         running = self.kept.read("processes", lambda: {row.id for row in self.processes.running().filter(category=CommandCategory.TEST_RUN).all_rows()},
                                  "state IN (?, ?) AND category = ?", [*OPEN, CommandCategory.TEST_RUN], name="processes.running_tests")

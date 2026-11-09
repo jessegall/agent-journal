@@ -37,9 +37,9 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
         for helper in self.agents.running(HelperRole.HELPER):
             job = self.jobs.open_job(helper.id)
             if job is not None and helper.parent_id is not None:
-                self.check(helper, job, context)
+                self.check(helper, helper.parent_id, job, context)
 
-    def check(self, helper: Agent, job: HelperJob, context: Context) -> None:
+    def check(self, helper: Agent, parent_id: int, job: HelperJob, context: Context) -> None:
         with self.scopes.opened(None, helper.environment_id):
             limits = self.options.resolved(helper.role, helper.profile).options
             max_minutes = limits.max_minutes if limits.max_minutes is not None else self.settings.number(HELPER_MAX_MINUTES)
@@ -47,14 +47,14 @@ class EndHelpersPastLimitsHandler(Handler[EndHelpersPastLimits, None]):
             spend = HelperSpend(job.creation_timestamp().elapsed_seconds(context.timestamp) / 60, self.files.status(helper.session).cost_dollars, job.cost_baseline,
                                 max_minutes, max_cost)
         if spend.share >= 1:
-            self.stop(helper, job, spend)
-        elif spend.share >= WARNING_SHARE and not self.is_warned(helper, job):
-            self.bus.run(SendHelperLimitWarning(helper.id, helper.parent_id, job.id, spend.limit_name), Actor.core(), environment_id=helper.environment_id)
+            self.stop(helper, parent_id, job, spend)
+        elif spend.share >= WARNING_SHARE and not self.is_warned(parent_id, job):
+            self.bus.run(SendHelperLimitWarning(helper.id, parent_id, job.id, spend.limit_name), Actor.core(), environment_id=helper.environment_id)
 
-    def is_warned(self, helper: Agent, job: HelperJob) -> bool:
-        return self.queries.query(AgentLine).filter(session_agent_id=helper.parent_id, source=SendHelperLimitWarning.source(job.id)).exists()
+    def is_warned(self, parent_id: int, job: HelperJob) -> bool:
+        return self.queries.query(AgentLine).filter(session_agent_id=parent_id, source=SendHelperLimitWarning.source(job.id)).exists()
 
-    def stop(self, helper: Agent, job: HelperJob, spend: HelperSpend) -> None:
+    def stop(self, helper: Agent, parent_id: int, job: HelperJob, spend: HelperSpend) -> None:
         text = f"It was stopped at its {spend.limit_name} limit."
-        self.bus.run(RecordParentReport(helper.id, helper.parent_id, text, job.id), Actor.core(), environment_id=helper.environment_id)
+        self.bus.run(RecordParentReport(helper.id, parent_id, text, job.id), Actor.core(), environment_id=helper.environment_id)
         self.bus.run(EndAgent(helper.id), Actor.core(), environment_id=helper.environment_id)

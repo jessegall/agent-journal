@@ -53,7 +53,6 @@ src/core/modules/messages/commands/record_parent_report/record_parent_report_han
 src/core/modules/messages/rules/transcript_message_rule.py imports core module settings, which core module messages may not use
 src/core/modules/messages/rules/typed_prompt_rule.py imports core module schedules, which core module messages may not use
 src/core/modules/messages/support/agent_message_routes.py imports core module profiles, which core module messages may not use
-src/core/modules/notices: has no declaration class
 src/core/modules/phone/commands/pair_phone/pair_phone_handler.py imports core module agents, which core module phone may not use
 src/core/modules/pins/support/pin_nudges.py imports core module drivers, which core module pins may not use
 src/core/modules/plan_reviews/support/plan_rounds.py imports core module actors, which core module plan_reviews may not use
