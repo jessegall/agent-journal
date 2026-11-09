@@ -1,6 +1,6 @@
 from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-from core.modules.skills.support.agent_skill_rows import AgentSkillRows
+from core.modules.skills.support.loaded_skills import LoadedSkills
 from core.modules.skills.support.skill_files import SkillFiles
 from core.modules.skills.support.skill_block import SkillBlock
 from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
@@ -31,9 +31,9 @@ class PhraseTriggerRule(DriverRule):
     drivers = ["*"]
     role_group = RoleGroup.PROMPT
 
-    def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions, catalogue: SkillCatalogue, rows: AgentSkillRows, files: SkillFiles) -> None:
+    def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions, catalogue: SkillCatalogue, loaded: LoadedSkills, files: SkillFiles) -> None:
         self.triggers, self.conditions = triggers, conditions
-        self.catalogue, self.rows, self.files = catalogue, rows, files
+        self.catalogue, self.loaded, self.files = catalogue, loaded, files
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         texts = [(place, text) for place, text in self.texts(hook) if text]
@@ -45,8 +45,8 @@ class PhraseTriggerRule(DriverRule):
             return RuleAnswer.refused(TRIGGER_DENIES.nudge(trigger=deny.id)).running(FireTrigger(deny.id))
         if not matching:
             return RuleAnswer.allowed()
-        missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None
-                   and not self.rows.is_loaded(hook.agent_id, trigger.skill, skills[trigger.skill].digest)]
+        loaded = self.loaded.names(hook.agent_id) if skills else ()
+        missing = [trigger for trigger in matching if trigger.action is TriggerAction.SKILL and trigger.skill is not None and trigger.skill not in loaded]
         commands = [RequestSkill(hook.agent_id, folder) for folder in dict.fromkeys(trigger.skill for trigger in missing) if folder is not None]
         nudges = [TRIGGER_LINE.nudge(trigger=trigger.id) for trigger in matching if trigger.action is not TriggerAction.SKILL]
         if missing:
