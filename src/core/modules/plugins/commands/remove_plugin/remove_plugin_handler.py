@@ -14,8 +14,8 @@ from core.modules.skills.support.plugin_skill_removal import PluginSkillRemoval
 
 
 class RemovePluginHandler(Handler[RemovePlugin, str]):
-    """Deletes a plugin's row, its readers and its code folder, and its data folder only with --purge; only
-    the person removes."""
+    """Deletes a plugin's row with its aliases, then its readers and its code folder, and its data folder only with
+    --purge; only the person removes."""
 
     command = RemovePlugin
     runs_once = True
@@ -29,8 +29,8 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
 
     def handle(self, command: RemovePlugin, context: Context) -> str:
         plugin = self.plugins.find_name(command.name)
-        self.readers.remove(plugin.name, context)
         self.repository.delete(plugin, context)
+        self.readers.remove(plugin.name, context)
         self.skill_removal.remove(plugin.name)
         shutil.rmtree(self.folders.code(plugin.name), ignore_errors=True)
         if command.purge:
