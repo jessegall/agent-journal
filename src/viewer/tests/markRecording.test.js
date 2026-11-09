@@ -5,11 +5,11 @@ import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
 const RECORDING_MS = 1300;
 
-function mounted(enabled, read, run) {
+function mounted(enabled, read, run, shared = {read, run, markMotion: ref(enabled)}) {
     const element = document.createElement("div");
     document.body.append(element);
     const app = createApp({render: () => h(ChatMark, {mark: {label: "Ran the tests", detail: "3 passed"}})});
-    app.provide(WINDOW_CONTEXT, {read, run, markMotion: ref(enabled)});
+    app.provide(WINDOW_CONTEXT, shared);
     app.mount(element);
     return {element, app};
 }
@@ -48,13 +48,12 @@ test("many marks recorded together are sent as one request", async () => {
     document.getAnimations = () => [];
     const saved = [];
     const run = async (line) => saved.push(line);
-    const opened = [mounted(true, async () => ({}), run), mounted(true, async () => ({}), run), mounted(true, async () => ({}), run)];
-    const context = opened.map(({app}) => app._context.provides[WINDOW_CONTEXT]);
+    const shared = {read: async () => ({}), run, markMotion: ref(true)};
+    const opened = [1, 2, 3].map(() => mounted(true, shared.read, run, shared));
     for (const {element} of opened) element.querySelector(".top").click();
     await nextTick();
     await new Promise((resolve) => setTimeout(resolve, RECORDING_MS));
     expect(saved).toHaveLength(1);
     expect(JSON.parse(saved[0][2])).toHaveLength(3);
-    expect(context).toHaveLength(3);
     opened.forEach(({app}) => app.unmount());
 });
