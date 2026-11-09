@@ -230,7 +230,12 @@
         "ViewerVersionScriptDetector",
         "architecture_nudges_stored_text",
         "WindowContextNamedWindowDetector",
-        "WindowContextAssignedWindowDetector"
+        "WindowContextAssignedWindowDetector",
+        "architecture_plugins_plugin_named_in_python_text",
+        "architecture_plugins_plugin_named_in_python_name",
+        "architecture_plugins_plugin_named_in_script_text",
+        "architecture_plugins_plugin_named_in_vue_text",
+        "architecture_plugins_plugin_named_in_go_text"
     ],
     "parallel": 2,
     "configure": {
@@ -415,13 +420,6 @@
             }
         ],
         "architecture_testing_interpreter_in_a_test": [
-            {
-                "judges": [
-                    "tests"
-                ]
-            }
-        ],
-        "architecture_testing_sleep_in_a_test": [
             {
                 "judges": [
                     "tests"

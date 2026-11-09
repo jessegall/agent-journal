@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 if (!document.getElementById("window-styles-12cedbc03e9f")) { const style = document.createElement("style"); style.id = "window-styles-12cedbc03e9f"; style.textContent = ".rules-page[data-v-741afd9c]{display:flex;flex-direction:column;gap:8px}.rules-refusal[data-v-741afd9c]{margin:0;color:var(--danger);font-size:12.5px}.rule[data-v-741afd9c]{display:flex;flex:1;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding:4px 0}.rule-text[data-v-741afd9c]{flex:1 1 240px;min-width:0}.rule-state[data-v-741afd9c]{color:var(--warn);font-size:12px}\n"; document.head.appendChild(style); }
 import { computed as B, ref as D, openBlock as s, createBlock as y, unref as o, withCtx as r, createElementVNode as n, createElementBlock as R, toDisplayString as g, createCommentVNode as O, createVNode as m, Fragment as P, createTextVNode as v } from "vue";
 import { useWindow as V, WindowRoom as T, RowList as $, Btn as _ } from "@journal/window-kit";

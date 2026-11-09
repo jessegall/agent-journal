@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { openBlock as c, createElementBlock as l, Fragment as m, createElementVNode as n } from "vue";
 import { useWindow as a } from "@journal/window-kit";
 const d = {

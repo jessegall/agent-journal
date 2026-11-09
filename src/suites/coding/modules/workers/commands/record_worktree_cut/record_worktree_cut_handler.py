@@ -12,6 +12,7 @@ from core.base.scope.scopes import Scopes
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits
+from suites.coding.modules.workers.support.assignable_tasks import AssignableTasks
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
@@ -47,5 +48,6 @@ class RecordWorktreeCutHandler(Handler[RecordWorktreeCut, Worktree]):
             self.repository.update(task, context, delegated_to=worktree.session_agent_id)
         self.waits.update_tasks(command.task_ids, context)
         self.assignments.record(worktree.session_agent_id, tasks, context)
-        self.bus.dispatch(StartTask(command.task_ids[0]), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
+        if AssignableTasks.has_open(list(tasks)):
+            self.bus.dispatch(StartTask(command.task_ids[0]), replace(context, actor=Actor(worktree.session_agent_id, ActorType.AGENT)))
         return cut

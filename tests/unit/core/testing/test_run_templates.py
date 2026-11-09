@@ -1,3 +1,4 @@
+from core.testing.template_cache import python_source_folders
 from types import SimpleNamespace
 
 import pytest
@@ -63,3 +64,7 @@ def test_folder_choice_ignores_code_change(first_process, tmp_path):
     assert run_template_folder() == tmp_path / "first"
     first_process.setattr(TemplateCache, "folder", lambda cache: tmp_path / "second")
     assert run_template_folder() == tmp_path / "first"
+
+
+def test_the_viewer_is_no_part_of_a_template_key_or_of_the_pinned_code():
+    assert "viewer" not in [folder.name for folder in python_source_folders()]

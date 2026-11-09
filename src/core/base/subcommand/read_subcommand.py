@@ -17,6 +17,7 @@ class ReadSubcommand(Generic[R]):
     empty_line: ClassVar[str] = ""
     disabled_scopes: ClassVar[WholeScopes] = ()
     environment_refusal: ClassVar[str] = ""
+    allows_pipes: ClassVar[bool] = False
 
     cli_name: str
     name: str

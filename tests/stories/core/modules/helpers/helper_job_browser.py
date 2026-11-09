@@ -26,7 +26,7 @@ def test_ended_helper_keeps_its_last_job(new_story):
 def test_resumed_helper_shows_its_new_job(new_story):
     story = new_story(fixture=EndedHelper)
     helper = helper_agent(story)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
     story.expect_success(f'helper send {helper.id} "Review plan 1093"', actor=story.agent)
     launcher.drain_requests()
     launcher.server.close()

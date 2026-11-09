@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { openBlock as n, createElementBlock as u, createElementVNode as t, computed as h, normalizeClass as X, toDisplayString as y, renderSlot as me, createTextVNode as S, createCommentVNode as j, createVNode as $, unref as v, withCtx as A, reactive as ie, ref as T, watch as ne, Fragment as x, renderList as L, createBlock as R, withModifiers as ke, useModel as ye, normalizeStyle as le, mergeModels as fe, onMounted as be } from "vue";
 import { useWindow as G, Btn as U, Switch as ee, TextInput as he, useNow as _e, age as $e, Icon as we, Segmented as Ce, WindowRoom as Ae, InnerTabs as Se, TabBody as Oe, SwitchCase as Te } from "@journal/window-kit";
 import { _ as P } from "./_plugin-vue_export-helper-CHgC5LLL.js";

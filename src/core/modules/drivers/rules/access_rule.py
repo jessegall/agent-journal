@@ -14,7 +14,7 @@ from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
-from core.base.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors
+from core.base.plan_authors import PLAN_AUTHOR_LINES, PlanAuthors, PlanEdit
 from core.modules.drivers.commands.use_permission.use_permission import UsePermission
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
@@ -64,13 +64,15 @@ class AccessRule(ReadonlyRule):
     def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:
         if shell.contains_fragment(self.identity_variables()):
             return True
-        return any(self.is_outward(" ".join(part.arguments[:2])) and not self.plan_author_line(part.arguments, agent_id)
-                   for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
+        outward = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and self.is_outward(" ".join(part.arguments[:2]))]
+        edits = [self.plan_edit(arguments) for arguments in outward]
+        return any(edit is None for edit in edits) or (bool(edits) and not self.plan_authors.are_authors(agent_id, [edit for edit in edits if edit is not None]))
 
-    def plan_author_line(self, arguments: Sequence[str], agent_id: int) -> bool:
+    @staticmethod
+    def plan_edit(arguments: Sequence[str]) -> PlanEdit | None:
         line = " ".join(arguments[:2])
         row_id = next((int(word) for word in arguments[2:] if word.isdigit()), None)
-        return line in PLAN_AUTHOR_LINES and row_id is not None and self.plan_authors.is_author(agent_id, line, row_id)
+        return PlanEdit(line, row_id) if line in PLAN_AUTHOR_LINES and row_id is not None else None
 
     def is_outward(self, line: str) -> bool:
         if not self.registry.is_outward(line) or line in self.registry.subcommands:

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, unref } from "vue";
-import {READ_RATES, coalesced, eventAboutRows, eventChildOf, peekRef, SkeletonLine, useDockCard, useWindow} from "@journal/window-kit";
+import {AgentBadge, READ_RATES, agentLabel, coalesced, eventAboutRows, eventChildOf, peekRef, SkeletonLine, useDockCard, useWindow} from "@journal/window-kit";
 
 const PREVIEW_PHASES = 5;
 const view = useWindow();
@@ -64,11 +64,11 @@ view.follow(["phase.*", "phase_task.*", "task.*", "agent.*"], (event) => {
         <button
           type="button"
           class="plan-dock-agent"
-          :title="`Open ${agent.name}`"
+          :title="`Open ${agentLabel(agent.name, agent.main)}`"
           data-plan-dock-agent
           @click="peekRef(`agents:${agent.id}`)"
         >
-          {{ agent.name }}
+          <AgentBadge :name="agent.name" :main="agent.main" />
         </button>
       </template>
     </div>

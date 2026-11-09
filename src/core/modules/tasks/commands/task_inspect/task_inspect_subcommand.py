@@ -30,7 +30,7 @@ class TaskInspectSubcommand(ReadSubcommand[TaskInspection]):
         row = self.queries.query(TaskInspectionRow).find(arguments.task_id)
         openers = json.loads(row.openers)
         attempts = self.attempts.last_runs([wait["id"] for wait in openers if wait["command"]])
-        return TaskInspection(task, tuple(json.loads(row.waits)), tuple(reversed(json.loads(row.logs))), tuple(TaskOpener.parsed(wait, attempts.get(wait["id"], "")).text for wait in openers), row.helper_id, row.helper_name, tuple(json.loads(row.block_renewals)), tags=row.tags)
+        return TaskInspection(task, tuple(json.loads(row.waits)), tuple(reversed(json.loads(row.logs))), tuple(TaskOpener.parsed(wait, attempts.get(wait["id"], "")).text for wait in openers), row.helper_id, row.helper_name, row.helper_main, tuple(json.loads(row.block_renewals)), tags=row.tags)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskInspection):

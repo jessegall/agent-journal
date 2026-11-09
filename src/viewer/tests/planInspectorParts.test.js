@@ -69,6 +69,6 @@ test("an agent with only blocked tasks in a phase is Queued, and one with a star
     const phases = [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [task(1, "blocked", 12), task(2, "blocked", 13), task(3, "testing", 13), task(4, "started", 14), task(5, "open", 15)]}];
     const element = drawn(PlanPhases, {phases, currentPhase: 1}, {task: () => null});
     await settle();
-    const words = Object.fromEntries([...element.querySelectorAll("[data-plan-phase-agent]")].map((agent) => [agent.textContent.trim().split(/\s+/)[1], agent.querySelector(".agent-word").textContent]));
+    const words = Object.fromEntries([...element.querySelectorAll("[data-plan-phase-agent]")].map((agent) => [agent.querySelector("[data-agent-badge-name]").textContent.split(" ")[1], agent.querySelector(".agent-word").textContent]));
     expect(words).toEqual({12: "Queued", 13: "Working", 14: "Working", 15: "Queued"});
 });

@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { ref as r, watch as i } from "vue";
 function c(a, u) {
   a.value = !a.value, a.value || u();

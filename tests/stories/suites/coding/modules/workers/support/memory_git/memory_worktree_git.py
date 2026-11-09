@@ -269,9 +269,6 @@ class MemoryWorktreeGit(WorktreeGit):
     def uncommitted_files(self, folder: str) -> tuple[str, ...]:
         return self.uncommitted_names(folder)
 
-    def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
-        return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
-
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
         base = self.history.merge_base(self.history.branches[worktree.base_branch], self.history.branches[worktree.branch])
         changes = self.file_changes(worktree.folder, base)

@@ -46,7 +46,7 @@ def waiting_line(story: Story) -> AgentLine:
 
 def test_agents_of_a_program_at_its_usage_limit_are_marked_and_get_no_lines_until_it_starts_again(new_story):
     story = limited_story(new_story)
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    launcher = FakeLauncher.listening(story.home.socket(LAUNCHER_SOCKET))
     try:
         story.hook("s-1", HookSamples.session_start())
         report_window(story, 100)

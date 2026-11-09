@@ -13,4 +13,5 @@ class ApprovalLifecycle(Lifecycle):
     accept = Move("accept", [ApprovalState.RUNNING], ApprovalState.ACCEPTED)
     refuse = Move("refuse", [ApprovalState.RUNNING], ApprovalState.REFUSED)
     retry = Move("retry", [ApprovalState.RUNNING], ApprovalState.OPEN)
+    recover = Move("recover", [ApprovalState.RUNNING], ApprovalState.OPEN)
     close = Move("close", [ApprovalState.OPEN], ApprovalState.CLOSED)

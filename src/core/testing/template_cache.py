@@ -18,6 +18,10 @@ UNTEMPLATED_FOLDERS = frozenset(("viewer", "__pycache__"))
 HASH_CHARACTERS = 16
 
 
+def python_source_folders() -> tuple[Path, ...]:
+    return tuple(sorted(folder for folder in CORE_FOLDER.parent.iterdir() if folder.is_dir() and folder.name not in UNTEMPLATED_FOLDERS))
+
+
 class TemplateCache:
     """Shares complete story templates between every checkout of a project, keyed on their python sources (the
     viewer's sources are no part of a template, so editing them rebuilds nothing), and when a new one is
@@ -33,8 +37,7 @@ class TemplateCache:
     def folder(self) -> Path:
         checkout = CORE_FOLDER.parent.parent.resolve()
         support_folders = tuple(sorted(folder for folder in (checkout / "tests").rglob("support") if folder.is_dir()))
-        source_folders = tuple(sorted(folder for folder in CORE_FOLDER.parent.iterdir() if folder.is_dir() and folder.name not in UNTEMPLATED_FOLDERS))
-        source_hash = SourceHash.text((*source_folders, *support_folders))
+        source_hash = SourceHash.text((*python_source_folders(), *support_folders))
         current = self.root / source_hash[:HASH_CHARACTERS]
         is_new = not current.is_dir()
         current.mkdir(parents=True, exist_ok=True)

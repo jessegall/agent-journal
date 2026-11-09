@@ -43,6 +43,9 @@ class AgentRows:
     def is_main(self, agent_id: int) -> bool:
         return self.find(agent_id).role == AgentRole.MAIN
 
+    def has_profile(self, agent_id: int, profile: str) -> bool:
+        return self.find(agent_id).profile == profile
+
     def require_main(self, actor: Actor, action: str) -> None:
         if actor.type is not ActorType.AGENT:
             return

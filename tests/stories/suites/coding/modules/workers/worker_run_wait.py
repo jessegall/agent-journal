@@ -29,6 +29,10 @@ BUILD_SHELL = HookSamples.shell(BUILD_LINE, ShellPart("make", CommandCategory.BU
 SEARCH_SHELL = HookSamples.shell("grep -r cart src", ShellPart("grep", CommandCategory.SEARCH, ["-r", "cart", "src"]))
 OUTPUT_NUMBER_LINE = "go on with task 1, you hear when it ends"
 SECONDS_SET = f"setting set {WORKER_RUN_WAIT} {{seconds}} --environment main"
+LONG_OUTPUT = "".join(f"line {number}\n" for number in range(1, 301))
+PIPED_TEST = HookSamples.shell("journal worker test python tests/cart.py && tail -2",
+                               ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", "python", "tests/cart.py"], subcommand="worker", pipe_target=1),
+                               ShellPart("tail", CommandCategory.SEARCH, ["-2"]))
 
 
 @pytest.fixture
@@ -70,10 +74,10 @@ def end_run_during_wait(story, text: str, exit_code: int = 0, after_sleeps: int 
     story.clock.call_after_sleeps(after_sleeps, ended)
 
 
-def test_a_workers_build_holds_its_call_for_thirty_seconds_by_default(worker):
+def test_a_workers_build_holds_its_call_for_sixty_seconds_by_default(worker):
     command = worker_command(worker)
-    expect_value_with(command, "--limit 30 ")
-    expect_value_with(command, f"{QUEUE_WAIT_VARIABLE}=30")
+    expect_value_with(command, "--limit 60 ")
+    expect_value_with(command, f"{QUEUE_WAIT_VARIABLE}=60")
     expect_value_with(command, f"{COUNTED_QUEUE_VARIABLE}=1")
     expect_value_without(command, "--background")
 
@@ -98,14 +102,14 @@ def test_at_zero_a_workers_build_goes_to_the_background_at_once(worker):
 def test_a_build_that_went_long_before_still_holds_a_workers_call(worker):
     first = worker_command(worker)
     worker.story.expect_success(f"process background {newest_run(worker.story).id}", actor=worker.worker)
-    expect_value_with(first, "--limit 30 ")
+    expect_value_with(first, "--limit 60 ")
     expect_value_without(worker_command(worker), "--background")
 
 
 def test_a_read_only_helpers_build_holds_its_call_too(new_story):
     story = install_runner(new_story(fixture=BuilderHelper))
     command = dict(story.hook("sub-1", BUILD_SHELL).updated_input)["command"]
-    expect_value_with(command, "--limit 30 ")
+    expect_value_with(command, "--limit 60 ")
 
 
 def test_a_main_agents_build_keeps_its_own_limit(new_story):
@@ -174,10 +178,10 @@ def test_a_changed_setting_changes_how_long_a_named_test_holds(worker):
     expect_value(worker.story.clock.slept_seconds - start_seconds, 5)
 
 
-def test_the_default_holds_a_named_test_for_thirty_seconds(worker):
+def test_the_default_holds_a_named_test_for_sixty_seconds(worker):
     start_seconds = worker.story.clock.slept_seconds
     worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.clock.slept_seconds - start_seconds, 30)
+    expect_value(worker.story.clock.slept_seconds - start_seconds, 60)
 
 
 def test_at_zero_a_named_test_launches_in_the_background_and_tells_the_output_number_at_once(worker, launches):
@@ -193,7 +197,7 @@ def test_at_zero_a_named_test_launches_in_the_background_and_tells_the_output_nu
 def test_a_named_test_launches_held_with_the_settings_queue_wait(worker, launches):
     worker.story.run(TEST_RUN, actor=worker.worker)
     worker.story.run_listeners()
-    expect_value_with(launches[0], f"{QUEUE_WAIT_VARIABLE}=30")
+    expect_value_with(launches[0], f"{QUEUE_WAIT_VARIABLE}=60")
     expect_value_without(launches[0], "--background")
 
 
@@ -207,3 +211,21 @@ def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed
         key = f"terminal-output.{reply.hook_call_id}"
         status, output = window_data(server, cookie, keys=key, window="agents.agents")
         worker.story.expect_rows(status == 200, output["keys"][key]["value"]["lines"] == ["10 passed"], detail=str(output["keys"][key]))
+
+
+def test_a_named_test_with_no_pipe_gets_only_a_short_answer_and_the_output_number(worker):
+    end_run_during_wait(worker.story, LONG_OUTPUT)
+    text = worker.story.run(TEST_RUN, actor=worker.worker).output_text
+    expect_value_with(text, "line 300")
+    expect_value_without(text, "line 200\n")
+    expect_value_with(text, f"full output saved as output {newest_run(worker.story).id}")
+
+
+def test_a_named_test_with_a_pipe_gets_the_whole_output_for_the_pipe_and_the_output_number(worker):
+    worker.story.hook(worker.session, PIPED_TEST)
+    shell_process = newest_run(worker.story)
+    end_run_during_wait(worker.story, LONG_OUTPUT)
+    text = worker.story.run(TEST_RUN, actor=worker.worker, process_id=shell_process.id).output_text
+    expect_value_with(text, "line 1\n")
+    expect_value_with(text, "line 300")
+    expect_value_with(text, f"full output saved as output {newest_run(worker.story).id}")

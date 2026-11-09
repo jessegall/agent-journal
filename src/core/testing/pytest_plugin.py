@@ -8,11 +8,12 @@ from pathlib import Path
 import pytest
 
 from core.base.database.shared_tables import SharedTables
-from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE, SOURCE_FOLDER
+from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE
 from core.base.module.source_hash import SourceHash
 
 from core.base.registry.lazy_loading import LazyLoading
 from core.testing.heavy_run_gate import HeavyRunGate
+from core.testing.template_cache import python_source_folders
 from core.testing.run_cpu import RunCpu
 from core.testing.run_size import RunSize
 from core.testing.full_run_record import FullRunRecord
@@ -76,7 +77,7 @@ def chooses_template_folder(config: pytest.Config) -> bool:
 def pinned_code_text() -> str:
     # The first process of a run hashes the code and its runners inherit it, so a file edited during the run changes nothing.
     if PINNED_CODE_VARIABLE not in os.environ:
-        os.environ[PINNED_CODE_VARIABLE] = SourceHash.text(tuple([SOURCE_FOLDER]))
+        os.environ[PINNED_CODE_VARIABLE] = SourceHash.text(python_source_folders())
     return os.environ[PINNED_CODE_VARIABLE]
 
 

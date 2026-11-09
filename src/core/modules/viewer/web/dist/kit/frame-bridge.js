@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 async function l() {
   let r = 1;
   const o = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), s = window.parent;

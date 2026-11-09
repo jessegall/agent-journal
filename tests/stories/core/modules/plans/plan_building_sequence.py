@@ -12,7 +12,7 @@ from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 
-STEP_NOT_COMPLETE = "step {step} of sequence 1 is not complete"
+STEP_INCOMPLETE = "step {step} of sequence 1 is not complete"
 PLAN_BEING_BUILT = "plan 1 is still being built"
 ORDER_MISSING = "states no order"
 COMMAND_REFUSED = "does not allow this command"
@@ -138,7 +138,7 @@ def test_the_step_that_sets_the_order_comes_before_marking_the_plan_ready(new_st
 
 def test_a_plan_without_a_goal_cannot_leave_the_first_step(new_story):
     story = new_story(fixture=AgreeStep)
-    story.expect_refusal("sequence next", STEP_NOT_COMPLETE.format(step=1), actor=story.agent)
+    story.expect_refusal("sequence next", STEP_INCOMPLETE.format(step=1), actor=story.agent)
     story.expect_refusal("sequence next", "plan 1 has no brief", actor=story.agent)
 
 

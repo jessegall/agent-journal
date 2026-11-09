@@ -115,7 +115,7 @@ def test_a_batch_has_three_own_runs_and_the_next_batch_starts_a_new_count(batch)
         expect_reply_line(reply, f"left here: {remaining}")
     for _ in range(3):
         batch.prove_advance(TEST_LINE)
-    expect_reply_refusal(batch.run_test(), "--ask-main")
+    expect_reply_refusal(batch.run_test(), "No test runs left")
     batch.prove_advance(TEST_LINE)
     batch.end_all_tests()
     reply = batch.run_test()

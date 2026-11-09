@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {age, ago, perHour, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
+import {age, ago, peekRef, perHour, Btn, Icon, TimeAgo, useNow, useWindow} from "@journal/window-kit";
 import AgentCardDetails from "./AgentCardDetails.vue";
 import AgentActions from "./AgentActions.vue";
 import AgentStatusDot from "./AgentStatusDot.vue";
@@ -70,6 +70,7 @@ const statusSeen = computed(() => (props.facts?.last_activity ? `Seen: ${ago(pro
         </span>
         <template v-if="open"><InformationBar :agent-programs="context.props.programs.rows.value" :agent="row" :branch="progress?.branch" :usage="{agents: facts ? [facts] : [], windows: facts?.windows ?? []}" card>
             <AgentActions :row="row" />
+            <Btn variant="ghost" small data-agent-inspector @click.stop="peekRef(`agents:${row.id}`)">Open inspector</Btn>
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
         <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :per-hour="rate" /></template>

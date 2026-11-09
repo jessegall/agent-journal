@@ -62,7 +62,7 @@ def test_a_lost_typed_prompt_shows_in_the_chat_once(builder, tmp_path):
     expect_chat_count(builder, "please look at the cart", 1)
 
 
-@pytest.mark.parametrize("prompt", ["[journal] output 3 ended", "/compact", "<task-notification>done</task-notification>", '<cross-session-message from="uds:/tmp/peer.sock" from-name="Peer">A request</cross-session-message>'])
+@pytest.mark.parametrize("prompt", ["[journal] output 3 ended", "/compact", "<task-notification>done</task-notification>", '<cross-session-message from="uds:/tmp/peer.sock" from-name="Peer">A request</cross-session-message>', "[Cross-session idle notice] Session shop-e6 went idle"])
 def test_a_line_of_the_journal_a_program_command_or_a_notification_is_not_in_the_chat(builder, prompt):
     builder.hook("s-1", HookSamples.prompt(prompt))
     expect_chat_count(builder, prompt, 0)

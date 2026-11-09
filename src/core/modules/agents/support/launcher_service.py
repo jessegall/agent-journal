@@ -26,12 +26,12 @@ class LauncherService:
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
         deadline = time.monotonic() + START_LIMIT_SECONDS
         while time.monotonic() < deadline:
-            if self.answers():
+            if self.is_answering():
                 return True
             time.sleep(POLL_SECONDS)
         return False
 
-    def answers(self) -> bool:
+    def is_answering(self) -> bool:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as connection:
             try:
                 connection.connect(str(self.home.socket(LAUNCHER_SOCKET)))

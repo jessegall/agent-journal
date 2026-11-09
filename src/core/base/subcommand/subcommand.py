@@ -18,6 +18,7 @@ class Subcommand(Generic[C, R]):
     after_listeners."""
 
     disabled_scopes: ClassVar[WholeScopes] = ()
+    allows_pipes: ClassVar[bool] = False
 
     cli_name: str
     name: str

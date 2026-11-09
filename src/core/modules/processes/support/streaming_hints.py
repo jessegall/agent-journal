@@ -41,7 +41,7 @@ class StreamingHints:
         return next((hint for patterns, hint in STREAMING_HINTS if ReaderSelection.matches(patterns, command)), GENERAL_HINT)
 
     @staticmethod
-    def runs_packages_serially(command: str) -> bool:
+    def is_serial_packages_run(command: str) -> bool:
         match = TEST_COMMAND_PATTERN.search(command)
         if match is None or SERIAL_PACKAGES_PATTERN.search(match.group(1)):
             return False
