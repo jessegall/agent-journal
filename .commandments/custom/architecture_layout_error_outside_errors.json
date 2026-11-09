@@ -34,9 +34,6 @@
                 "file": "src/core/base/cli/usage_error.py"
             },
             {
-                "file": "src/core/base/code_version_missing_error.py"
-            },
-            {
                 "file": "src/core/base/command/command_error.py"
             },
             {

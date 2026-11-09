@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -98,6 +99,13 @@ def test_a_config_rule_is_rewritten_for_a_folder(tmp_path):
     rule = write(tmp_path, ".commandments/config.json", '{"module": "core.base.sample_area.reach", "file": "src/core/base/sample_area/reach.py"}\n')
     moved_area(tmp_path)
     assert rule.read_text() == '{"module": "engine.sample_area.reach", "file": "src/engine/sample_area/reach.py"}\n'
+
+
+def test_a_moved_file_leaves_the_allow_list_of_the_layout_rules(tmp_path):
+    write(tmp_path, LOOSE_FILE, "class Deadline:\n    pass\n")
+    rule = write(tmp_path, ".commandments/custom/architecture_layout_base_loose_class.json", '{"find": {"reject": [{"testCode": true}, {"file": "src/core/base/deadline.py"}, {"file": "src/core/base/clock.py"}]}}\n')
+    script.move_path(tmp_path, tmp_path / LOOSE_FILE, tmp_path / LOOSE_TARGET)
+    assert json.loads(rule.read_text())["find"]["reject"] == [{"testCode": True}, {"file": "src/core/base/clock.py"}]
 
 
 def test_the_layer_pattern_matches_two_folders_while_engine_files_remain(tmp_path):

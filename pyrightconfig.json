@@ -1,6 +1,7 @@
 {
     "include": [
         "src/core",
+        "src/engine",
         "src/server",
         "src/suites"
     ],

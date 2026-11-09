@@ -82,9 +82,6 @@
                 "file": "src/core/base/code_copy.py"
             },
             {
-                "file": "src/core/base/code_version_missing_error.py"
-            },
-            {
                 "file": "src/core/base/code_versions.py"
             },
             {

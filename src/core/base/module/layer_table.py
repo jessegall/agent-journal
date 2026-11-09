@@ -5,7 +5,7 @@ from core.base.module.layer_pattern import LayerPattern
 from core.base.module.layer_tier import LayerTier
 
 LAYER_PATTERNS = (
-    LayerPattern(re.compile(r"src/core/base/"), LayerTier.ENGINE),
+    LayerPattern(re.compile(r"src/(?:core/base|engine)/"), LayerTier.ENGINE),
     LayerPattern(re.compile(r"src/core/modules/([^/]+)/"), LayerTier.CORE_MODULE),
     LayerPattern(re.compile(r"src/suites/([^/]+)/modules/([^/]+)/"), LayerTier.SUITE_MODULE),
     LayerPattern(re.compile(r"src/suites/([^/]+)/"), LayerTier.SUITE),

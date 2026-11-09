@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from core.base.code_version_missing_error import CodeVersionMissingError
+from engine.errors.code_version_missing_error import CodeVersionMissingError
 from core.base.code_versions import FIRST_VERSION, CodeVersions
 from core.base.journal_home import JournalHome
 

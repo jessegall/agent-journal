@@ -2,6 +2,7 @@
 
 import argparse
 import ast
+import json
 import re
 import shutil
 import subprocess
@@ -15,7 +16,8 @@ SOURCE_FOLDERS = ("src", "tests", "scripts")
 SKIPPED_FOLDERS = {"__pycache__", "node_modules"}
 TEXT_FILE_PATTERNS = (".commandments/**/*", "tests/snapshots/**/*.json", "docs/writing-a-module.md", "pyrightconfig.json", "src/**/layer_allow_list.txt")
 RECORDING_FILE_PATTERNS = ["tools/journal-hook/**/testdata/*.jsonl"]
-PLUGIN_FILE_PATTERNS = [".journal/plugins/*/journal-plugin.json"]
+ALLOW_LISTED_RULE_PATTERN = "architecture_layout_*.json"
+PLUGIN_FILE_PATTERNS =[".journal/plugins/*/journal-plugin.json"]
 TEST_ROOTS = ("tests/unit", "tests/stories")
 SCRIPTS_FOLDER = "scripts"
 HELPER_FOLDERS = {"support", "samples", "fixtures", "testdata", "web", "__pycache__"}
@@ -378,6 +380,18 @@ def move_plan(root: Path, source: Path, target: Path) -> MovePlan:
     raise MoveError(f"{relative_text(root, source)} does not exist")
 
 
+def without_allow_list_entries(path: Path, text: str, moved_paths: set[str]) -> str:
+    if not path.match(ALLOW_LISTED_RULE_PATTERN):
+        return text
+    rule = json.loads(text)
+    reject = rule["find"]["reject"]
+    remaining = [step for step in reject if step.get("file") not in moved_paths]
+    if len(remaining) == len(reject):
+        return text
+    rule["find"]["reject"] = remaining
+    return json.dumps(rule, indent=4) + "\n"
+
+
 def planned_files(root: Path, plan: MovePlan) -> dict[Path, str]:
     collisions = [relative_text(root, target) for target in plan.file_targets.values() if target.exists()]
     if collisions:
@@ -396,11 +410,12 @@ def planned_files(root: Path, plan: MovePlan) -> dict[Path, str]:
         edited = with_engine_layer_line(rewrite.edited_text(), layer_line)
         if edited != rewrite.text:
             changed[path] = edited
+    moved_paths = {relative_text(root, source) for source in plan.file_targets}
     for path in files_matching(root, TEXT_FILE_PATTERNS):
         text = file_text(path)
         if text is None:
             continue
-        edited = rewritten_text(text, plan.renames)
+        edited = rewritten_text(without_allow_list_entries(path, text, moved_paths), plan.renames)
         if any(unknown_path_pattern(rename.previous).search(edited) for rename in plan.renames if rename.separators == DOTTED_SEPARATORS):
             unplaced.append(f"{relative_text(root, path)}: names the file in a form the tool cannot rewrite")
         if edited != text:

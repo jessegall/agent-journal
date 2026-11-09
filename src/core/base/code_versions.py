@@ -7,7 +7,7 @@ from pathlib import Path
 
 from core.base.clock import Clock
 from core.base.code_copy import IGNORED, CodeCopy
-from core.base.code_version_missing_error import CodeVersionMissingError
+from engine.errors.code_version_missing_error import CodeVersionMissingError
 from core.base.journal_home import JournalHome
 
 PARTIAL_VERSION = ".partial"
