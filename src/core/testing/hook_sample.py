@@ -13,6 +13,11 @@ class HookSample:
     def firing(self) -> object:
         return self.body["firing"]
 
+    @property
+    def action(self) -> str:
+        tool = self.body["tool"]
+        return f"{self.body['event']} {tool['name'] if isinstance(tool, Mapping) else ''}".strip()
+
     def with_raw(self, raw: Mapping[str, object]) -> "HookSample":
         return self.with_fields(raw=raw)
 

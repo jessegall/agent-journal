@@ -55,6 +55,7 @@ from core.testing.hook_sample import HookSample
 from core.testing.hook_samples import SAMPLE_FIRING, HookSamples
 from core.testing.manual_clock import ManualClock
 from core.testing.story_journal import StoryJournal
+from core.testing.story_path import StoryPath
 from core.testing.story_state import StoryState
 from core.testing.fixed_process_table import FixedProcessTable
 from core.testing.line_outcome import LineOutcome
@@ -78,6 +79,7 @@ class Story:
         self.journal = COMMITTING_JOURNAL
         self.results: list[LineOutcome] = []
         self.steps: list[str] = []
+        self.path: list[str] = []
         self.agent, self.user, self.helper = state.agent, state.user, state.helper
         self.environment: str | None = None
         self.replacements: dict[type, object] = {}
@@ -110,6 +112,7 @@ class Story:
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
         with self.repeated_work.request():
             code = self.container.get(Console).run(shlex.split(line), caller, stream)
+        self.path.append(StoryPath.command(caller.actor.id, shlex.split(line), code))
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
@@ -123,6 +126,7 @@ class Story:
         self.steps.append(f"request {line}: {json.dumps(asdict(request), sort_keys=True)}")
         with self.repeated_work.request():
             code = self.container.get(Console).requested_run(shlex.split(line), request, stream)
+        self.path.append(StoryPath.command(0, shlex.split(line), code))
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
 
@@ -138,6 +142,7 @@ class Story:
 
     def advance(self, duration: timedelta) -> None:
         self.steps.append(f"advance {duration}")
+        self.path.append("advance")
         self.clock.advance(duration)
 
     def hook(self, session: str, sample: HookSample) -> HookReply:
@@ -146,7 +151,9 @@ class Story:
         firing = f"story-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
         event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=milliseconds).body)
         with self.repeated_work.request():
-            return self.container.get(HookRoute).answer(event)
+            reply = self.container.get(HookRoute).answer(event)
+        self.path += StoryPath.hook(sample.action, reply)
+        return reply
 
     @property
     def repeated_work(self) -> RepeatedWork:

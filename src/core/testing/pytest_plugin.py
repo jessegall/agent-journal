@@ -20,6 +20,7 @@ from core.testing.full_run_record import FullRunRecord
 from core.testing.full_run_records import FullRunRecords
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
+from core.testing.story_body import StoryBody
 from core.testing.story_overlap import StoryOverlap
 from core.testing.story_steps import StorySteps
 from core.testing.story_budget import BUDGET_MARKER, CPU_SECONDS_BUDGET, POINTS_BUDGET, StoryBudget
@@ -36,6 +37,7 @@ RUN_CPU = pytest.StashKey[RunCpu]()
 FULL_RUN = pytest.StashKey[FullRunRecord]()
 CPU_SECONDS_KEY = "journal_cpu_seconds"
 STORY_STEPS_KEY = "journal_story_steps"
+STORY_PATHS_KEY = "journal_story_paths"
 SINGLE_RUNNER_LIMIT_OPTION = "one_runner_below"
 RUNNERS_OPTION = "runners"
 HIGHEST_COUNT_START_OPTION = "most_runners_from"
@@ -116,11 +118,11 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
     def started(*modules: str, fixture: type[StoryFixture] | None = None, environment: str | None = None) -> Story:
         story = templates.story(tmp_path / "journal", modules, fixture)
         story.environment = environment
-        created.append(StorySteps(story))
+        created.append(StorySteps(story, " ".join((*modules, fixture.__name__ if fixture else ""))))
         return story
     yield started
     for steps in created:
-        overlap.add(item.nodeid, steps.lines())
+        overlap.add(item.nodeid, steps.start, steps.lines(), [] if StoryBody.reaches_internals(getattr(item, "function")) else steps.path())
         steps.story.close()
     created.clear()
     SharedTables.shared.cache_clear()
@@ -172,6 +174,7 @@ def story_budget(item: pytest.Item) -> StoryBudget:
 def pytest_testnodedown(node: pytest.Session, error: object) -> None:
     output: dict[str, dict[str, list[str]]] = getattr(node, "workeroutput", {})
     node.config.stash[STORY_OVERLAP].stories.update(output.get(STORY_STEPS_KEY, {}))
+    node.config.stash[STORY_OVERLAP].story_paths.update(output.get(STORY_PATHS_KEY, {}))
     node.config.stash[RUN_CPU].add(float(getattr(node, "workeroutput", {}).get(CPU_SECONDS_KEY, 0.0)))
 
 
@@ -180,6 +183,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     process_output: dict[str, object] | None = getattr(session.config, "workeroutput", None)
     if process_output is not None:
         process_output[STORY_STEPS_KEY] = overlap.stories
+        process_output[STORY_PATHS_KEY] = overlap.story_paths
         process_output[CPU_SECONDS_KEY] = session.config.stash[RUN_CPU].seconds
         return
     if RunSize(session.config.args, 1).is_full_suite() and not session.config.option.collectonly:
@@ -189,7 +193,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
     lines = overlap.report_lines()
     if not lines:
         return
-    report = pytest.TestReport(nodeid="stories::shared_first_steps", location=("stories", 0, "shared_first_steps"),
+    report = pytest.TestReport(nodeid="stories::overlapping_steps", location=("stories", 0, "overlapping_steps"),
                                keywords={}, outcome="failed", longrepr="\n".join(lines), when="call", sections=[])
     session.config.hook.pytest_runtest_logreport(report=report)
     if session.exitstatus == pytest.ExitCode.OK:
