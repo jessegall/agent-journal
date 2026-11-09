@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import ClassVar, TypeIs
 
 from core.base.change.event_subscriber import E, EventSubscriber
 from core.base.command.context import Context
@@ -14,3 +14,7 @@ class SaveListener(EventSubscriber[E]):
 
     def handle(self, event: E, context: Context) -> None:
         raise NotImplementedError(f"{type(self).__name__} handles nothing")
+
+
+def is_save_listener_class(class_type: type) -> TypeIs[type[SaveListener[object]]]:
+    return issubclass(class_type, SaveListener)

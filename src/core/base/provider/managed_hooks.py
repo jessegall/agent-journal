@@ -106,9 +106,9 @@ class ManagedHooks:
     @lru_cache(maxsize=128)
     def loaded_hooks(self, version: FileVersion) -> tuple[ManagedHook, ...]:
         stored = json.loads(FileAccess.shared().read(self.path))
-        return tuple(ManagedHook(**{**{key: value for key, value in hook.items() if key != "clash"}, "state": ManagedState(hook["state"]),
-                              "effects": tuple(HookEffect(value) for value in hook.get("clash", [])),
-                              "sources": tuple(HookSource(**source) for source in hook.get("sources", []))}) for hook in stored["hooks"])
+        return tuple(replace(ManagedHook(**{key: value for key, value in hook.items() if key != "clash"}), state=ManagedState(hook["state"]),
+                             effects=tuple(HookEffect(value) for value in hook.get("clash", [])),
+                             sources=tuple(HookSource(**source) for source in hook.get("sources", []))) for hook in stored["hooks"])
 
     def _write(self, hooks: Sequence[ManagedHook]) -> None:
         with FileAccess.shared().temporary_writer(self.path.parent) as writing:

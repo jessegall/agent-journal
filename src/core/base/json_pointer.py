@@ -1,7 +1,7 @@
 import copy
 
 from core.base.refusal import Refusal
-from core.base.type_guards import is_list, is_mapping
+from core.base.type_guards import is_list, is_mapping, is_mutable_mapping
 
 
 class JsonPointer:
@@ -22,7 +22,7 @@ class JsonPointer:
         for part in parts[:-1]:
             place = JsonPointer.child(place, part, pointer)
         last = parts[-1]
-        if is_mapping(place):
+        if is_mutable_mapping(place):
             place[last] = value
         elif is_list(place) and last == "-":
             place.append(value)

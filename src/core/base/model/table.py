@@ -113,9 +113,9 @@ def stored(value: object) -> object:
 
 
 def loaded_state(value_type: type, value: object) -> object:
-    if not issubclass(value_type, StrEnum) or not isinstance(value, str):
-        return loaded(value_type, value)
-    return value_type(value) if value in value_type._value2member_map_ else AddedState(value)
+    if isinstance(value, str) and issubclass(value_type, StrEnum):
+        return value_type(value) if value in value_type._value2member_map_ else AddedState(value)
+    return loaded(value_type, value)
 
 
 def loaded(value_type: type, value: object) -> Any:

@@ -1,8 +1,8 @@
 from core.base.change.change import Change
 from core.base.container import Container
 from core.base.guard.change_filter import ChangeFilter
-from core.base.listener.deletion_listener import DeletionListener
-from core.base.listener.save_listener import SaveListener
+from core.base.listener.deletion_listener import is_deletion_listener_class
+from core.base.listener.save_listener import is_save_listener_class
 from core.base.model.model import Model
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
@@ -21,7 +21,7 @@ class Listeners:
     def run_deletion_listeners(self, change: Change[Model]) -> None:
         for entry in self.registry.event_listeners(change.event, ListenerTiming.DELETION):
             listener_class = entry.path.loaded()
-            if not issubclass(listener_class, DeletionListener):
+            if not is_deletion_listener_class(listener_class):
                 raise ListenerClassError(f"{entry.path.text} is no deletion listener")
             if self.change_filter.applies(entry.name, change):
                 self.container.get(listener_class).handle(change.typed_event(listener_class), change.context)
@@ -31,7 +31,7 @@ class Listeners:
             return
         for entry in self.registry.event_listeners(changes[0].event, ListenerTiming.DELETION):
             listener_class = entry.path.loaded()
-            if not issubclass(listener_class, DeletionListener):
+            if not is_deletion_listener_class(listener_class):
                 raise ListenerClassError(f"{entry.path.text} is no deletion listener")
             events = [change.typed_event(listener_class) for change in changes if self.change_filter.applies(entry.name, change)]
             if events:
@@ -40,7 +40,7 @@ class Listeners:
     def run_save_listeners(self, change: Change[Model]) -> None:
         for entry in self.registry.event_listeners(change.event, ListenerTiming.SAVE):
             listener_class = entry.path.loaded()
-            if not issubclass(listener_class, SaveListener):
+            if not is_save_listener_class(listener_class):
                 raise ListenerClassError(f"{entry.path.text} is no save listener")
             if self.change_filter.applies(entry.name, change):
                 with self.scopes.change_scope(listener_class.disabled_scopes, change):

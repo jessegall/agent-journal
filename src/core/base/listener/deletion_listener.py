@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import ClassVar, TypeIs
 from collections.abc import Sequence
 
 from core.base.change.event_subscriber import E, EventSubscriber
@@ -17,3 +17,7 @@ class DeletionListener(EventSubscriber[E]):
     def handle_many(self, events: Sequence[E], context: Context) -> None:
         for event in events:
             self.handle(event, context)
+
+
+def is_deletion_listener_class(class_type: type) -> TypeIs[type[DeletionListener[object]]]:
+    return issubclass(class_type, DeletionListener)
