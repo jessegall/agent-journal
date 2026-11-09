@@ -20,15 +20,13 @@ from core.testing.story_state import StoryState
 from core.testing.story_fixture import StoryFixture
 from core.testing.template import Template
 from core.testing.template_adaptation import STATE_FILE, TemplateAdaptation
-from core.testing.template_requests import TemplateRequests
 from core.testing.working_journal import WorkingJournal
-
-REQUESTS_FILE = "template-requests.jsonl"
 
 
 class TemplateDatabases:
-    """Migrated databases shared by test processes; a story runs on a working journal of its template that
-    rolls back at its end, so only a runner's first story of a template copies it."""
+    """Migrated databases shared by test processes and kept for later runs: a template is built the first time a
+    story uses it and saved. A story runs on a working journal of its template that rolls back at its end, so only
+    a runner's first story of a template copies it."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
@@ -36,7 +34,6 @@ class TemplateDatabases:
         self.templates: dict[tuple[tuple[str, ...], type[StoryFixture] | None], Template] = {}
         self.working_folder = tempfile.TemporaryDirectory(prefix="story-journals-")
         self.working_journals: dict[Path, list[WorkingJournal]] = {}
-        self.requests = TemplateRequests(folder.parent / REQUESTS_FILE)
 
     def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
         template = self.template(modules, fixture)
@@ -81,8 +78,6 @@ class TemplateDatabases:
                 FileAccess.shared().write_binary(state, pickle.dumps(built.state))
                 FileAccess.shared().replace(state, folder / STATE_FILE)
                 self.adaptation.mark(folder)
-                if modules:
-                    self.requests.add(modules, fixture)
             usable = self.usable_folder(folder, name)
             return Template(JournalHome(usable), pickle.loads(FileAccess.shared().binary(usable / STATE_FILE)))
 

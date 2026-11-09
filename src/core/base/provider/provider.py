@@ -1,3 +1,4 @@
+from core.base.provider.context_window import ContextWindow
 from abc import ABC, abstractmethod
 from dataclasses import replace
 from collections.abc import Mapping, Sequence
@@ -201,8 +202,8 @@ class Provider(ABC):
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return None
 
-    def context_window(self, home: JournalHome, session: str) -> tuple[int | None, int | None]:
-        return self.context_percent(home, session), self.context_tokens(home, session)
+    def context_window(self, home: JournalHome, session: str) -> ContextWindow:
+        return ContextWindow(self.context_percent(home, session), self.context_tokens(home, session))
 
     def session_effort(self, home: JournalHome, session: str) -> str:
         return ""

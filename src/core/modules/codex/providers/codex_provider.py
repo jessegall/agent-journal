@@ -1,3 +1,4 @@
+from core.base.provider.context_window import ContextWindow
 from core.base.provider.program_server_file import ProgramServerFile
 from core.modules.codex.providers.support.codex_server_file import CodexServerFile
 from dataclasses import replace
@@ -138,14 +139,14 @@ class CodexProvider(Provider):
         return located
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
-        return self.context_window(home, session)[0]
+        return self.context_window(home, session).used_percentage
 
     def context_tokens(self, home: JournalHome, session: str) -> int | None:
-        return self.context_window(home, session)[1]
+        return self.context_window(home, session).total_input_tokens
 
-    def context_window(self, home: JournalHome, session: str) -> tuple[int | None, int | None]:
+    def context_window(self, home: JournalHome, session: str) -> ContextWindow:
         latest = self.latest_token_count(home, session)
-        return (latest.percent(), latest.used_tokens) if latest else (None, None)
+        return ContextWindow(latest.percent(), latest.used_tokens) if latest else ContextWindow(None, None)
 
     def latest_token_count(self, home: JournalHome, session: str) -> CodexTokenCount | None:
         path = self.transcript(home.folder.parent, session)

@@ -21,7 +21,6 @@ from core.testing.story_budget import BUDGET_MARKER, CPU_SECONDS_BUDGET, POINTS_
 from core.testing.template_cache import TemplateCache
 from core.testing.temp_folders import TempFolders
 from core.testing.template_databases import TemplateDatabases
-from core.testing.template_prebuild import TemplatePrebuild
 
 STORY_OVERLAP = pytest.StashKey[StoryOverlap]()
 STORY_RUNS = pytest.StashKey[list[StorySteps]]()
@@ -39,7 +38,6 @@ MOST_RUNNERS_OPTION = "most_runners"
 RUNNER_NICENESS = 10
 GATE_LOCK_VARIABLE = "JOURNAL_HEAVY_GATE_HELD"
 TEMPLATE_FOLDER_VARIABLE = "JOURNAL_TEMPLATE_FOLDER"
-MOST_BUILD_PROCESSES = 8
 LISTING_OPTIONS = ("collectonly", "help", "version")
 
 
@@ -55,11 +53,8 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
     if GATE_LOCK_VARIABLE not in os.environ and RunSize(config.args, 1).is_heavy():
         HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
         os.environ[GATE_LOCK_VARIABLE] = "1"
-    if is_template_build_due(config):
-        print("building the story templates", file=sys.stderr, flush=True)
-        LazyLoading.disabled = True
-        templates = TemplateDatabases(run_template_folder())
-        TemplatePrebuild(templates, Path(config.rootpath) / "tests", processes=min(MOST_BUILD_PROCESSES, os.cpu_count() or 1)).run()
+    if chooses_template_folder(config):
+        run_template_folder()
     if not config.getoption("numprocesses", None):
         return
     os.nice(RUNNER_NICENESS)
@@ -68,10 +63,9 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
     config.option.numprocesses = 0 if runner_total == 1 else runner_total
 
 
-def is_template_build_due(config: pytest.Config) -> bool:
+def chooses_template_folder(config: pytest.Config) -> bool:
     is_listing = any(config.getoption(option, False) for option in LISTING_OPTIONS)
-    run_size = RunSize(config.args, 1)
-    return not (hasattr(config, "workerinput") or is_listing or TEMPLATE_FOLDER_VARIABLE in os.environ) and run_size.reaches_stories() and run_size.is_heavy()
+    return not (hasattr(config, "workerinput") or is_listing or TEMPLATE_FOLDER_VARIABLE in os.environ) and RunSize(config.args, 1).reaches_stories()
 
 
 def run_template_folder() -> Path:

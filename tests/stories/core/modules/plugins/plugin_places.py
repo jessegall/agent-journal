@@ -1,12 +1,10 @@
 import io
 import json
 import shlex
-import sqlite3
 
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.query.queries import Queries
-from core.modules.plugins.support.plugin_place import PluginPlace
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.support.process_setting import ProcessSetting
@@ -31,12 +29,12 @@ def plugin_run(story, plugin: str) -> int:
     return story.container.get(Console).run(shlex.split(RUN_LINE.format(story.worker.id)), caller, io.StringIO())
 
 
-def test_a_service_runs_in_the_process_queue_under_its_plugins_name(new_story):
+def test_a_service_takes_no_place_in_the_process_queue(new_story):
     story = served_story(new_story)
     try:
         listed = [run for run in queue_runs(story, "running") if run["plugin"] == "served"]
-        story.expect_rows(len(listed) == 1, listed[0]["uses_slot"] is False)
-        story.expect_text("queue list --environment 1", "plugin served", actor=story.user)
+        story.expect_rows(not listed)
+        story.expect_absent("queue list --environment 1", "plugin served", actor=story.user)
     finally:
         story.processes.close()
 
@@ -48,28 +46,6 @@ def test_a_plugin_switched_off_leaves_no_process_of_it_running(new_story):
         story.services.follow(story.processes)
         story.expect_rows(story.processes.running == {}, not [process for process in plugin_processes(story, "served") if process.state is ProcessState.RUNNING])
         story.expect_absent("queue list --environment 1", "plugin served", actor=story.user)
-    finally:
-        story.processes.close()
-
-
-class ClosedPlaces:
-    """The rows of a round that has ended, whose database is closed."""
-
-    def wait(self, process_id: int, limit_seconds: float) -> bool:
-        raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
-
-    def leave(self, process_id: int, exit_code: int) -> None:
-        raise sqlite3.ProgrammingError("Cannot operate on a closed database.")
-
-
-def test_a_service_an_earlier_round_started_is_stopped_through_the_round_that_stops_it(new_story):
-    story = served_story(new_story)
-    try:
-        key = ("served", "answers")
-        story.processes.places[key] = PluginPlace(story.processes.places[key].process_id, ClosedPlaces())
-        story.run("plugin disable served", actor=story.user)
-        story.services.follow(story.processes)
-        story.expect_rows(story.processes.running == {}, not [process for process in plugin_processes(story, "served") if process.state is ProcessState.RUNNING])
     finally:
         story.processes.close()
 

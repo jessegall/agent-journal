@@ -258,14 +258,13 @@ def test_stopping_a_service_ends_the_children_it_started(new_story):
     story.expect_rows(ended)
 
 
-def test_a_server_started_after_a_crash_stops_the_service_left_running_before_starting_its_own(new_story):
+def test_a_server_started_after_a_crash_keeps_the_service_still_running_and_starts_no_second_one(new_story):
     story = served_story(new_story)
     leftover = story.processes.running[("served", "answers")]
     after_crash = ServiceProcesses()
     try:
         story.services.follow(after_crash)
-        leftover.exit_code()
-        story.expect_rows(not is_running(leftover.pid), after_crash.running[("served", "answers")].pid != leftover.pid)
+        story.expect_rows(is_running(leftover.pid), after_crash.running[("served", "answers")].pid == leftover.pid)
     finally:
         after_crash.close()
         story.processes.close()
