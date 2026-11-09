@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.base.skill.skill_shape import DESCRIPTION_LIMIT, IMPERATIVE_VERBS, READ_IT_PHRASES
+from core.base.skill.skill_shape import DESCRIPTION_CHARACTER_LIMIT, IMPERATIVE_VERBS, READ_IT_PHRASES
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_absent_value
 
@@ -37,7 +37,7 @@ def description_faults(path: Path) -> list[str]:
         faults.append(f"{name}: does not end on a read-it half")
     if re.search(r"[.!?]\s", description) or description.endswith("."):
         faults.append(f"{name}: is not one sentence without a full stop")
-    if len(description) > DESCRIPTION_LIMIT:
+    if len(description) > DESCRIPTION_CHARACTER_LIMIT:
         faults.append(f"{name}: is {len(description)} characters long")
     return faults
 
