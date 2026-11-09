@@ -44,7 +44,7 @@ class DeveloperModule(Module):
     name = "journal.core.developer"
     seed_reason = "its settings are the person's own choice"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments"]
+    dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments", "journal.core.agents"]
     settings = DEVELOPER_SETTINGS
     models = [ModelDeclaration(PrivateDataMark, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [HookRequestsMigration, PrivateDataFlagsMigration]

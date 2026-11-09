@@ -74,7 +74,7 @@ class SkillsModule(Module):
     requires_core = ">=5,<6"
     block_conditions = [SkillsRead, SkillLoaded]
     settings = SKILL_SETTINGS
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat", "journal.core.processes", "journal.core.environments"]
     skills = [SkillDeclaration("journal", "Find your way in the journal: what it is, its basic ideas and which skill to read for what; read at the start of every session, with the etiquette skill"),
               SkillDeclaration("journal-etiquette", "Behave in the chat with the user and keep the journal's own mechanics out of it; read at the start of every session, with the journal skill")]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill]), ModelDeclaration(SkillRequest, excluded_subcommands=["make", "edit", "show", "list", "delete"])]

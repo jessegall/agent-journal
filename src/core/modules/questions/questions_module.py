@@ -53,7 +53,7 @@ class QuestionsModule(Module):
     nudges = QUESTION_NUDGES
     requires_core = ">=5,<6"
     block_conditions = [QuestionAnswered, QuestionsClosed]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents", "journal.core.tasks", "journal.core.plans"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionEnvironmentStateIndexMigration, QuestionSessionMigration, QuestionAgentStateIndexMigration, QuestionsTablesMigration, AnswerMessageMigration, QuestionPlaceMigration, QuestionContextMigration]
     moves = [QuestionsMove, QuestionLinksMove]
