@@ -115,7 +115,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.run_listeners()
     expect_states(story, task1="testing", task2="open", task3="open")
     expect_absent_marks_text(story, "handed in")
-    story.expect_refusal("worker next --wait --differences none", "the tests of task 1 are running", actor=worker)
+    story.expect_refusal("worker next --wait --differences none", "The tests of task 1 are queued", actor=worker)
 
     # its test fails: the task goes back to the worker with a mark in the chat, and the next task waits
     ended(story, started[0], 1)

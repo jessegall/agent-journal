@@ -25,6 +25,7 @@ STEP_TEXTS = {
     WorkerStep.WAIT: WorkerStepText("{waiting}", "stop", "you are woken when its tests end or it is merged"),
     WorkerStep.FIX: WorkerStepText("The tests of {label} failed.", "fix the failing tests and hand in again, running tests freely until then", "the next hand-in reruns only what failed"),
     WorkerStep.CONFLICT: WorkerStepText("{label} clashed with its base branch in {files}.", "settle the conflict markers in those files, then journal worker deliver", f"the journal merges it again. {AskTopic.CONFLICT.question_line()}"),
+    WorkerStep.BLOCKED: WorkerStepText("task {task} is blocked.", "stop", "you are woken when it opens, or when you are given another task"),
     WorkerStep.QUESTION: WorkerStepText("Your question is open.", "do the work named in the answer, or stop", "you are woken when the answer comes"),
 }
 
