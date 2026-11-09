@@ -32,7 +32,7 @@ def retried(story):
     return launcher
 
 
-def expect_woken(story, launcher) -> None:
+def expect_worker_restart(story, launcher) -> None:
     launcher.drain_requests()
     story.expect_rows(len(launcher.starts) == 1, launcher.starts[0]["agent_id"] == story.worker.id, detail=str(launcher.requests))
 
@@ -64,24 +64,24 @@ def blocked_worker(two_task_worker):
 
 
 def test_a_stopped_worker_whose_current_task_is_blocked_is_woken_for_its_next_open_task(blocked_worker):
-    expect_woken(blocked_worker, retried(blocked_worker))
+    expect_worker_restart(blocked_worker, retried(blocked_worker))
 
 
 def test_a_stopped_worker_whose_last_line_went_into_a_dying_program_is_woken_again(blocked_worker):
     waiting_lines_entered(blocked_worker)
     blocked_worker.advance(timedelta(minutes=1))
-    expect_woken(blocked_worker, retried(blocked_worker))
+    expect_worker_restart(blocked_worker, retried(blocked_worker))
 
 
 def test_a_stopped_worker_with_a_started_task_whose_last_line_went_into_a_dying_program_is_woken_again(two_task_worker):
     ended(two_task_worker)
     waiting_lines_entered(two_task_worker)
     two_task_worker.advance(timedelta(minutes=1))
-    expect_woken(two_task_worker, retried(two_task_worker))
+    expect_worker_restart(two_task_worker, retried(two_task_worker))
 
 
 def test_a_stopped_worker_is_told_which_task_it_goes_on_with(blocked_worker):
-    expect_woken(blocked_worker, retried(blocked_worker))
+    expect_worker_restart(blocked_worker, retried(blocked_worker))
     blocked_worker.expect_text(f"agent-line list --agent {blocked_worker.worker.id}", "you ended with tasks left")
 
 

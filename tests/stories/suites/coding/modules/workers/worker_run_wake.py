@@ -29,11 +29,11 @@ def start_background_run(story, worker):
     return run, bus
 
 
-def expect_woken(story, worker, run) -> None:
+def expect_run_ended_line(story, worker, run) -> None:
     story.expect_text(f"agent-line list --agent {worker.id}", f"your run {run.id} ended", "workers.worker-job")
 
 
-def expect_not_woken(story, worker, run) -> None:
+def expect_run_ended_line_absent(story, worker, run) -> None:
     story.expect_absent(f"agent-line list --agent {worker.id}", f"your run {run.id} ended")
 
 
@@ -42,7 +42,7 @@ def test_a_worker_that_stopped_with_a_run_of_its_own_going_is_woken_with_the_run
     run, bus = start_background_run(story, worker)
     story.run(f"agent end {worker.id}", actor=worker)
     bus.run(EndProcess(run.id, 1, 10, 1), worker, environment_id=1)
-    expect_woken(story, worker, run)
+    expect_run_ended_line(story, worker, run)
 
 
 def test_a_worker_that_asked_then_started_a_run_and_stopped_is_woken_when_the_run_ends(new_story):
@@ -52,7 +52,7 @@ def test_a_worker_that_asked_then_started_a_run_and_stopped_is_woken_when_the_ru
     run, bus = start_background_run(story, worker)
     story.run(f"agent end {worker.id}", actor=worker)
     bus.run(EndProcess(run.id, 1, 10, 1), worker, environment_id=1)
-    expect_woken(story, worker, run)
+    expect_run_ended_line(story, worker, run)
 
 
 def test_a_worker_that_started_a_run_then_asked_and_stopped_stays_stopped_when_the_run_ends(new_story):
@@ -62,7 +62,7 @@ def test_a_worker_that_started_a_run_then_asked_and_stopped_stays_stopped_when_t
     story.expect_success(ASK, actor=worker)
     story.run(f"agent end {worker.id}", actor=worker)
     bus.run(EndProcess(run.id, 1, 10, 1), worker, environment_id=1)
-    expect_not_woken(story, worker, run)
+    expect_run_ended_line_absent(story, worker, run)
 
 
 def test_a_worker_a_person_stopped_stays_stopped_when_its_run_ends(new_story):
@@ -72,4 +72,4 @@ def test_a_worker_a_person_stopped_stays_stopped_when_its_run_ends(new_story):
     story.expect_success(f"agent edit {worker.id} --pid 700 --process-started-at 2026-10-31T09:00:00+00:00", "pid: 700")
     story.expect_success(f"agent stop {worker.id}", actor=user)
     bus.run(EndProcess(run.id, 1, 10, 1), worker, environment_id=1)
-    expect_not_woken(story, worker, run)
+    expect_run_ended_line_absent(story, worker, run)
