@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, WindowRoom, useWindow} from "@journal/window-kit";
+import {Btn, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
 
 // the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again;
 // a window used up in full says the agents wait at the usage limit until then
@@ -13,21 +13,15 @@ const program = computed(() => usage.value?.agents?.[0]?.program ?? "claude");
 const kind = ref("5 hours");
 const mode = ref("fixed");
 const percent = ref(50);
-const limitFailure = ref("");
+const {refusal: limitFailure, run} = useRunLine(() => view.reload("limits"));
 
 async function setLimit() {
     const number = Number(percent.value);
     if (view.readOnly || !(number > 0 && number <= 100)) { limitFailure.value = "Use a percent from 1 to 100."; return; }
-    const answer = await view.run(["usage-limit", "set", program.value, kind.value, mode.value, String(number)]);
-    limitFailure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) await view.reload("limits");
+    await run(["usage-limit", "set", program.value, kind.value, mode.value, String(number)]);
 }
 
-async function removeLimit(limit) {
-    const answer = await view.run(["usage-limit", "delete", String(limit.id)]);
-    limitFailure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) await view.reload("limits");
-}
+const removeLimit = (limit) => run(["usage-limit", "delete", String(limit.id)]);
 
 const describe = (limit) => `${limit.window}: ${limit.mode === "fixed" ? "halt at" : "halt after"} ${limit.percent}%${limit.mode === "fixed" ? "" : " more than when it was set"}`;
 
