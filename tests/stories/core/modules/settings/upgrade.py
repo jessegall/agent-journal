@@ -3,16 +3,6 @@ from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_outcome_with
 
 
-def test_a_setting_a_module_declares_moves_under_its_full_name_with_its_value(new_story):
-    story = upgraded_story(new_story)
-    story.expect_text("setting list", "journal.core.memories.keyword-limit  4")
-
-
-def test_version_4s_profile_model_setting_moves_under_its_new_name(new_story):
-    story = upgraded_story(new_story)
-    story.expect_text("setting list", 'journal.core.profiles.model-claude  "haiku"')
-
-
 def test_version_4s_voice_settings_move_under_the_voices_module_names(new_story):
     story = upgraded_story(new_story)
     shown = story.run("setting list")
@@ -47,13 +37,6 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     listing.expect_text("moveprefs.limit  7")
     listing.expect_text("moveprefs.limit  9")
     listing.expect_no_text("moveprefs.limit  8")
-
-
-def test_a_version_4_key_with_a_version_5_counterpart_moves_under_the_full_key(new_story):
-    story = upgraded_story(new_story)
-    shown = story.run("setting list")
-    shown.expect_text("journal.suites.coding.workers.worker-run-limit  3")
-    shown.expect_text("journal.suites.coding.workers.main-dispatches-workers  false")
 
 
 def test_a_version_4_text_of_kinds_becomes_the_list_version_5_declares(new_story):

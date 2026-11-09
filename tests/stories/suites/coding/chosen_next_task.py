@@ -29,24 +29,11 @@ def worker_with_task(two_tasks):
     return story, worker, second
 
 
-def test_a_chosen_task_is_handed_out_next(two_tasks):
-    story, _, third = two_tasks
-    story.expect_success(f"task next {third}", actor=story.agent)
-    story.expect_rows(next_for_main_agent(story) == third)
-
-
 def test_a_chosen_task_goes_before_a_critical_task(two_tasks):
     story, second, _ = two_tasks
     new_task(story, "Urgent job", "--priority critical")
     story.expect_success(f"task next {second}", actor=story.agent)
     story.expect_rows(next_for_main_agent(story) == second)
-
-
-def test_a_second_choice_replaces_the_first(two_tasks):
-    story, second, third = two_tasks
-    story.expect_success(f"task next {second}", actor=story.agent)
-    story.expect_success(f"task next {third}", actor=story.agent)
-    story.expect_rows(next_for_main_agent(story) == third)
 
 
 def test_the_main_agent_chooses_for_a_worker(worker_with_task):

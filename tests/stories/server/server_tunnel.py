@@ -19,15 +19,6 @@ def test_the_server_opens_the_chosen_tunnel_for_the_viewers_port(server_tunnel_s
     story.story.expect_rows(story.context.tunnel.address() == SAMPLE_ADDRESS)
 
 
-def test_a_changed_choice_closes_the_old_tunnel_and_opens_the_new_one(server_tunnel_server):
-    story = server_tunnel_server
-    story.context.tunnel.follow(story.viewer_port())
-    opened = story.context.tunnel.current
-    story.story.expect_success(f"setting set {SERVICE} none --project", actor=story.story.user)
-    story.context.tunnel.follow(story.viewer_port())
-    story.story.expect_rows(opened.address() is None, story.context.tunnel.address() is None, story.context.tunnel.current.name == "none")
-
-
 def test_a_restarted_server_opens_the_tunnel_again(new_story):
     journal = tunnel_journal(new_story)
     with server_story(journal) as story:

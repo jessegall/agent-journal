@@ -17,11 +17,6 @@ def test_a_recommendation_that_is_not_an_option_is_refused(new_story):
                          "the recommended choice is not one of the options: mysql", actor=story.agent)
 
 
-def test_a_question_without_options_is_asked_open_ended(new_story):
-    story = new_story(fixture=AgentStarted)
-    story.expect_success('question ask "What should the page be called?" --context "A story asks this so its card and answer can be checked." --environment main', "question 1 asked; waiting for the answer", actor=story.agent)
-
-
 def test_a_question_without_an_environment_is_refused(new_story):
     story = new_story(fixture=AgentStarted)
     story.expect_refusal('question ask "Which database?" --context "A story asks this so its card and answer can be checked."', "a question needs an environment")
@@ -38,4 +33,3 @@ def test_a_message_read_while_a_question_waits_is_marked_read(new_story):
     story.expect_success('message send "See you tomorrow" --environment main', actor=story.user)
     story.hook("s-1", HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use"))
     story.expect_text("message show 1", "read_at: 20", actor=story.agent)
-

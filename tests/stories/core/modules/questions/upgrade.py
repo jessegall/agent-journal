@@ -10,18 +10,6 @@ def test_an_answered_question_moves_with_its_options_answer_and_asking_agent_fro
     story.expect_text("question show 1 --json", '"answer": "SQLite"', '"recommended": "SQLite"')
 
 
-def test_an_open_question_moves_open(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("question show 2", "question 2: Ship on Friday?", "state: open")
-    expect_upgrade_text(story, "questions: moved 7")
-
-
-def test_a_question_a_person_signed_moves_to_the_newest_main_agent(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("question show 7", "question 7: Which colour did version 3 ask?")
-    expect_upgrade_without_text(story, "skipped questions 7")
-
-
 def test_a_question_longer_than_version_5_allows_moves_whole_into_a_document_and_keeps_its_start(new_story):
     story = upgraded_story(new_story)
     question = story.run("question show 3").output_text

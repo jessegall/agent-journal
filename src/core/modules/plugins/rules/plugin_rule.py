@@ -78,7 +78,7 @@ class PluginRule(DriverRule):
         queue = PluginQueue(self.folders.data(plugin.name))
         reserved = queue.reserved_names()
         committed = {row.name for row in self.queries.query(PluginQueueFile).filter(plugin_id=plugin.id).matching(Among("name", reserved)).all_rows()} if reserved else set()
-        read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed)
+        read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed, self.clock)
         for name, answer in read.answers:
             lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])
             commands.extend([AddPluginOutput(plugin.id, hook.agent_id, answer.output)] if answer.has_output() else [])

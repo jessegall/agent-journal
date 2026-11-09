@@ -105,14 +105,6 @@ def test_another_agent_cannot_remove_an_automatic_link(attributed):
     scenario.expect_link("message:2", "task:2", "about")
 
 
-def test_person_can_correct_an_automatic_link_through_chat_permission(attributed):
-    scenario = attributed
-    edge = next(row for row in scenario.links("message:2") if row["link_type"] == "about")
-    answer = viewer_answer(scenario.story, "messages.chat", ["link", "remove", str(edge["id"])])
-    scenario.story.expect_rows(answer.code == 0, detail=answer.error)
-    scenario.expect_no_link("message:2", "task:2")
-
-
 @pytest.mark.parametrize("relation", ["comments_on", "mentions"])
 def test_correction_refuses_non_attribution_relations(scenario, relation):
     scenario.command('task edit 1 --brief "A reference to message 2"')

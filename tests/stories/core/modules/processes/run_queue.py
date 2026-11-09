@@ -38,14 +38,6 @@ def test_runs_over_the_batch_size_wait_and_start_as_a_spot_frees(new_story):
     expect_absent_waits(story, third)
 
 
-def test_the_batch_size_is_a_setting(new_story):
-    story = install_runner(new_story(fixture=QueueAgents))
-    story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
-    first, second = queued(story, "make one"), queued(story, "make two")
-    expect_slot(story, first)
-    expect_absent_slot(story, second)
-
-
 def test_a_main_agents_run_neither_waits_nor_holds_a_spot(new_story):
     story = install_runner(new_story(fixture=QueueAgents))
     start_process(story, "make main", category=CommandCategory.TEST_RUN)

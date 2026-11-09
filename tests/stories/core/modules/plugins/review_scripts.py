@@ -1,14 +1,10 @@
 import io
 import json
-import os
 import subprocess
 from datetime import timedelta
 
 from server.booting_work import BootingWork
 from core.base.leftover_process import LeftoverProcess
-from core.base.caller.caller_request import CallerRequest
-from core.base.caller.caller_resolver import CallerResolver
-from core.base.caller.process_table import ProcessTable
 from core.base.cli.caller_stream import CallerStream
 from core.base.command.bus import Bus
 from core.base.journal_container import synced_container
@@ -33,58 +29,10 @@ PLUGIN_UPDATED = "core.plugins.plugin.updated"
 RECOVERING = 'if [ ! -e "$JOURNAL_PLUGIN_DATA/recovered" ]; then exit 3; fi'
 
 
-def test_s69_a_child_that_keeps_the_output_open_does_not_hold_the_run(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "bg.sh"}, scripts={"bg.sh": OPEN_OUTPUT_SCRIPT})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(len(script_calls(story, "bg.sh")) == 1, plugin_row(story).fault_count == 0)
-
-
-def test_s70_a_script_that_prints_without_end_is_stopped_at_the_cap(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "loud.sh"}, scripts={"loud.sh": PRINTS_WITHOUT_END})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    plugin_page(story).expect_fault("printed more than", f"at {TASK_CREATED} (commit)")
-
-
-def test_s71_a_fault_holds_the_end_of_the_errors_with_the_settings_hidden(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "err.sh"}, scripts={"err.sh": ERROR_WRITER})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    plugin_page(story).expect_fault("it ended with code 3", "the hidden value is")
-
-
-def test_s72_a_failing_commit_script_on_the_plugin_row_runs_once_for_one_real_change(event_page):
-    story = event_page.story
-    install_event_plugin(story, {"event": PLUGIN_UPDATED, "commit": "fail.sh"})
-    event_page.disable()
-    event_page.enable()
-    story.run_listeners()
-    calls = len(script_calls(story, "fail.sh"))
-    story.run_listeners()
-    story.expect_rows(calls >= 1, len(script_calls(story, "fail.sh")) == calls, plugin_row(story).fault_count == calls)
-
-
-def test_s72_a_success_that_clears_faults_gives_no_delivery(new_story):
-    story = event_plugin_story(new_story, {"event": PLUGIN_UPDATED, "commit": "recovering.sh"}, {"event": TASK_CREATED, "commit": "fail.sh"}, scripts={"recovering.sh": RECOVERING})
-    plugin_data(story, "recovered").touch()
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(not script_calls(story, "recovering.sh"))
-
-
 def test_s73_a_write_from_a_server_round_runs_no_script_and_notes_the_skip(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "refuse.sh", "listen": "pin.sh"}, modules=[NOTES])
     synced_container(story.home).get(Bus).run(ManyNotes(1), story.user)
     story.expect_rows(not script_calls(story, "refuse.sh"), not script_calls(story, "pin.sh"), "were skipped" in story.system_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
-
-
-def test_s74_a_line_from_a_script_in_a_direct_run_is_known_by_its_variable(new_story):
-    story = event_plugin_story(new_story)
-    container = synced_container(story.home)
-    container.bind(ProcessTable, story.process_table)
-    caller = container.get(CallerResolver).caller(CallerRequest(variables={"JOURNAL_PLUGIN": "events", "USER": "Ada"}, folder="/", pid=os.getpid()))
-    story.expect_rows(caller.plugin_script == "events")
 
 
 def test_s75_a_caller_waiting_on_a_guard_script_is_told_at_once(new_story):

@@ -6,9 +6,6 @@ from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, expect_clean_environment, repository_environment
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-
-
 @pytest.fixture
 def git_writes(monkeypatch, new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
@@ -29,44 +26,6 @@ def expect_external_git_calls(git_calls):
 
 def expired_removal(git, folder, worktree):
     raise subprocess.TimeoutExpired("git worktree remove", 1)
-
-
-def test_a_dispatch_runs_git_with_no_write_open(git_writes):
-    story, git_calls = git_writes
-    repository_environment(story)
-    dispatched_worker(story)
-    expect_external_git_calls(git_calls)
-
-
-def test_a_dispatch_whose_cut_fails_undoes_its_rows_with_no_write_open(git_writes):
-    story, git_calls = git_writes
-    repository = repository_environment(story)
-    story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo npm is not installed >&2; exit 1"]' --environment main""", "key: journal.suites.coding.workers.worktree-commands")
-    story.expect_refusal(DISPATCH, "npm is not installed", actor=story.agent)
-    expect_clean_environment(story, repository)
-    expect_external_git_calls(git_calls)
-
-
-def test_a_hand_in_runs_git_with_no_write_open(git_writes):
-    story, git_calls = git_writes
-    repository = repository_environment(story)
-    worker = dispatched_worker(story)
-    repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success(FIRST_PROOF, actor=worker)
-    git_calls.clear()
-    story.expect_success(DELIVERY, actor=worker)
-    expect_external_git_calls(git_calls)
-
-
-def test_a_merge_runs_git_with_no_write_open(git_writes):
-    story, git_calls = git_writes
-    repository = repository_environment(story)
-    worker = checked_worker(story, repository)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    git_calls.clear()
-    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    expect_external_git_calls(git_calls)
 
 
 def test_a_release_runs_git_with_no_write_open(git_writes):

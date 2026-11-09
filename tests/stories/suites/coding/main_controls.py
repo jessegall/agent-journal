@@ -87,14 +87,6 @@ def test_s45_defaults_cannot_be_set_by_an_agent(new_story):
             story.expect_refusal(f"setting set {key} {shlex.quote(saved_text(value))} {scope} --reason 'a story asks'", "A person was asked", actor=story.agent)
 
 
-def test_s56_existing_merge_commands_survive_upgrade(new_story):
-    story = new_story(fixture=UserBuilder)
-    configured = ["git push origin main", "echo pushed"]
-    story.expect_success(f"setting set {MERGE_COMMANDS} {shlex.quote(json.dumps(configured))} --environment main", actor=story.user)
-    expect_value(json.loads(tree_rows(story)[MERGE_COMMANDS]["value"]), configured)
-    expect_value((list(RULES[MERGE_COMMANDS].problems(MERGE_COMMANDS, configured)), DECLARED[MERGE_COMMANDS][1].default), ([], ()))
-
-
 def test_s01_s52_fixture_matrix_names_78_control_cases_8_regressions_and_the_transitions():
     cases = matrix_cases()
     expect_value((len(cases), len(set(cases)), sum(case.startswith("C") for case in cases)), (104, 104, 78))

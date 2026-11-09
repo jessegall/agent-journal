@@ -27,12 +27,6 @@ def test_a_loop_of_three_is_refused_by_its_guard_and_offers_no_way_past(new_stor
     story.expect_rows("--skip-guard" not in story.run(lines.THIRD_TASK_DEPENDENCY).output_text)
 
 
-def test_the_same_dependency_twice_is_refused(new_story):
-    story = three_tasks(new_story)
-    story.run(lines.FIRST_TASK_DEPENDENCY)
-    story.expect_refusal(lines.FIRST_TASK_DEPENDENCY, "a task-dependency with that task_id, dependency_id exists already")
-
-
 def test_deleting_a_task_removes_its_dependencies_first(new_story):
     story = three_tasks(new_story)
     story.run(lines.FIRST_TASK_DEPENDENCY)

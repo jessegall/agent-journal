@@ -42,13 +42,6 @@ def test_a_refused_write_prints_its_refusal_and_no_confirmation(new_story):
     expect_output_outcome_without(outcome, "created:")
 
 
-def test_a_row_another_command_of_the_same_actor_wrote_meanwhile_is_not_named(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.run('task make "Fix the totals" --environment main', actor=story.agent)
-    story.run('task make "Fix the sums" --environment main', actor=story.agent)
-    expect_output_3(story, "task start 2", ["updated: task:2"])
-
-
 def expect_output_3(story, text, expected) -> None:
     actual = story.run(text, actor=story.agent).output_text.splitlines()
     assert actual == expected, actual

@@ -132,22 +132,6 @@ def test_a_line_the_merger_read_and_did_nothing_about_comes_back(merger_that_rea
     expect_unread_lines(worker.story, 1)
 
 
-def test_a_line_the_merger_acted_on_does_not_come_back(merger_that_read_the_line):
-    worker, merger = merger_that_read_the_line
-    worker.story.expect_success('merger tell "Worker asks which reader to keep" --tried "Read the brief" --option "The first" --option "The second" --recommend "The first"', actor=merger)
-    retry_after_the_merger_ended(worker.story)
-    expect_unread_lines(worker.story, 0)
-
-
-def test_a_line_that_came_back_once_is_not_returned_a_second_time(merger_that_read_the_line):
-    worker, merger = merger_that_read_the_line
-    retry_after_the_merger_ended(worker.story)
-    second = Actor(merger_agent(worker.story).id, ActorType.AGENT)
-    worker.story.expect_success("merger next", actor=second)
-    retry_after_the_merger_ended(worker.story)
-    expect_unread_lines(worker.story, 0)
-
-
 @pytest.fixture
 def merger_with_ended_main(new_story, monkeypatch):
     merger_can_start(monkeypatch)

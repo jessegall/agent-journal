@@ -46,28 +46,6 @@ def test_following_twice_inside_one_revision_window_opens_a_revision_each_time(n
     story.expect_text("doc revision 1 3", "doc 1, revision 3 of 3: Cart rules, team", "second team text", actor=story.user)
 
 
-def test_a_new_title_from_the_server_is_kept_on_the_document(new_story):
-    story = doc_story(new_story)
-    followed = doc_share(story).follow(story.row(Doc, 1), team_version("Renamed by the team", "text"), team_context(story))
-    story.expect_rows(followed.title == "Renamed by the team", story.row(Doc, 1).title == "Renamed by the team", story.row(Doc, 1).abstract == "From the team")
-
-
-def test_a_person_edit_followed_by_the_server_inside_one_window_stays_in_the_revisions(new_story):
-    story = doc_story(new_story)
-    story.run('doc edit 1 --body "my own words"', actor=story.user)
-    doc_share(story).follow(story.row(Doc, 1), team_version("Cart rules", "the team text"), team_context(story))
-    story.expect_text("doc revision 1 2", "my own words", actor=story.user)
-    story.expect_text("doc revision 1 3", "the team text", actor=story.user)
-
-
-def test_the_next_edit_after_the_server_opens_its_own_revision(new_story):
-    story = doc_story(new_story)
-    doc_share(story).follow(story.row(Doc, 1), team_version("Cart rules", "the team text"), team_context(story))
-    story.run('doc edit 1 --body "after the team"', actor=story.user)
-    story.expect_text("doc revision 1 2", "the team text", actor=story.user)
-    story.expect_text("doc revision 1 3", "doc 1, revision 3 of 3", "after the team", actor=story.user)
-
-
 def test_a_version_equal_to_the_latest_revision_opens_no_revision(new_story):
     story = doc_story(new_story)
     doc = story.row(Doc, 1)

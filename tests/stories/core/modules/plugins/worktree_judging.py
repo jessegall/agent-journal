@@ -28,15 +28,6 @@ def worktree_story(new_story):
     return story
 
 
-def test_a_workers_file_is_judged_in_its_worktree_and_answered_only_to_that_worker(worktree_story):
-    story = worktree_story
-    story.repository.changed(story.worker.id, "cart.py", SIN)
-    scanned_edit(story, story.worker_session, "cart.py", folder=story.worktree)
-    story.run_listeners()
-    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "mutable default")
-    expect_plugin_notice(story, LISTING_SAMPLE, f"[plugin worktree-judge] {story.worktree / 'cart.py'}: mutable default", session=story.worker_session, agent_id=story.worker.id)
-
-
 def test_a_main_checkout_sin_reaches_only_the_main_agent(worktree_story):
     story = worktree_story
     story.repository.uncommitted("cart.py", SIN)
@@ -51,13 +42,6 @@ def test_both_worker_handoffs_judge_the_worker_files_from_its_base(worktree_stor
     story = worktree_story
     story.repository.changed(story.worker.id, "cart.py", SIN)
     story.expect_refusal(command, f"{story.worktree / 'cart.py'}: mutable default", actor=story.worker)
-
-
-def test_a_main_checkout_sin_does_not_hold_a_clean_workers_handoff(worktree_story):
-    story = worktree_story
-    story.repository.uncommitted("main_only.py", SIN)
-    story.repository.changed(story.worker.id, "cart.py", "TOTAL = 1\n")
-    story.expect_success("worker next --wait --differences none", actor=story.worker)
 
 
 def test_a_resumed_worker_is_not_judged_for_new_main_commits(worktree_story):

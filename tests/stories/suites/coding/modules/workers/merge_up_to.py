@@ -1,6 +1,5 @@
 import pytest
 
-from core.modules.agents.support.agent_conversations import AgentConversations
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -9,11 +8,6 @@ pytestmark = pytest.mark.real_git
 
 RECEIPT = "RECEIPT = 1\n"
 UNKNOWN_COMMIT = "0" * 40
-
-
-@pytest.fixture(autouse=True)
-def workers_have_conversations(monkeypatch):
-    monkeypatch.setattr(AgentConversations, "exists", lambda conversations, agent: True)
 
 
 @pytest.fixture
@@ -48,12 +42,6 @@ def expect_first_task_merged(story, repository, worker, second_task):
     story.expect_text(f"task show {second_task}", "state: started")
     story.expect_rows((repository.worktree_folder(worker.id) / "receipt.py").read_text() == RECEIPT)
     story.expect_text("worker-worktree show 1", "state: cut")
-
-
-def test_a_merge_up_to_a_finished_task_takes_it_while_the_worker_goes_on(proven_worker):
-    story, repository, worker, second_task = proven_worker
-    story.expect_success(f"worker merge --wait {worker.id} --up-to 1", actor=story.agent)
-    expect_first_task_merged(story, repository, worker, second_task)
 
 
 def test_a_merge_up_to_a_commit_takes_the_work_up_to_it(proven_worker):

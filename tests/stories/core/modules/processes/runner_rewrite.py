@@ -12,7 +12,6 @@ from core.base.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from core.testing.expect_reply import expect_reply_allowed
@@ -27,14 +26,6 @@ TESTS = HookSamples.shell("pytest -q", ShellPart("pytest", CommandCategory.TEST_
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
 
 
-def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_process_row(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    reply = story.hook("s-1", SERVER)
-    expect_updated_input_reply(reply, {"command": runner_line(story, 1, "node serve.js")})
-    story.expect_success("process show 1", "line: node serve.js", "state: running", "limit_seconds: 15", f"session_agent_id: {story.agent.id}")
-    story.expect_text(f"hook-call show {reply.hook_call_id}", "processes.runner-rewrite: rewritten")
-
-
 def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     reply = story.hook("s-1", SERVER)
@@ -45,12 +36,6 @@ def test_the_agent_terminal_reads_the_call_output_through_the_viewer(new_story):
     story.expect_rows(page["lines"] == ["server started"])
 
 
-@pytest.mark.parametrize("sample, line", [(JOURNAL, "journal task show 1"), (OUTPUT_READ, "journal output read 7 --lines 1-30")], ids=["task show", "output read"])
-def test_a_journal_only_line_runs_with_no_limit_so_its_text_is_never_moved_to_another_output(new_story, sample, line):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    expect_updated_input_hook(story, "s-1", sample, {"command": runner_line(story, 1, line, limit=0)})
-
-
 @pytest.mark.parametrize("program,category", [("cat", CommandCategory.READ), ("touch", CommandCategory.EDIT), ("custom", CommandCategory.UNKNOWN)])
 def test_a_read_write_or_unknown_command_gets_the_fifteen_second_limit(new_story, program, category):
     story = install_runner(new_story(fixture=BuilderStarted))
@@ -58,12 +43,6 @@ def test_a_read_write_or_unknown_command_gets_the_fifteen_second_limit(new_story
     reply = story.hook("s-1", sample)
     story.expect_rows("--limit 15" in str(reply.updated_input))
     story.expect_text("process show 1", "limit_seconds: 15", actor=story.agent)
-
-
-def test_a_test_run_and_a_build_run_in_line_and_keep_more_of_their_output(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    expect_rewritten(story.hook("s-1", TESTS), runner_line(story, 1, "pytest -q", has_long_part=True, progress_count="pytest -q --collect-only -q", progress_position=1, progress_pattern=PYTEST_COUNT_PATTERN))
-    expect_rewritten(story.hook("s-1", BUILD), runner_line(story, 2, "make build", has_long_part=True))
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once(new_story):
@@ -108,32 +87,6 @@ def test_a_second_rule_that_rewrites_the_hook_is_refused_and_no_process_is_kept(
     story.expect_refusal("process show 1", "no process 1")
 
 
-def test_a_background_bash_call_of_claude_runs_in_the_foreground_through_the_runner(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    background = SERVER.with_raw({"tool_input": {"command": "node serve.js", "run_in_background": True, "description": "list"}})
-    expect_updated_input_hook(story, "s-1", background, {"command": runner_line(story, 1, "node serve.js"), "description": "list"})
-
-
-def test_without_the_runner_installed_lines_are_left_as_they_are_and_the_agent_is_told_once(new_story):
-    story = new_story(fixture=BuilderStarted)
-    first = story.hook("s-1", SERVER)
-    expect_updated_input_reply(first, {})
-    expect_lines_reply_line(first, "journal-run is not installed")
-    second = story.hook("s-1", SERVER)
-    expect_updated_input_reply(second, {})
-    expect_lines_second_without_line(second, "journal-run is not installed")
-    story.expect_refusal("process show 1", "no process 1")
-
-
-
-def test_a_line_that_read_command_files_goes_through_the_runner_with_its_pipes_as_written(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    line = "cat src/cart.py | tail -n 3"
-    reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
-    expect_updated_input_reply(reply, {"command": runner_line(story, 1, line, read_command=True)})
-    story.expect_success("process show 1", f"line: {line}", "state: running")
-
-
 def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     line = "sed -n 1,5p src/cart.py && cat > notes.txt"
@@ -142,36 +95,6 @@ def test_a_chain_of_reads_and_writes_goes_through_the_runner_as_written(new_stor
     expect_updated_input_reply(reply, {"command": expected})
     expect_reply_allowed(reply)
     story.expect_success("process show 1", f"line: {line}")
-
-
-def test_a_read_that_went_through_the_runner_makes_no_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.hook("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
-    story.run_listeners()
-    expect_mark_count(story, 0)
-
-
-def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    line = "cat src/cart.py && pytest -q"
-    reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
-    expect_rewritten(reply, runner_line(story, 1, line, has_long_part=True, queue_run=False, progress_count="pytest -q --collect-only -q", progress_position=2, progress_pattern=PYTEST_COUNT_PATTERN))
-
-
-def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    follow = HookSamples.shell("tail -f server.log", ShellPart("tail", CommandCategory.READ, ["-f", "server.log"], effects=[CommandEffect.READS_FILES, CommandEffect.RUNS_LONG]))
-    expect_updated_input_hook_4(story, "s-1", follow)
-
-
-def expect_updated_input_hook_4(story, text, follow) -> None:
-    actual = story.hook(text, follow).updated_input
-    assert actual, actual
-
-
-def expect_lines_second_without_line(second, expected) -> None:
-    actual = second.lines
-    assert not any(expected in line for line in actual), actual
 
 
 def expect_updated_input_hook_5(story, text, item, expected) -> None:

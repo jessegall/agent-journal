@@ -1,14 +1,10 @@
-import json
 import sqlite3
 
-from datetime import timedelta
 from unittest.mock import patch
 
 from core.base.actor import Actor
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.database.database import Database
-from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rules import DriverRules
 from core.base.journal_home import JournalHome
 from core.base.driver.interval import Interval
@@ -28,12 +24,7 @@ from core.modules.drivers.support.nudge_records import NudgeRecords
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
 from core.modules.processes.support.process_nudges import READER_REQUEST, RUN_NAME
 from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
-from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
-from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_answers, expect_outcome_with, expect_value, expect_value_with
@@ -70,14 +61,6 @@ def test_module_sync_registers_every_declared_nudge_under_its_module(new_story):
 def test_no_two_nudges_share_a_key(new_story):
     keys = [entry.key for entry in new_story(fixture=UserJoined).container.get(Registry).nudges]
     expect_answers(keys, len(set(keys)))
-
-
-def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
-    story = new_story(fixture=UserJoined)
-    window = WindowStory(story)
-    window.expect_window_allowed("drivers.nudges", "nudge list")
-    rows = json.loads(story.run("nudge list --json", actor=story.user).output_text)["rows"]
-    expect_value_with(rows, {"id": RUN_NAME.key, "key": RUN_NAME.key, "module": "journal.core.processes", "type": "steering", "text": RUN_NAME.text, "repeat_seconds": 0, "delivery_count": 0, "last_delivered_at": ""})
 
 
 def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():

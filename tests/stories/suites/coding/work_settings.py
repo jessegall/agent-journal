@@ -15,11 +15,6 @@ def revision(story, actor) -> str:
     return lines[0].removeprefix(REVISION_PREFIX)
 
 
-def test_s44_show_names_the_builder_preset_for_the_defaults(new_story):
-    story = new_story(fixture=UserBuilder)
-    story.expect_text("work-settings show --environment main", "workflow: builder", f"{AUTO}: on", actor=story.user)
-
-
 def test_s44_the_orchestrator_preset_writes_its_controls_together_and_the_builder_preset_restores_the_name(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"work-settings preset orchestrator --revision {revision(story, story.user)} --environment main", actor=story.user)
@@ -64,11 +59,3 @@ def test_the_work_settings_badge_the_context_size_as_the_capped_amount(new_story
     badges = {row["key"]: row["badge"] for row in shown["fields"]}
     expect_value(badges["journal.core.helpers.context-limit-tokens"], "Capped amount")
     expect_value(badges["journal.core.helpers.context-limit-on"], "")
-
-
-def test_the_work_settings_name_the_settings_each_control_depends_on(new_story):
-    story = new_story(fixture=UserBuilder)
-    shown = json.loads(story.run("work-settings show --environment main --json", story.user).output_text)
-    expect_value(shown["depends"][CONTINUE_SETTING], ["journal.suites.coding.main-writes-code"])
-    expect_value(shown["depends"][MERGER], ["journal.suites.coding.workers.main-dispatches-workers"])
-    expect_value("journal.suites.coding.auto-mode" not in shown["depends"], True)

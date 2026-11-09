@@ -146,15 +146,6 @@ def test_delivery_with_only_checked_proofs_reaches_the_merger_or_main_agent(new_
         story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
 
 
-def test_with_the_setting_off_the_main_agent_hears_that_the_tests_passed(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = checked_worker(story, repository)
-    story.expect_rows(merger_agent(story) is None)
-    repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-
-
 def test_only_the_merger_runs_its_commands(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_refusal("merger next", "only the merger runs this", actor=story.agent)

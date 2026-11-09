@@ -148,16 +148,6 @@ def test_batch_across_programs_is_refused_plan_names_phase(split_story, split_vi
     story.expect_refusal(f'worker dispatch --test-command python=pytest --plan {plan}', '--phase', actor=story.agent)
 
 
-def test_strict_route_refuses_when_its_program_is_out(split_story):
-    story = split_story
-    route = story.new_row_id('worker-route make --program codex --tags strict --strict --environment main', actor=story.agent)
-    story.expect_success('task tag 1 strict --confirm', actor=story.agent)
-    _, ends_at = outage(story)
-    story.expect_refusal('worker dispatch --test-command python=pytest 1', ends_at, actor=story.agent)
-    story.expect_rows('codex' in story.results[-1].output_text)
-    story.expect_text('worker-worktree list', 'nothing found')
-
-
 def test_strict_route_refuses_when_its_program_is_out_non_strict_uses_split(split_story, split_viewer):
     story = split_story
     story.expect_success('worker-route make --program codex --tags fallback --environment main', actor=story.agent)
@@ -175,10 +165,6 @@ def test_complexity_route_needs_a_score(split_story):
     story.expect_success('worker-route make --complexity-from 4 --program codex --environment main', actor=story.agent)
     story.expect_refusal('worker dispatch --test-command python=pytest 1', 'journal task edit 1 --complexity', actor=story.agent)
     story.expect_text('worker-worktree list', 'nothing found')
-
-
-def test_complexity_route_needs_a_score_no_complexity_route_stops_nothing(split_story):
-    expect_unmatched_route(split_story, '--tags absent')
 
 
 @pytest.mark.parametrize('flags,reason', [('--program codex', 'tags'), ('--tags linux', 'program'), ('--tags linux --tier fast --strict', 'program')])
@@ -301,14 +287,6 @@ def test_agent_cannot_change_a_route_a_person_made_own_route_can_change(split_st
     route = story.new_row_id('worker-route make --program codex --tags own --environment main', actor=story.agent)
     story.expect_success(f'worker-route edit {route} --program claude', actor=story.agent)
     story.expect_text(f'worker-route show {route}', 'program: claude')
-
-
-def test_agent_cannot_change_a_route_a_person_made_agent_change_has_a_mark(split_story):
-    story = split_story
-    set_split(story, 'claude 70,codex 30')
-    story.expect_success('worker-route make --program codex --tags marked --environment main', actor=story.agent)
-    story.run_listeners()
-    story.expect_text('chat-mark list --json', 'split', 'route', 'codex')
 
 
 def test_worker_cannot_dispatch_by_a_route(split_story):

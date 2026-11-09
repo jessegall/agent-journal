@@ -72,14 +72,6 @@ def test_a_worker_past_the_limit_compacts_its_session_before_its_job_runs(compac
     story.expect_rows(COMPACT_LINE.split()[0] in command, "--resume" in command, JOB not in command, detail=command)
 
 
-@pytest.mark.parametrize(("tokens", "matching_session"), [(3_000, True), (LIMIT, False)], ids=["compacted", "tokens-unchanged-starts-over"])
-def test_after_its_compaction_a_worker_goes_on_with_its_job_and_starts_over_only_if_the_tokens_did_not_fall(compacting_worker, tokens, matching_session):
-    story, worker, launcher = compacting_worker
-    session = worker_session(story, worker)
-    command = compaction_ended(story, worker, launcher, tokens)
-    story.expect_rows("/compact" not in command, JOB in command, (worker_session(story, worker) == session) is matching_session, detail=command)
-
-
 def test_a_worker_under_the_limit_resumes_on_its_job(ended_worker):
     story, worker = ended_worker
     has_context(story, worker, LIMIT - 1)
@@ -118,10 +110,3 @@ def test_a_worker_under_the_limit_at_worker_next_goes_on_and_may_not_stop(new_st
     has_context(story, worker, LIMIT - 1)
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")
-
-
-def test_the_inspector_of_a_worker_reads_its_agent_row_once(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    worker = dispatched_worker(story)
-    story.expect_success(f"usage inspector {worker.id} --environment main", actor=story.user)

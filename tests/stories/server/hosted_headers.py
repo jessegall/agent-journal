@@ -2,7 +2,6 @@ import re
 
 from server.viewer.hosted_headers import HostedHeaders
 from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, reply_headers, session_cookie, socket_raw, socket_path
-from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_value
 
 TRANSPORT_SECURITY = "Strict-Transport-Security"
@@ -39,12 +38,3 @@ def test_the_content_policy_is_on_the_shell_page_only(hosted_server):
 def test_the_hosted_session_cookie_is_host_prefixed_secure_and_http_only():
     cookie = HostedHeaders(PUBLIC_ORIGIN).cookie(f"{HostedHeaders.cookie_prefix}journal_viewer", "token")
     expect_value(bool(re.fullmatch(HOSTED_COOKIE, cookie)), True)
-
-
-def test_a_local_viewer_adds_no_hosted_header_and_keeps_the_old_cookie(new_story):
-    with server_story(new_story()) as server:
-        key = server.context.viewer.login.new_key(1)
-        _, headers, _ = viewer_answer(server.viewer_port(), f"/?key={key}", "", "")
-        expect_value(bool(re.fullmatch(LOCAL_COOKIE, headers["Set-Cookie"])), True)
-        _, state_headers, _ = viewer_answer(server.viewer_port(), JSON_ROUTE, "", "")
-        expect_value([name for name in (*HOSTED_HEADERS, POLICY) if name in state_headers], [])

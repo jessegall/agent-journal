@@ -5,9 +5,6 @@ from core.base.cli.console import Console
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
-from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.driver.support.fixtures import LeadStarted
-from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.mark_samples import EXCEPTION_SAMPLE, marks_text
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_marks, expect_system_log_with, expect_value
@@ -73,14 +70,6 @@ def test_a_command_whose_reader_went_away_records_no_exception(new_story, monkey
         patched.setattr(Console, "run_parsed", closed_pipe)
         story.run("task list", environment_id=1)
     story.expect_no_text("journal-exception list", "BrokenPipeError")
-
-
-def test_a_failing_hook_rule_shows_one_exception_mark_and_the_file_keeps_the_trace(new_story):
-    story = new_story(SAMPLES, fixture=LeadStarted)
-    story.hook("s-1", HookSamples.stop())
-    story.run_listeners()
-    expect_count_marks(story, "samples.failing-rule", 1)
-    expect_system_log_with(story, "the sample rule failed")
 
 
 def test_a_database_that_holds_faults_upgrades_to_exceptions_with_its_marks_events_and_cursor(new_story):

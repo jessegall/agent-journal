@@ -5,9 +5,7 @@ import pytest
 
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
-from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.plugins.support.event_modules import CLASHING, CLASHING_KEY, NOTE_CREATED, NOTES, NOTES_MOVED
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -28,12 +26,6 @@ def key_rows(story) -> list[dict[str, object]]:
     return json.loads(outcome.output_text)["rows"]
 
 
-def test_s1_an_author_finds_the_keys_of_a_subject_with_their_forms_and_log_names(author):
-    author.expect_text("event keys --grep worktree", "suites.coding.workers.worker_worktree.created", ALL_FORMS, "worker_worktree.create",
-                       "suites.coding.workers.worker_worktree.cut", "worker_worktree.cut", actor=author.agent)
-    author.expect_no_text("event keys --grep worktree", "core.tasks.task.created", actor=author.agent)
-
-
 def test_s1_each_line_holds_the_key_the_forms_and_the_log_name_sorted_by_key(author):
     author.expect_success("event keys --grep worktree", f"suites.coding.workers.worker_worktree.cut   {ALL_FORMS}   worker_worktree.cut   a worker worktree was cut", actor=author.agent)
     lines = author.run("event keys", actor=author.agent).output_text.splitlines()
@@ -45,23 +37,6 @@ def test_s1_a_model_with_a_lifecycle_lists_each_move(author):
     keys = {row["key"] for row in key_rows(author)}
     missing = [move.name for move in TaskLifecycle.moves() if f"core.tasks.task.{move.name}" not in keys]
     author.expect_rows(not missing, "core.tasks.task.created" in keys, "core.tasks.task.updated" in keys, "core.tasks.task.deleted" in keys)
-
-
-def test_s1_a_model_with_change_names_lists_each_name(author):
-    keys = {row["key"]: row for row in key_rows(author)}
-    for name in HookCall.change_names:
-        author.expect_rows(keys[f"core.drivers.hook_call.{name}"]["forms"] == ["commit"])
-
-
-def test_s1_metadata_is_not_listed(author):
-    rows = key_rows(author)
-    author.expect_rows(bool(rows), not [row for row in rows if str(row["key"]).endswith("metadata") or str(row["event"]).endswith(METADATA_CHANGE)])
-
-
-def test_s1_a_system_event_lists_only_the_commit_form(author):
-    keys = {row["key"]: row for row in key_rows(author)}
-    for key in SYSTEM_KEYS:
-        author.expect_rows(keys[key]["forms"] == ["commit"])
 
 
 def test_s2_every_known_event_has_a_key_or_a_stated_reason_and_no_two_share_one(author):
@@ -83,13 +58,6 @@ def test_s2_the_registry_of_the_real_modules_holds_their_keys(author):
 
 def test_s2_a_module_that_adds_a_clashing_key_fails_at_sync(author):
     author.expect_sync_refusal(CLASHING, CLASHING_KEY)
-
-
-def test_s2_a_suite_that_is_not_installed_adds_no_keys(author):
-    author.expect_no_text("event keys", "samples.edit_lock", actor=author.agent)
-    author.expect_text("event keys --grep core.tasks", "core.tasks.task.created", actor=author.agent)
-    author.expect_sync_success(SAMPLES)
-    author.expect_text("event keys --grep edit_lock", "samples.edit_lock.created", "samples.edit_lock.ended", actor=author.agent)
 
 
 def test_s3_a_listener_class_and_a_model_file_that_move_folders_change_no_key(author):

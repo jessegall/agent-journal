@@ -346,9 +346,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def parsed_request[Parsed](self, parse: Callable[[], Parsed]) -> Parsed | None:
         try:
-            request = WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query)
-            started_at, (received_at, request_id) = perf_counter(), self.stamped()
-            answer = viewer.routes.window_data.answer(request, person_id, session.shared)
+            return parse()
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
             return None
@@ -392,9 +390,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.wfile.flush()
         viewer.routes.request_log.record_viewers(records)
 
-    @staticmethod
-    def stamped() -> tuple[str, str]:
-        return datetime.now(timezone.utc).isoformat(), str(uuid4())
+    def stamped(self) -> tuple[str, str]:
+        return self.viewer().routes.clock.timestamp().text, str(uuid4())
 
     @staticmethod
     def http_request(request_id: str, received_at: str, duration_ms: float, body_bytes: int, person_id: int) -> ViewerHttpRequest:

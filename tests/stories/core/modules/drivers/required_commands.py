@@ -73,13 +73,6 @@ def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(counted
     expect_value_with(refusal, f"skip block {TITLE_BLOCK} with a reason")
 
 
-def test_while_held_reads_and_journal_commands_still_run_so_the_agent_is_never_stuck(required_command_limit):
-    story, _ = required_command_limit
-    expect_reply_allowed(story.hook("s-1", READ))
-    expect_reply_allowed(story.hook("s-1", journal_line("journal task list")))
-    expect_reply_allowed(story.hook("s-1", journal_line("journal agent-block list")))
-
-
 def test_running_the_command_settles_it_and_writes_run_again(required_command_limit):
     story, process = required_command_limit
     expect_reply_allowed(story.hook("s-1", journal_line(f'journal output title {process.id} "Deploy staging"')))

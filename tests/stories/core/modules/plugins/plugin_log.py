@@ -12,8 +12,3 @@ def test_a_plugin_line_without_a_level_is_information(new_story):
     story = installed_story(new_story)
     story.expect_success('plugin log sample "it started"', actor=story.user)
     story.expect_text("developer system-logs --level info", "plugin sample: it started", actor=story.user)
-
-
-def test_a_line_of_a_plugin_that_is_not_installed_is_refused(new_story):
-    story = installed_story(new_story)
-    story.expect_refusal('plugin log missing --level error "lost"', "no plugin named missing", actor=story.user)

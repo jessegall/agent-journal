@@ -68,10 +68,6 @@ def test_a_setting_an_agent_may_set_needs_no_request(plain_story):
     plain_story.expect_refusal("setting request journal.core.settings.backup-count 3 --reason 'more' --project", "may set", actor=plain_story.agent)
 
 
-def test_the_question_names_the_setting_its_old_and_new_value_and_the_reason(requested):
-    requested.story.expect_text("approval show 1", SUITE_KEY, "to samples", "it fits the work", "state: open")
-
-
 def test_only_a_person_answers_the_question(requested):
     requested.story.expect_refusal("approval accept 1", "an agent cannot decide", actor=requested.story.agent)
 

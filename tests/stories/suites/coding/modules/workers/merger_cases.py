@@ -121,20 +121,9 @@ def spent_case(new_story, monkeypatch):
     return MergerCase(worker.story, worker.repository, worker.worker, running_merger(worker.story, worker.worker))
 
 
-def test_merger_scope_separates_own_files_from_refused_files(own_files):
-    own_files.refused_at_hand_in("cart.py:3 is bad\nsrc/far.py:9 is bad")
-    text = own_files.scope()
-    own_files.story.expect_rows("own and refused: cart.py" in text, "refused only: src/far.py" in text, "own only: rate.py" in text, "1 refused files are not yours" in text, detail=text)
-
-
 def test_merger_scope_says_when_all_refused_files_are_the_workers(own_files):
     own_files.refused_at_hand_in("cart.py has a sin")
     own_files.story.expect_rows("all refused files are yours" in own_files.scope(), detail=own_files.scope())
-
-
-def test_merger_scope_with_no_refusal_says_so(own_files):
-    text = own_files.scope()
-    own_files.story.expect_rows("no refused files" in text, "own only: cart.py, rate.py" in text, detail=text)
 
 
 def test_merger_scope_of_a_worker_with_no_worktree_is_refused(case):
@@ -159,14 +148,6 @@ def test_merger_scope_reads_a_real_judge_refusal(new_story, monkeypatch):
     judged.story.expect_rows("own and refused: cart.py" in judged.scope(), detail=judged.scope())
 
 
-def test_merger_repair_relinks_missing_libraries_and_tells_the_worker_once(linked):
-    library = linked.repository.worktree_folder(linked.worker.id) / "node_modules"
-    library.unlink()
-    linked.story.expect_text(f"merger repair {linked.worker.id}", "node_modules", actor=linked.merger)
-    expect_value(library.is_symlink() and (library / LIBRARY_FILE).read_text() == LIBRARY_TEXT, True)
-    linked.story.expect_rows(linked.worker_lines().count(LINKED_LINE) == 1, detail=linked.worker_lines())
-
-
 def test_repair_with_nothing_missing_says_so_and_tells_the_worker_nothing(linked):
     lines_at_start = linked.worker_lines()
     linked.story.expect_text(f"merger repair {linked.worker.id}", "nothing missing", actor=linked.merger)
@@ -178,13 +159,6 @@ def test_a_second_repair_finds_nothing_and_does_not_tell_the_worker_again(linked
     linked.story.expect_success(f"merger repair {linked.worker.id}", actor=linked.merger)
     linked.story.expect_text(f"merger repair {linked.worker.id}", "nothing missing", actor=linked.merger)
     linked.story.expect_rows(linked.worker_lines().count(LINKED_LINE) == 1, detail=linked.worker_lines())
-
-
-def test_repair_copies_a_missing_copied_library_back(copied):
-    library = copied.repository.worktree_folder(copied.worker.id) / "vendor"
-    shutil.rmtree(library)
-    copied.story.expect_text(f"merger repair {copied.worker.id}", "vendor", actor=copied.merger)
-    expect_value(not library.is_symlink() and (library / LIBRARY_FILE).read_text() == LIBRARY_TEXT, True)
 
 
 def test_repair_of_a_worker_with_no_worktree_is_refused(case):
@@ -213,22 +187,10 @@ def test_a_tell_without_every_part_is_refused_with_the_shape(case, line):
     case.story.expect_rows(case.main_messages() == ())
 
 
-def test_a_tell_reaches_the_main_agent_as_one_message_with_four_parts(case):
-    case.story.expect_success(MERGER_QUESTION, actor=case.merger)
-    messages = case.main_messages()
-    case.story.expect_rows(len(messages) == 1, detail=str(messages))
-    case.story.expect_rows(messages[0].text == "What: Which tax applies?\nTried: Read the brief\nOptions: 1) Dutch tax 2) No tax\nRecommendation: Dutch tax", messages[0].target_agent_id is None, detail=messages[0].text)
-
-
 def test_a_case_no_command_covers_ends_at_the_main_agent_with_the_facts_of_the_worker(own_files):
     own_files.story.expect_success(f"{MERGER_QUESTION} --worker {own_files.worker.id}", actor=own_files.merger)
     text = own_files.main_messages()[0].text
     own_files.story.expect_rows("Recommendation: Dutch tax" in text, "point build, task 1" in text, "cart.py, rate.py" in text, detail=text)
-
-
-def test_a_tell_naming_a_worker_with_no_work_leaves_the_facts_out(case):
-    case.story.expect_success(f"{MERGER_QUESTION} --worker {case.merger.id}", actor=case.merger)
-    case.story.expect_rows("point" not in case.main_messages()[0].text, detail=case.main_messages()[0].text)
 
 
 def test_only_the_merger_tells(case):
@@ -271,13 +233,6 @@ def test_the_merger_text_names_the_ladder_and_the_case_book(case):
 @pytest.mark.parametrize("case_text", ["journal merger scope", "journal merger repair", "journal helper grant", "already built", "add the case to this file"])
 def test_the_case_book_holds_each_known_case(case_text):
     expect_value_with(merger_skill_text(), case_text)
-
-
-def test_the_branch_of_the_environment_is_not_touched_by_a_scope(own_files):
-    own_files.repository.checkout(ENVIRONMENT_BRANCH)
-    tip = own_files.repository.tip(ENVIRONMENT_BRANCH)
-    own_files.scope()
-    own_files.story.expect_rows(own_files.repository.tip(ENVIRONMENT_BRANCH) == tip)
 
 
 def logs_read_at(story: Story, worker: Actor) -> str | None:

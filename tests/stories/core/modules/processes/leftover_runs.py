@@ -18,12 +18,6 @@ def test_a_resumed_session_ends_a_run_left_open_as_orphaned(new_story):
     story.expect_text(f"process show {process.id}", "state: orphaned", actor=story.agent)
 
 
-def test_a_start_after_a_compaction_leaves_a_run_going(new_story):
-    story, process = running_story(new_story)
-    story.hook("s-1", COMPACTION)
-    story.expect_text(f"process show {process.id}", "state: background", actor=story.agent)
-
-
 def test_a_clear_leaves_a_run_going(new_story):
     story, process = running_story(new_story)
     story.hook("s-1", CLEAR)

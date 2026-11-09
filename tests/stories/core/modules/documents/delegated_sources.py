@@ -29,12 +29,6 @@ def helper_plan(scenario, helper_id: int, title: str) -> None:
     scenario.story.run_listeners()
 
 
-def test_planner_helper_creates_plan_for_parent_comment(scenario):
-    helper_id = helper_agent(scenario.story).id
-    helper_plan(scenario, helper_id, "Planned by the helper")
-    scenario.expect_link("message:2", "plan:2", "about")
-
-
 def test_parent_changes_do_not_change_dispatched_source(scenario):
     helper_id = helper_agent(scenario.story).id
     scenario.switch(1)

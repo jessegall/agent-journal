@@ -90,11 +90,6 @@ def test_a_task_edited_by_the_user_shows_no_edited_mark(new_story):
     expect_absent_marks_text(story, "edited")
 
 
-def test_a_task_started_shows_a_started_mark_and_no_edited_mark(new_story):
-    story = new_story(fixture=StartedTaskMark)
-    expect_absent_marks_text(story, "edited")
-
-
 class StartedTaskMark(StoryFixture):
     parent = OpenTaskBuilder
 

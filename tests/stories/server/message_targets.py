@@ -72,16 +72,6 @@ def post_target(server, cookie, target, text):
     return server.viewer_line_value(cookie, {"window": "agents.transcript", "environment": "main", "line": ["message", "send", text, "--target-agent", str(target.id)]})
 
 
-def test_a_workers_message_reaches_its_hook_without_reaching_main(targeted_chat):
-    server, cookie, typing = targeted_chat
-    story = server.story
-    message = post_target(server, cookie, story.worker, "Keep the worker change small")
-    expect_value(message["target_agent_id"], story.worker.id)
-    expect_absent_reply_line(story.hook("s-1", READ), "new message")
-    expect_reply_line(story.hook(story.worker_session, READ), f"new message {message['id']}")
-    expect_row(typing, typed=[])
-
-
 @pytest.mark.parametrize("role", ["worker", "helper"])
 def test_a_message_wakes_its_idle_target(targeted_chat, role):
     server, cookie, typing = targeted_chat

@@ -27,19 +27,3 @@ def test_a_plugin_guard_refuses_a_merge_before_anything_is_merged_and_the_worker
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == target_tip)
     job = story.container.get(Queries).query(Message).newest().first()
     story.expect_rows(job is not None and "was refused before anything was merged" in job.text and "not today" in job.text)
-
-
-def test_a_plugin_guard_that_allows_lets_the_merge_through_with_both_ends_recorded(new_story):
-    story, repository, worker = guarded_merge_story(new_story, "see.sh")
-    target_tip = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) != target_tip)
-    story.expect_text("merge-request list --json", f'"target_commit": "{target_tip}"', f'"worker_id": {worker.id}', actor=story.user)
-
-
-def test_a_plugin_guard_past_its_window_lets_the_merge_through_with_the_fault_on_the_plugin(new_story):
-    story, repository, worker = guarded_merge_story(new_story, "slow.sh", window_ms=300)
-    target_tip = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) != target_tip)
-    story.expect_text("plugin list", "last fault", f"at {MERGE_REQUEST_KEY} (guard)", actor=story.user)

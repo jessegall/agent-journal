@@ -54,6 +54,12 @@ def test_a_story_inside_a_longer_story_reaches_nothing_new():
     assert f"story reaches nothing the other stories do not: {FIRST}" in report, report
 
 
+def test_of_two_stories_that_cover_each_other_only_one_is_named_as_reaching_nothing_new():
+    lines = [command("task list"), command("plan list")]
+    report = overlap_of({FIRST: ("Started", lines), SECOND: ("Started", lines)})
+    assert [line for line in report if "reaches nothing" in line] == [f"story reaches nothing the other stories do not: {FIRST}"], report
+
+
 def test_a_story_with_no_steps_is_not_a_finding():
     assert overlap_of({FIRST: ("Started", []), SECOND: ("Started", [])}) == []
 

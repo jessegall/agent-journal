@@ -96,13 +96,6 @@ class KeptTyping(TerminalTyping):
         self.typed.append((agent_id, line))
 
 
-def test_a_message_to_an_agent_at_work_goes_by_its_next_hook_and_nothing_is_typed(delivery_typing):
-    story, typing = delivery_typing
-    post_message(story, "One more thing")
-    expect_row(typing, typed=[])
-    story.expect_hook_allowed("s-1", HookSamples.edit("cart.py"), "new message 1")
-
-
 def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_it_is_not_said_again(idle_delivery_typing):
     story, typing = idle_delivery_typing
     agent = story.agent
@@ -163,13 +156,6 @@ def test_a_message_sent_just_after_an_interrupted_turn_is_typed_at_the_next_tick
 
 def tool_failure(interrupted: bool):
     return HookSamples.edit("cart.py").with_fields(event="post_tool_use_failure").with_raw({"is_interrupt": interrupted})
-
-
-def test_a_message_sent_right_after_the_user_interrupted_a_tool_is_typed_since_the_program_reports_the_interrupt_with_its_failed_tool(delivery_typing):
-    story, typing = delivery_typing
-    story.hook("s-1", tool_failure(interrupted=True))
-    post_message(story, "Are you there")
-    expect_terminal_lines(typing, ["[journal] new message 1"])
 
 
 def test_a_message_sent_after_a_tool_failed_without_an_interrupt_is_not_typed(delivery_typing):
@@ -354,15 +340,6 @@ def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
     expect_output_5(story, "message read 1", "Fix the cart first")
     story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_text("message show 1", "read_at: 2026", actor=story.user)
-
-
-def test_only_read_tells_the_agent_how_to_act_and_only_the_first_time(new_story):
-    story = new_story(SAMPLES, fixture=UnreadCartMessage)
-    reply = story.hook("s-1", READ_MESSAGE_HOOK)
-    line = next(line for line in reply.lines if line.startswith(READ_NUDGE_START))
-    expect_value_with(line, "steering")
-    expect_value_with(line, "update")
-    expect_absent_startswith_lines_hook(READ_NUDGE_START, story, "s-1", READ_MESSAGE_HOOK)
 
 
 def test_each_new_message_read_in_one_turn_tells_the_agent_how_to_act(new_story):

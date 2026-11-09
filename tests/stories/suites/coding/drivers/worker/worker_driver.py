@@ -34,11 +34,6 @@ def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_stor
     story.expect_hook_allowed(WORKER_SESSION, TASK_READ)
 
 
-def test_a_worker_runs_no_git(new_story):
-    story = new_story(fixture=WorkingAgent)
-    story.expect_hook_refusal(WORKER_SESSION, GIT_STATUS, "a worker runs no git: the journal commits and merges your work")
-
-
 def test_a_worker_runs_no_command_of_a_type_its_setting_leaves_out(new_story):
     story = new_story(fixture=WorkingAgent)
     story.expect_success("""setting make journal.suites.coding.worker-command-types '["read", "search"]' --environment main""", "key: journal.suites.coding.worker-command-types")

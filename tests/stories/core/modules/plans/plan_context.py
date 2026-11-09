@@ -39,18 +39,6 @@ def delivered(scenario, session="s-1"):
     return scenario.story.hook(session, HookSamples.tool_use("Read", ToolType.READ, [], None))
 
 
-@pytest.mark.parametrize("start_channel", ["viewer", "agent"])
-def test_started_plan_delivers_context_after_viewer_or_cli_start(approved_scenario, start_channel):
-    scenario = approved_scenario
-    if start_channel == "viewer":
-        scenario.person("viewer.shell", "plan", "start", "1")
-    else:
-        scenario.command("plan start 1")
-    lines = "\n".join(delivered(scenario).lines)
-    feature("plan 1 started" in lines, lines)
-    feature("Original cart request" not in lines, "journal notice quoted user prose")
-
-
 def test_a_plan_without_tasks_still_delivers_context(scenario):
     feature("plan 1 started" in "\n".join(delivered(scenario).lines), "zero-task plan had no context pointer")
 

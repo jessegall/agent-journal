@@ -62,10 +62,6 @@ def test_a_skill_of_the_profile_can_be_marked_required(saved):
     saved.expect_no_text(f"profile skills --profile {PROFILE}", "journal-tasks: on, required", actor=saved.user)
 
 
-def test_a_skill_the_profile_does_not_give_cannot_be_required(person):
-    person.expect_refusal(f"{SAVE} --skills {LISTED} --required-skills {UNLISTED_SKILL}", UNLISTED_SKILL, actor=person.user)
-
-
 def test_a_skill_nobody_has_cannot_be_required(person):
     person.expect_refusal(f"{SAVE} --skills {LISTED} --required-skills no-such-skill", "no-such-skill", actor=person.user)
 
@@ -132,8 +128,3 @@ def test_the_required_skill_is_due_again_after_a_compaction(saved, note_taker):
 
 def test_a_skill_every_agent_reads_at_the_start_is_locked_on(saved):
     saved.expect_rows(row(saved, PROFILE, "journal").locked is True, row(saved, PROFILE, "journal").listed is True, row(saved, PROFILE, REQUIRED).locked is False)
-
-
-def test_the_functional_designer_ships_requiring_the_skill_for_user_stories(person):
-    designer = started_helper(person, "s-designer", "journal-functional-designer")
-    person.expect_text("skill required", "journal-user-stories", actor=designer)

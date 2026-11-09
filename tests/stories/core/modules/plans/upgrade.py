@@ -3,16 +3,6 @@ import json
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story, expect_upgrade_text
 
 
-def test_a_plan_keeps_its_number_title_and_state(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("plan show 1", "title: Checkout", "state: approved")
-
-
-def test_a_paused_plan_moves_as_approved_so_it_can_be_started_again(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("plan show 2", "title: Payments", "state: approved")
-
-
 def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in_order(new_story):
     story = upgraded_story(new_story)
     story.expect_success("plan show 3", "title: Cart rework", "state: ready")

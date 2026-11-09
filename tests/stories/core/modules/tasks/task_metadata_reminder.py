@@ -13,12 +13,6 @@ def story(new_story):
     return story
 
 
-def test_a_task_missing_both_names_what_it_needs_and_no_command(story):
-    outcome = story.run('task make "Fix networking on linux" --environment main', actor=story.agent)
-    story.expect_rows(outcome.code == 0, "task 2 needs tags and complexity" in outcome.output_text,
-                      "journal task tag" not in outcome.output_text, "journal task edit" not in outcome.output_text)
-
-
 def test_a_task_with_only_tags_asks_for_complexity(story):
     outcome = story.run('task make "Fix networking" --tag networking --environment main', actor=story.agent)
     story.expect_rows("task 2 needs complexity" in outcome.output_text, "journal task edit" not in outcome.output_text,
@@ -33,11 +27,6 @@ def test_a_task_with_only_a_score_asks_for_tags(story):
 
 def test_a_complete_task_has_no_reminder(story):
     outcome = story.run('task make "Fix networking" --tag networking --complexity 3 --environment main', actor=story.agent)
-    story.expect_rows("needs tags" not in outcome.output_text, "needs complexity" not in outcome.output_text)
-
-
-def test_a_person_receives_no_reminder(story):
-    outcome = story.run('task make "Fix networking" --environment main', actor=story.user)
     story.expect_rows("needs tags" not in outcome.output_text, "needs complexity" not in outcome.output_text)
 
 

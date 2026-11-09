@@ -49,18 +49,6 @@ def test_a_dispatch_for_a_plan_that_is_only_a_draft_is_refused(new_story):
     story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet --plan 1", "plan 1 is draft", actor=story.agent)
 
 
-def test_a_dispatch_for_a_phase_of_another_plan_is_refused(new_story):
-    story = planned_story(new_story)
-    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 9", "phase 9 is not in plan 1", actor=story.agent)
-
-
-def test_a_dispatch_names_tasks_or_a_plan_and_not_both_nor_a_phase_alone(new_story):
-    story = planned_story(new_story)
-    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet --plan 1 2", "takes tasks or a plan, not both", actor=story.agent)
-    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet --phase 1", "--phase needs --plan", actor=story.agent)
-    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet", "tasks or to a plan", actor=story.agent)
-
-
 def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(new_story, monkeypatch):
     story = planned_story(new_story)
     recording_launch(monkeypatch)

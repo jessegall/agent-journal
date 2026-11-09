@@ -65,7 +65,13 @@ class StoryOverlap:
     @staticmethod
     def redundant_stories(paths: dict[str, set[str]]) -> list[str]:
         counts = Counter(step_key for step_keys in paths.values() for step_key in step_keys)
-        return [f"story reaches nothing the other stories do not: {name}" for name, step_keys in sorted(paths.items()) if all(counts[step_key] > 1 for step_key in step_keys)]
+        lines: list[str] = []
+        for name, step_keys in sorted(paths.items(), key=lambda story: (len(story[1]), story[0])):
+            if any(counts[step_key] == 1 for step_key in step_keys):
+                continue
+            counts.subtract(step_keys)
+            lines.append(f"story reaches nothing the other stories do not: {name}")
+        return lines
 
     @staticmethod
     def candidate_pairs(paths: dict[str, set[str]]) -> set[tuple[str, str]]:

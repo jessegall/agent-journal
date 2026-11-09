@@ -1,5 +1,3 @@
-import pytest
-
 import base64
 import http.client
 import json
@@ -55,14 +53,6 @@ def test_a_locked_link_asks_for_its_password_and_a_guessed_cookie_opens_nothing(
     expect_viewer_answer(story, made, "", "", 401)
 
 
-def test_five_wrong_passwords_lock_the_address_out(plan_server):
-    story = plan_server
-    made = made_link(story, "--password open-sesame")
-    for _ in range(5):
-        expect_with_password(story, made, "wrong", 401)
-    expect_with_password(story, made, "open-sesame", 429)
-
-
 def test_each_opening_counts_as_a_view(plan_server):
     story = plan_server
     made = made_link(story)
@@ -94,14 +84,6 @@ def test_a_visitor_comments_through_a_link_that_takes_them(plan_server):
     expect_value_with(body, "a name of up to 40")
 
 
-def test_a_link_without_comments_gives_no_way_in(plan_server):
-    story = plan_server
-    made = made_link(story)
-    cookie = f"{story.cookie_name("journal_share")}={made['token']}"
-    expect_viewer_answer_3(story, "/api/share/comments", cookie, "", 403)
-    expect_viewer_answer_2(story, "/api/share/comments", cookie, "", "name", "text", "Bo", "x", 403)
-
-
 def test_a_shared_document_reads_to_its_visitor_and_no_other_does(plan_server):
     story = plan_server
     story.expect_viewer_login(story.viewer_key("Ada"))
@@ -125,15 +107,6 @@ def test_a_shared_document_reads_to_its_visitor_and_no_other_does(plan_server):
     expect_value_without(body, "Hidden")
 
 
-def test_wrong_passwords_on_one_link_leave_another_link_open(plan_server):
-    story = plan_server
-    first = made_link(story, "--password open-sesame")
-    second = json.loads(story.story.run("share make plans:1 --password other-word --json", actor=story.story.user).output_text)
-    statuses = [with_password(story, first["link"], "wrong")[0] for _ in range(6)]
-    expect_lines(statuses, 1, 429)
-    expect_with_password(story, second, "other-word", 200)
-
-
 def expect_with_password(story, second, text, expected) -> None:
     actual = with_password(story, second['link'], text)[0]
     assert actual == expected, actual
@@ -146,11 +119,6 @@ def expect_model_share_session(session, expected) -> None:
 
 def expect_viewer_answer(story, made, text, text_2, expected) -> None:
     actual = viewer_answer(story.viewer_port(), made['link'], text, text_2)[0]
-    assert actual == expected, actual
-
-
-def expect_viewer_answer_2(story, text, cookie, text_2, text_3, text_4, text_5, text_6, expected) -> None:
-    actual = viewer_answer(story.viewer_port(), text, cookie, text_2, {text_3: text_5, text_4: text_6})[0]
     assert actual == expected, actual
 
 

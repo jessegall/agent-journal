@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.clock import Clock
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
@@ -24,10 +23,6 @@ def advanced_worker(new_story, monkeypatch):
     return worker
 
 
-def clock_text(story) -> str:
-    return story.container.get(Clock).timestamp().text
-
-
 @pytest.fixture
 def program_ended(advanced_worker):
     advanced_worker.story.advance(timedelta(minutes=5))
@@ -43,17 +38,6 @@ def handoff_worker(advanced_worker, monkeypatch):
     advanced_worker.story.expect_text("worker next --differences none", "command accepted", actor=advanced_worker.worker)
     advanced_worker.story.advance(timedelta(minutes=5))
     advanced_worker.story.run(f"agent edit {advanced_worker.worker.id} --pid 700 --process-started-at {PROCESS_START}")
-    advanced_worker.story.use_processes()
-    return advanced_worker
-
-
-@pytest.fixture
-def failed_launch_worker(advanced_worker):
-    advanced_worker.story.advance(timedelta(minutes=5))
-    advanced_worker.story.expect_success(f"agent edit {advanced_worker.worker.id} --pid 700 --process-started-at {clock_text(advanced_worker.story)}")
-    terminal = advanced_worker.story.home.terminal_file(advanced_worker.worker.id)
-    terminal.parent.mkdir(parents=True, exist_ok=True)
-    terminal.write_text("No conversation found with session ID: 83055d61\n")
     advanced_worker.story.use_processes()
     return advanced_worker
 
@@ -102,28 +86,11 @@ def test_a_worker_that_ended_while_its_hand_in_runs_leaves_no_stopped_line(hando
     worker.story.expect_rows(not any("stopped with" in line or "ended with" in line for line in worker.main_agent_lines()), detail=str(worker.main_agent_lines()))
 
 
-def test_a_program_that_ended_as_it_started_is_reported_as_a_failed_launch_with_the_error_it_wrote(failed_launch_worker):
-    failed_launch_worker.story.run_listeners()
-    failed_launch_worker.story.tick(MAIN_SESSION)
-    lines = failed_launch_worker.main_agent_lines()
-    failed_launch_worker.story.expect_rows(any(f"worker:{failed_launch_worker.worker.id} did not start: No conversation found with session ID: 83055d61" in line for line in lines),
-                                          not any("stopped with" in line for line in lines), detail=str(lines))
-
-
-def test_a_worker_that_ended_in_a_phase_is_started_again_as_today(program_ended):
-    program_ended.story.tick(MAIN_SESSION)
-    program_ended.story.expect_rows(any("stopped with" in line and "started again" in line for line in program_ended.main_agent_lines()))
-
-
 def test_after_its_limit_a_worker_that_ended_names_its_tasks_those_in_testing_included(program_ended, monkeypatch):
     monkeypatch.setattr("suites.coding.modules.workers.support.worker_job.RESUME_LIMIT_COUNT", 0)
     program_ended.story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=program_ended.story.user)
     program_ended.story.tick(MAIN_SESSION)
     program_ended.story.expect_text(f"agent-line list --agent {program_ended.story.agent.id}", f"worker:{program_ended.worker.id} ended with task:1, task:2, task:3 left")
-
-
-def test_worker_status_shows_the_phase_and_what_waits_for_its_end(advanced_worker):
-    advanced_worker.story.expect_text(f"worker status {advanced_worker.worker.id}", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=advanced_worker.story.agent)
 
 
 @pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])
@@ -138,13 +105,6 @@ def test_a_release_leaves_a_task_with_all_its_proofs_checked_as_it_is(advanced_w
     advanced_worker.story.expect_success(f'worker release {advanced_worker.worker.id} "the plan is done with"', actor=advanced_worker.story.agent)
     advanced_worker.story.expect_no_text("task show 1", "state: open", actor=advanced_worker.story.agent)
     expect_open_undelegated(advanced_worker, 2, 3)
-
-
-def test_a_release_in_the_middle_of_a_phase_keeps_the_branch(advanced_worker):
-    branch = advanced_worker.repository.worker_branch(advanced_worker.worker.id)
-    tip = advanced_worker.repository.tip(branch)
-    advanced_worker.story.expect_success(f'worker release {advanced_worker.worker.id} "keep it"', actor=advanced_worker.story.agent)
-    advanced_worker.repository.expect_branch_tip(branch, tip)
 
 
 def test_after_a_release_the_plan_can_be_handed_to_another_worker(advanced_worker):

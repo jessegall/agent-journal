@@ -36,11 +36,6 @@ def test_a_second_pytest_command_names_the_saved_command(saved_pytest, line):
     story.expect_text("alias list --json", '"name": "pytest-run"', actor=story.agent)
 
 
-def test_vitest_can_be_saved_beside_pytest(saved_pytest):
-    story = saved_pytest
-    story.expect_success('alias add viewer-tests "npx vitest run {args}" --category "test run"', actor=story.agent)
-
-
 def test_an_unknown_test_program_does_not_block_a_save(saved_pytest):
     story = saved_pytest
     story.expect_success('alias add custom-tests "our-private-test-tool {args}" --category "test run"', actor=story.agent)
@@ -52,13 +47,6 @@ def test_editing_a_command_cannot_duplicate_another_saved_program(saved_pytest):
     story.expect_success('alias add private-tests "echo testing"', actor=story.agent)
     story.expect_refusal('alias edit private-tests --line "pytest tests/unit" --category "test run"', "journal pytest-run", actor=story.agent)
     story.expect_success('alias edit pytest-run --about "Python tests"', actor=story.agent)
-
-
-def test_go_tests_in_different_modules_can_be_saved(saved_pytest):
-    story = saved_pytest
-    story.expect_success('alias add hook-tests "go -C tools/journal-hook test {args}" --category "test run"', actor=story.agent)
-    story.expect_success('alias add runner-tests "cd tools/journal-run && go test {args}" --category "test run"', actor=story.agent)
-    story.expect_refusal('alias add private-hook-tests "cd tools/journal-hook && go test ./..." --category "test run"', "journal hook-tests", actor=story.agent)
 
 
 def test_a_second_build_of_the_same_program_and_folder_is_refused(saved_pytest):

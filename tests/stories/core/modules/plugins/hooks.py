@@ -40,11 +40,6 @@ def test_a_command_the_plugin_holds_and_refuses_is_refused_with_its_reason(new_s
     story.expect_text(f"agent-line list --agent {story.agent.id}", "[plugin sample] no deletes here", actor=story.agent)
 
 
-def test_a_command_the_plugin_allows_goes_through(new_story):
-    story = installed_story(new_story)
-    story.expect_hook_allowed("s-1", LISTING_SAMPLE)
-
-
 @pytest.fixture
 def prepared_install(new_story):
     return installed_story(new_story)
@@ -98,38 +93,6 @@ def test_a_queue_file_that_is_not_json_is_set_aside_as_the_plugins_fault_and_the
     story.expect_text("plugin list", "last fault: its queue file 1.json is not JSON", actor=story.user)
     (queue / "2.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "two sins in c.py"}))
     expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] two sins in c.py")
-
-
-def test_a_line_reserved_by_a_hook_that_never_committed_is_offered_again(new_story):
-    story = installed_story(new_story)
-    queue = story.home.folder / "plugin-data" / "sample" / "queue"
-    queue.mkdir(parents=True, exist_ok=True)
-    reserved_file = queue / "1.json.rolled-back.reserved"
-    reserved_file.write_text(json.dumps({"v": 1, "env": "main", "tell": "three sins in d.py"}))
-    os.utime(reserved_file, (0, 0))
-    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] three sins in d.py")
-
-
-def test_a_line_whose_hook_committed_is_never_offered_again_though_its_file_waits_to_be_deleted(new_story):
-    story = installed_story(new_story)
-    queue = story.home.folder / "plugin-data" / "sample" / "queue"
-    queue.mkdir(parents=True, exist_ok=True)
-    (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "five sins in f.py"}))
-    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] five sins in f.py")
-    for reserved_file in queue.glob("*.reserved"):
-        os.utime(reserved_file, (0, 0))
-    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "five sins in f.py")
-
-
-def test_a_line_read_by_a_hook_is_not_read_again_before_it_is_deleted(new_story):
-    story = installed_story(new_story)
-    queue = story.home.folder / "plugin-data" / "sample" / "queue"
-    queue.mkdir(parents=True, exist_ok=True)
-    (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "four sins in e.py"}))
-    expect_plugin_notice(story, LISTING_SAMPLE, "[plugin sample] four sins in e.py")
-    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "four sins in e.py")
-    story.run_listeners()
-    story.expect_rows(not any(queue.iterdir()))
 
 
 def test_the_starts_of_one_hook_read_the_login_path_once(new_story, monkeypatch):

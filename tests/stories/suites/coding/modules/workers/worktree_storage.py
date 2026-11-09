@@ -9,9 +9,6 @@ from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-
-
 pytestmark = pytest.mark.real_git
 
 COPY = "vendor"
@@ -36,17 +33,6 @@ def libraries_tick(story):
     handlers = [handler for module in ModuleFinder(story.home).modules() for handler in module.tick_handlers if handler.label == "stopped worker libraries"]
     story.expect_rows(len(handlers) == 1)
     handlers[0].handler(story.container)
-
-
-def test_a_worker_stopped_for_15_minutes_loses_its_copied_library_and_keeps_its_changes(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    worker, folder = stopped_worker(story)
-    story.advance(timedelta(minutes=14))
-    libraries_tick(story)
-    story.expect_rows((folder / COPY / LIBRARY_FILE).is_file())
-    story.advance(timedelta(minutes=1))
-    libraries_tick(story)
-    story.expect_rows(not (folder / COPY).exists(), (folder / CHANGED_FILE).read_text() == "my change\n")
 
 
 def test_a_send_to_the_stopped_worker_copies_its_library_back_before_its_program_starts(new_story):

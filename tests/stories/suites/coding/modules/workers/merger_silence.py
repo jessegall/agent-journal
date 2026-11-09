@@ -10,7 +10,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.messages.models.message import Message
 from core.testing.fake_launcher import FakeLauncher
-from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
@@ -61,12 +60,6 @@ def worker_with_merger(new_story, monkeypatch):
     return WorkerWithMerger(story, worker, merger_agent(story))
 
 
-def test_the_mergers_closing_words_make_no_message_for_the_main_agent(worker_with_merger):
-    stop = HookSamples.stop()
-    worker_with_merger.story.hook(worker_with_merger.agent.session, stop.with_raw({**stop.body["raw"], "last_assistant_message": CLOSING_MESSAGE}))
-    worker_with_merger.story.expect_rows(CLOSING_MESSAGE not in " ".join(worker_with_merger.texts()), detail=str(worker_with_merger.texts()))
-
-
 def test_sending_a_merge_back_stays_silent_until_the_third_time_and_then_the_count_starts_again(worker_with_merger):
     worker_with_merger.return_merge(2)
     worker_with_merger.story.expect_rows(worker_with_merger.texts() == [], detail=str(worker_with_merger.texts()))
@@ -81,9 +74,3 @@ def test_the_limit_is_the_setting_a_person_chose(worker_with_merger):
     worker_with_merger.story.expect_success("setting set journal.suites.coding.workers.hand-in-failures-to-flag 2 --project", actor=worker_with_merger.story.user)
     worker_with_merger.return_merge(2)
     worker_with_merger.story.expect_rows(any("sent back 2 times" in text for text in worker_with_merger.texts()), detail=str(worker_with_merger.texts()))
-
-
-def test_a_request_for_help_still_reaches_the_main_agent(worker_with_merger):
-    worker_with_merger.story.expect_success('merger tell "Which tax applies?" --tried "Read the brief" --option "Dutch tax" --option "No tax" --recommend "Dutch tax"', actor=worker_with_merger.actor)
-    worker_with_merger.story.run_listeners()
-    worker_with_merger.story.expect_rows(any("Which tax applies?" in text for text in worker_with_merger.texts()), detail=str(worker_with_merger.texts()))

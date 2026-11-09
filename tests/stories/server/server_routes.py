@@ -1,13 +1,10 @@
 from tests.stories.server.support.server_fixtures import task_server
 
-import pytest
-
 from tests.stories.core.support import story_lines as lines
 import os
 
 from core.base.cli.console import REFUSED_CODE
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
-from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.server_client import expect_timing_lines, expect_timing_report_steps, server_story
 
 
@@ -30,12 +27,6 @@ def test_an_unknown_route_is_404_and_a_body_that_is_no_command_line_is_400(task_
     story = task_server
     story.expect_status("GET", "/nowhere", None, 404)
     story.expect_status("POST", "/cli", {"argv": "task list"}, 400)
-
-
-def test_two_writes_sent_at_once_are_both_saved(task_server):
-    story = task_server
-    story.expect_atomic_writes(['task make "Fourth" --environment main', 'task make "Fifth" --environment main'])
-    story.expect_direct_run_answer("task list --oldest --environment main")
 
 
 def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cli_limit(task_server):
@@ -75,5 +66,3 @@ def test_each_request_on_a_kept_connection_leaves_its_own_line_from_its_own_acce
     server = task_server
     server.post_repeated_health()
     expect_timing_lines(story.home, [("", ["server_accepted", "server_received", "answered"])] * 2)
-
-

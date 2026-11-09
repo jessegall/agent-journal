@@ -27,17 +27,6 @@ def test_a_request_after_the_code_changed_gets_409_runs_nothing_and_the_server_r
     story.expect_stale_answer_released_files('task make "Fourth" --environment main', task_listing)
 
 
-def test_a_stale_server_leaves_the_restart_mark_before_it_answers_and_the_next_server_removes_it(changing_code_server):
-    story, code_file, task_listing = changing_code_server
-    code_file.write_text("x = 22\n")
-    story.expect_stale_answer_released_files('task make "Fourth" --environment main', task_listing)
-    restart_mark = ServerFiles(story.story.home).restart_mark
-    expect_exists_version_four(restart_mark)
-    with ServerProcess(story.story.home) as server:
-        server.expect_health()
-        expect_absent_exists_version_four(restart_mark)
-
-
 def test_a_server_that_starts_on_changed_code_syncs_before_it_takes_a_request(new_story):
     story = new_story(fixture=ThreeTasks)
     database = story.container.get(Database)

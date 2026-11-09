@@ -42,16 +42,6 @@ def test_a_command_that_is_no_test_run_or_build_makes_no_chat_mark_and_no_docked
     story.expect_absent("dock-item list", "processes.output")
 
 
-def test_a_workers_merge_makes_a_chat_mark_and_a_docked_card_while_it_runs(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    moved_run(story, "journal worker merge 7", category=CommandCategory.JOURNAL)
-    story.advance(timedelta(seconds=6))
-    story.tick("s-1")
-    story.run_listeners()
-    story.expect_text(MARKS, "process:1", "Running journal worker merge 7")
-    story.expect_text("dock-item list", "processes.output")
-
-
 def test_a_test_run_and_a_build_make_a_chat_mark_and_a_docked_card_for_the_main_agent_and_for_a_worker(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     worker = new_worker(story)

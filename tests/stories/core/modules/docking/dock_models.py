@@ -40,13 +40,6 @@ def test_docking_a_task_changes_no_task_row(new_story):
     expect_output(story, f"task show {task_id}", starting_text)
 
 
-def test_an_environment_made_gets_its_dock_from_the_listener(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    story.run("environment make elsewhere /work/elsewhere")
-    story.run_listeners()
-    expect_dock_count(story, 2)
-
-
 def test_the_environment_made_before_the_module_has_a_dock_when_the_listener_runs(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run_listeners()

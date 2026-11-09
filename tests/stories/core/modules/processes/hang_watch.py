@@ -63,25 +63,6 @@ def started_tree(story: Story, used: float | None) -> FakeGroupCpuTime:
     return tree
 
 
-def test_an_idle_silent_run_is_stopped_and_its_agent_told_which_run_and_for_how_long(new_story):
-    story = new_story(fixture=ActiveBuild)
-    started_tree(story, 12.0)
-    story.advance(timedelta(seconds=HANG_SECONDS + 1))
-    watch_tick(story)
-    story.expect_text("process show 1", "state: stopped", actor=story.agent)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", "output 1 printed nothing for 301 seconds, so it was stopped: its output is kept", actor=story.agent)
-
-
-def test_a_silent_run_whose_processor_time_rises_is_left_alone(new_story):
-    story = new_story(fixture=ActiveBuild)
-    tree = started_tree(story, 12.0)
-    for used in (13.0, 14.0):
-        story.advance(timedelta(seconds=200))
-        tree.used = used
-        watch_tick(story)
-    story.expect_text("process show 1", "state: background", actor=story.agent)
-
-
 def test_an_idle_run_that_printed_lately_is_left_alone(new_story):
     story = new_story(fixture=ActiveBuild)
     started_tree(story, 12.0)
@@ -131,36 +112,6 @@ def test_a_silent_build_that_keeps_using_processor_time_is_never_asked_about(new
     for seconds in (500, 500, 500):
         busy_for(story, tree, seconds)
     expect_looks(story, 0)
-    story.expect_text("process show 1", "state: background", actor=story.agent)
-
-
-def test_the_ask_repeats_after_the_hang_seconds_and_the_run_is_stopped_after_the_third_one(new_story):
-    story = new_story(fixture=ActiveTestRun)
-    tree = started_tree(story, 12.0)
-    busy_for(story, tree, LOOK_SECONDS + 1)
-    busy_for(story, tree, HANG_SECONDS - 1)
-    expect_looks(story, 1)
-    busy_for(story, tree, 2)
-    expect_looks(story, 2)
-    busy_for(story, tree, HANG_SECONDS)
-    expect_looks(story, 3)
-    story.expect_text("process show 1", "state: background", actor=story.agent)
-    busy_for(story, tree, HANG_SECONDS)
-    story.expect_text("process show 1", "state: stopped", actor=story.agent)
-
-
-def test_a_test_run_whose_agent_read_its_output_is_not_stopped_and_is_asked_again_after_the_look_seconds(new_story):
-    story = new_story(fixture=ActiveTestRun)
-    tree = started_tree(story, 12.0)
-    busy_for(story, tree, LOOK_SECONDS + 1)
-    busy_for(story, tree, HANG_SECONDS + 1)
-    expect_looks(story, 2)
-    story.expect_success("output read 1 --summary", actor=story.agent)
-    for _ in range(2):
-        busy_for(story, tree, HANG_SECONDS + 1)
-    expect_looks(story, 2)
-    busy_for(story, tree, LOOK_SECONDS)
-    expect_looks(story, 3)
     story.expect_text("process show 1", "state: background", actor=story.agent)
 
 

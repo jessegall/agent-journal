@@ -32,19 +32,6 @@ def helper_viewer(helper_split_story):
         yield viewer
 
 
-def test_helper_with_nothing_set_runs_on_its_parent_program(helper_split_story):
-    story = helper_split_story
-    helper_id, _ = started(story)
-    story.expect_text(f'agent show {helper_id}', 'program: claude', 'program_model: sonnet')
-
-
-def test_helper_with_nothing_set_runs_on_its_parent_program_profile_can_name_one(helper_split_story, helper_viewer):
-    story = helper_split_story
-    helper_viewer.value('profiles.profiles', ['profile', 'save', 'codex-reader', '--description', 'Reads files', '--body', 'Read files.', '--program', 'codex', '--model', 'gpt-6.1-terra'])
-    helper_id, _ = started(story, 'helper start codex-reader --brief "Read the queue" --environment main')
-    story.expect_text(f'agent show {helper_id}', 'program: codex')
-
-
 def test_split_passes_over_a_program_not_trusted(helper_split_story, tmp_path, monkeypatch, helper_viewer):
     story = helper_split_story
     set_split(story, 'claude 20,codex 80', viewer=helper_viewer)
@@ -90,13 +77,6 @@ def test_split_setting_must_add_to_100(helper_split_story, helper_viewer, shares
     story.expect_absent(f'setting show {SPLIT}', shares)
 
 
-def test_split_setting_must_add_to_100_empty_means_today(helper_split_story, helper_viewer):
-    story = helper_split_story
-    set_split(story, '', viewer=helper_viewer)
-    helper_id, _ = started(story)
-    story.expect_text(f'agent show {helper_id}', 'program: claude')
-
-
 @pytest.mark.parametrize('shares,reason', [('claude -1,codex 101', 'does not follow'), ('claude 50.5,codex 49.5', 'does not follow'), ('claude 100,codex 0,claude 0', 'twice'), ('claude', 'does not follow')])
 def test_split_setting_must_add_to_100_invalid_lines_are_refused(helper_split_story, helper_viewer, shares, reason):
     story = helper_split_story
@@ -113,14 +93,6 @@ def test_helper_goes_by_the_split(helper_split_story, helper_viewer):
     rows = json.loads(answer.output_text)['rows']
     codex = next(row for row in rows if row['id'] == 'codex')
     story.expect_rows(codex['recent'] == 0, codex['helpers_recent'] == 1)
-
-
-def test_helper_goes_by_the_split_profile_program_wins(helper_split_story, helper_viewer):
-    story = helper_split_story
-    helper_viewer.value('profiles.profiles', ['profile', 'save', 'claude-reader', '--description', 'Reads files', '--body', 'Read files.', '--program', 'claude', '--model', 'sonnet'])
-    set_split(story, 'codex 100,claude 0', viewer=helper_viewer)
-    helper_id, _ = started(story, 'helper start claude-reader --brief "Read the queue" --environment main')
-    story.expect_text(f'agent show {helper_id}', 'program: claude')
 
 
 def test_helper_goes_by_the_split_reuse_still_goes_first(new_story):

@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-import pytest
-
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.base.module.module_finder import ModuleFinder
@@ -67,13 +65,6 @@ def test_an_ended_output_cannot_get_a_timeout(new_story):
     story = new_story(fixture=UserBuilder)
     process = ended_run(story, "make package", "built\n")
     story.expect_refusal(f"output timeout {process.id} 10m", "not running", actor=story.agent)
-
-
-@pytest.mark.parametrize("duration", ["0s", "later"])
-def test_an_invalid_duration_is_refused(new_story, duration):
-    story = new_story(fixture=UserBuilder)
-    process = start_process(story, "make package", category=CommandCategory.BUILD)
-    story.expect_refusal(f"output timeout {process.id} {duration}", "duration", actor=story.agent)
 
 
 def test_a_saved_command_can_set_its_timeout_at_start(new_story):

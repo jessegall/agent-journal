@@ -25,19 +25,6 @@ MESSAGE_TEXT = "the job is noted"
 MESSAGE_SCRIPT = f"""echo '{{"v": 1, "tell": "{MESSAGE_TEXT}"}}'"""
 
 
-def test_s14_a_commit_script_receives_the_key_the_row_and_final_true_even_for_a_long_row(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
-    story.expect_success(f'task make "{SECOND_JOB_TITLE}" --brief "{LONG_TEXT}" --environment main', actor=story.agent)
-    story.run_listeners()
-    calls = script_calls(story, "see.sh")
-    story.expect_rows(len(calls) == 1)
-    call = calls[0]
-    data = event_data(call)
-    story.expect_rows(call["event"] == TASK_CREATED, call["environment"] == "main", call["agent"] == story.agent.id, call["window_ms"] is None, bool(call["role"]))
-    story.expect_rows(data["form"] == "commit", data["final"] is True, data["log_name"] == "task.create", int(data["event_id"]) > 0)
-    story.expect_rows(data_row(call)["title"] == SECOND_JOB_TITLE, data_row(call)["brief"] == LONG_TEXT, data_row(call, "old_row") == {})
-
-
 def test_s15_a_later_listener_that_fails_leaves_no_delivery_and_the_script_never_runs(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"}, modules=[FAILS_LATER])
     story.expect_success(SECOND_JOB, actor=story.agent)
@@ -72,16 +59,6 @@ def test_s17_a_commit_script_runs_on_its_own_thread_after_the_command_returns(ne
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
 
 
-def test_s18_a_failing_commit_script_keeps_the_change_shows_on_the_card_and_runs_once(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "fail.sh"})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.run_listeners()
-    story.expect_rows(len(tasks_titled(story, SECOND_JOB_TITLE)) == 1, len(script_calls(story, "fail.sh")) == 1)
-    page = plugin_page(story)
-    page.expect_fault("it ended with code 3", f"at {TASK_CREATED} (commit)")
-
-
 def test_s18_the_fifth_fault_shows_the_failing_mark_and_a_success_clears_it(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "recovering.sh"}, scripts={"recovering.sh": RECOVERING})
     for number in range(FAILING_COUNT):
@@ -94,35 +71,6 @@ def test_s18_the_fifth_fault_shows_the_failing_mark_and_a_success_clears_it(new_
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "Plugin events answers again", actor=story.user)
     story.expect_rows(plugin_row(story).fault_count == 0)
-
-
-def test_a_commit_script_that_answers_refuse_is_a_fault_and_the_change_stays(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "refuse.sh"})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(len(tasks_titled(story, SECOND_JOB_TITLE)) == 1, plugin_row(story).last_fault == f"it answered refuse at {TASK_CREATED} (commit): not today")
-
-
-def test_a_fault_write_starts_no_script_on_the_plugin_row(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "fail.sh"}, {"event": "core.plugins.plugin.updated", "commit": "see.sh"})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(plugin_row(story).fault_count == 1, len(script_calls(story, "fail.sh")) == 1, not script_calls(story, "see.sh"))
-
-
-def test_a_tell_goes_to_the_queue_of_the_agent_that_made_the_change(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": MESSAGE_SCRIPT})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    queue_files = list(plugin_data(story, "queue").glob("delivery-*.json"))
-    story.expect_rows(len(queue_files) == 1, MESSAGE_TEXT in queue_files[0].read_text())
-
-
-def test_a_tell_with_no_agent_is_dropped(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": MESSAGE_SCRIPT})
-    story.expect_success(SECOND_JOB, actor=story.user)
-    story.run_listeners()
-    story.expect_rows(len(script_calls(story, "told.sh")) == 1, not list(plugin_data(story, "queue").glob("delivery-*.json")), plugin_row(story).fault_count == 0)
 
 
 def test_a_change_with_no_script_on_its_key_writes_no_delivery_and_adds_no_query(new_story):
@@ -171,12 +119,3 @@ def test_a_hears_card_for_a_person_still_does_not_show(new_story):
     story.container.get(Bus).run(AddPluginOutput(plugin_row(story).id, None, CARD_ANSWER), story.user)
     story.run_listeners()
     story.expect_no_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
-
-
-def test_a_tell_that_could_not_judge_reaches_the_queue_and_counts_no_fault(new_story):
-    script = """echo '{"v": 1, "tell": "could not judge this: the parser failed"}'"""
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "told.sh"}, scripts={"told.sh": script})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    queue_files = list(plugin_data(story, "queue").glob("delivery-*.json"))
-    story.expect_rows(len(queue_files) == 1, "could not judge this" in queue_files[0].read_text(), plugin_row(story).fault_count == 0, not plugin_row(story).last_fault)

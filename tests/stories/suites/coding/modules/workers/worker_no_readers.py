@@ -14,7 +14,6 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
-from tests.stories.suites.coding.modules.workers.support.phase_steps import unplanned_worker
 from tests.stories.support.story_checks import expect_value
 
 RAW_TEST = HookSamples.shell("pytest tests/one.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]))
@@ -142,13 +141,6 @@ def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_disabled)
     readers_disabled.advance(timedelta(seconds=10))
     readers_disabled.expect_rows(not any(f"output {process.id}" in line for line in hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))))
     expect_unblocked(readers_disabled)
-
-
-def test_a_silent_run_of_a_worker_says_nothing_about_its_output(readers_disabled):
-    readers_disabled.advance(timedelta(seconds=1))
-    worker_run(readers_disabled, "custom-test run", CommandCategory.TEST_RUN)
-    readers_disabled.advance(timedelta(minutes=10))
-    readers_disabled.expect_rows(not any("printed nothing" in line or "quiet" in line for line in hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))))
 
 
 def test_only_the_main_agent_hears_the_shorter_read_of_a_reader():

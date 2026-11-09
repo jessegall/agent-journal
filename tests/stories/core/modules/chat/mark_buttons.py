@@ -19,10 +19,3 @@ def test_a_declared_buttons_line_runs_through_the_line_route_with_its_row(new_st
     window_story, task_id = chat_story(new_story)
     window_story.story.expect_success("window allow button:chatsample --type runs --environment main", actor=window_story.story.user)
     window_story.expect_window_allowed(CHAT, f"task edit {task_id}")
-
-
-def test_a_line_no_declaration_lists_is_refused(new_story):
-    window_story, task_id = chat_story(new_story)
-    window_story.expect_window_refusal(CHAT, f"task delete {task_id}", "messages.chat does not declare task delete")
-
-

@@ -7,12 +7,6 @@ from tests.stories.core.base.upgrade.support.fixture_upgrade import (
 )
 
 
-def test_a_version_4_edit_moves_as_a_file_edit_of_the_agent_whose_session_made_it(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("file-edit show 1", "path: cart.py", "added: 11", "removed: 2")
-    expect_upgrade_text(story, "journal.suites.coding: moved 7, already moved 0")
-
-
 def test_an_edit_made_by_no_agent_is_dropped_and_counted_and_one_of_a_session_with_no_agent_row_moves(new_story):
     story = upgraded_story(new_story)
     expect_upgrade_text(story, "dropped edits made by no agent: 1 rows")

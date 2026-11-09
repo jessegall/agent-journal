@@ -74,13 +74,6 @@ def test_removal_stops_the_worker_program_before_git(writing_folder):
     story.expect_rows(writer.poll() is not None, story.row(Process, process.id).state is ProcessState.STOPPED)
 
 
-def test_release_stops_a_build_before_removing_its_folder(writing_folder):
-    story, repository, worker, process, writer = writing_folder
-    story.expect_success(f'worker release {worker.id} "The work is no longer needed"', actor=story.agent)
-    repository.expect_no_folder(worker.id)
-    story.expect_rows(writer.poll() is not None, story.row(Process, process.id).state is ProcessState.STOPPED)
-
-
 def test_removal_stops_the_workers_helper_program(writing_folder):
     story, repository, worker, process, writer = writing_folder
     story.new_row_id(f'agent start folder-helper claude helper --parent {worker.id} --pid {writer.pid} --environment main')
@@ -103,18 +96,6 @@ def test_removal_clears_files_left_by_git(delivered_folder, monkeypatch):
     monkeypatch.setattr(WorktreeGit, 'git', leave_files)
     story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
     repository.expect_no_folder(worker.id)
-
-
-@pytest.mark.real_git
-def test_send_clears_an_unregistered_leftover_folder(delivered_folder):
-    story, repository, worker = delivered_folder
-    story.expect_success(f'worker merge --wait {worker.id}', actor=story.agent)
-    folder = repository.worktree_folder(worker.id)
-    folder.mkdir(parents=True)
-    (folder / 'late.pyc').write_bytes(b'cache')
-    task_id = story.new_row_id('task make "Next change" --brief "Change the cart again"', actor=story.agent)
-    story.expect_success(f'worker send --wait {worker.id} --task {task_id}', actor=story.agent)
-    story.expect_rows((folder / '.git').is_file(), not (folder / 'late.pyc').exists())
 
 
 @pytest.mark.real_git

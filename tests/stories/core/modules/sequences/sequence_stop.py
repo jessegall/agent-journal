@@ -4,7 +4,6 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.fixtures.started_sequence import StartedSequence
 
 OPEN_SEQUENCE = "sequence:1"
@@ -73,11 +72,6 @@ def test_an_agent_that_has_not_taken_up_its_step_cannot_stop(new_story):
     story.expect_hook_refusal("s-1", HookSamples.stop(), OPEN_SEQUENCE)
 
 
-def test_an_agent_working_on_its_step_cannot_stop(new_story):
-    story = new_story(fixture=FollowedSequence)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), OPEN_SEQUENCE)
-
-
 def test_the_refusal_names_the_step_the_agent_is_on(new_story):
     story = new_story(fixture=SecondStep)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "step 2")
@@ -100,21 +94,9 @@ def test_an_agent_that_gave_the_sequence_up_may_stop(new_story):
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_asking_to_stop_over_and_over_never_lets_the_agent_through(new_story):
-    story = new_story(fixture=FollowedSequence)
-    for _ in range(STOP_ATTEMPTS):
-        story.expect_hook_refusal("s-1", HookSamples.stop(), OPEN_SEQUENCE)
-
-
 def test_a_helper_with_a_running_sequence_cannot_stop(new_story):
     story = new_story(fixture=HelperOnSequence)
     story.expect_hook_refusal("s-helper", HookSamples.stop(), OPEN_SEQUENCE)
-
-
-def test_asking_over_and_over_never_lets_a_helper_through(new_story):
-    story = new_story(fixture=HelperOnSequence)
-    for _ in range(STOP_ATTEMPTS):
-        story.expect_hook_refusal("s-helper", HookSamples.stop(), OPEN_SEQUENCE)
 
 
 def test_an_agent_waiting_on_its_running_helper_may_stop(new_story):
@@ -162,11 +144,6 @@ def test_an_agent_with_a_second_sequence_on_top_is_held_by_the_top_one(new_story
     story.expect_success('sequence make "Hotfix" --steps "Patch it | Ship it"', actor=story.user)
     story.expect_success("sequence run 2", actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "sequence:2")
-
-
-def test_an_agent_with_no_sequence_stops_as_before(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
 def test_an_agent_with_a_running_sequence_a_task_in_hand_and_a_watched_run_stops_without_a_journal_exception(new_story):

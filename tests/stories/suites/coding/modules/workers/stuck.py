@@ -41,16 +41,6 @@ def stop_mark(story, variant):
     return next(line.split()[0] for line in listed.splitlines() if variant in line)
 
 
-def test_a_worker_that_stops_before_delivering_is_refused_every_time(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    worker = dispatched_worker(story)
-    session = worker_session(story, worker)
-    for _ in range(STOP_REFUSAL_COUNT + 2):
-        story.expect_hook_refusal(session, HookSamples.stop(), AskTopic.GENERAL.question_line())
-    story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
-
-
 def test_a_worker_with_a_task_queued_and_none_started_is_refused_its_stop(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)

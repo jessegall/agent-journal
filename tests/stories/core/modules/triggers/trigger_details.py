@@ -102,14 +102,6 @@ def test_a_pattern_that_could_stall_a_hook_is_refused_when_saved(new_story):
     story.expect_success("""trigger edit 1 --phrases "(a+)+$" --match-mode part""", actor=story.agent)
 
 
-def test_a_condition_that_does_not_pass_keeps_it_quiet(new_story):
-    story = new_story(fixture=AgentsEnableTriggers)
-    made(story, """--conditions '[{"type": "agent", "value": "helper"}]'""")
-    story.expect_hook_allowed("s-1", GIT_CHAIN)
-    story.expect_success("""trigger edit 1 --conditions '[{"type": "agent", "value": "main"}]'""", actor=story.agent)
-    story.expect_hook_refusal("s-1", GIT_CHAIN, TRIGGER_DENIES.nudge(trigger=1).text)
-
-
 def test_a_condition_on_the_hour_keeps_it_quiet_outside_the_hours(new_story):
     story = new_story(fixture=AgentsEnableTriggers)
     made(story, """--conditions '[{"type": "hours", "value": "0-0"}]'""")

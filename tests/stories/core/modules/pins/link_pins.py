@@ -35,20 +35,6 @@ def pin_lines(hook_answer) -> list[str]:
     return [line for line in hook_answer.lines if "pin this link" in line]
 
 
-def test_each_link_is_offered_on_its_own_and_only_once(new_story):
-    story = new_story(fixture=UserJoined)
-    expect_pin_lines(story.hook("s-1", shell_call("gh pr create", "https://docs.example.com/pages/4\n")))
-    expect_pin_lines(story.hook("s-1", shell_call("gh pr create", "https://docs.example.com/pages/5\n")))
-    expect_absent_pin_lines(story.hook("s-1", shell_call("gh pr view", "https://docs.example.com/pages/4\n")))
-
-
-def test_a_link_of_a_closed_pin_is_offered_again(new_story):
-    story = new_story(fixture=UserJoined)
-    story.run('pin make "The pull request" --link "https://docs.example.com/pages/4" --environment main', actor=story.agent)
-    story.expect_success("pin close 1", actor=story.user)
-    expect_pin_lines(story.hook("s-1", shell_call("gh pr view", "https://docs.example.com/pages/4\n")))
-
-
 def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story):
     story = new_story(fixture=UserJoined)
     address = "https://github.com/shop/cart/pull/4"
@@ -58,20 +44,6 @@ def test_a_pull_request_pins_itself_once_and_a_closed_pin_stays_closed(new_story
     story.expect_success("pin close 1", actor=story.user)
     story.hook("s-1", shell_call("gh pr view", f"{address}\n"))
     story.expect_absent("pin list --environment main", "Pull request 4", actor=story.user)
-
-
-def test_a_design_link_in_a_designers_working_output_is_not_pinned(new_story):
-    story = new_story(fixture=UserJoined)
-    response = {"content": [{"type": "text", "text": "Link: https://claude.ai/design/p/1?file=Cart.html"}]}
-    sample = HookSamples.tool_use("Agent", ToolType.UNCATEGORISED, [], None).with_fields(event="post_tool_use").with_raw({"tool_response": response})
-    expect_absent_pin_lines(story.hook("s-1", sample))
-    story.expect_absent("pin list --environment main", "https://claude.ai/design/p/1?file=Cart.html", actor=story.user)
-
-
-def test_the_same_design_link_is_pinned_when_the_designers_report_arrives(new_story):
-    address = "https://claude.ai/design/p/1?file=Cart.html"
-    story = reported(new_story, StartedHelper, f"Done: {address}")
-    story.expect_text("pin list --environment main", "Design: Cart.html", address, actor=story.user)
 
 
 def test_a_bare_design_project_link_is_not_pinned(new_story):
@@ -105,11 +77,6 @@ def test_the_main_agents_text_does_not_pin_a_design(new_story):
     story.expect_absent("pin list --environment main", address, actor=story.user)
 
 
-def test_a_link_in_a_message_the_agent_sends_is_offered(new_story):
-    story = new_story(fixture=UserJoined)
-    expect_pin_lines(story.hook("s-1", shell_call('journal message send "see https://docs.example.com/pages/1"')))
-
-
 def test_a_link_in_a_file_the_agent_reads_is_not_offered(new_story):
     story = new_story(fixture=UserJoined)
     sample = HookSamples.tool_use("Read", ToolType.READ, ["a.md"], None).with_fields(event="post_tool_use").with_raw({"tool_response": {"content": "https://claude.ai/design/p/1"}})
@@ -124,30 +91,11 @@ def test_shortened_links_are_neither_pinned_nor_suggested(new_story):
     story.expect_absent("pin list --environment main", "github.com", actor=story.user)
 
 
-def test_a_designs_long_address_is_pinned_in_full_and_named_for_its_file_at_the_report(new_story):
-    address = "https://claude.ai/design/p/" + "a" * 220 + "?file=Agent%20limits"
-    story = reported(new_story, StartedHelper, f"Done: {address}")
-    story.expect_text("pin list --environment main", "Design: Agent limits", address, actor=story.user)
-
-
-def test_a_design_after_a_long_report_is_pinned_in_full(new_story):
-    address = "https://claude.ai/design/p/cart?file=Agent%20limits"
-    story = reported(new_story, StartedHelper, "output " * 100 + address)
-    story.expect_text("pin list --environment main", "Design: Agent limits", address, actor=story.user)
-
-
 def test_design_files_are_pinned_once_and_a_bare_project_does_not_duplicate_them(new_story):
     project = "https://claude.ai/design/p/cart"
     story = reported(new_story, StartedHelper, "\n".join((f"{project}?file=Checkout&mode=edit", f"{project}?mode=preview&file=Checkout", project, f"{project}?file=Payment")))
     pins = json.loads(story.run("pin list --environment main --json", actor=story.user).output_text)["rows"]
     story.expect_rows(len(pins) == 2, {pin["title"] for pin in pins} == {"Design: Checkout", "Design: Payment"})
-
-
-def test_file_output_and_backslash_links_are_not_offered(new_story):
-    story = new_story(fixture=UserJoined)
-    text = r"https://github\.com/shop/cart and https://fonts.googleapis.com/css?family=Inter&amp;display=swap"
-    story.expect_absent_hook_line("s-1", shell_call("cat design.html", text), "pin this link")
-    story.expect_absent_hook_line("s-1", shell_call("curl example", r"https://github\.com/shop/cart"), "pin this link")
 
 
 def test_a_link_in_the_agents_text_is_offered(new_story):

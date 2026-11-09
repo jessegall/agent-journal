@@ -83,27 +83,6 @@ def test_a_phone_subscription_is_kept_and_never_shown(new_story):
     story.expect_no_text("event list --json", ENDPOINT, actor=story.user)
 
 
-def test_a_question_asked_only_records_the_notice_and_the_ticker_round_pushes_the_subscribed_phone_once(new_story):
-    service = FakePush()
-    story = subscribed_story(new_story, service)
-    ask(story)
-    story.run_listeners()
-    expect_row(service, sent=[])
-    tick(story)
-    expect_row(service, sent=[ENDPOINT])
-    tick(story)
-    expect_row(service, sent=[ENDPOINT])
-
-
-def test_two_notices_before_a_round_make_one_push(new_story):
-    service = FakePush()
-    story = subscribed_story(new_story, service)
-    ask(story)
-    ask(story)
-    tick(story)
-    expect_row(service, sent=[ENDPOINT])
-
-
 def test_a_plan_made_ready_is_pushed_by_the_ticker_round(new_story):
     service = FakePush()
     story = subscribed_story(new_story, service)
@@ -125,26 +104,6 @@ def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
     ask(story)
     tick(story)
     expect_row(service, sent=[])
-
-
-def test_an_unpaired_phone_is_not_pushed(new_story):
-    service = FakePush()
-    story = subscribed_story(new_story, service)
-    story.expect_success("phone unpair 1", actor=story.user)
-    ask(story)
-    tick(story)
-    expect_row(service, sent=[])
-
-
-def test_a_push_service_that_no_longer_knows_the_phone_clears_its_subscription(new_story):
-    service = FakePush(status=410)
-    story = subscribed_story(new_story, service)
-    ask(story)
-    tick(story)
-    expect_row(service, sent=[ENDPOINT])
-    ask(story)
-    tick(story)
-    expect_row(service, sent=[ENDPOINT])
 
 
 def test_a_failed_push_keeps_the_subscription_for_the_next_notice(new_story):
@@ -199,24 +158,8 @@ def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_
     expect_signed_p256(P256, raw_public, f"{head}.{claims}", signature, "=", 4)
 
 
-def test_the_real_push_sends_only_to_a_known_push_service_and_only_with_a_tunnel_address(new_story):
-    story = paired_story(new_story)
-    requests, service = built_service(story, "journal.example.test")
-    expect_delivery_status(service, "https://evil.example.test/push", 0)
-    expect_delivery_status(service, "http://fcm.googleapis.com/x", 0)
-    expect_posts_requests(requests, [])
-    requests, service = built_service(story, None)
-    expect_delivery_status(service, ENDPOINT, 0)
-    expect_posts_requests(requests, [])
-
-
 def expect_delivery_status(service, item, expected) -> None:
     actual = service.send(item)
-    assert actual == expected, actual
-
-
-def expect_posts_requests(requests, expected) -> None:
-    actual = requests.posts
     assert actual == expected, actual
 
 

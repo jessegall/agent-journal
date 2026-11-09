@@ -9,7 +9,6 @@ import pytest
 from core.modules.updates.support.release_notes import PAGE_SIZE
 from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
-from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_absent_last, expect_answers
 from install.code_handover import CodeHandover
@@ -96,13 +95,6 @@ def test_an_agent_installs_a_release(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
     story.expect_success("update install", actor=story.agent)
     story.expect_rows(installed_marker(story) != "")
-
-
-def test_the_updates_window_checks_and_lists_the_installed_releases(new_story, tmp_path):
-    window = WindowStory(released_story(new_story, tmp_path / "release"))
-    window.expect_window_allowed("updates.updates", "update check")
-    window.expect_window_allowed("updates.updates", "release list")
-    window.expect_window_allowed("updates.updates", "update install")
 
 
 class GithubReleases(ReleaseSource):

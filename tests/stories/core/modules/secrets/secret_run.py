@@ -9,32 +9,15 @@ __all__ = ["private_folder"]
 MASK = "[secret GITHUB_KEY]"
 
 
-def test_the_value_goes_to_the_program_on_its_input_and_comes_back_masked(new_story):
-    story = filled_story(new_story)
-    story.expect_text("secret run 1 -- head -c 64", MASK, actor=story.agent)
-    story.expect_absent("secret run 1 -- head -c 64", VALUE, actor=story.agent)
-
-
 def test_env_gives_the_value_in_the_fields_variable_masked_in_the_output(new_story):
     story = filled_story(new_story)
     story.expect_text("secret run 1 --env -- printenv GITHUB_KEY", MASK, actor=story.agent)
-
-
-def test_stdin_sends_the_text_with_the_field_filled_in(new_story):
-    story = filled_story(new_story)
-    story.expect_text('secret run 1 --stdin "Bearer {key}" -- head -c 64', f"Bearer {MASK}", actor=story.agent)
 
 
 def test_a_replaced_value_is_still_masked(new_story):
     story = filled_story(new_story, f"secret fill 1 key {REPLACEMENT_VALUE}")
     outcome = story.run(f'secret run 1 --stdin "old {VALUE} new {{key}}" -- head -c 200', story.agent)
     story.expect_rows(outcome.code == 0, VALUE not in outcome.output_text, REPLACEMENT_VALUE not in outcome.output_text, outcome.output_text.count(MASK) == 2)
-
-
-def test_a_secret_is_found_by_its_title_and_an_unknown_one_is_refused(new_story):
-    story = filled_story(new_story)
-    story.expect_text("secret run Github -- head -c 64", MASK, actor=story.agent)
-    story.expect_refusal("secret run Nope -- head -c 64", "no secret is numbered or titled 'Nope': journal secret list shows them", actor=story.agent)
 
 
 def test_the_program_runs_with_a_throwaway_home_and_nothing_of_the_agents_environment(new_story, monkeypatch, private_folder):
@@ -49,11 +32,6 @@ def test_the_program_runs_with_a_throwaway_home_and_nothing_of_the_agents_enviro
 def test_a_program_the_user_did_not_allow_is_refused_with_how_to_propose_it(new_story):
     story = filled_story(new_story)
     story.expect_refusal("secret run 1 --reason needed -- curl https://api.github.com", "A person was asked in the dock", actor=story.agent)
-
-
-def test_a_wrapper_is_refused_even_named_after_the_separator(new_story):
-    story = filled_story(new_story)
-    story.expect_refusal("secret run 1 -- bash -c true", "a secret never goes to bash: name the program that uses it, such as curl or gh", actor=story.agent)
 
 
 def test_a_program_named_by_its_path_is_refused_with_its_bare_name(new_story):

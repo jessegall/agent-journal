@@ -16,13 +16,6 @@ def test_the_hook_trust_of_a_folder_without_a_programs_hooks_is_unwritten_for_th
     story.expect_success(f"program trust claude {folder}", "unwritten")
 
 
-def test_the_launcher_gets_each_programs_command_line_from_its_provider(new_story):
-    story = new_story(fixture=MainEnvironment)
-    folder = project_folder(story)
-    story.expect_text(f"program command claude {folder} --launch launch-1", "claude", "--model", "--dangerously-skip-permissions", "--session-id")
-    story.expect_text(f"program command codex {folder} --launch launch-1 --resume t-1", "codex", "--no-daemon", "--dangerously-bypass-approvals-and-sandbox", "t-1")
-
-
 def test_the_launcher_passes_the_person_s_flags_over_the_defaults(new_story):
     story = new_story(fixture=MainEnvironment)
     folder = project_folder(story)

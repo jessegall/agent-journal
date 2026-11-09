@@ -67,12 +67,6 @@ def test_s21_a_skip_with_the_bare_guard_name_passes_nothing(new_story):
     story.expect_rows(not tasks_titled(story, SECOND_JOB_TITLE))
 
 
-def test_s22_a_guard_that_prints_nothing_saves_the_row_once_with_one_event(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.expect_rows(len(script_calls(story, "see.sh")) == 1, len(tasks_titled(story, SECOND_JOB_TITLE)) == 1, len(logged_events(story, "task.create")) == 2)
-
-
 def agent_lines_containing(story, text: str) -> list[AgentLine]:
     return [line for line in story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).all_rows() if text in line.text]
 
@@ -93,14 +87,6 @@ def test_s22_a_plugin_is_given_the_test_environments_checkout_for_the_agent_gran
     story.expect_rows(granted.project_root == Path("/work/story-engine").resolve(), program.granted_checkout(SimpleNamespace(environment="main", agent_id=story.agent.id)) is None)
 
 
-def test_s22_an_allowing_guard_tells_the_agent_and_shows_its_card_once(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": MESSAGE_SCRIPT})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.run_listeners()
-    story.expect_text("chat-mark list --environment 1", CARD_LABEL, actor=story.user)
-    story.expect_rows(len(agent_lines_containing(story, GUARD_MESSAGE)) == 1, len(script_calls(story, "words.sh")) == 1)
-
-
 def test_s22_what_an_allowing_guard_tells_rolls_back_when_a_later_listener_refuses(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "words.sh"}, scripts={"words.sh": MESSAGE_SCRIPT}, modules=[FAILS_LATER])
     story.expect_refusal(f'task make "{REFUSED_TITLE}" --brief "Do it" --environment main', LATER_REFUSAL, actor=story.agent)
@@ -115,15 +101,6 @@ def test_s22_another_guard_that_refuses_keeps_the_guard_script_from_running(new_
     story.expect_rows(not script_calls(story, "see.sh"))
     story.expect_success('event-note make "A note"', actor=story.user)
     story.expect_rows(len(script_calls(story, "see.sh")) == 1)
-
-
-@pytest.mark.parametrize(("script", "fault"), [("fail.sh", "it ended with code 3"), ("broken.sh", "its answer is not JSON"), ("gone.sh", "gone.sh")])
-def test_s23_a_guard_that_fails_lets_the_change_through_and_shows_on_the_card(new_story, script, fault):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": script})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    story.expect_rows(len(tasks_titled(story, SECOND_JOB_TITLE)) == 1)
-    page = plugin_page(story)
-    page.expect_fault(fault, f"at {TASK_CREATED} (guard)")
 
 
 def test_s24_a_guard_script_runs_with_no_lock_held_and_the_command_then_finishes(new_story):

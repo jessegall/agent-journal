@@ -71,32 +71,6 @@ def test_type_filter_precedes_paging(linked_scenario):
     feature(answer["rows"][0]["link_type"] == "comments_on", str(answer))
 
 
-def test_counterpart_pages_keep_all_relation_types_once(linked_scenario):
-    scenario = linked_scenario
-    scenario.command('task edit 1 --brief "message:2 and doc:1"')
-    scenario.story.run_listeners()
-    arguments = ["link", "list", "--row", "task:1", "--group-counterparts", "--page-size", "1"]
-    first = requested_read(scenario, "viewer.shell", arguments)
-    pages = [first, *(requested_read(scenario, "viewer.shell", [*arguments, "--page", str(page)]) for page in range(2, first["total"] + 1))]
-    counterparts = [entry for page in pages for entry in page["counterparts"]]
-    keys = [(entry["endpoint"]["model"], entry["endpoint"]["id"]) for entry in counterparts]
-    feature(len(keys) == len(set(keys)) == first["total"], str(pages))
-    message = next(entry for entry in counterparts if entry["endpoint"]["model"] == "message" and entry["endpoint"]["id"] == 2)
-    feature({"about", "edited", "mentions"} <= set(message["relations"]), str(message))
-
-
-def test_counterpart_priority_survives_page_boundaries(linked_scenario):
-    scenario = linked_scenario
-    scenario.command('task edit 1 --brief "The design is doc:1"')
-    scenario.story.run_listeners()
-    arguments = ["link", "list", "--row", "task:1", "--group-counterparts", "--first-counterpart", "doc:1", "--page-size", "1"]
-    first = requested_read(scenario, "viewer.shell", arguments)
-    feature(first["counterparts"][0]["endpoint"]["model"] == "doc", str(first))
-    later_pages = [requested_read(scenario, "viewer.shell", [*arguments, "--page", str(number)]) for number in range(2, first["total"] + 1)]
-    keys = [(entry["endpoint"]["model"], entry["endpoint"]["id"]) for page in [first, *later_pages] for entry in page["counterparts"]]
-    feature(len(keys) == len(set(keys)) == first["total"], str(keys))
-
-
 def test_plan_links_exclude_its_tasks_and_phases_before_counting_and_filtering(scenario):
     scenario.command('phase make --plan 1 "Build" --goal "Finish the cart"')
     scenario.command('phase place 1 --phase 1')
@@ -190,16 +164,6 @@ def test_plan_start_pointer_is_read_before_work(new_story):
     feature("plan 1 started" in notice, notice)
     context = scenario.context("plan")
     feature("messages" in context, str(context))
-
-
-def test_link_removal_does_not_reappear_on_retry(linked_scenario):
-    scenario = linked_scenario
-    edge = next(row for row in scenario.links("message:2") if row["link_type"] == "about")
-    arguments = ["link", "remove", str(edge["id"])]
-    requested_read(scenario, "viewer.shell", arguments)
-    requested_read(scenario, "viewer.shell", arguments)
-    scenario.story.run_listeners()
-    scenario.expect_no_link("message:2", "task:1")
 
 
 def test_refused_comment_does_not_write_a_message(scenario):

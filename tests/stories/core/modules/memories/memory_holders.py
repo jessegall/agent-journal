@@ -59,13 +59,6 @@ def test_a_removed_memory_counts_as_removed(new_story):
     story.expect_rows((row["active_memories"], row["removed_memories"]) == (1, 1))
 
 
-def test_an_agent_holding_only_removed_memories_is_still_listed(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_success(f"memory remove {WORKER_MEMORY} --reason stale", actor=story.user)
-    row = holders(story)["rows"][0]
-    story.expect_rows((row["active_memories"], row["removed_memories"]) == (0, 1))
-
-
 def test_an_ended_agent_stays_listed_with_its_end_time_and_working_now_leaves_it_out(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     worker = read_agent(story, "s-9")

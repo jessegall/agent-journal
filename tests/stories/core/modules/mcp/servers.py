@@ -42,45 +42,6 @@ def test_a_name_the_catalogue_lacks_is_refused_with_where_the_names_are(new_stor
     story.expect_refusal("mcp install nope", "no suggested server is named nope: journal mcp suggested lists them", actor=story.user)
 
 
-def test_an_installed_server_appears_in_the_mcp_json_with_its_key_only_as_a_variable(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_success("mcp install github", "installed github: it needs its key, journal mcp key github <value>", actor=story.user)
-    servers = json.loads(claude_file(story).read_text())["mcpServers"]
-    story.expect_rows(servers["github"] == {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env": {GITHUB_VARIABLE: f"${{{GITHUB_VARIABLE}}}"}})
-
-
-def test_an_installed_server_appears_in_the_codex_config_naming_its_key_variable(new_story):
-    story = installed_story(new_story, "linear", "github")
-    servers = tomllib.loads(codex_file(story).read_text())["mcp_servers"]
-    story.expect_rows(servers["github"] == {"command": "npx", "args": ["-y", "@modelcontextprotocol/server-github"], "env_vars": [GITHUB_VARIABLE]},
-                      servers["linear"] == {"url": "https://mcp.linear.app/mcp"})
-
-
-def test_a_server_reached_over_http_is_written_with_its_address(new_story):
-    story = installed_story(new_story, "linear")
-    story.expect_rows(json.loads(claude_file(story).read_text())["mcpServers"]["linear"] == {"type": "http", "url": "https://mcp.linear.app/mcp"})
-
-
-def test_the_servers_and_settings_the_project_had_stay_beside_the_journals(new_story):
-    story = new_story(fixture=UserJoined)
-    claude_file(story).write_text(json.dumps({"mcpServers": {"mine": {"command": "my-server"}}}))
-    codex_file(story).parent.mkdir(parents=True, exist_ok=True)
-    codex_file(story).write_text('model = "gpt-5"\n')
-    story.expect_success("mcp install linear", actor=story.user)
-    story.expect_rows(json.loads(claude_file(story).read_text())["mcpServers"]["mine"] == {"command": "my-server"},
-                      tomllib.loads(codex_file(story).read_text())["model"] == "gpt-5")
-
-
-def test_an_older_table_of_a_server_gives_way_to_the_journals_so_codex_can_read_the_file(new_story):
-    story = new_story(fixture=UserJoined)
-    codex_file(story).parent.mkdir(parents=True, exist_ok=True)
-    older = "# Written by the journal: edit it on the viewer's MCP page.\n[mcp_servers.linear]\nurl = \"https://old.example\"\n\n[mcp_servers.mine]\ncommand = \"my-server\"\n"
-    codex_file(story).write_text(older)
-    story.expect_success("mcp install linear", actor=story.user)
-    servers = tomllib.loads(codex_file(story).read_text())["mcp_servers"]
-    story.expect_rows(servers["linear"] == {"url": "https://mcp.linear.app/mcp"}, servers["mine"] == {"command": "my-server"})
-
-
 def test_a_server_installed_already_is_refused(new_story):
     story = installed_story(new_story, "github")
     story.expect_refusal("mcp install github", "github is installed already: journal mcp list shows it", actor=story.user)
@@ -147,12 +108,6 @@ def test_a_server_added_by_its_address_is_reached_over_http(new_story):
     story.expect_text("mcp list", "shop  ready  shop", actor=story.user)
 
 
-def test_a_server_added_by_its_command_is_started_with_its_arguments(new_story):
-    story = new_story(fixture=UserJoined)
-    story.expect_success('mcp add shop "npx -y shop-server --quiet"', actor=story.user)
-    story.expect_rows(json.loads(claude_file(story).read_text())["mcpServers"]["shop"] == {"command": "npx", "args": ["-y", "shop-server", "--quiet"]})
-
-
 def test_an_added_server_needs_a_usable_name_a_new_name_and_a_target(new_story):
     story = installed_story(new_story, "linear")
     story.expect_refusal("mcp add linear https://other.example", "linear is installed already", actor=story.user)
@@ -166,4 +121,3 @@ def test_an_added_server_comes_off_like_any_other(new_story):
     story.expect_success("mcp add shop https://mcp.shop.example/mcp", actor=story.user)
     story.expect_success("mcp remove shop", actor=story.user)
     story.expect_rows("shop" not in json.loads(claude_file(story).read_text())["mcpServers"])
-

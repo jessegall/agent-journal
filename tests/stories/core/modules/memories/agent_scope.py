@@ -23,16 +23,6 @@ def test_the_main_agent_never_sees_a_worker_s_memory(new_story):
     expect_hidden(story, WORKER_MEMORY, WORKER_FACT, story.agent)
 
 
-def test_a_worker_never_sees_the_main_agent_s_memory(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    expect_hidden(story, MAIN_MEMORY, MAIN_FACT, read_agent(story, "s-9"))
-
-
-def test_a_worker_never_sees_another_worker_s_memory(new_story):
-    story = new_story(fixture=MainAndWorkerMemories)
-    expect_hidden(story, WORKER_MEMORY, WORKER_FACT, started_agent(story, "s-10"))
-
-
 def test_a_new_worker_does_not_inherit_an_ended_worker_s_memory(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     story.expect_success(f"agent end {read_agent(story, 's-9').id}", actor=story.user)

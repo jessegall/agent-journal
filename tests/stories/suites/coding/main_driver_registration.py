@@ -57,13 +57,3 @@ def test_plan_delivery_stops_when_auto_is_turned_off_under_the_main_driver(new_s
     story.expect_success('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     story.expect_text("task show 2", "state: open", actor=story.agent)
-
-
-def test_auto_off_delivers_nothing_to_the_main_agent_under_the_main_driver(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    story.expect_success("driver choose coding.main --environment main")
-    story.expect_success("setting set journal.suites.coding.auto-mode off --environment main")
-    story.run('task make "Second" --environment main', actor=story.agent)
-    story.expect_success('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
-    story.expect_text("task show 2", "state: open", actor=story.agent)

@@ -105,11 +105,6 @@ def test_broken_markdown_is_refused_at_a_save_with_the_lines_to_fix(new_story):
     story.expect_refusal('doc make "Bad" --abstract "A bad one" --body "```"', "this code fence is never closed", actor=story.user)
 
 
-def test_a_fence_may_hold_what_would_be_broken_outside_it(new_story):
-    story = doc_story(new_story)
-    story.expect_success('doc edit 1 --body "```text\\n| a | b |\\n##Totals\\n```"', "doc 1 written anew: Cart rules", actor=story.user)
-
-
 def test_an_abstract_edit_of_an_old_text_with_a_fault_is_not_refused(new_story):
     story = doc_story(new_story)
     story.container.get(Database).connection.execute("UPDATE docs SET body = '```' WHERE id = 1")

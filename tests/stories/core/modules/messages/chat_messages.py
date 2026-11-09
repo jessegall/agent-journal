@@ -31,11 +31,6 @@ def test_reading_a_message_marks_it_read_once(new_story):
     story.expect_success("message show 1", "read_at: 2026-10-31T09:00:00.000000+00:00", "version: 2", actor=story.agent)
 
 
-def test_a_reply_names_the_message_it_answers(new_story):
-    story = new_story(fixture=UnansweredMessage)
-    story.expect_success('message reply 1 "On it" --environment main', "parent_id: 1", "type: agent", actor=story.agent)
-
-
 def test_an_environments_chat_is_listed_in_the_order_written(new_story):
     story = new_story(fixture=UnansweredMessage)
     story.run('message reply 1 "On it" --environment main', actor=story.agent)

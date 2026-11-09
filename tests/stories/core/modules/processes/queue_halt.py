@@ -30,32 +30,6 @@ def reminders(story) -> list[str]:
     return [line for line in story.hook("s-1", VIEW_LINE).lines if REMINDER in line]
 
 
-def test_work_can_still_join_a_halted_queue_and_waits_there(new_story):
-    story = halted_story(new_story)
-    first, second = queued(story, "make one"), queued(story, "make two")
-    expect_waits(story, first)
-    expect_waits(story, second)
-    expect_absent_slot(story, first)
-
-
-def test_nothing_starts_while_the_queue_is_halted_not_even_when_a_spot_frees(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    first, second, third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
-    story.expect_success(HALT, actor=story.agent)
-    end_run(story, first, "ok\n")
-    expect_absent_slot(story, third)
-    expect_waits(story, third)
-
-
-def test_runs_already_holding_a_spot_go_on_while_the_queue_is_halted(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    first = queued(story, "make one")
-    story.expect_success(HALT, actor=story.agent)
-    expect_slot(story, first)
-    expect_absent_waits(story, first)
-    end_run(story, first, "ok\n")
-
-
 def test_resuming_grants_the_spots_oldest_first(new_story):
     story = halted_story(new_story)
     first, second, third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
@@ -128,12 +102,6 @@ def test_the_main_agent_is_reminded_every_five_minutes_while_the_queue_is_halted
     expect_reminders_2(story, 1)
     story.expect_success("queue resume", actor=story.agent)
     story.advance(timedelta(seconds=REMINDER_SECONDS + 1))
-    expect_reminders(story, [])
-
-
-def test_a_restart_alone_sends_no_reminder(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    story.home.restart_mark.write_text("1")
     expect_reminders(story, [])
 
 

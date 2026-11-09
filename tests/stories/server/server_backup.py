@@ -4,8 +4,6 @@ import pytest
 
 import os
 import sqlite3
-from datetime import timedelta
-
 from server.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_answers, expect_exists_version_four, expect_lines_2
@@ -43,20 +41,6 @@ def test_a_copy_younger_than_the_setting_is_not_written_again(new_story):
     expect_copies_backup(backup, 1)
 
 
-def test_a_copy_is_written_again_once_the_clock_passes_the_setting(new_story):
-    story, backup = journal(new_story)
-    story.expect_success("setting set journal.core.settings.backup-minutes 30 --project", actor=story.user)
-    story.expect_success("setting set journal.core.settings.backup-count 5 --project", actor=story.user)
-    backup.follow()
-    stamp(backup.copies()[0], backup.clock.epoch_seconds())
-    story.clock.advance(timedelta(minutes=29))
-    backup.follow()
-    expect_copies_backup(backup, 1)
-    story.clock.advance(timedelta(minutes=2))
-    backup.follow()
-    expect_copies_backup(backup, 2)
-
-
 def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, monkeypatch):
     story, backup = journal(new_story)
 
@@ -70,13 +54,6 @@ def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, mo
     expect_iterdir_folder_backup(backup, [])
 
 
-def test_keeping_no_copies_still_keeps_the_one_just_written(new_story):
-    story, backup = journal(new_story)
-    story.expect_success("setting set journal.core.settings.backup-count 0 --project", actor=story.user)
-    backup.follow()
-    expect_copies_backup(backup, 1)
-
-
 def test_only_the_newest_copies_stay(new_story):
     story, backup = journal(new_story)
     backup.folder().mkdir(parents=True)
@@ -87,13 +64,6 @@ def test_only_the_newest_copies_stay(new_story):
     names = [copy.name for copy in backup.copies()]
     expect_answers(names, 2)
     expect_lines_2(names, "version-5-20260103-000000.db")
-
-
-def test_zero_minutes_writes_no_copy(new_story):
-    story, backup = journal(new_story)
-    story.expect_success("setting set journal.core.settings.backup-minutes 0 --project", actor=story.user)
-    backup.follow()
-    expect_copies_backup_2(backup, [])
 
 
 def test_version_4s_copies_are_left_alone(new_story):

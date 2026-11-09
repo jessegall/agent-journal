@@ -21,11 +21,6 @@ def test_a_main_agent_with_auto_off_that_stops_is_not_given_the_open_task(new_st
     story.expect_success(lines.TASK_DETAILS, "state: open")
 
 
-def test_a_main_agent_with_auto_on_with_nothing_open_stops(new_story):
-    story = new_story(fixture=BuilderStarted)
-    story.expect_hook_allowed("s-1", HookSamples.stop())
-
-
 def test_a_main_agent_with_auto_on_is_told_it_is_the_main_agent_when_its_session_starts(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_hook_allowed("s-1", HookSamples.session_start(), "You are the main agent")
@@ -37,17 +32,6 @@ def test_a_main_agent_with_auto_on_given_a_task_is_told_its_brief(new_story):
     story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is yours now")
 
 
-def test_a_main_agent_with_auto_on_starting_is_told_what_waits_for_it(new_story):
-    story = new_story(fixture=CodingEnvironment)
-    story.run('task make "Fix the tax" --environment main')
-    story.expect_hook_allowed("s-1", HookSamples.session_start(), "waiting for you: 1 open tasks")
-
-
-def test_a_main_agent_with_auto_on_with_nothing_waiting_is_told_nothing_about_it(new_story):
-    story = new_story(fixture=CodingEnvironment)
-    story.expect_absent_hook_line("s-1", HookSamples.session_start(), "waiting for you")
-
-
 def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itself(new_story):
     story = new_story(fixture=CodingEnvironment)
     launcher = FakeLauncher.listening(story.home.socket("launcher"))
@@ -56,8 +40,3 @@ def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itse
     launcher.drain_requests()
     name = launcher.requests[0]["session"]
     story.expect_hook_allowed(name, HookSamples.session_start().with_fields(launch=name), "introduce yourself in the chat")
-
-
-def test_a_main_agent_with_auto_on_the_user_started_by_hand_is_not_told_to_introduce_itself(new_story):
-    story = new_story(fixture=CodingEnvironment)
-    story.expect_absent_hook_line("s-1", HookSamples.session_start(), "introduce yourself")

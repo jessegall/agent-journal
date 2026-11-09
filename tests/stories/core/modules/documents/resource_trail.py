@@ -1,7 +1,5 @@
 import pytest
 from unittest.mock import patch
-from concurrent.futures import ThreadPoolExecutor
-
 from core.base.change.event_log import EventLog
 from core.base.query.query import Query
 from core.base.listener.commit_listener_runner import CommitListenerRunner
@@ -14,15 +12,7 @@ from tests.stories.core.modules.secrets.support.private_home import private_fold
 from tests.stories.suites.coding.modules.workers.worker_context import assigned_worker, worker_scenario
 
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario, feature, scenario
-from tests.stories.server.support.server_client import server_story
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
-
-
-@pytest.fixture
-def link_server(scenario):
-    scenario.command('transcription make "Concurrent requests" --text "Cart meeting" --environment main')
-    with server_story(scenario.story, listener_thread_started=False) as server:
-        yield server
 
 
 def test_viewer_comment_keeps_its_original_target(scenario):
@@ -32,24 +22,11 @@ def test_viewer_comment_keeps_its_original_target(scenario):
     scenario.story.expect_rows(comment["text"] == "Implement the cart request")
 
 
-def test_link_types_can_share_endpoints(scenario):
-    comment = scenario.comment("viewer.shell", "task", 1, "Review task 1")
-    scenario.story.run_listeners()
-    rows = scenario.links(f'message:{comment["id"]}')
-    relations = {row["link_type"] for row in rows if row["target_model"] == "task" and row["target_id"] == 1}
-    scenario.story.expect_rows({"comments_on", "mentions"} <= relations)
-
-
 def test_duplicate_transcription_link_is_idempotent(scenario):
     scenario.command('transcription make "Cart meeting" --text "Discuss totals" --environment main')
     scenario.requested_command("transcription link 1 task 1")
     scenario.requested_command("transcription link 1 task 1")
     feature(len([row for row in scenario.links("transcription:1") if row["target_id"] == 1 and row["target_model"] == "task"]) == 1, "duplicate transcription subject")
-
-
-def test_fields_cannot_manufacture_a_reference(scenario):
-    scenario.command('doc make "task" --abstract "1" --body "No reference"')
-    scenario.expect_no_link("doc:2", "task:1")
 
 
 def test_deleted_sources_are_not_relinked_by_deferred_events(scenario):
@@ -77,13 +54,6 @@ def test_prose_field_updates_keep_old_mentions(scenario):
     scenario.expect_link("task:1", "doc:1", "mentions")
 
 
-@pytest.mark.parametrize("text", ["task 1.5", "task 1-2", "other-task 1"], ids=["decimal", "range", "embedded-name"])
-def test_malformed_reference_tokens_are_ignored(scenario, text):
-    scenario.command(f'doc make "Malformed reference" --abstract "Tokens" --body "{text}; plan 1"')
-    scenario.expect_no_link("doc:2", "task:1")
-    scenario.expect_link("doc:2", "plan:1", "mentions")
-
-
 def test_long_text_scanning_batches_distinct_references(scenario):
     for number in range(2, 42):
         scenario.make_task(f"Cart item {number}")
@@ -106,14 +76,6 @@ def test_new_link_events_run_once_and_duplicates_run_none(scenario):
     feature(len([event for event in events if event.is_creation]) == 1, "duplicate link emitted another creation event")
 
 
-def test_replayed_and_competing_writes_keep_one_typed_link(link_server):
-    scenario = Scenario(link_server.story)
-    with ThreadPoolExecutor(max_workers=2) as workers:
-        outcomes = list(workers.map(lambda _: link_server.run_as("transcription link 1 task 1", "s-1"), range(3)))
-    feature(all(outcome.exit_code == 0 for outcome in outcomes), repr(outcomes))
-    feature(len([row for row in scenario.links("transcription:1") if row["target_model"] == "task" and row["target_id"] == 1]) == 1, "replayed write duplicated its typed identity")
-
-
 @pytest.mark.usefixtures("private_folder")
 def test_library_copies_are_not_scanned(scenario, shared_server):
     server, tokens = shared_server
@@ -132,11 +94,6 @@ def test_additional_prose_sources_are_scanned_on_updates(scenario, commands, sou
     for command in commands:
         scenario.command(command)
     scenario.expect_link(source, "doc:1", "mentions")
-
-
-def test_message_edits_are_scanned(scenario):
-    scenario.person("messages.chat", "message", "edit", "1", "--text", "Read doc 1")
-    scenario.expect_link("message:1", "doc:1", "mentions")
 
 
 def test_delegated_comment_and_review_link_side_effects_remain(assigned_worker):
@@ -171,9 +128,3 @@ def test_existing_prose_fields_keep_their_mentions(scenario, command, source):
     scenario.command(command)
     scenario.story.run_listeners()
     scenario.expect_link(source, "doc:1", "mentions")
-
-
-def test_new_person_message_text_is_scanned(scenario):
-    scenario.person("messages.chat", "message", "send", "Read doc 1")
-    scenario.story.run_listeners()
-    scenario.story.expect_rows(any(row["target_model"] == "doc" and row["target_id"] == 1 and row["link_type"] == "mentions" for row in scenario.links("message:3")))

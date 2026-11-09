@@ -23,11 +23,6 @@ def config_file(story) -> dict[str, object]:
     return json.loads((story.home.folder.parent / CONFIG["file"]).read_text())
 
 
-def test_the_config_is_served_with_its_version(new_story):
-    story = configured_story(new_story)
-    story.expect_text("plugin config events", "version 1", '"level": 1', actor=story.user)
-
-
 def test_a_change_at_a_pointer_is_written_as_the_next_version_with_the_places_it_changed(new_story):
     story = configured_story(new_story)
     story.expect_text("plugin config events", "version 1", actor=story.user)

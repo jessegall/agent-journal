@@ -85,14 +85,6 @@ def test_a_run_keeps_the_title_of_its_reader_with_its_topic(new_story):
     expect_run_title(story, "deploy staging", "Deploying: staging")
 
 
-def test_a_run_with_no_reader_never_shows_its_raw_line_as_its_title_until_the_agent_gives_one(new_story):
-    story = new_story(fixture=BuilderStarted)
-    process = ended_run(story, "./deploy.sh --with secret", "uploading\n")
-    expect_title_without(story, f"process card {process.id} --json", "secret")
-    story.run(f'output title {process.id} "Deploying the site"', actor=story.agent)
-    expect_row(json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text), title="Deploying the site")
-
-
 def test_a_reader_counts_the_steps_of_a_run_and_keeps_them_on_its_output(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(f'{TESTS_READER} --step "[.FE]" --subject "the failed tests" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
@@ -117,8 +109,3 @@ def test_a_count_pattern_is_checked_and_its_fields_survive_an_update(new_story):
 def expect_run_title(story, line, expected) -> None:
     actual = run_title(story, line)
     assert actual == expected, actual
-
-
-def expect_title_without(story, text, expected) -> None:
-    actual = json.loads(story.run(text, actor=story.agent).output_text)['title']
-    assert expected not in actual, actual

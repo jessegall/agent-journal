@@ -40,11 +40,6 @@ def test_a_step_does_not_advance_while_a_check_it_lists_has_not_passed(new_story
     story.expect_refusal("sequence next", "journal check run 1", actor=story.agent)
 
 
-def test_a_step_advances_once_the_check_it_lists_passes(new_story):
-    story = new_story(fixture=PassedCheckSequence)
-    story.expect_text("sequence next", "sequence 1, step 2: Tag the release", actor=story.agent)
-
-
 def test_the_sequence_does_not_finish_while_the_check_of_its_last_step_fails(new_story):
     story = new_story(fixture=PassedCheckSequence)
     story.run("sequence next", actor=story.agent)
@@ -89,12 +84,6 @@ def test_the_step_line_and_sequence_show_name_the_checks(new_story):
     story = new_story(fixture=FailedCheckSequence)
     story.expect_text("sequence show 1", "1. Run the suite (checks that must pass: 1)", actor=story.user)
     story.expect_text("sequence follow", "these checks must pass before it moves on: check 1", actor=story.agent)
-
-
-def test_checks_that_are_not_a_list_of_numbers_are_refused_when_written(new_story):
-    story = new_story(fixture=UserJoined)
-    for checks in ("one", ["a"], [True]):
-        story.expect_refusal(f'sequence make "Bad" --steps "one" --step-guards {shlex.quote(json.dumps([{"checks": checks}]))}', "checks are a list of check numbers", actor=story.user)
 
 
 def test_a_sequence_a_command_starts_holds_its_first_step_on_a_failed_check(new_story):

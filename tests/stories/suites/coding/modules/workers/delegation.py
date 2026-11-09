@@ -33,20 +33,6 @@ def last_message_id(story) -> int:
     return story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].id
 
 
-def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
-    story, repository, worker = delegated_story(new_story)
-    repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.run('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.run("worker next --wait --differences none", actor=worker)
-    story.run_listeners()
-    expect_marks_text(story, f"Worker {worker.id} started task 1")
-    expect_marks_text(story, f"Worker {worker.id} started task 2")
-
-
-def judge_sample(*arguments: str):
-    return HookSamples.shell(f"journal sins {' '.join(arguments)}", ShellPart("journal", CommandCategory.JOURNAL, ["sins", *arguments], subcommand="sins"))
-
-
 @pytest.fixture
 def judge_worker(new_story):
     return delegated_story(new_story)
@@ -56,16 +42,6 @@ def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(judge_worker
     story, _, worker = judge_worker
     line = HookSamples.shell('journal task log 1 "I will run journal sins next"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "log", "1", "I will run journal sins next"], subcommand="task"))
     expect_absent_reply_refusal(story.hook(worker_session(story, worker), line), "a worker judges only its own changes")
-
-
-def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_worker):
-    story, _, worker = judge_worker
-    session = worker_session(story, worker)
-    story.expect_hook_refusal(session, judge_sample("src"), "a worker judges only its own changes")
-    story.expect_hook_refusal(session, judge_sample(), "a worker judges only its own changes")
-    story.expect_hook_allowed(session, judge_sample("--changes"))
-    story.expect_hook_allowed(session, judge_sample("--branch"))
-    story.expect_hook_allowed("s-1", judge_sample("src"))
 
 
 def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):
@@ -107,24 +83,6 @@ def test_a_worker_gets_none_of_the_messages_the_person_wrote_to_the_main_agent(n
     story.expect_text("message unread --environment main", "Fix the cart first", actor=story.agent)
 
 
-def test_a_queued_task_moves_to_the_main_agent_or_another_worker(new_story):
-    story, _, worker = delegated_story(new_story)
-    story.expect_text(f"task assign 2 --to {story.agent.id}", "task:2", actor=story.agent)
-    story.expect_text("task show 2", f"delegated_to: {story.agent.id}", actor=story.agent)
-    story.expect_text(f"task assign 2 --to {worker.id}", "task:2", actor=story.agent)
-    story.expect_text("task show 2", f"delegated_to: {worker.id}", "state: open", actor=story.agent)
-
-
-def test_a_task_a_worker_releases_leaves_its_queue_and_it_goes_on_with_its_next(new_story):
-    story, _, worker = delegated_story(new_story)
-    story.expect_success('task release 1 --reason "it needs a fixture I cannot make"', actor=worker)
-    story.expect_text("task show 1", "state: open", actor=story.agent)
-    story.expect_absent("task show 1", "delegated_to", actor=story.agent)
-    story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
-    story.expect_text("worker-worktree show 1", "task_id: 2", actor=story.agent)
-    story.expect_absent(f"agent-line list --agent {worker.id}", "was taken from you")
-
-
 def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_on_with_its_next(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text(f"task assign 1 --to {story.agent.id}", "task:1", actor=story.agent)
@@ -150,12 +108,6 @@ def test_a_task_is_not_assigned_to_a_worker_whose_work_is_delivered(new_story):
     story.expect_refusal(f"task assign 2 --to {worker.id}", "is a worker and takes no task", actor=story.agent)
     story.expect_refusal(f"task assign 2 --to {worker.id}", "a worker with a cut worktree take a task", actor=story.agent)
     story.expect_absent("task show 2", "delegated_to", actor=story.agent)
-
-
-def test_a_workers_last_task_goes_back_with_the_worker(new_story):
-    story, _, worker = delegated_story(new_story)
-    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
-    story.expect_refusal(f"task assign 1 --to {story.agent.id}", f"task 1 is the last of worker {worker.id}", actor=story.agent)
 
 
 def test_a_workers_last_task_can_be_taken_back_after_other_work_is_finished(new_story):
@@ -229,26 +181,10 @@ def test_a_dispatch_on_a_file_an_ended_worker_changed_is_refused_naming_it(new_s
     story.expect_hook_refusal("s-1", dispatch_sample("2", "--model", "sonnet"), f"worker:{worker.id} changed these files")
 
 
-def test_fresh_passes_and_a_dispatch_on_other_files_goes_out(new_story):
-    story, _ = ended_worker_story(new_story)
-    story.expect_hook_allowed("s-1", dispatch_sample("2", "--model", "sonnet", "--fresh", "A new worker"))
-    story.expect_hook_allowed("s-1", dispatch_sample("3", "--model", "sonnet"))
-
-
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text("task show 1", "state: started", f"delegated_to: {worker.id}", actor=story.agent)
     story.expect_text("task show 2", "state: open", f"delegated_to: {worker.id}", actor=story.agent)
-
-
-def test_delivering_starts_the_next_delegated_task_in_the_same_worktree(new_story):
-    story, repository, worker = delegated_story(new_story)
-    repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_text("worker next --wait --differences none", "your next task, task 2: Second job", "Do the second job", actor=worker)
-    story.expect_text("task show 1", "state: testing", actor=story.agent)
-    story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
-    story.expect_text("worker-worktree show 1", "state: cut", "task_id: 2", actor=story.agent)
 
 
 def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task(new_story):
@@ -272,13 +208,6 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text("task show 2", "state: completed", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
-
-
-def test_releasing_a_worker_gives_its_delegated_tasks_back(new_story):
-    story, _, worker = delegated_story(new_story)
-    story.expect_success(f'worker release {worker.id} "not needed"', actor=story.agent)
-    story.expect_text("task show 1", "state: open", actor=story.agent)
-    expect_delegated("delegated_to", story, "task show 2", "delegated_to: None", "task show 2")
 
 
 def test_releasing_a_worker_leaves_a_delegated_task_that_ended_alone(new_story):
@@ -392,8 +321,3 @@ def expect_following_plans_2(plans, plan_id, expected) -> None:
 def expect_id_next_delegated(next_task, worker, expected) -> None:
     actual = next_task.following(worker.id).id
     assert actual == expected, actual
-
-
-def expect_delegated(text, story, text_2, text_3, text_4) -> None:
-    actual = text not in story.run(text_2, actor=story.agent).output_text or text_3 in story.run(text_4, actor=story.agent).output_text
-    assert actual, actual

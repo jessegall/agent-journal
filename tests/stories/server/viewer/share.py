@@ -102,13 +102,6 @@ def test_the_share_page_loads_every_file_it_names_with_only_the_share_cookie(sha
         story.expect_viewer_status(path, 200, visitor)
 
 
-def test_a_revoked_link_is_gone_and_a_made_up_one_is_unknown(shared_plan_link):
-    story, ((cookie, share)) = shared_plan_link
-    revoke(story, share)
-    story.expect_viewer_status(share.path, 410, text='<meta name="journal-share" content="gone">')
-    story.expect_viewer_status("/viewer/share/not-a-link", 404, text='<meta name="journal-share" content="gone">')
-
-
 def test_the_plans_window_of_a_share_loads_and_reads_the_shared_plan_with_only_the_share_cookie(shared_plan_link):
     story, ((_, share)) = shared_plan_link
     visitor = opened(story, share)

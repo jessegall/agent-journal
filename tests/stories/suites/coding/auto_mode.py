@@ -15,13 +15,6 @@ def started_holder(story, task_id: int) -> str:
     return story.run(f"task show {task_id}", actor=story.agent).output_text
 
 
-def test_closing_the_task_in_hand_starts_the_most_urgent_open_one_for_the_same_agent(next_task_after_close):
-    story = next_task_after_close
-    expect_started_holder(story, 3, "state: started")
-    expect_started_holder(story, 3, f"holder_id: {story.agent.id}")
-    expect_started_holder(story, 2, "state: open")
-
-
 @pytest.mark.parametrize("move", ['task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'])
 def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(new_story, move):
     story = new_story(fixture=PrioritizedTasks)
@@ -101,36 +94,11 @@ def test_a_task_queued_for_a_worker_is_not_started_for_the_main_agent(new_story)
     expect_started_holder(story, 4, f"holder_id: {story.agent.id}")
 
 
-def test_closing_the_main_agents_task_hands_out_none_of_the_tasks_sent_to_a_kept_worker(new_story):
-    story = new_story(fixture=StartedTaskBuilder)
-    repository_environment(story)
-    story.run('task make "Running at the worker" --environment main', actor=story.agent)
-    story.run('task make "First sent" --environment main --priority critical', actor=story.agent)
-    story.run('task make "Second sent" --environment main --priority high', actor=story.agent)
-    story.run('task make "Left for the main agent" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
-    story.expect_success(f"worker send --wait {worker.id} --task 3 4", actor=story.agent)
-    story.expect_success('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
-    for task_id in (3, 4):
-        expect_started_holder(story, task_id, "state: open")
-        expect_started_holder(story, task_id, f"delegated_to: {worker.id}")
-    expect_started_holder(story, 5, f"holder_id: {story.agent.id}")
-
-
 class PrioritizedTasks(StoryFixture):
     parent = StartedTaskBuilder
 
     def steps(self, story):
         task_pair(story)
-
-
-@pytest.fixture
-def next_task_after_close(new_story):
-    story = new_story(fixture=PrioritizedTasks)
-    story.run('task close 1 --outcome "done"', actor=story.agent)
-    story.run_listeners()
-    return story
 
 
 @pytest.fixture

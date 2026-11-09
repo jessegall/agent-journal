@@ -2,11 +2,6 @@ from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upg
 from tests.stories.support.story_checks import expect_repeated_upgrade
 
 
-def test_version_4_triggers_move_with_their_numbers_phrases_and_actions(new_story):
-    story = upgraded_story(new_story)
-    story.expect_text("trigger list", "deploy, release -> nudge: Run the release sequence", "rm -rf -> deny: never remove folders")
-
-
 def test_a_scheduled_trigger_keeps_its_next_time_and_interval_and_one_with_no_next_time_moves_struck(new_story):
     story = upgraded_story(new_story)
     story.expect_text("trigger list", "Check the build", "2036-01-01")

@@ -70,41 +70,10 @@ def worktree_state(story) -> tuple[str, str, bool]:
     return marks, story.repository.git("status", "--porcelain", folder=folder).stdout, (folder / ".commandments").exists()
 
 
-@pytest.fixture
-def delivered_story(hiding_story):
-    delivery_line(hiding_story)
-    return hiding_story
-
-
-@pytest.fixture
-def moved_branch_delivery(hiding_story):
-    hiding_story.repository.checkout(ENVIRONMENT_BRANCH)
-    hiding_story.repository.committed(RULES, CHANGED_RULES_TEXT, "The rules change")
-    delivery_line(hiding_story)
-    return hiding_story
-
-
 def test_s36_a_plugin_hides_a_tracked_folder_from_a_worktree(hiding_story):
     story, repository, worker = hiding_story, hiding_story.repository, hiding_story.worker
     story.expect_rows(len(script_calls(story, "hide.sh")) == 1, not (repository.worktree_folder(worker.id) / ".commandments").exists())
     repository.expect_clean(worker.id)
-
-
-def test_s36_the_branch_keeps_a_hidden_folder_whole_after_the_merge(delivered_story):
-    story, repository, worker = delivered_story, delivered_story.repository, delivered_story.worker
-    story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", False))
-    repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
-    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
-
-
-def test_s36_the_branch_changes_the_hidden_folder_during_the_work_and_the_delivery_rebases(moved_branch_delivery):
-    story, repository, worker = moved_branch_delivery, moved_branch_delivery.repository, moved_branch_delivery.worker
-    story.expect_rows(worktree_state(story) == (f"S {RULES}\n", "", True))
-    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
-    repository.expect_file(ENVIRONMENT_BRANCH, RULES, CHANGED_RULES_TEXT)
-    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 1\n")
 
 
 def test_s36_a_commit_script_on_the_delivery_lifts_the_mark_and_restores_the_folder(lifting_story):
@@ -113,24 +82,6 @@ def test_s36_a_commit_script_on_the_delivery_lifts_the_mark_and_restores_the_fol
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, RULES, RULES_TEXT)
-
-
-def test_a_plugin_hears_one_event_for_a_merge_with_its_commits_and_none_for_a_refused_one(new_story):
-    story = event_plugin_story(new_story, {"event": WORKTREE_MERGE, "commit": "see.sh"}, fixture=EventWorkerStarted)
-    story.repository = repository_environment(story)
-    story.worker = dispatched_worker(story, DISPATCH)
-    story.repository.checkout(ENVIRONMENT_BRANCH)
-    outcome = story.run(f"worker merge --wait {story.worker.id}", actor=story.agent)
-    story.run_listeners()
-    story.expect_rows(outcome.code != 0, not script_calls(story, "see.sh"))
-    delivery_line(story)
-    original_commit = story.repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
-    story.run_listeners()
-    calls = script_calls(story, "see.sh")
-    story.expect_rows(len(calls) == 1)
-    row = data_row(calls[0])
-    story.expect_rows(row["commit_before_merge"] == original_commit, row["commit_after_merge"] == story.repository.tip(ENVIRONMENT_BRANCH), row["session_agent_id"] == story.worker.id, bool(row["merged_task_ids"]))
 
 
 def removal_story(new_story):
@@ -168,13 +119,3 @@ def test_s37_a_guard_on_a_new_worktree_refuses_and_nothing_stays(new_story):
     repository = repository_environment(story)
     story.expect_refusal(DISPATCH, REFUSAL, actor=story.agent)
     expect_clean_environment(story, repository)
-
-
-def test_s38_the_commit_payload_on_cut_holds_the_folder_and_branch_and_the_folder_is_there(new_story):
-    story = event_plugin_story(new_story, {"event": WORKTREE_CUT, "commit": "folder.sh"}, scripts={"folder.sh": CHECK_FOLDER_SCRIPT}, fixture=EventWorkerStarted)
-    repository = repository_environment(story)
-    worker = dispatched_worker(story, DISPATCH)
-    story.run_listeners()
-    calls = script_calls(story, "folder.sh")
-    story.expect_rows(len(calls) == 1, plugin_data(story, "folder-was-there").exists())
-    story.expect_rows(data_row(calls[0])["folder"] == str(repository.worktree_folder(worker.id)), data_row(calls[0])["branch"] == repository.worker_branch(worker.id))

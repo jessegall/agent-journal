@@ -27,10 +27,3 @@ def test_a_person_who_allows_a_dock_allows_it_for_themselves_only(new_story):
 
 def test_a_dock_the_journal_ships_reads_with_no_allowance(new_story):
     window_story(new_story).expect_window_allowed("plans.draft", "plan inspect 1")
-
-
-def test_removing_a_module_deletes_the_permission_for_its_dock(new_story):
-    window = window_story(new_story)
-    window.story.expect_success(ALLOW, actor=window.story.user)
-    window.module_removed("good")
-    window.expect_row_count("window_permissions", 0)

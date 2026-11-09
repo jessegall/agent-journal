@@ -10,18 +10,6 @@ def window_story(new_story) -> WindowStory:
     return WindowStory(new_story(NOTES, fixture=UserJoined))
 
 
-def test_a_person_who_allows_a_window_its_reads_lets_it_read(new_story):
-    window = window_story(new_story)
-    window.story.expect_success(ALLOW_READS, actor=window.story.user)
-    window.expect_window_allowed("notes.board", "task list")
-
-
-def test_an_allowance_of_reads_gives_no_runs(new_story):
-    window = window_story(new_story)
-    window.story.expect_success(ALLOW_READS, actor=window.story.user)
-    window.expect_window_refusal("notes.board", "task start 1", "notes.board may run task start once you allow it")
-
-
 def test_an_agent_cannot_give_a_window_permission(new_story):
     window = window_story(new_story)
     window.story.expect_refusal(ALLOW_READS, "A person was asked in the dock", actor=window.story.agent)

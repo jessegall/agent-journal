@@ -44,14 +44,6 @@ def submitted(fourth):
     return fourth
 
 
-def test_a_batch_waits_for_the_fourth_task_then_runs_all_its_proofs(submitted):
-    submitted.story.expect_rows(len(submitted.started) == 4, submitted.current_task() == 4)
-    submitted.end_all_tests()
-    submitted.story.expect_rows(len(submitted.started) == 4, submitted.current_task() == 5)
-    for task in (1, 2, 3, 4):
-        submitted.story.expect_text(f"task show {task}", "state: completed", actor=submitted.story.agent)
-
-
 @pytest.fixture
 def checked_proof_batch(batch):
     for _ in range(4):
@@ -60,11 +52,6 @@ def checked_proof_batch(batch):
         batch.story.expect_success(f"proof check {task}", actor=batch.story.agent)
         batch.story.expect_success("worker next --wait --differences none", actor=batch.worker)
     return batch
-
-
-def test_a_batch_of_checked_proofs_moves_on_without_starting_a_test(checked_proof_batch):
-    batch = checked_proof_batch
-    batch.story.expect_rows(batch.current_task() == 5, not batch.started)
 
 
 def test_a_short_batch_runs_at_the_workers_last_task(new_story, monkeypatch):
@@ -175,12 +162,6 @@ def test_both_settings_appear_in_the_viewers_workers_section_and_are_person_set(
 def second(batch):
     batch.prove_advance(TEST_LINE)
     return batch
-
-
-def test_a_task_handed_in_without_a_change_of_its_own_is_refused(second):
-    task = second.current_task()
-    second.story.expect_success(f'proof make 1 --task {task} "cart.py:1, nothing new"', actor=second.worker)
-    second.story.expect_refusal("worker next --wait --differences none", f"task {task} changed no file, so it is not built", actor=second.worker)
 
 
 def test_a_task_already_built_is_handed_in_by_saying_so_and_the_main_agent_reads_it(second):

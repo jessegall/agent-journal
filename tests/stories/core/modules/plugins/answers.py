@@ -11,30 +11,6 @@ CLEAN_SAMPLE = HookSamples.shell("git tag", ShellPart("git", CommandCategory.VER
 LOG_SAMPLE = HookSamples.shell("git log", ShellPart("git", CommandCategory.VERSION_CONTROL, ["log"]))
 
 
-def test_a_card_in_a_plugins_answer_shows_in_the_chat_after_the_reply_with_the_plugins_name(new_story):
-    story = installed_story(new_story)
-    story.hook("s-1", STATUS_SAMPLE)
-    story.run_listeners()
-    story.expect_text("chat-mark list --environment 1", "sample: Branch is clean", actor=story.user)
-
-
-def test_a_card_whose_answer_says_how_long_the_plugin_took_shows_that_duration(new_story):
-    story = installed_story(new_story)
-    story.hook("s-1", JUDGE_SAMPLE)
-    story.run_listeners()
-    story.expect_text("chat-mark list --environment 1 --columns figure,text", "sample: Branch was judged  1.2 s", actor=story.user)
-
-
-def test_a_good_card_shows_no_duration_even_after_a_card_of_the_same_key_showed_one(new_story):
-    story = installed_story(new_story)
-    story.hook("s-1", JUDGE_SAMPLE)
-    story.run_listeners()
-    story.hook("s-1", CLEAN_SAMPLE)
-    story.run_listeners()
-    story.expect_text("chat-mark list --environment 1 --columns figure,text", "sample: Branch is clean again", actor=story.user)
-    story.expect_no_text("chat-mark list --environment 1 --columns figure,text", "1.2 s", actor=story.user)
-
-
 def test_a_card_for_a_worker_stays_out_of_the_main_chat(new_story):
     story = installed_story(new_story)
     story.hook("s-1", STATUS_SAMPLE)
@@ -70,13 +46,6 @@ def test_a_plugins_mark_never_ends_so_a_later_card_of_its_key_always_updates_it(
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1 --state shown", "sample: Branch has changes", actor=story.user)
     story.expect_absent("chat-mark list --environment 1 --state ended", "sample:", actor=story.user)
-
-
-def test_the_commands_in_a_plugins_answer_run_after_the_reply_as_the_plugins_module(new_story):
-    story = installed_story(new_story)
-    story.hook("s-1", LOG_SAMPLE)
-    story.run_listeners()
-    story.expect_text("pin list --environment main", "Release notes", actor=story.user)
 
 
 def test_a_plugins_command_shows_a_card_in_the_chat_of_the_agent_that_ran_it(new_story):

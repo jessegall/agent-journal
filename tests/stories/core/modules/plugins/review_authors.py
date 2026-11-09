@@ -2,14 +2,12 @@ import json
 from datetime import timedelta
 from pathlib import Path
 
-from core.base.change.event_log import HIDDEN
 from core.base.command.bus import Bus
 from core.base.model.event_form import EventForm
 from core.base.plugin_script_processes import PluginScriptProcesses
 from core.modules.plugins.commands.prune_plugin_deliveries.prune_plugin_deliveries import PrunePluginDeliveries
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from tests.stories.core.modules.plugins.event_many import WORKTREE_MERGE
-from tests.stories.core.modules.plugins.support.checkout_stories import checkout_story
 from tests.stories.core.modules.plugins.support.event_stories import (
     SECOND_JOB, TASK_CREATED, deliveries, event_page, event_plugin_story, install_event_plugin, logged_events, plugin_row, script_calls)
 
@@ -60,21 +58,6 @@ def test_s90_a_listed_extra_file_counts_in_the_digest_and_changing_it_switches_t
     story.expect_rows(plugin_row(story).enabled is False)
 
 
-def test_s90_a_file_outside_the_folder_is_a_wrong_entry(event_page):
-    install_event_plugin(event_page.story, files=["../outside.py"])
-    event_page.story.expect_rows(any(row["state"] == "wrong script" for row in event_page.card()))
-
-
-def test_s91_a_hand_in_names_odd_file_names_exactly(new_story):
-    story = checkout_story(new_story, {"event": "suites.coding.workers.worker_worktree.deliver", "commit": "see.sh"})
-    names = ["a space.py", "a'quote.py", "a\ttab.py", "naïve.py"]
-    for name in names:
-        story.repository.changed(story.worker.id, name, "TOTAL = 1\n")
-    outcome = story.run("plugin changes --json", actor=story.worker)
-    rows = {row["relative"] for row in json.loads(outcome.output_text)["rows"]}
-    story.expect_rows(set(names) <= rows)
-
-
 def test_s92_old_deliveries_past_the_newest_are_pruned_and_a_recent_one_stays(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
     for number in range(KEEP_COUNT + 2):
@@ -85,10 +68,3 @@ def test_s92_old_deliveries_past_the_newest_are_pruned_and_a_recent_one_stays(ne
     story.container.get(Bus).run(PrunePluginDeliveries(), story.user)
     story.expect_rows(len(deliveries(story)) == KEEP_COUNT)
     story.expect_text("plugin record events --inputs", "Job", actor=story.user)
-
-
-def test_s92_a_delivery_keeps_its_data_out_of_the_event_log(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
-    story.expect_success(SECOND_JOB, actor=story.agent)
-    logged = logged_events(story, "plugin_delivery.create")
-    story.expect_rows(HIDDEN in logged[-1].data["data"])

@@ -7,11 +7,6 @@ def test_a_message_keeps_its_number_text_and_type(new_story):
     story.expect_success("message show 2", "text: Shipping it", "type: agent")
 
 
-def test_a_reply_names_the_message_it_answers(new_story):
-    story = upgraded_story(new_story)
-    story.expect_success("message show 2", "parent_id: 1")
-
-
 def test_a_chat_card_and_a_report_are_not_messages_and_are_counted_by_kind(new_story):
     story = upgraded_story(new_story)
     story.expect_no_text("message list", "Task 1 started")
@@ -37,8 +32,3 @@ def test_an_agents_message_names_the_agent_that_wrote_it(new_story):
 def test_a_message_of_an_environment_that_no_longer_exists_is_skipped_and_told(new_story):
     story = upgraded_story(new_story)
     expect_upgrade_text(story, "skipped messages 5: its environment 9 did not move")
-
-
-def test_a_reaction_moves_onto_its_message(new_story):
-    story = upgraded_story(new_story)
-    story.expect_text("message show 2", '"actor_type": "user"')

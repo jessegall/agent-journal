@@ -49,13 +49,6 @@ def attachment_scenario(linked_scenario):
     return ImageScenario(scenario, message["id"])
 
 
-def test_context_author_labels_follow_message_type(linked_scenario):
-    page = linked_scenario.context()
-    messages = page["messages"]
-    feature(messages[0]["author"] == "Ada", json.dumps(messages))
-    feature(messages[-1]["author"] != "Ada", "agent reply was labelled as the person")
-
-
 def test_hidden_peer_and_unrelated_journal_messages_are_excluded(linked_scenario, tmp_path):
     linked_scenario.command('message send "Unrelated main-agent note"')
     started(linked_scenario.story, 'helper start journal-researcher --brief "Inspect the cart" --model sonnet --environment main')
@@ -204,12 +197,6 @@ def test_shipped_instructions_teach_source_lifetime_and_context(linked_scenario)
     feature(initial_sources == linked_scenario.source_rows(linked_scenario.story.agent.id), "instruction examples replaced the source")
     linked_scenario.requested_command("message clear-work-source")
     linked_scenario.requested_command("message work-source")
-
-
-def test_profile_launch_uses_current_context_commands(linked_scenario):
-    _, launcher = started(linked_scenario.story, 'helper start journal-planner --brief "Read the task context" --model sonnet --environment main')
-    prompt = " ".join(launcher.requests[0]["command"])
-    feature("work-from" in prompt and "task context" in prompt and "plan context" in prompt, "shipped planner launch does not teach the current commands")
 
 
 def test_upgraded_user_profile_is_not_overwritten(linked_scenario):

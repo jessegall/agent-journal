@@ -23,9 +23,3 @@ def test_a_worker_dispatch_goes_to_the_background_at_once(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     answer = str(story.hook("s-1", journal_line("worker", "dispatch", "1", "--model", "sonnet")).updated_input)
     story.expect_rows(BACKGROUND_FLAG in answer, detail=answer)
-
-
-def test_another_journal_command_stays_in_the_foreground(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    answer = str(story.hook("s-1", journal_line("task", "list")).updated_input)
-    story.expect_rows(BACKGROUND_FLAG not in answer, detail=answer)

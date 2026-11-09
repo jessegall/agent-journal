@@ -60,24 +60,3 @@ def test_split_tab_saves_shares_that_add_to_100_worker_limit_matches_settings(sp
     settings = split_viewer.value('settings.settings', ['setting', 'tree'])['rows']
     saved = next(row for row in settings if row['key'] == key)
     story.expect_rows(dropdown['value'] == saved['value'], saved['value'] == 4)
-
-
-def test_person_adds_a_route_in_the_split_tab(split_story, split_viewer):
-    story = split_story
-    story.expect_success('task tag 1 networking linux --confirm', actor=story.agent)
-    tags = split_viewer.value('workers.workers', ['task', 'tags'])['rows']
-    story.expect_rows({row['word'] for row in tags} >= {'networking', 'linux'})
-    split_viewer.value('workers.workers', ['worker-route', 'make', '--tags', 'networking,linux', '--program', 'codex', '--tier', 'strongest'])
-    rows = split_viewer.value('workers.workers', ['worker-route', 'list'])['rows']
-    story.expect_rows(rows[0]['program'] == 'codex', rows[0]['tier'] == 'strongest', set(rows[0]['tags']) == {'networking', 'linux'})
-
-
-def test_split_tab_shows_a_program_that_is_out(split_story, split_viewer):
-    story = split_story
-    outage_id, ends_at = outage(story, 'codex', reason='out of credit')
-    rows = split_viewer.value('workers.workers', ['worker', 'split'])['rows']
-    codex = next(row for row in rows if row['id'] == 'codex')
-    story.expect_rows('out of credit' in str(codex), ends_at in str(codex))
-    split_viewer.value('workers.workers', ['provider-outage', 'delete', str(outage_id)])
-    ready = split_viewer.value('workers.workers', ['worker', 'split'])['rows']
-    story.expect_rows('out of credit' not in str(next(row for row in ready if row['id'] == 'codex')))

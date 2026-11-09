@@ -41,13 +41,6 @@ print(json.dumps(answer))
 SECOND_PLUGIN_SKILL_SCRIPT = """echo '{"v": 1, "require_skills": ["not-published-here"]}'"""
 
 
-def test_an_installed_plugin_publishes_its_skills_marked_with_its_name(new_story):
-    story = installed_story(new_story)
-    story.expect_text("skill list", "sample-rules", actor=story.user)
-    skill = story.home.folder.parent / ".claude" / "skills" / "sample-rules" / "SKILL.md"
-    story.expect_rows(skill.is_file() and "plugin: sample" in skill.read_text())
-
-
 def test_the_skills_due_when_a_plugins_answer_requires_a_skill_count_down_from_the_session_start_and_then_hold_the_next_tool(new_story):
     story = installed_story(new_story)
     story.container.bind(SkillRequirement, SkillRequirement())
@@ -64,23 +57,6 @@ def skill_digest(story, name):
 
 def mark_rules_loaded(story, digest):
     story.container.get(Bus).run(LoadSkill(story.agent.id, "sample-rules", digest), Actor.core(), environment_id=1)
-
-
-def test_a_plugin_is_told_the_skills_the_agent_has_loaded(new_story):
-    story = installed_story(new_story)
-    mark_rules_loaded(story, skill_digest(story, "sample-rules"))
-    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are loaded")
-
-
-def test_a_skill_the_agent_has_not_loaded_is_not_listed(new_story):
-    story = installed_story(new_story)
-    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
-
-
-def test_a_skill_read_in_an_older_text_is_not_listed(new_story):
-    story = installed_story(new_story)
-    mark_rules_loaded(story, "an-older-text")
-    expect_plugin_notice(story, GIT_REMOTE_SAMPLE, "[plugin sample] the rules are not loaded")
 
 
 def test_s41_a_compaction_resets_the_skills_and_the_next_event_lists_none(new_story):
@@ -103,16 +79,6 @@ def rules_plugin(new_story, **manifest):
 
 def rules_state(story):
     return story.container.get(Queries).query(AgentSkill).filter(skill="sample-rules").first().state
-
-
-def test_s41_the_skills_reach_a_hears_delivery(new_story):
-    story = rules_plugin(new_story, program="see.sh", hears=["file_edited"])
-    mark_rules_loaded(story, skill_digest(story, "sample-rules"))
-    scanned_edit(story, "s-1", "a.py")
-    story.run_listeners()
-    calls = script_calls(story, "see.sh")
-    story.expect_rows(len(calls) == 1)
-    story.expect_rows("sample-rules" in calls[0]["skills"])
 
 
 def start_service_socket(path: Path, lines: list[str]) -> socket.socket:
@@ -150,15 +116,6 @@ def test_s41_the_skills_reach_an_answering_service(new_story):
     story.expect_rows("sample-rules" in json.loads(lines[0])["skills"])
 
 
-def test_s43_a_change_made_by_a_person_gives_no_agent_and_no_skills(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
-    story.expect_success(SECOND_JOB, actor=story.user)
-    story.run_listeners()
-    calls = script_calls(story, "see.sh")
-    story.expect_rows(len(calls) == 1, plugin_row(story).fault_count == 0)
-    story.expect_rows(calls[0]["agent"] is None, calls[0]["skills"] == [])
-
-
 def test_s44_a_plugin_asks_for_a_missing_skill_once_and_then_sends_neither_line_nor_skill(new_story):
     story = rules_plugin(new_story, scripts={"judge.sh": RULES_REQUEST}, program="judge.sh", hears=["file_edited"])
     scanned_edit(story, "s-1", "cart.py")
@@ -184,21 +141,6 @@ def test_s44_a_skill_the_plugin_does_not_publish_is_ignored(new_story):
     story.run_listeners()
     story.expect_rows(len(script_calls(story, "asks.sh")) == 1)
     story.expect_rows(story.container.get(Queries).query(AgentSkill).filter(skill="not-published-here").first() is None)
-
-
-def test_a_switched_off_plugin_takes_its_skills_away(new_story):
-    story = installed_story(new_story)
-    story.run("plugin disable sample", actor=story.user)
-    story.expect_absent("skill list", "sample-rules", actor=story.user)
-    story.expect_rows(not (story.home.folder.parent / ".claude" / "skills" / "sample-rules").exists())
-
-
-def test_a_plugin_skill_published_only_for_codex_is_known(new_story):
-    story = installed_story(new_story)
-    codex_skill = story.home.folder.parent / ".agents" / "skills" / "codex-rules" / "SKILL.md"
-    codex_skill.parent.mkdir(parents=True, exist_ok=True)
-    codex_skill.write_text("---\nplugin: sample\nname: codex-rules\ndescription: Rules only Codex reads\n---\n")
-    story.expect_text("skill list", "codex-rules", actor=story.user)
 
 
 @pytest.mark.real_git

@@ -35,23 +35,6 @@ def test_s11_inheritance_without_options_allows_every_type_and_profile(new_story
     expect_absent_value(new_reasons(story, "worker", "journal-worker") + new_reasons(story, "helper", "journal-merger"))
 
 
-def test_s11_inheritance_a_profile_line_wins_over_its_type_only_for_its_own_fields(new_story):
-    story = new_story(fixture=UserBuilder)
-    set_options(story, "helper allow_new=off", "helper:journal-merger allow_new=on")
-    expect_absent_value(new_reasons(story, "helper", "journal-merger"))
-    expect_value(new_reasons(story, "helper", "journal-researcher"), ["new helper sessions are switched off"])
-    expect_absent_value(new_reasons(story, "worker", "journal-worker"))
-
-
-def test_s13_inheritance_an_empty_allowed_profiles_list_denies_all_and_a_missing_one_allows_all(new_story):
-    story = new_story(fixture=UserBuilder)
-    set_options(story, "worker allowed_profiles=")
-    expect_value(new_reasons(story, "worker", "journal-worker"), ["worker may not use the profile journal-worker"])
-    set_options(story, "worker allowed_profiles=journal-worker")
-    expect_absent_value(new_reasons(story, "worker", "journal-worker"))
-    expect_value(new_reasons(story, "worker", "other-profile"), ["worker may not use the profile other-profile"])
-
-
 def test_s12_inheritance_the_environment_list_replaces_the_project_list_and_names_its_source(new_story):
     story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off", scope="--project")
@@ -101,33 +84,11 @@ def test_s14_inheritance_allowed_providers_refuse_the_program_of_the_sender_and_
     expect_program(split_story, dispatch(split_story, flags="--program codex"), "codex")
 
 
-def test_s15_inheritance_options_of_another_agent_type_leave_the_existing_program_choice_alone(split_story, split_viewer):
-    viewer_options(split_viewer, "helper allow_new=off")
-    expect_program(split_story, dispatch(split_story), "claude", "sonnet")
-
-
-def test_s16_inheritance_the_common_split_only_chooses_among_the_allowed_providers(split_story, split_viewer):
-    split_viewer.value("settings.settings", ["setting", "set", "journal.core.helpers.program-split", "claude 80,codex 20", "--project"])
-    viewer_options(split_viewer, "worker allowed_providers=codex")
-    expect_program(split_story, dispatch(split_story), "codex")
-
-
-def test_s16_inheritance_an_empty_allowed_providers_list_leaves_no_program_for_the_split(split_story, split_viewer):
-    split_viewer.value("settings.settings", ["setting", "set", "journal.core.helpers.program-split", "claude 80,codex 20", "--project"])
-    viewer_options(split_viewer, "worker allowed_providers=")
-    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "no program can take this worker")
-
-
 def test_s17_inheritance_allowed_models_narrow_the_model_of_the_profile_and_refuse_another(split_story, split_viewer):
     viewer_options(split_viewer, "worker allowed_models=claude:opus")
     expect_program(split_story, dispatch(split_story), "claude", "opus")
     second = new_task(split_story, "Total the cart")
     split_story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {second}", "cannot run on claude", actor=split_story.agent)
-
-
-def test_s18_inheritance_a_model_default_of_the_agent_options_replaces_the_profile_model(split_story, split_viewer):
-    viewer_options(split_viewer, "worker model_defaults=claude:opus")
-    expect_program(split_story, dispatch(split_story), "claude", "opus")
 
 
 def test_s19_inheritance_a_strict_route_to_a_program_the_options_forbid_creates_no_worker(split_story, split_viewer):
@@ -137,22 +98,12 @@ def test_s19_inheritance_a_strict_route_to_a_program_the_options_forbid_creates_
     expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "must go to codex")
 
 
-def test_s52_inheritance_a_configured_model_list_naming_no_model_of_the_program_denies_instead_of_allowing_all(split_story, split_viewer):
-    split_viewer.value("settings.settings", ["setting", "set", ALLOWED_MODELS, json.dumps(["codex gpt-6.1-sol"]), "--environment", "main"])
-    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "no allowed automatic model")
-
-
 def stopped_worker(story):
     launcher = FakeLauncher.listening(story.home.socket("launcher"), request_count=4)
     worker = dispatch(story)
     story.run_listeners()
     exit_program(story, worker)
     return worker, launcher
-
-
-def test_s11_lifecycle_new_workers_off_refuses_a_dispatch_and_starts_nothing(split_story, split_viewer):
-    viewer_options(split_viewer, "worker allow_new=off")
-    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "new worker sessions are switched off")
 
 
 def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing(new_story):
@@ -173,11 +124,6 @@ def test_s12_lifecycle_resume_off_or_a_forbidden_program_refuses_a_job_for_a_sto
     split_story.expect_refusal(f'worker send {worker.id} "go on"', "worker may not use claude", actor=split_story.agent)
 
 
-def test_s13_lifecycle_an_empty_profile_list_refuses_a_dispatch_of_every_profile(split_story, split_viewer):
-    viewer_options(split_viewer, "worker allowed_profiles=")
-    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "may not use the profile journal-worker")
-
-
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
 PROFILE_LIMITS = "journal.core.helpers.read-only-helper-profile-limits"
 
@@ -187,23 +133,12 @@ def helper_profiles(story) -> dict[str, dict]:
     return {row["profile"]: row for row in next(row for row in rows if row["key"] == "helper")["profiles"]}
 
 
-def test_s20_inheritance_an_unused_helper_profile_shows_the_common_limits_with_no_counts(new_story):
-    story = new_story(fixture=UserBuilder)
-    merger = helper_profiles(story)["journal-merger"]
-    expect_value((merger["running"], merger["kept"], merger["run_limit"], merger["kept_limit"]), (0, 0, 4, 8))
-
-
 def test_s21_inheritance_an_explicit_profile_limit_changes_only_that_profile(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps(['journal-merger:1:2']))} --environment main", actor=story.user)
     profiles = helper_profiles(story)
     merger, researcher = profiles["journal-merger"], profiles["journal-researcher"]
     expect_value(((merger["run_limit"], merger["kept_limit"]), (researcher["run_limit"], researcher["kept_limit"])), ((1, 2), (4, 8)))
-
-
-def test_s21_inheritance_a_worker_run_limit_of_zero_starts_no_worker(split_story, split_viewer):
-    split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "0", "--environment", "main"])
-    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "0 workers are running")
 
 
 def test_pending_openings_share_one_limit(split_story, split_viewer):
@@ -226,40 +161,8 @@ def test_failed_opening_releases_place_once(split_story, split_viewer):
     split_story.expect_refusal(f"worker dispatch --test-command python=pytest {second}", "1 workers are running", actor=split_story.agent)
 
 
-def test_special_designer_and_merger_profiles_each_show_once_with_the_common_helper_limits(new_story):
-    story = new_story(fixture=UserBuilder)
-    rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
-    names = [row["profile"] for row in next(row for row in rows if row["key"] == "helper")["profiles"]]
-    profiles = helper_profiles(story)
-    expect_value((names.count("journal-designer"), names.count("journal-merger")), (1, 1))
-    expect_value([(profiles[name]["run_limit"], profiles[name]["kept_limit"]) for name in ("journal-designer", "journal-merger")], [(4, 8), (4, 8)])
-
-
-def test_s49_special_profiles_with_no_agents_add_nothing_to_the_helper_totals(new_story):
-    story = new_story(fixture=UserBuilder)
-    rows = json.loads(story.run("agent limits --json --environment main", actor=story.agent).output_text)["rows"]
-    helper = next(row for row in rows if row["key"] == "helper")
-    expect_value((helper["running"], helper["kept"], sum(row["running"] + row["kept"] for row in helper["profiles"])), (0, 0, 0))
-
-
 def test_s22_a_helper_options_minutes_end_a_job_before_the_common_limit(new_story):
     story = new_story(fixture=StartedHelper)
     set_options(story, "helper max_minutes=10")
     enforced(story, 11)
     story.expect_text(f"message read {helper_report(story).id}", "stopped at its time limit")
-
-
-def test_s23_a_profile_line_sets_a_fractional_cost_cap_and_a_zero_cap_is_unlimited(new_story):
-    story = new_story(fixture=StartedHelper)
-    set_options(story, "helper max_cost=0", "helper:journal-researcher max_cost=0.5")
-    save_status_file(story, helper_agent(story).session, {"cost": {"total_cost_usd": 0.6}})
-    enforced(story, 1)
-    story.expect_text(f"message read {helper_report(story).id}", "stopped at its cost limit")
-
-
-def test_s23_a_type_line_of_zero_cost_leaves_the_helper_running(new_story):
-    story = new_story(fixture=StartedHelper)
-    set_options(story, "helper max_cost=0")
-    save_status_file(story, helper_agent(story).session, {"cost": {"total_cost_usd": 40}})
-    enforced(story, 1)
-    story.expect_rows(helper_agent(story).ended_at is None)

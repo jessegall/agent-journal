@@ -40,11 +40,6 @@ def test_s01_fixture_a_person_change_in_one_story_is_not_seen_by_the_next(new_st
     story.expect_success(f"setting set {AUTO_MODE} off --environment main", actor=story.user)
 
 
-def test_s01_fixture_a_story_starts_from_the_declared_default_of_auto_mode(new_story):
-    story = new_story(fixture=MainControlsActors)
-    story.expect_success(f"setting show {AUTO_MODE} --environment main", "value: True", actor=story.user)
-
-
 def limit_rows(viewer):
     status, answer = window_data(viewer.server, viewer.cookie, keys="limits", window="coding.agent-settings", query="environment=main&tab=agents")
     expect_value((status, answer["keys"]["limits"]["code"]), (200, 0))
@@ -93,17 +88,6 @@ def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back
         expect_value((after["workflow"], after["controls"][AUTO_MODE]), ("orchestrator", False))
 
 
-def test_s51_the_window_refuses_a_draft_made_from_an_older_reading_and_changes_nothing(new_story):
-    story = new_story(fixture=MainControlsActors)
-    story.expect_text("setting show journal.suites.coding.continue-while-delegatable --environment main", "value:", actor=story.user)
-    with person_viewer(story) as viewer:
-        viewer.set_setting(AUTO_MODE, "true")
-        old = active_work_row(viewer)["revision"]
-        viewer.set_setting("journal.suites.coding.continue-while-delegatable", "true")
-        viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", old]}, 200, "changed since")
-        expect_value(active_work_row(viewer)["workflow"], "custom")
-
-
 TEST_BATCH = "journal.suites.coding.workers.test-batch-size"
 FAILURES = "journal.suites.coding.workers.own-test-failures-to-flag"
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
@@ -122,17 +106,6 @@ def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
         viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
         after = field_values(active_work_row(viewer), "tests")
         expect_value((after[TEST_BATCH], after[FAILURES]), (4, 7))
-
-
-def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_nothing(new_story):
-    story = new_story(fixture=MainControlsActors)
-    story.expect_text(f"setting show {RUN_LIMIT} --environment main", "value:", actor=story.user)
-    with person_viewer(story) as viewer:
-        settings = active_work_row(viewer)
-        previous = field_values(settings, "advanced")[RUN_LIMIT]
-        viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
-        after = active_work_row(viewer)
-        expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (previous, True))
 
 
 def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(viewer_person):

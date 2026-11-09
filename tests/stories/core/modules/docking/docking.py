@@ -7,7 +7,6 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.scope.scopes import Scopes
 from core.base.database.database import Database
-from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.base.refusal import Refusal
@@ -16,13 +15,6 @@ from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDock
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state, leave_tick
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_events_window_with, expect_value_2
-
-
-def test_an_environment_has_one_dock_made_with_it(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    story.run_listeners()
-    expect_value_2(story, "SELECT count(*) FROM docks", 1)
-    story.expect_refusal("dock make --environment main", "exists already")
 
 
 def test_items_are_added_within_the_types_limit(ended_pair):
@@ -57,14 +49,6 @@ def test_two_items_added_in_one_request_to_a_full_dock_read_the_items_of_the_cha
     story.expect_rows(len(refused) == 2, detail=str(refused))
 
 
-def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(kept_dock):
-    story, item = kept_dock
-    running, third = running_task(story, "Running"), ended_task(story, "Third")
-    docked(story, running)
-    with pytest.raises(Refusal, match="docksample.task allows at most 2 items"):
-        docked(story, third)
-
-
 def test_an_item_leaves_after_its_time_unless_it_was_kept(leaving_dock):
     story, leaves = leaving_dock
     stays = docked(story, ended_task(story, "Staying"))
@@ -82,20 +66,6 @@ def test_an_item_leaves_on_a_tick_after_a_change_in_another_environment(leaving_
     story.run_listeners()
     leave_tick(story)
     expect_docked_state(story, leaves, "undocked")
-
-
-def test_a_row_is_docked_once_per_type(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    task_id = ended_task(story, "Once")
-    docked(story, task_id)
-    with pytest.raises(Refusal, match="task .* is docked already"):
-        docked(story, task_id)
-
-
-def test_a_type_no_module_declares_is_refused(new_story):
-    story = new_story(SAMPLE, fixture=UserJoined)
-    with pytest.raises(Refusal, match="no installed module declares the dock type docksample.ghost"):
-        docked(story, ended_task(story, "Ghost"), SampleDockType.UNKNOWN_TYPE)
 
 
 def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):

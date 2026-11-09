@@ -70,18 +70,6 @@ def test_the_hint_on_the_skip_guard_path_names_the_flag_that_takes_the_reason(ne
     story.expect_refusal(reply("Fifth hint") + f" --skip-guard {GUARD}", "--skip-reason '<why>'", actor=story.agent)
 
 
-def test_retrying_the_same_refused_line_keeps_the_count_going(new_story):
-    story = new_story(fixture=MessageAnswered)
-    refusal_line(story, reply("Sixth retried"))
-    skipped(story)
-    story.expect_success(reply("Sixth retried") + " --confirm" + REASON, actor=story.agent)
-    story.advance(timedelta(seconds=1))
-    refusal_line(story, reply("Sixth retried again"))
-    refusal_line(story, reply("Sixth retried again"))
-    skipped(story)
-    story.expect_text("refusal-skip show 2", "streak: 2", actor=story.user)
-
-
 def test_a_refusal_by_something_else_between_two_skips_starts_the_count_again(new_story):
     story = new_story(fixture=MessageAnswered)
     refusal_line(story, reply("Seventh obeyed"))

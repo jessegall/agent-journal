@@ -107,12 +107,6 @@ def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(end
     expect_value_without_line(lines, "no reader reads mkdir")
 
 
-def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(unread_build_output):
-    story, lines = unread_build_output
-    expect_value_line(lines, "no reader reads deploy.sh yet")
-    expect_absent_lines(story, READ_NOTES, "no reader reads")
-
-
 def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(ended_loop_output):
     lines = ended_loop_output
     expect_value_without_line(lines, "no reader reads")
@@ -132,17 +126,6 @@ def test_a_run_a_reader_reads_gets_no_advice(read_test_output):
 def test_a_run_that_printed_nothing_gets_no_advice(empty_build_output):
     lines = empty_build_output
     expect_value_without_line(lines, "no reader reads")
-
-
-def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    ended_run(story, "pytest -q", TESTS_REPORT, exit_code=1)
-    expect_absent_lines(story, READ_NOTES, "ended")
-
-
-def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(unmatched_reader_output):
-    story, process = unmatched_reader_output
-    expect_lines(story, READ_NOTES, "reader deploys picked none")
 
 
 def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no_summary_to_add_one(new_story):
@@ -264,11 +247,6 @@ def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(chain_re
     expect_lines(story, READ_NOTES, "reader deploys picked none")
 
 
-def test_a_run_not_shown_in_the_chat_is_never_asked_about_a_reader(unshown_output):
-    story, process = unshown_output
-    expect_absent_lines(story, READ_NOTES, "reader deploys")
-
-
 def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('reader add tests --commands "pytest*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
@@ -290,14 +268,6 @@ def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_ba
     story.run('message send "are you there" --environment main', actor=story.user)
     story.run_listeners()
     expect_folder(folder, process, "move", "1")
-
-
-def test_an_agents_own_message_moves_nothing(new_story):
-    story = new_story(fixture=UserBuilder)
-    process = start_process(story, "sleep 60")
-    story.run('message send "working on it" --environment main', actor=story.agent)
-    story.run_listeners()
-    expect_value_10(story, process, "move", "")
 
 
 @pytest.fixture

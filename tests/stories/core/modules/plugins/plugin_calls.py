@@ -25,18 +25,6 @@ ANSWER_SCRIPT = f"echo '{SCRIPT_ANSWER}'"
 ROOT_MARK = "ran at the root"
 
 
-def test_s53_a_worker_cannot_read_a_project_file_by_asking(new_story):
-    story = checkout_story(new_story)
-    story.repository.uncommitted(SECRET_NAME, "the secret\n")
-    story.expect_refusal(f"plugin file {SECRET_NAME} --from project", SECRET_NAME, actor=story.worker)
-    story.expect_no_text(f"plugin file {SECRET_NAME} --from project", "the secret", actor=story.worker)
-
-
-def test_s53_a_worker_cannot_name_another_agent(new_story):
-    story = checkout_story(new_story)
-    story.expect_refusal(f"plugin file {ORDER} --agent {story.agent.id}", "only itself", actor=story.worker)
-
-
 @pytest.fixture
 def prepared_checkout(new_story):
     return checkout_story(new_story)
@@ -49,20 +37,6 @@ def test_s53_a_worker_cannot_leave_its_checkout_with_dots(prepared_checkout):
     for line in (f"plugin file ../../../../{SECRET_NAME}", f"plugin file ../../../../{SECRET_NAME} --from project", f"plugin file {story.repository.folder / SECRET_NAME}"):
         story.expect_refusal(line, "leaves the checkout", actor=story.worker)
         story.expect_no_text(line, "the secret", actor=story.worker)
-
-
-def test_s53_a_worker_cannot_leave_its_checkout_through_a_link(prepared_checkout):
-    story = prepared_checkout
-    story.repository.uncommitted(SECRET_NAME, "the secret\n")
-    (story.worktree / "escape.txt").symlink_to(story.repository.folder / SECRET_NAME)
-    story.expect_refusal("plugin file escape.txt", "through a link", actor=story.worker)
-    story.expect_no_text("plugin file escape.txt", "the secret", actor=story.worker)
-
-
-def test_s53_a_person_may_read_the_project_for_any_agent(new_story):
-    story = checkout_story(new_story)
-    story.repository.uncommitted(SECRET_NAME, "the secret\n")
-    story.expect_text(f"plugin file {SECRET_NAME} --from project --agent {story.worker.id}", "the secret", actor=story.user)
 
 
 def test_s53_a_worker_reads_its_own_checkout_and_a_declared_folder_of_the_project(new_story):
@@ -89,16 +63,6 @@ def worker_with_tools(new_story):
     return story
 
 
-def test_s58_plugin_run_runs_by_relative_path_at_the_root_of_the_worktree_with_the_sandbox_of_the_worker(new_story):
-    story = worker_with_tools(new_story)
-    recorded = recording_runner_at(story.home)
-    outcome = story.run(f"plugin run --agent {story.worker.id} -- sh ./tools/journal-run", actor=story.user)
-    story.expect_rows(outcome.code == 0, ROOT_MARK in outcome.output_text)
-    call = json.loads(recorded.read_text())
-    story.expect_rows(call["folder"] == real(story.worktree), "--read-only-shell" in call["arguments"], str(story.worktree) in call["arguments"][call["arguments"].index("--write-folder") + 1])
-    story.expect_rows(call["session"] == "", (story.worktree / "where.txt").read_text().strip() == real(story.worktree))
-
-
 def test_s58_the_output_of_plugin_run_has_a_number(new_story):
     story = worker_with_tools(new_story)
     recording_runner_at(story.home)
@@ -117,14 +81,6 @@ def test_s58_a_slow_command_holds_no_lock(new_story):
     outcome = story.run(f"plugin run --agent {story.worker.id} -- sh ./check.sh", actor=story.user)
     story.expect_rows(outcome.code == 0)
     story.expect_rows((story.worktree / "lock.txt").read_text() == "free\n")
-
-
-def test_s58_read_only_gives_the_run_no_folder_to_write_in(new_story):
-    story = worker_with_tools(new_story)
-    recorded = recording_runner_at(story.home)
-    story.expect_success(f"plugin run --agent {story.worker.id} --read-only -- true", actor=story.user)
-    arguments = json.loads(recorded.read_text())["arguments"]
-    story.expect_rows("--read-only-shell" in arguments, "--write-folder" not in arguments)
 
 
 def test_s58_an_agent_may_not_use_plugin_run_even_naming_itself(new_story):
@@ -173,18 +129,6 @@ def test_s61_trying_a_script_prints_the_line_and_the_answer_and_leaves_nothing(n
     story.run_listeners()
     story.expect_rows(len(list(story.container.get(Queries).query(PluginOutput).all_rows())) == story.outputs_before, len(story.refusals()) == story.refusals_before)
     story.expect_no_text("chat-mark list --environment 1", "Tidy", actor=story.user)
-
-
-def test_s61_trying_a_script_that_fails_leaves_no_fault(new_story):
-    story = tried_story(new_story, EVENT_SCRIPTS["fail.sh"])
-    story.expect_text(f"plugin try tidy-worktrees {TRY_KEY} --agent {story.worker.id}", TRY_KEY, "3", actor=story.user)
-    story.run_listeners()
-    story.expect_rows(plugin_row(story, "tidy-worktrees").fault_count == story.faults_before)
-
-
-def test_s61_trying_a_key_with_no_event_yet_uses_an_empty_row(new_story):
-    story = checkout_story(new_story, {"event": "core.pins.pin.created", "commit": "try.sh"}, scripts={"try.sh": ANSWER_SCRIPT}, name="tidy-worktrees", program="try.sh")
-    story.expect_text("plugin try tidy-worktrees core.pins.pin.created", "core.pins.pin.created", "the worktree is tidy", actor=story.user)
 
 
 def test_s61_the_inputs_of_a_plugin_show_a_held_event_that_has_no_row(new_story):

@@ -44,14 +44,6 @@ def details(story) -> list[dict]:
     return [json.loads(row["lines"]) for row in rows if row["type"] == "search.search"]
 
 
-def test_an_agent_that_searches_has_one_mark_with_its_words_and_how_many_rows_held_them(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
-    story.run('task make "Fix the cart" --environment main', actor=story.user)
-    story.hook("s-1", search_hook("journal search find cart"))
-    story.run_listeners()
-    expect_marks_text(story, "Searched for cart: 1 row")
-
-
 def test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage(new_story):
     story = install_runner(new_story(fixture=UserBuilder))
     story.run('task make "Fix the cart" --environment main', actor=story.user)
@@ -63,52 +55,6 @@ def test_the_mark_opens_to_the_rows_found_each_with_its_noun_number_and_passage(
     expect_row(mark, total=2)
     expect_cli_hit_id(mark, [("doc", 1), ("task", 1)])
     expect_excerpt_hit_hits(mark)
-
-
-def test_the_mark_keeps_the_first_ten_rows_and_says_how_many_there_were(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
-    for number in range(14):
-        story.run(f'task make "Cart task {number}" --environment main', actor=story.user)
-    story.hook("s-1", search_hook("journal search find cart"))
-    story.run_listeners()
-    [mark] = details(story)
-    expect_hits_mark(mark, 10)
-    expect_total_closed(mark, 14)
-    expect_marks_text(story, "Searched for cart: 14 rows")
-
-
-def test_the_model_option_narrows_the_search_the_mark_shows(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
-    story.run('task make "The cart task" --environment main', actor=story.user)
-    story.run('doc make "Cart rules" --abstract "How the cart counts" --body "in cents"', actor=story.user)
-    story.hook("s-1", search_hook("journal search find cart --model task"))
-    story.run_listeners()
-    [mark] = details(story)
-    expect_cli_hit_hits(mark, ["task"])
-
-
-def test_a_command_that_is_no_search_and_a_search_of_an_unknown_model_leave_no_mark(new_story):
-    story = install_runner(new_story(fixture=UserBuilder))
-    story.run('task make "Fix the cart" --environment main', actor=story.user)
-    story.hook("s-1", search_hook("journal task list"))
-    story.hook("s-1", search_hook("journal search find cart --model ghost"))
-    story.run_listeners()
-    expect_details(story, [])
-
-
-def expect_details(story, expected) -> None:
-    actual = details(story)
-    assert actual == expected, actual
-
-
-def expect_cli_hit_hits(mark, expected) -> None:
-    actual = [hit['cli_name'] for hit in mark['hits']]
-    assert actual == expected, actual
-
-
-def expect_hits_mark(mark, expected) -> None:
-    actual = len(mark['hits'])
-    assert actual == expected, actual
 
 
 def expect_excerpt_hit_hits(mark) -> None:

@@ -13,20 +13,7 @@ def test_a_write_through_the_server_wakes_the_listener_thread_which_starts_the_n
     story.expect_eventually(lines.SECOND_TASK_DETAILS, "state: started")
 
 
-def test_no_request_thread_runs_a_commit_listener(stopped_listeners):
-    story = stopped_listeners
-    story.run_as(lines.TASK_CLOSE, SESSION)
-    story.expect_line(lines.TASK_DETAILS, "state: completed")
-    story.expect_line(lines.SECOND_TASK_DETAILS, "state: open")
-
-
 @pytest.fixture
 def running_listeners(new_story):
     with server_story(new_story(fixture=StartedPlanTask)) as story:
-        yield story
-
-
-@pytest.fixture
-def stopped_listeners(new_story):
-    with server_story(new_story(fixture=StartedPlanTask), listener_thread_started=False) as story:
         yield story

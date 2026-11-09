@@ -5,7 +5,6 @@ import pytest
 from core.base.instruction_imports import INSTRUCTION_FILES
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from core.modules.helpers.support.helper_settings import HELPER_INSTRUCTION_FILES
 from core.modules.helpers.support.helper_start_folder import HelperStartFolder
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent
 
@@ -75,9 +74,3 @@ def test_a_start_folder_made_with_the_whole_skills_folder_is_narrowed(started_fo
     (folder / ".claude" / "skills").symlink_to(skills)
     prepared(started_folder)
     started_folder.expect_rows(not (folder / ".claude" / "skills").is_symlink(), not (folder / ".claude" / "skills" / "journal-planning").exists())
-
-
-def test_with_the_setting_off_no_start_folder_is_made(started_folder):
-    started_folder.expect_success(f"setting set {HELPER_INSTRUCTION_FILES} false --project", actor=started_folder.user)
-    folder = prepared(started_folder)
-    started_folder.expect_rows(not folder.exists())

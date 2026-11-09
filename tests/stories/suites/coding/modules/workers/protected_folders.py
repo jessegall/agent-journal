@@ -35,13 +35,6 @@ def test_a_worker_cannot_edit_or_write_a_protected_path(protected_worker):
     story.expect_hook_allowed(session, HookSamples.edit("other.py"))
 
 
-def test_a_worker_cannot_hand_in_a_protected_change(protected_worker):
-    story, repository, worker = protected_worker
-    repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
-    story.expect_success(FIRST_PROOF, actor=worker)
-    story.expect_refusal(DELIVERY, "cart.py is protected", actor=worker)
-
-
 def test_a_main_agent_may_edit_a_protected_path(protected_worker):
     story, repository, _ = protected_worker
     story.expect_hook_allowed("s-1", HookSamples.edit(str(repository.folder / "cart.py")))

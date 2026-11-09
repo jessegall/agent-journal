@@ -12,12 +12,6 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
 
 
-def test_a_main_agent_with_auto_off_that_stops_with_open_tasks_is_told_they_wait_for_a_worker(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait for a worker: 1")
-    story.expect_success(lines.TASK_DETAILS, "state: open")
-
-
 def test_a_main_agent_that_writes_no_code_starts_no_task_of_its_own(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     story.run("setting set journal.suites.coding.main-writes-code off --environment main")

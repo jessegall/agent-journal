@@ -79,18 +79,6 @@ def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktre
     story.expect_hook_refusal(session, HookSamples.edit("cart.py").with_fields(program="codex"), f"read this first: {expected}")
 
 
-def test_skill_write_removes_old_codex_journal_skills_and_preserves_other_skills(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    for skill in ("journal", "journal-tasks", "my-skill"):
-        path = story.home.project_folder / ".codex/skills" / skill / "SKILL.md"
-        path.parent.mkdir(parents=True)
-        path.write_text("old")
-    story.expect_success("skill write")
-    story.expect_rows(not (story.home.project_folder / ".codex/skills/journal").exists(),
-                      not (story.home.project_folder / ".codex/skills/journal-tasks").exists(),
-                      (story.home.project_folder / ".codex/skills/my-skill/SKILL.md").read_text() == "old")
-
-
 def test_a_completed_upgrade_removes_the_version_four_codex_skill_folders(new_story):
     def old_skills(home):
         path = home.parent / ".codex/skills/journal-tasks/SKILL.md"

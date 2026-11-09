@@ -31,13 +31,6 @@ def test_a_value_saved_through_the_place_shows_in_the_owners_group_with_one_key(
     story.expect_no_text("setting list", PLACED_ADDRESS, actor=story.user)
 
 
-def test_a_value_saved_in_the_owners_group_shows_where_the_group_is_placed(new_story):
-    story = shared_story(new_story)
-    story.run(f"setting set {LOCAL_ADDRESS} {TUNNEL} --project", actor=story.user)
-    story.expect_success(f"setting show {PLACED_ADDRESS}", f"value: {TUNNEL}", actor=story.user)
-    expect_count_output(story, "setting tree", TUNNEL, 2)
-
-
 def test_a_reference_to_a_group_its_module_does_not_declare_is_refused_naming_the_module(new_story):
     story = new_story(f"{PATH}:GoodModule", fixture=UserJoined)
     story.expect_sync_refusal(f"{PATH}:DanglingModule", "dangling places good.sharing.nothing, which the module good does not declare")

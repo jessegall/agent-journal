@@ -6,7 +6,7 @@ from core.base.provider.context_window import ContextWindow
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION
 from core.testing.hook_samples import HookSamples
-from tests.stories.suites.coding.modules.workers.context_limit import LIMIT, CLEAR_START, LimitEnabled, set_value, typing_recorded
+from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, CLEAR_START, LimitEnabled, set_value, typing_recorded
 
 CODEX_SESSION = "s-codex"
 
@@ -15,7 +15,7 @@ CODEX_SESSION = "s-codex"
 def codex_agent(new_story, monkeypatch):
     story = typing_recorded(new_story(fixture=LimitEnabled))
     story.expect_success(f"agent start {CODEX_SESSION} codex worker --parent {story.agent.id} --environment main", actor=story.user)
-    monkeypatch.setattr(CodexProvider, "context_window", lambda provider, home, session: ContextWindow(None, LIMIT))
+    monkeypatch.setattr(CodexProvider, "context_window", lambda provider, home, session: ContextWindow(None, LIMIT_TOKENS))
     return story
 
 

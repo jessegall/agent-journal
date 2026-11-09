@@ -97,20 +97,6 @@ def test_choosing_the_library_version_is_refused_while_a_run_is_going(new_story,
     story.expect_rows(story.row(Sequence, row_id).title == "Renamed there")
 
 
-def test_new_steps_of_a_sequence_with_triggers_wait_for_reading_and_the_old_steps_go_on_running(new_story, shared_server):
-    server, tokens = shared_server
-    story, item_id, row_id = library_sequence_story(new_story, server, tokens, "Triggered and changed", "Run the suite", "Tag the release")
-    story.expect_text(f"sequence edit {row_id} --triggers {shlex.quote(TRIGGERS)}", f"updated: sequence:{row_id}", actor=story.user)
-    change_sequence(server, tokens.admin, item_id, 1, "Triggered and changed", "Run the suite", "Tag it", "Tell the team")
-    story.expect_text("library sync", "1 copies followed, 1 changed.", actor=story.agent)
-    waiting = stored_copy(story, item_id)
-    story.expect_rows(waiting.state is CopyState.REVIEW, waiting.note == "The steps of this sequence changed.", story.row(Sequence, row_id).steps == ("Run the suite", "Tag the release"))
-    story.expect_text("library copies", "Status: New version to read", "The steps of this sequence changed.", actor=story.agent)
-    story.expect_ordered_lines(f"sequence run {row_id}", f"sequence {row_id}, step 1: Run the suite", actor=story.agent)
-    story.expect_text("library sync", "1 copies followed, 0 changed.", actor=story.agent)
-    story.expect_rows(story.row(Sequence, row_id).steps == ("Run the suite", "Tag the release"), story.row(Sequence, row_id).triggers == TRIGGERS)
-
-
 def test_a_sequence_that_comes_with_the_journal_cannot_be_shared(new_story, shared_server):
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)

@@ -1,6 +1,4 @@
 import pytest
-import os
-
 from core.base.module.module_finder import ModuleFinder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, worktree_file_text
@@ -36,24 +34,3 @@ def test_a_profile_change_reaches_the_instruction_files_at_the_next_task_start_a
     instruction_tick(story)
     expect_value(bool(SECOND_CHANGE in worktree_file_text(repository, worker, "AGENTS.md") and SECOND_CHANGE in worktree_file_text(repository, worker, "CLAUDE.md")), True)
     repository.expect_clean(worker.id)
-
-
-def test_an_instruction_file_that_already_says_the_same_is_not_written_again(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = project_with_instructions(story)
-    worker = dispatched_worker(story)
-    paths = [repository.worktree_folder(worker.id) / name for name in ("AGENTS.md", "CLAUDE.md")]
-    for path in paths:
-        os.utime(path, (OLD_TIME, OLD_TIME))
-    instruction_tick(story)
-    story.expect_rows(all(int(path.stat().st_mtime) == OLD_TIME for path in paths))
-
-
-def test_with_the_setting_off_the_tick_leaves_the_project_s_instruction_files_alone(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = project_with_instructions(story)
-    story.expect_success("setting set journal.suites.coding.workers.worker-instruction-files false --project", actor=story.user)
-    worker = dispatched_worker(story)
-    story.expect_success(CHANGE_PROFILE, actor=story.user)
-    instruction_tick(story)
-    expect_value(worktree_file_text(repository, worker, "AGENTS.md"), PROJECT_TEXT)

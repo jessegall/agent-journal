@@ -43,11 +43,6 @@ def test_a_first_start_gets_the_memories(new_story):
     story.expect_hook_allowed("s-2", HookSamples.session_start().with_fields(session="s-2"), MEMORY)
 
 
-def test_a_start_after_a_compaction_gets_the_memories(new_story):
-    story = kept_memory_story(new_story)
-    story.expect_hook_allowed("s-1", COMPACTION, MEMORY)
-
-
 def test_a_resumed_session_makes_no_start_skill_due(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run_listeners()

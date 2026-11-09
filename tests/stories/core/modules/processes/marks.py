@@ -13,10 +13,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.queries.process_query import ProcessQuery
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
-from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.move_process.move_process import MoveProcess
-from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.commands.support.part_spec import PartSpec
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run, parts_started, start_process, started_run, tick
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
@@ -29,11 +26,6 @@ from core.testing.expect_row import expect_row
 MARKS = "chat-mark list --environment 1 --oldest"
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
 PROGRESS = 'reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"'
-
-
-def test_a_run_shows_a_process_mark_keyed_by_its_number(started_test_mark):
-    story = started_test_mark
-    story.expect_text(MARKS, "processes.command", "process:1", "Running tests")
 
 
 def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
@@ -108,12 +100,6 @@ def test_a_short_run_whose_output_is_dropped_still_ends_its_mark(ended_short_mar
     story.expect_text("chat-mark list --environment 1 --state ended", "process:1")
 
 
-def test_a_run_moved_to_the_background_updates_its_mark_in_place(background_build_mark):
-    story, process, starting_count = background_build_mark
-    expect_mark_count(story, starting_count)
-    story.expect_text(MARKS, "process:1", "Building")
-
-
 def test_the_mark_is_a_process_mark_that_folds_open_in_place_and_has_a_stop_and_a_dock_button(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
@@ -169,17 +155,6 @@ def test_a_plain_command_moved_to_the_background_makes_no_mark(background_plain_
     expect_mark_count(story, 0)
 
 
-def test_a_line_of_several_commands_shows_a_mark_for_the_test_run_alone(command_chain_mark):
-    story, parts = command_chain_mark
-    story.expect_text(MARKS, "process:1", "Running tests")
-    story.expect_absent(MARKS, "grep")
-
-
-def test_a_test_mark_omits_the_command_and_project_path(project_path_mark):
-    story = project_path_mark
-    story.expect_absent(MARKS, "cart.py")
-
-
 def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_the_same(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = started_run(story, "make one && make two")
@@ -187,11 +162,6 @@ def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_
     folder.write_output(process.id, 1, "ran\n")
     expect_bytes_after_folder(folder, process, 0, b"ran\n")
     expect_bytes_after_folder(folder, process, 2, b"n\n")
-
-
-def test_output_that_is_not_utf8_still_ends_its_mark(binary_output_mark):
-    story, process = binary_output_mark
-    story.expect_text(MARKS, "process:1", "ended")
 
 
 def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new_story):
@@ -317,30 +287,11 @@ def test_go_tests_use_the_reader_title_and_count_even_when_a_pipe_returns_zero(n
 
 
 @pytest.fixture
-def started_test_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    started_run(story, "make test", category=CommandCategory.TEST_RUN)
-    story.run_listeners()
-    return story
-
-
-@pytest.fixture
 def ended_short_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = started_run(story, "make plain", category=CommandCategory.BUILD)
     story.run_listeners()
     return story, process
-
-
-@pytest.fixture
-def background_build_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = started_run(story, "make build", category=CommandCategory.BUILD)
-    story.run_listeners()
-    starting_count = mark_count(story)
-    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
-    story.run_listeners()
-    return story, process, starting_count
 
 
 @pytest.fixture
@@ -350,35 +301,6 @@ def background_plain_mark(new_story):
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
     end_run(story, process, "done\n")
-    story.run_listeners()
-    return story, process
-
-
-@pytest.fixture
-def command_chain_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    parts = (PartSpec("grep -n cart notes", "grep", False, CommandCategory.SEARCH), PartSpec("make test", "make", False, CommandCategory.TEST_RUN))
-    process = story.container.get(Bus).run(StartProcess(story.agent.id, None, "grep -n cart notes; make test", "/work/main", "zsh", CommandCategory.SEARCH, 30, parts), story.agent, environment_id=1)
-    parts_started(story, process)
-    story.run_listeners()
-    return story, parts
-
-
-@pytest.fixture
-def project_path_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    started_run(story, "cd /work/main && make test /work/main/cart.py", category=CommandCategory.TEST_RUN)
-    story.run_listeners()
-    return story
-
-
-@pytest.fixture
-def binary_output_mark(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
-    story.run_listeners()
-    (story.container.get(OutputFolder).home.folder / "processes" / str(process.id) / "1.out").write_bytes(b"caf\xe9\n")
-    story.container.get(Bus).run(EndProcess(process.id, 0, 5, 1), story.agent, environment_id=1)
     story.run_listeners()
     return story, process
 

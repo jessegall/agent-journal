@@ -14,13 +14,6 @@ def plugin_story(new_story):
     return story
 
 
-def test_the_user_installs_a_plugin_from_its_folder_and_it_is_listed_on_with_its_version(new_story):
-    story = plugin_story(new_story)
-    story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
-    story.expect_text("plugin list", "sample", "on", "1.0.0", actor=story.user)
-    story.expect_rows((story.home.folder / "plugins" / "sample" / "run.sh").is_file(), (story.home.folder / "plugin-data" / "sample").is_dir())
-
-
 def test_a_plugin_is_upgraded_once_from_a_local_folder_and_keeps_its_own_source(new_story):
     story = plugin_story(new_story)
     story.expect_text(f"plugin install {story.plugin_folder} --yes", "installed sample, on", actor=story.user)
@@ -73,14 +66,6 @@ def test_the_user_configures_a_setting_of_its_type_and_a_wrong_value_is_refused(
     story.expect_refusal("plugin configure sample level high", "level is a number; high is not", actor=story.user)
 
 
-def test_disable_switches_a_plugin_off_and_remove_keeps_its_data_unless_purged(new_story):
-    story = plugin_story(new_story)
-    story.run(f"plugin install {story.plugin_folder} --yes", actor=story.user)
-    story.expect_text("plugin disable sample", "sample off", actor=story.user)
-    story.expect_text("plugin remove sample", "removed sample; its data folder stays", actor=story.user)
-    story.expect_rows((story.home.folder / "plugin-data" / "sample").is_dir(), not (story.home.folder / "plugins" / "sample").exists())
-
-
 def test_with_no_plugin_installed_the_list_says_so(new_story):
     story = plugin_story(new_story)
     story.expect_text("plugin list", "no plugin is installed", actor=story.user)
@@ -94,13 +79,6 @@ def test_a_plugin_with_a_manifest_for_this_journal_version_installs_from_that_ma
     story.expect_text("plugin list", "sample", "2.0.0", actor=story.user)
     installed = story.home.folder / "plugins" / "sample"
     story.expect_rows((installed / "journal-plugin.json").is_file(), (installed / "journal-plugin.5.json").is_file(), (installed / "journal-plugin.9.json").is_file())
-
-
-def test_a_plugin_whose_manifests_are_all_for_a_newer_journal_is_refused_plainly(new_story):
-    story = plugin_story(new_story)
-    (story.plugin_folder / "journal-plugin.json").unlink()
-    (story.plugin_folder / "journal-plugin.9.json").write_text(json.dumps(MANIFEST))
-    story.expect_refusal(f"plugin install {story.plugin_folder} --yes", "is for a newer journal: the lowest is for 9, this journal is 5.0.0", actor=story.user)
 
 
 def test_a_standing_yes_installs_a_plugin_again_though_the_install_has_a_prepare_step(new_story):

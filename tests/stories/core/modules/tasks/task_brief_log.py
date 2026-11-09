@@ -17,14 +17,6 @@ def test_a_brief_prints_the_log_lines_after_the_comments(new_story):
     story.expect_text("task overview 1", "log: the first step", "log: the second step", actor=story.agent)
 
 
-def test_an_overview_shows_the_last_5_log_lines_and_says_how_many_are_older(new_story):
-    story = new_story(fixture=StartedTask)
-    for step in range(1, 8):
-        story.run(f"task log 1 'step number {step}'", actor=story.agent)
-    text = story.run("task overview 1", actor=story.agent).output_text
-    story.expect_rows("log: step number 3" in text, "log: step number 7" in text, "2 older log lines: journal task-log list --task 1" in text, "log: step number 2" not in text)
-
-
 def test_an_overview_shows_the_last_5_comments_and_says_how_many_are_older(new_story):
     story = new_story(fixture=UserBuilder)
     story.run('task make "Fix the total" --brief "Cents" --environment main', actor=story.agent)

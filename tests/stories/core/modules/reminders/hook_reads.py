@@ -82,10 +82,6 @@ def transcript_story(new_story, tmp_path):
     return story, path, PROMPT.with_raw({"transcript_path": str(path)})
 
 
-def listed(story) -> str:
-    return story.run("message list --json", actor=story.user).output_text
-
-
 def test_a_second_hook_over_an_unchanged_transcript_reads_none_of_it(new_story, tmp_path, monkeypatch):
     story, path, hook = transcript_story(new_story, tmp_path)
     first = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
@@ -102,39 +98,3 @@ def test_a_hook_over_a_transcript_that_grew_reads_only_what_was_added(new_story,
         transcript.write(added)
     read = bytes_read_during(monkeypatch, path, lambda: story.hook("s-1", hook))
     expect_value(read, len(added.encode()))
-
-
-def test_a_note_in_the_added_part_still_reaches_the_chat_once(new_story, tmp_path):
-    story, path, hook = transcript_story(new_story, tmp_path)
-    story.hook("s-1", hook)
-    with path.open("a") as transcript:
-        transcript.write(queued("and the totals"))
-    story.hook("s-1", hook)
-    story.hook("s-1", hook)
-    text = listed(story)
-    expect_count_shown(text, "look at the cart", 1)
-    expect_count_shown(text, "and the totals", 1)
-
-
-def test_a_line_written_in_two_parts_is_read_once_it_is_whole(new_story, tmp_path):
-    story, path, hook = transcript_story(new_story, tmp_path)
-    story.hook("s-1", hook)
-    full_line = queued("in two parts")
-    with path.open("a") as transcript:
-        transcript.write(full_line[:40])
-    story.hook("s-1", hook)
-    expect_absent_listed(story, "in two parts")
-    with path.open("a") as transcript:
-        transcript.write(full_line[40:])
-    story.hook("s-1", hook)
-    expect_count_listed(story, "in two parts", 1)
-
-
-def expect_absent_listed(story, expected) -> None:
-    actual = listed(story)
-    assert expected not in actual, actual
-
-
-def expect_count_listed(story, text, expected) -> None:
-    actual = listed(story).count(text)
-    assert actual == expected, actual

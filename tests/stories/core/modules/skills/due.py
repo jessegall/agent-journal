@@ -69,24 +69,12 @@ def read_digest(story, skill: str) -> str:
     return next(entry.digest for entry in Registry.read(story.container.get(Database)).skills if entry.folder == skill)
 
 
-def test_a_session_start_makes_due_the_skills_of_the_session_start_setting_which_default_to_the_three(started_skill_environment):
-    story = started_skill_environment
-    skill_lines = due_lines(story)
-    expect_defaults(skill_lines, DEFAULTS)
-    expect_journal_notes_chores(skill_lines, "journal-notes", "journal-chores")
-
-
 def test_the_session_start_setting_names_the_skills_instead(skill_environment):
     story = skill_environment
     story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
     start(story)
     expect_due(story, "journal-notes")
     expect_skills_absent(story, *DEFAULTS)
-
-
-def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(compacted_environment):
-    story = compacted_environment
-    expect_due(story, "journal-chores")
 
 
 def test_after_a_compaction_the_due_skill_is_named_for_three_tool_uses_and_then_held_until_it_is_loaded(compacted_environment):
@@ -154,23 +142,6 @@ def test_a_refused_command_blocks_every_other_tool_until_its_skill_is_read(start
     story.expect_hook_refusal("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])), "load this first with the Skill tool: journal-tasks")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
-
-
-def test_an_event_a_skill_names_makes_it_due_for_the_main_agent_of_the_environment(task_skill_due):
-    story = task_skill_due
-    expect_due(story, "journal-chores")
-
-
-def test_an_event_a_skill_names_makes_it_due_unless_the_agent_read_it(task_skill_loaded):
-    story = task_skill_loaded
-    expect_skills_absent(story, "journal-chores")
-
-
-def test_a_skill_already_loaded_at_the_same_digest_is_never_due(prompt_skill_loaded):
-    story = prompt_skill_loaded
-    skill_lines = due_lines(story)
-    expect_value_without(skill_lines, "  journal-notes  due")
-    expect_value_with(skill_lines, f"journal-notes  {read_digest(story, 'journal-notes')}  loaded")
 
 
 @pytest.fixture

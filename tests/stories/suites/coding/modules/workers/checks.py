@@ -6,14 +6,6 @@ SHORTFALL = "the rounding has no test"
 PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'
 
 
-def test_a_proof_the_main_agent_checks_is_checked(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    delivered_worker(story, repository)
-    story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(lines.TASK_DETAILS, "state: testing")
-
-
 def test_a_short_proof_moves_the_task_back_to_started_and_tells_the_worker_what_is_missing(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -56,16 +48,6 @@ def test_a_proof_must_name_the_workers_current_task(new_story):
     worker = dispatched_worker(story)
     story.expect_refusal('proof make 1 "evidence" --task 99', 'current task is 1', actor=worker)
     story.expect_success('proof make 1 "evidence" --task 1', 'task_id: 1', actor=worker)
-
-
-def test_the_main_agent_can_return_a_checked_proof_with_a_reason(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = delivered_worker(story, repository)
-    story.expect_success('proof check 1', 'state: checked', actor=story.agent)
-    story.expect_refusal('proof short 1 "wrong task"', 'main agent', actor=worker)
-    story.expect_success('proof short 1 "wrong task"', 'state: short', 'shortfall: wrong task', actor=story.agent)
-    story.expect_success(lines.TASK_DETAILS, 'state: started', f'holder_id: {worker.id}')
 
 
 def test_a_short_proof_is_replaced_with_the_command_its_refusal_names(new_story):

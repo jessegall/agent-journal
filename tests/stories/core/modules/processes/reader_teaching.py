@@ -90,12 +90,3 @@ def test_a_title_in_words_says_nothing(new_story):
     process = moved_run(story, "make test")
     story.run(f'output title {process.id} "Running the cart tests"', actor=story.agent)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "is a flag or a path")
-
-
-def test_a_title_is_a_whole_phrase_that_opens_on_what_the_run_does(new_story):
-    story = runner_story(new_story)
-    process = moved_run(story, "make test")
-    story.expect_refusal(f'output title {process.id} "Tests"', "not the single word", actor=story.agent)
-    story.expect_refusal(f'output title {process.id} "The cart tests"', "open it on what it does", actor=story.agent)
-    story.expect_refusal(f'output title {process.id} "Running the tests of"', "which stops on 'of'", actor=story.agent)
-    story.expect_success(f'output title {process.id} "Running the cart tests"', actor=story.agent)

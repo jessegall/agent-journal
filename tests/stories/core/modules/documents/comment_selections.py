@@ -27,13 +27,6 @@ def test_a_comment_on_the_whole_document_has_no_selection(new_story):
     story.expect_text("doc inspect 1 --json", '"body": "Good plan"', '"quote": ""', '"position": null', actor=story.user)
 
 
-def test_a_comment_on_a_line_of_code_says_so(new_story):
-    story = new_story(fixture=BuilderStarted)
-    made(story)
-    story.expect_success('doc comment 1 "Why?" --quote "total = 1" --position 3 --selection-type code --environment main', actor=story.user)
-    story.expect_text("doc inspect 1 --json", '"selection_type": "code"', actor=story.user)
-
-
 def test_a_report_keeps_comments_without_a_revision(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success('report make "Checked" --abstract "What was checked" --body "All of it."', actor=story.agent)

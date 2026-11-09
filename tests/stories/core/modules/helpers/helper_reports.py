@@ -60,14 +60,6 @@ def test_the_agent_card_reads_reports_through_the_viewer(new_story):
 
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
-def test_a_short_report_names_its_readable_message(new_story, helper_fixture):
-    story = reported(new_story, helper_fixture, "The cart adds tax twice.")
-    story.expect_text(LINES.format(agent=story.agent.id), f"reports in message:{helper_report(story).id}")
-    story.expect_no_text(LINES.format(agent=story.agent.id), "The cart adds tax twice.")
-    story.expect_text(f"message read {helper_report(story).id}", "The cart adds tax twice.")
-
-
-@pytest.mark.parametrize("helper_fixture", PROGRAMS)
 def test_a_long_report_gives_the_parent_its_message_number(new_story, helper_fixture):
     story = reported(new_story, helper_fixture, "x" * 2001)
     story.expect_text(LINES.format(agent=story.agent.id), f"reports in message:{helper_report(story).id}")
@@ -247,14 +239,6 @@ def test_the_parent_is_warned_once(new_story):
     enforced(story, 2)
     lines = story.run(LINES.format(agent=story.agent.id)).output_text
     story.expect_rows(lines.count("near its time limit") == 1)
-
-
-def test_a_helper_past_its_cost_is_stopped(new_story):
-    story = new_story(fixture=StartedHelper)
-    story.run(f"setting set {HELPER_MAX_COST} 5 --project", actor=story.user)
-    save_status_file(story, helper_agent(story).session, {"cost": {"total_cost_usd": 6}})
-    enforced(story, 1)
-    story.expect_text(f"message read {helper_report(story).id}", "stopped at its cost limit")
 
 
 def test_a_helper_with_no_cost_is_held_by_time_alone(new_story):

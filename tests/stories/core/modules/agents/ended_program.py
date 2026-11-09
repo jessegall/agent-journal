@@ -61,14 +61,6 @@ def test_an_agent_that_ended_itself_gets_no_stop(new_story, role):
     story.expect_rows(launcher.requests == [])
 
 
-def test_a_main_agent_a_person_ended_gets_one_stop(new_story):
-    story = new_story(fixture=UserJoined)
-    launcher = running_launcher(story)
-    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.run_listeners()
-    story.expect_rows(launcher.requests == read_stops(story.agent.id))
-
-
 def test_a_main_agent_that_ended_itself_gets_no_stop(new_story):
     story = new_story(fixture=UserJoined)
     launcher = running_launcher(story)

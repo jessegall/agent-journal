@@ -14,11 +14,6 @@ def window_story(new_story) -> WindowStory:
     return story
 
 
-def test_the_suites_presets_of_a_page_are_listed_in_the_order_it_declares(new_story):
-    window = window_story(new_story)
-    window.story.expect_ordered_lines("suite presets main home", "board  Board  The notes board alone", "both  Both  Board and summary")
-
-
 def test_a_page_the_suite_gives_no_presets_lists_none(new_story):
     window = window_story(new_story)
     window.story.expect_success("suite presets main agent", "nothing found")

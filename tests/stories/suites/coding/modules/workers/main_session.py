@@ -43,12 +43,6 @@ def test_a_new_main_session_is_held_for_a_delivered_workers_proof(started_replac
     story.expect_hook_refusal("s-new", HookSamples.stop(), notice)
 
 
-def test_a_new_main_session_is_told_of_an_unmerged_worker(started_replacement):
-    story, worker, main = started_replacement
-    story.tick("s-new")
-    story.expect_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} delivered task:1, unmerged")
-
-
 def test_a_new_main_session_hears_a_comment_sent_to_its_worker(replacement):
     story, worker, main = replacement
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

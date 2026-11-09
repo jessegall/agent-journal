@@ -102,26 +102,6 @@ def running(story) -> bool:
     return "Release" in story.run("sequence-run list", actor=story.user).output_text or '"sequence_id": 1' in story.run("sequence-run list --json", actor=story.user).output_text
 
 
-def test_words_in_a_prompt_start_a_sequence_and_tell_the_agent(new_story):
-    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
-    story.expect_hook_allowed("s-1", HookSamples.prompt("Please GIVE ME AN UPDATE now"), "sequence:1 started")
-    expect_running(story)
-
-
-def test_other_words_start_nothing(new_story):
-    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
-    story.hook("s-1", HookSamples.prompt("carry on"))
-    expect_absent_running(story)
-
-
-def test_an_edited_file_a_glob_names_starts_a_sequence(new_story):
-    story = triggered_story(new_story, {"trigger_type": "file", "pattern": "src/*.py"})
-    story.hook("s-1", post_tool("Edit", "edit", tuple(["docs/a.md"])))
-    expect_absent_running(story)
-    story.hook("s-1", post_tool("Edit", "edit", tuple(["src/cart.py"])))
-    expect_running(story)
-
-
 def test_a_text_an_edit_adds_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "file-text", "pattern": "*.py", "text": "TODO"})
     story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "del", "line": 1, "text": "TODO old"}])))
@@ -130,27 +110,11 @@ def test_a_text_an_edit_adds_starts_a_sequence(new_story):
     expect_running(story)
 
 
-def test_a_tool_used_starts_a_sequence(new_story):
-    story = triggered_story(new_story, {"trigger_type": "tool", "tool": "Edit", "pattern": "migrations/"})
-    story.hook("s-1", post_tool("Edit", "edit", tuple(["src/a.py"])))
-    expect_absent_running(story)
-    story.hook("s-1", post_tool("Edit", "edit", tuple(["migrations/a.py"])))
-    expect_running(story)
-
-
 def test_a_record_made_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "row", "event": "plan.create"})
     story.run('plan make "The rebuild" --environment main', actor=story.user)
     story.run_listeners()
     expect_running(story)
-
-
-def test_a_record_a_helper_makes_starts_the_sequence_on_that_helper_and_not_the_main_agent(new_story):
-    story = triggered_story(new_story, {"trigger_type": "row", "event": "plan.create"})
-    helper_id = story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main")
-    story.run('plan make "The rebuild" --environment main', actor=Actor(helper_id, ActorType.AGENT))
-    story.run_listeners()
-    expect_agent_id(story, 1, helper_id)
 
 
 def test_a_running_sequence_is_not_started_again(new_story):

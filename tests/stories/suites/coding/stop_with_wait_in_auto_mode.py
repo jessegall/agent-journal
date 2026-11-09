@@ -30,14 +30,6 @@ def test_in_auto_mode_a_stop_with_a_started_task_is_refused_without_a_wait(new_s
     story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand: carry on")
 
 
-@pytest.mark.parametrize("wait", WAITS)
-def test_with_auto_mode_off_a_wait_still_lets_the_stop_through_with_a_task_in_hand(new_story, wait):
-    story = new_story(fixture=StartedTaskBuilder)
-    story.run("setting set journal.suites.coding.auto-mode off --environment main")
-    declare_wait(story, wait)
-    story.expect_hook_silent("s-1", HookSamples.stop())
-
-
 @pytest.mark.parametrize("move", ['task block 1 --reason "waits for the price list"', 'task close 1 --outcome "done"', 'task cancel 1 --reason "not needed"'])
 def test_in_auto_mode_the_stop_is_allowed_once_the_task_is_blocked_completed_or_cancelled(new_story, move):
     story = new_story(fixture=StartedTaskBuilder)

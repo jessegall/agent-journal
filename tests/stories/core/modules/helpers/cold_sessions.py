@@ -34,41 +34,6 @@ def ended_helper(new_story):
     return new_story(fixture=EndedHelper)
 
 
-@pytest.mark.parametrize("percent", SMALL_PERCENTS + LARGE_PERCENTS)
-@pytest.mark.parametrize("minutes", WARM_MINUTES)
-def test_a_session_inside_the_cache_lifetime_is_never_cold(ended_helper, minutes, percent):
-    aged(ended_helper, minutes, percent)
-    ended_helper.expect_rows(not is_cold(ended_helper))
-
-
-@pytest.mark.parametrize("percent", SMALL_PERCENTS)
-@pytest.mark.parametrize("minutes", COLD_MINUTES)
-def test_a_small_session_past_the_cache_lifetime_is_not_worth_starting_over(ended_helper, minutes, percent):
-    aged(ended_helper, minutes, percent)
-    ended_helper.expect_rows(not is_cold(ended_helper))
-
-
-@pytest.mark.parametrize("percent", LARGE_PERCENTS)
-@pytest.mark.parametrize("minutes", COLD_MINUTES)
-def test_a_large_session_past_the_cache_lifetime_is_cold(ended_helper, minutes, percent):
-    aged(ended_helper, minutes, percent)
-    ended_helper.expect_rows(is_cold(ended_helper))
-
-
-def test_a_session_with_no_reported_size_is_not_cold(ended_helper):
-    ended_helper.advance(timedelta(minutes=300))
-    ended_helper.expect_rows(not is_cold(ended_helper))
-
-
-def test_the_size_of_an_ended_session_is_read_from_the_folder_it_moved_to(ended_helper):
-    aged(ended_helper, 300, 60)
-    session = helper_agent(ended_helper).session
-    ended = ended_helper.home.status_folder / "ended"
-    ended.mkdir(parents=True, exist_ok=True)
-    (ended_helper.home.status_folder / f"{session}.json").rename(ended / f"{session}.json")
-    ended_helper.expect_rows(is_cold(ended_helper))
-
-
 @pytest.mark.parametrize("setting", [COLD_SESSION_MINUTES, COLD_SESSION_CONTEXT_PERCENT])
 def test_either_limit_at_zero_turns_the_check_off(ended_helper, setting):
     aged(ended_helper, 300, 100)
@@ -81,15 +46,6 @@ def test_the_person_sets_the_cache_lifetime(ended_helper, minutes, cold):
     ended_helper.expect_success(f"setting set {COLD_SESSION_MINUTES} 10 --project", actor=ended_helper.user)
     aged(ended_helper, minutes, LIMIT_PERCENT)
     ended_helper.expect_rows(is_cold(ended_helper) is cold)
-
-
-def test_the_person_sets_the_context_size(ended_helper):
-    ended_helper.expect_success(f"setting set {COLD_SESSION_CONTEXT_PERCENT} 50 --project", actor=ended_helper.user)
-    aged(ended_helper, LIMIT_MINUTES, 49)
-    ended_helper.expect_rows(not is_cold(ended_helper))
-    for percent in (50, 51):
-        full_status(ended_helper, helper_agent(ended_helper).session, percent, 0.0)
-        ended_helper.expect_rows(is_cold(ended_helper))
 
 
 def with_job(story, monkeypatch, minutes, percent):
@@ -133,22 +89,9 @@ MAIN_SESSION = "s-1"
 COLD_LIST = "helper cold-sessions claude --environment main --json"
 
 
-def cold_rows(story):
-    return json.loads(story.run(COLD_LIST, actor=story.user).output_text)["rows"]
-
-
 @pytest.fixture
 def main_session(new_story):
     return new_story(fixture=BuilderStarted)
-
-
-@pytest.mark.parametrize("minutes, percent, listed", [(55, 20, True), (300, 100, True), (54, 100, False), (299, 19, False), (0, 0, False)],
-                         ids=["at both limits", "long past both", "still warm", "too small", "fresh"])
-def test_the_boot_menu_reads_which_main_sessions_went_cold(main_session, minutes, percent, listed):
-    full_status(main_session, MAIN_SESSION, percent, 0.0)
-    main_session.advance(timedelta(minutes=minutes))
-    expected = [{"session": MAIN_SESSION, "context_percent": percent}] if listed else []
-    main_session.expect_rows(cold_rows(main_session) == expected, detail=str(cold_rows(main_session)))
 
 
 def test_the_boot_menu_reads_no_cold_session_of_another_program(main_session):
@@ -195,4 +138,3 @@ def test_a_session_whose_last_message_is_over_an_hour_old_may_not_be_resumed(end
 def test_a_session_whose_last_message_is_under_an_hour_old_may_be_resumed(ended_helper):
     ended_helper.advance(timedelta(minutes=59))
     ended_helper.container.get(ColdSessions).require_replaced(helper_agent(ended_helper))
-

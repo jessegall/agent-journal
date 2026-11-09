@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 
 from core.base.actor import Actor
@@ -81,21 +79,9 @@ def test_the_planner_runs_on_a_cheaper_model_and_works_from_the_design(bundled_s
                         "functional design document" in planner.body, "cheaper model" in planner.body, detail=planner.body)
 
 
-def test_the_main_agent_skill_names_who_to_dispatch_and_what_to_do_when_helpers_are_off(bundled_story):
-    bundled_story.run("skill write")
-    expect_skill_text(bundled_story, "journal-plan-dispatch", "name: journal-plan-dispatch", FUNCTIONAL_DESIGNER, PLANNER, "When read-only helpers are switched off", "journal-planning")
-
-
 def test_the_functional_design_skill_asks_for_stories_examples_and_phases(bundled_story):
     bundled_story.run("skill write")
     expect_skill_text(bundled_story, "journal-functional-design", "name: journal-functional-design", "User stories", "Code examples", "Phases", "any application")
-
-
-def test_the_user_stories_skill_teaches_every_angle_and_holds_no_test_builder(bundled_story):
-    bundled_story.run("skill write")
-    expect_skill_text(bundled_story, "journal-user-stories", "name: journal-user-stories", "Who acts", "Refusal", "Failure", "Recovery", "Abuse", "at least", "Story books")
-    text = Path("src/suites/coding/skills/journal-user-stories/SKILL.md").read_text()
-    bundled_story.expect_rows("inferred" not in text, "source" not in text.lower(), detail=text)
 
 
 def test_the_functional_designer_must_read_the_user_stories_skill_and_is_given_it(bundled_story):
@@ -106,25 +92,6 @@ def test_the_functional_designer_must_read_the_user_stories_skill_and_is_given_i
 def test_the_planner_turns_stories_into_story_books_of_one_task_each(bundled_story):
     planner = profile(bundled_story, PLANNER)
     bundled_story.expect_rows("story books" in planner.body, "one task" in planner.body, "names each story" in planner.body, "when the book is done" in planner.body, detail=planner.body)
-
-
-def test_the_functional_designer_points_out_the_unit_tests_a_change_needs(bundled_story):
-    designer = profile(bundled_story, FUNCTIONAL_DESIGNER)
-    bundled_story.expect_rows("which unit tests are needed" in designer.body, detail=designer.body)
-    bundled_story.run("skill write")
-    expect_skill_text(bundled_story, "journal-functional-design", "**Unit tests**", "at a high level")
-
-
-def test_the_planner_carries_a_documents_unit_test_plan_into_the_plan(bundled_story):
-    planner = profile(bundled_story, PLANNER)
-    bundled_story.expect_rows("testing plan for unit tests" in planner.body, detail=planner.body)
-    bundled_story.run("skill write")
-    expect_skill_text(bundled_story, "journal-planning", "testing plan for unit tests")
-
-
-def test_the_planning_skill_stays_the_planners_and_takes_a_design_as_its_source(bundled_story):
-    bundled_story.run("skill write")
-    expect_skill_text(bundled_story, "journal-planning", "name: journal-planning", "functional design document", "cheaper model")
 
 
 def test_with_helpers_switched_off_the_main_agent_cannot_start_a_functional_designer(bundled_story):

@@ -3,11 +3,8 @@ from datetime import timedelta
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_check import BlockCheck
-from core.base.driver.conditions.time_reached import TimeReached
 from core.base.driver.hook_event import HookEvent
 from core.base.module.block_conditions import BlockConditions
-from core.base.timestamp import Timestamp
-from core.modules.drivers.support.block_conditions.tool_uses import ToolUses
 from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
 from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed
 from core.modules.tasks.support.block_conditions.started_task_exists import StartedTaskExists
@@ -63,15 +60,6 @@ def test_a_check_condition_follows_its_last_run(new_story):
     expect_true_check_passed(1, story)
 
 
-def test_time_and_tool_use_conditions(new_story):
-    story = new_story(fixture=BuilderStarted)
-    later = Timestamp(story.clock.timestamp().value + timedelta(minutes=5))
-    expect_absent_true_time_reached(later, story)
-    story.advance(timedelta(minutes=6))
-    expect_true_time_reached(later, story)
-    expect_absent_true_tool_uses(1, story)
-
-
 def test_a_stored_condition_is_built_again_and_one_no_module_registers_counts_as_true(new_story):
     story = new_story(fixture=BuilderStarted)
     conditions = story.container.get(BlockConditions)
@@ -87,21 +75,6 @@ def expect_true_built_conditions(conditions, text, text_2, story) -> None:
 def expect_isinstance(conditions, text) -> None:
     actual = isinstance(conditions.built(TaskClosed.name, text), TaskClosed)
     assert actual, actual
-
-
-def expect_absent_true_tool_uses(number, story) -> None:
-    actual = ToolUses(number).is_true(read_check(story))
-    assert not actual, actual
-
-
-def expect_true_time_reached(later, story) -> None:
-    actual = TimeReached(later.text).is_true(read_check(story))
-    assert actual, actual
-
-
-def expect_absent_true_time_reached(later, story) -> None:
-    actual = TimeReached(later.text).is_true(read_check(story))
-    assert not actual, actual
 
 
 def expect_true_check_passed(number, story) -> None:

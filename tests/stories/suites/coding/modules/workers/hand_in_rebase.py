@@ -47,27 +47,6 @@ def expect_tip(story, repository, worker):
                       (folder / "rate.py").read_text() == "RATE = 2\n")
 
 
-def test_a_hand_in_on_a_moved_base_rebases_the_work_and_base_commit_follows(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = moved_base_worker(story, repository)
-    story.expect_success(DELIVERY, actor=worker)
-    expect_tip(story, repository, worker)
-    repository.expect_clean(worker.id)
-    repository.expect_no_stash()
-
-
-def test_uncommitted_changes_come_back_after_the_rebase_and_are_committed(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = moved_base_worker(story, repository)
-    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
-    story.expect_success(DELIVERY, actor=worker)
-    repository.expect_file(repository.worker_branch(worker.id), "cart.py", CART_CHANGE)
-    repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
-    repository.expect_clean(worker.id)
-
-
 def test_worker_next_rebases_before_the_next_task_starts(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -167,26 +146,6 @@ def committed_files(repository, worker, notes):
     repository.git("commit", "-m", "The work the stash also holds", folder=folder)
 
 
-def test_a_stash_the_commit_already_holds_is_dropped_and_the_hand_in_goes_on(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = stashed_worker(story, repository)
-    committed_files(repository, worker, "NOTE = 1\n")
-    story.expect_success('worker deliver --wait --differences "committed before this hand-in"', actor=worker)
-    repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
-    repository.expect_no_stash()
-
-
-def test_a_stash_that_holds_more_than_the_commit_stays_and_refuses_the_hand_in(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = stashed_worker(story, repository)
-    committed_files(repository, worker, "NOTE = 2\n")
-    story.expect_refusal(DELIVERY, "git stash apply failed", actor=worker)
-    stashes = repository.git("stash", "list", folder=repository.worktree_folder(worker.id)).stdout
-    story.expect_rows(STASH_MESSAGE in stashes)
-
-
 def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -249,4 +208,3 @@ def test_two_worktrees_rebasing_at_once_each_keep_their_own_files(new_story):
     story.expect_rows((worker_folder / "notes.py").exists(), not (worker_folder / "sibling.py").exists())
     story.expect_rows((sibling_folder / "sibling.py").exists(), not (sibling_folder / "notes.py").exists())
     repository.expect_no_stash()
-

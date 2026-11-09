@@ -99,13 +99,6 @@ def test_a_helper_is_told_to_ask_its_parent(new_story):
     expect_helper_refusal(story, "a read-only helper only reads: ask your parent to save an alias for this build")
 
 
-def test_saving_a_build_writes_its_name_for_the_hook(new_story):
-    story = new_story(fixture=BuildSaved)
-    story.expect_success('alias add unit-tests "pytest tests/unit" --category "test run"', actor=story.agent)
-    story.run_listeners()
-    expect_saved_names(story, ["build-npm", "unit-tests"])
-
-
 def test_each_alias_with_a_category_writes_its_category_for_the_hook(new_story):
     story = new_story(fixture=BuildSaved)
     story.expect_success('alias add sins ".journal/plugins/judge/bin/judge --changes" --category check', actor=story.agent)

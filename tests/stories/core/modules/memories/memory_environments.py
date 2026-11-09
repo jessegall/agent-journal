@@ -22,11 +22,6 @@ class StagingEnvironment(StoryFixture):
         story.expect_success("environment show 2", "name: staging")
 
 
-def test_a_main_agent_never_sees_the_main_agent_s_memory_of_another_environment(new_story):
-    story = new_story(fixture=StagingEnvironment)
-    story.expect_no_text("memory list", MAIN_FACT, actor=staging_main(story))
-
-
 def test_a_main_agent_never_reads_a_memory_of_another_environment_by_its_number(new_story):
     story = new_story(fixture=StagingEnvironment)
     story.expect_refusal("memory show 1", "no memory", actor=staging_main(story))

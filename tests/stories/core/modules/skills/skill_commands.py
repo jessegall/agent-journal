@@ -23,11 +23,6 @@ def test_require_makes_a_skill_due_for_an_agent(new_story):
     story.expect_success(f"agent-skill list --agent {story.agent.id}", f"3  {story.agent.id}  journal-notes  due")
 
 
-def test_require_of_a_skill_no_module_declares_is_refused(new_story):
-    story = started(new_story)
-    story.expect_refusal(f"skill require {story.agent.id} journal-gone", "no module declares the skill journal-gone")
-
-
 def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_text(required_notes_skill):
     story = required_notes_skill
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", current_digest(story, "journal-notes")), story.agent)

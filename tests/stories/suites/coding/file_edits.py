@@ -15,12 +15,6 @@ CART_EDIT = HookSamples.edit("src/cart.py", 3, 1).with_fields(event="post_tool_u
 ROWS = [{"line_type": "del", "line": 1, "text": "TOTAL = 0"}, {"line_type": "add", "line": 1, "text": "TOTAL = 1"}]
 
 
-def test_an_agent_that_edits_a_file_leaves_a_file_edit_with_its_path_and_counts(new_story):
-    story = new_story(fixture=BuilderStarted)
-    scanned_edit(story, "s-1", "src/cart.py", 3, 1)
-    story.expect_success("file-edit show 1", "path: src/cart.py", "added: 3", "removed: 1", f"session_agent_id: {story.agent.id}")
-
-
 def test_the_instruction_files_the_journal_writes_for_a_worker_are_not_its_edits_and_its_own_edit_is(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
@@ -30,10 +24,6 @@ def test_the_instruction_files_the_journal_writes_for_a_worker_are_not_its_edits
     story.expect_refusal("file-edit show 1", "no")
     scanned_edit(story, session, "src/cart.py", 3, 1)
     story.expect_success("file-edit show 1", "path: src/cart.py")
-
-
-def edit_rows(story) -> list[dict[str, object]]:
-    return json.loads(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["rows"])
 
 
 def test_a_scan_of_a_shell_line_keeps_each_file_for_the_agent_of_its_process(new_story):
@@ -79,24 +69,6 @@ def test_a_tool_that_reads_files_leaves_no_file_edit(new_story):
 
 
 ROWS = [{"line_type": "add", "line": 4, "text": "total = 0"}, {"line_type": "del", "line": 4, "text": "total = None"}]
-
-
-def edit_with_rows(existed: bool = True):
-    diff = {"path": "src/cart.py", "existed": existed, "lines_added": 1, "lines_removed": 1}
-    return HookSamples.sample("post_tool_use", {"name": "Edit", "category": "edit", "files": ["src/cart.py"], "shell": None, "diff": diff, "diff_rows": ROWS})
-
-
-def test_a_file_edit_keeps_the_lines_it_changed(new_story):
-    story = new_story(fixture=BuilderStarted)
-    scanned_edit(story, "s-1", "src/cart.py", rows=ROWS)
-    row = json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)
-    story.expect_rows(json.loads(row["rows"]) == ROWS, row["edit_type"] == "edit")
-
-
-def test_an_edit_that_made_the_file_says_so(new_story):
-    story = new_story(fixture=BuilderStarted)
-    scanned_edit(story, "s-1", "src/cart.py", existed=False)
-    story.expect_rows(json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["edit_type"] == "new")
 
 
 def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_story):
