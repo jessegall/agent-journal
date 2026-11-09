@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --configLoader runner && vite build --configLoader runner --config kit/vite.config.js && node kit/buildWindows.js",
+    "build": "vite build --configLoader runner && vite build --configLoader runner --config kit/vite.config.js && node kit/buildWindows.js && PYTHONPATH=.. python3 -m install.built_bundles ..",
     "test": "vitest run --configLoader runner"
   },
   "dependencies": {
