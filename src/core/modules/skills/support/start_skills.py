@@ -24,10 +24,13 @@ class StartSkills:
         self.values, self.catalogue = values, catalogue
 
     def session_start(self) -> list[str]:
-        return self.folders(SESSION_START_KEY)
+        return [*self.folders(SESSION_START_KEY), *self.setting_skills()]
 
     def after_compaction(self) -> list[str]:
-        return self.folders(AFTER_COMPACTION_KEY)
+        return [*self.folders(AFTER_COMPACTION_KEY), *self.setting_skills()]
+
+    def setting_skills(self) -> list[str]:
+        return [skill.folder for skill in self.catalogue.skills() if skill.required_setting is not None and self.values.flag(skill.required_setting)]
 
     def main_agent(self) -> list[str]:
         return self.folders(MAIN_AGENT_KEY)

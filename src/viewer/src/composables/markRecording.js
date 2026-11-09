@@ -3,6 +3,20 @@ import {ENTER_MS, LEAVE_MS, RESIZE_MS} from "./markMotion.js";
 
 const SETTLE_MS = 200;
 const RECORD_MS = LEAVE_MS + RESIZE_MS + ENTER_MS + SETTLE_MS;
+const BATCH_MS = 300;
+const batches = new WeakMap();
+
+// the recordings that end within one short time are sent as one line, since a chat of many marks would send a line for each
+function keep(context, recording) {
+    const batch = batches.get(context) ?? [];
+    batches.set(context, [...batch, recording]);
+    if (batch.length) return;
+    setTimeout(() => {
+        const recordings = batches.get(context);
+        batches.delete(context);
+        context.run(["developer", "record-mark-motion", JSON.stringify(recordings)]);
+    }, BATCH_MS);
+}
 
 function box(element) {
     if (!element) return null;
@@ -40,7 +54,7 @@ export function useMarkRecording(root, wanted, phase, context) {
             if (!context.markMotion.value) return;
             frames.push(frameOf(element, started, phase.value));
             if (performance.now() - started < RECORD_MS) return void requestAnimationFrame(sample);
-            context.run(["developer", "record-mark-motion", JSON.stringify({key: element.dataset.markKey ?? "", folds, at: new Date().toISOString(), frames})]);
+            keep(context, {key: element.dataset.markKey ?? "", folds, at: new Date().toISOString(), frames});
         }
         sample();
     }, {flush: "sync"});

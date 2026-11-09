@@ -13,7 +13,7 @@ try {
         const saved = await page.waitForResponse((response) => response.request().postData()?.includes("record-mark-motion"), {timeout: 4000});
         const posted = JSON.parse(saved.request().postData());
         const line = posted.line ?? posted.lines.find((entry) => entry.line[1] === "record-mark-motion").line;
-        const {frames} = JSON.parse(line[2]);
+        const [{frames}] = JSON.parse(line[2]);
         const final = frames.at(-1).mark;
         const titleOffset = (frame) => frame.title.y - frame.mark.y;
         const drift = Math.max(...frames.map((frame) => Math.abs(titleOffset(frame) - titleOffset(frames[0]))));

@@ -5,7 +5,7 @@ from core.modules.developer.support.mark_motion_file import MarkMotionFile
 
 
 class RecordMarkMotionHandler(Handler[RecordMarkMotion, None]):
-    """Adds one recording to the file of mark motions."""
+    """Adds the recordings to the file of mark motions."""
 
     command = RecordMarkMotion
 
@@ -13,4 +13,4 @@ class RecordMarkMotionHandler(Handler[RecordMarkMotion, None]):
         self.recordings = recordings
 
     def handle(self, command: RecordMarkMotion, context: Context) -> None:
-        self.recordings.add(command.frames)
+        self.recordings.add_all(command.recordings)

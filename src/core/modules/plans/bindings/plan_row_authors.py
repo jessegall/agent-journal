@@ -17,8 +17,11 @@ class PlanRowAuthors(PlanAuthors):
 
     def is_creator(self, agent_id: int, line: str, row_id: int) -> bool:
         plan_id = self.plan_id(line.split(" ", 1)[0], row_id)
-        plan = self.queries.query(Plan).filter(id=plan_id).first() if plan_id is not None else None
+        plan = self.plan(plan_id) if plan_id is not None else None
         return plan is not None and plan.creator_id == agent_id
+
+    def plan(self, plan_id: int) -> Plan | None:
+        return self.kept.scoped_read("plans", self.queries.query(Plan).filter(id=plan_id).first, "id = ?", [plan_id], name="plans.author_plan")
 
     def plan_id(self, row_type: str, row_id: int) -> int | None:
         match row_type:

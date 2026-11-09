@@ -12,8 +12,8 @@ REFUSAL = "does not allow this command"
 
 
 def journal_sample(line: str):
-    words = line.split()
-    return HookSamples.shell(f"journal {line}", ShellPart("journal", CommandCategory.JOURNAL, words, subcommand=words[0]))
+    arguments = line.split()
+    return HookSamples.shell(f"journal {line}", ShellPart("journal", CommandCategory.JOURNAL, arguments, subcommand=arguments[0]))
 
 
 class RefusingStep(StoryFixture):

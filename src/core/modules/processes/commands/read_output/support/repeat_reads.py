@@ -27,7 +27,7 @@ class RepeatReads:
         if context.actor.type is not ActorType.AGENT:
             return
         has_ended = self.has_ended(command.process_id)
-        if not self.countdowns.tick(RUNNING_OUTPUT_READS, context.actor.id, str(command.process_id), context, until=lambda: has_ended):
+        if not self.countdowns.tick(RUNNING_OUTPUT_READS, context.actor.id, str(command.process_id), context, stop_condition=lambda: has_ended):
             raise Refusal(f"output {command.process_id} is still running: stop polling it", f"a main agent sets a monitor with journal output monitor {command.process_id}; a helper goes idle: the journal wakes you when it ends")
         if not has_ended or command.is_repeat_allowed:
             return
