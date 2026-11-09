@@ -1,10 +1,10 @@
-from tests.stories.core.support.fixtures import PhaseWithThreeTasks
+from tests.stories.core.support.fixtures import ThreeTasksPhase
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_the_tasks_window_reads_its_visible_tab_and_requests_plan_places_on_demand(new_story):
-    story = new_story(fixture=PhaseWithThreeTasks)
+    story = new_story(fixture=ThreeTasksPhase)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         status, listed = window_data(server, cookie, window="tasks.tasks", query="environment=main&tab=list&board.limit=1")

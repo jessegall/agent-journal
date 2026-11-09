@@ -4,14 +4,14 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.expect_reply import expect_reply_allowed, expect_reply_line, expect_reply_refusal
 from core.testing.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_RUN_ALLOWED
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, asking_main, worker_on_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, asking_main, start_planned_worker
 
 SETTING = "journal.suites.coding.workers.worker-phase-test-runs"
 
 
 @pytest.fixture
 def worker(new_story, monkeypatch):
-    return worker_on_plan(new_story, monkeypatch)
+    return start_planned_worker(new_story, monkeypatch)
 
 
 def expect_counted(worker, remaining):
@@ -35,7 +35,7 @@ def test_three_runs_count_down_and_the_fourth_is_refused_with_the_hand_in_reason
 
 @pytest.fixture
 def moved(spent):
-    spent.prove_and_move_on()
+    spent.prove_advance()
     return spent
 
 
@@ -45,7 +45,7 @@ def test_the_same_phase_keeps_its_count_when_the_worker_moves_to_another_task(mo
 
 def test_the_next_phase_starts_a_new_count(moved):
     for _ in range(2):
-        moved.prove_and_move_on()
+        moved.prove_advance()
     moved.story.expect_rows(moved.current_task() == 4)
     expect_counted(moved, 2)
 
@@ -60,7 +60,7 @@ def test_an_allowed_request_does_not_spend_the_phase_allowance(spent):
 
 
 def test_another_worker_in_the_same_phase_has_its_own_count(new_story, monkeypatch):
-    first = worker_on_plan(new_story, monkeypatch, dispatch="worker dispatch --model sonnet 1")
+    first = start_planned_worker(new_story, monkeypatch, dispatch="worker dispatch --model sonnet 1")
     for remaining in (2, 1, 0):
         expect_counted(first, remaining)
     second_worker = first.added_worker("worker dispatch --model sonnet 2")

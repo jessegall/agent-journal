@@ -6,7 +6,7 @@ from core.base.actor_type import ActorType
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.ticks.run_end_recovery import RunEndRecovery
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_absent_marks_text, expect_marks_text
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
@@ -23,7 +23,7 @@ def proved(story, repository, worker, point_file: str, text: str, task: int = 1)
 
 
 def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_the_tested_task_closes(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
@@ -40,7 +40,7 @@ def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_th
 
 
 def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_over(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
@@ -54,7 +54,7 @@ def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_ove
 
 
 def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -67,7 +67,7 @@ def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_sto
 
 
 def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -86,7 +86,7 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
 
 
 def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_once_and_is_merged(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
@@ -148,7 +148,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
 
 
 def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)

@@ -8,8 +8,8 @@ from core.modules.triggers.models.trigger import Trigger
 from core.modules.sharing.models.share_link import ShareLink
 from core.modules.sharing.models.enums.share_link_state import ShareLinkState
 from tests.stories.core.modules.plans.support.approval_fixtures import ReadyApprovalPlan
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
-from tests.stories.core.support.fixtures import PlanWithPhases
+from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.core.support.fixtures import PhasesPlan
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 
@@ -47,7 +47,7 @@ def test_a_refused_plan_is_not_asked_again_when_the_registry_changes(ready_plan,
 
 @pytest.fixture
 def waiting_trigger(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success('trigger make "deploy" "Check the release notes" --environment main', actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(request is not None)
@@ -70,7 +70,7 @@ def test_a_waiting_trigger_uses_the_shared_dock(waiting_trigger, trigger_viewer,
 
 @pytest.fixture
 def waiting_share(new_story):
-    story = new_story(fixture=PlanWithPhases)
+    story = new_story(fixture=PhasesPlan)
     story.new_row_id("share make plans:1 --environment main", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).filter(arguments=("share", "accept", "1")).first()
     story.expect_rows(request is not None)

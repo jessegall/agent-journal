@@ -25,7 +25,9 @@ from core.modules.skills.commands.skill_list.skill_list_subcommand import SkillL
 from core.modules.skills.commands.skill_required.skill_required_subcommand import SkillRequiredSubcommand
 from core.modules.skills.commands.skill_show.skill_show_subcommand import SkillShowSubcommand
 from core.modules.skills.commands.skill_write.skill_write_subcommand import SkillWriteSubcommand
+from core.modules.skills.listeners.command_skill_listener import CommandSkillListener
 from core.modules.skills.listeners.compaction_reset_listener import CompactionResetListener
+from core.modules.skills.listeners.kept_skills_listener import KeptSkillsListener
 from core.modules.skills.listeners.keyword_skills_listener import KeywordSkillsListener
 from core.modules.skills.listeners.skill_event_listener import SkillEventListener
 from core.modules.skills.listeners.skill_loaded_mark_listener import SkillLoadedMarkListener
@@ -78,7 +80,7 @@ class SkillsModule(Module):
     migrations = [SkillSessionMigration, SkillsTablesMigration, SkillRequestsTableMigration]
     subcommands = [SetRequiredSkillSubcommand, SkillRequirementsSubcommand, SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand, SkillRequiredSubcommand]
     handlers = [SetRequiredSkillHandler, RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler, RequestSkillHandler]
-    listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
+    listeners = [SkillPublishListener, SkillReadListener, SkillPartReadListener, CommandSkillListener, KeptSkillsListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener, SkillRequestSaveListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, skeleton=SKILLS_SKILLS_SKELETON, group="project", place=WindowPlace.PAGE, icon=WindowIcon.SKILL, search=WindowReadSearch("skill list", "Find a skill", ("folder", "description")),

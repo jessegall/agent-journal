@@ -14,7 +14,7 @@ PROGRAM_MANIFEST = {"program": PROGRAM_SCRIPT, "hears": [EDIT_EVENT], "scripts":
 MAIN_ENVIRONMENT = 1
 
 
-def with_a_fault(story, name="events"):
+def faulty(story, name="events"):
     story.container.get(Bus).run(RecordPluginFault(plugin_row(story, name).id, OLD_FAULT), story.user)
     story.expect_rows(plugin_row(story, name).fault_count == 1)
 
@@ -37,7 +37,7 @@ def test_a_hears_delivery_of_a_plugin_with_changed_files_does_not_run_and_switch
 def test_a_clean_hears_delivery_clears_a_fault(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"}, **PROGRAM_MANIFEST)
     story.run_listeners()
-    with_a_fault(story)
+    faulty(story)
     call_count = len(script_calls(story, PROGRAM_SCRIPT))
     deliver_file_edit(story)
     story.run_listeners()
@@ -46,14 +46,14 @@ def test_a_clean_hears_delivery_clears_a_fault(new_story):
 
 def test_a_clean_guard_script_clears_a_fault(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "guard": "see.sh"})
-    with_a_fault(story)
+    faulty(story)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.expect_rows(plugin_row(story).fault_count == 0)
 
 
 def test_a_clean_commit_script_clears_a_fault(new_story):
     story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "see.sh"})
-    with_a_fault(story)
+    faulty(story)
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     story.expect_rows(plugin_row(story).fault_count == 0)
@@ -61,7 +61,7 @@ def test_a_clean_commit_script_clears_a_fault(new_story):
 
 def test_a_clean_answer_to_a_hook_clears_a_fault(new_story):
     story = installed_story(new_story)
-    with_a_fault(story, "sample")
+    faulty(story, "sample")
     story.hook("s-1", LISTING_SAMPLE)
     story.run_listeners()
     story.expect_rows(plugin_row(story, "sample").fault_count == 0)
@@ -69,7 +69,7 @@ def test_a_clean_answer_to_a_hook_clears_a_fault(new_story):
 
 def test_a_clean_answer_to_a_workers_step_clears_a_fault(new_story):
     story = step_plugin_story(new_story, "worker_delivering")
-    with_a_fault(story, "steps")
+    faulty(story, "steps")
     worker = dispatched_worker(story)
     story.repository.changed(worker.id, "notes.md", "Notes\n")
     story.run(FIRST_PROOF, actor=worker)
@@ -79,7 +79,7 @@ def test_a_clean_answer_to_a_workers_step_clears_a_fault(new_story):
 
 def test_a_clean_try_shows_its_answer_and_leaves_a_fault_since_a_try_is_a_read(new_story):
     story = tried_story(new_story, "")
-    with_a_fault(story, "tidy-worktrees")
+    faulty(story, "tidy-worktrees")
     story.expect_text(f"plugin try tidy-worktrees {TRY_KEY} --agent {story.worker.id}", TRY_KEY, actor=story.user)
     story.run_listeners()
     story.expect_rows(plugin_row(story, "tidy-worktrees").fault_count == 1)

@@ -20,14 +20,14 @@ from core.base.query.queries import Queries
 from core.testing.story import Story
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.important_lines import WORKER_RUN_LINE, proved_worker
 from tests.stories.suites.coding.modules.workers.merge_followup_plan import merge_story
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, worker_on_plan as plan_worker, worker_outside_plan as solo_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker as plan_worker, unplanned_worker as solo_worker
 from tests.stories.suites.coding.modules.workers.test_batches import BATCH, PHASE, configure
 from tests.stories.suites.coding.modules.workers.test_queue import affected_test_story, ended, queued_story
 from tests.stories.support.story_checks import expect_value
@@ -39,7 +39,7 @@ def test_s32_the_phase_setting_off_tests_each_plan_task_whatever_the_outside_bat
     configure(worker, BATCH, "4")
     for _ in range(4):
         expect_reply_allowed(worker.run_test())
-    worker.change_and_prove(TEST_LINE)
+    worker.edit_prove(TEST_LINE)
     worker.story.expect_text("worker next --wait --differences none", "tests of task 1", actor=worker.worker)
     worker.story.expect_rows(len(worker.started) == 1, worker.current_task() == 1)
 
@@ -48,7 +48,7 @@ def test_s33_a_batch_outside_a_plan_runs_its_proofs_together_when_its_size_is_re
     worker = solo_worker(new_story, monkeypatch)
     UserJoined().steps(worker.story)
     configure(worker, BATCH, "2")
-    worker.prove_and_move_on(TEST_LINE)
+    worker.prove_advance(TEST_LINE)
     worker.story.expect_rows(worker.current_task() == 2, len(worker.started) == 0)
     worker.prove(TEST_LINE)
     worker.story.expect_text("worker deliver --wait --differences none", "tests of batch", actor=worker.worker)
@@ -140,7 +140,7 @@ def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit
 
 
 def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -149,7 +149,7 @@ def test_manual_merge_keeps_mechanical_judging(new_story, monkeypatch):
 
 
 def test_s42_the_own_test_failure_limit_is_a_setting_and_counts_failures_already_recorded(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)
     bus = story.container.get(Bus)
     for _ in range(3):

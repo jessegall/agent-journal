@@ -10,7 +10,7 @@ from core.modules.processes.commands.read_new_output.read_new_output import Read
 from core.modules.processes.support.grown_outputs import GrownOutputs
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import install_runner, moved_run
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 COUNTING_READER = 'reader add counting --commands "cart-suite*" --title "Cart tests" --lines "line" --summary "(line [0-9]+)" --count "total ([0-9]+)" --step "line "'
 FIRST_OUTPUT = "total 90\n" + "".join(f"line {number}\n" for number in range(1, 90))
@@ -28,7 +28,7 @@ def read_row(story, process):
 
 @pytest.fixture
 def read_run(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(COUNTING_READER, actor=story.agent)
     process = moved_run(story, "cart-suite run")
     story.container.get(OutputFolder).write_output(process.id, 1, FIRST_OUTPUT)
@@ -56,6 +56,6 @@ def test_a_reader_after_a_cut_starts_again_and_counts_only_what_is_kept(read_run
 
 
 def test_the_finished_list_reads_the_newest_ended_runs_by_its_index(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     plan = json.dumps([dict(row) for row in story.container.get(Database).rows(QUEUE_PLAN)])
     story.expect_rows("processes_environment_ended" in plan, "TEMP B-TREE" not in plan)

@@ -89,7 +89,7 @@ class ItemPause(MoveCommand[Item]):
     move = ItemLifecycle.pause
 
 
-class TryARefusedItem(SaveListener[Created[Item]]):
+class TryDeclinedItem(SaveListener[Created[Item]]):
     """After an item is made, tries to make a refused one and carries on when it is refused."""
 
     name = "items.try-refused"
@@ -121,19 +121,19 @@ class OutsideTestWork:
 
 
 @dataclass(frozen=True)
-class CreateItemWithOutsideWork(Command[Item]):
+class OutsideWorkCreateItem(Command[Item]):
     title: str
 
 
-class CreateItemWithOutsideWorkHandler(Handler[CreateItemWithOutsideWork, Item]):
+class OutsideWorkCreateItemHandler(Handler[OutsideWorkCreateItem, Item]):
     """Saves an item and asks for outside work once."""
 
-    command = CreateItemWithOutsideWork
+    command = OutsideWorkCreateItem
 
     def __init__(self, repository: Repository) -> None:
         self.repository = repository
 
-    def handle(self, command: CreateItemWithOutsideWork, context: Context) -> Item:
+    def handle(self, command: OutsideWorkCreateItem, context: Context) -> Item:
         ROUNDS.append(context.external_runs.rounds)
         item = self.repository.save(Item(title=command.title), context)
         turn = context.external_runs.turn("guard", "item.create")
@@ -186,7 +186,7 @@ class SwallowingItem(Command[Item]):
     title: str
 
 
-class SwallowingItemHandler(CreateItemWithOutsideWorkHandler):
+class SwallowingItemHandler(OutsideWorkCreateItemHandler):
     """Catches everything, as a broad except in a handler does."""
 
     command = SwallowingItem
@@ -203,7 +203,7 @@ class KeptItem(Command[Item]):
     title: str
 
 
-class KeptItemHandler(CreateItemWithOutsideWorkHandler):
+class KeptItemHandler(OutsideWorkCreateItemHandler):
     """Reads the items through kept rows at the start of each round."""
 
     command = KeptItem
@@ -220,23 +220,23 @@ class KeptItemHandler(CreateItemWithOutsideWorkHandler):
 
 
 @dataclass(frozen=True)
-class CreateItemsWithOutsideWork(Command[Item]):
+class OutsideWorkCreateItems(Command[Item]):
     lock = False
     first: str
     second: str
 
 
-class CreateItemsWithOutsideWorkHandler(Handler[CreateItemsWithOutsideWork, Item]):
+class OutsideWorkCreateItemsHandler(Handler[OutsideWorkCreateItems, Item]):
     """Runs two commands of its own, as a handler with outside work between them does."""
 
-    command = CreateItemsWithOutsideWork
+    command = OutsideWorkCreateItems
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, command: CreateItemsWithOutsideWork, context: Context) -> Item:
+    def handle(self, command: OutsideWorkCreateItems, context: Context) -> Item:
         self.bus.run(MakeItem(title=command.first), context.actor)
-        return self.bus.run_with_context(CreateItemWithOutsideWork(command.second), context)
+        return self.bus.run_with_context(OutsideWorkCreateItem(command.second), context)
 
 
 @dataclass(frozen=True)
@@ -253,17 +253,17 @@ class RecordContextHandler(Handler[RecordContext, int]):
 
 
 @dataclass(frozen=True)
-class PassedOn(Command[int]):
+class Passed(Command[int]):
     lock = False
 
 
-class PassedOnHandler(Handler[PassedOn, int]):
-    command = PassedOn
+class PassedHandler(Handler[Passed, int]):
+    command = Passed
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, command: PassedOn, context: Context) -> int:
+    def handle(self, command: Passed, context: Context) -> int:
         return self.bus.run_with_context(RecordContext(), context)
 
 
@@ -277,19 +277,19 @@ class CreateNestedSingleItemHandler(CreateSingleItemHandler):
 
 
 @dataclass(frozen=True)
-class CreateItemAfterNested(Command[Item]):
+class NestedCreateItem(Command[Item]):
     title: str
 
 
-class CreateItemAfterNestedHandler(Handler[CreateItemAfterNested, Item]):
+class NestedCreateItemHandler(Handler[NestedCreateItem, Item]):
     """Dispatches a single-run command before requesting outside work."""
 
-    command = CreateItemAfterNested
+    command = NestedCreateItem
 
     def __init__(self, bus: Bus) -> None:
         self.bus = bus
 
-    def handle(self, command: CreateItemAfterNested, context: Context) -> Item:
+    def handle(self, command: NestedCreateItem, context: Context) -> Item:
         ROUNDS.append(context.external_runs.rounds)
         item = self.bus.dispatch(CreateNestedSingleItem(command.title), context)
         if not context.external_runs.closed:
@@ -304,16 +304,16 @@ def handlers(*pairs: tuple[type, type]) -> dict[str, DottedPath]:
 @pytest.fixture
 def container(tmp_path):
     registry = Registry("abc", {}, handlers((PreparedItem, PreparedItemHandler), (MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (ItemPair, ItemPairHandler), (BlockedItem, BlockedItemHandler)), {}, (),
-                        [ListenerEntry(TryARefusedItem.name, EventPattern(TryARefusedItem.event), ListenerTiming.SAVE, DottedPath.class_path(TryARefusedItem), 1)])
+                        [ListenerEntry(TryDeclinedItem.name, EventPattern(TryDeclinedItem.event), ListenerTiming.SAVE, DottedPath.class_path(TryDeclinedItem), 1)])
     return sample_container(tmp_path, registry)
 
 
 @pytest.fixture
-def outside_container(tmp_path):
+def external_container(tmp_path):
     for records in (ROUNDS, WORK_RUNS, CACHED_COUNTS, RECORDED_CONTEXTS):
         records.clear()
-    pairs = handlers((MakeCommand, MakeHandler), (CreateItemWithOutsideWork, CreateItemWithOutsideWorkHandler), (EndlessItem, EndlessItemHandler), (CreateSingleItem, CreateSingleItemHandler), (SwallowingItem, SwallowingItemHandler),
-                     (KeptItem, KeptItemHandler), (CreateItemsWithOutsideWork, CreateItemsWithOutsideWorkHandler), (RecordContext, RecordContextHandler), (PassedOn, PassedOnHandler), (CreateNestedSingleItem, CreateNestedSingleItemHandler), (CreateItemAfterNested, CreateItemAfterNestedHandler))
+    pairs = handlers((MakeCommand, MakeHandler), (OutsideWorkCreateItem, OutsideWorkCreateItemHandler), (EndlessItem, EndlessItemHandler), (CreateSingleItem, CreateSingleItemHandler), (SwallowingItem, SwallowingItemHandler),
+                     (KeptItem, KeptItemHandler), (OutsideWorkCreateItems, OutsideWorkCreateItemsHandler), (RecordContext, RecordContextHandler), (Passed, PassedHandler), (CreateNestedSingleItem, CreateNestedSingleItemHandler), (NestedCreateItem, NestedCreateItemHandler))
     container = sample_container(tmp_path, Registry("abc", {}, pairs, {}, (), ()))
     container.bind(ScriptPolicy, ScriptPolicy(guards_run=True))
     return container
@@ -369,62 +369,62 @@ def test_a_handler_can_run_again_unless_it_says_it_runs_once():
     assert Handler.runs_once is False
 
 
-def test_a_command_that_rolls_back_once_runs_twice_and_saves_once(outside_container):
-    item = outside_container.get(Bus).run(CreateItemWithOutsideWork("Dune"), AGENT)
+def test_a_command_that_rolls_back_once_runs_twice_and_saves_once(external_container):
+    item = external_container.get(Bus).run(OutsideWorkCreateItem("Dune"), AGENT)
     assert ROUNDS == [1, 2] and WORK_RUNS == ["item.create"]
-    assert titles(outside_container) == ["Dune"] and item.title == "Dune"
+    assert titles(external_container) == ["Dune"] and item.title == "Dune"
 
 
-def test_the_round_past_the_limit_goes_closed_and_the_command_commits(outside_container):
-    outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
+def test_the_round_past_the_limit_goes_closed_and_the_command_commits(external_container):
+    external_container.get(Bus).run(EndlessItem("Dune"), AGENT)
     assert len(ROUNDS) == MAX_ROUNDS + 1 and len(WORK_RUNS) == MAX_ROUNDS
-    assert titles(outside_container) == ["Dune"]
+    assert titles(external_container) == ["Dune"]
 
 
-def test_a_closed_run_never_raises_and_its_handler_runs_once(outside_container):
-    outside_container.get(Bus).run(CreateSingleItem("Dune"), AGENT)
+def test_a_closed_run_never_raises_and_its_handler_runs_once(external_container):
+    external_container.get(Bus).run(CreateSingleItem("Dune"), AGENT)
     assert ROUNDS == [1] and WORK_RUNS == []
-    assert titles(outside_container) == ["Dune"]
+    assert titles(external_container) == ["Dune"]
 
 
-def test_explain_never_calls_the_work(outside_container):
-    outside_container.get(Bus).explain(EndlessItem("Dune"), AGENT)
-    assert WORK_RUNS == [] and titles(outside_container) == []
+def test_explain_never_calls_the_work(external_container):
+    external_container.get(Bus).explain(EndlessItem("Dune"), AGENT)
+    assert WORK_RUNS == [] and titles(external_container) == []
 
 
-def test_a_handler_that_swallows_the_rollback_is_caught(outside_container):
-    outside_container.get(Bus).run(SwallowingItem("Dune"), AGENT)
+def test_a_handler_that_swallows_the_rollback_is_caught(external_container):
+    external_container.get(Bus).run(SwallowingItem("Dune"), AGENT)
     assert ROUNDS == [1, 2] and WORK_RUNS == ["item.create"]
-    assert titles(outside_container) == ["Dune"]
+    assert titles(external_container) == ["Dune"]
 
 
-def test_a_rolled_back_row_is_not_read_back_from_kept_rows(outside_container):
-    outside_container.get(Bus).run(KeptItem("Dune"), AGENT)
+def test_a_rolled_back_row_is_not_read_back_from_kept_rows(external_container):
+    external_container.get(Bus).run(KeptItem("Dune"), AGENT)
     assert CACHED_COUNTS == [0, 0, 1]
 
 
-def test_a_locked_command_inside_an_unlocked_one_runs_as_it_does_at_the_top(outside_container):
-    outside_container.get(Bus).run(CreateItemsWithOutsideWork("First", "Second"), AGENT)
+def test_a_locked_command_inside_an_unlocked_one_runs_as_it_does_at_the_top(external_container):
+    external_container.get(Bus).run(OutsideWorkCreateItems("First", "Second"), AGENT)
     assert ROUNDS == [1, 2] and WORK_RUNS == ["item.create"]
-    assert titles(outside_container) == ["First", "Second"]
+    assert titles(external_container) == ["First", "Second"]
 
 
-def test_a_nested_command_keeps_the_skipped_guards_and_the_plugin_script(outside_container):
-    outside_container.get(Bus).run(PassedOn(), AGENT, frozenset({"plugins.event-guard"}), plugin_script="see.sh")
+def test_a_nested_command_keeps_the_skipped_guards_and_the_plugin_script(external_container):
+    external_container.get(Bus).run(Passed(), AGENT, frozenset({"plugins.event-guard"}), plugin_script="see.sh")
     context = RECORDED_CONTEXTS[0]
     assert context.skipped_guards == {"plugins.event-guard"} and context.external_runs.is_plugin_script
 
 
-def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(outside_container):
-    outside_container.get(Bus).run(CreateItemAfterNested("Dune"), AGENT)
+def test_dispatching_a_command_that_runs_once_closes_the_rest_of_the_command(external_container):
+    external_container.get(Bus).run(NestedCreateItem("Dune"), AGENT)
     assert ROUNDS == [1, 1] and WORK_RUNS == []
-    assert titles(outside_container) == ["Dune"]
+    assert titles(external_container) == ["Dune"]
 
 
-def test_a_container_nobody_opened_runs_no_outside_work_and_says_why(outside_container):
-    outside_container.bind(ScriptPolicy, ScriptPolicy())
-    outside_container.instances.pop(Bus, None)
-    outside_container.get(Bus).run(EndlessItem("Dune"), AGENT)
+def test_a_container_nobody_opened_runs_no_outside_work_and_says_why(external_container):
+    external_container.bind(ScriptPolicy, ScriptPolicy())
+    external_container.instances.pop(Bus, None)
+    external_container.get(Bus).run(EndlessItem("Dune"), AGENT)
     assert ROUNDS == [1] and WORK_RUNS == []
 
 
@@ -437,5 +437,5 @@ def test_a_dispatch_refuses_a_handler_with_a_prepare_step(container):
 
 def test_lock_is_command_metadata_and_defaults_to_true():
     assert MakeItem.lock is True
-    assert CreateItemsWithOutsideWork.lock is False
-    assert CreateItemsWithOutsideWork("First", "Second").field_values(()) == {"first": "First", "second": "Second"}
+    assert OutsideWorkCreateItems.lock is False
+    assert OutsideWorkCreateItems("First", "Second").field_values(()) == {"first": "First", "second": "Second"}

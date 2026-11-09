@@ -3,7 +3,7 @@ from core.modules.messages.models.message import Message
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.event_stories import install_event_plugin
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -11,7 +11,7 @@ MERGE_REQUEST_KEY = "suites.coding.workers.merge_request.created"
 
 
 def guarded_merge_story(new_story, script: str, **entry: object):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)

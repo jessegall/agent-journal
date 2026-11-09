@@ -19,7 +19,7 @@ from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 RULE = "processes.failed-full-run"
@@ -38,7 +38,7 @@ def full_line():
 class FailedFullRun(StoryFixture):
     """A main agent whose last full test run failed."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story: Story) -> None:
         part = PartSpec("pytest", "pytest", False, CommandCategory.TEST_RUN)
@@ -95,7 +95,7 @@ def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_a_retry_of_the_same
 
 
 def test_a_skip_with_no_refusal_before_it_is_refused(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_refusal(SKIP, "has not refused you since your last skip", actor=story.agent)
 
 
@@ -113,7 +113,7 @@ def test_a_safety_refusal_has_no_skip(new_story):
 
 
 def test_a_main_agent_at_five_skips_loses_the_skip_and_the_person_is_told_and_gives_it_back(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     guard_skips(story, story.agent, 5)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(approval is not None, "skipped 5 refusals" in approval.text)
@@ -124,7 +124,7 @@ def test_a_main_agent_at_five_skips_loses_the_skip_and_the_person_is_told_and_gi
 
 
 def test_a_worker_at_five_skips_is_raised_to_its_main_agent_not_the_person(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     worker = Actor(story.new_row_id(f"agent start s-worker claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     guard_skips(story, worker, 5)
     story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{worker.id} skipped 5 refusals in a row")

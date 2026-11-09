@@ -15,7 +15,7 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 START = 'helper start journal-researcher --brief "How does the queue hold a run?" --environment main'
 CODEX_START = f"{START} --program codex --model gpt-6.1-sol"
@@ -25,7 +25,7 @@ PLAIN_START = 'helper start journal-researcher --brief "Read the queue" --enviro
 class LauncherRuns(StoryFixture):
     """A main agent with a person beside it, ready to start helpers."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         return None
@@ -58,7 +58,7 @@ def started(story, line=START, actor=None):
     return helper_id, launcher
 
 
-def started_from(new_story, fixture, line=START):
+def start_source(new_story, fixture, line=START):
     story = new_story(fixture=fixture)
     return story, *started(story, line)
 
@@ -90,7 +90,7 @@ def test_a_start_keeps_a_job_with_the_whole_brief(new_story):
 
 
 def test_the_launcher_gets_the_program_and_brief_in_the_parent_s_folder(new_story):
-    story, helper_id, launcher = started_from(new_story, LauncherRuns)
+    story, helper_id, launcher = start_source(new_story, LauncherRuns)
     request = launcher.requests[0]
     command = " ".join(request["command"])
     story.expect_rows(request["agent_id"] == helper_id, request["folder"] == "/work/journal", request["environment"] == "main")
@@ -153,7 +153,7 @@ def test_no_launcher_is_refused_before_any_row(new_story):
 
 
 def test_at_the_limit_a_start_names_the_running_helpers_and_an_ended_one_gives_its_slot_back(new_story):
-    story, helper_id, _ = started_from(new_story, OneHelperAllowed, f'{START} --name "Rosalind Franklin"')
+    story, helper_id, _ = start_source(new_story, OneHelperAllowed, f'{START} --name "Rosalind Franklin"')
     fake_launcher(story)
     story.expect_refusal(START, f"agent:{helper_id}", actor=story.agent)
     story.home.socket("launcher").unlink()

@@ -11,11 +11,11 @@ PATH = "tests.stories.core.base.viewer.support.button_label_faults"
 DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer"]
 
 
-class MarkedType(StrEnum):
+class TaggedType(StrEnum):
     NOTE = "marked.note"
 
 
-class MarkedVariant(StrEnum):
+class TaggedVariant(StrEnum):
     PLAIN = "plain"
 
 
@@ -42,5 +42,5 @@ class MarkButtonModule(Module):
     name = "marked"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    marks = [MarkDeclaration(type=MarkedType.NOTE, variants=MarkedVariant, family=MarkFamily("marked", "Marked", "check", MarkGroup.WORK), label="Notes", mark_icon="check",
+    marks = [MarkDeclaration(type=TaggedType.NOTE, variants=TaggedVariant, family=MarkFamily("marked", "Marked", "check", MarkGroup.WORK), label="Notes", mark_icon="check",
                              buttons=[MarkButton("check", "Dismiss the note", "task start {row_id}")])]

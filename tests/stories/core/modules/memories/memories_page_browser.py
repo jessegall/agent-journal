@@ -1,4 +1,4 @@
-from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, agent_of, started_agent
+from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, read_agent, started_agent
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 
@@ -16,7 +16,7 @@ def seed(new_story):
     ended = started_agent(story, "s-21", "reviewer")
     story.expect_success('memory make "A reviewer reads the whole diff" --environment main', actor=ended)
     story.expect_success(f"agent end {ended.id}", actor=story.user)
-    story.expect_success(f"agent end {agent_of(story, 's-9').id}", actor=story.user)
+    story.expect_success(f"agent end {read_agent(story, 's-9').id}", actor=story.user)
     return story
 
 

@@ -26,7 +26,7 @@ def queue_runs(story, section: str) -> list[dict[str, object]]:
     return json.loads(story.run("queue inspect --environment 1 --json", actor=story.user).output_text)[section]
 
 
-def run_for_plugin(story, plugin: str) -> int:
+def plugin_run(story, plugin: str) -> int:
     caller = Caller(story.user, 1, plugin_script=plugin)
     return story.container.get(Console).run(shlex.split(RUN_LINE.format(story.worker.id)), caller, io.StringIO())
 
@@ -78,7 +78,7 @@ def test_a_run_a_plugin_asks_for_takes_a_place_in_the_queue_under_its_name(new_s
     story = worker_with_tools(new_story)
     recorded = recording_runner_at(story.home)
     story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --project", actor=story.user)
-    story.expect_rows(run_for_plugin(story, "events") == 0)
+    story.expect_rows(plugin_run(story, "events") == 0)
     listed = [run for run in queue_runs(story, "running") if run["plugin"] == "events"]
     story.expect_rows(len(listed) == 1, listed[0]["uses_slot"] is True, "--queue" in json.loads(recorded.read_text())["arguments"])
 
@@ -87,8 +87,8 @@ def test_a_run_a_plugin_asks_for_waits_when_every_place_is_taken(new_story):
     story = worker_with_tools(new_story)
     recording_runner_at(story.home)
     story.expect_success(f"setting set {ProcessSetting.RUN_BATCH_SIZE.key} 1 --project", actor=story.user)
-    run_for_plugin(story, "events")
-    run_for_plugin(story, "later")
+    plugin_run(story, "events")
+    plugin_run(story, "later")
     story.expect_rows([run["plugin"] for run in queue_runs(story, "running")] == ["events"], [run["plugin"] for run in queue_runs(story, "waiting")] == ["later"])
 
 

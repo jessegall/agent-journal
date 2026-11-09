@@ -18,7 +18,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 MODULE = "tunnels.tunler.tunler_module:TunlerModule"
 SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain"
 SERVICE_SETTING = "journal.core.tunnel.service"
-OWN_DOMAIN = f"cart-team.{TUNLER_HOST}"
+TEAM_DOMAIN = f"cart-team.{TUNLER_HOST}"
 SPARE_DOMAIN = f"old-shop.{TUNLER_HOST}"
 VIEWER_PORT = 8000
 
@@ -94,19 +94,19 @@ def test_logging_out_leaves_the_machine_logged_out(new_story):
 
 
 def test_the_domains_name_the_one_this_journal_uses(new_story):
-    story, _ = account_story(new_story, FakeTunlerClient(domains=[OWN_DOMAIN, SPARE_DOMAIN]))
+    story, _ = account_story(new_story, FakeTunlerClient(domains=[TEAM_DOMAIN, SPARE_DOMAIN]))
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     rows = answer(story, "tunler domains")["domains"]
-    expect_value(rows, [{"name": OWN_DOMAIN, "own": True}, {"name": SPARE_DOMAIN, "own": False}])
+    expect_value(rows, [{"name": TEAM_DOMAIN, "own": True}, {"name": SPARE_DOMAIN, "own": False}])
 
 
 def test_releasing_a_domain_takes_it_off_the_account_and_a_failure_is_refused(new_story):
-    client = FakeTunlerClient(domains=[OWN_DOMAIN, SPARE_DOMAIN])
+    client = FakeTunlerClient(domains=[TEAM_DOMAIN, SPARE_DOMAIN])
     story, _ = account_story(new_story, client)
     story.expect_success(f"tunler release {SPARE_DOMAIN}", actor=story.user)
-    expect_row(client, domain_names=[OWN_DOMAIN])
+    expect_row(client, domain_names=[TEAM_DOMAIN])
     client.release_error = "the server said no"
-    story.expect_refusal(f"tunler release {OWN_DOMAIN}", "the server said no", actor=story.user)
+    story.expect_refusal(f"tunler release {TEAM_DOMAIN}", "the server said no", actor=story.user)
 
 
 def test_the_version_says_when_a_newer_one_waits_and_an_update_takes_it(new_story):

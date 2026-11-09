@@ -3,12 +3,12 @@ import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.modules.helpers.start_helper import started
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 @pytest.fixture
 def story(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success('task make "Existing" --tag networking --tag linux --confirm --complexity 2 --environment main', actor=story.user)
     return story
 

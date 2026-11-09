@@ -92,7 +92,7 @@ def test_the_person_sets_the_context_size(ended_helper):
         ended_helper.expect_rows(is_cold(ended_helper))
 
 
-def sent_a_job(story, monkeypatch, minutes, percent):
+def with_job(story, monkeypatch, minutes, percent):
     helper = helper_agent(story)
     resumable_session(story, helper, monkeypatch)
     aged(story, minutes, percent)
@@ -104,7 +104,7 @@ def sent_a_job(story, monkeypatch, minutes, percent):
 
 
 def test_a_cold_helper_starts_a_new_session_under_the_same_agent_and_is_told_who_it_is(ended_helper, monkeypatch):
-    helper, request = sent_a_job(ended_helper, monkeypatch, LIMIT_MINUTES, LIMIT_PERCENT)
+    helper, request = with_job(ended_helper, monkeypatch, LIMIT_MINUTES, LIMIT_PERCENT)
     replaced = helper_agent(ended_helper)
     prompt = " ".join(request["command"])
     ended_helper.expect_rows(replaced.id == helper.id, replaced.session != helper.session, request["session"] == replaced.session, "--resume" not in request["command"],
@@ -112,19 +112,19 @@ def test_a_cold_helper_starts_a_new_session_under_the_same_agent_and_is_told_who
 
 
 def test_a_warm_helper_resumes_its_own_session(ended_helper, monkeypatch):
-    helper, request = sent_a_job(ended_helper, monkeypatch, LIMIT_MINUTES - 1, 100)
+    helper, request = with_job(ended_helper, monkeypatch, LIMIT_MINUTES - 1, 100)
     ended_helper.expect_rows(helper_agent(ended_helper).session == helper.session, "--resume" in request["command"], helper.session in request["command"], detail=str(request))
 
 
 def test_a_small_cold_helper_resumes_its_own_session(ended_helper, monkeypatch):
-    helper, request = sent_a_job(ended_helper, monkeypatch, 300, LIMIT_PERCENT - 1)
+    helper, request = with_job(ended_helper, monkeypatch, 300, LIMIT_PERCENT - 1)
     ended_helper.expect_rows(helper_agent(ended_helper).session == helper.session, "--resume" in request["command"], detail=str(request))
 
 
 def test_a_helper_keeps_its_memories_when_it_starts_over(ended_helper, monkeypatch):
     helper = helper_agent(ended_helper)
     memory = ended_helper.new_row_id('memory make "The cart adds tax twice" --weight 5 --environment main', actor=ended_helper.user)
-    sent_a_job(ended_helper, monkeypatch, LIMIT_MINUTES, LIMIT_PERCENT)
+    with_job(ended_helper, monkeypatch, LIMIT_MINUTES, LIMIT_PERCENT)
     ended_helper.expect_rows(helper_agent(ended_helper).id == helper.id)
     ended_helper.expect_text(f"memory read {memory}", "The cart adds tax twice", actor=ended_helper.user)
 

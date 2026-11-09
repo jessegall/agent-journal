@@ -1,4 +1,4 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.testing.story_fixture import StoryFixture
 
 from datetime import timedelta
@@ -39,7 +39,7 @@ class CartMemory(StoryFixture):
 
 
 def test_a_start_memory_a_keyword_gave_before_the_listener_ran_is_given_once(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success('memory make "The cart rounds to cents" --keywords cart --environment main', actor=story.user)
     story.hook("s-1", HookSamples.session_start())
     story.hook("s-1", HookSamples.prompt("Look at the cart"))

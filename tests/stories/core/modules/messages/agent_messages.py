@@ -12,7 +12,7 @@ def helper_actor(story) -> Actor:
     return Actor(helper_agent(story).id, ActorType.AGENT)
 
 
-def sent_by(story, agent_id: int) -> Message:
+def sender_name(story, agent_id: int) -> Message:
     return story.container.get(Queries).query(Message).filter(session_agent_id=agent_id).newest().first()
 
 
@@ -20,7 +20,7 @@ def test_a_main_agent_messages_its_own_helper_and_the_helper_is_told_the_message
     story = new_story(fixture=StartedHelper)
     helper = helper_actor(story)
     story.expect_success(f'message send "Look at src/cart.py again" --to agent:{helper.id}', actor=story.agent)
-    message = sent_by(story, story.agent.id)
+    message = sender_name(story, story.agent.id)
     story.expect_text(LINES.format(agent=helper.id), f"agent:{story.agent.id} reports in message:{message.id}")
     story.expect_text(f"message read {message.id}", "Look at src/cart.py again", actor=helper)
     story.expect_rows(message.is_chat_visible is False)
@@ -30,7 +30,7 @@ def test_a_helper_messages_its_main_agent(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_actor(story)
     story.expect_success(f'message send "The total is wrong" --to agent:{story.agent.id}', actor=helper)
-    message = sent_by(story, helper.id)
+    message = sender_name(story, helper.id)
     story.expect_text(LINES.format(agent=story.agent.id), f"agent:{helper.id} reports in message:{message.id}")
     story.expect_text(f"message read {message.id}", "The total is wrong", actor=story.agent)
 
@@ -49,7 +49,7 @@ def test_an_agent_messages_no_unrelated_agent_and_none_of_another_environment(ne
     sibling = Actor(story.new_row_id(f"agent start s-3 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_refusal(f'message send "Hello" --to agent:{sibling.id}', "not yours to message", actor=helper)
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
-    elsewhere = Actor(story.new_row_id("agent start s-4 claude main --environment elsewhere"), ActorType.AGENT)
-    story.expect_refusal(f'message send "Hello" --to agent:{elsewhere.id}', "no agent", actor=story.agent)
+    alternate_folder = Actor(story.new_row_id("agent start s-4 claude main --environment elsewhere"), ActorType.AGENT)
+    story.expect_refusal(f'message send "Hello" --to agent:{alternate_folder.id}', "no agent", actor=story.agent)
     story.expect_refusal(f'message send "Hello" --to agent:{story.agent.id}', "sends no message to itself", actor=story.agent)
-    story.expect_rows(sent_by(story, helper.id) is None)
+    story.expect_rows(sender_name(story, helper.id) is None)

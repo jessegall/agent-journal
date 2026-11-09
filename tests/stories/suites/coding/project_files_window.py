@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 import pytest
 
 from core.base.file_access import FileAccess
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -14,7 +14,7 @@ pytestmark = pytest.mark.real_git
 
 @pytest.fixture
 def project_files_server(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     repository = repository_environment(story)
     (repository.folder / "shop files").mkdir()
     FileAccess.shared().write(repository.folder / "shop files" / "cart totals.py", "TOTAL = 1\n")

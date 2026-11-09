@@ -8,7 +8,7 @@ from core.modules.sequences.listeners.sequence_end_listener import SequenceEndLi
 from core.modules.sequences.listeners.sequence_row_trigger_listener import SequenceRowTriggerListener
 from tests.stories.core.modules.sequences.plan_sequence import StandardSequences
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 
 
@@ -19,7 +19,7 @@ from tests.stories.support.story_checks import expect_value
      ("proof.check", "task.start", "affected_test.delete")),
 ])
 def test_the_registry_names_only_the_events_the_listener_handles(new_story, name, matched_events, unmatched_events):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     entry = next(listener for listener in story.container.get(Registry).listeners if listener.name == name)
     expect_value(all(entry.event.matches(event) for event in matched_events), True)
     expect_value(any(entry.event.matches(event) for event in unmatched_events), False)

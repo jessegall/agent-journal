@@ -2,7 +2,7 @@ import json
 
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.available_work import AvailableWork
-from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_story
 from tests.stories.suites.coding.support.main_controls_fixture import scope_line
@@ -33,7 +33,7 @@ def expect_reserved(story, task: int) -> None:
 
 
 def test_a_main_agent_claims_an_open_task_ahead_of_time(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
+    story = new_story(fixture=OpenTaskBuilder)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     expect_reserved(story, 1)
 
@@ -71,7 +71,7 @@ def test_a_phase_that_is_not_in_the_plan_is_refused(new_story):
 
 
 def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("driver choose coding.main --environment main")
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "is yours now")
@@ -79,7 +79,7 @@ def test_a_reserved_task_reaches_a_stopping_main_agent_with_auto_mode_off(new_st
 
 
 def test_an_open_task_stays_with_auto_mode_while_a_reservation_ends_when_the_main_agent_starts_it(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     expect_value(assigned_task(story), None)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     expect_value(assigned_task(story).id, 1)
@@ -97,7 +97,7 @@ def test_a_reserved_task_of_a_plan_waits_for_the_plan_to_start_and_comes_in_its_
 
 
 def test_a_main_agent_that_writes_no_code_cannot_have_a_task_reserved(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
+    story = new_story(fixture=OpenTaskBuilder)
     story.expect_success(f"setting set {WRITES_CODE} off --environment main")
     story.expect_refusal(f"task assign 1 --to {story.agent.id}", "task 1 goes to a worker", actor=story.agent)
     story.expect_absent("task show 1", "delegated_to", actor=story.agent)
@@ -111,7 +111,7 @@ def test_letting_the_agent_pick_reserves_nothing(new_story):
 
 
 def test_a_reserved_task_is_not_sent_to_a_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     story.expect_refusal("worker dispatch --model sonnet 1", f"task 1 is reserved for agent {story.agent.id}", actor=story.agent)
@@ -128,7 +128,7 @@ def test_a_plan_sent_to_a_worker_leaves_the_task_reserved_for_the_main_agent(new
 
 
 def test_a_reserved_task_is_not_offered_to_send_to_a_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     with scope_line(story):
         answer = story.container.get(AvailableWork).answer(story.agent.id)

@@ -10,11 +10,11 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import plan
 from tests.stories.suites.coding.modules.workers.test_queue import recording_launch
 
 
-def outline_of(story) -> dict:
+def read_outline(story) -> dict:
     return json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
 
 
-def expect_queued_for(outline, task_id, agent_id) -> None:
+def expect_queued(outline, task_id, agent_id) -> None:
     task = [task for phase in outline["phases"] for task in phase["tasks"] if task["id"] == task_id][0]
     actual = (task["state"], task["helper_id"], bool(task["helper_name"]))
     assert actual == ("open", agent_id, True), actual
@@ -29,10 +29,10 @@ def test_a_dispatch_for_a_phase_hands_the_worker_that_phases_open_tasks_in_plan_
     story = planned_story(new_story)
     recording_launch(monkeypatch)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
-    expect_agents(outline_of(story), (True, [(1, True), (2, True), (3, True)]))
+    expect_agents(read_outline(story), (True, [(1, True), (2, True), (3, True)]))
     board = json.loads(story.run("plan board --environment main --json", actor=story.agent).output_text)["plans"][0]
     expect_agents(board, (True, [(1, True), (2, True), (3, True)]))
-    expect_queued_for(outline_of(story), 2, worker.id)
+    expect_queued(read_outline(story), 2, worker.id)
     story.expect_text("task show 4", "state: open", actor=story.agent)
     story.expect_text(f"task show 2", f"delegated_to: {worker.id}", actor=story.agent)
 
@@ -41,7 +41,7 @@ def test_a_dispatch_for_a_whole_plan_hands_the_worker_every_open_task_phase_by_p
     story = planned_story(new_story)
     recording_launch(monkeypatch)
     story.run("worker dispatch --model sonnet --plan 1", actor=story.agent)
-    expect_agents(outline_of(story), (True, [(1, True), (2, True), (3, True), (4, True)]))
+    expect_agents(read_outline(story), (True, [(1, True), (2, True), (3, True), (4, True)]))
 
 
 def test_a_dispatch_for_a_plan_that_is_only_a_draft_is_refused(new_story):

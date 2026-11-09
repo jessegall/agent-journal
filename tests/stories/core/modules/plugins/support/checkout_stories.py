@@ -17,7 +17,7 @@ ORDER_TEXT = "ORDER = 0\n"
 CHANGED_ORDER_TEXT = "ORDER = 1\n"
 FILE_EDITED = "file_edited"
 WORKER_DELIVERING = "worker_delivering"
-LISTENS_FOR_FILES = {"program": "see.sh", "hears": [FILE_EDITED, WORKER_DELIVERING], "holds": [{"event": WORKER_DELIVERING, "window_ms": 5000}], "reaches": {FILE_EDITED: ["workers", "helpers"]}}
+FILE_LISTENER = {"program": "see.sh", "hears": [FILE_EDITED, WORKER_DELIVERING], "holds": [{"event": WORKER_DELIVERING, "window_ms": 5000}], "reaches": {FILE_EDITED: ["workers", "helpers"]}}
 
 
 def project_with_order(story: Story, folder: Path, environment_path: Path | None = None) -> GitRepository:
@@ -31,7 +31,7 @@ def project_with_order(story: Story, folder: Path, environment_path: Path | None
 
 
 def checkout_story(new_story, *entries: object, project: str = "project", linked: bool = False, dispatch: str = DISPATCH, setup_repository=None, **manifest: object) -> Story:
-    story = install_runner(event_plugin_story(new_story, *entries, fixture=EventWorkerStarted, **{**LISTENS_FOR_FILES, **manifest}))
+    story = install_runner(event_plugin_story(new_story, *entries, fixture=EventWorkerStarted, **{**FILE_LISTENER, **manifest}))
     parent = story.home.folder.parent
     link = parent / "linked-project" if linked else None
     story.repository = project_with_order(story, parent / project, link)
@@ -60,11 +60,11 @@ def edit_event(story: Story, session: str, name: str = ORDER, folder: Path | Non
     return edit_events(story)[-1]
 
 
-def checkout_of(call: dict[str, object]) -> dict[str, object]:
+def checkout_row(call: dict[str, object]) -> dict[str, object]:
     return cast(dict[str, object], call["checkout"])
 
 
-def file_of(call: dict[str, object]) -> dict[str, object]:
+def read_file(call: dict[str, object]) -> dict[str, object]:
     return cast(dict[str, object], event_data(call)["file"])
 
 

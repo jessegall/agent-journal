@@ -5,6 +5,7 @@ from core.base.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.block_condition import BlockCondition
 from core.base.driver.block_until import BlockUntil
+from core.base.driver.interval import Interval
 from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_type import NudgeType
 
@@ -57,6 +58,9 @@ class RuleAnswer:
     @classmethod
     def refused_with_block(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
         return cls.refused(nudge).running(BlockUntil(hook.agent_id, nudge, condition))
+
+    def blocking_after(self, hook: AgentHook, nudge: Nudge, condition: BlockCondition, after: Interval, countdown: Nudge, strict: bool = False) -> "RuleAnswer":
+        return self.running(BlockUntil(hook.agent_id, nudge, condition, after, countdown, strict=strict))
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])

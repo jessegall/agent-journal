@@ -3,7 +3,7 @@ import pytest
 from core.base.database.database import Database
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
                                            ('worker send --wait {worker} "Finish the total"', "takes the job")])
 @pytest.mark.real_git
 def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new_story, command, notice):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success('task close 1 --outcome "tests passed"', actor=story.agent)
@@ -32,7 +32,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
 
 @pytest.mark.real_git
 def test_worker_send_runs_git_outside_its_transaction(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     database, transaction_flags, synced = story.container.get(Database), [], WorktreeGit.sync

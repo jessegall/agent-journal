@@ -14,7 +14,7 @@ from core.testing.line_outcome import LineOutcome
 from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment, repository_folder, story_repository, worker_session
@@ -23,7 +23,7 @@ from tests.stories.suites.coding.modules.workers.test_queue import ended, record
 
 PLAN_DISPATCH = "worker dispatch --model sonnet --plan 1"
 PHASE_DISPATCH = "worker dispatch --model sonnet --plan 1 --phase 1"
-OUTSIDE_DISPATCH = "worker dispatch --model sonnet 1 2"
+EXTERNAL_DISPATCH = "worker dispatch --model sonnet 1 2"
 TEST_LINE = "pytest tests/cart.py"
 SECOND_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
@@ -31,7 +31,7 @@ TEST_ALIAS = "cart-test"
 
 def planned_story(new_story, approve: bool = True, build_test: str = ""):
     """Plan 1 with phase Build holding the open tasks 1 (Fix the cart), 2 and 3, and phase Ship holding task 4."""
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     UserJoined().steps(story)
     repository_environment(story)
     story.run('plan make "Rebuild the cart" --environment main')
@@ -101,7 +101,7 @@ class StoryWorker:
     def current_task(self) -> int:
         return json.loads(self.story.run("worker status --json", actor=self.worker).output_text)["current_task"]["id"]
 
-    def change_and_prove(self, test_line: str = "", point: int = 1) -> None:
+    def edit_prove(self, test_line: str = "", point: int = 1) -> None:
         outcome = self.prove(test_line, point)
         assert outcome.code == 0, outcome.output_text
 
@@ -111,7 +111,7 @@ class StoryWorker:
         test_flag = f' --test "{test_line}"' if test_line else ""
         return self.story.run(f'proof make {point} --task {self.current_task()} "cart.py:1, the cart total"{test_flag}', actor=self.worker)
 
-    def prove_and_move_on(self, test_line: str = "") -> LineOutcome:
+    def prove_advance(self, test_line: str = "") -> LineOutcome:
         self.prove(test_line)
         return self.story.run("worker next --wait --differences none", actor=self.worker)
 
@@ -140,10 +140,10 @@ class StoryWorker:
         return replace(self, worker=worker, session=worker_session(self.story, worker))
 
     def main_agent_lines(self) -> tuple[str, ...]:
-        return lines_of_agent(self.story, self.story.agent)[self.initial_line_count:]
+        return agent_lines(self.story, self.story.agent)[self.initial_line_count:]
 
     def worker_lines(self) -> tuple[str, ...]:
-        return lines_of_agent(self.story, self.worker)
+        return agent_lines(self.story, self.worker)
 
     def run_requests(self) -> tuple[RunRequest, ...]:
         outcome = self.story.run("worker-test-request list --json", actor=self.story.agent)
@@ -152,7 +152,7 @@ class StoryWorker:
         return tuple(RunRequest(row["id"], row["command"], row["reason"], row["state"]) for row in rows)
 
 
-def lines_of_agent(story: Story, agent: Actor) -> tuple[str, ...]:
+def agent_lines(story: Story, agent: Actor) -> tuple[str, ...]:
     story.run_listeners()
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=agent.id).all_rows()
     return tuple(line.text for line in lines)
@@ -163,16 +163,16 @@ def dispatched_story_worker(story: Story, dispatch: str, monkeypatch) -> StoryWo
     started = recording_launch(monkeypatch)
     worker = dispatched_worker(story, dispatch)
     repository = story_repository(story)
-    return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(lines_of_agent(story, story.agent)))
+    return StoryWorker(story, repository, worker, worker_session(story, worker), started, len(agent_lines(story, story.agent)))
 
 
-def worker_on_plan(new_story, monkeypatch, dispatch: str = PLAN_DISPATCH, build_test: str = "") -> StoryWorker:
+def start_planned_worker(new_story, monkeypatch, dispatch: str = PLAN_DISPATCH, build_test: str = "") -> StoryWorker:
     return dispatched_story_worker(planned_story(new_story, build_test=build_test), dispatch, monkeypatch)
 
 
-def worker_outside_plan(new_story, monkeypatch) -> StoryWorker:
+def unplanned_worker(new_story, monkeypatch) -> StoryWorker:
     """A worker holding task 1 with task 2 queued, neither of them in a plan."""
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
-    return dispatched_story_worker(story, OUTSIDE_DISPATCH, monkeypatch)
+    return dispatched_story_worker(story, EXTERNAL_DISPATCH, monkeypatch)

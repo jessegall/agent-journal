@@ -5,7 +5,7 @@ from core.base.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_total_cost_less
 
 QUEUE_READ_POINTS = 60
@@ -16,7 +16,7 @@ def queue_page(story, flags=""):
 
 
 def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     for number in range(40):
         end_run(story, start_process(story, f"make old-{number}", category=CommandCategory.BUILD), "built\n")
     database = story.container.get(Database)
@@ -28,7 +28,7 @@ def test_a_queue_read_costs_the_same_with_many_ended_runs(new_story):
 
 
 def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an_edited_limit(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
@@ -66,7 +66,7 @@ def test_the_process_queue_lists_worker_commands_waiting_and_running_and_uses_an
 
 
 def test_the_inspector_lists_every_waiting_command_beyond_the_default_page(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("setting set journal.core.processes.run-batch-size 0 --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start long-queue-worker claude worker --environment main"), ActorType.AGENT)
     processes = [start_process(story, f"make package-{number}", category=CommandCategory.BUILD) for number in range(51)]

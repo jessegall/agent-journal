@@ -1,12 +1,12 @@
 import pytest
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
 @pytest.mark.real_git
 def test_a_merge_conflict_names_three_long_paths_whole_to_the_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     paths = tuple(f"src/core/modules/processes/support/reader_requests/{name}/conflicting_process_reader.py"
                   for name in ("first_reader", "second_reader", "third_reader"))

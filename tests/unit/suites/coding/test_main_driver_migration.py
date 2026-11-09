@@ -4,7 +4,7 @@ import sqlite3
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
 
 DRIVER = "journal.core.drivers.driver.main"
-KEEP_GOING = "journal.suites.coding.continue-while-delegatable"
+CONTINUE_SETTING = "journal.suites.coding.continue-while-delegatable"
 STAMP = "2026-01-01T00:00:00"
 
 
@@ -40,7 +40,7 @@ def test_builder_and_orchestrator_environments_move_to_the_main_driver_and_the_o
     add_driver(connection, 2, "coding.orchestrator")
     run(connection)
     assert drivers(connection) == {1: "coding.main", 2: "coding.main"}
-    assert connection.execute("SELECT environment_id FROM settings WHERE key = ?", tuple([KEEP_GOING])).fetchall() == [tuple([2])]
+    assert connection.execute("SELECT environment_id FROM settings WHERE key = ?", tuple([CONTINUE_SETTING])).fetchall() == [tuple([2])]
 
 
 def test_saved_skips_and_stop_check_records_take_the_name_of_the_main_stop_rule():

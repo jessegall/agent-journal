@@ -1,7 +1,7 @@
 import json
 import shlex
 
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_absent_value, expect_value_5
 
 FIXTURE_KEYS = ["journal.core.drivers.suite"]
@@ -25,7 +25,7 @@ def saved_text(row: dict) -> str:
 
 
 def test_every_setting_shows_its_default_and_keeps_it_when_saved_unchanged(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting switch {OPTIONAL_GROUP} on --project", actor=story.user)
     problems = []
     for row in rows(story):
@@ -44,7 +44,7 @@ def test_every_setting_shows_its_default_and_keeps_it_when_saved_unchanged(new_s
 
 
 def test_a_list_item_holding_a_comma_stays_one_item(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     key = "journal.core.overview.commands"
     story.expect_success(f"""setting set {key} '["task list --columns id,title", "question list"]' --environment main""", actor=story.user)
     value = next(row["value"] for row in rows(story) if row["key"] == key)

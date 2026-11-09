@@ -5,7 +5,7 @@ from tests.stories.core.support.fixtures import UserJoined
 COMMANDMENTS_LOCK = '{"packages": [{"name": "jessegall/code-commandments"}]}'
 
 
-def project_with_the_commandments_package(new_story):
+def commandments_project(new_story):
     story = new_story(fixture=UserJoined)
     (story.home.project_folder / "composer.lock").write_text(COMMANDMENTS_LOCK)
     return story
@@ -35,7 +35,7 @@ def test_an_answered_suggestion_is_never_made_again_and_cannot_be_answered_twice
 
 @pytest.fixture
 def commandments_suggestion(new_story):
-    story = project_with_the_commandments_package(new_story)
+    story = commandments_project(new_story)
     story.tick("s-1")
     story.run_listeners()
     return story

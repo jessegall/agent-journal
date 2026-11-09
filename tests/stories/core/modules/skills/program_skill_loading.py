@@ -4,7 +4,7 @@ from core.base.driver.tool_type import ToolType
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
-from tests.stories.core.modules.skills.due import environment, start, use_up_countdown
+from tests.stories.core.modules.skills.due import environment, start, drain_countdown
 
 
 def test_each_program_names_how_it_loads_a_required_skill(new_story):
@@ -12,7 +12,7 @@ def test_each_program_names_how_it_loads_a_required_skill(new_story):
     story.run('setting make journal.core.skills.session-start \'["journal-notes"]\'')
     story.container.bind(SkillRequirement, SkillRequirement())
     start(story)
-    use_up_countdown(story, HookSamples.edit('src/cart.py'), 'journal-notes')
+    drain_countdown(story, HookSamples.edit('src/cart.py'), 'journal-notes')
     story.expect_hook_refusal('s-1', HookSamples.edit('src/cart.py'), 'load this first with the Skill tool: journal-notes')
     story.expect_success("skill required", "load this first with the Skill tool: journal-notes", actor=story.agent)
     story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")

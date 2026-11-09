@@ -8,7 +8,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.testing.story import Story
-from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, connected_second, copy_of_item, new_item, second_story, shared_server)
+from tests.stories.core.modules.library.support.copy_stories import (server_change, connected, connected_second, item_copy, new_item, second_story, shared_server)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
@@ -25,7 +25,7 @@ def copy_json(story: Story, item_id: int) -> dict[str, object]:
     return next(row for row in copies(story) if row["item_id"] == item_id)
 
 
-def role_of(story: Story) -> str:
+def read_role(story: Story) -> str:
     return str(json.loads(story.run("library status --json", story.agent).output_text)["role"])
 
 
@@ -59,8 +59,8 @@ def test_the_team_stories_run_end_to_end_on_two_journals_and_one_server(new_stor
         linus.expect_success('doc edit 1 --body "Linus note."', actor=linus.user)
         linus.expect_text("library sync", "1 changed.", actor=linus.agent)
         linus.expect_text("library copies", "Status: Local change, not sent", actor=linus.agent)
-        linus.expect_rows(role_of(linus) == "read")
-        change_on_server(server, tokens.editor, item_id, "Release checklist", "Tag first.\nBuild in the morning.", 2)
+        linus.expect_rows(read_role(linus) == "read")
+        server_change(server, tokens.editor, item_id, "Release checklist", "Tag first.\nBuild in the morning.", 2)
         linus.expect_text("library sync", "1 changed.", actor=linus.agent)
         denied = copy_json(linus, item_id)
         linus.expect_rows(denied["status"] == "denied", denied["server_version"] == 3, denied["version"] == 2, linus.row(Doc, 1).body == "Linus note.")
@@ -69,18 +69,18 @@ def test_the_team_stories_run_end_to_end_on_two_journals_and_one_server(new_stor
         # Story 7: Linus is given edit rights; his waiting change meets a newer library version, so he chooses
         server.run("user role Linus edit")
         linus.expect_text("library sync", "1 changed.", actor=linus.agent)
-        linus.expect_rows(role_of(linus) == "edit")
+        linus.expect_rows(read_role(linus) == "edit")
         linus.expect_rows(copy_json(linus, item_id)["status"] == "conflict")
 
         # Story 10: Linus uses the library's version and his text stays in the revisions; Grace, back from a train, keeps hers
-        linus.expect_text(f"library resolve {copy_of_item(linus, item_id).id} --keep library", "Status: In sync", actor=linus.user)
+        linus.expect_text(f"library resolve {item_copy(linus, item_id).id} --keep library", "Status: In sync", actor=linus.user)
         linus.expect_rows(linus.row(Doc, 1).body == "Tag first.\nBuild in the morning.")
         linus.expect_text("doc revision 1 3", "Linus note.", actor=linus.user)
         grace.expect_success('doc edit 1 --body "Grace on the train."', actor=grace.user)
-        change_on_server(server, tokens.admin, item_id, "Release checklist", "Ada while Grace was away.", 3)
+        server_change(server, tokens.admin, item_id, "Release checklist", "Ada while Grace was away.", 3)
         grace.expect_text("library sync", "1 changed.", actor=grace.agent)
         grace.expect_rows(copy_json(grace, item_id)["status"] == "conflict", grace.row(Doc, 1).body == "Grace on the train.")
-        grace.expect_text(f"library resolve {copy_of_item(grace, item_id).id} --keep mine", "Status: In sync", actor=grace.user)
+        grace.expect_text(f"library resolve {item_copy(grace, item_id).id} --keep mine", "Status: In sync", actor=grace.user)
         kept = server_fields(server, tokens.admin, item_id)
         grace.expect_rows(kept["version"] == 5, kept["fields"]["body"] == "Grace on the train.")
         linus.expect_text("library sync", "1 changed.", actor=linus.agent)
@@ -131,10 +131,10 @@ def test_the_team_stories_run_end_to_end_on_two_journals_and_one_server(new_stor
             story.expect_rows(story.row(Doc, 1).body == "Grace on the train.", copy_json(story, item_id)["version"] == good + 2)
 
         # Story 16: Linus stops following a copy; it becomes a plain document and the server keeps its item
-        offline_copy = copy_of_item(linus, first)
-        item_at_leaving = server_fields(server, tokens.admin, first)
+        offline_copy = item_copy(linus, first)
+        last_item = server_fields(server, tokens.admin, first)
         linus.expect_text(f"library leave {offline_copy.id}", f"doc 2 no longer follows library doc {first}", actor=linus.user)
-        linus.expect_rows(copy_of_item(linus, first) is None, linus.row(Doc, 2).body == "Edited offline.", server_fields(server, tokens.admin, first) == item_at_leaving)
+        linus.expect_rows(item_copy(linus, first) is None, linus.row(Doc, 2).body == "Edited offline.", server_fields(server, tokens.admin, first) == last_item)
         linus.expect_text("library sync", "Reached the library", actor=linus.agent)
         linus.expect_rows(linus.row(Doc, 2).body == "Edited offline.")
     finally:

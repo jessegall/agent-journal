@@ -3,7 +3,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.story import Story
 from tests.stories.core.modules.plugins.support.plugin_samples import event_plugin_folder
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.support.story_checks import expect_value
@@ -29,7 +29,7 @@ def worktree_file_text(repository, worker, name: str) -> str:
 
 @pytest.mark.real_git
 def test_a_worker_s_worktree_gets_instruction_files_for_its_profile_and_not_the_project_s(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = project_with_instructions(story)
     worker = dispatched_worker(story)
     for name in ("CLAUDE.md", "AGENTS.md"):
@@ -41,7 +41,7 @@ def test_a_worker_s_worktree_gets_instruction_files_for_its_profile_and_not_the_
 
 @pytest.mark.real_git
 def test_a_profile_keeps_the_project_s_files_beside_its_own_when_it_says_so(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = project_with_instructions(story)
     story.expect_success(NOTES_PROFILE, actor=story.user)
     worker = dispatched_worker(story, DISPATCH.replace("--model sonnet", "--model sonnet --profile notes-worker"))
@@ -53,7 +53,7 @@ def test_a_profile_keeps_the_project_s_files_beside_its_own_when_it_says_so(new_
 
 
 def test_a_person_turns_the_instruction_files_off_and_the_worktree_keeps_the_project_s(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = project_with_instructions(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-instruction-files false --project", actor=story.user)
     worker = dispatched_worker(story)
@@ -61,7 +61,7 @@ def test_a_person_turns_the_instruction_files_off_and_the_worktree_keeps_the_pro
 
 
 def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unless_the_profile_turns_it_off(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = project_with_instructions(story)
     folder = event_plugin_folder(story.home.folder.parent, [], {}, name="commandments", instruction_blocks=BLOCK)
     (folder / "briefing.md").write_text(PLUGIN_TEXT)
@@ -74,7 +74,7 @@ def test_a_plugin_s_block_is_shown_as_a_profile_switch_and_put_in_the_files_unle
 
 @pytest.mark.real_git
 def test_a_change_of_the_base_to_an_instruction_file_merges_into_a_worktree_that_holds_written_files(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = project_with_instructions(story)
     worker = dispatched_worker(story)
     repository.committed("AGENTS.md", "The base changed its agent file.\n", "the base changes the agent file")

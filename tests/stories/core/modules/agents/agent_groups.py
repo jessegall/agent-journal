@@ -4,7 +4,7 @@ from core.base.agent_group import AgentGroup
 from core.base.agent_group_book import AgentGroupBook
 from core.base.registry.agent_group_entry import AgentGroupEntry
 from core.base.registry.registry import Registry
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 
 
@@ -14,13 +14,13 @@ def helper_groups(story) -> dict[str, str]:
 
 
 def test_s49_the_coding_suite_shows_each_special_helper_profile_in_its_own_group(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     groups = helper_groups(story)
     expect_value((groups["journal-merger"], groups["journal-designer"], groups["journal-researcher"]), ("merger", "designer", "helpers"))
 
 
 def test_s49_every_profile_is_in_exactly_one_group(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     book = story.container.get(Registry).agent_group_book()
     expect_value([book.group("worker", "journal-worker").key, book.group("helper", "journal-merger").key, book.group("helper", "anything").key], ["workers", "merger", "helpers"])
 

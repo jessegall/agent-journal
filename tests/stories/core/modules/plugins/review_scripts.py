@@ -27,7 +27,7 @@ FAILING_COUNT = 5
 OPEN_OUTPUT_SCRIPT = """sleep 60 &
 echo '{"v": 1, "tell": "answered"}'"""
 PRINTS_WITHOUT_END = "yes output"
-WRITES_ERRORS_THEN_FAILS = """echo "the hidden value is secret-setting-value" >&2
+ERROR_WRITER = """echo "the hidden value is secret-setting-value" >&2
 exit 3"""
 PLUGIN_UPDATED = "core.plugins.plugin.updated"
 RECOVERING = 'if [ ! -e "$JOURNAL_PLUGIN_DATA/recovered" ]; then exit 3; fi'
@@ -48,7 +48,7 @@ def test_s70_a_script_that_prints_without_end_is_stopped_at_the_cap(new_story):
 
 
 def test_s71_a_fault_holds_the_end_of_the_errors_with_the_settings_hidden(new_story):
-    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "err.sh"}, scripts={"err.sh": WRITES_ERRORS_THEN_FAILS})
+    story = event_plugin_story(new_story, {"event": TASK_CREATED, "commit": "err.sh"}, scripts={"err.sh": ERROR_WRITER})
     story.expect_success(SECOND_JOB, actor=story.agent)
     story.run_listeners()
     plugin_page(story).expect_fault("it ended with code 3", "the hidden value is")

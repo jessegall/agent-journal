@@ -1,5 +1,5 @@
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -7,7 +7,7 @@ RELEASE_REASON = "the cart waits for the new prices"
 
 
 def test_a_merged_worktree_is_removed_with_its_branch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -17,7 +17,7 @@ def test_a_merged_worktree_is_removed_with_its_branch(new_story):
 
 
 def test_a_release_removes_the_folder_and_keeps_and_names_a_branch_that_holds_commits(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     worker_tip = repository.tip(repository.worker_branch(worker.id))
@@ -29,7 +29,7 @@ def test_a_release_removes_the_folder_and_keeps_and_names_a_branch_that_holds_co
 
 
 def test_a_release_of_a_worktree_with_no_commits_removes_its_branch_too(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f'worker release {worker.id} "{RELEASE_REASON}"', actor=story.agent)
@@ -38,7 +38,7 @@ def test_a_release_of_a_worktree_with_no_commits_removes_its_branch_too(new_stor
 
 
 def test_a_worktree_folder_deleted_by_hand_is_pruned_from_git_at_its_removal(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.folder_deleted(worker.id)

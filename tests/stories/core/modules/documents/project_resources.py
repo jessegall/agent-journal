@@ -6,13 +6,13 @@ from core.base.viewer.window_place import WindowPlace
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.line_outcome import LineOutcome
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 class TwoEnvironments(StoryFixture):
     """Two environments in one project, with a user and a coding agent in main."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story: Story) -> None:
         story.run('environment make other /work/other', actor=story.user)
@@ -37,15 +37,15 @@ def test_project_resources_are_read_from_both_environments(new_story, creation, 
     story = new_story(fixture=TwoEnvironments)
     story.expect_success(f'{creation} --environment main', actor=story.user)
     for environment_id in (1, 2):
-        read_in_environment(story, f'{listing} --json', environment_id).expect_text('Project guide')
-        read_in_environment(story, inspection_command, environment_id).expect_text(text)
+        environment_read(story, f'{listing} --json', environment_id).expect_text('Project guide')
+        environment_read(story, inspection_command, environment_id).expect_text(text)
 
 
 def test_documents_have_no_environment_owner(new_story):
     story = new_story(fixture=TwoEnvironments)
     story.expect_success('doc make "Project guide" --abstract "Project rules" --body "Shared" --environment main',
                          actor=story.user)
-    read_in_environment(story, 'doc show 1 --json', 2).expect_no_text('environment_id')
+    environment_read(story, 'doc show 1 --json', 2).expect_no_text('environment_id')
 
 
 def test_a_document_edited_in_another_environment_changes_the_same_row(new_story):
@@ -53,23 +53,23 @@ def test_a_document_edited_in_another_environment_changes_the_same_row(new_story
     story.expect_success('doc make "Project guide" --abstract "Project rules" --body "Original" --environment main',
                          actor=story.user)
     story.expect_success('doc edit 1 --body "Updated in other" --environment other', actor=story.user)
-    read_in_environment(story, 'doc show 1 --all', 1).expect_text('Updated in other')
+    environment_read(story, 'doc show 1 --all', 1).expect_text('Updated in other')
 
 
 def test_a_dump_can_be_created_for_the_project_without_choosing_an_environment(new_story):
     story = new_story(fixture=TwoEnvironments)
     story.expect_success('dump make "Project notes"', actor=story.user)
-    read_in_environment(story, 'dump show 1', 2).expect_text('Project notes')
+    environment_read(story, 'dump show 1', 2).expect_text('Project notes')
 
 
 def test_a_dump_closed_in_another_environment_leaves_its_original_dock(new_story):
     story = new_story(fixture=TwoEnvironments)
     story.expect_success('dump make "Project notes" --environment main', actor=story.user)
     story.run_listeners()
-    read_in_environment(story, 'dock-item list --dock 1', 1).expect_text('docked')
+    environment_read(story, 'dock-item list --dock 1', 1).expect_text('docked')
     story.expect_success('dump filed 1 1 "Filed from other" --environment other', actor=story.user)
     story.run_listeners()
-    read_in_environment(story, 'dock-item list --dock 1', 1).expect_text('undocked')
+    environment_read(story, 'dock-item list --dock 1', 1).expect_text('undocked')
 
 
 def test_dumps_have_no_navigation_item(new_story):
@@ -85,7 +85,7 @@ def test_project_resources_are_listed_under_project_in_navigation(new_story, nam
     story.expect_rows(any(window.name == name and window.group == 'project' for window in windows))
 
 
-def read_in_environment(story: Story, line: str, environment_id: int) -> LineOutcome:
+def environment_read(story: Story, line: str, environment_id: int) -> LineOutcome:
     outcome = story.run(line, actor=story.user, environment_id=environment_id)
     outcome.expect_code(0)
     return outcome

@@ -6,7 +6,7 @@ from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE
 from tests.stories.core.modules.plugins.support.notices import expect_plugin_notice
 from tests.stories.core.modules.plugins.support.worktree_plugin import worktree_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -17,7 +17,7 @@ SIN = "def total(items=[]):\n    return len(items)\n"
 
 @pytest.fixture
 def worktree_story(new_story):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     story.expect_success(f"plugin install {worktree_plugin_folder(story.home.project_folder)} --yes", actor=story.user)
     story.repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)

@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 
 import pytest
 
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.viewer_request_attribution import request
 from tests.stories.server.window_data_route import window_data
@@ -11,7 +11,7 @@ from tests.stories.server.window_data_route import window_data
 
 @pytest.fixture
 def request_log_server(new_story):
-    story = new_story(fixture=HookRecordingOn)
+    story = new_story(fixture=HookRecordingEnabled)
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         request(server, cookie, "/api/line", {"window": "tasks.tasks", "environment": "main", "line": ["task", "list"]})

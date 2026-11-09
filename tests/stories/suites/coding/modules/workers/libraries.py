@@ -2,7 +2,7 @@ import pytest
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.support.story_checks import expect_command_file, expect_value_without
 LIBRARY_FILE = "index.js"
@@ -10,7 +10,7 @@ LIBRARY_TEXT = "module.exports = 1\n"
 
 
 def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_never_sees(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
     worker_id = dispatched_worker(story, f"{DISPATCH} --library-link node_modules").id
@@ -20,7 +20,7 @@ def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_ne
 
 
 def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_sees_them(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     hooks = repository.folder / ".codex" / "hooks.json"
     hooks.parent.mkdir(parents=True)
@@ -31,7 +31,7 @@ def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_s
 
 
 def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_first_hook(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     launch_name = story.container.get(Queries).query(Agent).find(worker.id).session
@@ -40,7 +40,7 @@ def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_
 
 
 def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
     story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
@@ -51,7 +51,7 @@ def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_neve
 
 
 def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refused_and_makes_nothing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_refusal(f"{DISPATCH} --library-link node_modules", f"node_modules is no folder in {repository.folder}", actor=story.agent)
     story.expect_refusal(f"{DISPATCH} --library-copy ..", f".. is no folder in {repository.folder}", actor=story.agent)
@@ -59,7 +59,7 @@ def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refu
 
 
 def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
     (repository.folder / "vendor" / LIBRARY_FILE).chmod(0)
@@ -72,7 +72,7 @@ def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
 
 @pytest.mark.real_git
 def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environment_named_not_of_another_in_its_folder(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
@@ -96,7 +96,7 @@ def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environmen
 
 
 def test_a_launch_worktree_of_an_environment_that_does_not_exist_is_refused(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_refusal(f"worktree prepare {repository.folder} {repository.folder} nowhere", "no environment named nowhere", actor=story.user)
 

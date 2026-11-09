@@ -6,7 +6,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.program_states import ProgramStates
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.testing.story import Story
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 WINDOW_SECONDS = 5 * 3600
 WEEK_SECONDS = 7 * 24 * 3600
@@ -21,7 +21,7 @@ def report(story: Story, five_hours: float, seven_days: float = 0) -> None:
 
 
 def limited_story(new_story) -> Story:
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.container.bind(ProgramStates, story.container.constructed(ProgramStates))
     return story
 

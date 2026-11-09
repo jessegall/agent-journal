@@ -8,7 +8,7 @@ from tests.stories.support.story_checks import expect_value
 PLANTED = "contact " + "jane.doe" + "@" + "mail" + ".nl for access\n"
 
 
-class ToolsOn(StoryFixture):
+class ToolsEnabled(StoryFixture):
     """The developer tools are switched on for the project, so its private data scan runs."""
 
     parent = BuilderStarted
@@ -29,7 +29,7 @@ def chat_marks(story) -> str:
 
 
 def test_a_planted_file_gets_one_card_naming_the_file_line_and_kind_and_never_the_text(new_story):
-    story = new_story(fixture=ToolsOn)
+    story = new_story(fixture=ToolsEnabled)
     planted_project(story)
     PrivateDataTick()(story.container)
     marks = chat_marks(story)
@@ -38,7 +38,7 @@ def test_a_planted_file_gets_one_card_naming_the_file_line_and_kind_and_never_th
 
 
 def test_a_file_already_scanned_is_not_scanned_again_until_it_changes(new_story):
-    story = new_story(fixture=ToolsOn)
+    story = new_story(fixture=ToolsEnabled)
     planted_project(story, "again.txt")
     PrivateDataTick()(story.container)
     first = chat_marks(story).count("again.txt, line 2")

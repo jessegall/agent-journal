@@ -17,7 +17,7 @@ from core.base.profile.model_tier import ModelTier
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.providers import Providers
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.unit.core.base.samples.program_sample import SampleProgram
@@ -42,7 +42,7 @@ class SplitProgramModule(Module):
 
 @pytest.fixture
 def split_story(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     monkeypatch.setattr(shutil, 'which', lambda name: name)

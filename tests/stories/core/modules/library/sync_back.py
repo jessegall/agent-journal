@@ -15,7 +15,7 @@ from core.modules.library.support.library_failures import LibraryFailures
 from core.modules.library.support.library_item_removed_error import LibraryItemRemovedError
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.testing.story import Story
-from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, copy_line, copy_of_item, copy_with, made_copy, shared_server)
+from tests.stories.core.modules.library.support.copy_stories import (server_change, connected, copy_line, item_copy, copy_with, made_copy, shared_server)
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
@@ -110,7 +110,7 @@ def test_a_newer_server_version_does_not_overwrite_a_read_only_edit_and_is_asked
     copy = made_copy(story, server, tokens.admin, "Opal read only newer")
     edit_body(story, copy, "Edited by a reader.")
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    change_on_server(server, tokens.admin, copy.item_id, "Opal read only newer", "Admin text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Opal read only newer", "Admin text.", 1)
     fetched = counted(monkeypatch, story.container.get(LibraryClient), "item")
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     story.expect_text("library sync", CHANGED_NONE, actor=story.agent)
@@ -136,7 +136,7 @@ def test_a_role_raised_to_edit_compares_a_waiting_edit_with_a_newer_server_versi
     copy = made_copy(story, server, tokens.admin, "Garnet role raised newer")
     edit_body(story, copy, "Edited by Noor.")
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
-    change_on_server(server, tokens.admin, copy.item_id, "Garnet role raised newer", "Admin text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Garnet role raised newer", "Admin text.", 1)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     server.run("user role Noor edit")
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
@@ -152,7 +152,7 @@ def test_a_stale_write_is_a_conflict_that_keeps_both_versions(new_story, shared_
     real_update = client.update
 
     def update_after_admin(*arguments: object) -> object:
-        change_on_server(server, tokens.admin, copy.item_id, "Pearl stale write", "Admin text.", 1)
+        server_change(server, tokens.admin, copy.item_id, "Pearl stale write", "Admin text.", 1)
         return real_update(*arguments)
 
     monkeypatch.setattr(client, "update", update_after_admin)
@@ -167,7 +167,7 @@ def test_a_change_on_both_sides_is_a_conflict_that_overwrites_nothing(new_story,
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Amber both sides")
     edit_body(story, copy, "Edited here.")
-    change_on_server(server, tokens.admin, copy.item_id, "Amber both sides", "Admin text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Amber both sides", "Admin text.", 1)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     story.expect_rows(stored_copy(story, copy).state is CopyState.CONFLICT, story.row(Doc, copy.row_id).body == "Edited here.",
                       server_item(server, tokens.admin, copy)["fields"]["body"] == "Admin text.")
@@ -178,7 +178,7 @@ def test_a_conflict_sends_no_more_requests_for_its_item(new_story, shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Topaz quiet conflict")
     edit_body(story, copy, "Edited here.")
-    change_on_server(server, tokens.admin, copy.item_id, "Topaz quiet conflict", "Admin text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Topaz quiet conflict", "Admin text.", 1)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     client = story.container.get(LibraryClient)
     fetched, update_calls = counted(monkeypatch, client, "item"), counted(monkeypatch, client, "update")
@@ -191,7 +191,7 @@ def test_the_same_text_on_both_sides_is_no_conflict(new_story, shared_server):
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Agate same text")
     edit_body(story, copy, "Same words.")
-    change_on_server(server, tokens.admin, copy.item_id, "Agate same text", "Same words.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Agate same text", "Same words.", 1)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     story.expect_rows(stored_copy(story, copy).state is CopyState.SYNCED, stored_copy(story, copy).base_version == 2, copy_line(story, copy).endswith("Status: In sync"))
 
@@ -289,7 +289,7 @@ def test_a_restored_backup_is_a_conflict_for_a_person_to_choose(new_story, share
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Quartz backup")
-    change_on_server(server, tokens.admin, copy.item_id, "Quartz backup", "Backup text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Quartz backup", "Backup text.", 1)
     copy_with(story, copy, base_version=5)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     kept = stored_copy(story, copy)
@@ -331,12 +331,12 @@ def test_a_round_cut_off_in_the_middle_is_finished_by_the_next_round_without_sen
     update_calls = counted(monkeypatch, client, "update")
     real_update = client.update
 
-    def update_failing_for_cut_copy(*arguments: object) -> object:
+    def cut_copy_update_failing(*arguments: object) -> object:
         if arguments[1] == cut.item_id:
             raise LibraryUnreachableError("The connection was cut.")
         return real_update(*arguments)
 
-    monkeypatch.setattr(client, "update", update_failing_for_cut_copy)
+    monkeypatch.setattr(client, "update", cut_copy_update_failing)
     story.expect_text("library sync", "Did not reach the library. The connection was cut.", actor=story.agent)
     story.expect_rows(stored_copy(story, first_copy).base_version == 2, stored_copy(story, cut).base_version == 1)
     monkeypatch.setattr(client, "update", real_update)
@@ -371,7 +371,7 @@ def test_a_new_server_version_that_must_be_read_first_waits_for_a_person(new_sto
 def conflicted_copy(story: Story, server: SharedServerBinary, tokens, title: str) -> LibraryCopy:
     copy = made_copy(story, server, tokens.admin, title)
     edit_body(story, copy, "Edited here.")
-    change_on_server(server, tokens.admin, copy.item_id, title, "Admin text.", 1)
+    server_change(server, tokens.admin, copy.item_id, title, "Admin text.", 1)
     story.expect_text("library sync", CHANGED_SINGLE, actor=story.agent)
     assert stored_copy(story, copy).state is CopyState.CONFLICT
     return copy
@@ -394,7 +394,7 @@ def test_keeping_mine_when_a_third_version_arrived_stays_a_conflict_with_the_new
     real_update = client.update
 
     def update_after_third_version(*arguments: object) -> object:
-        change_on_server(server, tokens.admin, copy.item_id, "Basalt keep mine third", "Third text.", 2)
+        server_change(server, tokens.admin, copy.item_id, "Basalt keep mine third", "Third text.", 2)
         return real_update(*arguments)
 
     monkeypatch.setattr(client, "update", update_after_third_version)

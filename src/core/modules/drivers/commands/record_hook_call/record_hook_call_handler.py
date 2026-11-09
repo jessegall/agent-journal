@@ -85,6 +85,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                 metadata["context_percent"] = percent
         if command.event.displayed_text:
             metadata[DISPLAYED_TEXT] = command.event.displayed_text
+        if tool is not None and command.event.event == HookEventName.PRE_TOOL_USE:
+            metadata.update({"journal_commands": list(tool.journal_commands), "program": command.event.program, "transcript_path": command.event.transcript.text})
         if tool is not None and tool.category is ToolType.MONITOR:
             metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,

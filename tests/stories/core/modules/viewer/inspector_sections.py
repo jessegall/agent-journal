@@ -90,7 +90,7 @@ def test_a_suite_that_names_a_section_refuses_the_sync(new_story):
 
 def test_a_button_on_an_inspector_slot_refuses_the_sync(new_story):
     story = new_story(fixture=MainEnvironment)
-    story.expect_sync_refusal(section_modules.BUTTON_ON_AN_INSPECTOR_SLOT, "uses unknown slot inspector.plan")
+    story.expect_sync_refusal(section_modules.INSPECTOR_SLOT_BUTTON, "uses unknown slot inspector.plan")
 
 
 def test_a_correct_section_syncs_into_the_registry(new_story):

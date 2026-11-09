@@ -13,7 +13,7 @@ from core.modules.questions.commands.ask_question.ask_question import AskQuestio
 from core.modules.setting_requests.commands.request_setting.request_setting_handler import APPROVE_OPTION, REFUSE_OPTION
 from core.modules.setting_requests.models.setting_request import SettingRequest
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 SETTING = "journal.core.project-rules.agents-make-rules"
 MODULE = "tests.stories.core.modules.approvals.support.legacy_setting_requests:LegacySettingRequestsModule"
@@ -63,7 +63,7 @@ class ApprovalUpgradeModule(Module):
 
 
 class LegacySettingQuestion(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.expect_success("legacy-setting-request make --environment main", actor=story.agent)

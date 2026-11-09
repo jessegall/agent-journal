@@ -1,4 +1,4 @@
-from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_DETAILS, OneReviewerAllowed, ReviewRequested, ReviewWithReviewer, reviewer_of
+from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_DETAILS, OneReviewerAllowed, ReviewRequested, ReviewerReview, read_reviewer
 from tests.stories.core.support.fixtures import ThreeTasks
 
 
@@ -24,21 +24,21 @@ def test_an_idle_reviewer_is_let_go_and_none_idle_is_refused(new_story):
 
 
 def test_a_queued_review_with_no_reviewer_gets_one_added(new_story):
-    story = new_story(fixture=ReviewWithReviewer)
+    story = new_story(fixture=ReviewerReview)
     story.expect_text("reviewer list --environment 1", "reviewers: 1, reviews waiting: 0")
 
 
 def test_a_reviewer_that_ends_while_reviewing_gives_its_review_back_as_abandoned(new_story):
-    story = new_story(fixture=ReviewWithReviewer)
-    story.run(f"agent end {reviewer_of(story).id}")
+    story = new_story(fixture=ReviewerReview)
+    story.run(f"agent end {read_reviewer(story).id}")
     story.expect_success(REVIEW_DETAILS, "state: abandoned")
 
 
 def test_the_reviewer_list_names_each_reviewer_and_the_waiting_reviews_in_order(new_story):
-    story = new_story(fixture=ReviewWithReviewer)
+    story = new_story(fixture=ReviewerReview)
     story.run("review request task 2 --points 1 --environment main", actor=story.agent)
     story.run("review request task 3 --points 1 --environment main", actor=story.agent)
-    story.expect_ordered_lines("reviewer list --environment 1", f"reviewer {reviewer_of(story).id}: reviewing", "waiting 1: review 2", "waiting 2: review 3", "reviewers: 1, reviews waiting: 2")
+    story.expect_ordered_lines("reviewer list --environment 1", f"reviewer {read_reviewer(story).id}: reviewing", "waiting 1: review 2", "waiting 2: review 3", "reviewers: 1, reviews waiting: 2")
 
 
 def test_a_reviewer_is_refused_while_reviewers_are_switched_off(new_story):

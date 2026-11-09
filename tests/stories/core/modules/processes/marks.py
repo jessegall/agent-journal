@@ -22,7 +22,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 from core.testing.expect_row import expect_row
 
@@ -82,7 +82,7 @@ def test_a_mark_of_a_stopped_run_says_the_agent_stopped_it_and_not_its_last_line
 
 
 def test_a_mark_of_a_run_a_person_stopped_says_so(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     process = moved_run(story, "make test", category=CommandCategory.TEST_RUN)
     story.expect_success(f"output stop {process.id}", actor=story.user)
     story.run_listeners()
@@ -228,7 +228,7 @@ def process_story(new_story):
 
 
 def test_a_run_that_waited_in_the_queue_docks_only_after_5_seconds_of_running(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.expect_success("setting set journal.core.processes.readers-forced false --environment main", actor=story.user)
     story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)

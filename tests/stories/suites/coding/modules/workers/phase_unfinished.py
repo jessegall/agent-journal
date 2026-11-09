@@ -4,8 +4,7 @@ import pytest
 
 from core.base.clock import Clock
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
-
-from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, worker_on_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
 
 MAIN_SESSION = "s-1"
 PROCESS_START = "2026-10-31T09:00:00+00:00"
@@ -19,8 +18,8 @@ def expect_open_undelegated(worker, *task_ids: int) -> None:
 
 @pytest.fixture
 def advanced_worker(new_story, monkeypatch):
-    worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
-    worker.prove_and_move_on()
+    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+    worker.prove_advance()
     return worker
 
 
@@ -59,10 +58,10 @@ def failed_launch_worker(advanced_worker):
 
 
 @pytest.fixture
-def phase_handed_in(new_story, monkeypatch):
-    worker = worker_on_plan(new_story, monkeypatch, PHASE_DISPATCH)
-    worker.prove_and_move_on(TEST_LINE)
-    worker.prove_and_move_on(SECOND_TEST_LINE)
+def phase_delivered(new_story, monkeypatch):
+    worker = start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
+    worker.prove_advance(TEST_LINE)
+    worker.prove_advance(SECOND_TEST_LINE)
     worker.prove(TEST_LINE)
     worker.story.run("worker deliver --wait --differences none", actor=worker.worker)
     return worker
@@ -70,10 +69,10 @@ def phase_handed_in(new_story, monkeypatch):
 
 @pytest.fixture
 def ended_during_tests(new_story, monkeypatch):
-    worker = worker_on_plan(new_story, monkeypatch)
-    worker.prove_and_move_on(TEST_LINE)
-    worker.prove_and_move_on()
-    worker.prove_and_move_on(SECOND_TEST_LINE)
+    worker = start_planned_worker(new_story, monkeypatch)
+    worker.prove_advance(TEST_LINE)
+    worker.prove_advance()
+    worker.prove_advance(SECOND_TEST_LINE)
     worker.story.run(f"agent edit {worker.worker.id} --pid 700 --process-started-at {PROCESS_START}")
     worker.story.use_processes()
     return worker
@@ -117,7 +116,7 @@ def test_worker_status_shows_the_phase_and_what_waits_for_its_end(advanced_worke
     advanced_worker.story.expect_text(f"worker status {advanced_worker.worker.id}", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=advanced_worker.story.agent)
 
 
-@pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_handed_in", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])
+@pytest.mark.parametrize("fixture, reason", [("advanced_worker", "the plan changed"), ("phase_delivered", "the tests take too long")], ids=["in the middle of a phase", "after the hand-in"])
 def test_a_release_leaves_the_unfinished_tasks_open_and_not_delegated(request, fixture, reason):
     worker = request.getfixturevalue(fixture)
     worker.story.expect_success(f'worker release {worker.worker.id} "{reason}"', actor=worker.story.agent)

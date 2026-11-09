@@ -1,13 +1,13 @@
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from typing import ClassVar
 
 
 class ClerkRegistered(StoryFixture):
     """Another module supplies a clerk type that extends helper."""
 
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
         story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:Clerk")
@@ -29,7 +29,7 @@ class WorkerStarted(HelperSession):
     role = "worker"
 
 
-class NativeHelperUnderBuilder(HelperSession):
+class BuilderNativeHelper(HelperSession):
     role = "helper"
 
 
@@ -38,10 +38,10 @@ class ClerkStarted(HelperSession):
 
 
 
-class RuleForEveryHelper(StoryFixture):
+class EveryHelperRule(StoryFixture):
     """A module adds a rule that names the helper role; a worker, a read-only helper and a clerk are each started."""
 
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
         story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:EveryHelperRules")
@@ -49,12 +49,12 @@ class RuleForEveryHelper(StoryFixture):
             story.expect_success(f"agent start s-{role} claude {role} --parent {story.agent.id} --environment main")
 
 
-class RuleForReadOnlyHelpers(StoryFixture):
+class ReaderHelpersRule(StoryFixture):
     """A module adds a rule for read-only helpers alone; a worker and a read-only helper are started."""
 
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
-        story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:ReadOnlyHelperRules")
+        story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:ReaderHelperRules")
         for role in ("helper", "worker"):
             story.expect_success(f"agent start s-{role} claude {role} --parent {story.agent.id} --environment main")

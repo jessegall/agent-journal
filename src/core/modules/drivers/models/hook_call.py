@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.foreign_run import ForeignRun
+from core.base.driver.hook_transcript import HookTranscript
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.event_form import EventForm
 from core.base.metadata import Metadata
@@ -96,6 +97,14 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def is_interrupted(self) -> bool:
         return bool(self.metadata.module_part(DRIVERS_MODULE).get("interrupted"))
+
+    @property
+    def journal_commands(self) -> frozenset[str]:
+        return frozenset(self.text_values("journal_commands"))
+
+    @property
+    def transcript(self) -> HookTranscript:
+        return HookTranscript(self.driver_text("program"), self.firing, self.driver_text("transcript_path"))
 
     @property
     def is_compaction(self) -> bool:

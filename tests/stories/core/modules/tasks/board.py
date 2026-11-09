@@ -3,7 +3,7 @@ import pytest
 import json
 from datetime import timedelta
 
-from tests.stories.core.modules.tasks.task_counts import TasksInFourStates, counted_task
+from tests.stories.core.modules.tasks.task_counts import FourStatesTasks, counted_task
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_id_cancelled, expect_index, expect_value, expect_value_with, expect_value_without
 
@@ -80,7 +80,7 @@ def test_the_board_has_no_delegated_group(new_story):
 
 
 def test_a_delegated_task_is_in_the_group_of_its_state(new_story):
-    story = new_story(fixture=TasksInFourStates)
+    story = new_story(fixture=FourStatesTasks)
     groups = {group["state"]: group for group in json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]}
     assert counted_task(story, 3) in [row["id"] for row in groups["open"]["rows"]]
 

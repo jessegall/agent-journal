@@ -1,11 +1,11 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_activity_reads_its_selected_agent_and_pages_the_calls_key(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.hook("s-1", HookSamples.stop().with_fields(firing="activity-stop"))
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

@@ -7,12 +7,12 @@ from core.testing.story_fixture import StoryFixture
 
 from datetime import timedelta
 
-from tests.stories.core.modules.drivers.hook_durations import BuilderWithUser
+from tests.stories.core.modules.drivers.hook_durations import UserBuilder
 from tests.stories.support.story_checks import expect_count_output, expect_value
 
 
 class RepliedCartMessage(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run('message send "Fix the cart" --environment main', actor=story.user)
@@ -59,7 +59,7 @@ def test_a_selected_request_still_links_work_after_more_than_two_minutes(new_sto
 
 
 def test_a_task_made_with_no_reply_to_a_person_is_not_linked(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('message send "Fix the cart" --environment main', actor=story.user)
     story.run('message send "Working on it" --environment main', actor=story.agent)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
@@ -101,7 +101,7 @@ def test_a_task_a_reply_names_links_to_the_message_it_answers(old_task):
 
 
 def test_a_reply_naming_a_task_that_does_not_exist_links_nothing(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('message send "Is it filed" --environment main', actor=story.user)
     story.run('message reply 1 "No, task 99 is gone"', actor=story.agent)
     story.run_listeners()
@@ -117,7 +117,7 @@ def test_a_row_is_linked_once_however_often_it_is_edited(replied_task):
 
 @pytest.fixture
 def old_task(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.advance(timedelta(seconds=300))
     return story

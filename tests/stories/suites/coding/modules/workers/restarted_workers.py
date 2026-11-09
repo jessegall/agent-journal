@@ -6,9 +6,9 @@ from core.modules.agents.models.agent import Agent
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, no_program_on_the_machine, replaced_launcher, running_worker, start_launcher, worker_story
+from tests.stories.suites.coding.modules.workers.gone_workers import RESUMED_PID, missing_program, replaced_launcher, running_worker, start_launcher, worker_story
 
-__all__ = ["no_program_on_the_machine", "running_worker", "worker_story"]
+__all__ = ["missing_program", "running_worker", "worker_story"]
 
 CONTEXT_TOKENS = 400000
 

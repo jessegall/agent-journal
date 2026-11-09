@@ -8,7 +8,7 @@ from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.story import Story
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -29,7 +29,7 @@ class PendingRule(NamedTuple):
 
 @pytest.fixture
 def pending_setting(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_refusal(CHANGE_SETTING, "A person was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(request is not None)
@@ -38,7 +38,7 @@ def pending_setting(new_story):
 
 @pytest.fixture
 def proposed_rule(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     rule_id = story.new_row_id('rule make "Name every file plainly"', actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(request is not None, request.requester_id == story.agent.id)
@@ -92,7 +92,7 @@ def test_an_agent_cannot_hide_a_pending_approval(pending_setting):
 
 
 def test_every_pending_approval_stays_visible_beyond_the_ordinary_dock_limit(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for number in range(8):
         story.new_row_id(f'rule make "Keep rule {number}"', actor=story.agent)
     items = tuple(story.container.get(Queries).query(DockItem).filter(type="approvals.request", state=DockItemState.DOCKED).all_rows())
@@ -108,7 +108,7 @@ def test_a_rule_proposal_uses_the_same_dock_and_person_decision(proposed_rule, r
 
 
 def test_an_explicit_setting_request_also_uses_the_shared_dock(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     request_id = story.new_row_id(f'setting request {SETTING} true --project --reason "Let agents maintain these rules"', actor=story.agent)
     story.expect_text("dock-item main --environment main", "approvals.request", actor=story.user)
     with server_story(story) as server:

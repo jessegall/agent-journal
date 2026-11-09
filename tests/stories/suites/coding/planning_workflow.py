@@ -13,7 +13,7 @@ from core.testing.story_fixture import StoryFixture
 from server.booting_work import BootingWork
 from suites.coding.support.coding_settings import STARTS_HELPERS_SETTING
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.support.skill_expectations import expect_skill_text
 
 FUNCTIONAL_DESIGN = "Writing a functional design"
@@ -22,8 +22,8 @@ FUNCTIONAL_DESIGNER = "journal-functional-designer"
 PLANNER = "journal-planner"
 
 
-class ShippedSequences(StoryFixture):
-    parent = BuilderWithUser
+class BundledSequences(StoryFixture):
+    parent = UserBuilder
 
     def steps(self, story):
         story.run_listeners()
@@ -34,7 +34,7 @@ class ShippedSequences(StoryFixture):
 
 @pytest.fixture
 def shipped(new_story):
-    return new_story(fixture=ShippedSequences)
+    return new_story(fixture=BundledSequences)
 
 
 def sequence_id(story, title):

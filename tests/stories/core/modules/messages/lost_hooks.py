@@ -9,7 +9,7 @@ import pytest
 from core.base.provider.transcript_entries import TranscriptEntries
 from core.base.database.database import BUSY_TIMEOUT_SECONDS, Database
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.hook.hook_delivery_retries import HookDeliveryRetries
@@ -61,7 +61,7 @@ def expect_chat_count(story, text: str, expected: int) -> None:
 
 @pytest.fixture
 def builder(new_story):
-    return new_story(fixture=BuilderWithUser)
+    return new_story(fixture=UserBuilder)
 
 
 @pytest.fixture
@@ -224,7 +224,7 @@ def test_a_new_message_line_comes_at_the_next_hook_after_one_went_through_unchec
 
 
 def test_a_new_message_line_whose_hook_left_before_the_answer_comes_again_at_the_next_hook(server):
-    server.send_hook_and_leave(hook_body("left-tool"))
+    server.post_hook_disconnect(hook_body("left-tool"))
     server.expect_hook_line_soon("new message 1", "next-tool")
 
 
@@ -232,7 +232,7 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
     reset_attempted = Event()
     original_answer = HookEndpoint.answer_lost
 
-    def answer_lost_while_busy(endpoint, reply):
+    def busy_answer_dropped(endpoint, reply):
         with sqlite3.connect(server.story.home.database) as writer:
             writer.execute("BEGIN IMMEDIATE")
             try:
@@ -241,8 +241,8 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
                 writer.rollback()
                 reset_attempted.set()
 
-    monkeypatch.setattr(HookEndpoint, "answer_lost", answer_lost_while_busy)
-    server.send_hook_and_leave(hook_body("left-while-busy"))
+    monkeypatch.setattr(HookEndpoint, "answer_lost", busy_answer_dropped)
+    server.post_hook_disconnect(hook_body("left-while-busy"))
     server.story.expect_rows(reset_attempted.wait(10), detail="the lost hook answer never attempted to reset its deliveries")
     folder = server.story.home.folder / "runtime" / "lost-hook-answers"
     server.story.expect_rows(list(folder.iterdir()), detail="the busy reset left no retry")

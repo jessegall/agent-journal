@@ -25,9 +25,9 @@ class InterruptedMain(StoryFixture):
         story.expect_success(f"agent interrupted {story.agent.id}")
 
 
-def interrupted_story(new_story, quiet_answer: bytes) -> tuple[Story, FakeLauncher]:
+def interrupted_story(new_story, silent_answer: bytes) -> tuple[Story, FakeLauncher]:
     story = new_story(fixture=InterruptedMain)
-    return story, FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=quiet_answer, request_count=1)
+    return story, FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=silent_answer, request_count=1)
 
 
 def wake_lines(story: Story) -> list[AgentLine]:

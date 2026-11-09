@@ -5,7 +5,7 @@ from core.modules.processes.ticks.output_reading import OutputReading
 from server.ticker import Ticker
 from tests.stories.core.base.driver.support.fixtures import LeadLocked
 from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -29,7 +29,7 @@ def test_the_handlers_the_modules_declare_start_at_their_own_pace(new_story):
 
 
 def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_developer_options_are_on(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     tools = story.container.get(PerformanceTools)
     tools.run(SlowTickTool, 51)
     story.run_listeners()
@@ -45,7 +45,7 @@ def test_a_slow_tick_shows_a_warning_mark_and_tells_the_main_agent_when_the_deve
 
 
 def test_a_slow_tick_shows_no_mark_with_its_option_off_and_no_line_with_errors_to_the_agent_off(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     tools = story.container.get(PerformanceTools)
     story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)
     story.expect_success("setting set journal.core.developer.tools.slow-clock-ticks false --project", actor=story.user)

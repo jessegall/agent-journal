@@ -1,10 +1,10 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_the_shell_reads_visible_keys_and_requests_activity_and_fitness_separately(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         query = "environment=main&suite-presets.environment=main&suite-presets.page=home&person-presets.page=home"

@@ -12,8 +12,8 @@ from core.modules.tasks.migrations.m007_task_delegated_to import TaskDelegationM
 from core.modules.tasks.models.open_dependency import OpenDependency
 
 PLAN_COUNT = 2000
-PHASES_PER_PLAN = 5
-TASKS_PER_PHASE = 4
+PLAN_PHASES = 5
+PHASE_TASKS = 4
 READ_COUNT = 300
 STAMP = "2026-10-31T09:00:00.000000+00:00"
 STATES = ("open", "started", "completed", "cancelled")
@@ -47,11 +47,11 @@ class ViewTiming:
     def fill(self) -> None:
         tasks, phases, places, dependencies = [], [], [], []
         for plan in range(1, PLAN_COUNT + 1):
-            for phase_position in range(1, PHASES_PER_PLAN + 1):
-                phase = (plan - 1) * PHASES_PER_PLAN + phase_position
+            for phase_position in range(1, PLAN_PHASES + 1):
+                phase = (plan - 1) * PLAN_PHASES + phase_position
                 phases.append((phase, plan, phase_position))
-                for place in range(1, TASKS_PER_PHASE + 1):
-                    task = (phase - 1) * TASKS_PER_PHASE + place
+                for place in range(1, PHASE_TASKS + 1):
+                    task = (phase - 1) * PHASE_TASKS + place
                     state = STATES[task % len(STATES)]
                     tasks.append((task, state, STAMP if state in ("completed", "cancelled") else None))
                     places.append((task, phase, task, place))
@@ -82,4 +82,4 @@ class ViewTiming:
         return [1 + (number * 7919) % PLAN_COUNT for number in range(READ_COUNT)]
 
     def task_keys(self) -> list[int]:
-        return [1 + (number * 7919) % (PLAN_COUNT * PHASES_PER_PLAN * TASKS_PER_PHASE) for number in range(READ_COUNT)]
+        return [1 + (number * 7919) % (PLAN_COUNT * PLAN_PHASES * PHASE_TASKS) for number in range(READ_COUNT)]

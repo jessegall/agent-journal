@@ -19,11 +19,11 @@ from core.modules.library.support.copy_source import CopySource
 from core.modules.library.support.kept_row import KeptRow
 from core.modules.library.support.library_client import LibraryClient
 from core.modules.messages.commands.read_message.read_message import ReadMessage
-from tests.stories.core.modules.library.support.copy_stories import (change_on_server, connected, connection_with, copy_line, copy_of_item, copy_with, made_copy, new_item,
+from tests.stories.core.modules.library.support.copy_stories import (server_change, connected, connection_with, copy_line, item_copy, copy_with, made_copy, new_item,
                                                                      shared_server)
-from tests.stories.core.modules.library.support.stored_text import every_stored_text
+from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
 __all__ = ["private_folder", "shared_server"]
@@ -36,7 +36,7 @@ def test_getting_an_item_makes_one_document_and_one_copy_that_follows_it(new_sto
     item_id = new_item(server, tokens.admin, "Quartz got", "Read it first.")
     story = connected(new_story, server, tokens.editor)
     story.expect_success(f"library get doc {item_id}", f"library doc {item_id}, version 1 is now doc 1", actor=story.agent)
-    copy, doc = copy_of_item(story, item_id), story.row(Doc, 1)
+    copy, doc = item_copy(story, item_id), story.row(Doc, 1)
     story.expect_rows(doc.title == "Quartz got", doc.abstract == "About Quartz got", doc.body == "Read it first.", len(list(story.container.get(Queries).query(Doc).all_rows())) == 1)
     story.expect_rows(copy.row_id == 1, copy.base_version == 1, copy.state is CopyState.SYNCED, len(list(story.container.get(Queries).query(LibraryCopy).all_rows())) == 1)
     story.expect_text("doc revision 1 1", "Read it first.", actor=story.user)
@@ -82,7 +82,7 @@ def test_leaving_makes_the_row_a_plain_document_and_changes_nothing_on_the_serve
     copy = made_copy(story,server, tokens.admin, "Marble left")
     server_item = server.send(tokens.editor, "GET", f"/items/doc/{copy.item_id}")[1]
     story.expect_success(f"library leave {copy.id}", f"doc {copy.row_id} no longer follows library doc {copy.item_id}", actor=story.user)
-    story.expect_rows(copy_of_item(story, copy.item_id) is None, story.row(Doc, copy.row_id).title == "Marble left",
+    story.expect_rows(item_copy(story, copy.item_id) is None, story.row(Doc, copy.row_id).title == "Marble left",
                       server.send(tokens.editor, "GET", f"/items/doc/{copy.item_id}")[1] == server_item)
     story.expect_text("library copies", "no copies", actor=story.agent)
 
@@ -93,7 +93,7 @@ def test_an_agent_cannot_leave_and_a_copy_that_is_not_there_is_refused(new_story
     copy = made_copy(story,server, tokens.admin, "Slate agent")
     story.expect_refusal(f"library leave {copy.id} --reason 'a story asks'", "an agent cannot stop following for the team", actor=story.agent)
     story.expect_refusal("library leave 99", "no library-copy 99", actor=story.user)
-    story.expect_rows(copy_of_item(story, copy.item_id) is not None)
+    story.expect_rows(item_copy(story, copy.item_id) is not None)
 
 
 def test_a_copy_in_step_reads_in_sync(new_story, shared_server):
@@ -159,9 +159,9 @@ def test_a_change_on_the_server_arrives_in_the_row_with_a_revision_of_its_own(ne
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Quartz arrives")
-    change_on_server(server, tokens.admin, copy.item_id, "Quartz arrives, revised", "Newer text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Quartz arrives, revised", "Newer text.", 1)
     story.expect_text("library sync", "Reached the library. 1 copies followed, 1 changed.", actor=story.agent)
-    doc, copy = story.row(Doc, copy.row_id), copy_of_item(story, copy.item_id)
+    doc, copy = story.row(Doc, copy.row_id), item_copy(story, copy.item_id)
     story.expect_rows(doc.title == "Quartz arrives, revised", doc.body == "Newer text.", copy.base_version == 2, copy.state is CopyState.SYNCED)
     story.expect_text(f"doc revision {doc.id} 1", "Tag first.", actor=story.user)
     story.expect_text(f"doc revision {doc.id} 2", "Newer text.", actor=story.user)
@@ -174,11 +174,11 @@ def test_a_removal_leaves_the_row_and_a_restore_resumes_following(new_story, sha
     copy = made_copy(story, server, tokens.admin, "Basalt removed later")
     server.send(tokens.admin, "DELETE", f"/items/doc/{copy.item_id}")
     story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(copy_of_item(story, copy.item_id).state is CopyState.REMOVED, story.row(Doc, copy.row_id).title == "Basalt removed later")
+    story.expect_rows(item_copy(story, copy.item_id).state is CopyState.REMOVED, story.row(Doc, copy.row_id).title == "Basalt removed later")
     story.expect_rows(copy_line(story, copy).endswith("Status: Removed from the library"))
     server.send(tokens.admin, "POST", f"/items/doc/{copy.item_id}/restore")
     story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(copy_of_item(story, copy.item_id).state is CopyState.SYNCED, copy_line(story, copy).endswith("Status: In sync"))
+    story.expect_rows(item_copy(story, copy.item_id).state is CopyState.SYNCED, copy_line(story, copy).endswith("Status: In sync"))
 
 
 def test_a_purged_item_reads_as_removed_and_the_row_stays(new_story, shared_server):
@@ -187,7 +187,7 @@ def test_a_purged_item_reads_as_removed_and_the_row_stays(new_story, shared_serv
     copy = made_copy(story, server, tokens.admin, "Slate purged")
     server.run(f"item purge doc {copy.item_id}")
     story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(copy_of_item(story, copy.item_id).state is CopyState.REMOVED, story.row(Doc, copy.row_id).title == "Slate purged")
+    story.expect_rows(item_copy(story, copy.item_id).state is CopyState.REMOVED, story.row(Doc, copy.row_id).title == "Slate purged")
 
 
 def test_a_row_that_is_gone_from_this_journal_removes_its_copy_and_never_the_item(new_story, shared_server):
@@ -196,7 +196,7 @@ def test_a_row_that_is_gone_from_this_journal_removes_its_copy_and_never_the_ite
     copy = made_copy(story, server, tokens.admin, "Opal row gone")
     story.container.get(Repository).delete(story.row(Doc, copy.row_id), Context(story.user, story.clock.timestamp(), ReadMessage(1)))
     story.expect_text("library sync", "Reached the library", actor=story.agent)
-    story.expect_rows(copy_of_item(story, copy.item_id) is None, server.send(tokens.editor, "GET", f"/items/doc/{copy.item_id}")[0] == 200)
+    story.expect_rows(item_copy(story, copy.item_id) is None, server.send(tokens.editor, "GET", f"/items/doc/{copy.item_id}")[0] == 200)
 
 
 def test_a_check_that_was_removed_from_this_journal_loses_its_copy(new_story, shared_server):
@@ -213,20 +213,20 @@ def test_a_local_edit_made_during_a_round_is_seen_by_the_next_round(new_story, s
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Garnet edited")
-    change_on_server(server, tokens.admin, copy.item_id, "Garnet edited", "Server text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Garnet edited", "Server text.", 1)
     client = story.container.get(LibraryClient)
-    item_from_server = client.item
+    remote_item = client.item
 
     def item_after_edit(share: str, item_id: int):
         story.expect_success(f'doc edit {copy.row_id} --body "Typed during the round."', actor=story.user)
-        return item_from_server(share, item_id)
+        return remote_item(share, item_id)
 
     monkeypatch.setattr(client, "item", item_after_edit)
     story.expect_text("library sync", "Reached the library. 1 copies followed, 0 changed.", actor=story.agent)
-    monkeypatch.setattr(client, "item", item_from_server)
-    story.expect_rows(story.row(Doc, copy.row_id).body == "Typed during the round.", copy_of_item(story, copy.item_id).base_version == 1)
+    monkeypatch.setattr(client, "item", remote_item)
+    story.expect_rows(story.row(Doc, copy.row_id).body == "Typed during the round.", item_copy(story, copy.item_id).base_version == 1)
     story.expect_text("library sync", "Reached the library. 1 copies followed, 1 changed.", actor=story.agent)
-    story.expect_rows(story.row(Doc, copy.row_id).body == "Typed during the round.", copy_of_item(story, copy.item_id).state is CopyState.CONFLICT)
+    story.expect_rows(story.row(Doc, copy.row_id).body == "Typed during the round.", item_copy(story, copy.item_id).state is CopyState.CONFLICT)
 
 
 def test_one_copy_that_cannot_be_settled_stops_no_other_and_its_note_is_written_once(new_story, shared_server):
@@ -235,7 +235,7 @@ def test_one_copy_that_cannot_be_settled_stops_no_other_and_its_note_is_written_
     copy = made_copy(story, server, tokens.admin, "Pearl beside a bad copy")
     bad = story.container.get(Repository).save(LibraryCopy(creator_id=story.user.id, share="memo", item_id=999, row_id=999, base_version=1, base_digest="x"),
                                                Context(story.user, story.clock.timestamp(), ReadMessage(1)))
-    change_on_server(server, tokens.admin, copy.item_id, "Pearl beside a bad copy", "Server text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Pearl beside a bad copy", "Server text.", 1)
     story.expect_text("library sync", "Reached the library. 2 copies followed, 2 changed.", actor=story.agent)
     story.expect_rows(story.row(Doc, copy.row_id).body == "Server text.", story.row(LibraryCopy, bad.id).note == "this journal shares no memo with the library")
     story.expect_text("library sync", "Reached the library. 2 copies followed, 0 changed.", actor=story.agent)
@@ -246,13 +246,13 @@ def test_a_quiet_round_writes_nothing(new_story, shared_server):
     story = connected(new_story, server, tokens.editor)
     made_copy(story, server, tokens.admin, "Onyx quiet")
     story.expect_text("library sync", "Reached the library. 1 copies followed, 0 changed.", actor=story.agent)
-    stored_text = every_stored_text(story)
+    stored_text = stored_texts(story)
     story.expect_text("library sync", "Reached the library. 1 copies followed, 0 changed.", actor=story.agent)
-    story.expect_rows(every_stored_text(story) == stored_text)
+    story.expect_rows(stored_texts(story) == stored_text)
 
 
 def test_a_sync_with_no_connection_says_so_and_changes_nothing(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("library sync", "This journal is not connected to a shared server.", actor=story.agent)
 
 
@@ -262,9 +262,9 @@ def test_a_server_that_nobody_answers_at_is_noted_once_and_the_next_round_tries_
     story.expect_text("library sync", "Did not reach the library.", actor=story.agent)
     failure = story.container.get(Queries).query(LibraryConnection).first().failure
     story.expect_rows(bool(failure))
-    stored_text = every_stored_text(story)
+    stored_text = stored_texts(story)
     story.expect_text("library sync", "Did not reach the library.", actor=story.agent)
-    story.expect_rows(every_stored_text(story) == stored_text)
+    story.expect_rows(stored_texts(story) == stored_text)
 
 
 def test_an_address_that_answers_as_another_server_stops_sync_with_its_reason(new_story, shared_server):
@@ -280,7 +280,7 @@ class FailingCopyWrite(Exception):
     pass
 
 
-def fail_the_copy_write(monkeypatch) -> None:
+def broken_copy_save(monkeypatch) -> None:
     save, update = Repository.save, Repository.update
 
     def failing_save(repository, row, context):
@@ -306,7 +306,7 @@ def test_a_copy_that_cannot_be_written_leaves_no_row_the_save_made(new_story, sh
         def kept(self, share, context):
             return KeptRow(share.arrive(item.fields, context).id, "digest")
 
-    fail_the_copy_write(monkeypatch)
+    broken_copy_save(monkeypatch)
     with pytest.raises(FailingCopyWrite):
         story.container.get(Bus).run(SaveLibraryCopy("doc", item.item_id, item.version, ArrivingDoc()), story.user)
     monkeypatch.undo()
@@ -317,11 +317,11 @@ def test_a_merge_whose_new_base_cannot_be_written_leaves_the_row_unchanged(new_s
     server, tokens = shared_server
     story = connected(new_story, server, tokens.editor)
     copy = made_copy(story, server, tokens.admin, "Merged then failed")
-    change_on_server(server, tokens.admin, copy.item_id, "Merged then failed", "Server text.", 1)
+    server_change(server, tokens.admin, copy.item_id, "Merged then failed", "Server text.", 1)
     item = story.container.get(LibraryClient).item("doc", copy.item_id)
     body = story.row(Doc, copy.row_id).body
-    fail_the_copy_write(monkeypatch)
+    broken_copy_save(monkeypatch)
     with pytest.raises(FailingCopyWrite):
         story.container.get(Bus).run(MergeLibraryItem(copy.id, item, story.row(Doc, copy.row_id).version), story.user)
     monkeypatch.undo()
-    story.expect_rows(story.row(Doc, copy.row_id).body == body, copy_of_item(story, copy.item_id).base_version == 1)
+    story.expect_rows(story.row(Doc, copy.row_id).body == body, item_copy(story, copy.item_id).base_version == 1)

@@ -1,9 +1,9 @@
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
-class HookRecordingOn(StoryFixture):
-    parent = BuilderWithUser
+class HookRecordingEnabled(StoryFixture):
+    parent = UserBuilder
 
     def steps(self, story):
         story.expect_success("setting switch journal.core.developer.tools on --project", actor=story.user)

@@ -3,7 +3,7 @@ import json
 from core.base.actor import Actor
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, agent_of, started_agent
+from tests.stories.core.modules.memories.support.memory_owners import MAIN_FACT, MAIN_MEMORY, MainAndWorkerMemories, WORKER_FACT, WORKER_MEMORY, read_agent, started_agent
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 
 WINDOW = "memories.memories"
@@ -38,7 +38,7 @@ def test_the_page_reads_the_agents_holding_memories_and_follows_agent_events(new
 
 def test_one_read_names_each_agent_that_holds_a_memory_with_its_counts(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    worker = agent_of(story, "s-9")
+    worker = read_agent(story, "s-9")
     started_agent(story, "s-10")
     with story.repeated_work.request():
         read = holders(story)
@@ -53,7 +53,7 @@ def test_the_main_agent_is_not_one_of_the_listed_agents(new_story):
 
 def test_a_removed_memory_counts_as_removed(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    worker_memory(story, "s-9", "My branch is merged", agent_of(story, "s-9"))
+    worker_memory(story, "s-9", "My branch is merged", read_agent(story, "s-9"))
     story.expect_success(f"memory remove {WORKER_MEMORY} --reason stale", actor=story.user)
     row = holders(story)["rows"][0]
     story.expect_rows((row["active_memories"], row["removed_memories"]) == (1, 1))
@@ -68,7 +68,7 @@ def test_an_agent_holding_only_removed_memories_is_still_listed(new_story):
 
 def test_an_ended_agent_stays_listed_with_its_end_time_and_working_now_leaves_it_out(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    worker = agent_of(story, "s-9")
+    worker = read_agent(story, "s-9")
     story.expect_success(f"agent end {worker.id}", actor=story.user)
     story.expect_rows(holders(story)["rows"][0]["ended_at"])
     story.expect_rows(names(story, "--working") == [])
@@ -79,8 +79,8 @@ def test_ended_agents_come_newest_first(new_story):
     second = started_agent(story, "s-10")
     worker_memory(story, "s-10", "Second worker's memory", second)
     story.expect_success(f"agent end {second.id}", actor=story.user)
-    story.expect_success(f"agent end {agent_of(story, 's-9').id}", actor=story.user)
-    story.expect_rows(names(story) == [f"Worker {second.id}", f"Worker {agent_of(story, 's-9').id}"])
+    story.expect_success(f"agent end {read_agent(story, 's-9').id}", actor=story.user)
+    story.expect_rows(names(story) == [f"Worker {second.id}", f"Worker {read_agent(story, 's-9').id}"])
 
 
 def test_the_agents_are_paged(new_story):
@@ -104,7 +104,7 @@ def test_a_helper_and_a_reviewer_are_found_by_their_role(new_story):
 
 def test_agents_are_found_by_a_word_of_their_name_or_number(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    worker = agent_of(story, "s-9")
+    worker = read_agent(story, "s-9")
     helper = started_agent(story, "s-10", "helper")
     worker_memory(story, "s-10", "A helper's note", helper)
     story.expect_rows(names(story, f"--name worker") == [f"Worker {worker.id}"])
@@ -116,17 +116,17 @@ def test_the_agents_of_a_page_of_memories_are_read_together_by_number(new_story)
     story = new_story(fixture=MainAndWorkerMemories)
     second_agent = started_agent(story, "s-10")
     worker_memory(story, "s-10", "Another note", second_agent)
-    story.expect_rows(names(story, f"--agents {second_agent.id} {agent_of(story, 's-9').id}") == [f"Worker {second_agent.id}", f"Worker {agent_of(story, 's-9').id}"])
+    story.expect_rows(names(story, f"--agents {second_agent.id} {read_agent(story, 's-9').id}") == [f"Worker {second_agent.id}", f"Worker {read_agent(story, 's-9').id}"])
     story.expect_rows(names(story, f"--agents {second_agent.id}") == [f"Worker {second_agent.id}"])
 
 
 def test_agents_are_listed_for_one_environment_or_for_all(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     story.expect_success("environment make staging /work/staging")
-    staging = Actor(story.new_row_id("agent start s-20 claude worker --environment staging"), agent_of(story, "s-9").type)
+    staging = Actor(story.new_row_id("agent start s-20 claude worker --environment staging"), read_agent(story, "s-9").type)
     story.run('memory make "Staging has no queue" --environment staging', actor=staging)
     story.expect_rows(names(story, "--environment staging") == [f"Worker {staging.id}"])
-    story.expect_rows(names(story, "--environment main") == [f"Worker {agent_of(story, 's-9').id}"])
+    story.expect_rows(names(story, "--environment main") == [f"Worker {read_agent(story, 's-9').id}"])
     story.expect_rows(len(names(story)) == 2)
 
 
@@ -142,7 +142,7 @@ def test_a_person_lists_the_memories_of_every_agent_but_the_main_one(new_story):
 
 def test_a_person_lists_one_agent_s_memories_alone(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    story.expect_rows(memory_texts(story, f"--agent {agent_of(story, 's-9').id} --environment main") == [WORKER_FACT])
+    story.expect_rows(memory_texts(story, f"--agent {read_agent(story, 's-9').id} --environment main") == [WORKER_FACT])
 
 
 def test_a_list_with_no_agent_named_holds_every_agent_s_memories(new_story):
@@ -169,7 +169,7 @@ def test_the_list_is_ordered_by_weight_on_the_server(new_story):
 def test_the_removed_memories_of_one_agent_are_listed_by_state(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     story.expect_success(f"memory remove {WORKER_MEMORY} --reason stale", actor=story.user)
-    worker = agent_of(story, "s-9")
+    worker = read_agent(story, "s-9")
     story.expect_rows(memory_texts(story, f"--agent {worker.id} --removed --state removed --environment main") == [WORKER_FACT])
     story.expect_rows(memory_texts(story, f"--agent {worker.id} --state active --environment main") == [])
 

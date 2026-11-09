@@ -11,12 +11,12 @@ from core.modules.drivers.ticks.end_silent_helpers_tick import EndSilentHelpersT
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, jobs_of, helper_agent
+from tests.stories.core.modules.helpers.helper_jobs import resumable_session, EndedHelper, JOB, StartedHelper, read_jobs, helper_agent
 from core.modules.helpers.support.helper_settings import HELPER_MAX_COST
 from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from tests.stories.core.modules.helpers.read_only_access import StartedCodexHelper
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
 
 PROGRAMS = [StartedHelper, StartedCodexHelper]
@@ -83,7 +83,7 @@ def test_a_helper_that_says_nothing_still_reports(new_story, helper_fixture):
 @pytest.mark.parametrize("helper_fixture", [ReportedHelper, ReportedCodexHelper])
 def test_a_report_ends_the_job_and_stays_out_of_the_chat(new_story, helper_fixture):
     story = new_story(fixture=helper_fixture)
-    message, job = helper_report(story), jobs_of(story, helper_agent(story))[0]
+    message, job = helper_report(story), read_jobs(story, helper_agent(story))[0]
     story.expect_rows(message.is_chat_visible is False, job.report_message_id == message.id, job.returned == "The total is wrong.", job.ended_at is not None)
     story.expect_text("chat-mark list --environment 1", f"Agent {helper_agent(story).id} reported back")
 
@@ -113,7 +113,7 @@ def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story, monkeypat
     story.run_listeners()
     story.hook(helper_agent(story).session, HookSamples.session_start())
     story.hook(helper_agent(story).session, stop_with_report("The listener side is fine."))
-    jobs = jobs_of(story, helper_agent(story))
+    jobs = read_jobs(story, helper_agent(story))
     story.expect_rows(len(jobs) == 2, jobs[1].returned == "The listener side is fine.")
 
 
@@ -128,7 +128,7 @@ def test_two_jobs_in_a_row_that_end_without_a_report_both_close(new_story, monke
     story.run_listeners()
     story.hook(helper.session, HookSamples.session_start())
     exited(story, 0)
-    jobs = jobs_of(story, helper)
+    jobs = read_jobs(story, helper)
     story.expect_rows(len(jobs) == 2, all(job.ended_at is not None for job in jobs), jobs[0].returned == jobs[1].returned)
 
 
@@ -154,7 +154,7 @@ def test_a_program_that_exits_with_no_report_tells_the_parent_why(new_story, hel
     story = new_story(fixture=helper_fixture)
     exited(story, code, terminal)
     story.expect_text(f"message read {helper_report(story).id}", reason)
-    story.expect_rows(helper_agent(story).ended_at is not None, jobs_of(story, helper_agent(story))[0].ended_at is not None)
+    story.expect_rows(helper_agent(story).ended_at is not None, read_jobs(story, helper_agent(story))[0].ended_at is not None)
 
 
 def test_a_program_that_exits_after_its_report_only_ends_its_row(new_story):
@@ -191,7 +191,7 @@ def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
-    story.expect_rows(jobs_of(story, helper_agent(story))[0].ended_at is None)
+    story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is None)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
     story.run_listeners()
@@ -270,7 +270,7 @@ def test_a_retired_helpers_terminal_log_goes_with_it(new_story):
 
 
 def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     launcher = FakeLauncher(story.home.socket("launcher"))
     story.run('helper start journal-researcher --brief "Review HEAD~5..HEAD" --environment main', actor=Actor.core())
     story.run_listeners()

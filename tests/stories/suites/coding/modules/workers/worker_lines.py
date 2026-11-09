@@ -8,13 +8,13 @@ from datetime import timedelta
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 
 def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     folder = story.container.get(WorktreeQuery).worker_worktree(worker.id).folder
@@ -23,7 +23,7 @@ def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
 
 
 def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -40,7 +40,7 @@ def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(ne
 
 
 def test_a_worker_silent_for_thirty_minutes_is_told_to_log(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -51,7 +51,7 @@ def test_a_worker_silent_for_thirty_minutes_is_told_to_log(new_story):
 
 
 def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -68,7 +68,7 @@ def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_st
 
 
 def test_a_workers_build_goes_in_the_queue_and_its_read_does_not(new_story):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)

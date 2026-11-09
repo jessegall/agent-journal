@@ -28,7 +28,7 @@ def test_a_loop_that_does_real_work_between_its_sleeps_goes_on_through_the_runne
     expect_updated_input_hook(story, "s-1", BUSY_LOOP, {"command": runner_line(story, 1, "until pgrep -f build; do tail -n 1 build.log; sleep 5; done")})
 
 
-def monitor_on(command):
+def monitor_enabled(command):
     return HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": command}}).with_raw({"tool_input": {"command": command}})
 
 
@@ -46,9 +46,9 @@ def test_a_line_that_only_names_the_monitor_command_is_not_refused(new_story):
 
 def test_a_hand_made_wait_on_an_output_is_refused_naming_the_command_and_that_command_goes_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.expect_hook_refusal("s-1", monitor_on("until journal output read 7 --summary | grep -q passed; do sleep 2; done"), "give the Monitor the output wait")
-    story.expect_hook_allowed("s-1", monitor_on("journal output monitor 7"))
-    story.expect_hook_allowed("s-1", monitor_on("tail -f server.log"))
+    story.expect_hook_refusal("s-1", monitor_enabled("until journal output read 7 --summary | grep -q passed; do sleep 2; done"), "give the Monitor the output wait")
+    story.expect_hook_allowed("s-1", monitor_enabled("journal output monitor 7"))
+    story.expect_hook_allowed("s-1", monitor_enabled("tail -f server.log"))
 
 
 def test_the_sleep_tool_of_an_agent_program_is_refused(new_story):

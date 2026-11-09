@@ -4,7 +4,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
-from tests.stories.core.modules.processes.support.reader_teaching_fixtures import TwoRunsWithSameTitle
+from tests.stories.core.modules.processes.support.reader_teaching_fixtures import SameTitleTwoRuns
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
@@ -67,12 +67,12 @@ def test_a_title_that_holds_a_flag_or_a_path_is_refused_and_a_readers_title_is_n
 
 
 def test_two_running_outputs_with_one_title_are_named(new_story):
-    story = new_story(fixture=TwoRunsWithSameTitle)
+    story = new_story(fixture=SameTitleTwoRuns)
     story.expect_hook_allowed("s-1", VIEW_LINE, "outputs 1, 2 share one title")
 
 
 def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new_story):
-    story = new_story(fixture=TwoRunsWithSameTitle)
+    story = new_story(fixture=SameTitleTwoRuns)
     shared = "outputs 1, 2 share one title"
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(seconds=1))

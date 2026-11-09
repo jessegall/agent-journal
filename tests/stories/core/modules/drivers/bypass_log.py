@@ -8,7 +8,7 @@ from core.base.journal_home import JournalHome
 from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
-from tests.stories.core.support.coding_fixtures import BuilderStarted, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_marks, expect_value_with
 
@@ -39,7 +39,7 @@ def test_one_hook_is_said_in_the_singular_and_an_empty_log_says_nothing(single_b
 
 
 def test_a_helpers_hook_leaves_the_log_for_the_main_agent(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run_listeners()
     log_file(story).write_text(LOG_LINES)
     story.hook("sub-1", HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None}))

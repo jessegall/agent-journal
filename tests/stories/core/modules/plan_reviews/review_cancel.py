@@ -2,11 +2,11 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text
-from tests.stories.core.modules.plan_reviews.review_state import PlanUnderReview
+from tests.stories.core.modules.plan_reviews.review_state import ReviewPlan
 
 
-class ReviewWithDock(StoryFixture):
-    parent = PlanUnderReview
+class DockReview(StoryFixture):
+    parent = ReviewPlan
 
     def steps(self, story) -> None:
         story.run_listeners()
@@ -16,7 +16,7 @@ class ReviewWithDock(StoryFixture):
 
 
 def test_cancelling_a_plan_under_review_removes_its_dock_and_shows_its_mark(new_story):
-    story = new_story(fixture=ReviewWithDock)
+    story = new_story(fixture=DockReview)
     story.expect_success('plan cancel 1 --reason "Not needed"', actor=story.user)
     story.run_listeners()
 

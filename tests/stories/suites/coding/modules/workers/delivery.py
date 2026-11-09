@@ -1,5 +1,5 @@
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -7,7 +7,7 @@ TWO_POINT_BRIEF = 'task edit 1 --brief "- the total adds the tax\n- the total ro
 
 
 def test_a_delivery_with_every_point_proved_commits_the_worktree_and_moves_the_task_to_testing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     worker = delivered_worker(story, repository)
@@ -18,7 +18,7 @@ def test_a_delivery_with_every_point_proved_commits_the_worktree_and_moves_the_t
 
 
 def test_a_delivery_with_a_point_of_the_brief_unproved_is_refused_naming_the_point(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success(TWO_POINT_BRIEF, "version: 2")
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
@@ -32,7 +32,7 @@ def test_a_delivery_with_a_point_of_the_brief_unproved_is_refused_naming_the_poi
 
 
 def test_a_delivery_of_an_unchanged_worktree_is_refused(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)

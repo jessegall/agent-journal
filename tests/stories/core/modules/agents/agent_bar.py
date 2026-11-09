@@ -66,10 +66,10 @@ def test_the_programs_are_listed_by_name_and_title(new_story):
 
 def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, tmp_path):
     story = new_story(fixture=UserJoined)
-    stand_in = tmp_path / "claude"
-    stand_in.write_text(f"#!/bin/sh\nsleep {SLEEP_SECONDS} &\ntrap 'kill $!; exit 0' TERM\nwait\n")
-    stand_in.chmod(0o755)
-    program = subprocess.Popen([str(stand_in)], start_new_session=True)
+    fake = tmp_path / "claude"
+    fake.write_text(f"#!/bin/sh\nsleep {SLEEP_SECONDS} &\ntrap 'kill $!; exit 0' TERM\nwait\n")
+    fake.chmod(0o755)
+    program = subprocess.Popen([str(fake)], start_new_session=True)
     try:
         agent_id = story.new_row_id(f"agent start s-stand-in claude worker --pid {program.pid} --environment main")
         story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)

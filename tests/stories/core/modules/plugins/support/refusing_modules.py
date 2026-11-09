@@ -58,19 +58,19 @@ class OrphanProcessRowHandler(Handler[OrphanProcessRow, None]):
 
 
 @dataclass(frozen=True)
-class CreateNoteAfterSlots(Command[EventNote]):
+class SlotsCreateNote(Command[EventNote]):
     title: str
 
 
-class CreateNoteAfterSlotsHandler(Handler[CreateNoteAfterSlots, EventNote]):
+class SlotsCreateNoteHandler(Handler[SlotsCreateNote, EventNote]):
     """Dispatches a command that runs once, then saves a row on a key a guard script hears."""
 
-    command = CreateNoteAfterSlots
+    command = SlotsCreateNote
 
     def __init__(self, bus: Bus, repository: Repository) -> None:
         self.bus, self.repository = bus, repository
 
-    def handle(self, command: CreateNoteAfterSlots, context: Context) -> EventNote:
+    def handle(self, command: SlotsCreateNote, context: Context) -> EventNote:
         self.bus.dispatch(GrantRunSlots(), context)
         return self.repository.save(EventNote(title=command.title), context)
 
@@ -88,7 +88,7 @@ class NoteTitleGuard(Guard[Created[EventNote]]):
 class RefusingModule(Module):
     name = "acme.refusing"
     requires_core = ">=5,<6"
-    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, CreateNoteAfterSlotsHandler]
+    handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, SlotsCreateNoteHandler]
 
 
 class NoteTitleGuardModule(Module):

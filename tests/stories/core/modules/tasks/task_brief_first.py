@@ -6,7 +6,7 @@ from core.modules.documents.models.link import Link
 from core.modules.tasks.models.task_read import TaskRead
 
 from core.modules.documents.support.work_context_reader import WorkContextReader
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from unittest.mock import patch
 
 from tests.stories.core.modules.processes.support.process_samples import install_runner
@@ -17,7 +17,7 @@ from core.base.driver.command_category import CommandCategory
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithReadTask, BuilderWithUnreadTask, BuilderWithBriefedTask
+from tests.stories.core.support.coding_fixtures import BuilderStarted, ReadTaskBuilder, UnreadTaskBuilder, BriefedTaskBuilder
 
 EDIT = HookSamples.edit("src/cart.py")
 BRIEF_LINE = HookSamples.shell("journal task overview 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task"))
@@ -30,30 +30,30 @@ def briefs_required(story) -> None:
 
 
 def test_the_brief_command_prints_the_title_the_brief_and_the_comments(new_story):
-    story = new_story(fixture=BuilderWithBriefedTask)
+    story = new_story(fixture=BriefedTaskBuilder)
     story.run('task comment 1 "use the new cart" --environment main', actor=story.user)
     story.expect_text("task overview 1", "task 1: Fix the cart", "the total is in cents", "use the new cart", actor=story.agent)
 
 
 def test_the_brief_command_says_when_a_task_has_no_comments(new_story):
-    story = new_story(fixture=BuilderWithBriefedTask)
+    story = new_story(fixture=BriefedTaskBuilder)
     story.expect_text("task overview 1", "no comments on task 1", actor=story.agent)
 
 
 def test_a_task_handed_to_an_agent_blocks_it_until_it_read_the_brief(new_story):
-    story = new_story(fixture=BuilderWithUnreadTask)
+    story = new_story(fixture=UnreadTaskBuilder)
     story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
     story.expect_hook_allowed("s-1", BRIEF_LINE)
 
 
 def test_running_the_brief_command_releases_the_block(new_story):
-    story = new_story(fixture=BuilderWithUnreadTask)
+    story = new_story(fixture=UnreadTaskBuilder)
     story.expect_text("task overview 1", "task 1: Fix the cart", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 
 
 def test_two_unread_tasks_hold_two_blocks_so_reading_one_leaves_the_other(new_story):
-    story = new_story(fixture=BuilderWithUnreadTask)
+    story = new_story(fixture=UnreadTaskBuilder)
     story.run('task make "Second" --brief "A second job" --environment main', actor=story.user)
     story.run("task start 2", actor=story.agent)
     story.run("task overview 2", actor=story.agent)
@@ -63,7 +63,7 @@ def test_two_unread_tasks_hold_two_blocks_so_reading_one_leaves_the_other(new_st
 
 
 def test_a_task_already_read_in_this_window_raises_no_block(new_story):
-    story = new_story(fixture=BuilderWithReadTask)
+    story = new_story(fixture=ReadTaskBuilder)
     briefs_required(story)
     story.run('task release 1 --reason "later"', actor=story.agent)
     story.run("task start 1", actor=story.agent)
@@ -71,7 +71,7 @@ def test_a_task_already_read_in_this_window_raises_no_block(new_story):
 
 
 def test_a_compaction_blocks_the_agent_again_until_it_reads_the_brief(new_story):
-    story = new_story(fixture=BuilderWithReadTask)
+    story = new_story(fixture=ReadTaskBuilder)
     briefs_required(story)
     story.hook("s-1", COMPACTION)
     story.expect_hook_refusal("s-1", EDIT, BRIEF_REFUSAL)
@@ -100,7 +100,7 @@ def test_a_compaction_asks_only_for_the_last_started_task_and_the_earlier_one_wh
 
 
 def test_a_task_started_by_a_person_blocks_no_agent(new_story):
-    story = new_story(fixture=BuilderWithBriefedTask)
+    story = new_story(fixture=BriefedTaskBuilder)
     briefs_required(story)
     story.run("task start 1", actor=story.user)
     story.expect_hook_allowed("s-1", EDIT)
@@ -114,7 +114,7 @@ def test_a_story_that_is_not_about_the_brief_is_not_blocked(new_story):
 
 
 def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     for number in range(30):
         task_id = story.new_row_id(f'task make "Read me {number}"', actor=story.agent)
         story.expect_success(f"task overview {task_id}", actor=story.agent)
@@ -128,7 +128,7 @@ def test_resetting_many_task_reads_reads_each_row_no_more(new_story):
 
 
 def test_reading_the_overview_context_holds_no_write_lock(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUnreadTask)
+    story = new_story(fixture=UnreadTaskBuilder)
     original = WorkContextReader.overview
     observed = []
 
@@ -148,7 +148,7 @@ def test_reading_the_overview_context_holds_no_write_lock(new_story, monkeypatch
 
 
 def test_an_overview_that_cannot_read_its_context_records_no_task_read(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUnreadTask)
+    story = new_story(fixture=UnreadTaskBuilder)
 
     def unavailable(reader, task, caller):
         raise Refusal("the context is unavailable")
@@ -160,7 +160,7 @@ def test_an_overview_that_cannot_read_its_context_records_no_task_read(new_story
 
 
 def test_redirecting_or_piping_a_task_overview_does_not_mark_the_brief_read(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUnreadTask))
+    story = install_runner(new_story(fixture=UnreadTaskBuilder))
     part = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task")
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task overview 1 > /tmp/task", part, redirects=["> /tmp/task"]), BRIEF_REFUSAL)
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "overview", "1"], subcommand="task", pipe_target=1)

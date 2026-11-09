@@ -12,7 +12,7 @@ from core.testing.hook_samples import HookSamples
 from server.request_log import RequestLog
 from server.request_log_settings import RequestLogSettings
 from server.server_files import ServerFiles
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story
 
 FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
@@ -20,7 +20,7 @@ FINISHED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 
 @pytest.fixture
 def logs_server(new_story):
-    with server_story(new_story(fixture=HookRecordingOn)) as server:
+    with server_story(new_story(fixture=HookRecordingEnabled)) as server:
         path = server.story.home.system_log
         path.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(path.with_name("server.log.1"), "2026-01-01T10:00:00+00:00 info server older server line\n")

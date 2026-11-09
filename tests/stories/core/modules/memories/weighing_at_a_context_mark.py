@@ -8,7 +8,7 @@ from core.modules.drivers.rules.agent_block_rule import COUNTDOWN_USES
 from core.testing.hook_samples import HookSamples
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
 EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 EDIT = HookSamples.edit("src/cart.py")
@@ -101,7 +101,7 @@ class ContextFact(StoryFixture):
 
 
 class Limited(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
     limit = 400_000
 
     def steps(self, story):
@@ -109,44 +109,44 @@ class Limited(StoryFixture):
         story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {self.limit} --project", actor=story.user)
 
 
-class LimitedAboveTheWindow(Limited):
+class LimitedAboveWindow(Limited):
     limit = 1_000_000
 
 
-def context_is(story, tokens: int, window_percent: int) -> None:
+def expect_context(story, tokens: int, window_percent: int) -> None:
     save_status_file(story, "s-1", {"context_window": {"total_input_tokens": tokens, "used_percentage": window_percent}})
 
 
-def expect_no_mark_at(story, tokens: int, window_percent: int) -> None:
-    context_is(story, tokens, window_percent)
+def expect_mark_absent(story, tokens: int, window_percent: int) -> None:
+    expect_context(story, tokens, window_percent)
     story.expect_hook_silent("s-1", EDITED)
 
 
 def test_a_mark_counts_against_the_context_limit_when_one_is_on(new_story):
     story = new_story(fixture=Limited)
-    expect_no_mark_at(story, 199_000, 19)
-    context_is(story, 200_000, 20)
+    expect_mark_absent(story, 199_000, 19)
+    expect_context(story, 200_000, 20)
     story.expect_hook_allowed("s-1", EDITED, "context at 50%")
 
 
 def test_a_mark_counts_against_the_window_when_the_limit_is_off(new_story):
-    story = new_story(fixture=BuilderWithUser)
-    expect_no_mark_at(story, 200_000, 20)
+    story = new_story(fixture=UserBuilder)
+    expect_mark_absent(story, 200_000, 20)
 
 
 def test_a_mark_counts_against_the_window_when_it_is_smaller_than_the_limit(new_story):
-    story = new_story(fixture=LimitedAboveTheWindow)
-    context_is(story, 240_000, 60)
+    story = new_story(fixture=LimitedAboveWindow)
+    expect_context(story, 240_000, 60)
     story.expect_hook_allowed("s-1", EDITED, "context at 50%")
 
 
 def test_two_marks_too_few_tokens_apart_count_as_the_higher_one(new_story):
     story = new_story(fixture=Limited)
-    context_is(story, 328_000, 32)
+    expect_context(story, 328_000, 32)
     story.expect_hook_allowed("s-1", EDITED, "context at 50%")
 
 
 def test_the_higher_of_two_close_marks_still_opens(new_story):
     story = new_story(fixture=Limited)
-    context_is(story, 365_000, 36)
+    expect_context(story, 365_000, 36)
     story.expect_hook_allowed("s-1", EDITED, "context at 90%")

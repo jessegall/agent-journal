@@ -3,7 +3,7 @@ import pytest
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
@@ -12,7 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import r
 
 @pytest.fixture
 def agent_task_server(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.suites.coding.auto-mode off --environment main", actor=story.user)
     repository_environment(story)
     first = story.new_row_id('task make "First calculation" --brief "Check the cart calculation"', actor=story.agent)

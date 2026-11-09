@@ -4,15 +4,15 @@ from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
-from tests.stories.core.modules.skills.due import use_up_countdown as exhaust_countdown
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.modules.skills.due import drain_countdown as exhaust_countdown
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 PROGRAM_FOLDERS = (".claude/skills", ".agents/skills")
 
 
 def test_preparing_a_worker_publishes_journal_and_plugin_skills_for_both_programs(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success(f"plugin install {sample_plugin_folder(story.home.folder.parent)} --yes")
     worker = dispatched_worker(story)
@@ -25,7 +25,7 @@ def test_preparing_a_worker_publishes_journal_and_plugin_skills_for_both_program
 
 @pytest.mark.real_git
 def test_a_restart_updates_worktrees_and_removes_obsolete_journal_skills(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)
@@ -42,7 +42,7 @@ def test_a_restart_updates_worktrees_and_removes_obsolete_journal_skills(new_sto
 
 @pytest.mark.real_git
 def test_plugin_changes_reach_worktrees_and_withdraw_skills_when_disabled(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)
@@ -55,7 +55,7 @@ def test_plugin_changes_reach_worktrees_and_withdraw_skills_when_disabled(new_st
 
 
 def test_a_claude_workers_skill_reminder_names_the_skill_to_load_with_the_skill_tool(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -67,7 +67,7 @@ def test_a_claude_workers_skill_reminder_names_the_skill_to_load_with_the_skill_
 
 
 def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktree(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
@@ -80,7 +80,7 @@ def test_a_codex_workers_skill_reminder_names_its_programs_folder_in_its_worktre
 
 
 def test_skill_write_removes_old_codex_journal_skills_and_preserves_other_skills(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     for skill in ("journal", "journal-tasks", "my-skill"):
         path = story.home.project_folder / ".codex/skills" / skill / "SKILL.md"
         path.parent.mkdir(parents=True)

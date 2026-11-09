@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from core.modules.tasks.rules.inactive_task_reminder_rule import INACTIVE_MINUTES
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 
 def test_a_builder_quiet_with_its_task_in_hand_is_reminded_on_a_tick(task_turn):
@@ -13,7 +13,7 @@ def test_a_builder_quiet_with_its_task_in_hand_is_reminded_on_a_tick(task_turn):
 
 
 def test_a_builder_quiet_for_less_is_not_reminded(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(minutes=INACTIVE_MINUTES - 1))
     story.tick("s-1")
@@ -27,7 +27,7 @@ def test_a_quiet_reminder_reaches_the_agent_with_its_next_hook(task_turn):
 
 
 def test_a_builder_is_reminded_by_a_tick_that_comes_late(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(minutes=INACTIVE_MINUTES + 2))
     story.tick("s-1")
@@ -44,7 +44,7 @@ def test_a_builder_is_reminded_once_per_quiet_stretch(task_turn):
 
 @pytest.fixture
 def task_turn(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(minutes=INACTIVE_MINUTES))
     story.tick("s-1")

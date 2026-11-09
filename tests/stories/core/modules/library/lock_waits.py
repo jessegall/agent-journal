@@ -37,7 +37,7 @@ COPIES = 300
 AGENTS = 8
 BASELINE_SECONDS = 6
 LOADED_SECONDS = 15
-CHANGES_PER_SECOND = 20
+CHANGE_RATE = 20
 REPORT = Path("/tmp/library-lock-waits.json")
 LONGEST_WAIT_SECONDS = 5
 
@@ -105,7 +105,7 @@ def test_agents_edit_while_the_sync_tick_runs_on_its_own_thread_with_bulk_copies
         tick = CountingTick(itertools.count(0, 10).__next__)
         ticker = Ticker(story.home, [TickHandler(TickInterval(seconds=10), tick, "library sync")], context.listener_thread.wake, seconds=itertools.count(0, 10).__next__)
         stopped = threading.Event()
-        changed_on_server = []
+        server_changed = []
 
         def tick_often() -> None:
             while not stopped.is_set():
@@ -116,10 +116,10 @@ def test_agents_edit_while_the_sync_tick_runs_on_its_own_thread_with_bulk_copies
             for number in itertools.count():
                 if stopped.is_set():
                     return
-                for item_id in item_ids[:COPIES - AGENTS][number * CHANGES_PER_SECOND % (COPIES - AGENTS):][:CHANGES_PER_SECOND]:
+                for item_id in item_ids[:COPIES - AGENTS][number * CHANGE_RATE % (COPIES - AGENTS):][:CHANGE_RATE]:
                     code = server.send(tokens.admin, "GET", f"/items/doc/{item_id}")[1]
                     server.send(tokens.admin, "PUT", f"/items/doc/{item_id}", {"fields": doc_fields(f"Copy {item_id}", f"Changed {number}")}, {"If-Match": f'"{code["version"]}"'})
-                    changed_on_server.append(item_id)
+                    server_changed.append(item_id)
                 stopped.wait(1)
 
         threads = [threading.Thread(target=tick_often, daemon=True), threading.Thread(target=library_changes, daemon=True)]
@@ -131,6 +131,6 @@ def test_agents_edit_while_the_sync_tick_runs_on_its_own_thread_with_bulk_copies
             thread.join(10)
         ticker.join(30)
     REPORT.write_text(json.dumps({"copies": COPIES, "agents": AGENTS, "baseline": baseline, "while_the_tick_syncs": loaded, "tick_rounds": tick.rounds, "rounds_that_changed_rows": tick.changing_rounds,
-                                  "items_changed_on_the_server": len(changed_on_server)}, indent=2))
+                                  "items_changed_on_the_server": len(server_changed)}, indent=2))
     print("LOCK WAITS", REPORT.read_text())
     story.expect_rows(baseline["failed"] == 0, loaded["failed"] == 0, loaded["max_seconds"] < LONGEST_WAIT_SECONDS)

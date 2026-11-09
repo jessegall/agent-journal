@@ -10,7 +10,7 @@ VIEWER_FOLDER = Path(__file__).resolve().parents[4] / "src" / "viewer"
 
 class BrowserStoryTimeout(AssertionError):
     @classmethod
-    def for_script(cls, script: str, error: subprocess.TimeoutExpired) -> "BrowserStoryTimeout":
+    def with_script(cls, script: str, error: subprocess.TimeoutExpired) -> "BrowserStoryTimeout":
         return cls(f"""{script} exceeded {error.timeout} seconds.
 stdout:
 {cls.output_text(error.stdout)}
@@ -37,5 +37,5 @@ def expect_browser_at(address: str, script: str, arguments: Sequence[str]) -> No
             env={**os.environ, "DEBUG": f"{os.environ.get('DEBUG', '')},pw:api"},
         )
     except subprocess.TimeoutExpired as error:
-        raise BrowserStoryTimeout.for_script(script, error) from error
+        raise BrowserStoryTimeout.with_script(script, error) from error
     assert finished.returncode == 0, finished.stdout + finished.stderr

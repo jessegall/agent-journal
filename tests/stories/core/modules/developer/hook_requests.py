@@ -1,21 +1,21 @@
 from core.modules.developer.support.hook_request_log import HookRequestLog
 from datetime import timedelta
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.support.coding_fixtures import UserBuilder
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from core.testing.expect_row import expect_row
 
 HEADERS = {"X-Journal-Hook-Id": "firing-1", "X-Journal-Env": "main"}
 
 
 def logging_story(new_story, size: int = 3):
-    story = new_story(fixture=HookRecordingOn)
+    story = new_story(fixture=HookRecordingEnabled)
     story.expect_success(f"setting set journal.core.developer.tools.hooks.request-log-size {size} --project", actor=story.user)
     return story
 
 
 def test_nothing_is_recorded_while_the_option_is_off(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.container.get(HookRequestLog).record("claude", HEADERS, {"event": "stop"}, 12.5, HookAnswer.ALLOWED)
     story.expect_success("developer hook-requests", "nothing recorded yet")
 

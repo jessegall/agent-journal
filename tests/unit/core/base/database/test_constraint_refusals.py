@@ -27,22 +27,22 @@ def sample_table(name: str, cli_name: str) -> Table:
     return Table(type(cli_name.title(), (), {"cli_name": cli_name}), name, {}, "id")
 
 
-def refusal_of(database: Database, sql: str, table: str, cli_name: str):
+def read_refusal(database: Database, sql: str, table: str, cli_name: str):
     with pytest.raises(sqlite3.IntegrityError) as raised:
         database.update(Statement(sql))
     return ConstraintRefusals(database).refusal(raised.value, sample_table(table, cli_name), sql.startswith("DELETE"))
 
 
 def test_a_rule_raised_by_a_trigger_is_printed_as_written(database):
-    assert refusal_of(database, "INSERT INTO items (state) VALUES ('stolen')", "items", "item").text == "an item cannot start as stolen"
+    assert read_refusal(database, "INSERT INTO items (state) VALUES ('stolen')", "items", "item").text == "an item cannot start as stolen"
 
 
 def test_a_unique_failure_names_its_column(database):
-    assert refusal_of(database, "INSERT INTO shelves (name) VALUES ('top')", "shelves", "shelf").text == "a shelf with that name exists already"
+    assert read_refusal(database, "INSERT INTO shelves (name) VALUES ('top')", "shelves", "shelf").text == "a shelf with that name exists already"
 
 
 def test_a_row_still_referred_to_names_the_tables_that_refer_to_it(database):
-    refusal = refusal_of(database, "DELETE FROM shelves WHERE id = 1", "shelves", "shelf")
+    refusal = read_refusal(database, "DELETE FROM shelves WHERE id = 1", "shelves", "shelf")
     assert refusal.text == "this shelf is still referred to by books: remove or move those first"
 
 

@@ -1,10 +1,10 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_work_mode_reads_only_visible_settings(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         query = "environment=main"

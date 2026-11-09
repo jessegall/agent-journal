@@ -7,13 +7,13 @@ from core.testing.hook_samples import HookSamples
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.worker_step_samples import step_plugin_folder
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
 def step_plugin_story(new_story, event_name: str, services: list[dict[str, object]] | None = None):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.run(f"plugin install {step_plugin_folder(story.home.folder.parent, event_name, services)} --yes", actor=story.user)
     story.repository = repository_environment(story)
@@ -27,12 +27,12 @@ def delivering_plugin(new_story):
 
 
 @pytest.fixture
-def worker_under_plugin(delivering_plugin):
+def plugin_worker(delivering_plugin):
     return delivering_plugin, dispatched_worker(delivering_plugin)
 
 
-def test_a_plugin_holding_a_workers_delivery_refuses_it_with_its_reason(worker_under_plugin):
-    story, worker = worker_under_plugin
+def test_a_plugin_holding_a_workers_delivery_refuses_it_with_its_reason(plugin_worker):
+    story, worker = plugin_worker
     story.repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.run(FIRST_PROOF, actor=worker)
     story.expect_refusal(DELIVERY, "[plugin steps] cart.py has a sin", actor=worker)

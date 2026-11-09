@@ -4,8 +4,8 @@ from core.modules.messages.migrations.m015_main_message_targets import MainMessa
 from core.modules.messages.models.message import Message
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.scope.environment_rows import TwoEnvironmentsAtWork, staging_agent
-from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, agent_of, started_agent
+from tests.stories.core.base.scope.environment_rows import TwoWorkingEnvironments, staging_agent
+from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, read_agent, started_agent
 
 MAIN_QUESTION = "Ship on Friday?"
 PERSON_MESSAGE = "Hello main"
@@ -14,7 +14,7 @@ PERSON_MESSAGE = "Hello main"
 class StartedTaskMark(StoryFixture):
     """The main agent of environment main started task 1, which shows a mark in its chat."""
 
-    parent = TwoEnvironmentsAtWork
+    parent = TwoWorkingEnvironments
 
     def steps(self, story):
         story.run("task start 1", actor=story.agent)
@@ -41,7 +41,7 @@ def test_a_new_main_session_reads_the_question_of_the_session_before_it(new_stor
 def test_a_worker_reads_no_question_of_the_main_agent(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     open_main_question(story)
-    story.expect_no_text("question list", MAIN_QUESTION, actor=agent_of(story, "s-9"))
+    story.expect_no_text("question list", MAIN_QUESTION, actor=read_agent(story, "s-9"))
 
 
 def test_a_new_main_session_reads_the_hook_calls_of_the_session_before_it(new_story):
@@ -53,17 +53,17 @@ def test_a_new_main_session_reads_the_hook_calls_of_the_session_before_it(new_st
 def test_a_worker_reads_no_hook_call_of_the_main_agent(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     call_id = main_hook_call(story)
-    story.expect_refusal(f"hook-call show {call_id}", "no hook-call", actor=agent_of(story, "s-9"))
+    story.expect_refusal(f"hook-call show {call_id}", "no hook-call", actor=read_agent(story, "s-9"))
 
 
 def test_a_worker_reads_its_own_hook_calls(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     worker_call = story.hook("s-9", HookSamples.prompt("Work on the cart")).hook_call_id
-    story.expect_success(f"hook-call show {worker_call}", actor=agent_of(story, "s-9"))
+    story.expect_success(f"hook-call show {worker_call}", actor=read_agent(story, "s-9"))
 
 
 def test_a_main_agent_of_another_environment_reads_no_hook_call_here(new_story):
-    story = new_story(fixture=TwoEnvironmentsAtWork)
+    story = new_story(fixture=TwoWorkingEnvironments)
     call_id = main_hook_call(story)
     story.expect_refusal(f"hook-call show {call_id}", "no hook-call", actor=staging_agent(story))
 
@@ -99,14 +99,14 @@ def test_a_message_with_no_target_reaches_a_new_main_session(new_story):
 
 def test_a_message_to_a_worker_keeps_its_target(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    worker = agent_of(story, "s-9")
+    worker = read_agent(story, "s-9")
     message_id = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {worker.id} --environment main', story.user)
     story.expect_rows(story.row(Message, message_id).target_agent_id == worker.id)
 
 
 def test_the_migration_clears_a_stored_main_target_and_keeps_a_worker_s(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
-    worker = agent_of(story, "s-9")
+    worker = read_agent(story, "s-9")
     first = story.new_row_id(f'message send "{PERSON_MESSAGE}" --environment main', story.user)
     second = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {worker.id} --environment main', story.user)
     database = story.container.get(Database)

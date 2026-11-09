@@ -4,7 +4,7 @@ from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.memories.models.memory import Memory
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 MAIN_MEMORY = 1
 WORKER_MEMORY = 2
@@ -16,7 +16,7 @@ def started_agent(story, session, role="worker"):
     return Actor(story.new_row_id(f"agent start {session} claude {role} --environment main"), ActorType.AGENT)
 
 
-def agent_of(story, session):
+def read_agent(story, session):
     return Actor(story.container.get(Queries).query(Agent).filter(session=session).first().id, ActorType.AGENT)
 
 
@@ -36,7 +36,7 @@ def expect_hidden(story, memory_id, text, actor):
 class MainAndWorkerMemories(StoryFixture):
     """The main agent in session s-1 with memory 1, and a worker in session s-9 with memory 2."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run(f'memory make "{MAIN_FACT}" --environment main', actor=story.agent)
@@ -44,4 +44,4 @@ class MainAndWorkerMemories(StoryFixture):
 
     def expect(self, story):
         story.expect_text("memory list", MAIN_FACT, actor=story.agent)
-        story.expect_text("memory list", WORKER_FACT, actor=agent_of(story, "s-9"))
+        story.expect_text("memory list", WORKER_FACT, actor=read_agent(story, "s-9"))

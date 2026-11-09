@@ -5,13 +5,13 @@ from core.base.database.statement import Statement
 from core.base.query.queries import Queries
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
 
 def test_a_second_test_round_of_the_same_task_gets_its_own_mark(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- Cart\n- Tax"', actor=story.agent)
