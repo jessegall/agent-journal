@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from core.base.database.shared_tables import SharedTables
 from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE, SOURCE_FOLDER
 from core.base.module.source_hash import SourceHash
 
@@ -121,6 +122,7 @@ def new_story(templates: TemplateDatabases, tmp_path: Path, request: pytest.Fixt
         overlap.add(item.nodeid, steps.lines())
         steps.story.close()
     created.clear()
+    SharedTables.shared.cache_clear()
     if item.stash.get(CALL_PASSED, False):
         shutil.rmtree(tmp_path, ignore_errors=True)
 
