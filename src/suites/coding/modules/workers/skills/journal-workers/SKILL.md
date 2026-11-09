@@ -182,7 +182,7 @@ An open question lets you stop; the answer wakes you. Going on with other work e
     together, and only failed tests run at the next hand-in.
   - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
     flag until you hand in again, which runs only what failed.
-- A test or build, also `journal worker test`, holds your call for the setting `worker-run-wait-seconds` (30 by default), queued or
+- A test or build, also `journal worker test`, holds your call for the setting `worker-run-wait-seconds` (60 by default), queued or
   running. If it ends in time you get its output at once; if not you get its output number and may go on or stop.
 - A run that moves to the background is watched for you, so you need no Monitor: go on working and hear of its end on your
   next tool call, or stop and be started again when it ends.
