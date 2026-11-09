@@ -1,3 +1,4 @@
+from core.base.timestamp import Timestamp
 from core.base.type_guards import is_list, is_mapping
 from dataclasses import dataclass
 from typing import Mapping
@@ -9,11 +10,12 @@ class ContextWindow:
 
     used_percentage: int | None
     total_input_tokens: int | None
+    read_at: Timestamp | None = None
 
     @classmethod
-    def parsed(cls, fields: Mapping[str, object]) -> "ContextWindow":
+    def parsed(cls, fields: Mapping[str, object], read_at: Timestamp) -> "ContextWindow":
         window = fields.get("context_window")
-        return cls(cls.number(window, "used_percentage"), cls.number(window, "total_input_tokens"))
+        return cls(cls.number(window, "used_percentage"), cls.number(window, "total_input_tokens"), read_at)
 
     @staticmethod
     def number(window: object, name: str) -> int | None:
