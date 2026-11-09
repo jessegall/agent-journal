@@ -69,6 +69,9 @@ stays kept on the same agent number and session until retired.
   yourself.
   It first merges the branch into the worktree. When only built files under `web/dist` clash it keeps the branch's:
   rebuild after it. A clash in source goes back to the worker with conflict markers to settle.
+- What a worker needs to go on is the main agent's own decision, never a question for the person: give it test commands
+  with `journal worker send <n> --test-command <name>=<command>` and link a missing folder with `--library-link`, then
+  tell the person only if it matters.
 - `journal worker release <worker> "<why>"` puts its task back to open.
 - `journal worker sandbox <worker> on|off` sets whether that worker runs its shell lines in the sandbox, over the project setting
   `worker-sandbox`; `journal worker dispatch` and `send` take `--no-sandbox` to start it with the sandbox off. A person or the
