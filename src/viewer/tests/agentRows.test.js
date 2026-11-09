@@ -107,7 +107,7 @@ test("a closed card shows the profile, name and status without open-card details
     const card = cardOf(element, 3);
     expect(card.querySelector("[data-agent-title]").textContent).toBe("Researcher");
     expect(card.querySelector("[data-agent-name]").textContent).toBe("Madame Curie");
-    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(card.querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
     expect(card.querySelector("[data-agent-identity]").parentElement.previousElementSibling.classList.contains("agent-head")).toBe(true);
     expect(card.querySelector(".agent-dot").dataset.state).toBe("blocked");
     expect(card.textContent).not.toContain("Running");
@@ -115,14 +115,14 @@ test("a closed card shows the profile, name and status without open-card details
     expect(card.title).toBe("");
     card.click();
     await settle();
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
 });
 
 test("closed cards use the shared agent facts read for their identity", async () => {
     const held = window(FACTS);
     const element = await mounted({render: () => h(AgentRows, {line: "agent cards", empty: "No agents yet"})}, held);
-    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toBe("claude · opus");
-    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high");
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toBe("claude · opus · main 2");
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toBe("claude · sonnet · high · helper 3");
     expect(held.reads.filter((line) => line.startsWith("usage agents --closed"))).toHaveLength(0);
     expect(held.reads.filter((line) => line.startsWith("usage tool --agent"))).toHaveLength(0);
 });
@@ -653,4 +653,10 @@ test("a worker card says sandbox off when its facts say its shell runs outside t
     const shown = async (facts) => mounted({render: () => h(AgentCard, {row: worker, facts: {job_enabled: true, tasks: [], ...facts}})}, context(lines));
     expect((await shown({sandbox_off: true})).querySelector("[data-agent-sandbox-off]").textContent).toBe("sandbox off");
     expect((await shown({sandbox_off: false})).querySelector("[data-agent-sandbox-off]")).toBeNull();
+});
+
+test("every card shows its role and number in its header line, a helper and a merger too", async () => {
+    const element = await drawn();
+    expect(cardOf(element, 3).querySelector("[data-agent-identity]").textContent).toContain("helper 3");
+    expect(cardOf(element, 2).querySelector("[data-agent-identity]").textContent).toContain("main 2");
 });

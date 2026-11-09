@@ -1,10 +1,11 @@
 import {afterEach, expect, test, vi} from "vitest";
-import {context, mounted, page, settle, unmountAll} from "./support/windowContext.js";
+import {context, mounted, page, settleTransition, unmountAll} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 
 const FADE_MS = 5000;
-const realSetTimeout = globalThis.setTimeout;
-const realClearTimeout = globalThis.clearTimeout;
+const realSetTimeout = globalThis.setTimeout.bind(globalThis);
+const realClearTimeout = globalThis.clearTimeout.bind(globalThis);
+const READ_GAP_MS = 1000;
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -31,6 +32,8 @@ function catchFadeTimers() {
 
 async function strip() {
     const fades = catchFadeTimers();
+    let clock = Date.now();
+    vi.spyOn(Date, "now").mockImplementation(() => clock);
     const tool = {ok: true, value: {tool: "", wait_target: ""}};
     const heard = [];
     const window_ = {...context({"message feed": page([]), "usage tool": tool}), follow: (_, listener) => {
@@ -41,12 +44,13 @@ async function strip() {
     const word = () => element.querySelector("[data-running-command]").textContent;
     const run = async (value) => {
         tool.value = value;
+        clock += READ_GAP_MS;
         await Promise.all(heard.map((listener) => listener({event: "hook_call.create", row_id: 1})));
-        await settle();
+        await settleTransition();
     };
     const pass = async () => {
         fades.pass();
-        await settle();
+        await settleTransition();
     };
     return {word, run, pass, fades};
 }
