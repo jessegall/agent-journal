@@ -26,7 +26,7 @@ def project(root, importer_text):
 
 
 def moved(root):
-    return script.move_file(root, root / SOURCE, root / TARGET)
+    return script.move_path(root, root / SOURCE, root / TARGET)
 
 
 def test_a_from_import_is_rewritten_and_the_file_moves(tmp_path):
@@ -70,7 +70,7 @@ def test_a_longer_module_name_is_not_rewritten(tmp_path):
 def test_a_name_inside_a_longer_string_stops_the_move_and_is_named(tmp_path):
     text = 'PATH = "see core.base.sample_error for more"\n'
     importer = project(tmp_path, text)
-    with pytest.raises(script.MoveRefused, match="src/core/user.py:1"):
+    with pytest.raises(script.MoveError, match="src/core/user.py:1"):
         moved(tmp_path)
     assert (tmp_path / SOURCE).is_file() and importer.read_text() == text
 
@@ -78,26 +78,26 @@ def test_a_name_inside_a_longer_string_stops_the_move_and_is_named(tmp_path):
 def test_a_relative_import_stops_the_move(tmp_path):
     project(tmp_path, "")
     write(tmp_path, "src/core/base/neighbour.py", "from .sample_error import SampleError\n")
-    with pytest.raises(script.MoveRefused, match="relative import"):
+    with pytest.raises(script.MoveError, match="relative import"):
         moved(tmp_path)
 
 
 def test_a_target_that_exists_is_refused(tmp_path):
     project(tmp_path, "")
     write(tmp_path, TARGET)
-    with pytest.raises(script.MoveRefused, match="exists"):
+    with pytest.raises(script.MoveError, match="exists"):
         moved(tmp_path)
 
 
 def test_leaving_an_alias_is_refused(tmp_path):
     project(tmp_path, "")
-    with pytest.raises(script.MoveRefused, match="no alias"):
-        script.move_file(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, leave_alias=True)
+    with pytest.raises(script.MoveError, match="no alias"):
+        script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, leave_alias=True)
 
 
 def test_a_change_to_a_line_of_the_moved_file_that_is_no_import_is_refused(tmp_path):
     write(tmp_path, SOURCE, "import core.base.sample_error\n\nclass SampleError(Exception):\n    parent = core.base.sample_error.OTHER\n")
-    with pytest.raises(script.MoveRefused, match="not an import"):
+    with pytest.raises(script.MoveError, match="not an import"):
         moved(tmp_path)
 
 
@@ -118,6 +118,6 @@ def test_missing_packages_are_created_below_the_source_root(tmp_path):
 
 def test_a_dry_run_names_the_files_and_changes_nothing(tmp_path):
     importer = project(tmp_path, "from core.base.sample_error import SampleError\n")
-    report = script.move_file(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, dry_run=True)
+    report = script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET, dry_run=True)
     assert report == ["change src/core/user.py", "1 Python files and 0 other files change"]
     assert importer.read_text() == "from core.base.sample_error import SampleError\n" and (tmp_path / SOURCE).is_file()

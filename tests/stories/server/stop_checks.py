@@ -3,7 +3,7 @@ import pytest
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from tests.stories.suites.coding.drivers.orchestrator.orchestrator import ReadyPlanTaskOrchestrator
+from tests.stories.suites.coding.drivers.main.orchestrator import ReadyPlanTaskOrchestrator
 
 
 @pytest.fixture

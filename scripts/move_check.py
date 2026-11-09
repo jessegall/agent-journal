@@ -13,8 +13,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-SNAPSHOT_COMMANDS = ((str(ROOT / ".venv/bin/python3"), "-m", "pytest", "tests/unit/core/base/module/test_plugin_event_contract.py", "-q"), ("journal", "sins"))
-KEYS_THAT_FOLLOW_THE_SOURCE = {"module_fingerprints"}
+CONTRACT_COMMANDS = ((str(ROOT / ".venv/bin/python3"), "-m", "pytest", "tests/unit/core/base/module/test_plugin_event_contract.py", "-q"), ("journal", "sins"))
+SOURCE_DERIVED_KEYS = {"module_fingerprints"}
 IMPORT_LINE = re.compile(r"\s*(from|import)\s")
 
 
@@ -46,7 +46,7 @@ def renamed(text: str, moves: Mapping[str, str]) -> str:
 
 def registry_differences(recorded_text: str, current_text: str, moves: Mapping[str, str]) -> list[str]:
     recorded, current = json.loads(renamed(recorded_text, moves)), json.loads(current_text)
-    return [f"registry entry {key} changed" for key in sorted({*recorded, *current} - KEYS_THAT_FOLLOW_THE_SOURCE) if recorded.get(key) != current.get(key)]
+    return [f"registry entry {key} changed" for key in sorted({*recorded, *current} - SOURCE_DERIVED_KEYS) if recorded.get(key) != current.get(key)]
 
 
 def non_move_lines(diff_text: str, moved_names: Sequence[str]) -> list[str]:
@@ -63,8 +63,8 @@ def failed_commands(commands: Sequence[Sequence[str]], run: Callable[[Sequence[s
     return failed
 
 
-def folders_merging(folders: Sequence[Path], merge_head_of: Callable[[Path], Path]) -> list[Path]:
-    return [folder for folder in folders if merge_head_of(folder).exists()]
+def folders_merging(folders: Sequence[Path], merge_head_path: Callable[[Path], Path]) -> list[Path]:
+    return [folder for folder in folders if merge_head_path(folder).exists()]
 
 
 def merge_head(folder: Path) -> Path:
@@ -104,7 +104,7 @@ def main() -> int:
     if arguments.command == "after":
         lines = registry_differences(Path(arguments.file).read_text(), registry_text(), parsed_moves(arguments.moves))
     elif arguments.command == "snapshots":
-        lines = [f"failed: {line}" for line in failed_commands(SNAPSHOT_COMMANDS, run_exit_code)]
+        lines = [f"failed: {line}" for line in failed_commands(CONTRACT_COMMANDS, run_exit_code)]
     elif arguments.command == "wave":
         lines = [f"a merge is under way in {folder}" for folder in folders_merging(worktree_folders(), merge_head)]
     else:

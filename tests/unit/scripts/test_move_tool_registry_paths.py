@@ -22,7 +22,7 @@ def write(root, relative, text=""):
 
 def moved(root):
     write(root, SOURCE, "class SampleError(Exception):\n    pass\n")
-    return script.move_file(root, root / SOURCE, root / TARGET)
+    return script.move_path(root, root / SOURCE, root / TARGET)
 
 
 def test_a_snapshot_naming_the_class_path_is_rewritten(tmp_path):
@@ -52,8 +52,8 @@ def test_a_longer_name_in_a_rule_is_left_alone(tmp_path):
 def test_a_path_the_tool_does_not_understand_stops_the_move_and_is_named(tmp_path):
     rule = write(tmp_path, ".commandments/custom/rule.json", '{"fileMatches": "core/base/sample_error"}\n')
     write(tmp_path, SOURCE, "class SampleError(Exception):\n    pass\n")
-    with pytest.raises(script.MoveRefused, match=".commandments/custom/rule.json"):
-        script.move_file(tmp_path, tmp_path / SOURCE, tmp_path / TARGET)
+    with pytest.raises(script.MoveError, match=".commandments/custom/rule.json"):
+        script.move_path(tmp_path, tmp_path / SOURCE, tmp_path / TARGET)
     assert rule.read_text() == '{"fileMatches": "core/base/sample_error"}\n'
 
 
