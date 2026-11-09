@@ -29,16 +29,6 @@
                         "file": "tests/**"
                     }
                 ]
-            },
-            {
-                "all": [
-                    {
-                        "nameMatches": "^(agent|user|worker|expect|session|context|another|story|task|time)_"
-                    },
-                    {
-                        "file": "tests/stories/builder/**"
-                    }
-                ]
             }
         ],
         "select": "function",

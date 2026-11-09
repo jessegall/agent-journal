@@ -87,10 +87,10 @@ class ServerFiles:
         os.chmod(self.socket, SOCKET_FILE_MODE)
 
     def write_pid(self) -> None:
-        self.pid_file.write_text(str(os.getpid()))
+        FileAccess.shared().write(self.pid_file, str(os.getpid()))
 
     def remove_server_files(self) -> None:
-        if self.pid_file.exists() and self.pid_file.read_text().strip() == str(os.getpid()):
+        if self.pid_file.exists() and FileAccess.shared().read(self.pid_file).strip() == str(os.getpid()):
             self.socket.unlink(missing_ok=True)
             self.pid_file.unlink(missing_ok=True)
 
@@ -103,30 +103,30 @@ class ServerFiles:
         self.system_log.write(level, text, LogSource.SERVER)
 
     def write_tunnel_pid(self, pid: int) -> None:
-        self.tunnel_pid_file.write_text(str(pid))
+        FileAccess.shared().write(self.tunnel_pid_file, str(pid))
 
     def tunnel_pid(self) -> int | None:
-        text = self.tunnel_pid_file.read_text().strip() if self.tunnel_pid_file.is_file() else ""
+        text = FileAccess.shared().read(self.tunnel_pid_file).strip() if self.tunnel_pid_file.is_file() else ""
         return int(text) if text.isdigit() else None
 
     def clear_tunnel_pid(self) -> None:
         self.tunnel_pid_file.unlink(missing_ok=True)
 
     def mark_maintenance(self) -> None:
-        self.maintenance.write_text(str(os.getpid()))
+        FileAccess.shared().write(self.maintenance, str(os.getpid()))
 
     def clear_maintenance(self) -> None:
         self.maintenance.unlink(missing_ok=True)
 
     def mark_restart(self) -> None:
-        self.restart_mark.write_text(str(os.getpid()))
+        FileAccess.shared().write(self.restart_mark, str(os.getpid()))
 
     def clear_restart(self) -> None:
         self.restart_mark.unlink(missing_ok=True)
         self.start_mark.unlink(missing_ok=True)
 
     def mark_run_lock(self) -> None:
-        self.run_lock.write_text(str(os.getpid()))
+        FileAccess.shared().write(self.run_lock, str(os.getpid()))
 
     def clear_run_lock(self) -> None:
         self.run_lock.unlink(missing_ok=True)

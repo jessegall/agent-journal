@@ -16,7 +16,7 @@
                 "file": "src/core/modules/memories/**/*_handler.py"
             },
             {
-                "file": "src/core/modules/memories/memory.py"
+                "file": "src/core/modules/memories/models/memory.py"
             },
             {
                 "testCode": true

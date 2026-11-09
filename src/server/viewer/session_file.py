@@ -1,7 +1,7 @@
+from core.base.file_access import FileAccess
 from core.base.type_guards import is_mapping
 import hashlib
 import json
-import os
 from pathlib import Path
 
 from server.viewer.session_type import SessionType
@@ -26,7 +26,7 @@ class SessionFile:
         if not self.path.is_file():
             return {}
         try:
-            kept: object = json.loads(self.path.read_text())
+            kept: object = json.loads(FileAccess.shared().read(self.path))
         except ValueError:
             return {}
         if not is_mapping(kept):
@@ -44,6 +44,5 @@ class SessionFile:
     def save(self, sessions: dict[str, ViewerSession]) -> None:
         kept = {token: session.person_id if session.type is SessionType.PERSON else {"agent": session.person_id} for token, session in sessions.items()
                 if session.type in KEPT_TYPES and session.person_id is not None}
-        descriptor = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(descriptor, "w") as file:
+        with FileAccess.shared().private_writer(self.path) as file:
             file.write(json.dumps(kept))

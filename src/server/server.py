@@ -17,6 +17,7 @@ from core.base.hosting.host_probe import HostProbe
 from core.base.hosting.hosted_file import HOSTED_FILE_PATH, HostedFile
 from core.base.hosting.hosted_start_check import HostedStartCheck
 from core.base.journal_container import opened_container, synced_database_container
+from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from core.base.log_level import LogLevel
 from core.base.refusal import Refusal
@@ -80,7 +81,7 @@ CODE_CHECK_SECONDS = 10.0
 
 
 def last_port(home: JournalHome) -> int:
-    text = home.viewer_port_file.read_text().strip() if home.viewer_port_file.is_file() else ""
+    text = FileAccess.shared().read(home.viewer_port_file).strip() if home.viewer_port_file.is_file() else ""
     return int(text) if text.isdigit() else 0
 
 
@@ -155,7 +156,7 @@ def main(argv: list[str]) -> int:
     else:
         viewer = ViewerListener(login, routes, last_port(home), inherited_socket=inherited_viewer)
         journal_door = LocalJournalDoor()
-        home.viewer_port_file.write_text(str(viewer.port))
+        FileAccess.shared().write(home.viewer_port_file, str(viewer.port))
     ticker_thread = ListenerThread(ticker.tick, lambda error: files.log_line(f"the ticker could not tick: {error}", LogLevel.ERROR), TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     plugin_services = ServerPluginServices(home)

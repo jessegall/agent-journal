@@ -207,7 +207,7 @@ class ClaudeCodeProvider(Provider):
         return self.context_window(home, session).total_input_tokens
 
     def context_window(self, home: JournalHome, session: str) -> ContextWindow:
-        return ContextWindow.of_status_file(home.status_file(session))
+        return ContextWindow.read_status_file(home.status_file(session))
 
     def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
         prefix = re.sub(r"[/.]", "-", str(project.resolve()))

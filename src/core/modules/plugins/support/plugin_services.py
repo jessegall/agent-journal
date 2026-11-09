@@ -115,9 +115,8 @@ class PluginServices:
         return faults
 
     def failure(self, processes: ServiceProcesses, key: tuple[str, str], service: ManifestService, reason: str) -> list[str]:
-        """The fault to tell the user once, when the service has failed to run again and again."""
-        must_tell = processes.retries.failed(key, self.clock.timestamp().value)
-        return [f"its service {service.name} keeps failing to run: {reason}"] if must_tell else []
+        is_repeated_failure = processes.retries.failed(key, self.clock.timestamp().value)
+        return [f"its service {service.name} keeps failing to run: {reason}"] if is_repeated_failure else []
 
     def start(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest, digest: str, environment: dict[str, str]) -> None:
         program, pid_file = str(folder / service.command[0]), self.sockets.pid(*key)

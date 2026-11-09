@@ -5,7 +5,7 @@
         "select": "call",
         "where": [
             {
-                "fileMatches": "(^|/)src/(core|suites)/"
+                "fileMatches": "(^|/)src/(core|suites|server|install)/"
             },
             {
                 "any": [
@@ -127,9 +127,6 @@
             },
             {
                 "fileMatches": "(^|/)(${file_reads_conflicts_stream_lines})$"
-            },
-            {
-                "fileMatches": "(^|/)(${file_reads_shell_uses_nonblocking_budget})$"
             },
             {
                 "fileMatches": "(^|/)(${file_reads_shell_handoff_streams_child_output})$"

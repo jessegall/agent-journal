@@ -16,7 +16,7 @@ class ContextWindow:
     read_at: Timestamp | None = None
 
     @classmethod
-    def of_status_file(cls, path: Path) -> "ContextWindow":
+    def read_status_file(cls, path: Path) -> "ContextWindow":
         if not path.is_file():
             return cls(None, None)
         version = FileAccess.shared().version(path)
