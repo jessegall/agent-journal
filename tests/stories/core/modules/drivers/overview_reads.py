@@ -1,7 +1,7 @@
 import shlex
-import shutil
-import subprocess
 from datetime import timedelta
+
+import pytest
 
 from core.base.command.bus import Bus
 from core.modules.tasks.commands.reset_task_reads.reset_task_reads import ResetTaskReads
@@ -9,16 +9,13 @@ from core.modules.tasks.support.task_brief_requirement import TaskBriefRequireme
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
+from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.core.support.coding_fixtures import BuilderWithBriefedTask, BuilderWithUnreadTask, BuilderWithUser
 
 REFUSAL = "you read this overview already and it is still in your context"
 COMPACTION = HookSamples.sample("compact")
 CLEAR = HookSamples.session_start().with_raw({"source": "clear"})
 OVERVIEW_LINES = ("task overview 1", "overview", "git-overview commits --environment main")
-
-
-def git(folder, *arguments: str) -> None:
-    subprocess.run(["git", "-c", "user.name=Ada", "-c", "user.email=ada@example.test", *arguments], cwd=folder, check=True, capture_output=True, timeout=15)
 
 
 class TwoOpenTasks(StoryFixture):
@@ -39,19 +36,12 @@ class CheckedOutRepository(StoryFixture):
     parent = TwoOpenTasks
 
     def steps(self, story: Story) -> None:
-        folder = story.home.folder.parent / "repository"
-        shutil.rmtree(folder, ignore_errors=True)
-        folder.mkdir()
-        story.run(f"environment edit 1 --folder {shlex.quote(str(folder))}", actor=story.user)
-        git(folder, "init", "-q", "-b", "main")
-        (folder / "cart.py").write_text("one\n")
-        git(folder, "add", "cart.py")
-        git(folder, "commit", "-q", "-m", "Add the cart")
-        (folder / "cart.py").write_text("two\n")
-        git(folder, "commit", "-q", "-am", "Count in cents")
+        repository = GitRepository.sample(story.home.folder.parent / "repository")
+        repository.checkout("version-5")
+        story.run(f"environment edit 1 --folder {shlex.quote(str(repository.folder))}", actor=story.user)
 
     def expect(self, story: Story) -> None:
-        story.expect_text("git-overview current --environment main", "main", actor=story.user)
+        story.expect_text("git-overview current --environment main", "version-5", actor=story.user)
 
 
 class TaskOneRead(StoryFixture):
@@ -72,14 +62,14 @@ class EveryOverviewRead(StoryFixture):
     parent = CheckedOutRepository
 
     def steps(self, story: Story) -> None:
-        read_every_overview(story)
+        read_overviews(story)
         story.advance(timedelta(seconds=1))
 
     def expect(self, story: Story) -> None:
         story.expect_refusal("overview", REFUSAL, actor=story.agent)
 
 
-def read_every_overview(story: Story) -> None:
+def read_overviews(story: Story) -> None:
     for line in OVERVIEW_LINES:
         story.expect_success(line, actor=story.agent)
 
@@ -102,23 +92,17 @@ def test_the_overview_of_the_journal_is_refused_the_second_time(new_story):
 
 def test_a_git_overview_page_is_refused_the_second_time_and_another_page_passes(new_story):
     story = new_story(fixture=CheckedOutRepository)
-    story.expect_text("git-overview commits --limit 1 --environment main", "Count in cents", actor=story.agent)
+    story.expect_text("git-overview commits --limit 1 --environment main", "The cart", actor=story.agent)
     story.expect_refusal("git-overview commits --limit 1 --environment main", REFUSAL, actor=story.agent)
-    story.expect_text("git-overview commits --skip 1 --limit 1 --environment main", "Add the cart", actor=story.agent)
+    story.expect_text("git-overview commits --skip 1 --limit 1 --environment main", "The first commit", actor=story.agent)
 
 
-def test_every_overview_passes_again_after_a_compaction(new_story):
+@pytest.mark.parametrize("reset", [COMPACTION, CLEAR], ids=["compaction", "clear"])
+def test_every_overview_passes_again_after_a_context_reset(new_story, reset):
     story = new_story(fixture=EveryOverviewRead)
-    story.hook("s-1", COMPACTION)
+    story.hook("s-1", reset)
     story.advance(timedelta(seconds=1))
-    read_every_overview(story)
-
-
-def test_every_overview_passes_again_after_a_clear(new_story):
-    story = new_story(fixture=EveryOverviewRead)
-    story.hook("s-1", CLEAR)
-    story.advance(timedelta(seconds=1))
-    read_every_overview(story)
+    read_overviews(story)
 
 
 def test_a_failed_read_does_not_count_as_a_read(new_story):
