@@ -17,19 +17,21 @@ from suites.coding.modules.workers.models.affected_test import AffectedTest, Aff
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.affected_test_rows import AffectedTestRows
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 TEST_LIMIT_SECONDS = 3600
 
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
     """Moves queued proofs to running and makes their processes, owned by the worker that wrote them, so it reads
-    their output; a later listener starts them once this is committed."""
+    their output; a later listener starts them once this is committed. They run on the commit handed in, in a
+    checkout of its own, so the worker can go on working in its worktree."""
 
     command = StartWorkerTests
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery, proofs: ProofQuery, affected: AffectedTestRows) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery, proofs: ProofQuery, affected: AffectedTestRows, git: WorktreeGit) -> None:
         self.queries, self.repository, self.bus = queries, repository, bus
-        self.worktrees, self.proofs, self.affected = worktrees, proofs, affected
+        self.worktrees, self.proofs, self.affected, self.git = worktrees, proofs, affected, git
 
     def handle(self, command: StartWorkerTests, context: Context) -> None:
         worktrees = {worktree.id: worktree for worktree in self.worktrees.all_worktrees()}
@@ -52,11 +54,11 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
             self.start_picker(first_answer, worktree, context)
 
     def start(self, proof: Proof, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, proof.test_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = StartProcess.single_part(worktree.session_agent_id, proof.test_command, self.git.test_checkout(worktree), CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=proof.task_id), context)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
     def start_picker(self, first_answer: AffectedTest, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, first_answer.picker_command, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = StartProcess.single_part(worktree.session_agent_id, first_answer.picker_command, self.git.test_checkout(worktree), CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
         self.repository.update(first_answer, context, state=AffectedTestState.PICKING, process_id=process.id)

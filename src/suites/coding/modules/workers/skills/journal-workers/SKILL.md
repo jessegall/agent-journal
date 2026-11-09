@@ -140,7 +140,7 @@ never starts is retired after the idle time.
 - At each hand-in, say what you did differently from the task or left out: `journal worker next --differences "<what>"`,
   or `--differences none`; the same goes for `journal worker deliver`.
 - `journal worker next` hands your task over for testing: the plugins judge your changes, a refusal says what to put
-  right; the journal commits and runs its proofs' tests in turn. Stop then: a failure or your next task comes back to you.
+  right; the journal commits and runs its proofs' tests in turn, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.
 - `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
   tests in turn; those that fail come back to you to fix and deliver again.
 - `test-at-phase-end` (on by default) tests a started plan's tasks together at the end of each phase. Off tests
@@ -154,7 +154,7 @@ never starts is retired after the idle time.
     An allowed request runs once without the flag and does not use the phase allowance. The count starts anew
     in the next phase or batch. After failed tests come back, runs are free until the next hand-in.
   - At a phase or batch end, `journal worker next` or `journal worker deliver` after your last runs the tests
-    of all tasks waiting for that hand-in, plus a phase's own test when set. Stop then. All failures come back
+    of all tasks waiting for that hand-in, plus a phase's own test when set. You may go on working meanwhile. All failures come back
     together, and only failed tests run at the next hand-in.
   - When tests fail, you get every failure in one line, on the first failed task. You may run tests yourself with no
     flag until you hand in again, which runs only what failed.
