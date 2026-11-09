@@ -10,7 +10,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.messages.commands.unread_reports.unread_reports import UnreadReports
+from core.modules.messages.commands.unread_reports.support.unread_reports import UnreadReports
 
 SHOWN_REPORTS = 20
 TITLE_CHARACTERS = 100

@@ -9,7 +9,7 @@ from core.base.scope.environment_scope import EnvironmentScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.support.plugin_call_access import PluginCallAccess
-from core.modules.plugins.commands.plugin_path.checkout_path import CheckoutPath
+from core.modules.plugins.commands.plugin_path.support.checkout_path import CheckoutPath
 
 
 class PluginPathSubcommand(ReadSubcommand[CheckoutPath]):
