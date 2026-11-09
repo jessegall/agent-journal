@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { openBlock as t, createElementBlock as o, Fragment as u, createVNode as d, unref as c, withCtx as C, createTextVNode as w, toDisplayString as r, ref as h, normalizeClass as Q, createElementVNode as i, createCommentVNode as m, renderList as T, withModifiers as O, createBlock as R } from "vue";
 import { Btn as $, useWindow as I, TimeAgo as U, peekRef as j, TextInput as N } from "@journal/window-kit";
 import { _ as z } from "./_plugin-vue_export-helper-CHgC5LLL.js";

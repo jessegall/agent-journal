@@ -22,7 +22,7 @@ class AskTopic(StrEnum):
 
 
 WAITING_WORK_LINES = {
-    AskTopic.JUDGE: "fix the sins in your own files, leave the rest, and go on",
+    AskTopic.JUDGE: "fix the findings in your own files, leave the rest, and go on",
     AskTopic.TESTS: "work on the next task or prove what you have while the answer comes",
     AskTopic.BUILT: "prove each point with where it is and hand in with --differences already built: <where>, then go on to the next task",
     AskTopic.CONFLICT: "settle what you can in the named files",

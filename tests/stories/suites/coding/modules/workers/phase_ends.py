@@ -17,7 +17,6 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, TEST_LINE, dispatched_story_worker, planned_story, start_planned_worker
 
-FLAG = "--ask-main"
 PHASE_TEST = "pytest tests/phase.py"
 
 

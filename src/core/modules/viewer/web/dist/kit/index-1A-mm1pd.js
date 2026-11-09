@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { openBlock as u, createElementBlock as d, normalizeStyle as ye, unref as L, renderSlot as he, createElementVNode as m, normalizeClass as K, Fragment as D, renderList as ne, defineComponent as Ui, Comment as Gi, h as ua, cloneVNode as Vi, createBlock as F, withCtx as j, createVNode as I, toDisplayString as v, createCommentVNode as k, ref as O, inject as Me, watch as ge, onMounted as _e, onBeforeUnmount as et, reactive as Ht, shallowRef as Xe, onUnmounted as Be, useAttrs as ca, computed as E, resolveDynamicComponent as ut, mergeProps as Pe, useId as Os, resolveDirective as Ki, withDirectives as Je, createTextVNode as V, Teleport as da, nextTick as je, Transition as zt, withModifiers as Se, createApp as Yi, shallowReactive as Qi, withKeys as _t, onScopeDispose as fa, useModel as on, mergeModels as Pt, toRef as Sa, vModelText as Yn, resolveComponent as Xi, provide as Il, onErrorCaptured as Ji, TransitionGroup as Ts, isRef as go, getCurrentInstance as Zi, getCurrentScope as Bl, createSlots as eu, vShow as Rl, useSlots as tu, normalizeProps as nu, guardReactiveProps as au, defineAsyncComponent as su } from "vue";
 function Ll(e, t = performance.now()) {
   return { "--shimmer-ms": `${e}ms`, animationDelay: `${-(t % e)}ms` };
@@ -9822,7 +9821,7 @@ const Q2 = { after: 3 }, no = 10, X2 = { hop_up: 1200, disco: 7200, rope_swing: 
   ]),
   ...fe("tests_failed", { cooldown: 20, toward: "card" }, [le("startled", 2), le("dismay", 1), le("tantrum", 3), $e(1)]),
   ...fe("committed", { cooldown: 30, toward: "card", onto: !0 }, [le("nod", 2), $e(2)]),
-  // a sin the commandments plugin found repented: now and then a halo over the head and a serene, holy look
+  // a finding a plugin found fixed: now and then a halo over the head and a serene, holy look
   ...fe("sin_fixed", { cooldown: 300 }, [le("halo", 1), $e(2)]),
   // a sin it found in the agent's change: now and then it stands, kneels down toward the sin's mark and holds up a big cross in both hands
   // to ask forgiveness
@@ -10048,8 +10047,8 @@ function p5(e, t, n) {
   const a = e.way > 0 ? 90 : 270, s = e.pace > 1 ? { pace: e.pace } : {};
   return e.running || e.pressing || e.sprinting || e.pace > 1 ? { clip: "run", facing: a, ...s } : t !== "idle" && n(t, "walk") ? { clip: t, facing: a, posture: "walk", ...s } : { clip: "walk", facing: a, ...s };
 }
-const Ms = (e) => e.outcome, g5 = "plugin:code-commandments:sins:", cl = (e) => e.type === "plugins.card" && e.markKey.startsWith(g5), v5 = [
-  // a sin the commandments plugin found in the agent's change, and one it found repented, as its marks in the chat say
+const Ms = (e) => e.outcome, g5 = /^plugin:[^:]+:sins:/, cl = (e) => e.type === "plugins.card" && g5.test(e.markKey), v5 = [
+  // a finding a plugin made in the agent's change, and one it found fixed, as its marks in the chat say
   { beat: "sin_committed", matches: (e) => cl(e) && e.variant !== "good" },
   { beat: "sin_fixed", matches: (e) => cl(e) && e.variant === "good" },
   { beat: "committed", matches: (e) => e.type === "workers.worker" && e.variant === "merged" },
@@ -14129,7 +14128,7 @@ function hC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const mC = su(() => import("./VoiceFigure-BkZ3rCtx.js").then((e) => e.V)), pC = "1.2.0", gC = "3.5";
+const mC = su(() => import("./VoiceFigure-C45qbgBW.js").then((e) => e.V)), pC = "1.2.0", gC = "3.5";
 export {
   Tf as $,
   Oe as A,

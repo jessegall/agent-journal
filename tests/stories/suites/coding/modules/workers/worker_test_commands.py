@@ -11,7 +11,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, asking_main, dispatched_story_worker, shell_test_part, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, dispatched_story_worker, shell_test_part, start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
@@ -256,18 +256,6 @@ def test_the_fourth_run_of_a_phase_is_refused(phase_worker):
     for _ in range(phase_worker.status_json()["test_runs_available"]):
         expect_value(worker_test_hook(phase_worker, "python", "tests/cart.py").refusal, "")
     expect_value_with(worker_test_hook(phase_worker, "python", "tests/cart.py").refusal, "phase")
-
-
-def test_ask_main_still_reaches_the_merger_or_main_agent(phase_worker):
-    for _ in range(phase_worker.status_json()["test_runs_available"]):
-        worker_test_hook(phase_worker, "python", "tests/cart.py")
-    worker_test_hook(phase_worker, "python", "tests/cart.py", "--ask-main", "one more")
-    expect_value([(request.command, request.reason) for request in phase_worker.run_requests()], [("pytest tests/cart.py", "one more")])
-
-
-def test_a_flag_in_the_arguments_is_never_passed_to_the_run_as_a_request(phase_worker):
-    phase_worker.story.expect_success(asking_main(PYTHON_RUN, "one more"), actor=phase_worker.worker)
-    expect_value(started_lines(phase_worker), ["pytest tests/cart.py"])
 
 
 def test_a_proof_takes_a_name_and_an_unknown_name_is_refused_when_made(worker_with_commands):

@@ -5,7 +5,10 @@ const props = defineProps({title: {type: String, required: true}, skills: {type:
 const emit = defineEmits(["open", "require"]);
 const folded = ref(false);
 const expanded = ref(new Set());
-const familyOf = (skill) => skill.folder.match(/^commandments-([^-]+)-/)?.[0].slice(0, -1) || "";
+const SMALLEST_FAMILY = 3;
+const prefixOf = (skill) => skill.folder.match(/^[^-]+-[^-]+(?=-)/)?.[0] || "";
+const familySizes = computed(() => props.skills.reduce((sizes, skill) => sizes.set(prefixOf(skill), (sizes.get(prefixOf(skill)) || 0) + 1), new Map()));
+const familyOf = (skill) => (familySizes.value.get(prefixOf(skill)) >= SMALLEST_FAMILY ? prefixOf(skill) : "");
 const singles = computed(() => props.skills.filter((skill) => !familyOf(skill)));
 const families = computed(() => [...new Set(props.skills.map(familyOf).filter(Boolean))].map((name) => ({name, skills: props.skills.filter((skill) => familyOf(skill) === name)})));
 const toggle = (name) => {const next = new Set(expanded.value); next.has(name) ? next.delete(name) : next.add(name); expanded.value = next;};

@@ -14,7 +14,6 @@ from suites.coding.modules.workers.support.worker_test_run import WorkerTestRun
 from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_test_arguments import WorkerTestArguments
-from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
 from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
@@ -36,7 +35,7 @@ class RunWorkerTestHandler(Handler[RunWorkerTest, Process]):
         missing = self.libraries.missing(worktree)
         if missing:
             raise Refusal(f"{', '.join(missing)} is missing from your worktree", AskTopic.TOOL.hint("the merger can relink it"))
-        test_arguments = tuple(shlex.split(WorkerTestFlag.arguments_flag(command.name, command.name, command.test_arguments).command))[1:]
+        test_arguments = tuple(command.test_arguments)
         WorkerTestArguments.check(test_arguments)
         line = self.names.line(worktree.session_agent_id, command.name, test_arguments)
         start = StartProcess.single_part(worktree.session_agent_id, line, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)

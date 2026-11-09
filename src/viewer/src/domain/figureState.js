@@ -123,13 +123,13 @@ export {actOver, frameIn, closeAt, canSwitch, goesOnFacing, stretchedAs, stretch
 // how a card's process ended, as its mark reports it
 const outcomeOf = (card) => card.outcome;
 
-// the commandments plugin's mark for a file: one mark for each file, kept up in place, in the warn tone while it holds sins and the good tone once repented
-const SIN_MARKS = "plugin:code-commandments:sins:";
-const isSinMark = (card) => card.type === "plugins.card" && card.markKey.startsWith(SIN_MARKS);
+// a plugin's mark for a file: one mark for each file, kept up in place, in the warn tone while it holds findings and the good tone once they are fixed
+const SIN_MARKS = /^plugin:[^:]+:sins:/;
+const isSinMark = (card) => card.type === "plugins.card" && SIN_MARKS.test(card.markKey);
 
 // One-off beats, each fired by a chat mark and played once before the held state resumes; the first rule a mark matches names its beat
 const BEATS = [
-    // a sin the commandments plugin found in the agent's change, and one it found repented, as its marks in the chat say
+    // a finding a plugin made in the agent's change, and one it found fixed, as its marks in the chat say
     {beat: "sin_committed", matches: (card) => isSinMark(card) && card.variant !== "good"},
     {beat: "sin_fixed", matches: (card) => isSinMark(card) && card.variant === "good"},
     {beat: "committed", matches: (card) => card.type === "workers.worker" && card.variant === "merged"},
