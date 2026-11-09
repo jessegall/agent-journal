@@ -29,7 +29,7 @@ func TestEveryCommandMovesAfterFifteenSeconds(t *testing.T) {
 			}
 			current := time.Unix(0, 0)
 			tracker := Tracker{Options: setup, Client: newClient(), Folder: folder,
-				Reported: map[int]bool{}, Positions: map[int]bool{1: true}, Now: func() time.Time { return current },
+				Reported: map[int]bool{}, Positions: map[int]bool{1: true}, Clock: func() time.Time { return current },
 				Wait: func() { current = current.Add(time.Second) }}
 			var output strings.Builder
 			if code := tracker.Run(&output); code != 0 || !detached || current.Sub(time.Unix(0, 0)) != 15*time.Second || !strings.Contains(output.String(), "moved to the background: output 4") {
@@ -49,7 +49,7 @@ func TestACommandFinishingBeforeTheLimitStaysInTheForeground(t *testing.T) {
 	}
 	current := time.Unix(0, 0)
 	tracker := Tracker{Options: setup, Client: newClient(), Folder: folder, Reported: map[int]bool{},
-		Now: func() time.Time { return current }, Wait: func() { current = current.Add(time.Second); _ = folder.WriteEnd(0) }}
+		Clock: func() time.Time { return current }, Wait: func() { current = current.Add(time.Second); _ = folder.WriteEnd(0) }}
 	var output strings.Builder
 	if code := tracker.Run(&output); code != 0 || strings.Contains(output.String(), "background") {
 		t.Fatalf("code %d: %s", code, output.String())
