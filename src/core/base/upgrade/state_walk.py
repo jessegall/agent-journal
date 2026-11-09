@@ -1,6 +1,5 @@
 from collections import deque
-from enum import StrEnum
-
+from core.base.model.added_state import StateValue
 from core.base.model.lifecycle import Lifecycle
 
 
@@ -11,10 +10,10 @@ class StateWalk:
     def __init__(self, lifecycle: type[Lifecycle]) -> None:
         self.lifecycle = lifecycle
 
-    def path(self, target: StrEnum) -> list[StrEnum] | None:
+    def path(self, target: StateValue) -> list[StateValue] | None:
         first = self.lifecycle.initial[0]
-        queue: deque[list[StrEnum]] = deque([[first]])
-        visited = {first}
+        queue: deque[list[StateValue]] = deque([[first]])
+        visited: set[StateValue] = {first}
         while queue:
             route = queue.popleft()
             if route[-1] == target:

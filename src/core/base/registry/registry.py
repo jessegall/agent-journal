@@ -98,7 +98,7 @@ class Registry:
     skills: tuple[SkillEntry, ...] = ()
     moves: tuple[MoveEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
-    module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    module_suites: dict[str, tuple[str, ...]] = field(default_factory=dict[str, tuple[str, ...]])
     events: tuple[str, ...] = ()
     outward_lines: tuple[str, ...] = ()
     background_lines: tuple[str, ...] = ()

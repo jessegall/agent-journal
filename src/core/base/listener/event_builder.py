@@ -2,7 +2,7 @@ from dataclasses import replace
 from collections.abc import Sequence
 from typing import TypeVar
 
-from core.base.change.changed import Changed
+from core.base.change.changed import Changed, is_changed_class
 from core.base.change.created import Created
 from core.base.change.deleted import Deleted
 from core.base.change.event_type import EventType
@@ -24,8 +24,10 @@ class EventBuilder:
         self.rows, self.tables, self.book = rows, tables, book
 
     def built(self, event_type: EventType, logged: LoggedEvent) -> object | None:
-        if event_type.model is None or not issubclass(event_type.event_class, Changed):
+        if not is_changed_class(event_type.event_class):
             return event_type.event_class()
+        if event_type.model is None:
+            raise TypeError(f"{event_type.event_class.__name__} names no model")
         event_class = self.event_class(event_type.event_class, logged)
         if issubclass(event_class, Deleted):
             return self.deleted(event_type.model, logged)
@@ -40,7 +42,7 @@ class EventBuilder:
         if event_type.model is not None and issubclass(event_type.event_class, Changed):
             self.rows.prepare(event_type.model, [event.row_id for event in events if not event.is_deletion])
 
-    def event_class(self, declared: type, logged: LoggedEvent) -> type:
+    def event_class(self, declared: type[Changed[Model]], logged: LoggedEvent) -> type[Changed[Model]]:
         if declared is not Changed:
             return declared
         if logged.is_deletion:

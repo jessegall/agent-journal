@@ -65,5 +65,5 @@ class InspectorDeclaration:
                    actions=tuple(ButtonDeclaration.restored(action) for action in stored.get("actions", ())),
                    components=tuple(InspectorComponent(**component) for component in stored.get("components", ())),
                    comments=stored.get("comments", False), events=tuple(stored.get("events", ())),
-                   links=InspectorLinks(**{**links, "categories": tuple(links["categories"])}) if links is not None else None, labelled=stored.get("labelled", ""),
+                   links=replace(InspectorLinks(**links), categories=tuple(links["categories"])) if links is not None else None, labelled=stored.get("labelled", ""),
                    lists_fields=stored.get("lists_fields", False), draws_text=stored.get("draws_text", False))

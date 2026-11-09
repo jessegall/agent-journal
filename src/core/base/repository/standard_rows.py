@@ -1,3 +1,4 @@
+from functools import partial
 from collections.abc import Callable, Sequence
 
 from core.base.actor import CORE_ACTOR_ID, Actor
@@ -23,8 +24,7 @@ class StandardRows:
         titles = {getattr(row, "title") for row in standard}
         for row in [row for title, row in stored.items() if title not in titles and not used(row)]:
             self.repository.delete_stored(row, context)
-            self.kept.update(query.table.name, lambda rows: {title: current for title, current in rows.items() if current.id != row.id},
-                              "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+            self.kept.update(query.table.name, partial(self.without_row, row), "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
         for row in standard:
             existing = stored.get(getattr(row, "title"))
             if existing is not None and not any(getattr(existing, field) != getattr(row, field) for field in fields):
@@ -33,8 +33,15 @@ class StandardRows:
                 saved = self.repository.save(row, context)
             else:
                 saved = self.repository.update(existing, context, **{field: getattr(row, field) for field in fields})
-            self.kept.update(query.table.name, lambda rows: {**rows, getattr(saved, "title"): saved},
-                              "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+            self.kept.update(query.table.name, partial(self.with_row, saved), "creator_id = ?", [CORE_ACTOR_ID], name="standard.rows")
+
+    @staticmethod
+    def without_row[M: Model](row: M, rows: dict[str, M]) -> dict[str, M]:
+        return {title: current for title, current in rows.items() if current.id != row.id}
+
+    @staticmethod
+    def with_row[M: Model](row: M, rows: dict[str, M]) -> dict[str, M]:
+        return {**rows, getattr(row, "title"): row}
 
     @staticmethod
     def refuse_change(old_row: Model | None, actor: Actor) -> None:

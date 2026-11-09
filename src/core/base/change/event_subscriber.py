@@ -6,7 +6,7 @@ from core.base.change.event_pattern import EventPattern
 from core.base.change.event_type import EventType
 from core.base.model.move import Move
 
-E = TypeVar("E", contravariant=True)
+E = TypeVar("E", contravariant=True, default=object)
 
 
 class EventSubscriber(Generic[E]):

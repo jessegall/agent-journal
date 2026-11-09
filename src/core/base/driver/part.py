@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.driver.classification import Classification
 from core.base.driver.hook_event_error import HookEventError
-from core.base.driver.hook_fields import mapping, text, texts
+from core.base.driver.hook_fields import mapping, nested_texts, text, texts
 
 
 @dataclass(frozen=True)
@@ -40,4 +40,4 @@ class Part:
         return cls(text(fields, "text"), text(fields, "program"), text(fields, "subcommand"), texts(fields, "arguments"),
                    Classification.parsed(fields.get("classification")), texts(fields, "read_paths"), texts(fields, "write_paths"),
                    text(fields, "joined_by"), pipe_target, fields.get("is_full_test_run") is True, text(fields, "saved_command"), text(fields, "read_flag"), timeout,
-                   tuple(tuple(command) for command in fields.get("nested_journal_commands", [])))
+                   nested_texts(fields, "nested_journal_commands"))

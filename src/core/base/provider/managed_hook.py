@@ -21,7 +21,7 @@ class ManagedHook:
     timeout: int
     source: str
     tracked: bool
-    fields: Mapping[str, object] = field(default_factory=dict)
+    fields: Mapping[str, object] = field(default_factory=dict[str, object])
     state: ManagedState = ManagedState.ENABLED
     effects: Sequence[HookEffect] = ()
     sources: Sequence[HookSource] = ()

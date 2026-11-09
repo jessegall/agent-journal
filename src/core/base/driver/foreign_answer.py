@@ -10,7 +10,7 @@ class ForeignAnswer:
     name: str
     refusal: str = ""
     lines: tuple[str, ...] = ()
-    updated_input: Mapping[str, object] = field(default_factory=dict)
+    updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
     terminal: str = ""
 
     @classmethod

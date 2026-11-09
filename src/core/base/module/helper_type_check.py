@@ -78,7 +78,7 @@ class HelperTypeCheck:
         if not declaration.label.strip():
             problems.append(f"{name}: it has no label")
         roster = declaration.roster
-        if roster is not None and (not isinstance(roster, type) or not issubclass(roster, AgentRoster)):
+        if roster is not None and not issubclass(roster, AgentRoster):
             problems.append(f"{name}: its roster does not implement AgentRoster")
         return problems
 

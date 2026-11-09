@@ -3,6 +3,7 @@ from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import cache
+import inspect
 import os
 from pathlib import Path
 import sqlite3
@@ -122,7 +123,7 @@ class RepeatedWork(PointTally):
         if not statement.is_read:
             return
         if self.database is not None:
-            self.check_scan(statement)
+            self.check_scan(self.database, statement)
         if self.is_allowed_read():
             return
         self.reset_stale_reads()
@@ -151,8 +152,15 @@ class RepeatedWork(PointTally):
         raise RepeatedCallsError(finding.text)
 
     @staticmethod
+    def frame_above(levels: int) -> FrameType | None:
+        frame = inspect.currentframe()
+        for _ in range(levels + 1):
+            frame = frame.f_back if frame is not None else None
+        return frame
+
+    @staticmethod
     def is_allowed_read() -> bool:
-        frame = sys._getframe(2)
+        frame = RepeatedWork.frame_above(2)
         while frame is not None and frame.f_code.co_filename.endswith(READ_HELPERS):
             frame = frame.f_back
         if frame is None:
@@ -168,14 +176,14 @@ class RepeatedWork(PointTally):
             frame = frame.f_back
         return False
 
-    def check_scan(self, statement: Statement) -> None:
+    def check_scan(self, database: Database, statement: Statement) -> None:
         if statement in self.checked_plans:
             return
         self.checked_plans.add(statement)
         if UNFILTERED_COUNT.fullmatch(statement.sql):
             return
         page = BOUNDED_PAGE.fullmatch(statement.sql)
-        plans = self.database.query_plan(statement)
+        plans = database.query_plan(statement)
         for plan in plans:
             if "USING COVERING INDEX" in plan or plan == "SCAN CONSTANT ROW":
                 continue
@@ -187,7 +195,7 @@ class RepeatedWork(PointTally):
             if page is not None and not any("TEMP B-TREE" in step for step in plans) and self.has_page_bounds(page, statement):
                 continue
             index = SCAN_INDEX.search(plan)
-            if index is not None and self.database.is_partial_index(index.group(1)):
+            if index is not None and database.is_partial_index(index.group(1)):
                 continue
             if statement.scan_reason is not None:
                 self.allowed_scans[statement] = statement.scan_reason
@@ -212,7 +220,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def caller_frames() -> list[traceback.FrameSummary]:
-        stack = traceback.StackSummary.extract(traceback.walk_stack(sys._getframe(1)), limit=CALLER_FRAMES, lookup_lines=False)
+        stack = traceback.StackSummary.extract(traceback.walk_stack(RepeatedWork.frame_above(1)), limit=CALLER_FRAMES, lookup_lines=False)
         return [frame for frame in stack if not frame.filename.endswith(WATCH_FILES)]
 
     @staticmethod
@@ -251,7 +259,7 @@ class RepeatedWork(PointTally):
 
     @staticmethod
     def is_allowed_file_read() -> bool:
-        frame = sys._getframe(1)
+        frame = RepeatedWork.frame_above(1)
         for _ in range(CALLER_FRAMES):
             if frame is None:
                 return False
