@@ -107,7 +107,7 @@ class MemoryWorktreeGit(WorktreeGit):
         self.commit(worktree, message, trailer)
         return ()
 
-    def is_merging(self, worktree: Worktree) -> bool:
+    def is_merging(self, folder: str) -> bool:
         return False
 
     def move_onto_base(self, worktree: Worktree) -> None:

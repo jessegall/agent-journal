@@ -153,12 +153,12 @@ class WorktreeGit:
     def rebased_commit(self, worktree: Worktree, message: str, trailer: str) -> tuple[str, ...]:
         self.restore_stashes(worktree)
         self.refuse_conflicts(worktree)
-        if self.is_merging(worktree):
+        if self.is_merging(worktree.folder):
             self.commit(worktree, message, trailer)
             return ()
         moved = self.tip(worktree.folder, worktree.base_branch) != worktree.base_commit
         rebased = moved and self.rebase(worktree)
-        conflicts = self.conflict_files(worktree) if rebased else ()
+        conflicts = self.without_instruction_conflicts(worktree, self.conflict_files(worktree)) if rebased else ()
         if conflicts:
             return conflicts
         self.commit(worktree, message, trailer)
@@ -169,8 +169,8 @@ class WorktreeGit:
         if conflicts:
             raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle them in the worktree, then try again"))
 
-    def is_merging(self, worktree: Worktree) -> bool:
-        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
+    def is_merging(self, folder: str) -> bool:
+        return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
 
     def conflict_files(self, worktree: Worktree) -> tuple[str, ...]:
         return ConflictFiles(Path(worktree.folder)).paths()
@@ -187,10 +187,16 @@ class WorktreeGit:
         folders = self.built_folders(conflicts)
         if folders:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-r", "-f", "--ignore-unmatch", "--", *folders)
-        source_conflicts = tuple(path for path in conflicts if BUILT_FOLDER not in path)
+        source_conflicts = tuple(path for path in self.without_instruction_conflicts(worktree, tuple(conflicts)) if BUILT_FOLDER not in path)
         if not source_conflicts:
             self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "--no-edit")
         return source_conflicts
+
+    def without_instruction_conflicts(self, worktree: Worktree, conflicts: tuple[str, ...]) -> tuple[str, ...]:
+        instruction_conflicts = [path for path in conflicts if path in INSTRUCTION_FILES]
+        if instruction_conflicts:
+            self.checked(worktree.folder, GIT_LIMIT_SECONDS, "restore", f"--source={worktree.base_branch}", "--staged", "--worktree", "--", *instruction_conflicts)
+        return tuple(path for path in conflicts if path not in INSTRUCTION_FILES)
 
     def built_folders(self, files: list[str]) -> tuple[str, ...]:
         return tuple(sorted({path.split(BUILT_FOLDER, 1)[0] + "/web/dist" for path in files if BUILT_FOLDER in path}))
@@ -319,10 +325,24 @@ class WorktreeGit:
         return tuple(sorted(changed & uncommitted))
 
     def merge(self, folder: str, worktree: Worktree, message: str) -> None:
-        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "-m", message, worktree.branch)
-        if finished.returncode != 0:
+        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "--no-commit", worktree.branch)
+        if not self.is_merging(folder):
+            if finished.returncode != 0:
+                raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+            return
+        self.keep_instruction_files(folder)
+        if self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip():
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+        self.checked(folder, GIT_LIMIT_SECONDS, "commit", "-m", message)
+
+    def keep_instruction_files(self, folder: str) -> None:
+        kept = self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "--name-only", "HEAD", "--", *INSTRUCTION_FILES).stdout.split()
+        added = [name for name in INSTRUCTION_FILES if name not in kept]
+        if kept:
+            self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--source=HEAD", "--staged", "--worktree", "--", *kept)
+        if added:
+            self.checked(folder, GIT_LIMIT_SECONDS, "rm", "-f", "--quiet", "--ignore-unmatch", "--", *added)
 
     def untrack_files(self, folder: str, names: tuple[str, ...]) -> tuple[str, ...]:
         tracked = set(self.checked(folder, GIT_LIMIT_SECONDS, "ls-files", "--", *names).stdout.split())
@@ -442,7 +462,7 @@ class WorktreeGit:
     def worker_files(self, worktree: Worktree) -> tuple[str, ...]:
         listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--no-merges", "--name-only", "-z", "--format=", f"{worktree.base_branch}..HEAD").stdout
         committed = (name.strip("\n") for name in listing.split(NAME_SEPARATOR))
-        waiting = self.file_changes(worktree.folder, "MERGE_HEAD" if self.is_merging(worktree) else "HEAD")
+        waiting = self.file_changes(worktree.folder, "MERGE_HEAD" if self.is_merging(worktree.folder) else "HEAD")
         return tuple(dict.fromkeys(name for name in (*committed, *(change.relative for change in waiting)) if name))
 
     def file_changes(self, folder: str, base: str) -> tuple[WorktreeFileChange, ...]:
