@@ -86,11 +86,6 @@ src/core/modules/skills/support/agent_profile_skills.py imports core module prof
 src/core/modules/skills/support/profile_skills.py imports core module profiles, which core module skills may not use
 src/core/modules/skills/support/skill_agent_groups.py imports core module profiles, which core module skills may not use
 src/core/modules/skills/support/skill_projects.py imports core module environments, which core module skills may not use
-src/core/modules/tasks/commands/comment_task/comment_task_subcommand.py imports core module documents, which core module tasks may not use
-src/core/modules/tasks/commands/read_task_brief/read_task_brief_handler.py imports core module documents, which core module tasks may not use
-src/core/modules/tasks/commands/task_comments/task_comments_subcommand.py imports core module documents, which core module tasks may not use
-src/core/modules/tasks/commands/task_context/task_context_subcommand.py imports core module documents, which core module tasks may not use
-src/core/modules/tasks/commands/task_info/task_info_subcommand.py imports core module documents, which core module tasks may not use
 src/core/modules/tasks/rules/inactive_task_reminder_rule.py imports core module settings, which core module tasks may not use
 src/core/modules/updates/commands/install_release/install_release_handler.py imports host install, which core module updates may not use
 src/core/modules/updates/support/release_install_steps.py imports host install, which core module updates may not use

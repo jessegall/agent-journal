@@ -4,12 +4,12 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.documents.support.row_comments import RowComments
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_inspection_row import TaskInspectionRow
 from core.modules.tasks.support.task_info import TaskInfo
 from core.modules.tasks.support.task_opener import TaskOpener
 from core.modules.tasks.support.task_wait_attempts import TaskWaitAttempts
+from core.modules.tasks.support.task_comment_reads import TaskCommentReads
 
 
 class TaskInfoSubcommand(ReadSubcommand[TaskInfo]):
@@ -19,7 +19,7 @@ class TaskInfoSubcommand(ReadSubcommand[TaskInfo]):
     cli_name = "task"
     name = "info"
 
-    def __init__(self, queries: Queries, comments: RowComments, attempts: TaskWaitAttempts) -> None:
+    def __init__(self, queries: Queries, comments: TaskCommentReads, attempts: TaskWaitAttempts) -> None:
         self.queries, self.comments, self.attempts = queries, comments, attempts
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -34,4 +34,4 @@ class TaskInfoSubcommand(ReadSubcommand[TaskInfo]):
         listed = {f"tasks:{wait['id']}" for wait in dependencies}
         waits = (*(f"task {wait['id']} ({wait['state']})" for wait in dependencies),
                  *(TaskOpener.parsed(wait, attempts.get(wait["id"], "")).text for wait in openers if wait["target"] not in listed))
-        return TaskInfo(task.id, task.title, task.state.value, task.priority, task.complexity, tuple(row.tags), self.comments.query(task).count(), task.delegated_to, waits)
+        return TaskInfo(task.id, task.title, task.state.value, task.priority, task.complexity, tuple(row.tags), self.comments.total(task), task.delegated_to, waits)
