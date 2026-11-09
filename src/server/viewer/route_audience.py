@@ -7,5 +7,5 @@ class RouteAudience(Enum):
 
     PUBLIC_FILES = "public files"
     SESSION = "a session"
-    NOT_OPEN = "not open on a hosted journal"
+    CLOSED_HOSTED = "closed on a hosted journal"
     JOURNAL_USER = "the journal's own user"

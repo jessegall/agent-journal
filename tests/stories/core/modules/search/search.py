@@ -117,6 +117,10 @@ def test_at_most_forty_hits_are_shown_and_the_line_says_more_were_found(new_stor
     expect_value_with(output, "45 rows hold all of: cart, the newest 40 are shown")
 
 
+def expect_fewer_rows_loaded(loaded, limit) -> None:
+    assert loaded < limit, loaded
+
+
 def expect_sum_startswith_output(text, output, expected) -> None:
     actual = sum((line.startswith(text) for line in output.splitlines()))
     assert actual == expected, actual
@@ -130,4 +134,4 @@ def test_a_search_that_matches_nothing_loads_no_whole_rows(new_story):
     counts = story.container.get(Database).repeated_work
     previous_count = counts.rows
     story.expect_text("search find zebra quartz plume", "nothing here holds all of", actor=story.agent)
-    assert counts.rows - previous_count < 100
+    expect_fewer_rows_loaded(counts.rows - previous_count, 100)

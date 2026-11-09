@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class AssignHeldTasksMigration(Migration):
+class TaskHolderDelegationMigration(Migration):
     """Assigns every task an agent has in hand to that agent, now that starting a task assigns it."""
 
     number = 22
