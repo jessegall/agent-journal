@@ -13,3 +13,7 @@ class LocalDoor(Door):
 
     def refusal(self, request: DoorRequest) -> DoorRefusal | None:
         return None if request.host == self.host else DoorRefusal(403, WRONG_HOST_REASON)
+
+    @property
+    def state_needs_login(self) -> bool:
+        return False

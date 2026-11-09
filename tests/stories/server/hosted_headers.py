@@ -1,7 +1,7 @@
 import re
 
 from server.viewer.hosted_headers import HostedHeaders
-from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, reply_headers, socket_raw, socket_path
+from tests.stories.server.support.hosted_viewer import PUBLIC_ORIGIN, hosted_server, reply_headers, session_cookie, socket_raw, socket_path
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_value
 
@@ -12,14 +12,8 @@ POLICY = "Content-Security-Policy"
 JSON_ROUTE = "/api/server-state"
 FILE_ROUTE = "/viewer/kit/window-kit.js"
 SHELL_ROUTE = "/"
-SESSION_COOKIE = "__Host-journal_viewer"
 HOSTED_COOKIE = r"__Host-journal_viewer=[^;]+; Secure; HttpOnly; SameSite=Strict; Path=/"
 LOCAL_COOKIE = r"journal_viewer=[^;]+; HttpOnly; SameSite=Strict; Path=/"
-
-
-def session_cookie(server) -> dict[str, str]:
-    login = server.context.viewer.login
-    return {"Cookie": f"{SESSION_COOKIE}={login.session_token(login.new_key(1))}"}
 
 
 def test_every_hosted_header_is_on_a_json_answer_a_file_answer_and_the_shell_page(hosted_server):

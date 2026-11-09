@@ -137,8 +137,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 return
             self.answer_redirect(kept_query, {"Set-Cookie": viewer.answer_headers.cookie(self.cookie_name(COOKIE_NAME), token)})
             return
-        if route.path == SERVER_STATE_ROUTE:
-            self.answer(200, asdict(viewer.routes.server_state_route.state()))
+        if route.path == SERVER_STATE_ROUTE and not viewer.door.state_needs_login:
+            self.answer_server_state(viewer)
             return
         if route.path.startswith(MODULES_ROUTE):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
@@ -170,6 +170,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path.startswith(MESSAGE_FILES):
             self.answer_message_file(viewer, route.path.removeprefix(MESSAGE_FILES))
+            return
+        if route.path == SERVER_STATE_ROUTE:
+            self.answer_server_state(viewer)
             return
         if route.path == WINDOW_ROUTE:
             self.answer_window_data(viewer, session, viewer.login.person_id(token), route.query)
@@ -229,6 +232,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT).strip("/") or SHELL_PAGE)
             return
         self.answer(404, {"error": f"no route {route.path}"})
+
+    def answer_server_state(self, viewer: ViewerServer) -> None:
+        self.answer(200, asdict(viewer.routes.server_state_route.state()))
 
     def do_POST(self) -> None:
         route = urlsplit(self.path).path
