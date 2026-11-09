@@ -8,7 +8,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from core.testing.expect_reply import expect_absent_reply_line
-from tests.stories.support.story_checks import expect_updated_input_reply
+from tests.stories.support.story_checks import expect_updated_input_reply, expect_value
 
 JOURNAL_PART = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task")
 LISTING_PART = ShellPart("ls", CommandCategory.SEARCH, ["build"])
@@ -70,6 +70,14 @@ def test_a_journal_command_piped_into_a_cutting_program_is_refused(new_story):
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task", pipe_target=1)
     grep = ShellPart("grep", CommandCategory.SEARCH, ["state"])
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task show 1 && grep state", piped, grep), "do not cut a journal command with a pipe")
+
+
+def test_a_worker_test_may_be_piped_into_a_cutting_program_because_it_declares_pipes(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", "python"], subcommand="worker", pipe_target=1)
+    tail = ShellPart("tail", CommandCategory.SEARCH, ["-2"])
+    reply = story.hook("s-1", HookSamples.shell("journal worker test python && tail -2", piped, tail))
+    expect_value(reply.refusal, "")
 
 
 def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_story):
