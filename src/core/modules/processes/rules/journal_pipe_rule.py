@@ -32,4 +32,4 @@ class JournalPipeRule(DriverRule):
 
     def allows_pipes(self, part: Part) -> bool:
         subcommand = self.registry.subcommands.get(" ".join(part.arguments[:2]))
-        return subcommand is not None and subcommand.allows_pipes
+        return subcommand is not None and subcommand.loaded().allows_pipes

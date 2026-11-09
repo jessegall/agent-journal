@@ -72,6 +72,13 @@ def test_a_journal_command_piped_into_a_cutting_program_is_refused(new_story):
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task show 1 && grep state", piped, grep), "do not cut a journal command with a pipe")
 
 
+def test_a_module_subcommand_that_declares_no_pipes_is_refused_when_piped(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "models"], subcommand="worker", pipe_target=1)
+    grep = ShellPart("grep", CommandCategory.SEARCH, ["sonnet"])
+    story.expect_hook_refusal("s-1", HookSamples.shell("journal worker models && grep sonnet", piped, grep), "do not cut a journal command with a pipe")
+
+
 def test_a_worker_test_may_be_piped_into_a_cutting_program_because_it_declares_pipes(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     piped = ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", "python"], subcommand="worker", pipe_target=1)
