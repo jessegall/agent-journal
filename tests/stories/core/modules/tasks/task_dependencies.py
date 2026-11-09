@@ -19,12 +19,12 @@ def test_a_task_cannot_wait_on_itself(new_story):
     story.expect_refusal("task depend 1 --on 1", "a task-dependency must keep to task_id != dependency_id")
 
 
-def test_a_loop_of_three_is_refused_by_its_guard_with_the_flag_that_passes_it(new_story):
+def test_a_loop_of_three_is_refused_by_its_guard_and_offers_no_way_past(new_story):
     story = three_tasks(new_story)
     story.run(lines.FIRST_TASK_DEPENDENCY)
     story.run("task depend 2 --on 3")
     story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop: task 1 already waits on task 3, so this would be a loop")
-    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "(only if this refusal is wrong for the case in hand, never to get on faster: --skip-guard tasks.no-dependency-loop")
+    story.expect_rows("--skip-guard" not in story.run(lines.THIRD_TASK_DEPENDENCY).output_text)
 
 
 def test_the_same_dependency_twice_is_refused(new_story):

@@ -15,6 +15,7 @@ from tests.stories.suites.coding.modules.workers.worker_context import assigned_
 
 from tests.stories.core.modules.documents.support.trail_fixtures import Scenario, feature, scenario
 from tests.stories.server.support.server_client import server_story
+from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 
 @pytest.fixture
@@ -146,6 +147,7 @@ def test_delegated_comment_and_review_link_side_effects_remain(assigned_worker):
     scenario.command('template make "Read the plan" --brief "Find mistakes" --applies-to plan --purpose critique')
     templates = scenario.person("templates.templates", "template", "list")["rows"]
     template_id = next(row["id"] for row in templates if row["title"] == "Read the plan")
+    state_tasks_wait_on_nothing(scenario.story, scenario.story.agent, 1)
     scenario.command("plan ready 1")
     scenario.person("messages.chat", "template", "send", str(template_id), "--on=plan:1", "--set=agents=2 agents", "--set=size=a normal read")
     scenario.command('report make "Plan review" --abstract "Reviewed" --body "Looks correct" --about plan:1')

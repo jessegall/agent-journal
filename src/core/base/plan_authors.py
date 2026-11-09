@@ -1,4 +1,4 @@
-PLAN_AUTHOR_LINES = ("plan edit", "plan ready", "phase edit", "task edit", "task depend", "task comment")
+PLAN_AUTHOR_LINES = ("plan edit", "plan ready", "phase edit", "task edit", "task depend", "task waits-on-nothing", "task comment")
 
 
 class PlanAuthors:

@@ -12,6 +12,7 @@ class NoDependencyLoopGuard(Guard[Created[TaskDependency]]):
     """Refuses a dependency that would make a task wait, through others, on itself."""
 
     name = "tasks.no-dependency-loop"
+    is_safety = True
 
     def __init__(self, tasks: TaskQuery) -> None:
         self.tasks = tasks

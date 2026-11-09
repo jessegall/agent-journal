@@ -10,16 +10,21 @@ from core.base.type_guards import is_list
 ALLOWED_COMMANDS = "allowed_commands"
 FILE_EDITS_ALLOWED = "file_edits_allowed"
 CHECKS = "checks"
+REFUSED_COMMANDS = "refused_commands"
+CONDITIONS = "conditions"
 
 
 @dataclass(frozen=True)
 class SequenceGuard:
     """What one step of a sequence holds back: whether it allows file edits, the commands it allows when it
-    does not, and the checks that must have passed before the step can advance or the sequence can finish."""
+    does not, the commands it refuses, and the checks and conditions that must hold before the step can advance
+    or the sequence can finish."""
 
     file_edits_allowed: bool = True
     allowed_commands: tuple[str, ...] = ()
     checks: tuple[int, ...] = ()
+    refused_commands: tuple[str, ...] = ()
+    conditions: tuple[str, ...] = ()
 
     @classmethod
     def parsed(cls, values: Mapping[object, object]) -> Self:
@@ -36,4 +41,11 @@ class SequenceGuard:
         numbers = values.get(CHECKS, [])
         if not is_list(numbers) or not all(isinstance(number, int) and not isinstance(number, bool) for number in numbers):
             raise Refusal("a step guard's checks are a list of check numbers", "such as [3, 5]")
-        return cls(bool(allowed), texts, tuple(number for number in numbers if isinstance(number, int)))
+        return cls(bool(allowed), texts, tuple(number for number in numbers if isinstance(number, int)), cls.words(values, REFUSED_COMMANDS), cls.words(values, CONDITIONS))
+
+    @staticmethod
+    def words(values: Mapping[object, object], field: str) -> tuple[str, ...]:
+        listed = values.get(field, [])
+        if not is_list(listed):
+            raise Refusal(f"a step guard's {field} are a list of words")
+        return tuple(str(word) for word in listed)

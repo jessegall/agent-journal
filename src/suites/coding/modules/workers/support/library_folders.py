@@ -28,7 +28,7 @@ class LibraryFolders:
                 raise Refusal(f"{name} is no folder in {folder}", "name a library folder inside the environment's folder")
 
     def place(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
-        for name in links:
+        for name in dict.fromkeys(links):
             (Path(target) / name).parent.mkdir(parents=True, exist_ok=True)
             (Path(target) / name).symlink_to(Path(folder).resolve() / name, target_is_directory=True)
         for name in copies:

@@ -17,10 +17,10 @@ class WarnInstructionImportsHandler(Handler[WarnInstructionImports, None]):
     command = WarnInstructionImports
 
     def __init__(self, home: JournalHome, bus: Bus) -> None:
-        self.home, self.bus = home, bus
+        self.imports, self.bus = InstructionImports(home.project_folder), bus
 
     def handle(self, command: WarnInstructionImports, context: Context) -> None:
-        for fault in InstructionImports(self.home.project_folder).faults():
+        for fault in self.imports.faults():
             arguments = (*COMMAND_NAME_PARTS, fault.file, fault.imported)
             approval = UserApprovalRefusal(InstructionImportQuestion.text(fault.file, fault.imported), arguments,
                                            why=f"{fault.file} imports {fault.imported}, which puts the same text into the agent's context twice.")

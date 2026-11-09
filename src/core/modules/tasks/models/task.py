@@ -39,6 +39,7 @@ class Task(EnvironmentScoped, Model, StateHolder):
     started_at: Timestamp | None = None
     closed_at: Timestamp | None = None
     delegated_to: int | None = None
+    independence_reason: str = ""
 
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)
