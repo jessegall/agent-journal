@@ -1,3 +1,4 @@
+from core.base.database.database import Database
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_endswith_authorization, expect_startswith_listed, expect_value_with, expect_value_without, expect_visited_limit
@@ -119,3 +120,14 @@ def test_at_most_forty_hits_are_shown_and_the_line_says_more_were_found(new_stor
 def expect_sum_startswith_output(text, output, expected) -> None:
     actual = sum((line.startswith(text) for line in output.splitlines()))
     assert actual == expected, actual
+
+
+def test_a_search_that_matches_nothing_loads_no_whole_rows(new_story):
+    story = new_story(fixture=UserJoined)
+    for number in range(30):
+        story.run(f'task make "Fix the cart {number}" --environment main', actor=story.user)
+    story.expect_text("task show 1", "Fix the cart", actor=story.agent)
+    counts = story.container.get(Database).repeated_work
+    previous_count = counts.rows
+    story.expect_text("search find zebra quartz plume", "nothing here holds all of", actor=story.agent)
+    assert counts.rows - previous_count < 100
