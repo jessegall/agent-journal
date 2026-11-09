@@ -5,7 +5,6 @@ import html
 import json
 from time import perf_counter
 from dataclasses import asdict, replace
-from datetime import datetime, timezone
 from uuid import uuid4
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
@@ -298,7 +297,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         session = viewer.login.session(token)
-        received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
+        received_at, request_id = viewer.routes.clock.timestamp().text, str(uuid4())
         started_at = perf_counter()
         try:
             turn = nullcontext() if viewer.routes.priorities.is_unqueued(request.line) else viewer.routes.queue.viewer_turn(" ".join(request.line), request.window, viewer.routes.priorities.priority(request.window))
@@ -353,7 +352,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return None
 
     def answer_window_data(self, viewer: ViewerServer, session: ViewerSession, person_id: int, query: str) -> None:
-        started_at, received_at, request_id = perf_counter(), datetime.now(timezone.utc).isoformat(), str(uuid4())
+        started_at, received_at, request_id = perf_counter(), viewer.routes.clock.timestamp().text, str(uuid4())
         answer = self.parsed_request(lambda: viewer.routes.window_data.answer(WindowDataRequest.parsed(self.headers.get(WINDOW_HEADER), self.headers.get(KEYS_HEADER), query), person_id, session.shared))
         if answer is None:
             return
@@ -366,7 +365,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if request is None:
             return
         session, person_id = viewer.login.session(token), viewer.login.person_id(token)
-        received_at, request_id = datetime.now(timezone.utc).isoformat(), str(uuid4())
+        received_at, request_id = viewer.routes.clock.timestamp().text, str(uuid4())
         started_at = perf_counter()
         inspections = [(index, line) for index, line in enumerate(request.lines) if viewer.routes.priorities.is_unqueued(line.line)]
         command_lines = [(index, line) for index, line in enumerate(request.lines) if not viewer.routes.priorities.is_unqueued(line.line)]

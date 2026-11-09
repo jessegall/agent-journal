@@ -1,8 +1,7 @@
 import sqlite3
-import time
-from datetime import datetime
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
@@ -22,8 +21,8 @@ class ServerBackup:
     least the one
     just written; 0 minutes writes none."""
 
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
+    def __init__(self, home: JournalHome, clock: Clock) -> None:
+        self.home, self.clock = home, clock
 
     def follow(self) -> None:
         container = synced_container(self.home)
@@ -33,7 +32,7 @@ class ServerBackup:
         finally:
             container.get(Database).close()
         copies = self.copies()
-        if minutes == 0 or (copies and time.time() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS):
+        if minutes == 0 or (copies and self.clock.epoch_seconds() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS):
             return
         self.write_copy()
         for extra_copy in self.copies()[max(count, LEAST_COPIES):]:
@@ -47,7 +46,7 @@ class ServerBackup:
 
     def write_copy(self) -> None:
         self.folder().mkdir(parents=True, exist_ok=True)
-        target = self.folder() / f"{COPY_PREFIX}{datetime.now().strftime('%Y%m%d-%H%M%S')}.db"
+        target = self.folder() / f"{COPY_PREFIX}{self.clock.timestamp().value.strftime('%Y%m%d-%H%M%S')}.db"
         partial = target.with_suffix(PARTIAL_SUFFIX)
         source = sqlite3.connect(self.home.database)
         copy = sqlite3.connect(partial)

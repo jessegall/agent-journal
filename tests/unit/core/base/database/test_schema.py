@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 from dataclasses import dataclass
 import sqlite3
 
@@ -73,20 +74,20 @@ def tables(database: Database) -> list[str]:
 
 def test_each_migration_runs_once_in_the_order_of_the_modules(database):
     plan = (ModuleMigrations("shelves", [ShelvesTable()]), ModuleMigrations("books", [BooksTable()]))
-    assert Schema(database, Tables()).migrate(plan) == ["shelves 1", "books 1"]
-    assert Schema(database, Tables()).migrate(plan) == []
+    assert Schema(database, Tables(), Clock()).migrate(plan) == ["shelves 1", "books 1"]
+    assert Schema(database, Tables(), Clock()).migrate(plan) == []
     assert tables(database) == ["books", "migrations", "shelves"]
 
 
 def test_a_failing_statement_undoes_its_whole_migration(database):
     with pytest.raises(sqlite3.OperationalError):
-        Schema(database, Tables()).migrate([ModuleMigrations("shelves", (ShelvesTable(), BrokenSecondStatement()))])
+        Schema(database, Tables(), Clock()).migrate([ModuleMigrations("shelves", (ShelvesTable(), BrokenSecondStatement()))])
     assert "half" not in tables(database)
-    assert Schema(database, Tables()).migrate([ModuleMigrations("shelves", [ShelvesTable()])]) == []
+    assert Schema(database, Tables(), Clock()).migrate([ModuleMigrations("shelves", [ShelvesTable()])]) == []
 
 
 def test_a_rebuild_keeps_every_row_that_points_at_the_table(database):
-    schema = Schema(database, Tables())
+    schema = Schema(database, Tables(), Clock())
     schema.migrate((ModuleMigrations("shelves", [ShelvesTable()]), ModuleMigrations("books", [BooksTable()])))
     database.insert(Statement("INSERT INTO shelves (label) VALUES ('top')"))
     database.insert(Statement("INSERT INTO books (shelf_id) VALUES (1)"))
@@ -98,7 +99,7 @@ def test_a_rebuild_keeps_every_row_that_points_at_the_table(database):
 
 
 def test_a_view_is_made_again_from_its_declaration(database):
-    schema = Schema(database, Tables())
+    schema = Schema(database, Tables(), Clock())
     schema.migrate([ModuleMigrations("shelves", [ShelvesTable()])])
     schema.rebuild_views([ShelfLabel])
     schema.rebuild_views([NumberedShelfLabel])
@@ -108,5 +109,5 @@ def test_a_view_is_made_again_from_its_declaration(database):
 def test_a_model_and_its_table_that_disagree_are_named_by_model_and_column(database):
     database.update(Statement("CREATE TABLE shelves (id INTEGER PRIMARY KEY, label TEXT, version INTEGER, metadata TEXT, created_at TEXT, updated_at TEXT, colour TEXT) STRICT"))
     with pytest.raises(SchemaMismatchError) as raised:
-        Schema(database, Tables()).check_tables([Shelf], [])
+        Schema(database, Tables(), Clock()).check_tables([Shelf], [])
     assert raised.value.differences == ("Shelf.level has no column in shelves", "shelves.colour has no field in Shelf")

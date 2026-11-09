@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_link_session import ShareLinkSession
 from server.viewer.share_sessions import ShareSessions
@@ -17,7 +18,7 @@ class NoShares(ShareSessions):
     """Share sessions with no link, for login tests that need no journal."""
 
     def __init__(self) -> None:
-        return
+        self.clock = Clock()
 
     def link(self, token: str) -> ShareLinkSession | None:
         return None

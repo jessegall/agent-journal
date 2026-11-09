@@ -5,6 +5,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import IO
+from core.base.clock import Clock
 from core.base.journal_home import SERVER_SOCKET, JournalHome
 from core.base.file_access import FileAccess
 from core.base.log_level import LogLevel
@@ -34,7 +35,7 @@ class ServerFiles:
         self.lock = home.folder / "server.lock"
         self.pid_file = home.folder / "server.pid"
         self.log = home.system_log
-        self.system_log = SystemLogWriter(home)
+        self.system_log = SystemLogWriter(home, Clock())
         self.maintenance = home.folder / "maintenance"
         self.run_lock = home.run_lock
         self.restart_mark = home.restart_mark

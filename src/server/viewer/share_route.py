@@ -26,7 +26,7 @@ class ShareRoute:
         link = self.shares.link(token)
         if link is None:
             return ShareOpening(UNKNOWN)
-        if not link.is_open():
+        if not self.shares.is_open(link):
             return ShareOpening(ENDED)
         presented_token, _, key = presented_cookie.partition(COOKIE_SEPARATOR)
         if not self.shares.is_locked(link, token, key if presented_token == token else ""):

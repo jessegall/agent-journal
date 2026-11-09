@@ -2,11 +2,11 @@ from core.base.file_access import FileAccess
 from core.base.file_version import FileVersion
 import json
 import shutil
-import time
 from collections.abc import Sequence
 from collections.abc import Mapping
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.journal_home import ENDED_STATUS_FOLDER, JournalHome
 from core.base.provider.status_file_fields import StatusFileFields
 from core.base.timestamp import Timestamp
@@ -26,7 +26,8 @@ class StatusFiles:
     ended moves to a folder of its own for 30 days, so its card keeps its cost and the scan of open sessions
     does not read it."""
 
-    def __init__(self, home: JournalHome) -> None:
+    def __init__(self, home: JournalHome, clock: Clock) -> None:
+        self.clock = clock
         self.folder = home.status_folder
         self.plan_file = self.folder / PLAN_FILE
         self.ended_folder = self.folder / ENDED_STATUS_FOLDER
@@ -60,7 +61,7 @@ class StatusFiles:
         path.replace(self.ended_folder / path.name)
 
     def prune_ended(self) -> None:
-        oldest = time.time() - ENDED_KEPT_SECONDS
+        oldest = self.clock.epoch_seconds() - ENDED_KEPT_SECONDS
         for path in self.ended_folder.glob("*.json"):
             if path.stat().st_mtime < oldest:
                 path.unlink(missing_ok=True)

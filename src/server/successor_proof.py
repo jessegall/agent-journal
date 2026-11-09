@@ -3,6 +3,7 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.journal_container import opened_container, sync_modules
 from core.base.journal_home import JournalHome
@@ -25,7 +26,7 @@ class SuccessorProof:
         with tempfile.TemporaryDirectory() as folder:
             sync_modules(self.with_listed_modules(JournalHome(Path(folder))))
         if self.has_pending_migrations():
-            ServerBackup(self.home).write_copy()
+            ServerBackup(self.home, Clock()).write_copy()
             with tempfile.TemporaryDirectory(dir=self.home.folder) as folder:
                 sync_modules(self.copied_home(Path(folder)))
 

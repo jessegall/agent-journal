@@ -3,9 +3,9 @@ import fnmatch
 import hashlib
 import os
 import shutil
-import time
 from pathlib import Path
 
+from core.base.clock import Clock
 from core.base.code_copy import IGNORED, CodeCopy
 from core.base.code_version_missing_error import CodeVersionMissingError
 from core.base.journal_home import JournalHome
@@ -49,20 +49,20 @@ class CodeVersions:
     def is_ignored(self, name: str) -> bool:
         return any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED)
 
-    def add(self, source: Path) -> str:
+    def add(self, source: Path, clock: Clock) -> str:
         tag = self.tag(source)
         if not self.version(tag).is_dir():
             partial = self.version(tag + PARTIAL_VERSION)
             shutil.rmtree(partial, ignore_errors=True)
             self.folder.mkdir(parents=True, exist_ok=True)
-            self.remove_stale_partials()
+            self.remove_stale_partials(clock)
             CodeCopy(source, self.home).write(partial)
             partial.rename(self.version(tag))
         return tag
 
-    def remove_stale_partials(self) -> None:
+    def remove_stale_partials(self, clock: Clock) -> None:
         for partial in self.folder.glob(f"*{PARTIAL_VERSION}"):
-            if time.time() - partial.stat().st_mtime > STALE_PARTIAL_SECONDS:
+            if clock.epoch_seconds() - partial.stat().st_mtime > STALE_PARTIAL_SECONDS:
                 shutil.rmtree(partial, ignore_errors=True)
 
     def switch(self, tag: str) -> None:
@@ -92,8 +92,8 @@ class CodeVersions:
             if version.is_dir() and version.suffix != PARTIAL_VERSION and version.name not in kept:
                 shutil.rmtree(version)
 
-    def install(self, source: Path) -> None:
+    def install(self, source: Path, clock: Clock) -> None:
         if self.link.is_symlink():
-            self.switch(self.add(source))
+            self.switch(self.add(source, clock))
         else:
             CodeCopy(source, self.home).make()

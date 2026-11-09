@@ -1,3 +1,4 @@
+from core.base.clock import Clock
 import pytest
 
 from core.base.database.core_tables_migration import CORE_MIGRATIONS
@@ -12,7 +13,7 @@ from core.base.model.tables import Tables
 @pytest.mark.parametrize("present", [[], ["present"]], ids=["no-listeners", "one-listener"])
 def test_removing_absent_listeners_cleans_cursors_and_skips_without_a_cursor(tmp_path, present):
     database = Database.opened(JournalHome(tmp_path))
-    Schema(database, Tables()).migrate([CORE_MIGRATIONS])
+    Schema(database, Tables(), Clock()).migrate([CORE_MIGRATIONS])
     cursors = ListenerCursorTable(database)
     cursors.start("present")
     cursors.start("removed")

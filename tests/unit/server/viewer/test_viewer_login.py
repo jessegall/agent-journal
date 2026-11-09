@@ -52,6 +52,7 @@ class OneLink(NoShares):
     """Share sessions that know one link, ended or not."""
 
     def __init__(self, state: str) -> None:
+        super().__init__()
         self.state = state
 
     def link(self, token: str) -> ShareLinkSession | None:

@@ -81,7 +81,7 @@ def test_each_writer_shows_on_the_page_with_its_source_and_level(logs_server, mo
         slow_rules.setattr("core.base.driver.driver_rules.SLOW_RULE_SECONDS", 0)
         story.hook("s-1", FINISHED)
     ServerFiles(story.home).log_line("sample server line")
-    request_log = RequestLog(story.home)
+    request_log = RequestLog(story.home, story.clock)
     request_log.configuration = RequestLogSettings(True, 10)
     monkeypatch.setattr(request_log, "connected", refused_connection)
     request_log.record(["task", "list"], "cli", 1.0, 0.0, 0)

@@ -3,12 +3,12 @@ import json
 import fcntl
 import os
 import re
-import time
 from collections.abc import Collection, Generator
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import TextIO
 
+from core.base.clock import Clock
 from core.base.type_guards import is_mapping
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_card_answer import PluginCardAnswer
@@ -33,11 +33,11 @@ class PluginQueue:
     def reserved_names(self) -> list[str]:
         return [path.name for path in self.folder.glob(f"*{RESERVED_SUFFIX}")] if self.folder.is_dir() else []
 
-    def reserve(self, environment: str, agent_id: int, firing: str, committed_names: Collection[str]) -> PluginQueueRead:
+    def reserve(self, environment: str, agent_id: int, firing: str, committed_names: Collection[str], clock: Clock) -> PluginQueueRead:
         read = PluginQueueRead([], [])
         if not self.folder.is_dir():
             return read
-        self.restore_reservations(committed_names)
+        self.restore_reservations(committed_names, clock)
         for path in self.queued_paths():
             try:
                 self.reserve_file(path, environment, agent_id, firing, read)
@@ -65,12 +65,12 @@ class PluginQueue:
                 return
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
 
-    def restore_reservations(self, committed_names: Collection[str]) -> None:
+    def restore_reservations(self, committed_names: Collection[str], clock: Clock) -> None:
         for path in self.folder.glob(f"*{RESERVED_SUFFIX}"):
             with self.lock_file(path) as source:
                 if source is None or path.name in committed_names:
                     continue
-                if time.time() - os.fstat(source.fileno()).st_mtime <= RESERVATION_LIMIT_SECONDS:
+                if clock.epoch_seconds() - os.fstat(source.fileno()).st_mtime <= RESERVATION_LIMIT_SECONDS:
                     continue
                 try:
                     path.rename(self.folder / path.name.rsplit(".", 2)[0])

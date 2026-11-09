@@ -8,3 +8,6 @@ class Clock:
 
     def timestamp(self) -> Timestamp:
         return Timestamp(datetime.now(timezone.utc))
+
+    def epoch_seconds(self) -> float:
+        return self.timestamp().value.timestamp()

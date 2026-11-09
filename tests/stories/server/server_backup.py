@@ -4,7 +4,7 @@ import pytest
 
 import os
 import sqlite3
-import time
+from datetime import timedelta
 
 from server.server_backup import ServerBackup
 from tests.stories.core.support.fixtures import UserJoined
@@ -15,13 +15,16 @@ HOUR_SECONDS = 3600
 
 def journal(new_story):
     story = new_story(fixture=UserJoined)
-    return story, ServerBackup(story.home)
+    return story, ServerBackup(story.home, story.clock)
+
+
+def stamp(copy: Path, epoch_seconds: float) -> None:
+    os.utime(copy, (epoch_seconds, epoch_seconds))
 
 
 def age(backup: ServerBackup) -> None:
     for copy in backup.copies():
-        old = time.time() - HOUR_SECONDS
-        os.utime(copy, (old, old))
+        stamp(copy, backup.clock.epoch_seconds() - HOUR_SECONDS)
 
 
 def test_the_first_check_writes_a_copy_that_opens_with_the_journals_rows(new_story):
@@ -38,6 +41,20 @@ def test_a_copy_younger_than_the_setting_is_not_written_again(new_story):
     backup.follow()
     backup.follow()
     expect_copies_backup(backup, 1)
+
+
+def test_a_copy_is_written_again_once_the_clock_passes_the_setting(new_story):
+    story, backup = journal(new_story)
+    story.expect_success("setting set journal.core.settings.backup-minutes 30 --project", actor=story.user)
+    story.expect_success("setting set journal.core.settings.backup-count 5 --project", actor=story.user)
+    backup.follow()
+    stamp(backup.copies()[0], backup.clock.epoch_seconds())
+    story.clock.advance(timedelta(minutes=29))
+    backup.follow()
+    expect_copies_backup(backup, 1)
+    story.clock.advance(timedelta(minutes=2))
+    backup.follow()
+    expect_copies_backup(backup, 2)
 
 
 def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, monkeypatch):
