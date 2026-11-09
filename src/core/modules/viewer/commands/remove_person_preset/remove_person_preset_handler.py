@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.base.actor_type import ActorType
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.repository.repository import Repository
 from core.modules.viewer.commands.remove_person_preset.remove_person_preset import RemovePersonPreset
 from core.modules.viewer.models.person_preset import PersonPreset

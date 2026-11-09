@@ -1,4 +1,4 @@
-from core.base.block_refusal import BlockRefusal
+from engine.errors.block_refusal import BlockRefusal
 from core.base.command.command import Command
 
 

@@ -5,7 +5,7 @@ from core.base.command.request_user_approval import RequestUserApproval
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
 from core.modules.drivers.commands.allow_permission.allow_permission import AllowPermission
 from core.modules.drivers.commands.ask_permission.ask_permission import AskPermission

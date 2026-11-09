@@ -4,7 +4,7 @@ from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.instruction_imports import InstructionImports
 from core.base.journal_home import JournalHome
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.commands.remove_instruction_import.remove_instruction_import_handler import COMMAND_NAME_PARTS
 from core.modules.agents.commands.remove_instruction_import.support.instruction_import_question import InstructionImportQuestion
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports import WarnInstructionImports
