@@ -62,7 +62,7 @@ class TunlerInstaller:
         raise Refusal(BLOCKED if finished is not None and finished.returncode == KILLED_CODE else BROKEN_PROGRAM)
 
     @staticmethod
-    def finished(command: list[str], limit_seconds: float) -> subprocess.CompletedProcess | None:
+    def finished(command: list[str], limit_seconds: float) -> subprocess.CompletedProcess[str] | None:
         try:
             return subprocess.run(command, capture_output=True, text=True, timeout=limit_seconds, stdin=subprocess.DEVNULL)
         except (OSError, subprocess.TimeoutExpired):
