@@ -26,6 +26,7 @@ def batch(new_story, monkeypatch):
     for title in ("Tax", "Totals", "Shipping", "Release"):
         story.expect_success(f'task make "{title}" --brief "Check {title}"', actor=story.agent)
     worker = dispatched_story_worker(story, "worker dispatch --model sonnet 1 2 3 4 5", monkeypatch)
+    worker.save_test_alias()
     configure(worker, BATCH, "4")
     return worker
 
@@ -175,6 +176,13 @@ def test_a_task_handed_in_without_a_change_of_its_own_is_refused(second):
     task = second.current_task()
     second.story.expect_success(f'proof make 1 --task {task} "cart.py:1, nothing new"', actor=second.worker)
     second.story.expect_refusal("worker next --wait --differences none", f"task {task} changed no file, so it is not built", actor=second.worker)
+
+
+def test_a_task_already_built_is_handed_in_by_saying_so_and_the_main_agent_reads_it(second):
+    task = second.current_task()
+    second.story.expect_success(f'proof make 1 --task {task} "cart.py:1, already there"', actor=second.worker)
+    second.story.expect_success('worker next --wait --differences "already built on the branch"', actor=second.worker)
+    second.story.expect_text(f"task-log list --task {task}", "already built on the branch", actor=second.story.agent)
 
 
 def test_a_worker_revises_the_proof_of_an_earlier_task_of_its_batch(second):

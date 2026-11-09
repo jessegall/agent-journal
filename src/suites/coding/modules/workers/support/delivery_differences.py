@@ -19,6 +19,10 @@ def required_differences(arguments: Namespace) -> str:
     return arguments.differences.strip()
 
 
+def follows_brief(differences: str) -> bool:
+    return differences.lower() == NONE_ANSWER
+
+
 class DeliveryDifferences:
     """What a worker says at a hand-in about how its work differs from the task: anything but none is a log line the
     main agent must read."""
@@ -27,5 +31,5 @@ class DeliveryDifferences:
         self.bus = bus
 
     def record(self, task_id: int, differences: str, context: Context) -> None:
-        if differences.lower() != NONE_ANSWER:
+        if not follows_brief(differences):
             self.bus.dispatch(MakeTaskLog(task_id, differences, important=True), context)

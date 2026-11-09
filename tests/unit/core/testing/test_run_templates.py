@@ -17,8 +17,8 @@ def first_process(monkeypatch):
     return monkeypatch
 
 
-def test_single_story_run_builds_templates(first_process):
-    assert is_template_build_due(run_config("tests/stories/core/one.py::test_one"))
+def test_small_story_run_builds_only_the_templates_it_uses(first_process):
+    assert not is_template_build_due(run_config("tests/stories/core/one.py::test_one"))
 
 
 def test_whole_suite_run_builds_templates(first_process):

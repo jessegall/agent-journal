@@ -10,8 +10,12 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.brief_points import brief_point_count
+from suites.coding.modules.workers.support.delivery_differences import follows_brief
+from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
+
+NO_CHANGE_HINT = 'make the change, block the task on what it waits for, or if it is already built hand in with --differences "<why no change was needed>"'
 
 
 class WorkerTaskCommit:
@@ -28,7 +32,8 @@ class WorkerTaskCommit:
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} --task {task.id} \"<file:line, and the test that shows it>\"")
-    def commit(self, worktree: Worktree, task: Task, actor: Actor) -> None:
+
+    def commit(self, worktree: Worktree, task: Task, actor: Actor, differences: str) -> None:
         for path in self.git.uncommitted_files(worktree.folder):
             folder = self.protected.match(worktree.folder, path)
             if folder:
@@ -39,12 +44,15 @@ class WorkerTaskCommit:
             raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", "settle the conflict markers in those files, then hand in again")
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
         changes = self.git.comparison(current)
-        if not changes.files:
-            raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
-        if task.state is TaskState.STARTED and not self.git.has_task_commit(current, task.id):
-            raise Refusal(f"task {task.id} changed no file, so it is not built",
-                          f"block it on what it waits for with journal task block {task.id} --on task:<n>, or tell the main agent with journal worker report")
+        if follows_brief(differences):
+            self.check_built(current, task, changes)
         self.git.refuse_deleted_built_files(current, changes)
         if base_commit != worktree.base_commit:
             self.git.rebuild(current, self.queries.query(Environment).find(worktree.environment_id).folder)
         self.bus.run(RecordWorktreeBase(worktree.id, base_commit), actor, environment_id=worktree.environment_id)
+
+    def check_built(self, worktree: Worktree, task: Task, changes: WorktreeChanges) -> None:
+        if not changes.files:
+            raise Refusal("your worktree has no change", NO_CHANGE_HINT)
+        if task.state is TaskState.STARTED and not self.git.has_task_commit(worktree, task.id):
+            raise Refusal(f"task {task.id} changed no file, so it is not built", NO_CHANGE_HINT)

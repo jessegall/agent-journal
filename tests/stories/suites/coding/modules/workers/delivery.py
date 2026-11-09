@@ -36,6 +36,6 @@ def test_a_delivery_of_an_unchanged_worktree_is_refused(new_story):
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
-    story.expect_refusal(DELIVERY, "your worktree has no change: make the change, or say in a proof why none is needed and ask for release", actor=worker)
+    story.expect_refusal(DELIVERY, "your worktree has no change", actor=worker)
     story.expect_success(lines.TASK_DETAILS, "state: started")
     story.expect_success("worker-worktree show 1", "state: cut")

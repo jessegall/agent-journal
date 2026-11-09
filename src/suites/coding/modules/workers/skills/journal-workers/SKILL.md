@@ -140,6 +140,8 @@ never starts is retired after the idle time.
 - At each hand-in, say only what you did other than the task's brief asked or left out of it, never what you did:
   `journal worker next --differences "<what>"`. When you followed the brief, `--differences none`. The same goes for
   `journal worker deliver`.
+- A task already built needs no change: prove each point with where it is, and hand in with `--differences "<why no change was needed>"`.
+  With `--differences none`, a task that changed nothing is refused. The main agent reads your line.
 - `journal worker next` inside a phase or batch only commits your task and gives you the next one: no judge, no tests.
   At the end of the phase or batch it hands them all over: the plugins judge your changes together, a refusal says what to put
   right; the journal commits and puts all its proofs' tests on the run queue at once, on the commit you handed in. Go on working in your worktree meanwhile: your later edits do not change the result, and a failure or your next task comes back to you.

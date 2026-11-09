@@ -56,6 +56,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
         HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
         os.environ[GATE_LOCK_VARIABLE] = "1"
     if is_template_build_due(config):
+        print("building the story templates", file=sys.stderr, flush=True)
         LazyLoading.disabled = True
         templates = TemplateDatabases(run_template_folder())
         TemplatePrebuild(templates, Path(config.rootpath) / "tests", processes=min(MOST_BUILD_PROCESSES, os.cpu_count() or 1)).run()
@@ -69,7 +70,8 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 
 def is_template_build_due(config: pytest.Config) -> bool:
     is_listing = any(config.getoption(option, False) for option in LISTING_OPTIONS)
-    return not (hasattr(config, "workerinput") or is_listing or TEMPLATE_FOLDER_VARIABLE in os.environ) and RunSize(config.args, 1).reaches_stories()
+    run_size = RunSize(config.args, 1)
+    return not (hasattr(config, "workerinput") or is_listing or TEMPLATE_FOLDER_VARIABLE in os.environ) and run_size.reaches_stories() and run_size.is_heavy()
 
 
 def run_template_folder() -> Path:

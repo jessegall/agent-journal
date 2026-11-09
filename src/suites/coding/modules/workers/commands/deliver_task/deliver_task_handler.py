@@ -49,7 +49,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     def prepare(self, command: DeliverTask, actor: Actor) -> None:
         self.check_rows(command, actor)
         worktree = self.worktrees.worker_worktree(actor.id)
-        self.task_commit.commit(worktree, self.rows.required(Task, worktree.task_id), actor)
+        self.task_commit.commit(worktree, self.rows.required(Task, worktree.task_id), actor, command.differences)
 
     def handle(self, command: DeliverTask, context: Context) -> Task:
         committed = self.worktrees.worker_worktree(context.actor.id)

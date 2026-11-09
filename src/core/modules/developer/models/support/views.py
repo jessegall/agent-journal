@@ -3,7 +3,7 @@ SELECT id,
        json_extract(payload, '$.received_at') AS received_at,
        json_extract(payload, '$.program') AS program,
        CAST(coalesce(nullif(json_extract(payload, '$.agent'), ''), '0') AS INTEGER) AS agent_id,
-       CASE json_extract(payload, '$.role') WHEN 'viewer' THEN 'viewer' WHEN 'cli' THEN 'command line' ELSE 'hook' END AS kind,
+       CASE json_extract(payload, '$.role') WHEN 'viewer' THEN 'viewer' WHEN 'cli' THEN 'command line' ELSE 'hook' END AS category,
        CASE
            WHEN coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process part-start %'
              OR coalesce(json_extract(payload, '$.body.event'), '') || ' ' LIKE 'process part-end %'

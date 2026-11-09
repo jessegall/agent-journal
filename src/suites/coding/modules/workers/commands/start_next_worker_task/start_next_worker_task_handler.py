@@ -62,7 +62,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         task = self.queries.query(Task).find(worktree.task_id)
         if task.state is TaskState.STARTED and self.next_task.following(actor.id) is not None:
             self.task_commit.check_proofs(worktree, task)
-            self.task_commit.commit(worktree, task, actor)
+            self.task_commit.commit(worktree, task, actor, command.differences)
 
     def handle(self, command: StartNextWorkerTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
