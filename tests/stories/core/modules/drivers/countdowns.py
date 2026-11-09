@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
-from core.modules.drivers.support.countdowns import Countdowns, not_ended
+from core.modules.drivers.support.countdowns import Countdowns, condition_unmet
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -24,7 +24,7 @@ def new_countdowns(story) -> Countdowns:
     return Countdowns(story.container.get(Queries), story.container.get(Repository))
 
 
-def tick(story, count_down: CountDown, actor_id: int, subject: str = "one", stop_condition=not_ended) -> int:
+def tick(story, count_down: CountDown, actor_id: int, subject: str = "one", stop_condition=condition_unmet) -> int:
     with story.container.get(Database).transaction():
         return new_countdowns(story).tick(count_down, actor_id, subject, context_of(story), stop_condition)
 
