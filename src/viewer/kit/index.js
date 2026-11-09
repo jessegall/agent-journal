@@ -103,6 +103,8 @@ export {default as Dialog} from "../src/kit/Dialog.vue";
 export {default as DiffCard} from "../src/kit/DiffCard.vue";
 export {highlight} from "../src/text/highlight.js";
 export {default as HoverTip} from "../src/kit/HoverTip.vue";
+export {default as AgentTip} from "./AgentTip.vue";
+export {seenWords, sinceWords} from "./agentTipWords.js";
 export {default as MenuItem} from "../src/kit/MenuItem.vue";
 export {default as DropList} from "../src/kit/DropList.vue";
 export {default as MenuLabel} from "../src/kit/MenuLabel.vue";

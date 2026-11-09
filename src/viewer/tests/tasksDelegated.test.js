@@ -18,8 +18,8 @@ const read = (name) => readFileSync(resolve(__dirname, name), "utf8");
 test("a task delegated to a worker stays in the section of its state with the worker's icon, and there is no delegated section", async () => {
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: BOARD}}));
     expect(element.querySelector('[data-state="delegated"]')).toBeNull();
-    expect(element.querySelector('[data-state="started"] [data-row="1"] [data-task-agent] [role=\'tooltip\'] b').textContent).toBe("Worker 12");
-    expect(element.querySelector('[data-state="open"] [data-row="2"] [data-task-agent] [role=\'tooltip\'] b').textContent).toBe("Worker 12");
+    expect(element.querySelector('[data-state="started"] [data-row="1"] [data-task-agent]').getAttribute("aria-label")).toBe("Worker 12");
+    expect(element.querySelector('[data-state="open"] [data-row="2"] [data-task-agent]').getAttribute("aria-label")).toBe("Worker 12");
     expect(element.querySelector('[data-state="started"] [data-row="3"]')).not.toBeNull();
 });
 
@@ -51,7 +51,7 @@ test("the Testing section uses the shared half-filled icon and the testing colou
 test("a task queued for an agent shows the agent's name in its own group, and a task nobody holds shows none", async () => {
     const board = {groups: [{state: "open", total: 2, rows: [task(5, "Queued job", "open", 12), task(6, "Free job", "open")]}]};
     const element = await mounted(TaskGroups, context({"task board": {ok: true, value: board}}));
-    expect(element.querySelector('[data-row="5"] [data-task-agent] [role=\'tooltip\'] b').textContent).toBe("Worker 12");
+    expect(element.querySelector('[data-row="5"] [data-task-agent]').getAttribute("aria-label")).toBe("Worker 12");
     expect(element.querySelector('[data-row="6"] [data-task-agent]')).toBeNull();
 });
 

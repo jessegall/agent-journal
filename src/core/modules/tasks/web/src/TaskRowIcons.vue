@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {AgentBadge, HoverTip, Icon, PRIORITY_LEVELS, PriorityIcon, agentLabel, namedPriority, peekRef, priorityLabel, scoreMeaning} from "@journal/window-kit";
+import {AgentBadge, AgentTip, HoverTip, Icon, PRIORITY_LEVELS, PriorityIcon, agentLabel, namedPriority, peekRef, priorityLabel, scoreMeaning} from "@journal/window-kit";
 
 // the three fixed columns at the right of a task row: the agent on the task, its complexity and its priority; a task with no agent or no
 // complexity leaves that column empty, so the columns line up from row to row
@@ -24,10 +24,9 @@ function pick(key) {
 <template>
     <span class="icons" data-task-icons @click.stop @keydown.enter.stop>
         <template v-if="row.delegated_to">
-            <HoverTip as="button" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="tipLabel" @click="peekRef(`agents:${row.delegated_to}`)">
+            <AgentTip as="button" :agent-id="row.delegated_to" :label="tipLabel" :class="['cell', 'agent', {queued: !held}]" place="right" data-task-agent :data-held="held ? '' : null" :aria-label="tipLabel" @click="peekRef(`agents:${row.delegated_to}`)">
                 <span class="mark"><AgentBadge :name="tipLabel" :main="row.main_delegate" icon-only /></span>
-                <template #tip><b>{{ tipLabel }}</b></template>
-            </HoverTip>
+            </AgentTip>
         </template>
         <template v-else>
           <span class="cell empty" />
