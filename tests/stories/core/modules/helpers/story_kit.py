@@ -1,3 +1,5 @@
+from core.modules.agents.models.agent import Agent
+from core.base.query.queries import Queries
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -6,16 +8,17 @@ from core.testing.helper_started import HELPER_LAUNCH_NAME, HelperStarted
 from core.testing.hook_samples import HookSamples
 
 
-def test_a_helper_row_binds_its_real_session_with_its_first_hook(new_story):
+def test_a_helper_keeps_the_session_the_journal_chose_when_another_comes_under_its_launch_name(new_story):
     story = new_story(fixture=HelperStarted)
     story.hook("helper-session", HookSamples.helper(HELPER_LAUNCH_NAME))
-    story.expect_success(f"agent show {story.helper.id}", "session: helper-session", "role: helper")
+    story.expect_no_text(f"agent show {story.helper.id}", "session: helper-session")
 
 
 def test_a_helper_sends_hooks_as_itself(new_story):
     story = new_story(fixture=HelperStarted)
-    story.hook("helper-session", HookSamples.helper(HELPER_LAUNCH_NAME))
-    story.hook("helper-session", HookSamples.prompt("Read the cart"))
+    session = story.container.get(Queries).query(Agent).find(story.helper.id).session
+    story.hook(session, HookSamples.helper(HELPER_LAUNCH_NAME))
+    story.hook(session, HookSamples.prompt("Read the cart"))
     story.expect_rows(story.container.get(HookCallQuery).newest_agent_hook(story.helper.id) is not None)
 
 

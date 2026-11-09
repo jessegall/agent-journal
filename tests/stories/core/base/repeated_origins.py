@@ -32,8 +32,8 @@ def test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was
         first_reader(database)
         second_reader(database)
     first_read, repeated_read = str(raised.value).split("first read: ")[1].split("\nrepeated read:\n")
-    expect_value(place_names(first_read), ["test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was", "first_place_that_reads"])
-    expect_value(place_names(repeated_read), ["test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was", "second_place_that_reads"])
+    expect_value(place_names(first_read), ["test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was", "first_reader"])
+    expect_value(place_names(repeated_read), ["test_a_repeated_read_names_where_the_first_read_was_and_where_the_repeat_was", "second_reader"])
 
 
 def test_a_file_read_twice_is_refused_with_the_file_and_the_place_that_read_it(new_story, tmp_path):

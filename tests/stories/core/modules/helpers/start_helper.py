@@ -203,7 +203,7 @@ def test_a_helper_that_sent_a_hook_stays(new_story):
     story = new_story(fixture=StartedHelper)
     helper_id = running_helper(story)
     session = story.container.get(Queries).query(Agent).find(helper_id).session
-    story.hook("helper-1", HookSamples.helper(session))
+    story.hook(session, HookSamples.helper(session))
     story.advance(timedelta(seconds=61))
     story.hook("s-1", HookSamples.tick())
     story.run_listeners()

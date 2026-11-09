@@ -56,7 +56,7 @@ def chat(story) -> str:
 
 def expect_chat_count(story, text: str, expected: int) -> None:
     output = chat(story)
-    story.expect_rows(output.count(text) == expected)
+    story.expect_rows(output.count(text) == expected, detail=output[:400])
 
 
 @pytest.fixture
