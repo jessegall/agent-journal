@@ -1,5 +1,5 @@
 from core.modules.processes.listeners.ended_run_line_listener import EndedRunLineListener
-from core.base.run_owners import RunOwners
+from core.base.driver.run_owners import RunOwners
 from core.modules.processes.support.process_run_owners import ProcessRunOwners
 from core.modules.processes.support.process_wait_targets import ProcessWaitTargets
 from core.modules.waits.support.wait_targets import WaitTargets
