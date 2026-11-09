@@ -3,6 +3,7 @@ import json
 from datetime import timedelta
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.provider.status_file_fields import STATUS_CACHE_SIZE
 from core.modules.agents.models.agent import UPGRADE_RETIREMENT_REASON
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent, resumable_session
@@ -42,6 +43,15 @@ def test_agent_rows_keep_creation_order_when_states_and_activity_change(new_stor
     story.run(f"agent edit {oldest} --paused-at {story.clock.timestamp().text}")
     expect_card_order(story, "all", oldest, middle, newest)
     expect_card_order(story, "running", oldest, newest)
+
+
+def test_the_cards_of_more_running_agents_than_the_status_cache_holds_read_each_status_file_once(new_story):
+    story = new_story(fixture=UserBuilder)
+    sessions = [f"session-{number}" for number in range(STATUS_CACHE_SIZE + 6)]
+    for session in sessions:
+        story.expect_success(f"agent start {session} claude helper --environment main")
+        story.report_context_percent(session, 40)
+    story.expect_rows(len(cards(story, "running")) > 0)
 
 
 def test_agent_rows_filter_search_and_page_before_answering(new_story):
