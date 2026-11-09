@@ -1,5 +1,4 @@
-from core.modules.processes.support.progress_listing import ProgressListing
-from core.modules.processes.support.run_counts import RunCounts
+from core.modules.processes.support.run_count_lines import RunCountLines
 from dataclasses import replace
 
 from core.modules.processes.support.process_nudges import RUNNER_MISSING, SANDBOX_RUNNER_MISSING, SANDBOX_PARSE_ERROR, SANDBOX_FOLDER_MISSING
@@ -39,13 +38,12 @@ class RunnerRewriteRule(DriverRule):
     history = True
     overlay_proof = True
 
-    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, listings: RunCounts, types: HelperTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, progress_listing: ProgressListing, choice: AgentSandboxChoice) -> None:
-        self.limits, self.runner, self.hook_history, self.listings = limits, runner, hook_history, listings
+    def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory, count_lines: RunCountLines, types: HelperTypeBook, folders: AgentWriteFolder, shell_sandbox: ShellSandbox, project_reads: ProjectReads, checkouts: AgentCheckouts, choice: AgentSandboxChoice) -> None:
+        self.limits, self.runner, self.hook_history, self.count_lines = limits, runner, hook_history, count_lines
         self.types = types
         self.folders = folders
         self.shell_sandbox = shell_sandbox
         self.project_reads, self.checkouts = project_reads, checkouts
-        self.progress_listing = progress_listing
         self.choice = choice
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -74,9 +72,7 @@ class RunnerRewriteRule(DriverRule):
         process = next((made for made in results if isinstance(made, Process)), None)
         if process is None:
             return {}
-        listing = self.progress_listing.listing(process)
-        run = replace(run, count_line=self.listings.line(process), progress_count_line=listing.line if listing else "",
-                      progress_count_position=listing.position if listing else 0, progress_count_pattern=listing.pattern if listing else "")
+        run = self.count_lines.counted(run, process)
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}
         return {**kept, "command": RunnerLine.build(self.runner.path, process.id, run, shell.runner_text, hook.event.session)}
 
