@@ -311,13 +311,20 @@ class WorktreeGit:
     def unstash(self, worktree: Worktree, stash: str) -> None:
         applied = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "apply", stash).returncode == 0
         has_markers = bool(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.strip())
-        if not applied and not has_markers:
+        if not applied and not has_markers and not self.head_contains(worktree.folder, stash):
             raise Refusal(f"after the rebase, git stash apply failed for the uncommitted changes of worker {worktree.session_agent_id}", AskTopic.CONFLICT.hint(f"they stay in its stash {stash}: the worker applies them"))
         with self.stash_stack_lock(worktree):
             entries = self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "list", "--format=%H %gd").stdout.splitlines()
             for entry in (line.split() for line in entries):
                 if entry[0] == stash:
                     self.git(worktree.folder, GIT_LIMIT_SECONDS, "stash", "drop", entry[1])
+
+    def head_contains(self, folder: str, stash: str) -> bool:
+        parts = [(stash, self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{stash}^1", stash).stdout.splitlines())]
+        untracked = f"{stash}^3"
+        if self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", untracked).returncode == 0:
+            parts.append((untracked, self.checked(folder, GIT_LIMIT_SECONDS, "ls-tree", "-r", "--name-only", untracked).stdout.splitlines()))
+        return all(self.git(folder, GIT_LIMIT_SECONDS, "diff", "--quiet", tree, "HEAD", "--", *names).returncode == 0 for tree, names in parts if names)
 
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())

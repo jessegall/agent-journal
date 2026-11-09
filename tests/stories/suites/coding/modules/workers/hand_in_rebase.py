@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import STASH_MESSAGE, WorktreeGit
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.query.queries import Queries
 
@@ -149,6 +149,42 @@ def test_an_interrupted_rebase_restores_the_uncommitted_files_before_returning(n
     story.expect_rows((repository.worktree_folder(worker.id) / "notes.py").read_text() == "NOTE = 1\n")
     repository.expect_no_stash()
     story.expect_success(DELIVERY, actor=worker)
+
+
+def stashed_worker(story, repository):
+    worker = moved_base_worker(story, repository)
+    repository.changed(worker.id, "notes.py", "NOTE = 1\n")
+    repository.git("stash", "push", "--include-untracked", "--message", f"{STASH_MESSAGE}{repository.worker_branch(worker.id)}",
+                   folder=repository.worktree_folder(worker.id))
+    return worker
+
+
+def committed_files(repository, worker, notes):
+    folder = repository.worktree_folder(worker.id)
+    (folder / "cart.py").write_text(CART_CHANGE)
+    (folder / "notes.py").write_text(notes)
+    repository.git("add", "cart.py", "notes.py", folder=folder)
+    repository.git("commit", "-m", "The work the stash also holds", folder=folder)
+
+
+def test_a_stash_the_commit_already_holds_is_dropped_and_the_hand_in_goes_on(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = stashed_worker(story, repository)
+    committed_files(repository, worker, "NOTE = 1\n")
+    story.expect_success('worker deliver --wait --differences "committed before this hand-in"', actor=worker)
+    repository.expect_file(repository.worker_branch(worker.id), "notes.py", "NOTE = 1\n")
+    repository.expect_no_stash()
+
+
+def test_a_stash_that_holds_more_than_the_commit_stays_and_refuses_the_hand_in(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = stashed_worker(story, repository)
+    committed_files(repository, worker, "NOTE = 2\n")
+    story.expect_refusal(DELIVERY, "git stash apply failed", actor=worker)
+    stashes = repository.git("stash", "list", folder=repository.worktree_folder(worker.id)).stdout
+    story.expect_rows(STASH_MESSAGE in stashes)
 
 
 def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
