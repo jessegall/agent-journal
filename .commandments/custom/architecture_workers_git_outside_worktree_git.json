@@ -101,6 +101,9 @@
             },
             {
                 "fileMatches": "(^|/)src/core/(base/git/project_files|modules/tools/support/graphify_tool)\\.py$"
+            },
+            {
+                "fileMatches": "^scripts/"
             }
         ]
     },

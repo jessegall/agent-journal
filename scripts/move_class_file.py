@@ -256,7 +256,7 @@ class FileRewrite:
             self.edits.append(edit)
 
     @property
-    def changes_outside_imports(self) -> bool:
+    def has_edits_outside_imports(self) -> bool:
         return any(edit.line_number not in self.import_lines for edit in self.edits)
 
     def edited_text(self) -> str:
@@ -405,7 +405,7 @@ def planned_files(root: Path, plan: MovePlan) -> dict[Path, str]:
     for path in python_files(root):
         rewrite = FileRewrite(path, relative_text(root, path), module_name(root, path), plan.renames)
         unplaced.extend(rewrite.unplaced)
-        if plan.guards_file(path) and rewrite.changes_outside_imports:
+        if plan.guards_file(path) and rewrite.has_edits_outside_imports:
             raise MoveError(f"{rewrite.label}: the move would change a line of the moved file that is not an import")
         edited = with_engine_layer_line(rewrite.edited_text(), layer_line)
         if edited != rewrite.text:

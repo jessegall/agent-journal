@@ -118,7 +118,7 @@ class RequestLog:
         if not attribution["command_id"]:
             attribution["command_id"] = f"{http.request_id}:{record.child_index}"
         body = {"event": " ".join(request.line), "attribution": attribution}
-        return RequestLogEntry(request.line, "viewer", record.duration_ms, record.queued_ms, record.code, body)
+        return RequestLogEntry(request.line, "viewer", record.duration_ms, record.queued_ms, record.code, body, record.child_index == 0)
 
     def complete_reads(self, person_id: int, receipts: tuple[ReadAttribution, ...]) -> None:
         started_at = perf_counter()
@@ -175,7 +175,7 @@ class RequestLog:
         with self.lock:
             configuration = self.configuration
             self.counts["attempted"] += len(entries)
-            if any(isinstance(entry.body, dict) and "attribution" in entry.body and entry.body["attribution"]["child_index"] == 0 for entry in entries):
+            if any(entry.starts_http_request for entry in entries):
                 self.counts["http_requests"] += 1
             if not configuration.enabled:
                 self.counts["disabled"] += len(entries)

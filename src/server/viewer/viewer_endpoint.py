@@ -34,13 +34,13 @@ class ViewerEndpoint(TrackedRequests):
         raise NotImplementedError
 
     def serve(self) -> None:
-        self.serve_forever(STOP_POLL_SECONDS)  # type: ignore[attr-defined]
+        self.serve_forever(STOP_POLL_SECONDS)
 
     def start(self) -> None:
         self.thread.start()
 
     def stop(self) -> None:
-        self.shutdown()  # type: ignore[attr-defined]
+        self.shutdown()
         self.drain(STOP_LIMIT_SECONDS)
-        self.server_close()  # type: ignore[attr-defined]
+        self.server_close()
         self.thread.join(STOP_LIMIT_SECONDS)

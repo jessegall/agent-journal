@@ -9,3 +9,4 @@ class RequestLogEntry:
     queued_ms: float
     code: int
     body: object
+    starts_http_request: bool = False

@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.agent_role import AgentRole
@@ -21,7 +22,7 @@ class HookSender:
 
     @classmethod
     def parsed(cls, data: object, main_limit_seconds: float = HOOK_LIMIT_SECONDS, agent_limit_seconds: float = AGENT_HOOK_LIMIT_SECONDS) -> "HookSender":
-        fields = data if is_mapping(data) else {}
+        fields: Mapping[object, object] = data if is_mapping(data) else {}
         role = str(fields.get("role") or AgentRole.MAIN)
         session = str(fields.get("session", fields.get("session_id", "")))
         event_name = str(fields.get("event", fields.get("hook_event_name", "hook")))
