@@ -10,8 +10,8 @@ class AgentProfile:
     """Instructions and program settings for one type of agent, with its usage counts."""
 
     name: str
-    description: str
-    body: str
+    description: str = ""
+    body: str = ""
     agent_type: str = "helper"
     access: Access | None = None
     program: str = ""

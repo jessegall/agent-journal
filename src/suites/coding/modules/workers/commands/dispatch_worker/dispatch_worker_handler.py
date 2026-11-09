@@ -29,6 +29,7 @@ from suites.coding.modules.workers.support.worker_task_copies import WorkerTaskC
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.modules.helpers.support.allowed_models import AllowedModels
+from core.modules.helpers.support.profile_model import ProfileModel
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
@@ -81,7 +82,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.check_unstarted(command, context, environment)
         choice = self.routing.choice(command, tasks, caller, profile, context)
         program, model = choice.program, choice.model
-        self.check_model(program, model, profile.name)
+        self.check_model(ProfileModel(program, model, profile.name))
         if not command.new_agent_reason.strip():
             self.check_idle(environment.folder, WorkerRequest(profile.name, program, model), tasks, command)
         start = StartAgent(command.session or str(uuid4()), program, CodingHelperRole.WORKER, parent_id, program_model=model, profile=profile.name, given_name=command.given_name)
@@ -129,7 +130,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             raise Refusal(f"{profile.name} is a {self.types.find(profile.agent_type).label}: journal helper start runs it")
         return profile
 
-    def check_model(self, program: str, model: str, profile: str) -> None:
-        names = self.models.models_allowed(self.providers.provider(program), "worker", profile)
-        if model not in names:
-            raise Refusal(f"{model} cannot run on {program}; choose a model {program} may run: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")
+    def check_model(self, selection: ProfileModel) -> None:
+        names = self.models.models_allowed(self.providers.provider(selection.program), "worker", selection.profile)
+        if selection.model not in names:
+            raise Refusal(f"{selection.model} cannot run on {selection.program}; choose a model {selection.program} may run: {', '.join(names)}", "use --tier for a model of that program; journal worker models lists them")

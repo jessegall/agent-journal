@@ -27,6 +27,7 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
     once and run on the commit handed in, in a checkout of its own, so the worker can go on working in its
     worktree."""
 
+    runs_once = True
     command = StartWorkerTests
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery, proofs: ProofQuery, affected: AffectedTestRows, git: WorktreeGit) -> None:

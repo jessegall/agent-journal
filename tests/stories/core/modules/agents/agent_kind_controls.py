@@ -143,7 +143,7 @@ def test_s52_inheritance_a_configured_model_list_naming_no_model_of_the_program_
 
 
 def stopped_worker(story):
-    launcher = FakeLauncher(story.home.socket("launcher"), request_count=4)
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=4).serve()
     worker = dispatch(story)
     story.run_listeners()
     exit_program(story, worker)
@@ -158,7 +158,7 @@ def test_s11_lifecycle_new_workers_off_refuses_a_dispatch_and_starts_nothing(spl
 def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing(new_story):
     story = new_story(fixture=UserBuilder)
     set_options(story, "helper allow_new=off")
-    launcher = FakeLauncher(story.home.socket("launcher"), request_count=1)
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=1).serve()
     story.expect_refusal(START, "new helper sessions are switched off", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()

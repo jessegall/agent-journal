@@ -14,6 +14,8 @@ class GoneWorkerRecovery:
 
     def __call__(self, container: Container) -> None:
         workers = [agent for agent in container.get(AgentRows).running() if agent.role == CodingHelperRole.WORKER]
-        for missing_agent in container.get(GoneAgents).find(workers):
-            container.get(Bus).run(EndGoneWorker(missing_agent.id), Actor.core(), environment_id=missing_agent.environment_id)
+        missing = container.get(GoneAgents).find(workers)
+        bus = container.get(Bus)
+        for missing_agent in missing:
+            bus.run(EndGoneWorker(missing_agent.id), Actor.core(), environment_id=missing_agent.environment_id)
         WorkerResumeRetry()(container)

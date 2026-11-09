@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import END_CHANGE, Model
 from core.base.timestamp import Timestamp
@@ -57,6 +59,9 @@ class Agent(EnvironmentScoped, Model):
 
     def retired(self, timestamp: Timestamp, reason: str, actor_id: int) -> "Agent":
         return self.changed(retired_at=timestamp, retirement_reason=reason, retiring_actor_id=actor_id)
+
+    def has_other_parent_than(self, actor: Actor) -> bool:
+        return actor.type is ActorType.AGENT and self.parent_id != actor.id
 
     @property
     def activity(self) -> AgentActivity:

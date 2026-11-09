@@ -1,5 +1,8 @@
+from core.base.file_access import FileAccess
+from core.base.provider.status_file_fields import StatusFileFields
 from core.base.type_guards import is_list, is_mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Mapping
 
 
@@ -9,6 +12,10 @@ class ContextWindow:
 
     used_percentage: int | None
     total_input_tokens: int | None
+
+    @classmethod
+    def of_status_file(cls, path: Path) -> "ContextWindow":
+        return cls.parsed(StatusFileFields.read(path, FileAccess.shared().version(path)) if path.is_file() else {})
 
     @classmethod
     def parsed(cls, fields: Mapping[str, object]) -> "ContextWindow":

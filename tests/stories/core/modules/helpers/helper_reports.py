@@ -192,7 +192,7 @@ def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is None)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
     story.run_listeners()
     launcher.drain_requests()
@@ -235,7 +235,7 @@ def test_a_helper_past_its_time_is_stopped_and_the_parent_hears_why(new_story):
     story = new_story(fixture=StartedHelper)
     enforced(story, 49)
     story.expect_text(LINES.format(agent=story.agent.id), "near its time limit")
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2)
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2).serve()
     enforced(story, 12)
     story.expect_text(f"message read {helper_report(story).id}", "stopped at its time limit")
     story.expect_rows(helper_agent(story).ended_at is not None, launcher.requests == [{"agent_id": helper_agent(story).id, "stop": True}])
@@ -271,7 +271,7 @@ def test_a_retired_helpers_terminal_log_goes_with_it(new_story):
 
 def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
     story = new_story(fixture=UserBuilder)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     story.run('helper start journal-researcher --brief "Review HEAD~5..HEAD" --environment main', actor=Actor.core())
     story.run_listeners()
     launcher.drain_requests()

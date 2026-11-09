@@ -47,7 +47,8 @@ class RefreshPluginConfigSubcommand(Subcommand[RefreshPluginConfig, Plugin]):
     @staticmethod
     def value(text: str) -> object:
         try:
-            return json.loads(text)
+            decoded: object = json.loads(text)
+            return decoded
         except ValueError:
             return text
 

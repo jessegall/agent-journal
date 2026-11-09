@@ -196,7 +196,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(new_story, 
 
 def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launcher(new_story):
     story, worker, _, _ = worker_with_background_run(new_story)
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n")
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n").serve()
     story.expect_success(f"agent stop {worker.id}", f"stopped agent {worker.id}", actor=story.agent)
     expect_requests_launcher_2(launcher, 1, {"agent_id": worker.id, "stop": True})
     story.expect_text(f"agent show {worker.id}", "ended_at:", actor=story.agent)

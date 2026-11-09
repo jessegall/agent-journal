@@ -17,7 +17,7 @@ def replaced_story(new_story):
 
 def test_a_second_session_ends_the_old_row_in_its_hook_and_the_launcher_stops_the_program_afterwards(replaced_story):
     story, old = replaced_story
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n").serve()
     story.hook("s-2", HookSamples.session_start())
     story.expect_text(f"agent show {old.id}", "ended_at: 20")
     story.expect_rows(launcher.requests == [])
@@ -48,7 +48,7 @@ def test_the_replaced_sessions_next_tool_is_refused_with_no_record(replaced_stor
 
 def test_a_session_that_ends_by_itself_has_no_program_stopped(replaced_story):
     story, _ = replaced_story
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     story.hook("s-1", HookSamples.sample("session_end"))
     story.run_listeners()
     story.expect_rows(launcher.requests == [])
@@ -57,7 +57,7 @@ def test_a_session_that_ends_by_itself_has_no_program_stopped(replaced_story):
 def test_two_launches_at_once_end_with_one_main_and_the_first_is_stopped(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     first_id = story.new_row_id("agent start launch-a claude main --environment main")
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n").serve()
     second_id = story.new_row_id("agent start launch-b claude main --environment main")
     story.expect_text(f"agent show {first_id}", "ended_at: 20")
     story.expect_absent(f"agent show {second_id}", "ended_at: 20")
@@ -70,7 +70,7 @@ def test_a_resumed_main_ends_the_main_that_runs_and_keeps_its_own_program(replac
     story, old = replaced_story
     launch_row_id = story.new_row_id("agent start launch-a claude main --environment main")
     story.expect_text(f"agent show {old.id}", "ended_at: 20")
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n").serve()
     resumed = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="launch-a")))
     story.run_listeners()
     story.expect_rows(resumed.id == old.id, launch_row_id not in [request["agent_id"] for request in launcher.requests])

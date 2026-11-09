@@ -14,7 +14,7 @@ REFUSED = "reads and searches only"
 
 
 def started_designer(story):
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     story.expect_success(SAVE_DESIGNER, actor=story.user)
     story.run(START_DESIGNER, actor=story.agent)
     story.run_listeners()

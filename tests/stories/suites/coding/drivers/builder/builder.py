@@ -50,7 +50,7 @@ def test_a_main_agent_with_auto_on_with_nothing_waiting_is_told_nothing_about_it
 
 def test_a_main_agent_with_auto_on_the_journal_started_is_told_to_introduce_itself(new_story):
     story = new_story(fixture=CodingEnvironment)
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_text("agent launch claude --environment main", "started agent", actor=user)
     launcher.drain_requests()

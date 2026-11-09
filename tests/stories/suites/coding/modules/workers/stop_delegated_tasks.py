@@ -26,7 +26,7 @@ def worker_with_waiting_tasks(new_story):
         story.expect_success(f"task depend {number} --on 1", actor=story.agent)
     story.expect_success(f"task depend {TASK_COUNT} --on {TASK_COUNT - 1}", actor=story.agent)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n", request_count=2)
+    FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n", request_count=2).serve()
     return story
 
 

@@ -17,7 +17,7 @@ def merger_can_start(monkeypatch) -> None:
 
 @contextmanager
 def running_launcher(story: Story) -> Iterator[None]:
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     try:
         yield
     finally:

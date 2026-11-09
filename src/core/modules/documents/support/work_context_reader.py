@@ -269,7 +269,7 @@ class WorkContextReader:
         if message.type is MessageType.JOURNAL:
             return "Journal"
         if message.type is MessageType.AGENT:
-            return f"Agent {' '.join(actor.name.split())}" if actor is not None and actor.type is ActorType.AGENT else "Agent (identity unavailable)"
+            return f"Agent {' '.join(actor.name.split())}" if actor is not None and actor.is_agent() else "Agent (identity unavailable)"
         return " ".join(actor.name.split()) if actor is not None and actor.type is ActorType.USER else "Person (identity unavailable)"
 
     def attachment_previews(self, message: Message, command: str, page: int, budget: int) -> tuple[WorkContextAttachment, ...]:

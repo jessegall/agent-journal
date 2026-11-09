@@ -10,6 +10,7 @@ from core.base.driver.old_hook_runner_error import OldHookRunnerError
 from core.base.driver.hook_fields import boolean, mapping, mappings, number, text
 from core.base.driver.hook_transcript import HookTranscript
 from core.base.driver.tool import Tool
+from core.base.driver.tool_type import ToolType
 
 HOOK_EVENT_VERSION = 3
 RESUME_SOURCE = "resume"
@@ -114,6 +115,9 @@ class HookEvent:
     def displayed_text(self) -> str:
         text = self.raw.get("delta")
         return text.strip() if self.raw.get("final") is True and isinstance(text, str) else ""
+
+    def is_monitor_tool(self) -> bool:
+        return self.tool is not None and self.tool.category is ToolType.MONITOR
 
     def tool_input(self) -> Mapping[object, object]:
         return mapping(self.raw.get("tool_input", {}), "tool_input")

@@ -147,7 +147,7 @@ class MemoryWorktreeGit(WorktreeGit):
         return name is not None and name in {self.built_name(sibling) for sibling in siblings}
 
     def refuse_deleted_built_files(self, worktree: Worktree, changes: WorktreeChanges) -> None:
-        if any(change.status is FileStatus.DELETED and BUILT_FOLDER in change.relative for change in changes.changes):
+        if any(change.deleted_under(BUILT_FOLDER) for change in changes.changes):
             raise GitStoryRequired("a story about deleted built files builds its repository with real git")
 
     def rebuild(self, worktree: Worktree, base_folder: str) -> None:
@@ -271,9 +271,6 @@ class MemoryWorktreeGit(WorktreeGit):
 
     def uncommitted_files(self, folder: str) -> tuple[str, ...]:
         return self.uncommitted_names(folder)
-
-    def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
-        return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
 
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
         base = self.history.merge_base(self.history.branches[worktree.base_branch], self.history.branches[worktree.branch])

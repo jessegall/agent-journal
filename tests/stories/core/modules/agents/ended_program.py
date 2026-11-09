@@ -22,7 +22,7 @@ ROLES = ("worker", "helper", "reviewer", "verifier")
 
 
 def running_launcher(story) -> FakeLauncher:
-    return FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2)
+    return FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n", request_count=2).serve()
 
 
 def read_stops(*agent_ids: int) -> list[dict[str, object]]:

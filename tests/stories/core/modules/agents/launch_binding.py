@@ -67,7 +67,7 @@ def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_
 
 def test_a_resumed_main_is_stopped_through_the_launcher_under_the_row_its_launch_started(resumed_main):
     story, old, _, launch_row_id = resumed_main
-    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n")
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"stopped\n").serve()
     story.expect_success(f"agent stop {old.id}", f"stopped agent {old.id}")
     story.expect_rows(launcher.requests == [{"agent_id": launch_row_id, "stop": True}])
     story.expect_text(f"agent show {old.id}", "ended_at:")
@@ -77,7 +77,7 @@ def test_a_codex_worker_ended_before_its_first_hook_is_refused_its_tools_and_its
     story, main = started_main_agent
     worker_id = story.new_row_id(f"agent start worker-7 codex worker --parent {main.id} --environment main")
     story.run(f"agent end {worker_id}")
-    launcher = FakeLauncher(story.home.socket("launcher"))
+    launcher = FakeLauncher(story.home.socket("launcher")).serve()
     story.expect_hook_refusal("t-7", HookSamples.edit("a.py").with_fields(program="codex", launch="worker-7"), ENDED_AGENT.nudge().text)
     launcher.drain_requests()
     story.expect_rows(launcher.requests == [{"agent_id": worker_id, "stop": True}], "launch name worker-7" not in story.system_log_text())

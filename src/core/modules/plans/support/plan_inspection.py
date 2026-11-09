@@ -1,3 +1,4 @@
+from core.modules.plans.support.plan_assignee_json_record import PlanAssigneeJsonRecord
 from core.modules.plans.support.plan_inspection_json_record import PlanInspectionJsonRecord
 from dataclasses import dataclass
 
@@ -23,7 +24,7 @@ class PlanInspection:
             return 0
         return next((number for number, phase in enumerate(self.outline.phases, 1) if not phase.finished()), 0)
 
-    def assignee_json(self) -> dict[str, object] | None:
+    def assignee_json(self) -> PlanAssigneeJsonRecord | None:
         if self.assignee is None:
             return None
         name = "main" if self.assignee.role == AgentRole.MAIN else self.assignee.given_name or f"Agent {self.assignee.id}"

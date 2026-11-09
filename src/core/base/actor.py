@@ -10,6 +10,9 @@ class Actor:
     id: int
     type: ActorType
 
+    def is_agent(self) -> bool:
+        return self.type is ActorType.AGENT
+
     @classmethod
     def core(cls) -> "Actor":
         return cls(CORE_ACTOR_ID, ActorType.CORE)

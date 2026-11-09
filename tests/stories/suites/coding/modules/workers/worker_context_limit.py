@@ -49,7 +49,7 @@ def compacting_worker(ended_worker):
 
 
 def with_job(story, worker):
-    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET)).serve()
     story.run(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     return launcher
@@ -59,7 +59,7 @@ def compaction_ended(story, worker, launcher, tokens):
     launcher.server.close()
     story.home.socket(LAUNCHER_SOCKET).unlink()
     has_context(story, worker, tokens)
-    following = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    following = FakeLauncher(story.home.socket(LAUNCHER_SOCKET)).serve()
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
     following.drain_requests()

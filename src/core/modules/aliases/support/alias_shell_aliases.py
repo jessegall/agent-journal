@@ -1,5 +1,4 @@
 import shlex
-from collections.abc import Mapping
 
 from core.base.actor_type import ActorType
 from core.base.agent_checkouts import AgentCheckouts
@@ -15,6 +14,7 @@ from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.support.alias_names import AliasNames
 from core.modules.aliases.support.alias_access import AliasAccess
+from core.modules.plugins.support.plugin_alias_environment import PluginAliasEnvironment
 from core.modules.plugins.support.plugin_alias_variables import PluginAliasVariables
 
 JOURNAL_FOLDER_PREFIX = ".journal/"
@@ -39,7 +39,7 @@ class AliasShellAliases(ShellAliases):
         folder = str(checkout.root) if checkout.checkout_type is CheckoutType.WORKTREE and checkout.exists else request.folder
         return ShellRun(self.resolved_line(alias.shell_line(argv[1:])), {**request.variables, **checkout.variables(), **self.plugin_values(alias, caller), **alias.variable_values()}, folder)
 
-    def plugin_values(self, alias: Alias, caller: Caller) -> Mapping[str, str]:
+    def plugin_values(self, alias: Alias, caller: Caller) -> PluginAliasEnvironment | dict[str, str]:
         return self.plugin_variables.variables(alias.plugin_id, caller.environment_id) if alias.plugin_id is not None else {}
 
     def caller_checkout(self, caller: Caller) -> Checkout:
