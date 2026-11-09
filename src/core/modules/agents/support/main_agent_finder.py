@@ -23,6 +23,10 @@ class MainAgentFinder:
         return tuple(sorted(rows, key=lambda agent: agent.ended_at is not None))
 
     @staticmethod
+    def latest(queries: Queries) -> Agent | None:
+        return queries.query(Agent).filter(role=AgentRole.MAIN).newest().first()
+
+    @staticmethod
     def newest(queries: Queries) -> Agent | None:
         return next(iter(MainAgentFinder.rows(queries)), None)
 
