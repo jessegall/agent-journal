@@ -1,8 +1,8 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-9350f31ae916")) { const style = document.createElement("style"); style.id = "window-styles-9350f31ae916"; style.textContent = ".worker-models[data-v-8506c219]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-8506c219]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-8506c219]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-8506c219]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-8506c219]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-8506c219]{display:flex;gap:8px;align-items:center}.number[data-v-6eb6af04]{color:var(--text-3);font-size:12px}.main[data-v-6eb6af04]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-6eb6af04]{color:var(--text-3);font-size:12px}.main[data-v-a11fd403]{flex:1}.note[data-v-a11fd403]{color:var(--text-3);font-size:12px}.worker-moment[data-v-826dfb51]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-826dfb51]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-fbd94d47]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-fbd94d47]{display:flex;align-items:center;gap:8px}input[data-v-fbd94d47]{min-width:0;flex:1}output[data-v-fbd94d47]{min-width:36px;text-align:right}small[data-v-fbd94d47]{color:var(--text-3)}p[data-v-fbd94d47]{margin:0}.actions[data-v-fbd94d47]{display:flex;gap:6px}.route[data-v-928533ab]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-928533ab]{margin:0}small[data-v-928533ab]{color:var(--text-3)}.actions[data-v-928533ab]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-1c28c310]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-1c28c310]{margin:0}label[data-v-1c28c310]{display:flex;align-items:center;gap:8px}select[data-v-1c28c310],input[type=number][data-v-1c28c310]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-079b94a1]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-079b94a1]{display:flex;gap:8px}input[data-v-079b94a1]{min-width:0;flex:1}.split[data-v-29716346]{display:flex;flex-direction:column;gap:8px}p[data-v-29716346],h3[data-v-29716346]{margin:0}p[data-v-29716346]{color:var(--text-3);font-size:12px}h3[data-v-29716346]{margin-top:12px;font-size:13px}label[data-v-29716346]{display:flex;align-items:center;gap:8px}input[data-v-29716346]{width:54px}[role=alert][data-v-29716346]{color:var(--danger)}.worker-tab-body[data-v-f8b83cb6]{padding:14px 16px}.worktree[data-v-158c53fa]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-158c53fa]{flex:1;min-width:0}.worktree-holder[data-v-158c53fa]{font-weight:500}.worktree-folder[data-v-158c53fa]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-158c53fa]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-9a80c2fceec5")) { const style = document.createElement("style"); style.id = "window-styles-9a80c2fceec5"; style.textContent = ".worker-models[data-v-f2e1dbd2]{display:flex;flex-direction:column;gap:8px}.worker-models-note[data-v-f2e1dbd2]{margin:0;color:var(--text-3);font-size:12px}.worker-models-refusal[data-v-f2e1dbd2]{margin:0;color:var(--danger);font-size:12.5px}.worker-model[data-v-f2e1dbd2]{display:flex;flex:1;gap:14px;align-items:center;padding:4px 0}.worker-model-program[data-v-f2e1dbd2]{flex:0 0 120px;color:var(--text-2);font-size:12px;font-weight:600}.worker-model-name[data-v-f2e1dbd2]{display:flex;gap:8px;align-items:center}.number[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-d52c1a26]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-d52c1a26]{color:var(--text-3);font-size:12px}.main[data-v-dca1eb21]{flex:1}.note[data-v-dca1eb21]{color:var(--text-3);font-size:12px}.worker-moment[data-v-774d56be]{display:flex;gap:10px;justify-content:space-between;width:100%;padding:6px 0;border:0;background:none;color:var(--text-2);font:inherit;font-size:13px;text-align:left;cursor:pointer}.worker-moment time[data-v-774d56be]{flex:none;color:var(--text-3);font-size:12px}.program[data-v-3ab2fdf7]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}.share[data-v-3ab2fdf7]{display:flex;align-items:center;gap:8px}input[data-v-3ab2fdf7]{min-width:0;flex:1}output[data-v-3ab2fdf7]{min-width:36px;text-align:right}small[data-v-3ab2fdf7]{color:var(--text-3)}p[data-v-3ab2fdf7]{margin:0}.actions[data-v-3ab2fdf7]{display:flex;gap:6px}.route[data-v-de22f389]{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-bottom:1px solid var(--border)}p[data-v-de22f389]{margin:0}small[data-v-de22f389]{color:var(--text-3)}.actions[data-v-de22f389]{display:flex;flex-wrap:wrap;gap:6px}.route-form[data-v-0362f63d]{display:flex;flex-direction:column;gap:8px;margin-top:12px}h4[data-v-0362f63d]{margin:0}label[data-v-0362f63d]{display:flex;align-items:center;gap:8px}select[data-v-0362f63d],input[type=number][data-v-0362f63d]{min-width:0;flex:1;background:var(--bg);color:var(--text);border:1px solid var(--border);padding:4px}.outage[data-v-7ea51616]{display:flex;flex-direction:column;gap:8px;padding:10px 0}label[data-v-7ea51616]{display:flex;gap:8px}input[data-v-7ea51616]{min-width:0;flex:1}.split[data-v-ab331a12]{display:flex;flex-direction:column;gap:8px}p[data-v-ab331a12],h3[data-v-ab331a12]{margin:0}p[data-v-ab331a12]{color:var(--text-3);font-size:12px}h3[data-v-ab331a12]{margin-top:12px;font-size:13px}label[data-v-ab331a12]{display:flex;align-items:center;gap:8px}input[data-v-ab331a12]{width:54px}[role=alert][data-v-ab331a12]{color:var(--danger)}.worker-tab-body[data-v-8fe373bc]{padding:14px 16px}.worktree[data-v-a10f9f34]{display:flex;flex:1;gap:8px;align-items:center;min-width:0;padding:8px 0}.worktree-names[data-v-a10f9f34]{flex:1;min-width:0}.worktree-holder[data-v-a10f9f34]{font-weight:500}.worktree-folder[data-v-a10f9f34]{margin:2px 0 0;color:var(--text-3);font-size:12px;overflow-wrap:anywhere}.worktree-refusal[data-v-a10f9f34]{margin:2px 0 0;color:var(--danger);font-size:12.5px}\n"; document.head.appendChild(style); }
 import { openBlock as d, createBlock as V, unref as r, withCtx as S, createElementVNode as l, toDisplayString as b, createVNode as w, createElementBlock as v, createTextVNode as m, Fragment as U, renderList as q, createCommentVNode as C, ref as x, withModifiers as G, withDirectives as W, vModelSelect as j, vModelText as F, vModelCheckbox as Y, computed as T, watch as Z } from "vue";
 import { useWindow as P, RowList as z, peekRef as _, TimeAgo as ee, Btn as R, WindowRoom as te, InnerTabs as oe, TabBody as le, SwitchCase as ae, AgentRowList as re } from "@journal/window-kit";
-import { _ as N } from "./_plugin-vue_export-helper-CHgC5LLL.mjs";
+import { _ as N } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
   __name: "WorkerRecent",
   setup(e) {
@@ -32,7 +32,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "older", "more"]));
   }
-}, ue = /* @__PURE__ */ N(ie, [["__scopeId", "data-v-826dfb51"]]), de = ["data-split-program"], me = { class: "share" }, ve = ["value", "aria-label", "disabled"], be = { key: 0 }, fe = { key: 1 }, ge = { class: "actions" }, pe = {
+}, ue = /* @__PURE__ */ N(ie, [["__scopeId", "data-v-774d56be"]]), de = ["data-split-program"], me = { class: "share" }, ve = ["value", "aria-label", "disabled"], be = { key: 0 }, fe = { key: 1 }, ge = { class: "actions" }, pe = {
   __name: "WorkerSplitProgram",
   props: { row: { type: Object, required: !0 }, share: { type: Number, required: !0 }, disabled: Boolean },
   emits: ["share", "save", "back", "out"],
@@ -91,7 +91,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
       ])
     ], 8, de));
   }
-}, ke = /* @__PURE__ */ N(pe, [["__scopeId", "data-v-fbd94d47"]]), we = ["data-split-route"], ye = { key: 0 }, $e = { key: 1 }, ce = { class: "actions" }, Se = {
+}, ke = /* @__PURE__ */ N(pe, [["__scopeId", "data-v-3ab2fdf7"]]), we = ["data-split-route"], ye = { key: 0 }, $e = { key: 1 }, ce = { class: "actions" }, Se = {
   __name: "WorkerRouteRow",
   props: { row: { type: Object, required: !0 }, count: { type: Number, required: !0 }, disabled: Boolean },
   emits: ["move", "delete"],
@@ -143,7 +143,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
       ])
     ], 8, we));
   }
-}, he = /* @__PURE__ */ N(Se, [["__scopeId", "data-v-928533ab"]]), xe = ["disabled"], Ce = ["value"], We = ["disabled"], Re = ["disabled"], Me = ["disabled"], Ne = ["value"], Ae = ["disabled"], Be = ["disabled"], Oe = {
+}, he = /* @__PURE__ */ N(Se, [["__scopeId", "data-v-de22f389"]]), xe = ["disabled"], Ce = ["value"], We = ["disabled"], Re = ["disabled"], Me = ["disabled"], Ne = ["value"], Ae = ["disabled"], Be = ["disabled"], Oe = {
   __name: "WorkerRouteForm",
   props: { programs: { type: Array, required: !0 }, tags: { type: Array, required: !0 }, disabled: Boolean },
   emits: ["submit"],
@@ -253,7 +253,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
       }, 8, ["disabled"])
     ], 32));
   }
-}, Ue = /* @__PURE__ */ N(Oe, [["__scopeId", "data-v-1c28c310"]]), Ve = ["disabled"], Ie = ["disabled"], Te = {
+}, Ue = /* @__PURE__ */ N(Oe, [["__scopeId", "data-v-0362f63d"]]), Ve = ["disabled"], Ie = ["disabled"], Te = {
   __name: "WorkerOutageForm",
   props: { program: { type: String, required: !0 }, disabled: Boolean },
   emits: ["submit", "cancel"],
@@ -314,7 +314,7 @@ const ne = ["onClick"], se = { class: "worker-moment-text" }, ie = {
       ])
     ], 32));
   }
-}, qe = /* @__PURE__ */ N(Te, [["__scopeId", "data-v-079b94a1"]]);
+}, qe = /* @__PURE__ */ N(Te, [["__scopeId", "data-v-7ea51616"]]);
 function Fe(e, a, o) {
   if (!e.some((t) => t.id === a)) return e;
   if (e.length === 1) return e.map((t) => ({ ...t, share: 100 }));
@@ -424,7 +424,7 @@ const De = {
       }, null, 8, ["programs", "tags", "disabled"])
     ]));
   }
-}, ze = /* @__PURE__ */ N(Ge, [["__scopeId", "data-v-29716346"]]), He = {
+}, ze = /* @__PURE__ */ N(Ge, [["__scopeId", "data-v-ab331a12"]]), He = {
   __name: "WorkerDropdown",
   setup(e) {
     var p;
@@ -471,7 +471,7 @@ const De = {
       _: 1
     }));
   }
-}, Xe = /* @__PURE__ */ N(He, [["__scopeId", "data-v-f8b83cb6"]]);
+}, Xe = /* @__PURE__ */ N(He, [["__scopeId", "data-v-8fe373bc"]]);
 export {
   Xe as default
 };
