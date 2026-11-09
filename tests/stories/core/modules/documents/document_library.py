@@ -29,7 +29,7 @@ def library(story, line: str) -> dict:
 def test_the_library_lists_the_documents_with_no_text(new_story):
     answer = library(new_story(fixture=LibraryStocked), "document library")
     expect_row(answer, total=2)
-    expect_title_closed(answer, ["Cart rules", "Shipping"])
+    expect_title_closed(answer, ["Shipping", "Cart rules"])
     expect_answer_2("id", "title", "abstract", "close_reason", "updated_at", answer)
 
 
@@ -39,10 +39,10 @@ def test_the_library_lists_the_reports_when_asked_for_them(new_story):
     expect_title_closed(answer, ["Cart review"])
 
 
-def test_the_library_pages_by_the_last_number_it_gave(new_story):
-    answer = library(new_story(fixture=LibraryStocked), "document library --after 1")
+def test_the_library_pages_before_the_lowest_number_it_gave(new_story):
+    answer = library(new_story(fixture=LibraryStocked), "document library --before 2")
     expect_row(answer, total=2)
-    expect_title_closed(answer, ["Shipping"])
+    expect_title_closed(answer, ["Cart rules"])
 
 
 def test_the_library_shows_open_or_closed_texts_when_asked(new_story):
@@ -58,7 +58,7 @@ def test_the_library_shows_open_or_closed_texts_when_asked(new_story):
 
 def test_the_documents_window_reads_the_library_and_a_text_by_number(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
-    window.expect_window_allowed("documents.documents", "document library --type report --state closed --after 25")
+    window.expect_window_allowed("documents.documents", "document library --type report --state closed --before 25")
     window.expect_window_allowed("documents.documents", "doc show 1 --json")
 
 

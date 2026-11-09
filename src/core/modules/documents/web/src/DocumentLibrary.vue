@@ -38,13 +38,13 @@ const refusal = ref("");
 const groups = computed(() => grouped(sorted(searched(rows.value, words.value), order.value), order.value));
 const label = computed(() => (term.value === "doc" ? "Document" : "Report"));
 
-// the first page of the type chosen, in one read; a page more is asked for after the last number held
+// the first page of the type chosen, in one read; a page more is asked for before the lowest number held
 async function load() {
     const type = term.value;
     const shown = state.value;
     view.state["library.type"] = type;
     view.state["library.state"] = shown;
-    delete view.state["library.after"];
+    delete view.state["library.before"];
     const refreshed = await view.reload("library");
     if (type !== term.value || shown !== state.value) return;
     rows.value = refreshed && !failure.value ? library.data.value.rows : [];
@@ -55,9 +55,9 @@ async function load() {
 async function more() {
     const type = term.value;
     const shown = state.value;
-    view.state["library.after"] = String(Math.max(...rows.value.map((row) => row.id)));
+    view.state["library.before"] = String(Math.min(...rows.value.map((row) => row.id)));
     const refreshed = await view.reload("library");
-    delete view.state["library.after"];
+    delete view.state["library.before"];
     if (!refreshed || failure.value) return;
     if (type === term.value && shown === state.value) rows.value = [...rows.value, ...library.data.value.rows];
 }
