@@ -310,6 +310,7 @@ class OutputFolder:
         return marks.get(mark, "")
 
     def write_read_mark(self, process_id: int, mark: str, read_at: str) -> None:
+        (self.home.folder / FOLDER_NAME / str(process_id)).mkdir(parents=True, exist_ok=True)
         with FileAccess.shared().writer(self.home.folder / FOLDER_NAME / str(process_id) / READS_FILE, "a") as marks:
             marks.write(f"{mark} {read_at}\n")
 

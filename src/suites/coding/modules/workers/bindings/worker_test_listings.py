@@ -34,17 +34,14 @@ class WorkerTestListings(RunCounts):
         self.bus, self.nudger = bus, nudger
 
     def parts(self, process: Process) -> tuple[TestListing, ...]:
-        return self.agent_parts(process, self.rows.required(Agent, process.session_agent_id))
+        agent = self.rows.required(Agent, process.session_agent_id)
+        return self.output_parts(process, self.outputs.process_output(process.id)) if self.is_counted(process, agent) else ()
 
-    def agent_parts(self, process: Process, agent: Agent) -> tuple[TestListing, ...]:
-        if not process.is_queue_run or process.creator_id != process.session_agent_id:
-            return ()
-        if self.settings.number(WORKER_TEST_LIMIT) <= 0:
-            return ()
-        if agent.role != CodingHelperRole.WORKER:
-            return ()
+    def is_counted(self, process: Process, agent: Agent) -> bool:
+        return process.is_queue_run and process.creator_id == process.session_agent_id and self.settings.number(WORKER_TEST_LIMIT) > 0 and agent.role == CodingHelperRole.WORKER
+
+    def output_parts(self, process: Process, output: Output | None) -> tuple[TestListing, ...]:
         readers = self.readers.all()
-        output = self.outputs.process_output(process.id)
         listings: list[TestListing] = []
         for part in self.visibility.parts(process.id):
             if part.category is not CommandCategory.TEST_RUN:
@@ -65,8 +62,8 @@ class WorkerTestListings(RunCounts):
     def line(self, process: Process) -> str:
         return " && ".join(listing.line for listing in self.parts(process))
 
-    def has_listing(self, process: Process, agent: Agent) -> bool:
-        return bool(self.agent_parts(process, agent))
+    def has_listing(self, process: Process, agent: Agent, output: Output | None) -> bool:
+        return self.is_counted(process, agent) and bool(self.output_parts(process, output))
 
     def count(self, process: Process, text: str) -> int:
         counts = [self.run.count(listing.reader, listing.output_text(text), 0) for listing in self.parts(process)]
@@ -80,7 +77,7 @@ class WorkerTestListings(RunCounts):
     def reject_unknown(self, process: Process, agent: Agent, status: int | None, count: int, context: Context) -> None:
         if status == 0 and count > 0:
             return
-        if not self.requires_count(process, agent) or (status is None and not self.has_listing(process, agent)):
+        if not self.requires_count(process, agent) or (status is None and not self.has_listing(process, agent, self.outputs.process_output(process.id))):
             return
         self.nudger.send(process.session_agent_id, TEST_COUNT_UNKNOWN, WORKER_TEST_LIMIT_SOURCE, context, output=process.id)
         self.bus.dispatch(RestoreWorkerTests(process.id), context)

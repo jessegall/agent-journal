@@ -167,6 +167,22 @@ def test_a_worker_with_no_names_is_refused_and_told_who_gives_them(worker_withou
     worker_without_commands.story.expect_refusal(PYTHON_RUN, "no test command", actor=worker_without_commands.worker)
 
 
+@pytest.mark.parametrize("line, part", [
+    ("pytest tests/cart.py", shell_test_part("pytest tests/cart.py")),
+    ("journal run-tests tests/cart.py", ShellPart("journal", CommandCategory.TEST_RUN, ["run-tests", "tests/cart.py"])),
+])
+def test_a_test_line_of_a_worker_with_no_commands_says_it_has_none_and_who_gives_them(worker_without_commands, line, part):
+    reply = worker_without_commands.run_line(line, part)
+    expect_value_with(reply.refusal, "You have no test commands")
+    expect_value_with(reply.refusal, f"journal worker send {worker_without_commands.worker.id} --test-command")
+
+
+def test_the_status_of_a_worker_with_no_commands_promises_no_test_runs(worker_without_commands):
+    status = worker_without_commands.story.run("worker status", actor=worker_without_commands.worker).output_text
+    expect_value_with(status, "Own test runs left: 0")
+    worker_without_commands.story.expect_no_text("worker status", "no limit", actor=worker_without_commands.worker)
+
+
 def test_only_a_worker_runs_worker_test(worker_with_commands):
     worker_with_commands.story.expect_refusal(PYTHON_RUN, "only a worker", actor=worker_with_commands.story.agent)
 

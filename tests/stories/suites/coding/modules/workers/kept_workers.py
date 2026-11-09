@@ -53,6 +53,16 @@ def test_retire_refused_with_uncommitted_files(new_story):
     story.expect_refusal(f"agent retire {worker.id} {REASON}", "uncommitted files", actor=story.agent)
 
 
+def test_retire_ignores_the_instruction_files_the_journal_writes(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "AGENTS.md", "The journal's text\n")
+    repository.changed(worker.id, "CLAUDE.md", "The journal's text\n")
+    stopped(story, worker)
+    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
+
+
 def test_retire_settles_what_a_worker_holds(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
@@ -86,7 +96,7 @@ def test_a_failed_git_status_holds_the_retirement(new_story):
     stopped(story, worker)
     folder = repository.worktree_folder(worker.id)
     (folder / ".git").write_text("not a git folder")
-    story.expect_refusal(f"agent retire {worker.id} {REASON}", "git status failed", actor=story.agent)
+    story.expect_refusal(f"agent retire {worker.id} {REASON}", "git status --porcelain failed", actor=story.agent)
 
 
 @pytest.mark.real_git

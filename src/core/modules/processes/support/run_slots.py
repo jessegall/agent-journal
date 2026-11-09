@@ -32,10 +32,12 @@ class RunSlots:
 
     def grant(self, context: Context) -> None:
         runs = self.running()
-        for waiting in [process for process in runs if process.queued_at is not None]:
+        queued = [process for process in runs if process.queued_at is not None]
+        outputs = {output.process_id: output for output in self.outputs.process_outputs(tuple(process.id for process in queued))}
+        for waiting in queued:
             agent = self.rows.required(Agent, waiting.session_agent_id)
             needs_slot = self.admission.needs_slot(waiting, agent)
-            if not self.admission.may_start(waiting, agent, self.clock.timestamp()):
+            if not self.admission.may_start(waiting, agent, outputs.get(waiting.id), self.clock.timestamp()):
                 continue
             process = self.rows.required(Process, waiting.id)
             self.record_count(process, agent, context)

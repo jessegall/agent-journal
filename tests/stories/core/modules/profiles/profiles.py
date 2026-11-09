@@ -12,6 +12,7 @@ from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 from core.base.query.queries import Queries
+from core.base.registry.registry import Registry
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -150,3 +151,9 @@ def expect_agents_folder_journal_with(story, text, expected) -> None:
 def expect_file_agents_folder(story, text) -> None:
     actual = (agents_folder(story) / text).is_file()
     assert actual, actual
+
+
+def test_the_profiles_window_is_called_profiles_in_the_navigation(new_story):
+    story = new_story(fixture=UserBuilder)
+    titles = {window.name: window.title for window in story.container.get(Registry).windows}
+    expect_value(titles["profiles.profiles"], "Profiles")
