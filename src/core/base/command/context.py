@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.command.command import Command
 from core.base.command.outside_runs import OutsideRuns
 from core.base.explanation import Explanation
+from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 
 
@@ -22,6 +23,11 @@ class Context:
     explanation: Explanation | None = None
     external_runs: OutsideRuns = field(default_factory=OutsideRuns, compare=False)
     approval_id: int | None = None
+
+    def required_environment_id(self) -> int:
+        if self.environment_id is None:
+            raise Refusal("this runs in an environment", "name one with --environment")
+        return self.environment_id
 
     def nested(self, command: Command[object]) -> "Context":
         return replace(self, command=command)

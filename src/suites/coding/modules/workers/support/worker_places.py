@@ -46,7 +46,7 @@ class WorkerPlaces:
         return tuple(self.queries.query(Agent).filter(role=CodingHelperRole.WORKER).matching(IsNull("retired_at")).newest().all_rows())
 
     def kept_limit(self) -> int:
-        return self.limits.lookup(CodingHelperRole.WORKER).kept
+        return self.limits.required(CodingHelperRole.WORKER).kept
 
     def can_start_new(self) -> bool:
         workers = self.kept_workers()
@@ -67,7 +67,7 @@ class WorkerPlaces:
             raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", self.use.retire_suggestion(CodingHelperRole.WORKER) or TypeLimits.retirement_instruction(workers))
 
     def run_limit(self) -> int:
-        return self.limits.lookup(CodingHelperRole.WORKER).run
+        return self.limits.required(CodingHelperRole.WORKER).run
 
     def resuming_lines(self) -> tuple[AgentLine, ...]:
         cutoff_value_at = self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)
@@ -80,9 +80,9 @@ class WorkerPlaces:
 
     def resuming_count(self) -> int:
         pending = self.work.pending()
-        workers = {worker.id: worker for worker in self.kept_workers() if worker.ended_at is not None and worker.id not in pending}
-        return len({line.session_agent_id for line in self.resuming_lines() if line.source in RESUMING_SOURCES and line.session_agent_id in workers
-                    and line.updated_at.text > workers[line.session_agent_id].ended_at.text})
+        ended_at = {worker.id: worker.ended_at for worker in self.kept_workers() if worker.ended_at is not None and worker.id not in pending}
+        return len({line.session_agent_id for line in self.resuming_lines() if line.source in RESUMING_SOURCES and line.session_agent_id in ended_at
+                    and line.update_timestamp().text > ended_at[line.session_agent_id].text})
 
     def can_resume(self, worker: Agent) -> bool:
         if worker.ended_at is None:

@@ -46,8 +46,8 @@ class WorkerSessions(AgentLaunchGuard):
             finally:
                 fcntl.flock(opened, fcntl.LOCK_UN)
 
-    def prepare(self, worker: Agent) -> AgentSessionState:
-        current = self.rows.required(Agent, worker.id)
+    def prepare(self, agent: Agent) -> AgentSessionState:
+        current = self.rows.required(Agent, agent.id)
         if current.pid is None:
             return AgentSessionState.READY
         program = self.providers.provider(current.program).executable

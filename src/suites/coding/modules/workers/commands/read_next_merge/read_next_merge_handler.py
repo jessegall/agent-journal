@@ -9,6 +9,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
 from core.base.query.conditions.is_null import IsNull
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.merger_visit import MergerVisit
@@ -61,6 +62,6 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         return worktree.state is WorktreeState.DELIVERED and worktree.tests_passed_at is not None and worktree.returned_at is None
 
     @staticmethod
-    def task_section(task, summary: str, proofs: list[Proof]) -> str:
+    def task_section(task: Task, summary: str, proofs: list[Proof]) -> str:
         proof_lines = "\n".join(f"proof {proof.id}, point {proof.point}, {proof.state}: {proof.text}" for proof in proofs)
         return f"{summary}\nbrief: {task.brief}\n{proof_lines}"

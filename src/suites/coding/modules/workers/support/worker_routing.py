@@ -38,22 +38,31 @@ class WorkerRouting:
         self.admission = admission
 
     def choice(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, context: Context | None = None) -> WorkerChoice:
-        if caller is None and not command.program:
-            raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
+        if caller is None:
+            if not command.program:
+                raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
+            return self.requested(command, tasks, caller, profile, command.program, context)
         requested_program = command.program or (self.providers.model_program(command.program_model) if command.program_model else "")
         if not requested_program and profile.mcp_tools:
-            requested_program = profile.program or (caller.program if caller is not None else "")
-        route = self.routes.common_route(tasks)
+            requested_program = profile.program or caller.program
         if requested_program:
-            self.policy.check(tasks[0], route, WorkerRouteRequest.dispatch(requested_program, command, caller, context))
-            self.admission.checked_provider(WORKER_TYPE, profile.name, requested_program)
-            self.programs.installed(requested_program)
-            reason = "the profile's tools"
-            if command.program:
-                reason = "named at dispatch"
-            elif command.program_model:
-                reason = "the named model"
-            return self.selected(command, profile, requested_program, reason, route)
+            return self.requested(command, tasks, caller, profile, requested_program, context)
+        return self.chosen(command, tasks, caller, profile)
+
+    def requested(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent | None, profile: AgentProfile, requested_program: str, context: Context | None) -> WorkerChoice:
+        route = self.routes.common_route(tasks)
+        self.policy.check(tasks[0], route, WorkerRouteRequest.dispatch(requested_program, command, caller, context))
+        self.admission.checked_provider(WORKER_TYPE, profile.name, requested_program)
+        self.programs.installed(requested_program)
+        reason = "the profile's tools"
+        if command.program:
+            reason = "named at dispatch"
+        elif command.program_model:
+            reason = "the named model"
+        return self.selected(command, profile, requested_program, reason, route)
+
+    def chosen(self, command: WorkerProgramRequest, tasks: list[Task], caller: Agent, profile: AgentProfile) -> WorkerChoice:
+        route = self.routes.common_route(tasks)
         if route is None and not self.shares.is_configured:
             self.admission.checked_provider(WORKER_TYPE, profile.name, caller.program)
             self.programs.installed(caller.program)

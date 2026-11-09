@@ -57,7 +57,7 @@ class WorkerSplitSubcommand(ReadSubcommand[RowList | WorkerSplitPreview | Worker
                          "windows": [window.line for window in self.states.windows(provider.name)],
                          "outage": not outages[provider.name].is_ready,
                          "outage_reason": outages[provider.name].line if not outages[provider.name].is_ready else None,
-                         "outage_ends_at": outages[provider.name].ends_at.text if outages[provider.name].ends_at is not None else None,
+                         "outage_ends_at": outages[provider.name].ends_text,
                          **self.states.state(provider.name, folder).listed()}
                         for provider in self.providers.all()])
 

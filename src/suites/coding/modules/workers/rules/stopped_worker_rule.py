@@ -37,7 +37,7 @@ class StoppedWorkerRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         wait_seconds = self.settings.minutes(MERGER_WAIT_MINUTES).count
-        due = [worker for worker in self.stopped_with_tasks() if worker.ended_at.elapsed_seconds(hook.timestamp) >= wait_seconds]
+        due = [worker for worker in self.stopped_with_tasks() if worker.ended_at is not None and worker.ended_at.elapsed_seconds(hook.timestamp) >= wait_seconds]
         return RuleAnswer.with_nudges(*[nudge for nudge in map(self.nudge, due) if nudge is not None])
 
     def stopped_with_tasks(self) -> list[Agent]:
