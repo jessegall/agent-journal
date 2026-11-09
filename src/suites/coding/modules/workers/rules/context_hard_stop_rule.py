@@ -1,17 +1,13 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.seconds import Seconds
 from core.base.scope.actor_scope import ActorScope
-from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
+from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.modules.workers.support.worker_nudges import CONTEXT_HARD_STOP
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.agent_role import AgentRole
 from suites.coding.support.context_limit_check import ContextLimitCheck
-
-RETRY_SECONDS = Seconds(600)
 
 
 class ContextHardStopRule(DriverRule):
@@ -26,13 +22,13 @@ class ContextHardStopRule(DriverRule):
     disabled_scopes = [ActorScope]
     refuses_one_action = "An agent past the second context limit may run no more tools, so it must stop"
 
-    def __init__(self, history: HookHistory, limit_check: ContextLimitCheck) -> None:
-        self.history, self.limit_check = history, limit_check
+    def __init__(self, limit_check: ContextLimitCheck) -> None:
+        self.limit_check = limit_check
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
+        tool =hook.event.tool
         is_memory_command = tool is not None and tool.shell is not None and bool(tool.shell.parts_running_journal_command("memory"))
         if is_memory_command or not self.limit_check.exceeds_hard_limit(hook.agent_id):
             return RuleAnswer.allowed()
         refusal = RuleAnswer.refused(CONTEXT_HARD_STOP.nudge())
-        return refusal if self.history.has_recent_answer(self.name, hook, RETRY_SECONDS) else refusal.running(ChooseAgentControl(hook.agent_id, "context", self.limit_check.action()))
+        return refusal if self.limit_check.was_asked(hook.agent_id, hook.timestamp) else refusal.running(CompactAgentContext(hook.agent_id))

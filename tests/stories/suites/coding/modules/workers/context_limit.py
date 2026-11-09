@@ -307,3 +307,30 @@ def test_an_agent_past_the_limit_that_finishes_its_task_is_told_to_stop_and_give
     agent.expect_success('memory skip "nothing to keep"', actor=agent.agent)
     agent.hook(SESSION, HookSamples.stop())
     agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+
+
+def test_a_compaction_typed_by_one_rule_is_not_typed_again_by_another_while_the_size_is_as_it_was(hard_limited_worker):
+    agent = hard_limited_worker
+    has_context(agent, HARD)
+    agent.expect_hook_refusal(SESSION, HookSamples.edit("src/cart.py"), "no more tools, stop now")
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    agent.hook(SESSION, COMPACTION_START)
+    agent.advance(timedelta(minutes=1))
+    stops(agent)
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+
+
+@pytest.fixture
+def compacted_at_the_limit(limited):
+    has_context(limited, LIMIT)
+    idle_turn(limited)
+    return limited
+
+
+def test_a_compaction_is_typed_again_once_the_context_has_passed_the_limit_anew(compacted_at_the_limit):
+    agent = compacted_at_the_limit
+    agent.expect_rows(agent.typing.typed == [COMPACT], detail=str(agent.typing.typed))
+    has_context(agent, LIMIT + 5000)
+    agent.advance(timedelta(minutes=1))
+    agent.hook(SESSION, HookSamples.stop())
+    agent.expect_rows(agent.typing.typed == [COMPACT, COMPACT], detail=str(agent.typing.typed))
