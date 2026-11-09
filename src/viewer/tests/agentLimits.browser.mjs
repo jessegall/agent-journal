@@ -16,7 +16,8 @@ try {
         await page.emulateMedia({colorScheme});
         await limits.screenshot({path: `${capture}-${colorScheme}.png`, animations: "disabled"});
     }
-    await limits.locator('[data-agent-limits-edit]').click();
+    assert.equal(await limits.locator('[data-agent-limits-edit]').count(), 0);
+    await limits.locator('[data-agent-limit-type="worker"]').click();
     const worker = limits.locator('[data-edit-type="worker"]');
     await worker.locator('[data-agent-limit-input="run"]').fill("2");
     await worker.locator('[data-agent-limit-input="run"]').press("Tab");

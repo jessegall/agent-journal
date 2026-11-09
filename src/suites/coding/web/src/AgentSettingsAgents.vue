@@ -18,5 +18,5 @@ onMounted(() => view.reload("limits"));
 </template>
 
 <style scoped>
-.agents { display: flex; flex-direction: column; gap: 12px; padding-top: 14px; }
+.agents { display: flex; flex-direction: column; gap: 12px; }
 </style>

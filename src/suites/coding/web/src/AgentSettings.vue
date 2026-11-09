@@ -21,7 +21,7 @@ function pick(entry) {
     <WindowRoom padding="0">
         <div class="settings" data-agent-settings>
             <div class="settings-bar"><InnerTabs :tabs="tabs" :active="active" @choose="pick" /></div>
-            <div class="settings-body">
+            <div :class="['settings-body', {flush: tab === 'agents'}]">
                 <template v-if="view.readOnly">
                     <p class="note lock" role="note" data-settings-lock>Only a person can change these settings. You can read every value, and ask a person for a change.</p>
                 </template>
@@ -50,5 +50,7 @@ function pick(entry) {
 .settings { --settings-bar-height: 32px; container-type: inline-size; display: flex; flex-direction: column; min-height: 100%; background: var(--raised, var(--bg)); }
 .settings-bar { position: sticky; top: 0; z-index: 2; background: var(--raised, var(--bg)); }
 .settings-body { flex: 1; padding: 4px 18px 22px; }
+.flush { padding: 0 0 22px; }
+.flush .note { margin-left: 18px; margin-right: 18px; }
 .note { margin: 14px 0 0; padding: 8px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-dim, var(--hover)); color: var(--text); font-size: 12.5px; }
 </style>
