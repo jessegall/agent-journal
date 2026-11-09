@@ -103,8 +103,9 @@ def test_a_run_with_no_process_tree_is_left_alone(new_story):
     story.expect_text("process show 1", "state: background", actor=story.agent)
 
 
-def look_lines(story: Story) -> int:
-    return story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text.count(LOOK_LINE)
+def expect_looks(story: Story, asked: int) -> None:
+    lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.agent).output_text
+    story.expect_rows(lines.count(LOOK_LINE) == asked, detail=f"{asked} asks expected in:\n{lines}")
 
 
 def busy_for(story: Story, tree: FakeGroupCpuTime, seconds: int) -> None:
@@ -118,9 +119,9 @@ def test_a_silent_test_run_that_keeps_using_processor_time_has_its_agent_asked_t
     tree = started_tree(story, 12.0)
     for seconds in (400, 400):
         busy_for(story, tree, seconds)
-    story.expect_rows(look_lines(story) == 0)
+    expect_looks(story, 0)
     busy_for(story, tree, 200)
-    story.expect_rows(look_lines(story) == 1)
+    expect_looks(story, 1)
     story.expect_text("process show 1", "state: background", actor=story.agent)
 
 
@@ -129,7 +130,7 @@ def test_a_silent_build_that_keeps_using_processor_time_is_never_asked_about(new
     tree = started_tree(story, 12.0)
     for seconds in (500, 500, 500):
         busy_for(story, tree, seconds)
-    story.expect_rows(look_lines(story) == 0)
+    expect_looks(story, 0)
     story.expect_text("process show 1", "state: background", actor=story.agent)
 
 
@@ -138,11 +139,11 @@ def test_the_ask_repeats_after_the_hang_seconds_and_the_run_is_stopped_after_the
     tree = started_tree(story, 12.0)
     busy_for(story, tree, LOOK_SECONDS + 1)
     busy_for(story, tree, HANG_SECONDS - 1)
-    story.expect_rows(look_lines(story) == 1)
+    expect_looks(story, 1)
     busy_for(story, tree, 2)
-    story.expect_rows(look_lines(story) == 2)
+    expect_looks(story, 2)
     busy_for(story, tree, HANG_SECONDS)
-    story.expect_rows(look_lines(story) == 3)
+    expect_looks(story, 3)
     story.expect_text("process show 1", "state: background", actor=story.agent)
     busy_for(story, tree, HANG_SECONDS)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
@@ -158,7 +159,7 @@ def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it
     printed_at = story.clock.timestamp().value.timestamp()
     os.utime(folder.home.folder / "processes" / "1" / "1.out", (printed_at, printed_at))
     busy_for(story, tree, HANG_SECONDS + 1)
-    story.expect_rows(look_lines(story) == 1)
+    expect_looks(story, 1)
 
 
 def test_one_listing_of_the_processes_serves_every_run_of_a_tick(new_story):
