@@ -78,7 +78,7 @@ const L = (e, g) => {
       t("span", null, null, -1)
     ])], 10, qe));
   }
-}, re = /* @__PURE__ */ L(Se, [["__scopeId", "data-v-37017fe1"]]), xe = ["data-skill"], Ce = ["aria-label"], Te = { class: "name-line" }, Re = {
+}, re = /* @__PURE__ */ L(Se, [["__scopeId", "data-v-ee9d0e40"]]), xe = ["data-skill"], Ce = ["aria-label"], Te = { class: "name-line" }, Re = {
   key: 0,
   class: "read-dot",
   title: "Read by the main agent"
@@ -128,7 +128,7 @@ const L = (e, g) => {
       }, null, 8, ["folder", "required", "busy"])
     ], 10, xe));
   }
-}, Z = /* @__PURE__ */ L(je, [["__scopeId", "data-v-33ddf837"]]), Ie = { class: "skill-group" }, Ee = ["aria-expanded"], We = ["aria-expanded", "onClick"], Le = {
+}, Z = /* @__PURE__ */ L(je, [["__scopeId", "data-v-031ec345"]]), Ie = { class: "skill-group" }, Ee = ["aria-expanded"], We = ["aria-expanded", "onClick"], Le = {
   __name: "SkillListGroup",
   props: { title: { type: String, required: !0 }, skills: { type: Array, required: !0 }, opened: { type: String, default: "" }, busy: { type: Array, default: () => [] }, searching: Boolean },
   emits: ["open", "require"],
@@ -183,7 +183,7 @@ const L = (e, g) => {
       ], 64)) : S("", !0)
     ]));
   }
-}, Ne = /* @__PURE__ */ L(Le, [["__scopeId", "data-v-f48d4dac"]]), Ve = {
+}, Ne = /* @__PURE__ */ L(Le, [["__scopeId", "data-v-383c3904"]]), Ve = {
   class: "skills-list",
   "data-skills-catalogue": ""
 }, Be = { class: "filters" }, Me = ["aria-pressed", "onClick"], Fe = { class: "skill-list-scroll" }, Pe = {
@@ -244,7 +244,7 @@ const L = (e, g) => {
       ])
     ]));
   }
-}, De = /* @__PURE__ */ L(Ue, [["__scopeId", "data-v-bcdb5e6a"]]), oe = (e) => String(e || "").replace(/^---\n[\s\S]*?\n---\n+/, ""), Ge = { class: "requirements" }, He = { class: "block-head" }, Ke = { class: "switch-label" }, ze = {
+}, De = /* @__PURE__ */ L(Ue, [["__scopeId", "data-v-093ffe0e"]]), oe = (e) => String(e || "").replace(/^---\n[\s\S]*?\n---\n+/, ""), Ge = { class: "requirements" }, He = { class: "block-head" }, Ke = { class: "switch-label" }, ze = {
   key: 0,
   class: "choices"
 }, Ye = ["value", "disabled"], Je = { key: 0 }, Qe = {
@@ -301,7 +301,7 @@ const L = (e, g) => {
       ])) : S("", !0)
     ]));
   }
-}, _e = /* @__PURE__ */ L(Ze, [["__scopeId", "data-v-87c0e195"]]), et = [
+}, _e = /* @__PURE__ */ L(Ze, [["__scopeId", "data-v-7c679e99"]]), et = [
   { key: "nudge", value: "nudge", label: "Remind the agent", hint: "A short note only the agent sees. It carries on with its work.", ask: "What to remind the agent of", example: "Add the change to src/CHANGELOG.md in plain words." },
   { key: "instruct", value: "instruct", label: "Tell the agent to do something now", hint: "The agent sees “Do this now:” followed by your text.", ask: "What the agent should do", example: "Stop and ask me before you touch the database." },
   { key: "deny", value: "deny", label: "Block a command or file change", hint: "The command or file change is refused, and the agent is given your reason.", ask: "Reason the agent is given", example: "Never force-push. Ask me first." },
@@ -381,7 +381,7 @@ const rt = {
       ])
     ], 2));
   }
-}, ue = /* @__PURE__ */ L(gt, [["__scopeId", "data-v-a8b11e7d"]]), kt = { class: "tiles" }, mt = ["onClick"], ht = {
+}, ue = /* @__PURE__ */ L(gt, [["__scopeId", "data-v-8f3251db"]]), kt = { class: "tiles" }, mt = ["onClick"], ht = {
   __name: "TriggerTiles",
   props: /* @__PURE__ */ J({ options: { type: Array, required: !0 }, mark: { type: String, required: !0 } }, {
     modelValue: { type: String, required: !0 },
@@ -403,7 +403,7 @@ const rt = {
       ], 16, mt))), 128))
     ]));
   }
-}, vt = /* @__PURE__ */ L(ht, [["__scopeId", "data-v-e5657c19"]]), yt = { class: "words" }, pt = ["aria-label", "onClick"], ft = ["onKeydown"], bt = {
+}, vt = /* @__PURE__ */ L(ht, [["__scopeId", "data-v-eb4da38d"]]), yt = { class: "words" }, pt = ["aria-label", "onClick"], ft = ["onKeydown"], bt = {
   __name: "WatchedWords",
   props: { words: { type: Array, required: !0 } },
   emits: ["words"],
@@ -445,7 +445,7 @@ const rt = {
       ])
     ]));
   }
-}, $t = /* @__PURE__ */ L(bt, [["__scopeId", "data-v-740e8b19"]]), wt = { class: "field" }, qt = { class: "field" }, St = ["checked", "data-trigger-place", "onChange"], xt = { class: "field" }, Ct = {
+}, $t = /* @__PURE__ */ L(bt, [["__scopeId", "data-v-7a597156"]]), wt = { class: "field" }, qt = { class: "field" }, St = ["checked", "data-trigger-place", "onChange"], xt = { class: "field" }, Ct = {
   key: 0,
   class: "pattern-limit",
   "data-trigger-pattern-limit": ""
@@ -497,7 +497,7 @@ const rt = {
       ])
     ], 64));
   }
-}, Rt = /* @__PURE__ */ L(Tt, [["__scopeId", "data-v-3eabab54"]]), At = { class: "block" }, Ot = {
+}, Rt = /* @__PURE__ */ L(Tt, [["__scopeId", "data-v-2e25b9b9"]]), At = { class: "block" }, Ot = {
   key: 0,
   class: "field"
 }, jt = { class: "label" }, It = {
@@ -551,7 +551,7 @@ const rt = {
       })
     ]));
   }
-}, Nt = /* @__PURE__ */ L(Lt, [["__scopeId", "data-v-cec179d6"]]), Vt = {
+}, Nt = /* @__PURE__ */ L(Lt, [["__scopeId", "data-v-1a787719"]]), Vt = {
   __name: "TriggerConditionFields",
   props: {
     modelValue: { type: Array, required: !0 },
@@ -705,7 +705,7 @@ const rt = {
       ])
     ], 32));
   }
-}, ce = /* @__PURE__ */ L(Qt, [["__scopeId", "data-v-f829b85c"]]), Xt = { class: "skill-details" }, Zt = { class: "status" }, _t = { class: "block" }, el = { class: "block-head" }, tl = {
+}, ce = /* @__PURE__ */ L(Qt, [["__scopeId", "data-v-272d3d66"]]), Xt = { class: "skill-details" }, Zt = { class: "status" }, _t = { class: "block" }, el = { class: "block-head" }, tl = {
   key: 0,
   class: "help"
 }, ll = {
@@ -826,7 +826,7 @@ const rt = {
       ]);
     };
   }
-}, gl = /* @__PURE__ */ L(cl, [["__scopeId", "data-v-bcda4c9c"]]), kl = { class: "skills" }, ml = { class: "skills-title" }, hl = {
+}, gl = /* @__PURE__ */ L(cl, [["__scopeId", "data-v-4f1bf52d"]]), kl = { class: "skills" }, ml = { class: "skills-title" }, hl = {
   class: "skills-text",
   "data-skill-text": ""
 }, vl = {
@@ -851,7 +851,7 @@ const rt = {
       ])
     ]));
   }
-}, yl = /* @__PURE__ */ L(vl, [["__scopeId", "data-v-916542ad"]]), pl = { class: "page-head" }, fl = { "aria-label": "Skills views" }, bl = ["aria-pressed"], $l = ["aria-pressed"], wl = {
+}, yl = /* @__PURE__ */ L(vl, [["__scopeId", "data-v-d6cfa5ab"]]), pl = { class: "page-head" }, fl = { "aria-label": "Skills views" }, bl = ["aria-pressed"], $l = ["aria-pressed"], wl = {
   key: 0,
   class: "warning",
   role: "status"
@@ -1021,7 +1021,7 @@ const rt = {
       _: 1
     }));
   }
-}, Ml = /* @__PURE__ */ L(Nl, [["__scopeId", "data-v-292001d8"]]);
+}, Ml = /* @__PURE__ */ L(Nl, [["__scopeId", "data-v-d59c26e6"]]);
 export {
   Ml as S
 };
