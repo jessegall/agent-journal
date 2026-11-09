@@ -9,7 +9,8 @@ A plan is only as good as its tasks. Write it so a worker on a cheaper model who
 and finish it without having to decide anything for itself.
 
 - When your job names a functional design document, read it whole. Its goal, user stories and phases are your source:
-  turn them into the plan, and do not design it again.
+  turn them into the plan, and do not design it again. When it holds a testing plan for unit tests, those unit tests
+  go in the plan too.
 
 - Split each phase into its real steps. File one task per step a person could check.
 - A phase with one task needs a reason. `journal plan ready` refuses it until you pass
