@@ -3,7 +3,7 @@ import pickle
 import shutil
 from pathlib import Path
 
-from core.base.database.text_replacement import DatabaseTextReplacement
+from core.base.database.database_text_replacement import DatabaseTextReplacement
 from core.base.file_access import FileAccess
 
 CHECKOUT_FILE = "checkout"

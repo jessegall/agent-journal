@@ -24,8 +24,8 @@ def plan_tasks(story) -> dict[int, dict[str, object]]:
 
 
 def delegated_cards(story) -> list[dict[str, object]]:
-    board = json.loads(story.run("task board --environment main --state delegated --json", actor=story.agent).output_text)
-    return board["groups"][0]["rows"]
+    board = json.loads(story.run("task board --environment main --state open --json", actor=story.agent).output_text)
+    return [row for row in board["groups"][0]["rows"] if row["delegated_to"] is not None]
 
 
 def expect_reserved(story, task: int) -> None:

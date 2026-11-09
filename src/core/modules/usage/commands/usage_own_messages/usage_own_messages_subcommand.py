@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
+from core.modules.messages.support.recent_conversation import SHOWN_CHARACTERS
 from core.base.caller.caller import Caller
 from core.base.provider.providers import Providers
 from core.base.provider.transcript_row import TranscriptRow
@@ -13,7 +14,6 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.environments.models.environment import Environment
 
 SHOWN_MESSAGES = 10
-SHOWN_CHARACTERS = 300
 
 
 class UsageOwnMessagesSubcommand(ReadSubcommand[tuple[TranscriptRow, ...]]):
