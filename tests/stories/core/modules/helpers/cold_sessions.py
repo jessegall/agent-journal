@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 
 from core.modules.helpers.support.cold_sessions import ColdSessions
+from core.modules.helpers.support.helper_resume import HelperResume
 from core.modules.helpers.support.stale_session_error import StaleSessionError
 from core.modules.helpers.support.helper_settings import COLD_SESSION_CONTEXT_PERCENT, COLD_SESSION_MINUTES, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from core.testing.fake_launcher import FakeLauncher
@@ -156,17 +157,33 @@ def test_the_boot_menu_reads_no_cold_session_of_another_program(main_session):
     main_session.expect_rows(json.loads(main_session.run("helper cold-sessions codex --environment main --json", actor=main_session.user).output_text)["rows"] == [])
 
 
-def test_a_helper_past_the_context_limit_starts_a_new_session_when_it_is_sent_a_job(ended_helper, monkeypatch):
+@pytest.fixture
+def limited_helper(ended_helper):
     ended_helper.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=ended_helper.user)
     ended_helper.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=ended_helper.user)
-    helper = helper_agent(ended_helper)
-    save_status_file(ended_helper, helper.session, {"context_window": {"total_input_tokens": 400000}})
-    resumable_session(ended_helper, helper, monkeypatch)
-    launcher = FakeLauncher(ended_helper.home.socket("launcher"), answer=b"started 701\n")
-    ended_helper.expect_success(f'helper send {helper.id} "{JOB}"', actor=ended_helper.agent)
-    ended_helper.run_listeners()
+    save_status_file(ended_helper, helper_agent(ended_helper).session, {"context_window": {"total_input_tokens": 400000}})
+    return ended_helper
+
+
+def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_helper, monkeypatch):
+    story, helper = limited_helper, helper_agent(limited_helper)
+    resumable_session(story, helper, monkeypatch)
+    launcher = FakeLauncher(story.home.socket("launcher"), answer=b"started 701\n")
+    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
+    story.run_listeners()
     launcher.wait_for_requests()
-    ended_helper.expect_rows(helper_agent(ended_helper).session != helper.session, "--resume" not in launcher.requests[0]["command"], detail=str(launcher.requests[0]))
+    story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in launcher.requests[0]["command"], detail=str(launcher.requests[0]))
+
+
+def test_a_limited_helper_starts_its_new_session_again_when_the_launcher_still_holds_its_program(limited_helper):
+    story = limited_helper
+    launcher = FakeLauncher(story.home.socket("launcher"), request_count=2, answers=(b"running\n", b"started 701\n"))
+    resume = story.container.get(HelperResume)
+    resume.resume(helper_agent(story), JOB)
+    resume.resume(helper_agent(story), JOB)
+    session = helper_agent(story).session
+    first, second = launcher.requests[0]["command"], launcher.requests[1]["command"]
+    story.expect_rows("--session-id" in first, "--session-id" in second, session in second, "--resume" not in first, "--resume" not in second, detail=str(launcher.requests))
 
 
 def test_a_session_whose_last_message_is_over_an_hour_old_may_not_be_resumed(ended_helper):
@@ -178,3 +195,4 @@ def test_a_session_whose_last_message_is_over_an_hour_old_may_not_be_resumed(end
 def test_a_session_whose_last_message_is_under_an_hour_old_may_be_resumed(ended_helper):
     ended_helper.advance(timedelta(minutes=59))
     ended_helper.container.get(ColdSessions).require_replaced(helper_agent(ended_helper))
+
