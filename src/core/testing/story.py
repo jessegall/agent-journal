@@ -103,10 +103,10 @@ class Story:
         self.replacements[class_type] = replacement
         self.container.bind(class_type, replacement)
 
-    def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> LineOutcome:
+    def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None, process_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()
         line = self.scope_line(line)
-        caller = Caller(actor or Actor.core(), environment_id)
+        caller = Caller(actor or Actor.core(), environment_id, process_id=process_id)
         self.steps.append(f"command {caller.actor.id} {environment_id}: {line}")
         with self.repeated_work.request():
             code = self.container.get(Console).run(shlex.split(line), caller, stream)

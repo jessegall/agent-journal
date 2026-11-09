@@ -29,6 +29,10 @@ BUILD_SHELL = HookSamples.shell(BUILD_LINE, ShellPart("make", CommandCategory.BU
 SEARCH_SHELL = HookSamples.shell("grep -r cart src", ShellPart("grep", CommandCategory.SEARCH, ["-r", "cart", "src"]))
 OUTPUT_NUMBER_LINE = "go on with task 1, you hear when it ends"
 SECONDS_SET = f"setting set {WORKER_RUN_WAIT} {{seconds}} --environment main"
+LONG_OUTPUT = "".join(f"line {number}\n" for number in range(1, 301))
+PIPED_TEST = HookSamples.shell("journal worker test python tests/cart.py && tail -2",
+                               ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", "python", "tests/cart.py"], subcommand="worker", pipe_target=1),
+                               ShellPart("tail", CommandCategory.SEARCH, ["-2"]))
 
 
 @pytest.fixture
@@ -207,3 +211,21 @@ def test_the_commands_card_in_the_workers_chat_shows_what_its_named_test_printed
         key = f"terminal-output.{reply.hook_call_id}"
         status, output = window_data(server, cookie, keys=key, window="agents.agents")
         worker.story.expect_rows(status == 200, output["keys"][key]["value"]["lines"] == ["10 passed"], detail=str(output["keys"][key]))
+
+
+def test_a_named_test_with_no_pipe_gets_only_a_short_answer_and_the_output_number(worker):
+    end_run_during_wait(worker.story, LONG_OUTPUT)
+    text = worker.story.run(TEST_RUN, actor=worker.worker).output_text
+    expect_value_with(text, "line 300")
+    expect_value_without(text, "line 200\n")
+    expect_value_with(text, f"full output saved as output {newest_run(worker.story).id}")
+
+
+def test_a_named_test_with_a_pipe_gets_the_whole_output_for_the_pipe_and_the_output_number(worker):
+    worker.story.hook(worker.session, PIPED_TEST)
+    shell_process = newest_run(worker.story)
+    end_run_during_wait(worker.story, LONG_OUTPUT)
+    text = worker.story.run(TEST_RUN, actor=worker.worker, process_id=shell_process.id).output_text
+    expect_value_with(text, "line 1\n")
+    expect_value_with(text, "line 300")
+    expect_value_with(text, f"full output saved as output {newest_run(worker.story).id}")
