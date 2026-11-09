@@ -16,8 +16,6 @@ from core.modules.drivers.models.agent_block import AgentBlock
 from core.base.driver.tool_type import ToolType
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
-COUNTDOWN_USES = 3
-
 
 class AgentBlockRule(DriverRule):
     """A blocked agent's tools are refused but for reading and journal commands; a block ends as soon as its
@@ -72,4 +70,4 @@ class AgentBlockRule(DriverRule):
         if not block.countdown_text or not block.grace_tool_uses:
             return None
         remaining = block.grace_tool_uses - tool_uses - 1
-        return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(remaining)), turn_limited=False) if 0 <= remaining < COUNTDOWN_USES else None
+        return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(remaining)), turn_limited=False) if 0 <= remaining < block.countdown_from else None

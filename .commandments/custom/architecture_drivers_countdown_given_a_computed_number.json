@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "nudge"
+            },
+            {
+                "of": "receiver",
+                "nameMatches": "_COUNTDOWN$"
+            },
+            {
+                "not": {
+                    "argument": {
+                        "at": 0,
+                        "is": "literal"
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "countdown-given-a-computed-number",
+        "description": "A countdown line is given a number worked out by hand, so the count and its line are the caller's own.",
+        "rule": "Give the line \"{left}\" and let the funnel fill it in: BlockUntil and AgentBlockRule for tool uses, CountDown.line_at with the number Countdowns.tick answers for anything else.",
+        "skill": "plain-code-words"
+    }
+}
