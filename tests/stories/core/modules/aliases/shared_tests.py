@@ -71,6 +71,7 @@ def test_a_second_build_of_the_same_program_and_folder_is_refused(saved_pytest):
 def test_a_worker_runs_the_shared_pytest_in_its_own_checkout(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
+    story.expect_success("alias remove cart-test", actor=story.agent)
     story.expect_success('alias add pytest-run ".venv/bin/python3 -m pytest {args}" --category "test run" --agents', actor=story.agent)
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)

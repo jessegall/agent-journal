@@ -147,11 +147,11 @@ def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_nam
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
 
-def test_a_refused_command_blocks_every_other_tool_but_reading_until_its_skill_is_read(started_tasks):
+def test_a_refused_command_blocks_every_other_tool_until_its_skill_is_read(started_tasks):
     story = started_tasks
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-tasks")
-    story.expect_hook_allowed("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
+    story.expect_hook_refusal("s-1", HookSamples.shell("cat src/cart.py", ShellPart("cat", CommandCategory.READ, ["src/cart.py"])), "load this first with the Skill tool: journal-tasks")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))
 
