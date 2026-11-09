@@ -27,12 +27,24 @@ test("the agents tab of agent settings shows the counts without status words", a
 
 test("maximum controls save a change and read-only viewers cannot edit", async () => {
     const {element, held} = await counts();
-    [...element.querySelectorAll("button")].find((button) => button.textContent === "Change the maximums").click();
+    const edit = element.querySelector("[data-agent-limits-edit]");
+    expect(edit.textContent).toContain("Edit");
+    edit.click();
     await settle();
     const input = element.querySelector("[data-agent-limit-input='run']");
     input.nextElementSibling.click();
     await settle();
     expect(held.run).toHaveBeenCalledWith(["setting", "set", "sample.run", "2", "--environment", "main"]);
+});
+
+test("an opened row is a new screen in place of the table", async () => {
+    const {element} = await counts();
+    const table = element.querySelector("[data-counts-screen]");
+    element.querySelector("[data-agent-limit-type='worker']").click();
+    await settle();
+    const screen = element.querySelector("[data-counts-screen]");
+    expect(screen).not.toBe(table);
+    expect(screen.querySelector("[data-agent-limit-type]")).toBe(null);
 });
 
 test("an opened row lists its idle agent and retires it with a reason", async () => {
