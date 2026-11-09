@@ -104,7 +104,7 @@ class PlansModule(Module):
     bindings = {PlanAuthors: PlanRowAuthors}
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers", "journal.core.messages"]
     skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase")),
-              SkillDeclaration("journal-planning", "How thorough a plan is: real steps in each phase, one task per step, and a brief an agent can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
+              SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief each worker can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration]
     handlers = [AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]

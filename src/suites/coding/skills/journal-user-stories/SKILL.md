@@ -1,6 +1,6 @@
 ---
 name: journal-user-stories
-description: Write user stories for any system design from every angle, who acts, what they see, refusals, failures, recovery and abuse, and group them into story books; load it before you write stories or a functional design
+description: Write user stories for any system design from every angle, and group them into story books; read it before you write stories or a functional design
 ---
 
 # Writing user stories

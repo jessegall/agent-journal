@@ -91,7 +91,7 @@ class LibraryModule(Module):
                    RevokeLibraryTokenSubcommand,
                    MakeLibraryCopySubcommand, SendLibraryItemSubcommand, LeaveLibraryCopySubcommand, LibraryCopiesSubcommand, RunLibrarySyncSubcommand, ChooseLibraryVersionSubcommand, RemoveLibraryItemSubcommand, RestoreLibraryItemSubcommand]
     tick_handlers = [TickHandler(TickInterval(seconds=10), LibrarySyncTick(), "library sync")]
-    skills = [SkillDeclaration("journal-library", "Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
+    skills = [SkillDeclaration("journal-library", "Use the library to find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed",
                                keywords=("library", "team", "shared"), commands=["library"])]
     windows = [WindowDeclaration("library.teams", "Teams", "teams.js", WindowLoading.COMPONENT, skeleton=LIBRARY_TEAMS_SKELETON, search=WindowReadSearch("library list", "Search the library", ("title", "abstract")),
                                  place=WindowPlace.PAGE, group="project", icon=WindowIcon.SHARE, reads=["library status", "library list", "library browse", "library inspect", "library show", "library copies", "library-user list", "library-user tokens"],
