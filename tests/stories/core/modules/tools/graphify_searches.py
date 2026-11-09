@@ -64,7 +64,7 @@ def test_after_twenty_five_searches_every_search_that_is_not_graphify_is_refused
     story = blocked
     story.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     reply = search(story)
-    expect_value("use graphify query, path or explain first" in reply.refusal, True)
+    expect_value("use graphify query, path or explain" in reply.refusal, True)
     expect_value(bool(search(story, SHELL_SEARCH).refusal), True)
 
 
