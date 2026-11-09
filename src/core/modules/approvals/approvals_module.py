@@ -65,7 +65,7 @@ class ApprovalsModule(Module):
     marks = APPROVAL_MARKS
     nudges = [APPROVAL_PENDING, APPROVAL_DECIDED, APPROVAL_REVIEW]
     docks = [DockDeclaration(ApprovalDockType.REQUEST, "question", "Approval", "approval-dock.js", reads=["approval pending"], needs_user=True, reads_target=False),
-             DockDeclaration(ApprovalDockType.STANDING_USED, "check", "Went on under a standing yes", reads=["standing-approval show"], buttons=[MarkButton("close", "Withdraw", "standing-approval delete {row_id}")], leaves_after_seconds=8)]
+             DockDeclaration(ApprovalDockType.STANDING_USED, "check", "Approval automatically accepted", "standing-used-dock.js", reads=["standing-approval show"], buttons=[MarkButton("close", "Withdraw", "standing-approval delete {row_id}")], leaves_after_seconds=8)]
     button_slots = list(APPROVAL_SLOT)
     buttons = [ButtonDeclaration("approvals.accept", APPROVAL_SLOT, "Accept", "approval accept {row_id}", icon="check", primary=True, condition=OPEN_REQUEST,
                               menu=(ButtonMenuItem("Accept and always for the same request", "approval accept {row_id} --always same", description="Keeps a standing yes: the same kind of approval with the same command line, in this environment, is accepted with no card."),
