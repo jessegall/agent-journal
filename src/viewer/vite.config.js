@@ -26,13 +26,12 @@ const clearShellAssets = () => ({
 });
 
 // the phone's service worker, written in tools/phone-worker and put beside the shell as a built file
-const GENERATED_MARK = "/* @code-commandments-generated */";
 const phoneWorker = () => ({
     name: "phone-worker",
     apply: "build",
     writeBundle() {
         const source = readFileSync(fileURLToPath(new URL("../../tools/phone-worker/phone-sw.js", import.meta.url)), "utf8");
-        writeFileSync(`${OUT_DIR}/phone-sw.js`, `${GENERATED_MARK}\n${source}`);
+        writeFileSync(`${OUT_DIR}/phone-sw.js`, source);
     },
 });
 

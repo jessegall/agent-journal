@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { onUnmounted as R, ref as h, computed as x, openBlock as _, createBlock as V, unref as s, withCtx as c, createElementVNode as d, createVNode as w, toDisplayString as p, createElementBlock as k, withModifiers as D, withDirectives as O, withKeys as E, vModelText as K, createTextVNode as A, createCommentVNode as S } from "vue";
 import { useWindow as L, FeedPaginator as P, eventMayBeChildOf as U, WindowRoom as W, AutoScrollPane as q, RowList as F, Btn as I } from "@journal/window-kit";
 const j = (r, t) => {

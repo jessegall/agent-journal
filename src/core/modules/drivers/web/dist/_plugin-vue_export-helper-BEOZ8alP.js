@@ -1,4 +1,3 @@
-/* @code-commandments-generated */
 import { wordLabel as s } from "@journal/window-kit";
 const a = { info: "Notice", steering: "Instruction", refusal: "Refusal" }, i = {
   pre_tool_use: "Before a tool runs",

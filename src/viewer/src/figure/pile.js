@@ -116,7 +116,7 @@ export const PILE = [
     ]),
     ...at("tests_failed", {cooldown: 20, toward: "card"}, [clip("startled", 2), clip("dismay", 1), clip("tantrum", 3), nothing(1)]),
     ...at("committed", {cooldown: 30, toward: "card", onto: true}, [clip("nod", 2), nothing(2)]),
-    // a sin the commandments plugin found repented: now and then a halo over the head and a serene, holy look
+    // a finding a plugin found fixed: now and then a halo over the head and a serene, holy look
     ...at("sin_fixed", {cooldown: 300}, [clip("halo", 1), nothing(2)]),
     // a sin it found in the agent's change: now and then it stands, kneels down toward the sin's mark and holds up a big cross in both hands
     // to ask forgiveness

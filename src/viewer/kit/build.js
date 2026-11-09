@@ -2,8 +2,6 @@ import vue from "@vitejs/plugin-vue";
 import {createHash} from "node:crypto";
 import {defineConfig} from "vite";
 
-// the mark the code commandments judge reads to leave a built file alone
-const GENERATED_MARK = "/* @code-commandments-generated */";
 const FRAME_BRIDGE = "frame-bridge";
 
 // a module's styles, put into each of its window scripts and added to the page once, since the page loads a window's
@@ -19,7 +17,7 @@ export const stylesInScripts = () => ({
         const id = `window-styles-${createHash("sha256").update(css).digest("hex").slice(0, 12)}`;
         const added = css ? `if (!document.getElementById(${JSON.stringify(id)})) { const style = document.createElement("style"); style.id = ${JSON.stringify(id)}; style.textContent = ${JSON.stringify(css)}; document.head.appendChild(style); }\n` : "";
         for (const file of Object.values(bundle)) {
-            if (file.type === "chunk") file.code = `${GENERATED_MARK}\n${file.isEntry && file.name !== FRAME_BRIDGE ? added : ""}${file.code}`;
+            if (file.type === "chunk") file.code = `${file.isEntry && file.name !== FRAME_BRIDGE ? added : ""}${file.code}`;
         }
     },
 });
