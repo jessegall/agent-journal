@@ -44,6 +44,10 @@ class TextLines:
         return parser.parse_known_args(flags)[0]
 
     @staticmethod
+    def is_part_read(arguments: Namespace) -> bool:
+        return bool(arguments.section or arguments.bullets or arguments.grep)
+
+    @staticmethod
     def read_part(arguments: Namespace) -> str:
         if arguments.all:
             return "all"
