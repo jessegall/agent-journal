@@ -88,3 +88,12 @@ def test_a_run_whose_start_report_was_lost_still_shows_its_end(new_story):
     end_run(story, process, "done\n")
     story.run_listeners()
     story.expect_text(MARKS, "process:1", "ended", actor=story.user)
+
+
+def test_a_check_run_shows_its_mark_as_soon_as_its_part_starts(new_story):
+    story = install_runner(new_story(fixture=UserBuilder))
+    process = start_process(story, "make lint", category=CommandCategory.CHECK)
+    story.run_listeners()
+    story.expect_absent(MARKS, "processes.command", actor=story.user)
+    part_started(story, process)
+    story.expect_text(MARKS, "processes.command", "process:1", "running", actor=story.user)
