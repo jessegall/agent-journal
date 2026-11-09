@@ -30,3 +30,7 @@ class ForegroundRun:
     queue_wait_seconds: int = 5
     timeout_durations: tuple[str, ...] = ()
     counted_queue: bool = False
+
+    @classmethod
+    def queued_background(cls) -> "ForegroundRun":
+        return cls(0, True, queued=True)

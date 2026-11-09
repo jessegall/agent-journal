@@ -44,7 +44,7 @@ def silent_story(new_story, seconds: int = HANG_SECONDS + 1) -> Story:
 def test_a_run_silent_for_the_hang_time_holds_the_next_tool_use_and_names_what_to_read(new_story):
     story = silent_story(new_story)
     story.expect_hook_refusal("s-1", OTHER_TOOL_USE, HELD)
-    story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "journal output read 1 --tail 20")
+    story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "output 1 printed nothing for 301 seconds")
     story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "journal output stop 1")
 
 
@@ -55,7 +55,7 @@ def test_the_hold_says_the_processor_time_is_rising_when_it_moved_since_the_run_
     story.container.get(GroupCpuTime).used = 13.0
     watch_tick(story)
     story.advance(timedelta(seconds=HANG_SECONDS - 199))
-    story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "processor time is rising")
+    story.expect_hook_refusal("s-1", OTHER_TOOL_USE, "processor time rising")
 
 
 def test_reading_the_output_lets_the_next_tool_use_through_and_starts_the_silent_time_anew(new_story):

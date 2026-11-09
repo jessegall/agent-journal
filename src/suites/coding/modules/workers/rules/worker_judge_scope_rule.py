@@ -1,5 +1,3 @@
-from pathlib import PurePath
-
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -9,8 +7,6 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import JOURNAL_PROGRAM
 from suites.coding.modules.workers.support.worker_nudges import WORKER_JUDGE_SCOPE
 
-JUDGE_PROGRAM = "commandments-release"
-JUDGE_COMMAND = "judge"
 JOURNAL_JUDGE = "sins"
 SCOPING_FLAGS = ("--changes", "--branch")
 
@@ -33,6 +29,4 @@ class WorkerJudgeScopeRule(DriverRule):
 
     def is_unscoped_judge(self, part: Part) -> bool:
         first_argument = part.arguments[0] if part.arguments else ""
-        journal_judge = part.program == JOURNAL_PROGRAM and first_argument == JOURNAL_JUDGE
-        plugin_judge = PurePath(part.program).name == JUDGE_PROGRAM and first_argument == JUDGE_COMMAND
-        return (journal_judge or plugin_judge) and not any(argument.startswith(SCOPING_FLAGS) for argument in part.arguments)
+        return part.program == JOURNAL_PROGRAM and first_argument == JOURNAL_JUDGE and not any(argument.startswith(SCOPING_FLAGS) for argument in part.arguments)

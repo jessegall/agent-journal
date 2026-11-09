@@ -7,7 +7,7 @@ from core.modules.processes.support.held_runs import HeldRuns
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_nudges import SILENT_RUN_HELD
 
-LAST_LINES = 5
+SHOWN_LINES = 5
 ANSWERING_COMMANDS = ("output read", "output stop")
 
 
@@ -23,15 +23,15 @@ class SilentRunHoldRule(DriverRule):
         self.held_runs, self.folder = held_runs, folder
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        held = self.held_runs.found(hook.agent_id, hook.timestamp)
-        if held is None or self.answers(hook, held):
+        silent_run = self.held_runs.found(hook.agent_id, hook.timestamp)
+        if silent_run is None or self.answers(hook, silent_run):
             return RuleAnswer.allowed()
-        lines = " | ".join(self.folder.last_lines(held.process.id, LAST_LINES)) or "none"
-        return RuleAnswer.refused(SILENT_RUN_HELD.nudge(output=held.process.id, seconds=held.seconds, processor=held.processor, lines=lines))
+        lines = " | ".join(self.folder.last_lines(silent_run.process.id, SHOWN_LINES)) or "none"
+        return RuleAnswer.refused(SILENT_RUN_HELD.nudge(output=silent_run.process.id, seconds=silent_run.seconds, processor=silent_run.processor, lines=lines))
 
     @staticmethod
-    def answers(hook: AgentHook, held: HeldRun) -> bool:
+    def answers(hook: AgentHook, silent_run: HeldRun) -> bool:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return False
-        return any(str(held.process.id) in part.arguments for command in ANSWERING_COMMANDS for part in shell.parts_running_journal_command(command))
+        return any(str(silent_run.process.id) in part.arguments for command in ANSWERING_COMMANDS for part in shell.parts_running_journal_command(command))

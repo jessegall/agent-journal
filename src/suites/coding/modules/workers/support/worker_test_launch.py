@@ -5,7 +5,6 @@ from core.modules.processes.support.queued_process_start import QueuedProcessSta
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
 
-LIMIT_SECONDS = 0
 FALLBACK_SECONDS = 5
 
 
@@ -19,7 +18,7 @@ class WorkerTestLaunch:
         self.launch, self.settings = launch, settings
 
     def start(self, process: Process, line: str, session: str) -> None:
-        self.launch.start(QueuedProcessStart(process, line, session), ForegroundRun(LIMIT_SECONDS, True, queued=True))
+        self.launch.start(QueuedProcessStart(process, line, session), ForegroundRun.queued_background())
 
     def start_waited(self, process: Process, line: str, session: str) -> None:
         wait = int(self.settings.number(WORKER_RUN_WAIT))
