@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from core.base.actor import Actor
@@ -91,7 +93,9 @@ def test_the_functional_design_skill_asks_for_stories_examples_and_phases(bundle
 
 def test_the_user_stories_skill_teaches_every_angle_and_holds_no_test_builder(bundled_story):
     bundled_story.run("skill write")
-    expect_skill_text(bundled_story, "journal-user-stories", "name: journal-user-stories", "Who acts", "Refusal", "Failure", "Recovery", "Abuse", "at least", "(inferred)")
+    expect_skill_text(bundled_story, "journal-user-stories", "name: journal-user-stories", "Who acts", "Refusal", "Failure", "Recovery", "Abuse", "at least", "Story books")
+    text = Path("src/suites/coding/skills/journal-user-stories/SKILL.md").read_text()
+    bundled_story.expect_rows("inferred" not in text, "source" not in text.lower(), detail=text)
 
 
 def test_the_functional_designer_must_read_the_user_stories_skill_and_is_given_it(bundled_story):

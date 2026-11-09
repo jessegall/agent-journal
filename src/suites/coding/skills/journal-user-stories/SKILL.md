@@ -1,127 +1,113 @@
 ---
 name: journal-user-stories
-description: How to write user stories for any system design, from every angle: who acts, which form, refusals, failures, recovery and abuse; read it before you write stories
+description: Write user stories for any system design from every angle, who acts, what they see, refusals, failures, recovery and abuse, and group them into story books; load it before you write stories or a functional design
 ---
 
 # Writing user stories
 
-A user story describes a change in what a system does, seen from whoever meets that change. Write stories so that someone who
-has not seen your thinking knows who acts, what happens, and how to tell it worked.
+A story says what changes for someone, so that a reader who never saw your thinking knows who acts, what happens and how to
+tell it worked. The written story stands in for the conversation nobody will have, so settle in it everything that conversation
+would have settled.
 
-Marked **(inferred)** is judgement drawn from the sources, where the literature is silent. Everything else has a named source.
+A design holds at least 50 stories, and a large one far more. Fewer almost always means whole angles are missing: the bugs that
+hurt live in refusals, failures and recovery, and those are the stories a first pass leaves out.
 
-## What a story is
+## What makes a story good
 
-- A story is a card, a conversation and a confirmation (Jeffries). The written part is a reminder (Cohn), and conversation is
-  the most important part (Wake). A design has to stand in for that conversation, so spell out what a conversation would settle.
-- Describe a change in behaviour, not only a behaviour. A story that passes every check but does not produce the change is not
-  complete (Adzic). Say how much where you can: how much faster, how much larger.
-- A story is not a screen, a button, a component or a technical step (Agile Alliance). Technical work does not need to be
-  disguised as a story (Cohn). Keep it as a task.
+- It describes a change in behaviour that someone can see. If every check could pass without the change happening, rewrite it.
+- It is about an outcome, never a screen, a button or a technical step. Technical work is a task, not a story.
+- Say how much where it matters: how much faster, how many, within how long.
+- Its title states the actual behaviour: "Refused login after five wrong passwords", never "Login". The titles of a book read
+  together should tell you what the system does.
 
 ## Who acts
 
-- Name a specific actor. If you do not know who the users are, you should not write stories yet (Pichler). A set where every
-  story opens "As a user" means the user does not matter there, and the template is the wrong tool (Cohn).
-- Refine a role with a decoration instead of inventing more roles: a first-time visitor, a member who forgot their password (Cohn).
-- An actor can be another system or external hardware (UML, Cohn). One thing can play several actors.
-- A hostile actor is an actor. Use a malicious, an abusive and an unknowing user (OWASP). A misuser is not always human, and
-  can act by accident (Sindre and Opdahl).
-- For a system or service, name the system as the actor and state its trigger and its observable outcome as you would for a
-  person **(inferred)**. No source gives a template for this, and none treats time as an actor.
-- Stakeholders who never touch the system are not actors but do have interests. Cockburn's template records them.
+Name a specific actor in every story, because "a user" hides who the rule is for.
+
+- Sharpen a role with its situation instead of inventing roles: a first-time visitor, a member who forgot their password.
+- An actor can be another system, a timer or a background job. Name it, what triggers it and what can be observed afterwards.
+- Hostile and careless actors are actors: an attacker, someone abusing a limit, someone who clicks twice without meaning to.
+- People who never touch the system but care about the result have interests. Write what they must be able to rely on.
 
 ## Which form to use
 
 | Form | Use it when |
 | --- | --- |
-| As a <who>, I want <what>, so that <why> | Who acts matters, and users differ. "So that" is the most important part but optional (Cohn); it must add a real reason. |
-| When <situation>, I want <motivation>, so I can <outcome> | The job matters more than who does it, or the work starts from a trigger or event (Cohn, Klement). |
-| Given, When, Then | Giving concrete examples of one rule (Cucumber, North). Good for specifying, weaker for talking to customers (Cohn). |
+| As a <who>, I want <what>, so that <why> | Who acts matters and users differ. The reason must add something real, or drop it. |
+| When <situation>, I want <motivation>, so I can <outcome> | The work starts from a trigger or event, as with a system or a job. |
+| Given, When, Then | Pinning one rule down with one concrete example. |
 
-Templates are "training wheels" (Agile Alliance). When one does not fit, do not use it (Cohn).
-
-Give every story a title that describes actual behaviour (North): "Refused login after five wrong passwords", never "Login".
+Use whichever fits; a form is there to make you think, not to be filled in.
 
 ## Writing the examples
 
-- One example shows one rule. Three to five steps; longer and it loses its force (Cucumber).
-- Given holds all of the required context and no more; one event per example (North). Examples of a story differ in their
-  givens and outcomes, and their titles alone should tell you how.
-- The outcome is something observable (Cucumber, Adzic). Describe what, not how: if the wording would change when the
-  implementation does, rewrite it (Cucumber).
-- If you cannot state the outcome, you do not have an example, you have a question (Wynne). Write the question down.
-- Three to five acceptance criteria per story (Pichler). Include what would make someone reject the work, and say what is out
-  of scope (Cohn). A long list means the story is too big or you are writing test cases.
-- Criteria that merely restate the story, or that hide further stories, are a known failure (Pichler).
+- One example shows one rule, in three to five steps. A longer one has stopped showing anything.
+- Given holds exactly the context the rule needs. When is one event. Then is something observable.
+- Describe what happens, not how: if the wording would change when the implementation does, rewrite it.
+- If you cannot state the outcome, you have found a question. Write the question down and get it answered.
+- Give a story three to five acceptance criteria, including what would make someone reject the work and what is out of scope.
+  Past that, the story is too big.
 
 ## Covering every angle
 
-No source gives a formal completeness test. Judge coverage against actors, goals and paths **(inferred)**. A design holds at least
-50 stories: fewer almost always means whole angles are missing, and a large design holds far more.
+Work through this in order. It finds what reading the design again will not.
 
-1. List the actors, including systems, hostile users and careless ones.
-2. List each actor's goals. Lay them out in the order you would explain the system; a flat list hides gaps, walking a map finds
-   them (Patton). The stories that make the smallest end-to-end system come first.
-3. For each goal, write each path that applies **(inferred)**:
+1. List every actor, including systems, hostile users and careless ones.
+2. List each actor's goals, in the order you would explain the system. Walking them in order shows the gaps a flat list hides.
+3. For each goal, write a story for every path below that applies.
+4. For each story, ask what the benefit is. Work that would not deliver it means a story is missing.
+5. Ask what would make someone reject this, then read the whole list aloud as one walk through the system.
 
 | Path | Ask |
 | --- | --- |
 | Success | What does the actor see when it works? |
-| Variation | What other data, entry route or rule changes the outcome? "Manage" hides several operations (Lawrence). |
-| Empty and boundary | None, one, many, the limit, just past the limit, very long, odd case, time boundaries (productkind). |
+| Variation | What other data, entry route or rule changes the outcome? "Manage" hides several operations. |
+| Empty and boundary | None, one, many, the limit, just past the limit, very long, odd characters, midnight. |
 | Refusal | What is the actor not allowed to do, and when? |
-| Failure | At each step, what can go wrong? Phrase it as what was detected (Cockburn, by secondary sources). |
-| Recovery | After a failure or a refusal, what can the actor do next, and what is retained? |
-| Concurrency and repeat | The same thing twice, or two actors at once **(inferred)**. |
-| Abuse | Name the specific attack; a generic security requirement is useless (OWASP). |
-
-4. Check the benefit: if the work would not deliver the stated benefit, a story is missing (North).
-5. Ask what would make someone reject this, and which edge cases matter enough (Cohn).
-6. Walk it with someone: reading the map aloud surfaces missing steps (Patton).
+| Failure | At each step, what can go wrong? Name what was detected. |
+| Recovery | After a failure or a refusal, what can the actor do next, and what is kept? |
+| Concurrency and repeat | The same thing twice, or two actors at once. |
+| Interruption | The process dies, the machine restarts, the actor walks away halfway. Who picks it up? |
+| Abuse | Name the specific attack, never a general wish for security. |
 
 ### Refusals, failures and recovery
 
-Sources are thin here, so most of this is **(inferred)**.
+These decide whether the system can be trusted, so write them as carefully as the success case.
 
-- A refusal is an extension of a goal. State what the actor asked, the system's observable answer, what state is preserved, and
-  what the actor can do next.
-- A failure states what was detected, what still holds afterward (Cockburn's minimal guarantees), and whether the actor can retry.
-- An error message says what went wrong and what the actor can do; it must not leak (OWASP on account harvesting).
-- Happy case and edge cases can be separate stories (productkind). Prioritise; not every edge case needs writing up front (Cohn).
+- A refusal states what was asked, the answer the actor sees, what stays unchanged and what the actor can do next.
+- A failure states what was detected, what still holds afterwards and whether the actor can try again.
+- Recovery names who notices and who acts. A story where something stops and nobody is told is the bug, so write who gets told.
+- An error message says what went wrong and what to do about it, and gives an attacker nothing.
 
 ### Security and abuse
 
-- Write abuse cases as "As an attacker, I ...": "As an attacker, I change the primary key to read another user's record" (OWASP).
-- Walk STRIDE over each asset or flow: spoofing, tampering, repudiation, information disclosure, denial of service, elevation
-  of privilege (OWASP, Microsoft). A threat with no countermeasure is a vulnerability.
-- A misuse case often creates a story for its countermeasure, which may have a misuse case of its own (Sindre and Opdahl).
-- OWASP itself says abuse cases are rarely used and can feel heavyweight. Select the ones that matter.
+- Write the attack as a story: "As an attacker, I change the id in the address to read another member's record".
+- Walk each asset and flow for spoofing, tampering, denying an action, leaking information, denial of service and gaining rights.
+  A threat with no countermeasure is a vulnerability.
+- A countermeasure is often a story of its own, with its own abuse to consider.
 
-### Properties such as speed and scale
+### Speed, scale and other properties
 
-Performance, scale and security properties usually belong in a shared definition of done, with one item to establish the
-capability and a standing rule to keep it (Cohn). Deferring them makes it easy to call stories done that are not (Lawrence).
+A property such as speed belongs in one story that establishes it and a standing rule that keeps it. Left out, stories get called
+done while the property is not met.
 
 ## Splitting
 
-- Keep stories vertical: a slice through every layer, not one layer (Wake). Splitting by architecture layer fails at independent
-  and valuable (Lawrence).
-- Splitting patterns (Lawrence, Cohn): workflow steps with the simple end-to-end case first, operations, rule variations, data
-  variations, entry methods, simple and complex, deferring performance, and a spike as a last resort.
-- More than about five or six scenarios means a story can probably be split, along business lines (North). Many rules under
-  one story means the same (Wynne).
-- INVEST is a useful check: independent, negotiable, valuable, estimable, small, testable (Wake). It is "a small tool".
-- In a truly unknown domain do not try to find all the stories. Find the one or two that teach you something (Lawrence).
+- Keep every story a thin slice through the whole system, never one layer of it, so each can be delivered and checked alone.
+- Split along workflow steps with the simple end-to-end case first, then by operation, rule, data, entry route, or simple and
+  complex.
+- More than five or six examples, or many rules under one story, means it should be split.
+- Check each story is independent, negotiable, valuable, estimable, small and testable.
+
+## Story books
+
+Group related stories into a book: the refusals of one feature, its failures, its recovery. A planner makes one task of each book,
+so give every book a name and say when it is done, and give every story a title that can stand alone in that task's brief.
 
 ## Mistakes to avoid
 
-- Not everything is a story (Pichler).
-- A story with no clear actor (Pichler).
-- Too vague, or so detailed it prescribes the solution (Pichler, Cohn).
-- Treating the written story as the whole requirement (Cohn, Wake).
-- Splitting stories into tasks: tasks organise work, stories describe outcomes (Cohn).
-- Using a template without thinking (Cohn).
-
-There is no good evidence that user stories themselves raise success or productivity, and they are unsuited to contracts
-(Wikipedia's summary of criticism). They help a team think. They prove nothing on their own.
+- A story with no clear actor.
+- A story so vague nothing can check it, or so detailed it dictates the solution.
+- Only the success path.
+- Treating the written story as the whole requirement instead of writing down the questions it raises.
+- Splitting a story into tasks and calling those stories.

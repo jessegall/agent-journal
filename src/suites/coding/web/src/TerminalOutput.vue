@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {onUnmounted, ref} from "vue";
 import {useWindow} from "@journal/window-kit";
 import {useOutputPages} from "../../../../viewer/src/composables/outputPages.js";
 import OutputLines from "../../../../viewer/src/kit/OutputLines.vue";
@@ -15,6 +15,8 @@ pages.newest().then((answer) => {
     if (answer.ok && answer.value.command) emit("command", answer.value.command);
     loaded.value = true;
 });
+// a card opened while its run is still going reads what the run printed since
+onUnmounted(view.follow(["process.*"], () => pages.follow()));
 </script>
 
 <template>
