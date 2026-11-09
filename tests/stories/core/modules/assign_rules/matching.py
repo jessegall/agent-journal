@@ -80,9 +80,9 @@ def rule_story(new_story):
 
 
 def insert_rule(story, position, enabled=1, field=ConditionField.ANY, operator=ConditionOperator.ANY, value=""):
-    rule_id = story.database.insert(Statement("INSERT INTO assign_rules (version, created_at, updated_at, environment_id, creator_id, position, enabled, target) VALUES (1, 'now', 'now', ?, ?, ?, ?, 'main')",
+    rule_id = story.database.insert(Statement("INSERT INTO assign_rules (version, created_at, updated_at, environment_id, creator_id, position, enabled, target) VALUES (1, '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', ?, ?, ?, ?, 'main')",
                                               [story.environment_id, story.creator_id, position, enabled]))
-    story.database.insert(Statement("INSERT INTO assign_rule_conditions (version, created_at, updated_at, rule_id, field, operator, value) VALUES (1, 'now', 'now', ?, ?, ?, ?)", [rule_id, field.value, operator.value, value]))
+    story.database.insert(Statement("INSERT INTO assign_rule_conditions (version, created_at, updated_at, rule_id, field, operator, value) VALUES (1, '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00', ?, ?, ?, ?)", [rule_id, field.value, operator.value, value]))
     return rule_id
 
 
