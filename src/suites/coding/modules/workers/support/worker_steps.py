@@ -3,6 +3,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
+from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
@@ -41,6 +42,8 @@ class WorkerSteps:
             return WorkerStep.BUILD if worker_round.started else WorkerStep.WAIT
         if worker_round.conflict is not None:
             return WorkerStep.CONFLICT
+        if self.is_blocked(worker_round):
+            return WorkerStep.BLOCKED
         if self.is_delivered(worker_round):
             return WorkerStep.WAIT
         if self.phases.has_open_failure(worker_round.worktree):
@@ -54,6 +57,12 @@ class WorkerSteps:
 
     def continues_group(self, worker_round: WorkerRound) -> bool:
         return worker_round.following is not None and worker_round.group is not None and self.phases.continues_group(worker_round.group, worker_round.following)
+
+    def is_blocked(self, worker_round: WorkerRound) -> bool:
+        worktree = worker_round.worktree
+        if worktree.state is not WorktreeState.CUT or worker_round.started or worker_round.following is not None or self.proofs.tests_waiting(worktree.id):
+            return False
+        return self.queries.query(Task).find(worktree.task_id).state is TaskState.BLOCKED
 
     def is_delivered(self, worker_round: WorkerRound) -> bool:
         worktree = worker_round.worktree
