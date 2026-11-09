@@ -13,6 +13,7 @@ from core.modules.search.models.enums.search_mark_type import SearchMarkType
 from core.modules.search.models.enums.search_mark_variant import SearchMarkVariant
 from core.modules.search.support.row_search import RowSearch
 from core.modules.search.support.search_line import SearchLine
+from core.modules.search.support.search_outcomes import SearchOutcomes
 from core.base.change.created import Created
 
 SHOWN_HITS = 10
@@ -26,9 +27,9 @@ class SearchMarkListener(MarkListener[Created[ProcessPart]]):
     name = "search.search-mark"
     module_name = "journal.core.search"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, search: RowSearch, event_rows: EventRows) -> None:
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, search: RowSearch, event_rows: EventRows, outcomes: SearchOutcomes) -> None:
         super().__init__(bus, actors, queries, event_rows)
-        self.search = search
+        self.search, self.outcomes = search, outcomes
 
     def handle(self, event: Created[ProcessPart], logged: LoggedEvent) -> None:
         part = event.row
@@ -40,6 +41,7 @@ class SearchMarkListener(MarkListener[Created[ProcessPart]]):
             outcome = self.search.result(line.terms, line.models)
         except Refusal:
             return
+        self.outcomes.keep(run.session_agent_id, line.terms, line.models, outcome)
         matching_hits = [hit for hit in outcome.hits if (hit.cli_name, hit.row_id) != (Process.cli_name, run.id)]
         total = outcome.total - (len(outcome.hits) - len(matching_hits))
         hits = [{"cli_name": hit.cli_name, "id": hit.row_id, "excerpt": hit.excerpt} for hit in matching_hits[:SHOWN_HITS]]
