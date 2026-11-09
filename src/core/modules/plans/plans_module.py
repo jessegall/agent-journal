@@ -8,7 +8,6 @@ from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclarati
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.rework_plan.return_plan import ReturnPlan
 from core.modules.plans.commands.approve_plan.approve_plan import ApprovePlan
-from core.modules.plans.commands.approve_plan.approve_plan_handler import ApprovePlanHandler
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.commands.close_plan.close_plan import ClosePlan
 from core.modules.plans.commands.start_plan.start_plan import StartPlan
@@ -67,8 +66,6 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.upgrade.plans_move import PlansMove
-from core.modules.plans.commands.comment_plan.comment_plan_subcommand import CommentPlanSubcommand
-from core.modules.plans.commands.plan_comments.plan_comments_subcommand import PlanCommentsSubcommand
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
@@ -107,9 +104,9 @@ class PlansModule(Module):
               SkillDeclaration("journal-planning", "Build a thorough plan with real steps in each phase, one task per step, and a brief each worker can carry out alone; read it before you make a plan or a phase", keywords=("plan", "phases"), commands=("plan make", "phase make"))]
     models = [ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]), ModelDeclaration(PlanContextRead, excluded_subcommands=ALL_SUBCOMMANDS)]
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration]
-    handlers = [AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler, ApprovePlanHandler]
+    handlers = [AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
-    subcommands = [AssignPlanSubcommand, CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = [AssignPlanSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
