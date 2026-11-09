@@ -1,12 +1,15 @@
 <script setup>
 import {computed, ref} from "vue";
 import {Btn, Icon, MenuItem, MenuPanel, Switch} from "@journal/window-kit";
+import PluginServiceTerminal from "./PluginServiceTerminal.vue";
 
 // one installed plugin as version 4 drew it: its initials, title, version and switch, what it is for, any fault, where it came from, the services it runs,
 // and along its foot its settings, its dashboard, its log and a menu to check for updates or remove it; what opens below it comes in the slot
 const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, services: {type: Array, default: () => []}, events: {type: Array, default: () => []}, board: {type: Object, default: null}});
 const emit = defineEmits(["toggle", "settings", "board", "record", "latest", "remove"]);
 const more = ref(null);
+const terminalOf = ref(null);
+const toggleTerminal = (service) => (terminalOf.value = terminalOf.value === service.id ? null : service.id);
 const menu = ref(false);
 const initials = computed(() => props.plugin.title.split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((word) => word[0].toUpperCase()).join(""));
 const where = computed(() => props.plugin.source.replace(/^https?:\/\/(www\.)?/, ""));
@@ -59,10 +62,13 @@ function pick(event) {
             <div class="runs" data-plugin-runs>
                 <span class="label">Runs</span>
                 <template v-for="service in services" :key="service.id">
-                    <span class="run" :data-plugin-service="service.id">
-                        <span class="run-name">{{ service.service }}</span>
-                        <span class="run-state">{{ service.running ? `running, process ${service.pid}` : "stopped" }}</span>
-                    </span>
+                    <button type="button" class="service" :disabled="!service.running" :aria-expanded="terminalOf === service.id" :title="service.running ? 'Show what this service prints' : ''" :data-plugin-service="service.id" @click="toggleTerminal(service)">
+                        <span class="service-name">{{ service.service }}</span>
+                        <span class="service-state">{{ service.running ? `running, process ${service.pid}` : "stopped" }}</span>
+                    </button>
+                    <template v-if="terminalOf === service.id && service.running">
+                        <PluginServiceTerminal :plugin="plugin.name" :service="service.service" />
+                    </template>
                 </template>
             </div>
         </template>
@@ -230,6 +236,52 @@ function pick(event) {
     align-items: center;
     gap: 9px;
     padding: 3px 0;
+}
+
+.service {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: flex-start;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.service:disabled {
+    cursor: default;
+}
+
+.service:not(:disabled):hover,
+.service[aria-expanded="true"] {
+    background: var(--hover);
+}
+
+.service-name,
+.service-state {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.service-name {
+    color: var(--text);
+    font-size: 12.5px;
+    font-weight: 500;
+}
+
+.service-state {
+    color: var(--text-3);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
 }
 
 .run-name {

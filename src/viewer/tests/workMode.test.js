@@ -1,9 +1,17 @@
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {afterEach, expect, test} from "vitest";
 import {createApp, h} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import WorkMode from "../../suites/coding/web/src/WorkMode.vue";
 import {settle as settled} from "./support/windowContext.js";
 import {context as windowContext} from "./support/windowContext.js";
+
+// the rule of the shared tabs that draws their border, read from the component's own style
+function sharedTabsStyle() {
+    const style = readFileSync(resolve(__dirname, "..", "kit/InnerTabs.vue"), "utf8").split("<style")[1].replace(/^[^>]*>/, "");
+    return style.split("}").find((block) => block.split("{")[0].trim() === ".inner-tabs").split("{")[1];
+}
 
 const KEYS = {
     work: {line: "work-settings show", events: ["setting.*"]},
@@ -83,6 +91,21 @@ test("the modal has the tabs of the agent settings", async () => {
     element.querySelector("[data-open-agent-settings]").click();
     await settled();
     expect(document.querySelector("[data-agent-settings]").textContent).toMatch(/Work.*Agents.*Tests.*Advanced/s);
+});
+
+test("the agent settings tabs are the viewer's shared tabs, which have a border below them, and choosing one shows its settings", async () => {
+    const {element} = await mount();
+    element.querySelector("[data-open-agent-settings]").click();
+    await settled();
+    const bar = document.querySelector("[data-agent-settings] .settings-bar");
+    expect(bar.querySelector("[data-inner-tabs]")).not.toBeNull();
+    expect(bar.querySelector(".segmented")).toBeNull();
+    expect([...bar.querySelectorAll("[role=tab]")].map((tab) => tab.textContent.trim())).toEqual(["Work", "Agents", "Tests", "Advanced"]);
+    expect(sharedTabsStyle()).toMatch(/border-bottom:\s*1px solid/);
+    bar.querySelector("[data-tab=tests]").click();
+    await settled();
+    expect(document.querySelector("[data-agent-settings-tests]")).not.toBeNull();
+    expect(bar.querySelector("[data-tab=tests]").getAttribute("aria-selected")).toBe("true");
 });
 
 test("the auto switch lives here and sets auto mode", async () => {

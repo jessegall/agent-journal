@@ -88,24 +88,35 @@ def test_make_is_one_closed_revision(new_story):
     story.expect_success('task list', actor=story.agent)
 
 
-def test_a_stop_preserves_the_open_document(new_story):
+def test_a_stop_is_refused_with_the_document_open_and_goes_through_once_it_is_closed(new_story):
     story = new_story(fixture=DocumentOpen)
-    story.expect_hook_allowed('s-1', HookSamples.stop())
-    story.expect_hook_refusal('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])), 'doc:1 is open')
+    story.expect_hook_refusal('s-1', HookSamples.stop(), 'doc:1 is open')
+    story.expect_success('doc edit 1 --body "Kept"', actor=story.agent)
+    story.expect_text('doc show 1 --all', 'Kept', actor=story.agent)
+    story.expect_hook_refusal('s-1', HookSamples.stop(), 'close it, then stop')
     story.expect_success('doc close 1', actor=story.agent)
+    story.expect_hook_allowed('s-1', HookSamples.stop())
+
+
+def test_repeated_stops_do_not_release_the_open_document(new_story):
+    story = new_story(fixture=DocumentOpen)
+    for _ in range(7):
+        story.expect_hook_refusal('s-1', HookSamples.stop(), 'doc:1 is open')
+    story.expect_success('doc close 1', actor=story.agent)
+    story.expect_hook_allowed('s-1', HookSamples.stop())
 
 
 def test_a_new_session_hook_keeps_the_document_open(new_story):
     story = new_story(fixture=DocumentOpen)
     story.hook('s-1', HookSamples.sample('compact'))
-    story.expect_hook_refusal('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])), 'doc:1 is open')
+    story.expect_hook_refusal('s-1', HookSamples.edit('cart.py'), 'doc:1 is open')
     story.expect_success('doc close 1', actor=story.agent)
 
 
 def test_the_refusal_is_one_short_line_with_a_way_out(new_story):
     story = new_story(fixture=DocumentOpen)
-    reply = story.hook('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))
-    story.expect_rows('doc:1 is open' in reply.refusal, len(reply.refusal) < 120)
+    reply = story.hook('s-1', HookSamples.edit('cart.py'))
+    story.expect_rows('doc:1 is open' in reply.refusal, 'close it' in reply.refusal, len(reply.refusal) < 120)
 
 
 def test_reading_the_open_document_goes_through(new_story):
@@ -115,6 +126,32 @@ def test_reading_the_open_document_goes_through(new_story):
     story.expect_hook_allowed('s-1', HookSamples.tool_use('Read', ToolType.READ, ['notes.txt'], None))
 
 
+def test_searching_and_other_reads_go_through_with_the_document_open(new_story):
+    story = new_story(fixture=DocumentOpen)
+    story.expect_hook_allowed('s-1', HookSamples.shell('grep -rn cart src', ShellPart('grep', CommandCategory.SEARCH, ['-rn', 'cart', 'src'])))
+    story.expect_hook_allowed('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))
+    story.expect_hook_allowed('s-1', HookSamples.shell('journal doc show 2', ShellPart('journal', CommandCategory.JOURNAL, ['doc', 'show', '2'])))
+
+
+def test_a_file_edit_and_a_command_that_edits_are_refused_with_the_document_open(new_story):
+    story = new_story(fixture=DocumentOpen)
+    story.expect_hook_refusal('s-1', HookSamples.edit('cart.py'), 'doc:1 is open')
+    story.expect_hook_refusal('s-1', HookSamples.shell("sed -i s/a/b/ cart.py", ShellPart('sed', CommandCategory.EDIT, ['-i', 's/a/b/', 'cart.py'])), 'doc:1 is open')
+    story.expect_success('doc close 1', actor=story.agent)
+    story.expect_hook_allowed('s-1', HookSamples.edit('cart.py'))
+
+
+def test_writing_a_document_with_several_edits_and_searches_in_between_makes_one_revision(new_story):
+    story = new_story(fixture=DocumentOpen)
+    story.expect_success('doc edit 1 --body "First"', actor=story.agent)
+    story.expect_hook_allowed('s-1', HookSamples.shell('grep -rn cart src', ShellPart('grep', CommandCategory.SEARCH, ['-rn', 'cart', 'src'])))
+    story.expect_success('doc edit 1 --body "Second"', actor=story.agent)
+    story.expect_success('doc edit 1 --body "Third"', actor=story.agent)
+    story.expect_success('doc close 1', actor=story.agent)
+    rows = json.loads(story.run('doc revisions 1 --json').output_text)['rows']
+    story.expect_rows(len(rows) == 2, rows[-1]['body'] == 'Third')
+
+
 def test_loading_a_skill_and_reading_files_together_go_through(new_story):
     story = new_story(fixture=DocumentOpen)
     story.expect_hook_allowed('s-1', HookSamples.shell('cat notes.txt && journal skill required',
@@ -122,9 +159,9 @@ def test_loading_a_skill_and_reading_files_together_go_through(new_story):
     story.expect_hook_allowed('s-1', HookSamples.tool_use('Skill', ToolType.READ, [], None))
 
 
-def test_an_incomplete_journal_command_is_refused_without_a_fault(new_story):
+def test_an_incomplete_journal_command_goes_through_without_a_fault(new_story):
     story = new_story(fixture=DocumentOpen)
-    story.expect_hook_refusal('s-1', HookSamples.shell('journal', ShellPart('journal', CommandCategory.JOURNAL, [])), 'doc:1 is open')
+    story.expect_hook_allowed('s-1', HookSamples.shell('journal', ShellPart('journal', CommandCategory.JOURNAL, [])))
 
 
 def test_a_viewer_edit_and_close_preserve_the_agent_author(new_story):
@@ -167,12 +204,13 @@ def test_a_readonly_helper_can_make_open_edit_and_close_its_document(new_story):
     story.expect_text('doc revisions 1 --json', f'"author_id": {story.helper.id}')
 
 
-def test_a_block_allows_stop_and_closes_before_work_resumes(new_story):
+def test_closing_the_document_lets_the_edit_and_the_stop_through(new_story):
     story = new_story(fixture=DocumentOpen)
     story.expect_hook_refusal('s-1', HookSamples.edit('cart.py'), 'doc:1 is open')
-    story.expect_hook_allowed('s-1', HookSamples.stop())
+    story.expect_hook_refusal('s-1', HookSamples.stop(), 'doc:1 is open')
     story.expect_success('doc close 1', actor=story.agent)
-    story.expect_hook_allowed('s-1', HookSamples.shell('journal task list', ShellPart('journal', CommandCategory.JOURNAL, ['task', 'list'])))
+    story.expect_hook_allowed('s-1', HookSamples.edit('cart.py'))
+    story.expect_hook_allowed('s-1', HookSamples.stop())
 
 
 def test_an_ended_helper_keeps_its_revision_and_tells_its_parent(new_story):

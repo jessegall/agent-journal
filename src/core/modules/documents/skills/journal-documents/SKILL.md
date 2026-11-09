@@ -19,8 +19,10 @@ their own numbers, so write the type with the number: doc 12, report 3.
   `journal doc show --help` lists. Read narrowly.
 - Run `journal doc open <n>` before editing an existing document. Every edit belongs to that author's revision
   until `journal doc close <n>` saves it. Closing without changes adds no revision.
-- While a document is open, finish it before other work: only reading files, loading skills, and reading or editing
-  that document pass. Stopping is allowed; after waking, close the same document before doing other work.
+- Keep the document open until its whole text is ready, write it with as many edits and searches as you need, close
+  it once, and close it before you stop. While it is open only file edits and commands that edit are refused;
+  searching, reading and other reads pass. A stop is refused until it is closed. Closing after each edit adds a
+  revision each time: a revision is for changing a document after it is closed.
 - `journal doc edit <n> --abstract "<one line>" --body "<text>"` writes the whole text anew. Without an open
   revision it refuses the edit and names the open command; the saved text stays intact.
 - `journal doc make` saves the whole new document in one revision and needs no open or close command.

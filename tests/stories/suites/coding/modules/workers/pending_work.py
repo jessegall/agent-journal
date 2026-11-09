@@ -18,13 +18,13 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
-from tests.stories.suites.coding.modules.workers.merger import merger_of
+from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, ended, recording_launch
 
 
-class OrchestratorWithPerson(StoryFixture):
+class PersonOrchestrator(StoryFixture):
     parent = OrchestratorWithOpenTask
 
     def steps(self, story):
@@ -33,7 +33,7 @@ class OrchestratorWithPerson(StoryFixture):
 
 @pytest.fixture(params=[True, False], ids=["merger-on", "merger-off"])
 def waiting_place(new_story, monkeypatch, request):
-    story = new_story(fixture=OrchestratorWithPerson)
+    story = new_story(fixture=PersonOrchestrator)
     story.expect_success(f"setting set journal.suites.coding.workers.merger-on {str(request.param).lower()} --project", actor=story.user)
     monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
     monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
@@ -83,7 +83,7 @@ def expect_working(server, cookie, worker_id, status):
 
 @pytest.fixture
 def tested_place(waiting_place):
-    story, repository, first, second, tests, launches, merger_on, server, cookie = waiting_place
+    story, repository, first, second, tests, launches, merger_enabled, server, cookie = waiting_place
     expect_working(server, cookie, first.id, "tests running")
     WorkerResumeRetry()(story.container)
     story.expect_rows(launches.count(second.id) == 1)
@@ -95,9 +95,9 @@ def tested_place(waiting_place):
 
 
 def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_frees_it(tested_place):
-    story, repository, first, second, tests, launches, merger_on, server, cookie = tested_place
-    merger = merger_of(story)
-    if merger_on:
+    story, repository, first, second, tests, launches, merger_enabled, server, cookie = tested_place
+    merger = merger_agent(story)
+    if merger_enabled:
         story.expect_rows(merger is not None, story.row(Agent, merger.id).ended_at is None)
         actor = Actor(merger.id, ActorType.AGENT)
         story.expect_text("merger next", f"worker {first.id}", actor=actor)
@@ -113,7 +113,7 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
 
 
 def test_unchecked_work_keeps_its_status_and_place_when_sent_back(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithPerson)
+    story = new_story(fixture=PersonOrchestrator)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
@@ -135,7 +135,7 @@ def test_unchecked_work_keeps_its_status_and_place_when_sent_back(new_story, mon
 def test_work_returned_to_the_main_agent_keeps_the_place_until_release(waiting_place):
     story, _, first, second, tests, launches, _, server, cookie = waiting_place
     ended(story, tests[0], 0)
-    merger = merger_of(story)
+    merger = merger_agent(story)
     story.expect_success(f'merger pass {first.id} "Needs a decision"', actor=Actor(merger.id, ActorType.AGENT))
     story.expect_text("merger-line list", "Needs a decision", actor=story.agent)
     story.expect_text(f"agent-line list --agent {story.agent.id}", "merger-line:", actor=story.agent)

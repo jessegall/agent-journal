@@ -13,22 +13,21 @@ def story(new_story):
     return story
 
 
-def test_a_task_missing_both_names_matching_tags_and_both_commands(story):
+def test_a_task_missing_both_names_what_it_needs_and_no_command(story):
     result = story.run('task make "Fix networking on linux" --environment main', actor=story.agent)
-    story.expect_rows(result.code == 0, "needs tags and complexity" in result.output_text,
-                      "journal task tag 2 linux networking" in result.output_text,
-                      "journal task edit 2 --complexity <1-5>" in result.output_text)
+    story.expect_rows(result.code == 0, "task 2 needs tags and complexity" in result.output_text,
+                      "journal task tag" not in result.output_text, "journal task edit" not in result.output_text)
 
 
 def test_a_task_with_only_tags_asks_for_complexity(story):
     result = story.run('task make "Fix networking" --tag networking --environment main', actor=story.agent)
-    story.expect_rows("needs complexity" in result.output_text, "journal task edit 2 --complexity <1-5>" in result.output_text,
+    story.expect_rows("task 2 needs complexity" in result.output_text, "journal task edit" not in result.output_text,
                       "journal task tag" not in result.output_text)
 
 
 def test_a_task_with_only_a_score_asks_for_tags(story):
     result = story.run('task make "Fix networking" --complexity 3 --environment main', actor=story.agent)
-    story.expect_rows("needs tags" in result.output_text, "journal task tag 2 networking" in result.output_text,
+    story.expect_rows("task 2 needs tags" in result.output_text, "journal task tag" not in result.output_text,
                       "journal task edit" not in result.output_text)
 
 
@@ -42,12 +41,11 @@ def test_a_person_receives_no_reminder(story):
     story.expect_rows("needs tags" not in result.output_text, "needs complexity" not in result.output_text)
 
 
-def test_a_read_only_helper_is_told_how_to_set_metadata_next_time(story):
+def test_a_read_only_helper_is_told_to_ask_the_main_agent(story):
     helper_id, _ = started(story, 'helper start journal-planner --brief "Review tasks" --environment main')
     helper = Actor(helper_id, ActorType.AGENT)
     result = story.run('task make "Review networking" --environment main', actor=helper)
     story.expect_rows(result.code == 0, "needs tags and complexity" in result.output_text,
                       "ask the main agent to set them" in result.output_text,
-                      "journal task make <title> --tag <word> --complexity <1-5>" in result.output_text,
                       "journal task tag" not in result.output_text, "journal task edit" not in result.output_text)
     story.expect_success('task make "Review linux" --tag linux --complexity 2 --environment main', actor=helper)
