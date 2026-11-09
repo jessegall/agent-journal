@@ -67,5 +67,5 @@ class BookkeepingTable:
 
     def delete_passed(self, row_tables: Sequence[str], cutoff_at: str, limit: int) -> int:
         marks = ", ".join("?" for _ in row_tables)
-        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id IN (SELECT id FROM {self.table} WHERE row_table IN ({marks}) AND created_at < ?"
+        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id IN (SELECT id FROM {self.table} NOT INDEXED WHERE row_table IN ({marks}) AND created_at < ?"
                                               f" AND id <= (SELECT coalesce(min(event_id), 0) FROM listener_cursors) ORDER BY id LIMIT ?)", (*row_tables, cutoff_at, limit)))
