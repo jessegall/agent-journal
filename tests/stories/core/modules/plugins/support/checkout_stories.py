@@ -84,3 +84,20 @@ def moved_worktree_row(story: Story, worker_id: int, folder: Path) -> None:
         connection.commit()
     finally:
         connection.close()
+
+
+def removed_worktree_rows(story: Story, count: int) -> None:
+    """Adds worktrees of workers long gone, each removed, as a project that has cut many of them holds."""
+    table = story.container.get(Tables).table(Worktree).name
+    connection = sqlite3.connect(story.home.database)
+    try:
+        columns = [column[1] for column in connection.execute(f"PRAGMA table_info({table})") if column[1] != "id"]
+        values = {"session_agent_id": "9999", "folder": "? || n", "branch": "'gone/' || n", "removed_at": "NULL", "state": "'new'"}
+        select = ", ".join(values.get(column, column) for column in columns)
+        connection.execute(f"""WITH RECURSIVE counted(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM counted WHERE n < ?)
+                               INSERT INTO {table} ({', '.join(columns)}) SELECT {select} FROM {table}, counted WHERE {table}.session_agent_id = (SELECT MIN(session_agent_id) FROM {table})""",
+                           (count, str(story.home.folder.parent / "gone-worker-")))
+        connection.execute(f"UPDATE {table} SET removed_at = created_at WHERE session_agent_id = 9999")
+        connection.commit()
+    finally:
+        connection.close()

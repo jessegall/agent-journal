@@ -9,6 +9,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.bindings.agent_project_checkouts import AgentProjectCheckouts
 from core.modules.agents.models.agent import Agent
+from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
@@ -19,7 +20,8 @@ HEAD = "HEAD"
 class WorkerCheckouts(AgentProjectCheckouts):
     """A worker works in the newest worktree it was given, also once that is removed; an agent it started takes
     the checkout of its parent; any other agent works in the project. A file belongs to the worktree with the
-    longest root that contains it, whoever wrote it, since a project folder contains every worktree. Git is
+    longest root that contains it, whoever wrote it, since a project folder contains every worktree; the
+    worktrees are found by the folders that hold the path, with one read by folder. Git is
     asked in the project folder, whose store every worktree shares and which stays when a worktree is removed."""
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery, git: WorktreeGit) -> None:
@@ -34,11 +36,20 @@ class WorkerCheckouts(AgentProjectCheckouts):
         return self.checkout(agent.parent_id) if agent.parent_id is not None else super().checkout(agent_id)
 
     def file_checkout(self, agent_id: int, path: Path) -> Checkout:
-        real = path.parent.resolve() / path.name
-        containing = [worktree for worktree in self.worktrees.all_worktrees() if real.is_relative_to(Path(worktree.folder).resolve())]
+        containing = self.worktrees.in_folders(self.folders_holding(path))
         if not containing:
             return self.checkout(agent_id)
-        return self.worktree_checkout(max(containing, key=lambda worktree: len(Path(worktree.folder).resolve().parts)), self.queries.query(Agent).find(agent_id))
+        deepest = max(containing, key=lambda worktree: (len(Path(worktree.folder).resolve().parts), worktree.removed_at is None, worktree.id))
+        return self.worktree_checkout(deepest, self.queries.query(Agent).find(agent_id))
+
+    def folders_holding(self, path: Path) -> tuple[str, ...]:
+        real = path.parent.resolve() / path.name
+        spellings = [path.absolute(), real]
+        for environment in self.queries.query(Environment).all_rows():
+            root = Path(environment.folder)
+            if real.is_relative_to(root.resolve()):
+                spellings.append(root / real.relative_to(root.resolve()))
+        return tuple(dict.fromkeys(str(parent) for spelling in spellings for parent in spelling.parents))
 
     def file_state(self, checkout: Checkout, relative: str) -> FileState:
         base = checkout.base_commit or HEAD
