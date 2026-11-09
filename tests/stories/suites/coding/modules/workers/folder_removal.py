@@ -13,14 +13,14 @@ from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 
 @pytest.fixture
 def delivered_folder(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)

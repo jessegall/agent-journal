@@ -7,7 +7,7 @@ from core.modules.tasks.rules.unlogged_write_rule import UNLOGGED_WRITES_CEILING
 from core.modules.tasks.rules.log_request_rule import LOG_REQUEST_WRITES
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 CART_EDIT = HookSamples.edit("src/cart.py")
 CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", CommandCategory.SEARCH, ["-n", "total", "src/cart.py"]))
@@ -31,7 +31,7 @@ def test_a_builder_that_logs_its_task_counts_its_writes_from_the_log(new_story):
 
 
 def test_a_builder_is_readonly_more_past_the_hold_count_until_it_logs(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     edits(story, UNLOGGED_WRITES_CEILING - 1)
     story.expect_hook_refusal("s-1", CART_EDIT, "log task 1 due: 0 writes")
     story.expect_hook_allowed("s-1", CART_SEARCH)
@@ -41,7 +41,7 @@ def test_a_builder_is_readonly_more_past_the_hold_count_until_it_logs(new_story)
 
 
 class TaskLogThreshold(StoryFixture):
-    parent = BuilderWithStartedTask
+    parent = StartedTaskBuilder
 
     def steps(self, story):
         edits(story, LOG_REQUEST_WRITES - 1)

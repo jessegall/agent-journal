@@ -19,8 +19,8 @@ from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 
-AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
-CONTEXT = Context(Actor(7, ActorType.AGENT), AT, MakeItem(title="Dune"), environment_id=2, cause_id=11)
+FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+CONTEXT = Context(Actor(7, ActorType.AGENT), FIXED_TIME, MakeItem(title="Dune"), environment_id=2, cause_id=11)
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def test_a_change_reads_back_with_who_what_why_and_when(log):
     event_id = log.write(Change(stored, stored.moved(ItemLifecycle.pause), CONTEXT), frozenset({"items.no-paused-items"}))
     event = log.event(event_id)
     assert (event.event, event.row_table, event.row_id, event.environment_id, event.actor_id) == ("item.pause", "items", 4, 2, 7)
-    assert (event.command, event.cause_id, event.skipped_guards, event.timestamp) == ("MakeItem", 11, frozenset({"items.no-paused-items"}), AT)
+    assert (event.command, event.cause_id, event.skipped_guards, event.timestamp) == ("MakeItem", 11, frozenset({"items.no-paused-items"}), FIXED_TIME)
     assert dict(event.data) == {"state": ("open", "paused")}
 
 

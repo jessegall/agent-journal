@@ -1,6 +1,6 @@
 import pytest
 
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.web_build import BUILT_FILE, BUILT_TEXT, build_repository
@@ -13,7 +13,7 @@ HASHED_FILE = "app/web/dist/Chat-CD-8c9Cq.mjs"
 
 
 def test_a_rename_clash_in_built_files_is_deleted_and_rebuilt(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = build_repository(story)
     worker = dispatched_worker(story)
     folder = repository.worktree_folder(worker.id)
@@ -36,7 +36,7 @@ def test_a_rename_clash_in_built_files_is_deleted_and_rebuilt(new_story):
 
 
 def test_a_hand_in_that_deletes_built_files_whose_sources_stay_is_refused_with_the_build_to_run(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = build_repository(story)
     (repository.folder / "app/web/src").mkdir()
     repository.committed("app/web/src/chat.vue", "<template />\n", "The source of the built file")
@@ -48,7 +48,7 @@ def test_a_hand_in_that_deletes_built_files_whose_sources_stay_is_refused_with_t
     story.expect_refusal("worker deliver --wait --differences none", "npm --prefix src/viewer run build", actor=worker)
 
 
-def hashed_build_handed_in(story):
+def hashed_build_delivered(story):
     repository = build_repository(story)
     repository.committed(HASHED_FILE, "const first = 1;\n", "A built file with a hash in its name")
     (repository.folder / "app/web/src").mkdir()
@@ -59,8 +59,8 @@ def hashed_build_handed_in(story):
 
 
 def test_a_built_file_that_came_back_under_a_new_hash_is_a_rebuild(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    repository, worker = hashed_build_handed_in(story)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository, worker = hashed_build_delivered(story)
     repository.changed(worker.id, "app/web/dist/Chat-Xy-1b2c3.js", "export const other = 2;\n" * 40)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
@@ -68,8 +68,8 @@ def test_a_built_file_that_came_back_under_a_new_hash_is_a_rebuild(new_story):
 
 
 def test_a_built_file_with_a_hash_that_did_not_come_back_is_refused(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    repository, worker = hashed_build_handed_in(story)
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository, worker = hashed_build_delivered(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.run_listeners()
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story"', actor=worker)
@@ -78,7 +78,7 @@ def test_a_built_file_with_a_hash_that_did_not_come_back_is_refused(new_story):
 
 @pytest.mark.parametrize("length", [7, 8])
 def test_a_merge_refuses_markers_in_a_committed_file(new_story, length):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     folder = repository.worktree_folder(worker.id)
@@ -93,7 +93,7 @@ def test_a_merge_refuses_markers_in_a_committed_file(new_story, length):
 
 @pytest.mark.parametrize("exit_code,reason", [(1, "the web build failed"), (0, "the web build produced no files")])
 def test_a_failed_or_empty_build_leaves_the_environment_branch_unchanged(new_story, exit_code, reason):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = build_repository(story)
     worker = dispatched_worker(story)
     base = repository.tip(ENVIRONMENT_BRANCH)

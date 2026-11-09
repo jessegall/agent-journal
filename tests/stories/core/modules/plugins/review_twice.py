@@ -7,7 +7,7 @@ from core.base.refusal import Refusal
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_group import ProcessGroup
-from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, CreateNoteAfterSlots, OrphanProcessRow
+from tests.stories.core.modules.plugins.support.refusing_modules import REFUSING, DeleteProcessRow, SlotsCreateNote, OrphanProcessRow
 from tests.stories.core.modules.plugins.support.event_modules import NOTE_CREATED, NOTES, EventNote
 from tests.stories.core.modules.plugins.support.checkout_stories import ORDER, project_with_order
 from tests.stories.core.modules.plugins.support.event_stories import EventWorkerStarted, event_data, event_plugin_story, script_calls
@@ -61,7 +61,7 @@ def test_s83_a_refusal_after_a_command_orphans_a_process_leaves_it_running(refus
 
 def test_s84_a_key_after_a_command_that_runs_once_runs_no_guard_script_and_the_skip_is_noted(new_story):
     story = event_plugin_story(new_story, {"event": NOTE_CREATED, "guard": "see.sh"}, modules=[NOTES, REFUSING])
-    story.container.get(Bus).run(CreateNoteAfterSlots("A note"), story.agent)
+    story.container.get(Bus).run(SlotsCreateNote("A note"), story.agent)
     story.expect_rows(not script_calls(story, "see.sh"), "were skipped" in story.system_log_text(), story.container.get(Queries).query(EventNote).count() == 1)
 
 

@@ -35,8 +35,8 @@ def test_an_unknown_login_key_with_no_session_cookie_is_still_refused(person_ser
 def test_a_login_redirect_keeps_the_query_the_person_opened_and_drops_the_key(person_server):
     story = person_server
     key = story.viewer_key("Ada")
-    story.expect_viewer_login_to(key, "&environment=main&agent=3", "/viewer/?environment=main&agent=3")
-    story.expect_viewer_login_to(story.viewer_key("Ada"), "", "/viewer/")
+    story.expect_viewer_login_target(key, "&environment=main&agent=3", "/viewer/?environment=main&agent=3")
+    story.expect_viewer_login_target(story.viewer_key("Ada"), "", "/viewer/")
 
 
 def test_the_cookie_opens_the_viewer_shell_with_its_import_map(person_server):

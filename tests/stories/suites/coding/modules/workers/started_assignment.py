@@ -1,9 +1,9 @@
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
 def test_a_worker_with_an_open_and_a_started_assignment_makes_proofs_for_the_started_one(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     urgent = story.new_row_id('task make "Urgent fix" --brief "Fix it" --environment main', actor=story.agent)

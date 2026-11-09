@@ -10,7 +10,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from server.booting_work import BootingWork
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 
@@ -19,7 +19,7 @@ SAVE = ["profile", "save", "critic", "--description", "Reads a change", "--body"
 
 
 class ProfileSession(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.expect_sync_success(MODULE + "ProfileVersionOne")

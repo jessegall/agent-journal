@@ -17,7 +17,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 WRITES = [CommandEffect.WRITES_FILES]
 EDIT_TOOLS = [("Edit", ToolType.EDIT), ("Write", ToolType.NEW_FILE), ("NotebookEdit", ToolType.EDIT), ("apply_patch", ToolType.EDIT), ("Monitor", ToolType.MONITOR)]
@@ -27,7 +27,7 @@ SAFE_TOOLS = {StartedHelper: ["WebFetch", "WebSearch"]}
 class StartedCodexHelper(StoryFixture):
     """A main agent with a person beside it and one read-only helper on Codex."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         launcher = FakeLauncher(story.home.socket("launcher"))
@@ -226,10 +226,10 @@ def test_an_ended_helper_is_refused_its_next_tool_and_writes_no_second_report(ne
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_hook_refusal(session, tool("Edit", ToolType.EDIT), ENDED_AGENT.nudge().text)
-    lines_at_end = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
+    final_lines = story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text
     story.hook(session, HookSamples.stop())
     story.run_listeners()
-    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == lines_at_end)
+    story.expect_rows(story.run(f"agent-line list --agent {story.agent.id}", actor=story.user).output_text == final_lines)
 
 
 def test_a_codex_helper_ended_before_its_first_hook_is_refused_an_edit(new_story):
@@ -239,7 +239,7 @@ def test_a_codex_helper_ended_before_its_first_hook_is_refused_an_edit(new_story
 
 
 def main_story(new_story):
-    return new_story(fixture=BuilderWithUser)
+    return new_story(fixture=UserBuilder)
 
 
 @pytest.mark.parametrize("name, category", [("Agent", ToolType.AGENT), ("Task", ToolType.AGENT), ("collaborationspawn_agent", ToolType.AGENT), ("spawn_agent", ToolType.UNCATEGORISED), ("collaborationwait", ToolType.UNCATEGORISED)])

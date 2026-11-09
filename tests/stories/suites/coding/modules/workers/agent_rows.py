@@ -1,11 +1,11 @@
 import json
 
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
 def test_an_ended_worker_waiting_for_a_job_shows_in_the_idle_agents_list(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task cancel 1 --reason "Withdrawn"', actor=story.agent)
@@ -15,7 +15,7 @@ def test_an_ended_worker_waiting_for_a_job_shows_in_the_idle_agents_list(new_sto
 
 
 def test_the_agent_cards_list_a_worker_and_never_the_main_agent(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     cards = json.loads(story.run("agent cards --environment main --show all --json", actor=story.agent).output_text)["rows"]
@@ -23,7 +23,7 @@ def test_the_agent_cards_list_a_worker_and_never_the_main_agent(new_story):
 
 
 def test_the_agent_cards_list_a_helper_and_never_the_main_agent(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     cards = json.loads(story.run("agent cards --environment main --show all --json", actor=story.agent).output_text)["rows"]
     expect_id_cards(cards, [story.helper.id])
 

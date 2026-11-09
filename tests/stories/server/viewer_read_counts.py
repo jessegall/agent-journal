@@ -33,7 +33,7 @@ class ReadLine:
 
 @dataclass(frozen=True)
 class WorkloadEvent:
-    at_seconds: int
+    elapsed_seconds: int
     relevant: bool
     line: tuple[str, ...]
     environment: str
@@ -121,7 +121,7 @@ class ViewerReadDataset(StoryFixture):
             story.expect_success(f'doc make "Document {number}" --abstract "Workload document" --body "Fixed body" --environment main', actor=story.user)
 
 
-def build_workload_outputs_and_docks(story) -> None:
+def build_workload(story) -> None:
     started_run(story, "workload running")
     moved_run(story, "workload background")
     ended_run(story, "workload finished", ("a" * 63 + "\n") * 64)
@@ -221,13 +221,13 @@ class WorkloadServer:
         if "start_status" in funnel:
             start = funnel["start_status"]
             if status["epoch"] != start["epoch"]:
-                raise IncompleteViewerSample.for_reason("the server restarted during the sample")
+                raise IncompleteViewerSample.with_reason("the server restarted during the sample")
             attributed = tuple(row for row in attributed if
                                datetime.fromisoformat(funnel["opened_at"]) <= datetime.fromisoformat(row["received_at"]) <= datetime.fromisoformat(funnel["closed_at"]))
             status = {**status, **{key: status[key] - start[key] for key in (
                 "attempted", "recorded", "dropped", "disabled", "receipt_dropped", "recording_ms")}}
         if not all(row["complete"] for row in attributed):
-            raise IncompleteViewerSample.for_reason("some joined reads have no completion receipt")
+            raise IncompleteViewerSample.with_reason("some joined reads have no completion receipt")
         commands = {row["command_id"]: row for row in attributed}
         evidence = {"attribution": {"http_requests": len({row["request_id"] for row in attributed}),
                                     "logical_commands": len(attributed),
@@ -237,7 +237,7 @@ class WorkloadServer:
                     "losses": {"attempted": status["attempted"], "recorded": status["recorded"], "dropped": status["dropped"]},
                     "funnel": funnel["counts"]}
         if status["receipt_dropped"] or funnel["receiptFailures"]:
-            raise IncompleteViewerSample.for_reason("completion receipts were lost")
+            raise IncompleteViewerSample.with_reason("completion receipts were lost")
         validate_sample(evidence)
         return {**evidence, "epoch": status["epoch"], "retention_limit": status["retention_limit"],
                 "recording_ms": status["recording_ms"], "settings": self.workload.settings}
@@ -321,7 +321,7 @@ def workload_server(new_story, *, listen: bool = False):
         initial_values[key] = json.loads(story.run(f"setting show {key} --json", actor=story.user).output_text)
         story.expect_success(f"setting set {key} {json.dumps(value)} --project", actor=story.user)
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
-    build_workload_outputs_and_docks(story)
+    build_workload(story)
     try:
         with server_story(story, listener_thread_started=listen) as server:
             yield WorkloadServer(server, initial_values)
@@ -354,7 +354,7 @@ def scheduled_sample(new_story):
 
 class IncompleteViewerSample(AssertionError):
     @classmethod
-    def for_reason(cls, reason: str):
+    def with_reason(cls, reason: str):
         return cls(f"Incomplete viewer sample: {reason}")
 
 
@@ -367,30 +367,30 @@ def complete_sample_evidence() -> dict[str, object]:
 def validate_sample(evidence: dict[str, object]) -> None:
     required = {"attribution", "retention", "losses", "funnel"}
     if not required <= evidence.keys():
-        raise IncompleteViewerSample.for_reason("attribution, retention, loss and funnel evidence are required")
+        raise IncompleteViewerSample.with_reason("attribution, retention, loss and funnel evidence are required")
     counts = {"http_requests", "logical_commands", "joined_callers", "trailing_reads"}
     if not counts <= evidence["attribution"].keys() or not counts <= evidence["funnel"].keys():
-        raise IncompleteViewerSample.for_reason("every counter must have explicit attribution")
+        raise IncompleteViewerSample.with_reason("every counter must have explicit attribution")
     if any(type(evidence[section][key]) is not int or evidence[section][key] < 0
            for section in ("attribution", "funnel") for key in counts):
-        raise IncompleteViewerSample.for_reason("every counter must be a nonnegative integer")
+        raise IncompleteViewerSample.with_reason("every counter must be a nonnegative integer")
     if not {"attempted", "recorded", "dropped"} <= evidence["losses"].keys():
-        raise IncompleteViewerSample.for_reason("every loss count is required")
+        raise IncompleteViewerSample.with_reason("every loss count is required")
     if not {"retained", "required"} <= evidence["retention"].keys():
-        raise IncompleteViewerSample.for_reason("the retained and required record counts are required")
+        raise IncompleteViewerSample.with_reason("the retained and required record counts are required")
     losses = evidence["losses"]
     if losses["dropped"] != 0 or losses["attempted"] != losses["recorded"]:
-        raise IncompleteViewerSample.for_reason("the log lost records")
+        raise IncompleteViewerSample.with_reason("the log lost records")
     retention = evidence["retention"]
     if retention["retained"] < retention["required"] or retention["required"] < losses["recorded"]:
-        raise IncompleteViewerSample.for_reason("retention cannot cover the interval")
+        raise IncompleteViewerSample.with_reason("retention cannot cover the interval")
     if evidence["attribution"] != evidence["funnel"]:
-        raise IncompleteViewerSample.for_reason("the attributed log and funnel counters disagree")
+        raise IncompleteViewerSample.with_reason("the attributed log and funnel counters disagree")
 
 
 def validate_workload_sample(sample_data: dict[str, object]) -> None:
     if not sample_data["sample_complete"]:
-        raise IncompleteViewerSample.for_reason(sample_data["incomplete_reason"])
+        raise IncompleteViewerSample.with_reason(sample_data["incomplete_reason"])
     validate_sample(sample_data["counter_agreement"])
 
 

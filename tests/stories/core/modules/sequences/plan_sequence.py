@@ -7,13 +7,13 @@ from core.modules.sequences.models.sequence_run import SequenceRun
 from server.booting_work import BootingWork
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 PLAN_SEQUENCE = "Building a plan"
 
 
 class StandardSequences(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run_listeners()
@@ -21,7 +21,7 @@ class StandardSequences(StoryFixture):
         story.run_listeners()
 
 
-def worker_of(story) -> Actor:
+def read_worker(story) -> Actor:
     return Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
 
 
@@ -40,7 +40,7 @@ def test_the_main_agent_making_a_plan_follows_the_plan_sequence_and_the_chat_sho
 
 def test_a_worker_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
     story = new_story(fixture=StandardSequences)
-    worker = worker_of(story)
+    worker = read_worker(story)
     story.run(lines.NEW_PLAN, actor=worker)
     story.run_listeners()
     expect_run_agents(story, [worker.id])
@@ -69,7 +69,7 @@ def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_
 
 def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays_open(new_story):
     story = new_story(fixture=StandardSequences)
-    worker = worker_of(story)
+    worker = read_worker(story)
     story.run(lines.NEW_PLAN, actor=story.agent)
     story.run(lines.NEW_PLAN, actor=worker)
     story.run_listeners()

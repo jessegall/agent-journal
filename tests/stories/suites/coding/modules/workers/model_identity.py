@@ -7,7 +7,7 @@ from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
 from core.testing.fake_launcher import FakeLauncher
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -22,7 +22,7 @@ def expect_identity(story, worker, model):
 
 @pytest.fixture
 def identity_story(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     with viewer_client(story) as viewer:
         viewer.value('settings.settings', ['setting', 'set', 'journal.suites.coding.workers.merger-on', 'false', '--project'])

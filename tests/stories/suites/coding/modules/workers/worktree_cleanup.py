@@ -6,10 +6,10 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree, orphan_worktree
+from tests.stories.suites.coding.modules.workers.support.worktree_samples import worktree_commit, orphan_worktree
 
 
 pytestmark = pytest.mark.real_git
@@ -28,10 +28,10 @@ def next_hour_start(story) -> timedelta:
 
 
 def test_idle_rule_does_not_retire(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    tip = commit_in_worktree(repository, worker.id, "cart.py")
+    tip = worktree_commit(repository, worker.id, "cart.py")
     story.advance(hours(DEFAULT_HOURS))
     story.tick(MAIN_SESSION)
     story.expect_success("worker-worktree show 1", "state: cut")
@@ -43,7 +43,7 @@ def test_idle_rule_does_not_retire(new_story):
 
 
 def test_a_worker_that_used_a_tool_within_the_hours_keeps_running(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.advance(hours(DEFAULT_HOURS - 1))
@@ -55,7 +55,7 @@ def test_a_worker_that_used_a_tool_within_the_hours_keeps_running(new_story):
 
 
 def test_a_worker_with_delivered_work_is_never_stopped_for_being_idle(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     delivered_worker(story, repository)
     story.advance(hours(DEFAULT_HOURS * 4))
@@ -64,7 +64,7 @@ def test_a_worker_with_delivered_work_is_never_stopped_for_being_idle(new_story)
 
 
 def test_the_setting_sets_the_hours_a_worker_may_be_idle(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f"setting make {WORKER_IDLE_HOURS} {DEFAULT_HOURS * 2} --environment main", f"key: {WORKER_IDLE_HOURS}")
@@ -77,7 +77,7 @@ def test_the_setting_sets_the_hours_a_worker_may_be_idle(new_story):
 
 
 def test_the_hourly_sweep_keeps_unmerged_work_and_its_tip_as_a_ref(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     story.advance(next_hour_start(story))
@@ -87,7 +87,7 @@ def test_the_hourly_sweep_keeps_unmerged_work_and_its_tip_as_a_ref(new_story):
 
 
 def test_the_sweep_leaves_the_worktree_of_a_worker_that_holds_it(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     story.advance(next_hour_start(story))
@@ -97,7 +97,7 @@ def test_the_sweep_leaves_the_worktree_of_a_worker_that_holds_it(new_story):
 
 
 def test_the_sweep_runs_only_on_the_first_minute_of_an_hour(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     repository.git("update-ref", "refs/heads/version-5", tip)
@@ -107,7 +107,7 @@ def test_the_sweep_runs_only_on_the_first_minute_of_an_hour(new_story):
 
 
 def test_the_sweep_leaves_a_worktree_outside_the_worktree_folder(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     separate_folder = story.home.folder.parent / "separate_folder"
     repository.git("worktree", "add", "-b", "scratch", str(separate_folder), "version-5")
@@ -117,7 +117,7 @@ def test_the_sweep_leaves_a_worktree_outside_the_worktree_folder(new_story):
 
 
 def test_a_worktree_no_worker_holds_with_changes_not_committed_stays(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     folder = repository.worktree_folder(9)
@@ -131,7 +131,7 @@ def test_a_worktree_no_worker_holds_with_changes_not_committed_stays(new_story):
 
 
 def test_a_start_of_the_journal_keeps_unmerged_work_no_worker_holds(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     tip = orphan_worktree(repository, 9)
     BootingWork().run(story.container)
@@ -141,7 +141,7 @@ def test_a_start_of_the_journal_keeps_unmerged_work_no_worker_holds(new_story):
 
 
 def test_the_idle_stop_asks_the_launcher_to_stop_the_program(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     launcher = FakeLauncher(story.home.socket("launcher"))

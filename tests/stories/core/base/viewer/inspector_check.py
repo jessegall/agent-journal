@@ -32,7 +32,7 @@ def test_events_no_model_has_are_refused(new_story):
 
 
 def test_an_action_on_another_models_row_slot_is_refused(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:OtherRowModule", "the inspector of reminder, action Start the reminder, is on row.plan, which is another model's row")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:SecondRowModule", "the inspector of reminder, action Start the reminder, is on row.plan, which is another model's row")
 
 
 def test_an_action_without_an_icon_is_refused(new_story):

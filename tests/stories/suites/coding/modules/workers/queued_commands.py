@@ -27,7 +27,7 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 from suites.coding.modules.workers.models.enums.worker_operation_name import WorkerOperationName
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.modules.documents.support.trail_fixtures import SelectedTrail, Scenario
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
@@ -42,7 +42,7 @@ class WorkerCommandStory(NamedTuple):
 
 @pytest.fixture
 def worker_command(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)

@@ -10,7 +10,7 @@ from install.run_drain import RunDrain
 from server.server_files import ServerFiles
 
 
-def going_run(home: Path, name: str, pid: int) -> Path:
+def active_run(home: Path, name: str, pid: int) -> Path:
     run = home / "processes" / name
     run.mkdir(parents=True)
     (run / "pid").write_text(str(pid))
@@ -19,7 +19,7 @@ def going_run(home: Path, name: str, pid: int) -> Path:
 
 
 def test_a_change_waits_for_a_going_run_and_makes_new_runs_wait_on_the_lock(tmp_path):
-    run = going_run(tmp_path, "7", os.getpid())
+    run = active_run(tmp_path, "7", os.getpid())
     drain = RunDrain(JournalHome(tmp_path), limit_seconds=10, poll_seconds=0.01)
     waiter = threading.Thread(target=drain.wait)
     waiter.start()
@@ -37,20 +37,20 @@ def test_a_run_waiting_on_the_lock_or_gone_or_ended_does_not_count(tmp_path):
     (waiting / "1.out").write_text("")
     ended_process = subprocess.Popen(["true"])
     ended_process.wait()
-    going_run(tmp_path, "2", ended_process.pid)
-    ended = going_run(tmp_path, "3", os.getpid())
+    active_run(tmp_path, "2", ended_process.pid)
+    ended = active_run(tmp_path, "3", os.getpid())
     (ended / "end").write_text("0")
     assert RunDrain(JournalHome(tmp_path)).running_folders() == ()
 
 
 def test_the_run_that_started_the_change_does_not_wait_on_itself(tmp_path, monkeypatch):
-    going_run(tmp_path, "7", os.getpid())
+    active_run(tmp_path, "7", os.getpid())
     monkeypatch.setenv("JOURNAL_PROCESS", "7")
     assert RunDrain(JournalHome(tmp_path)).running_folders() == ()
 
 
 def test_past_the_limit_the_change_goes_ahead(tmp_path):
-    going_run(tmp_path, "7", os.getpid())
+    active_run(tmp_path, "7", os.getpid())
     started = time.monotonic()
     RunDrain(JournalHome(tmp_path), limit_seconds=0.05, poll_seconds=0.01).wait()
     assert time.monotonic() - started < 5
@@ -58,7 +58,7 @@ def test_past_the_limit_the_change_goes_ahead(tmp_path):
 
 def test_the_run_queue_is_held_while_a_change_waits_for_a_going_run_and_free_after_it(tmp_path):
     home = JournalHome(tmp_path)
-    run = going_run(tmp_path, "7", os.getpid())
+    run = active_run(tmp_path, "7", os.getpid())
     waiter = threading.Thread(target=RunDrain(home, limit_seconds=10, poll_seconds=0.01).wait)
     waiter.start()
     time.sleep(0.1)

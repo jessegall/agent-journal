@@ -28,7 +28,7 @@ REPEATED_READ = Statement("SELECT 1")
 SHORT_FINDING_LINES = 8
 
 
-class RepeatedWorkOn(StoryFixture):
+class RepeatedWorkEnabled(StoryFixture):
     parent = UserJoined
 
     def steps(self, story):
@@ -41,19 +41,19 @@ def duplicate_read(database):
         database.rows(REPEATED_READ)
 
 
-def read_around_a_rolled_back_write(database):
-    with suppress(RolledBackWrite), database.transaction():
+def read_rollback(database):
+    with suppress(UndoneWrite), database.transaction():
         database.update(Statement("UPDATE settings SET version = version + 1"))
         database.rows(REPEATED_READ)
-        raise RolledBackWrite()
+        raise UndoneWrite()
     database.rows(REPEATED_READ)
 
 
-class RolledBackWrite(Exception):
+class UndoneWrite(Exception):
     """Ends a story's write so its transaction rolls back."""
 
 
-def read_in_a_loop(database):
+def looped_read(database):
     for row_id in range(READ_TEXT_LIMIT_REPEATS + 1):
         database.rows(Statement("SELECT ?", [row_id]))
 
@@ -83,7 +83,7 @@ def reported(story) -> list[str]:
 
 @pytest.mark.parametrize("start", [run_as_core, run_direct])
 def test_with_the_setting_on_a_duplicate_query_in_a_request_is_reported_and_the_request_finishes(new_story, monkeypatch, start):
-    story = new_story(fixture=RepeatedWorkOn)
+    story = new_story(fixture=RepeatedWorkEnabled)
     replace_console_run(monkeypatch, duplicate_read)
     story.expect_rows(start(story) == 0)
     messages = reported(story)
@@ -92,22 +92,22 @@ def test_with_the_setting_on_a_duplicate_query_in_a_request_is_reported_and_the_
 
 @pytest.mark.parametrize("start", [run_as_core, run_direct])
 def test_with_the_setting_on_a_query_per_row_in_a_request_is_reported_and_the_request_finishes(new_story, monkeypatch, start):
-    story = new_story(fixture=RepeatedWorkOn)
-    replace_console_run(monkeypatch, read_in_a_loop)
+    story = new_story(fixture=RepeatedWorkEnabled)
+    replace_console_run(monkeypatch, looped_read)
     story.expect_rows(start(story) == 0)
     messages = reported(story)
     story.expect_rows(len(messages) == 1, "one request read this SQL more than 10 times: SELECT ?" in messages[0])
 
 
 def test_a_read_after_a_rolled_back_write_is_not_a_repeated_read(new_story, monkeypatch):
-    story = new_story(fixture=RepeatedWorkOn)
-    replace_console_run(monkeypatch, read_around_a_rolled_back_write)
+    story = new_story(fixture=RepeatedWorkEnabled)
+    replace_console_run(monkeypatch, read_rollback)
     story.expect_rows(run_as_core(story) == 0)
     story.expect_rows(reported(story) == [])
 
 
 def test_the_report_reaches_the_main_agent_through_its_error_line(new_story, monkeypatch):
-    story = new_story(fixture=RepeatedWorkOn)
+    story = new_story(fixture=RepeatedWorkEnabled)
     replace_console_run(monkeypatch, duplicate_read)
     run_as_core(story)
     monkeypatch.undo()
@@ -135,7 +135,7 @@ def test_the_setting_is_off_until_a_person_switches_it_on(new_story, monkeypatch
 
 
 def test_the_same_finding_in_two_requests_is_reported_once(new_story, monkeypatch):
-    story = new_story(fixture=RepeatedWorkOn)
+    story = new_story(fixture=RepeatedWorkEnabled)
     replace_console_run(monkeypatch, duplicate_read)
     line_run = LineRun(story.home)
     for _ in range(2):
@@ -143,20 +143,20 @@ def test_the_same_finding_in_two_requests_is_reported_once(new_story, monkeypatc
     story.expect_rows(len(reported(story)) == 1)
 
 
-def read_twice_per_row(*row_ids):
+def repeated_row_read(*row_ids):
     remaining = iter(row_ids)
 
-    def read_twice_for_next_row(database):
+    def next_row_reads(database):
         row_id = next(remaining)
         for _ in range(READ_LIMIT_REPEATS + 1):
             database.rows(Statement("SELECT ? AS row_id", [row_id]))
 
-    return read_twice_for_next_row
+    return next_row_reads
 
 
 def test_the_same_sql_read_for_two_rows_in_two_requests_is_reported_once_with_a_short_text(new_story, monkeypatch):
-    story = new_story(fixture=RepeatedWorkOn)
-    replace_console_run(monkeypatch, read_twice_per_row(106281, 106286))
+    story = new_story(fixture=RepeatedWorkEnabled)
+    replace_console_run(monkeypatch, repeated_row_read(106281, 106286))
     line_run = LineRun(story.home)
     for _ in range(2):
         run_as_core(story, line_run)
@@ -165,8 +165,8 @@ def test_the_same_sql_read_for_two_rows_in_two_requests_is_reported_once_with_a_
 
 
 def test_a_viewer_line_and_a_cli_line_share_the_reported_findings(new_story, monkeypatch):
-    story = new_story(fixture=RepeatedWorkOn)
-    replace_console_run(monkeypatch, read_twice_per_row(106281, 106286))
+    story = new_story(fixture=RepeatedWorkEnabled)
+    replace_console_run(monkeypatch, repeated_row_read(106281, 106286))
     shared = ReportedFindings()
     viewer_run = LineRoute(story.home, ListenerThread(lambda: None, lambda error: None), shared).line_run
     run_as_core(story, LineRun(story.home, reported=shared))
@@ -175,7 +175,7 @@ def test_a_viewer_line_and_a_cli_line_share_the_reported_findings(new_story, mon
 
 
 def test_with_the_setting_on_a_duplicate_query_in_a_hook_is_reported_and_the_hook_is_answered(new_story, monkeypatch):
-    started = new_story(fixture=RepeatedWorkOn)
+    started = new_story(fixture=RepeatedWorkEnabled)
     answer = AgentHookRoute.answer
 
     def duplicated_answer(route, event):

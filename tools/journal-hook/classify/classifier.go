@@ -109,10 +109,10 @@ func (classifier *Classifier) commandType(text string) string {
 		classifier.commandTypes = readNamedTexts(filepath.Join(filepath.Dir(classifier.projectFile), "runtime", commandTypeFileName))
 	}
 	tokens, commandType, longest := classifier.tokens(text), "", 0
-	for words, category := range classifier.commandTypes {
-		leading := shell.Tokens(words)
-		if len(leading) > longest && len(leading) <= len(tokens) && slices.Equal(tokens[:len(leading)], leading) {
-			commandType, longest = category, len(leading)
+	for prefixText, category := range classifier.commandTypes {
+		prefixTokens := shell.Tokens(prefixText)
+		if len(prefixTokens) > longest && len(prefixTokens) <= len(tokens) && slices.Equal(tokens[:len(prefixTokens)], prefixTokens) {
+			commandType, longest = category, len(prefixTokens)
 		}
 	}
 	return commandType

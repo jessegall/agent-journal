@@ -9,7 +9,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import UserJoined
 
-IN_CONTEXT = "is still in your context and has not changed since it was read"
+CONTEXT_TEXT = "is still in your context and has not changed since it was read"
 
 
 def read(path: str, **part: int):
@@ -42,7 +42,7 @@ def changed_at(story, file, offset: timedelta) -> None:
 def test_a_second_whole_read_of_an_unchanged_file_names_it(new_story):
     story = project_files(new_story(fixture=ReadingAgent))
     story.expect_hook_silent("s-1", read("src/cart.py"))
-    story.expect_hook_allowed("s-1", read("src/cart.py"), f"src/cart.py {IN_CONTEXT}")
+    story.expect_hook_allowed("s-1", read("src/cart.py"), f"src/cart.py {CONTEXT_TEXT}")
 
 
 def test_a_read_of_a_part_or_of_a_changed_file_is_not_named(new_story):
@@ -57,5 +57,5 @@ def test_a_read_of_a_part_or_of_a_changed_file_is_not_named(new_story):
 
 def test_a_read_of_an_instruction_file_the_program_started_with_names_it(new_story):
     story = project_files(new_story(fixture=ReadingAgent))
-    story.expect_hook_allowed("s-1", read("AGENTS.md"), f"AGENTS.md {IN_CONTEXT}")
-    story.expect_hook_allowed("s-1", read("CLAUDE.md"), f"CLAUDE.md {IN_CONTEXT}")
+    story.expect_hook_allowed("s-1", read("AGENTS.md"), f"AGENTS.md {CONTEXT_TEXT}")
+    story.expect_hook_allowed("s-1", read("CLAUDE.md"), f"CLAUDE.md {CONTEXT_TEXT}")

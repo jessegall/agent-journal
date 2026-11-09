@@ -13,7 +13,7 @@ def test_the_first_command_starts_the_server_the_next_reuses_it_each_leaves_a_ti
     with ClientBinary(new_story(fixture=ThreeTasks).home, tmp_path) as client:
         client.expect_answer(lines.TASK_LIST, "1  First  open  normal")
         first_server = client.server_pid()
-        client.wait_for_finished_start()
+        client.poll_finished_start()
         client.expect_answer(lines.SECOND_TASK_DETAILS, "title: Second")
         client.expect_server_pid(first_server)
         client.expect_answer("server stop", "the server stopped")

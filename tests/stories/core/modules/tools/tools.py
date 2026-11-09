@@ -47,18 +47,18 @@ def test_turning_graphify_off_removes_its_managed_hooks(new_story, tmp_path):
 def test_a_new_commit_starts_one_incremental_update_in_the_checkout(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
     story.expect_text(f"{TICK} {repo.folder}", "no graph yet", actor=story.agent)
-    repo.wait_for_refresh()
+    repo.poll_refresh()
     story.expect_rows(repo.call_count() == 1, f"{repo.folder} update ." in repo.calls.read_text())
     repo.commit("second")
     story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
-    repo.wait_for_refresh()
+    repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
 
 
 def test_the_graph_folder_is_ignored_by_git(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
     story.run(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.wait_for_refresh()
+    repo.poll_refresh()
     status = subprocess.run(["git", "-C", str(repo.folder), "status", "--porcelain"], capture_output=True, text=True, check=True).stdout
     story.expect_rows("graphify-out" not in status, detail=status)
 
@@ -66,7 +66,7 @@ def test_the_graph_folder_is_ignored_by_git(new_story, tmp_path):
 def test_no_update_starts_while_no_commit_has_landed_and_the_agent_is_told_the_graph_is_current(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.wait_for_refresh()
+    repo.poll_refresh()
     story.expect_text(f"{TICK} {repo.folder}", f"current as of commit {repo.head()[:7]}", actor=story.agent)
     story.expect_text(f"{TICK} {repo.folder}", "graphify-out", actor=story.agent)
     story.expect_rows(repo.call_count() == 1)
@@ -74,9 +74,9 @@ def test_no_update_starts_while_no_commit_has_landed_and_the_agent_is_told_the_g
 
 def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
     story, repo = story_with_graphify(new_story, tmp_path)
-    repo.hold_graphify()
+    repo.block_graphify()
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.wait_for_calls(1)
+    repo.poll_calls(1)
     repo.commit("second")
     story.expect_text(f"{TICK} {repo.folder}", "refreshing", actor=story.agent)
     story.expect_text(f"tool refresh graphify --folder {repo.folder}", "refreshing", actor=story.agent)
@@ -84,7 +84,7 @@ def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
     repo.release_graphify()
     repo.wait(lambda: not (repo.folder / "graphify-out/.journal-running").exists())
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.wait_for_refresh()
+    repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
 
 
@@ -102,7 +102,7 @@ def test_the_card_shows_installed_on_and_the_last_refresh_and_refresh_now_update
     project = GraphifyRepo(tmp_path, "project")
     story.expect_success(f"setting set {COMMAND_SETTING} {project.script} --project", actor=story.user)
     story.expect_success(f"tool refresh graphify --folder {project.folder}", actor=story.user)
-    project.wait_for_refresh()
+    project.poll_refresh()
     story.expect_success("tool on graphify", actor=story.user)
     card = json.loads(story.run("tool list --json", actor=story.user).output_text)["tools"][0]
     story.expect_rows(card["is_installed"] is True, card["is_on"] is True)

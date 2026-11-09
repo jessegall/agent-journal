@@ -85,7 +85,7 @@ class ServerStory:
         with self.context.hook_database.used(QueuePriority.MAIN_AGENT_HOOK, LOCKED_HOOK_WAIT_SECONDS):
             self.expect_hook_answer("/hook", body, 200, text)
 
-    def send_hook_and_leave(self, body: dict[str, object]) -> None:
+    def post_hook_disconnect(self, body: dict[str, object]) -> None:
         """Holds the hook in the queue until its client has closed, after the server took the connection, as a
         hook that gave up at its limit does, and waits until the server has answered it."""
         data = json.dumps(body).encode()
@@ -149,7 +149,7 @@ class ServerStory:
         assert status == 303 and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers)
         return cookie.split(";", 1)[0]
 
-    def expect_viewer_login_to(self, key: str, query: str, location: str) -> None:
+    def expect_viewer_login_target(self, key: str, query: str, location: str) -> None:
         self.expect_viewer_redirect(f"/?key={key}{query}", "", location)
 
     def expect_viewer_redirect(self, path: str, cookie: str, location: str) -> None:
@@ -250,7 +250,7 @@ class ServerStory:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": folder})
         assert answer.exit_code == code and text in answer.text, answer
 
-    def expect_writes_at_once(self, lines: list[str]) -> None:
+    def expect_atomic_writes(self, lines: list[str]) -> None:
         with ThreadPoolExecutor(len(lines)) as pool:
             answers = list(pool.map(lambda line: request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}), lines))
         assert all(answer.exit_code == 0 for answer in answers), answers
@@ -259,7 +259,7 @@ class ServerStory:
         idle_thread = ListenerThread(lambda: None, lambda error: None)
         assert CliEndpoint(self.story.home, ListenerWake(idle_thread), ReportedFindings()).line_run.busy_timeout_seconds == seconds
 
-    def expect_stale_answer_and_released_files(self, line: str, task_listing: LineOutcome) -> None:
+    def expect_stale_answer_released_files(self, line: str, task_listing: LineOutcome) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"})
         assert answer.status == 409 and "newer code" in answer.text, answer
         assert self.story.run("task list --environment main").output_text == task_listing.output_text
@@ -272,7 +272,7 @@ class ServerStory:
         assert answer.status == 200 and answer.json() == {"status": "stopping"}, answer
 
     def expect_raw_request_error(self, raw_request: bytes, error_name: str) -> None:
-        answer = answer_from(raw_answer(self.socket_path, raw_request))
+        answer = read_answer(raw_answer(self.socket_path, raw_request))
         assert answer.status == 500 and error_name in answer.text and answer.text.count("\n") <= 1, answer
         assert "Traceback" in ServerFiles(self.story.home).log.read_text()
 
@@ -307,7 +307,7 @@ class ServerStory:
         self.post_timed_line(line, "go_start=1")
         assert "timing line not written" in ServerFiles(self.story.home).log.read_text()
 
-    def send_health_twice_on_one_connection(self) -> None:
+    def post_repeated_health(self) -> None:
         first_request, last_request = b"GET /health HTTP/1.1\r\nHost: journal\r\n\r\n", b"GET /health HTTP/1.1\r\nHost: journal\r\nConnection: close\r\n\r\n"
         assert raw_answer(self.socket_path, first_request + last_request).count(b"HTTP/1.1 200") == 2
 
@@ -390,7 +390,7 @@ def request_answer(socket_path: Path, method: str, route: str, body: object = No
     data = json.dumps(body).encode() if body is not None else b""
     header_lines = "".join(f"{name}: {value}\r\n" for name, value in (headers or {}).items())
     head = f"{method} {route} HTTP/1.1\r\nHost: journal\r\n{header_lines}Content-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode()
-    return answer_from(raw_answer(socket_path, head + data))
+    return read_answer(raw_answer(socket_path, head + data))
 
 
 def raw_answer(socket_path: Path, raw_request: bytes) -> bytes:
@@ -404,7 +404,7 @@ def raw_answer(socket_path: Path, raw_request: bytes) -> bytes:
     return raw
 
 
-def answer_from(raw: bytes) -> ServerAnswer:
+def read_answer(raw: bytes) -> ServerAnswer:
     head, _, remaining = raw.partition(b"\r\n\r\n")
     status = int(head.split(b" ", 2)[1])
     headers = {line.split(b":", 1)[0].strip().lower(): line.split(b":", 1)[1].strip() for line in head.split(b"\r\n")[1:]}

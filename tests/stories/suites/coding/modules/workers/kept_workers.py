@@ -14,7 +14,7 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.end_inactive_worker.end_inactive_worker import EndInactiveWorker
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
@@ -25,7 +25,7 @@ from suites.coding.modules.workers.support.worker_proof_queue import WorkerProof
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from tests.stories.suites.coding.modules.workers.support.worktree_samples import commit_in_worktree
+from tests.stories.suites.coding.modules.workers.support.worktree_samples import worktree_commit
 
 REASON = '--reason "Its work is finished"'
 
@@ -35,7 +35,7 @@ def stopped(story, worker) -> None:
 
 
 def test_a_worker_with_unmerged_work_is_not_retired(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     stopped(story, worker)
@@ -43,7 +43,7 @@ def test_a_worker_with_unmerged_work_is_not_retired(new_story):
 
 
 def test_retire_refused_with_uncommitted_files(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
@@ -52,7 +52,7 @@ def test_retire_refused_with_uncommitted_files(new_story):
 
 
 def test_retire_settles_what_a_worker_holds(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     general = story.run(f"worker send --wait {worker.id}", actor=story.agent)
@@ -68,17 +68,17 @@ def test_retire_settles_what_a_worker_holds(new_story):
 
 @pytest.mark.real_git
 def test_retire_refused_with_a_preserved_branch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    commit_in_worktree(repository, worker.id, "cart.py")
+    worktree_commit(repository, worker.id, "cart.py")
     story.expect_success(f'worker release {worker.id} "Not needed"', actor=story.agent)
     story.expect_refusal(f"agent retire {worker.id} {REASON}", "unmerged work", actor=story.agent)
 
 
 @pytest.mark.real_git
 def test_a_failed_git_status_holds_the_retirement(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     stopped(story, worker)
@@ -89,25 +89,25 @@ def test_a_failed_git_status_holds_the_retirement(new_story):
 
 @pytest.mark.real_git
 def test_a_retire_runs_git_outside_the_transaction(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     stopped(story, worker)
     database = story.container.get(Database)
     git = WorktreeGit.git
-    inside = []
+    internal = []
 
     def recording_git(self, *arguments, **options):
         if "status" in arguments or "rev-parse" in arguments:
-            inside.append(database.has_transaction)
+            internal.append(database.has_transaction)
         return git(self, *arguments, **options)
     with patch.object(WorktreeGit, "git", recording_git):
         story.expect_success(f"agent retire {worker.id} {REASON}", actor=story.agent)
-    story.expect_rows(bool(inside), not any(inside))
+    story.expect_rows(bool(internal), not any(internal))
 
 
 def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
     worker = dispatched_worker(story)
@@ -116,7 +116,7 @@ def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story)
 
 
 def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=3)
@@ -129,14 +129,14 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=story.agent)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
-    start_count_at_limit = len(launcher.starts)
+    limit_start_count = len(launcher.starts)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
-    story.expect_rows(start_count_at_limit == 1, len(launcher.starts) == 2)
+    story.expect_rows(limit_start_count == 1, len(launcher.starts) == 2)
 
 
 def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeable(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -149,7 +149,7 @@ def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeabl
 
 
 def test_the_merge_of_a_delivered_worker_starts_the_task_sent_while_it_waited(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -164,7 +164,7 @@ def test_the_merge_of_a_delivered_worker_starts_the_task_sent_while_it_waited(ne
 
 
 def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -179,7 +179,7 @@ def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
 
 
 def test_an_unmerged_branch_is_never_overwritten(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success(f'worker release {worker.id} "Not needed"', actor=story.agent)
@@ -188,7 +188,7 @@ def test_an_unmerged_branch_is_never_overwritten(new_story):
 
 
 def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_passes(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -205,7 +205,7 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
 
 
 def test_a_worker_whose_task_was_cancelled_can_be_released(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task cancel 1 --reason "Not needed"', actor=story.user)
@@ -214,7 +214,7 @@ def test_a_worker_whose_task_was_cancelled_can_be_released(new_story):
 
 
 def test_stop_allowed_when_a_dispatch_cannot_proceed(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
     dispatched_worker(story)
@@ -231,7 +231,7 @@ def merged_kept_worker(story, repository):
 
 
 def test_a_send_with_an_open_dependency_assigns_the_task_to_wait_and_cuts_no_worktree(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = merged_kept_worker(story, repository_environment(story))
     first, second = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
     story.expect_success(f"task depend {second} --on {first}", actor=story.agent)
@@ -241,7 +241,7 @@ def test_a_send_with_an_open_dependency_assigns_the_task_to_wait_and_cuts_no_wor
 
 @pytest.mark.real_git
 def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = merged_kept_worker(story, repository_environment(story))
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
 
@@ -254,7 +254,7 @@ def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypat
 
 
 def test_a_send_while_tests_run_is_refused_and_nothing_moves(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = delivered_worker(story, repository_environment(story))
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     monkeypatch.setattr(WorkerProofQueue, "tests_pending", lambda queue, worktree: True)
@@ -263,7 +263,7 @@ def test_a_send_while_tests_run_is_refused_and_nothing_moves(new_story, monkeypa
 
 
 def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = merged_kept_worker(story, repository_environment(story))
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
     monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: (80, None))
@@ -273,7 +273,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
 
 
 def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
     dispatched_worker(story)
@@ -289,7 +289,7 @@ def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_
 
 
 def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("node_modules", "index.js", "module.exports = 1\n")
     worker = checked_worker(story, repository, "worker dispatch --model sonnet 1 --library-link node_modules")
@@ -305,7 +305,7 @@ def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_
 
 
 def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     stopped(story, worker)

@@ -34,7 +34,7 @@ def test_an_unknown_route_is_404_and_a_body_that_is_no_command_line_is_400(task_
 
 def test_two_writes_sent_at_once_are_both_saved(task_server):
     story = task_server
-    story.expect_writes_at_once(['task make "Fourth" --environment main', 'task make "Fifth" --environment main'])
+    story.expect_atomic_writes(['task make "Fourth" --environment main', 'task make "Fifth" --environment main'])
     story.expect_direct_run_answer("task list --oldest --environment main")
 
 
@@ -73,7 +73,7 @@ def test_a_timing_line_that_cannot_be_written_is_noted_and_the_request_still_ans
 def test_each_request_on_a_kept_connection_leaves_its_own_line_from_its_own_acceptance(task_server):
     story = task_server.story
     server = task_server
-    server.send_health_twice_on_one_connection()
+    server.post_repeated_health()
     expect_timing_lines(story.home, [("", ["server_accepted", "server_received", "answered"])] * 2)
 
 

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from core.base.database.database import Database
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.support.story_checks import expect_count_shown, expect_value, expect_greater, expect_visited_limit
 
 PROMPT = HookSamples.prompt("go on")
@@ -75,7 +75,7 @@ def test_a_hook_reads_the_open_reminders_and_counts_tool_uses_in_a_few_queries(n
 
 
 def transcript_story(new_story, tmp_path):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     path = tmp_path / "transcript.jsonl"
     filler = json.dumps({"type": "assistant", "message": "x" * 200}) + "\n"
     path.write_text(filler * TRANSCRIPT_LINES + queued("look at the cart"))

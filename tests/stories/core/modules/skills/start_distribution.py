@@ -3,7 +3,7 @@ import pytest
 from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFILES
 
 from server.booting_work import BootingWork
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 SHIPPED_PROFILES = (*HELPER_PROFILES, *WORKER_PROFILES)
 
@@ -39,7 +39,7 @@ def test_a_start_removes_every_profile_it_gave_out_and_writes_the_latest_and_a_p
 
 @pytest.fixture
 def distributed_files(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     started(story)
     return story
 

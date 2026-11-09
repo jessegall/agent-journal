@@ -29,10 +29,10 @@ class ServerProcess:
         self.process = self.started()
         deadline = time.monotonic() + TIMEOUT_SECONDS
         while not self.socket.exists() and time.monotonic() < deadline:
-            self.wait_or_go_on()
+            self.pause_continue()
         return self
 
-    def wait_or_go_on(self) -> None:
+    def pause_continue(self) -> None:
         try:
             self.process.wait(POLL_SECONDS)
         except subprocess.TimeoutExpired:
@@ -55,7 +55,7 @@ class ServerProcess:
         answer = request_answer(self.socket, "GET", "/health")
         assert self.process is not None and answer.status == 200 and answer.json() == {**answer.json(), "pid": self.process.pid}, answer
 
-    def expect_stop_on_sigterm(self) -> None:
+    def expect_sigterm_stop(self) -> None:
         assert self.process is not None
         os.kill(self.process.pid, signal.SIGTERM)
         started = time.monotonic()
@@ -65,7 +65,7 @@ class ServerProcess:
         assert not self.socket.exists() and not files.pid_file.exists() and files.acquire_lock(), "the stopped server left its files"
         files.release_lock()
 
-    def expect_stop_with_an_idle_connection(self) -> None:
+    def expect_idle_connection_stop(self) -> None:
         assert self.process is not None
         idle = UnixConnection(str(self.socket), TIMEOUT_SECONDS, "journal")
         try:

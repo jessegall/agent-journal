@@ -5,7 +5,7 @@ from datetime import timedelta
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from core.testing.expect_reply import expect_reply_line
 from tests.stories.support.story_checks import expect_value_with
 
@@ -16,7 +16,7 @@ def posted(line):
 
 
 def three_started_tasks(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.expect_success('task make "Second" --environment main', actor=story.agent)
     story.expect_success('task make "Third" --environment main', actor=story.agent)
     story.expect_success('task make "Waiting" --environment main', actor=story.agent)
@@ -42,7 +42,7 @@ def test_after_a_close_the_newest_started_still_held_is_named_and_nothing_new_st
 
 
 def test_with_empty_hands_nothing_is_named_and_the_next_task_starts(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.expect_success('task make "Next" --environment main', actor=story.agent)
     story.expect_success("task close 1 --outcome done", actor=story.agent)
     story.run_listeners()

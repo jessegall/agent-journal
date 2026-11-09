@@ -29,3 +29,17 @@ class SampleReader(DriverRule):
         tasks = TaskQuery(None, None)
         # @righteous architecture_drivers_rule_builds_its_reader
         return RuleAnswer.allowed() if tasks else RuleAnswer.allowed()
+
+
+class SampleCountdown(DriverRule):
+    name = "samples.countdown"
+    hook = HookEventName.STOP
+
+    def __init__(self, calls) -> None:
+        self.calls = calls
+
+    def answer(self, hook):
+        # @sin architecture_drivers_countdown_outside_block_until
+        used = self.calls.tool_call_count(hook.agent_id, hook.timestamp)
+        # @righteous architecture_drivers_countdown_outside_block_until
+        return RuleAnswer.allowed().running(StartTask(used))

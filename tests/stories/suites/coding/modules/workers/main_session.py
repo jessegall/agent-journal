@@ -3,13 +3,13 @@ from core.base.actor_type import ActorType
 import pytest
 from core.testing.hook_samples import HookSamples
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
-from tests.stories.suites.coding.modules.workers.report import REPORT, OrchestratorWithMergerOff, stop_with_text
+from tests.stories.suites.coding.modules.workers.report import REPORT, MergerOffOrchestrator, stop_with_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment, worker_session
 
 
 @pytest.fixture
 def delivered_story(new_story):
-    story = new_story(fixture=OrchestratorWithMergerOff)
+    story = new_story(fixture=MergerOffOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     return story, worker

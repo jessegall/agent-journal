@@ -4,7 +4,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-class TwoRunsWithSameTitle(StoryFixture):
+class SameTitleTwoRuns(StoryFixture):
     """Two background runs have the same title."""
 
     parent = BuilderStarted

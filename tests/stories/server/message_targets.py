@@ -16,7 +16,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.messages.delivery import KeptTyping, READ_MESSAGE_HOOK
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
@@ -26,7 +26,7 @@ READ = HookSamples.shell("cat cart.py", ShellPart("cat", CommandCategory.READ, [
 
 
 class TargetedSession(StoryFixture):
-    parent = OrchestratorWithOpenTask
+    parent = OpenTaskOrchestrator
 
     def steps(self, story):
         install_runner(story)

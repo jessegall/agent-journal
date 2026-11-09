@@ -14,7 +14,7 @@ from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 
 STEP_FAILURE = "this step of the dispatch failed"
@@ -30,7 +30,7 @@ def open_worktrees(story) -> list[Worktree]:
 
 @pytest.fixture
 def dispatch_story(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     return story
 
@@ -61,12 +61,12 @@ def test_a_dispatch_failing_once_a_row_refers_to_its_worker_ends_the_worker_and_
     story = dispatch_story
     bus = story.container.get(Bus)
 
-    def line_then_failure(git, folder, worktree):
+    def line_failure(git, folder, worktree):
         bus.run(RecordBypassLine(worktree.session_agent_id, 1), Actor.core(), environment_id=worktree.environment_id)
         raise Refusal(STEP_FAILURE, "try again")
 
     with monkeypatch.context() as broken:
-        broken.setattr(WorktreeGit, "cut", line_then_failure)
+        broken.setattr(WorktreeGit, "cut", line_failure)
         story.expect_refusal(DISPATCH, STEP_FAILURE, actor=story.agent)
     story.expect_rows(open_worktrees(story) == [], [row["ended_at"] is not None for row in worker_rows(story)] == [True])
     story.expect_success(DISPATCH, actor=story.agent)

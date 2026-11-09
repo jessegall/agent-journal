@@ -6,7 +6,7 @@ from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.drivers.models.agent_line import AgentLine
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
@@ -171,7 +171,7 @@ def test_with_no_main_agent_the_worker_is_not_held_and_its_run_goes_on(new_story
 
 
 def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run("setting set journal.core.processes.readers-forced on --environment main")
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)

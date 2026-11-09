@@ -279,8 +279,8 @@ def expect_absent_exists_parent_stale(stale) -> None:
     assert not actual, actual
 
 
-def expect_file_2(own_file, expected) -> None:
-    actual = own_file.read_text()
+def expect_file_2(agent_file, expected) -> None:
+    actual = agent_file.read_text()
     assert actual == expected, actual
 
 

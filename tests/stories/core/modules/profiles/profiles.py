@@ -9,7 +9,7 @@ from suites.coding.support.shipped_profiles import HELPER_PROFILES, WORKER_PROFI
 
 from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
@@ -25,14 +25,14 @@ def agents_folder(story):
 
 
 def saved_profile_story(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(SAVE_PROFILE, actor=story.user)
     return story
 
 
 @pytest.fixture
 def profiles_missing(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run_listeners()
     for profile in SHIPPED_PROFILES:
         (agents_folder(story) / f"{profile.name}.md").unlink(missing_ok=True)
@@ -73,7 +73,7 @@ def test_the_journals_start_writes_its_own_profiles(profiles_missing):
 
 
 def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_setting_says(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.profiles.model-claude haiku --project", actor=story.user)
     story.container.get(ProfileFiles).publish()
     expect_agents_folder_journal_with(story, "journal-researcher.md", "model: sonnet")
@@ -82,7 +82,7 @@ def test_a_shipped_profile_names_its_own_model_for_each_program_whatever_the_set
 
 
 def test_only_a_person_can_save_a_profile_and_its_effective_model_is_listed(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_refusal(SAVE_PROFILE, "A person was asked in the dock", actor=story.agent)
     request = story.container.get(Queries).query(ApprovalRequest).first()
     with viewer_client(story) as viewer:
@@ -91,14 +91,14 @@ def test_only_a_person_can_save_a_profile_and_its_effective_model_is_listed(new_
 
 
 def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_refusal('profile save "no good" --description "x"', "no good cannot name a profile", actor=story.user)
     story.expect_refusal('profile save critic --description "x" --type boss', "boss is no helper type: no installed module or suite registers it", actor=story.user)
     story.expect_refusal("profile save critic", "a profile needs a description", actor=story.user)
 
 
 def test_saving_a_shipped_profile_with_only_a_program_keeps_its_description_and_body(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     before = story.container.get(ProfileFiles).effective("journal-merger")
     story.expect_success("profile save journal-merger --program codex", actor=story.user)
     after = story.container.get(ProfileFiles).effective("journal-merger")
@@ -123,7 +123,7 @@ def test_starting_a_helper_under_a_profile_counts_its_use(new_story):
 
 
 def test_a_person_can_save_an_own_profile_under_a_journal_name(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success('profile save journal-mine --description "Mine" --body "Read."', "saved journal-mine in .agents/profiles/journal-mine.md", actor=story.user)
 
 

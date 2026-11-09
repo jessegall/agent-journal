@@ -7,7 +7,7 @@ from core.base.command.bus import Bus
 from core.base.module.module_finder import ModuleFinder
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -39,7 +39,7 @@ def libraries_tick(story):
 
 
 def test_a_worker_stopped_for_15_minutes_loses_its_copied_library_and_keeps_its_changes(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker, folder = stopped_worker(story)
     story.advance(timedelta(minutes=14))
     libraries_tick(story)
@@ -50,7 +50,7 @@ def test_a_worker_stopped_for_15_minutes_loses_its_copied_library_and_keeps_its_
 
 
 def test_a_send_to_the_stopped_worker_copies_its_library_back_before_its_program_starts(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker, folder = stopped_worker(story)
     story.advance(timedelta(minutes=15))
     libraries_tick(story)

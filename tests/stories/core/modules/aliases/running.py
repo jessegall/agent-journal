@@ -14,7 +14,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, runner_line
-from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from core.testing.expect_row import expect_row
 from tests.stories.support.story_checks import expect_updated_input_hook
@@ -56,7 +56,7 @@ def test_the_alias_reader_reads_the_output_of_its_line(new_story):
 
 
 def worker_actor(new_story):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     repository_environment(story)
     session = worker_session(story, dispatched_worker(story))
     agent = next(row for row in json.loads(story.run("agent list --json").output_text)["rows"] if row["session"] == session)
@@ -129,11 +129,11 @@ def expect_shell_aliases(aliases, text, text_2, caller, worktree, expected) -> N
 
 
 def test_a_workers_alias_runs_in_its_worktree_and_the_main_agents_in_the_folder_it_asked_from(new_story):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     story.run('alias add sins "echo judged" --agents', actor=story.agent)
     aliases = story.container.get(ShellAliases)
-    from_main = CallerRequest(folder=str(repository.folder))
-    expect_row(aliases.shell_run(["sins"], Caller(worker), from_main), folder=str(repository.worktree_folder(worker.id).resolve()))
-    expect_row(aliases.shell_run(["sins"], Caller(story.agent), from_main), folder=str(repository.folder))
+    main_source = CallerRequest(folder=str(repository.folder))
+    expect_row(aliases.shell_run(["sins"], Caller(worker), main_source), folder=str(repository.worktree_folder(worker.id).resolve()))
+    expect_row(aliases.shell_run(["sins"], Caller(story.agent), main_source), folder=str(repository.folder))

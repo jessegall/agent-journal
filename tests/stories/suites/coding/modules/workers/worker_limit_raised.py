@@ -5,14 +5,14 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.testing.story_fixture import StoryFixture
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
-from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 
 LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"])).with_fields(event="post_tool_use")
 RAISED = "worker limit is now"
 
 
 def story_with_person(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
+    story = new_story(fixture=OpenTaskBuilder)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     return story
 
@@ -28,7 +28,7 @@ def set_limit(story, limit: int, scope: str = "--environment main") -> None:
 class LimitRaised(StoryFixture):
     """A person, Ada, raised the worker limit of main to 4: story.user."""
 
-    parent = BuilderWithOpenTask
+    parent = OpenTaskBuilder
 
     def steps(self, story) -> None:
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

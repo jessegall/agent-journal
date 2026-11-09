@@ -6,14 +6,14 @@ from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.modules.tasks.models.task_read import TaskRead
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import request_answer, server_story
 
 WORKERS_COUNT = 6
 
 
-class SixWorkersWithTasks(StoryFixture):
-    parent = HookRecordingOn
+class SixTaskWorkers(StoryFixture):
+    parent = HookRecordingEnabled
 
     def steps(self, story):
         for number in range(1, WORKERS_COUNT + 1):
@@ -22,7 +22,7 @@ class SixWorkersWithTasks(StoryFixture):
 
 
 def test_six_worker_overviews_leave_hook_and_viewer_writes_free(new_story, monkeypatch):
-    story = new_story(fixture=SixWorkersWithTasks)
+    story = new_story(fixture=SixTaskWorkers)
     original = WorkContextReader.overview
     entered, release, worker_ids_lock = Event(), Event(), Lock()
     worker_ids = []

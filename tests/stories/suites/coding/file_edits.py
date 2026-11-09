@@ -5,7 +5,7 @@ from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 from tests.stories.support.story_checks import expect_value
@@ -21,7 +21,7 @@ def test_an_agent_that_edits_a_file_leaves_a_file_edit_with_its_path_and_counts(
 
 
 def test_the_instruction_files_the_journal_writes_for_a_worker_are_not_its_edits_and_its_own_edit_is(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     session = worker_session(story, dispatched_worker(story))
     for path in ("AGENTS.md", "CLAUDE.md", "AGENTS.original.md"):
@@ -109,6 +109,6 @@ def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_stor
 def test_a_scan_is_kept_for_the_agent_of_its_session_whatever_environment_it_works_in(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
-    elsewhere = story.new_row_id("agent start s-9 claude worker --environment elsewhere")
+    alternate_folder = story.new_row_id("agent start s-9 claude worker --environment elsewhere")
     scanned_edit(story, "s-9", "src/cart.py", 2, 0)
-    story.expect_success("file-edit show 1", "path: src/cart.py", f"session_agent_id: {elsewhere}")
+    story.expect_success("file-edit show 1", "path: src/cart.py", f"session_agent_id: {alternate_folder}")

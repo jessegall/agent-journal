@@ -6,7 +6,7 @@ from core.base.database.statement import Statement
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, dispatched_worker, repository_environment
@@ -23,7 +23,7 @@ def expect_reason(story, worker, reason):
 
 
 def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     launches = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- the total\n- the review"', actor=story.agent)
@@ -46,7 +46,7 @@ def test_a_worker_wait_reason_follows_tests_proof_check_and_merge(new_story, mon
 
 
 def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
@@ -66,7 +66,7 @@ def test_a_stopped_worker_with_a_task_says_what_it_waits_on_and_never_for_a_job(
 
 
 def test_a_worker_with_no_unfinished_tasks_waits_for_a_job(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task cancel 1 --reason "the job was withdrawn"', actor=story.agent)

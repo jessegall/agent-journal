@@ -1,7 +1,7 @@
 from core.modules.mcp.support.server_configs import ServerConfigs
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.server.support.browser_story import expect_browser
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 import shlex
 import subprocess
 from core.base.journal_home import LAUNCHER_SOCKET
@@ -13,7 +13,7 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.helper_resume import HelperResume
 from core.modules.agents.models.agent import Agent
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
@@ -518,7 +518,7 @@ def test_route_commands_as_the_doc_writes_them(split_story):
 
 @pytest.mark.parametrize(("program", "model"), [pytest.param("codex", "gpt-6.1-sol", id="S68")])
 def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, model):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     (story.home.project_folder / ".journal").symlink_to(story.home.folder, target_is_directory=True)
     monkeypatch.setenv("CODEX_HOME", str(story.home.folder / "codex-home"))
@@ -552,7 +552,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
 @pytest.mark.parametrize("case", [pytest.param("third-provider", id="S70")])
 def test_third_provider_in_every_list(new_story, case):
 
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_sync_success("tests.stories.suites.coding.modules.workers.support.third_program:ThirdProgramModule")
     story.expect_success("setting set journal.core.viewer.tour-completed true --project", actor=story.user)
     programs = json.loads(story.run("agent programs --json", actor=story.user).output_text)["rows"]

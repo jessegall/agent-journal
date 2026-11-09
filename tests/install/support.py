@@ -115,7 +115,7 @@ class ServerScratch:
                 return
             time.sleep(1)
 
-    def lock_is_free(self) -> bool:
+    def lock_free(self) -> bool:
         with (self.home.folder / "server.lock").open("a") as lock_file:
             try:
                 fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)

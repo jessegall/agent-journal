@@ -4,13 +4,13 @@ from core.base.module.module_removal import ModuleRemoval
 from server.viewer.windows_route import WindowsRoute
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.drivers.support.extended_suites import PATH
-from tests.stories.core.modules.drivers.support.environment_with_sample_driver import EnvironmentWithSampleDriver
+from tests.stories.core.modules.drivers.support.environment_with_sample_driver import SampleDriverEnvironment
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
 @pytest.mark.parametrize("saved_suite", ["samples", "coding"])
 def test_a_removed_driver_uses_the_default_without_changing_settings(new_story, saved_suite):
-    story = new_story(SAMPLES, fixture=EnvironmentWithSampleDriver)
+    story = new_story(SAMPLES, fixture=SampleDriverEnvironment)
     story.expect_success(f"suite choose {saved_suite} --environment main")
     story.container.get(ModuleRemoval).remove("samples")
     code, text = story.synced()

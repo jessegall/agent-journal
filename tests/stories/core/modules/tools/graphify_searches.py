@@ -35,22 +35,22 @@ def is_nudged(reply) -> bool:
 
 
 @pytest.fixture
-def graphify_on(new_story):
+def graphify_enabled(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success("tool on graphify", actor=story.user)
     return story
 
 
 @pytest.fixture
-def nine_searched(graphify_on):
-    searched(graphify_on, 9)
-    return graphify_on
+def nine_searched(graphify_enabled):
+    searched(graphify_enabled, 9)
+    return graphify_enabled
 
 
 @pytest.fixture
-def blocked(graphify_on):
-    searched(graphify_on, 25)
-    return graphify_on
+def blocked(graphify_enabled):
+    searched(graphify_enabled, 25)
+    return graphify_enabled
 
 
 def test_searches_without_graphify_are_nudged_at_ten_and_again_at_twenty(nine_searched):
@@ -82,15 +82,15 @@ def test_with_the_tool_off_nothing_is_nudged_or_refused(new_story):
         expect_value(bool(not reply.refusal and not is_nudged(reply)), True)
 
 
-def test_a_search_outside_the_code_does_not_count(graphify_on):
-    story = graphify_on
+def test_a_search_outside_the_code_does_not_count(graphify_enabled):
+    story = graphify_enabled
     for _ in range(30):
         reply = search(story, LOG_SEARCH)
         expect_value(bool(not reply.refusal and not is_nudged(reply)), True)
 
 
-def test_the_numbers_are_settings_and_shell_searches_count_too(graphify_on):
-    story = graphify_on
+def test_the_numbers_are_settings_and_shell_searches_count_too(graphify_enabled):
+    story = graphify_enabled
     story.expect_success(f"setting set {BLOCK_AFTER} 3 --project", actor=story.user)
     story.expect_success(f"setting set {NUDGE_AFTER} 2 --project", actor=story.user)
     expect_value(bool(is_nudged(search(story, SHELL_SEARCH))), False)

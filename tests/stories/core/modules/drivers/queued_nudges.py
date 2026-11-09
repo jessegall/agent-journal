@@ -13,14 +13,14 @@ from core.modules.drivers.support.line_typing import LineTyping
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 QUEUED = NudgeDeclaration("sample.queued", NudgeType.NOTICE, "task {task} is queued for worker {worker}",
                           plural_text="tasks {task} are queued for worker {worker}", id_field="task")
 
 
 def test_queued_declarations_merge_before_the_tool_hook_line_limit(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     nudger = story.container.get(Nudger)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():
@@ -32,7 +32,7 @@ def test_queued_declarations_merge_before_the_tool_hook_line_limit(new_story):
 
 
 def test_separate_tick_answers_keep_their_declaration_until_a_tool_hook(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     for task in range(1, 5):
         answer = RuleAnswer.with_nudges(QUEUED.nudge(task=task, worker=8))
         answers = RuleAnswers(["lead"], [RuleRecord("sample.queued", "lead", answer.outcome, answer)])
@@ -49,7 +49,7 @@ def expect_queued_lines(answer, expected):
 
 
 def test_raw_agent_text_is_read_by_its_row_number_on_a_hook_and_in_a_terminal(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     nudger = story.container.get(Nudger)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
     with story.container.get(Database).transaction():

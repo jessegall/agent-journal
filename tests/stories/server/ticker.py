@@ -32,7 +32,7 @@ class Counting:
         self.runs += 1
 
 
-def ticker_of(story, *handlers: TickHandler, wake=lambda: None) -> tuple[Ticker, Clock]:
+def read_ticker(story, *handlers: TickHandler, wake=lambda: None) -> tuple[Ticker, Clock]:
     clock = Clock()
     return Ticker(story.home, handlers, wake, clock), clock
 
@@ -46,7 +46,7 @@ def tick_at(ticker: Ticker, clock: Clock, seconds: float) -> None:
 def test_a_handler_runs_once_its_interval_has_passed_and_then_again_each_interval(new_story):
     story = new_story(fixture=UserJoined)
     counting = Counting()
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=10), counting, "counting"))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=10), counting, "counting"))
     tick_at(ticker, clock, 9)
     expect_row(counting, runs=0)
     tick_at(ticker, clock, 10)
@@ -59,7 +59,7 @@ def test_a_handler_runs_once_its_interval_has_passed_and_then_again_each_interva
 def test_a_handler_that_runs_at_start_runs_on_the_first_tick(new_story):
     story = new_story(fixture=UserJoined)
     counting = Counting()
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=60), counting, "counting", starts_immediately=True))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=60), counting, "counting", starts_immediately=True))
     tick_at(ticker, clock, 0)
     tick_at(ticker, clock, 30)
     expect_row(counting, runs=1)
@@ -70,7 +70,7 @@ def test_a_handler_that_runs_at_start_runs_on_the_first_tick(new_story):
 def test_a_lambda_registered_on_the_ticker_runs_on_a_fresh_container_of_the_journal(new_story):
     story = new_story(fixture=UserJoined)
     containers = []
-    ticker, clock = ticker_of(story)
+    ticker, clock = read_ticker(story)
     ticker.register(TickHandler(TickInterval(seconds=1), lambda container: containers.append(container), "lambda"))
     tick_at(ticker, clock, 1)
     expect_answers(containers, 1)
@@ -81,7 +81,7 @@ def test_a_lambda_registered_on_the_ticker_runs_on_a_fresh_container_of_the_jour
 def test_a_class_with_a_call_keeps_what_it_holds_from_one_run_to_the_next(new_story):
     story = new_story(fixture=UserJoined)
     counting = Counting()
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), counting, "counting"))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=1), counting, "counting"))
     for second in (1, 2, 3):
         tick_at(ticker, clock, second)
     expect_row(counting, runs=3)
@@ -97,7 +97,7 @@ def test_each_module_declares_the_handlers_it_needs_and_the_ticker_takes_them(ne
 
 def test_a_handler_with_the_name_of_another_is_refused(new_story):
     story = new_story(fixture=UserJoined)
-    ticker, _ = ticker_of(story, TickHandler(TickInterval(seconds=1), Counting(), "counting"))
+    ticker, _ = read_ticker(story, TickHandler(TickInterval(seconds=1), Counting(), "counting"))
     with pytest.raises(ValueError):
         ticker.register(TickHandler(TickInterval(seconds=2), Counting(), "counting"))
 
@@ -111,7 +111,7 @@ def test_a_slow_handler_runs_on_its_own_thread_and_holds_up_no_other_handler(new
         started.set()
         release.wait(JOIN_SECONDS)
 
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), slow, "slow"), TickHandler(TickInterval(seconds=1), quick, "quick"))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=1), slow, "slow"), TickHandler(TickInterval(seconds=1), quick, "quick"))
     clock.now = 1
     ticker.tick()
     expect_wait_arrived(started, JOIN_SECONDS)
@@ -131,7 +131,7 @@ def test_a_handler_still_running_is_not_started_again(new_story):
         started.set()
         release.wait(JOIN_SECONDS)
 
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), slow, "slow"))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=1), slow, "slow"))
     clock.now = 1
     ticker.tick()
     expect_wait_arrived(started, JOIN_SECONDS)
@@ -150,7 +150,7 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
     def broken(container: Container) -> None:
         raise ValueError("the copy broke")
 
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), broken, "broken"), TickHandler(TickInterval(seconds=1), after, "after"))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=1), broken, "broken"), TickHandler(TickInterval(seconds=1), after, "after"))
     tick_at(ticker, clock, 1)
     expect_runs_after(after, 1)
     expect_system_log_with(story, "ValueError: the copy broke")
@@ -162,7 +162,7 @@ def test_a_handler_that_fails_is_logged_and_the_others_still_run(new_story):
 def test_a_handler_that_answers_true_wakes_the_listeners_and_one_that_does_not_leaves_them(new_story):
     story = new_story(fixture=UserJoined)
     wake_calls = []
-    ticker, clock = ticker_of(story, TickHandler(TickInterval(seconds=1), lambda container: False, "idle"), wake=lambda: wake_calls.append(True))
+    ticker, clock = read_ticker(story, TickHandler(TickInterval(seconds=1), lambda container: False, "idle"), wake=lambda: wake_calls.append(True))
     tick_at(ticker, clock, 1)
     expect_value(wake_calls, [])
     ticker.register(TickHandler(TickInterval(seconds=1), lambda container: True, "wrote"))

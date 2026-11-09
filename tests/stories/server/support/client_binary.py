@@ -46,7 +46,7 @@ class ClientBinary:
     def expect_server_pid(self, pid: object) -> None:
         assert self.server_pid() == pid
 
-    def wait_for_finished_start(self) -> None:
+    def poll_finished_start(self) -> None:
         state, deadline = PerformanceState(self.home), time.monotonic() + RUN_TIMEOUT_SECONDS
         while not state.can_measure and time.monotonic() < deadline:
             request_answer(socket_path(self.home), "GET", "/health")

@@ -1,9 +1,9 @@
 from tests.stories.core.modules.messages.peer_messages import ENVELOPE, hook_with, queued, transcript_with
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def story_with_peer_message(new_story, tmp_path):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     hook_with(story, transcript_with(tmp_path, queued(ENVELOPE)))
     return story
 

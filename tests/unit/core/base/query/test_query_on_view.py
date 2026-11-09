@@ -65,9 +65,9 @@ def test_shared_event_rows_read_a_view_again_after_an_outside_commit_since_it_ha
     queries.database.update(Statement("CREATE VIEW shelf_sizes AS SELECT shelves.id AS id, count(books.id) AS book_count FROM shelves LEFT JOIN books ON books.shelf_id = shelves.id GROUP BY shelves.id"))
     rows = EventRows(queries)
     assert rows.required(ShelfSize, 1).book_count == 2
-    outside = Database.opened(JournalHome(tmp_path))
+    external = Database.opened(JournalHome(tmp_path))
     try:
-        outside.update(Statement("INSERT INTO books (shelf_id) VALUES (1)"))
+        external.update(Statement("INSERT INTO books (shelf_id) VALUES (1)"))
     finally:
-        outside.close()
+        external.close()
     assert rows.required(ShelfSize, 1).book_count == 3

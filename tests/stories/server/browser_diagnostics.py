@@ -25,7 +25,7 @@ def test_a_browser_timeout_keeps_the_script_output_and_playwright_action(monkeyp
 
 def test_a_browser_timeout_can_report_missing_output_and_invalid_bytes():
     error = subprocess.TimeoutExpired("node", 60, stderr=b"last action \xff")
-    failure = BrowserStoryTimeout.for_script("example.browser.mjs", error)
+    failure = BrowserStoryTimeout.with_script("example.browser.mjs", error)
     expect_failure_with(failure, "last action \ufffd")
     expect_failure_with(failure, "stdout:\n\nstderr:")
 

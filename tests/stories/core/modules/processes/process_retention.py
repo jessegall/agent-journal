@@ -16,13 +16,13 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 class ProcessLog(StoryFixture):
     """The process log keeps two ended runs beside its running commands."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run("setting set journal.core.processes.processes-kept 2 --environment main", actor=story.user)

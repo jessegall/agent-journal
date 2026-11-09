@@ -15,13 +15,13 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.agents.support.launch_answer import LaunchAnswer
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from core.modules.agents.support.agent_launcher import AgentLauncher
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 
 
 @pytest.mark.parametrize("entered_during_hand", [True, False], ids=["hook-takes-line", "line-still-waits"])
 def test_a_resumed_workers_job_is_entered_once(new_story, monkeypatch, entered_during_hand):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)

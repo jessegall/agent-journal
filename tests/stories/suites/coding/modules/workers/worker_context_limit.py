@@ -10,14 +10,14 @@ from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ENABLED, 
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, dispatched_worker, repository_environment, worker_session
 
 LIMIT = 400_000
 JOB = "Add the tax as well"
 
 
-def limit_on(story):
+def limit_enabled(story):
     story.expect_success(f"setting set {CONTEXT_LIMIT_ENABLED} true --project", actor=story.user)
     story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} {LIMIT} --project", actor=story.user)
 
@@ -32,9 +32,9 @@ def launched(launcher, number):
 
 @pytest.fixture
 def ended_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = checked_worker(story, repository_environment(story))
-    limit_on(story)
+    limit_enabled(story)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     return story, worker
 
@@ -43,12 +43,12 @@ def ended_worker(new_story):
 def compacting_worker(ended_worker):
     story, worker = ended_worker
     has_context(story, worker, LIMIT)
-    launcher = sent_a_job(story, worker)
+    launcher = with_job(story, worker)
     launcher.wait_for_requests()
     return story, worker, launcher
 
 
-def sent_a_job(story, worker):
+def with_job(story, worker):
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
     story.run(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
@@ -72,25 +72,25 @@ def test_a_worker_past_the_limit_compacts_its_session_before_its_job_runs(compac
     story.expect_rows(COMPACT_LINE.split()[0] in command, "--resume" in command, JOB not in command, detail=command)
 
 
-@pytest.mark.parametrize(("tokens", "same_session"), [(3_000, True), (LIMIT, False)], ids=["compacted", "tokens-unchanged-starts-over"])
-def test_after_its_compaction_a_worker_goes_on_with_its_job_and_starts_over_only_if_the_tokens_did_not_fall(compacting_worker, tokens, same_session):
+@pytest.mark.parametrize(("tokens", "matching_session"), [(3_000, True), (LIMIT, False)], ids=["compacted", "tokens-unchanged-starts-over"])
+def test_after_its_compaction_a_worker_goes_on_with_its_job_and_starts_over_only_if_the_tokens_did_not_fall(compacting_worker, tokens, matching_session):
     story, worker, launcher = compacting_worker
     session = worker_session(story, worker)
     command = compaction_ended(story, worker, launcher, tokens)
-    story.expect_rows("/compact" not in command, JOB in command, (worker_session(story, worker) == session) is same_session, detail=command)
+    story.expect_rows("/compact" not in command, JOB in command, (worker_session(story, worker) == session) is matching_session, detail=command)
 
 
 def test_a_worker_under_the_limit_resumes_on_its_job(ended_worker):
     story, worker = ended_worker
     has_context(story, worker, LIMIT - 1)
-    launcher = sent_a_job(story, worker)
+    launcher = with_job(story, worker)
     launcher.wait_for_requests()
     command = launched(launcher, 0)
     story.expect_rows("/compact" not in command, JOB in command, detail=command)
 
 
 def finished_task_ids(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
@@ -102,7 +102,7 @@ def finished_task_ids(new_story):
 
 def test_a_worker_past_the_limit_at_worker_next_is_told_to_stop_and_may_stop_with_its_next_task_started(new_story):
     story, worker = finished_task_ids(new_story)
-    limit_on(story)
+    limit_enabled(story)
     has_context(story, worker, LIMIT)
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.expect_text("task show 2", "state: started", actor=story.agent)
@@ -114,14 +114,14 @@ def test_a_worker_past_the_limit_at_worker_next_is_told_to_stop_and_may_stop_wit
 
 def test_a_worker_under_the_limit_at_worker_next_goes_on_and_may_not_stop(new_story):
     story, worker = finished_task_ids(new_story)
-    limit_on(story)
+    limit_enabled(story)
     has_context(story, worker, LIMIT - 1)
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "task")
 
 
 def test_the_inspector_of_a_worker_reads_its_agent_row_once(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f"usage inspector {worker.id} --environment main", actor=story.user)

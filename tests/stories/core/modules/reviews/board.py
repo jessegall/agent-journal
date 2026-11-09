@@ -1,6 +1,6 @@
 import json
 
-from tests.stories.core.modules.reviews.support.review_fixtures import ReviewInProgress, reviewer_of
+from tests.stories.core.modules.reviews.support.review_fixtures import ProgressReview, read_reviewer
 from core.testing.expect_row import expect_row
 
 
@@ -9,7 +9,7 @@ def board(story) -> dict:
 
 
 def test_a_review_in_progress_is_on_the_board_with_its_steps(new_story):
-    story = new_story(fixture=ReviewInProgress)
+    story = new_story(fixture=ProgressReview)
     story.run_listeners()
     answer = board(story)
     expect_row(answer, queued=0)
@@ -18,8 +18,8 @@ def test_a_review_in_progress_is_on_the_board_with_its_steps(new_story):
 
 
 def test_a_review_that_has_reported_leaves_the_board(new_story):
-    story = new_story(fixture=ReviewInProgress)
-    story.run('review record "1 passed"', actor=reviewer_of(story))
+    story = new_story(fixture=ProgressReview)
+    story.run('review record "1 passed"', actor=read_reviewer(story))
     story.run_listeners()
     expect_row(board(story), reviews=[])
 

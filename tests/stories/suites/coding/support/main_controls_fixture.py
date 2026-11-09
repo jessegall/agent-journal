@@ -9,7 +9,7 @@ from core.base.database.database import Database
 from core.base.row_owner import RowOwner
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 
 AGENT_ROLES = {"worker": "worker", "helper": "helper", "merger": "helper", "designer": "helper"}
@@ -20,7 +20,7 @@ class MainControlsActors(StoryFixture):
     """Ada, a person, beside the started main agent, with a worker, an ordinary helper, a merger and a
     designer under it: story.user and story.agent, and agent_actors for the others."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story: Story) -> None:
         for name, role in AGENT_ROLES.items():

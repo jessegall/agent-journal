@@ -1,10 +1,10 @@
 import json
 
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def test_codex_effort_stays_on_the_card_when_a_turn_grows_past_the_transcript_tail(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     monkeypatch.setenv("CODEX_HOME", str(story.home.folder / "codex"))
     worker_id = story.new_row_id("agent start codex-effort codex worker --environment main")
     rollout = story.home.folder / "codex" / "sessions" / "2026" / "11" / "06" / "rollout-2026-11-06T18-31-51-codex-effort.jsonl"

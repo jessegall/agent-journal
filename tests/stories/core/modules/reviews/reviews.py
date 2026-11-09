@@ -1,4 +1,4 @@
-from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_POINTS, reviewer_of, REVIEW_REQUEST, REVIEW_DETAILS, ReviewRequested, ReviewInProgress
+from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_POINTS, read_reviewer, REVIEW_REQUEST, REVIEW_DETAILS, ReviewRequested, ProgressReview
 
 
 def test_a_review_is_requested_for_a_subject_row_and_waits_queued(new_story):
@@ -19,41 +19,41 @@ def test_a_subject_is_reviewed_again_once_its_review_is_abandoned(new_story):
 
 
 def test_a_report_that_passes_every_point_approves_the_review(new_story):
-    story = new_story(fixture=ReviewInProgress)
-    story.expect_success('review record "1 passed\n2 passed"', actor=reviewer_of(story))
+    story = new_story(fixture=ProgressReview)
+    story.expect_success('review record "1 passed\n2 passed"', actor=read_reviewer(story))
     story.expect_success(REVIEW_DETAILS, "state: approved")
 
 
 def test_a_point_short_sends_the_review_back_with_the_reason(new_story):
-    story = new_story(fixture=ReviewInProgress)
-    story.run('review record "1 passed\n2 short: the total is in dollars"', actor=reviewer_of(story))
+    story = new_story(fixture=ProgressReview)
+    story.run('review record "1 passed\n2 short: the total is in dollars"', actor=read_reviewer(story))
     story.expect_success(REVIEW_DETAILS, "state: rejected")
     story.expect_text(REVIEW_POINTS, "short", "the total is in dollars")
 
 
 def test_a_point_undecided_leaves_the_review_to_the_agent_that_asked(new_story):
-    story = new_story(fixture=ReviewInProgress)
-    story.run('review record "1 passed\n2 undecided: the tests cannot run here"', actor=reviewer_of(story))
+    story = new_story(fixture=ProgressReview)
+    story.run('review record "1 passed\n2 undecided: the tests cannot run here"', actor=read_reviewer(story))
     story.expect_success(REVIEW_DETAILS, "state: undecided")
     story.expect_text(REVIEW_POINTS, "undecided", "the tests cannot run here")
 
 
 def test_a_point_the_report_does_not_name_leaves_the_review_to_the_agent_that_asked(new_story):
-    story = new_story(fixture=ReviewInProgress)
-    story.run('review record "1 passed"', actor=reviewer_of(story))
+    story = new_story(fixture=ProgressReview)
+    story.run('review record "1 passed"', actor=read_reviewer(story))
     story.expect_success(REVIEW_DETAILS, "state: undecided")
 
 
 def test_a_report_from_an_agent_that_is_not_the_reviewer_is_refused(new_story):
-    story = new_story(fixture=ReviewInProgress)
+    story = new_story(fixture=ProgressReview)
     story.expect_refusal('review record "1 passed\n2 passed" --environment main', "not the reviewer", actor=story.agent)
     story.expect_success(REVIEW_DETAILS, "state: reviewing")
 
 
 def test_a_second_report_is_refused(new_story):
-    story = new_story(fixture=ReviewInProgress)
-    story.run('review record "1 passed\n2 passed"', actor=reviewer_of(story))
-    story.expect_refusal('review record "1 short: wrong"', "is already approved", actor=reviewer_of(story))
+    story = new_story(fixture=ProgressReview)
+    story.run('review record "1 passed\n2 passed"', actor=read_reviewer(story))
+    story.expect_refusal('review record "1 short: wrong"', "is already approved", actor=read_reviewer(story))
     story.expect_success(REVIEW_DETAILS, "state: approved")
 
 

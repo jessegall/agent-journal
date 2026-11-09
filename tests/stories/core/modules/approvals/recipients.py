@@ -11,7 +11,7 @@ from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 from core.testing.story import Story
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
@@ -23,7 +23,7 @@ class HelperApproval(NamedTuple):
 
 @pytest.fixture
 def helper_request(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     helper = Actor(story.new_row_id(f"agent start help-shop claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_refusal("phone pair --reason needed", "main agent was asked", actor=helper)
     approval = story.container.get(Queries).query(ApprovalRequest).filter(requester_id=helper.id).first()

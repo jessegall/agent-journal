@@ -12,7 +12,7 @@ from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-class MainWithSession(StoryFixture):
+class SessionMain(StoryFixture):
     """The main agent started its session s-1."""
 
     parent = BuilderStarted
@@ -47,7 +47,7 @@ def late_hook(story: Story, seconds: int) -> None:
 
 
 def test_three_hook_timeouts_in_ten_minutes_tell_the_main_agent_once_with_the_agent_and_the_slowest_rule(new_story, monkeypatch):
-    story = new_story(fixture=MainWithSession)
+    story = new_story(fixture=SessionMain)
     slow = slow_first_rule(monkeypatch)
     for _ in range(3):
         late_hook(story, 6)
@@ -61,7 +61,7 @@ def test_three_hook_timeouts_in_ten_minutes_tell_the_main_agent_once_with_the_ag
 
 
 def test_the_persons_chat_shows_the_same_once(new_story, monkeypatch):
-    story = new_story(fixture=MainWithSession)
+    story = new_story(fixture=SessionMain)
     slow = slow_first_rule(monkeypatch)
     for _ in range(4):
         late_hook(story, 6)
@@ -71,7 +71,7 @@ def test_the_persons_chat_shows_the_same_once(new_story, monkeypatch):
 
 
 def test_two_timeouts_or_timeouts_far_apart_tell_nothing(new_story):
-    story = new_story(fixture=MainWithSession)
+    story = new_story(fixture=SessionMain)
     late_hook(story, 6)
     late_hook(story, 6)
     story.advance(timedelta(minutes=11))
@@ -80,7 +80,7 @@ def test_two_timeouts_or_timeouts_far_apart_tell_nothing(new_story):
 
 
 def test_a_hook_answered_in_time_is_no_timeout(new_story):
-    story = new_story(fixture=MainWithSession)
+    story = new_story(fixture=SessionMain)
     for _ in range(4):
         late_hook(story, 2)
     story.expect_absent_hook_line("s-1", HookSamples.prompt("go on"), "hook timeouts")

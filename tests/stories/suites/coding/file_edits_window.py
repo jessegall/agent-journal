@@ -1,11 +1,11 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.scanned_edits import scanned_edit
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_the_file_edits_window_pages_its_declared_key_through_the_viewer(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     scanned_edit(story, "s-1", "src/cart.py", 3, 1)
     scanned_edit(story, "s-1", "src/tax.py", 2, 0)
     with server_story(story) as server:

@@ -20,7 +20,7 @@ def expect_listed(program: str, provider: type[Provider], tools: set[str]) -> No
     assert tools - set(provider.tool_categories) <= set(provider.safe_tools)
 
 
-def expect_apart(provider: type[Provider]) -> None:
+def expect_separate(provider: type[Provider]) -> None:
     assert not set(provider.safe_tools) & set(provider.tool_categories)
 
 
@@ -32,4 +32,4 @@ def test_each_program_really_called_the_tools_it_lists(program, provider, tools)
 
 @pytest.mark.parametrize("provider", [ClaudeCodeProvider, CodexProvider])
 def test_a_safe_tool_keeps_out_of_the_global_categories(provider):
-    expect_apart(provider)
+    expect_separate(provider)

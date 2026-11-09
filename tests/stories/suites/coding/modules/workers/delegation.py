@@ -14,7 +14,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from core.testing.expect_reply import expect_absent_reply_refusal
@@ -22,7 +22,7 @@ from tests.stories.support.story_checks import expect_value
 
 
 def delegated_story(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
@@ -69,7 +69,7 @@ def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_wo
 
 
 def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('worker dispatch 1 --model sonnet --name "Noah Webster"', actor=story.agent)
     story.run_listeners()
@@ -78,7 +78,7 @@ def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_worke
 
 
 def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('worker dispatch 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
@@ -135,7 +135,7 @@ def test_a_started_task_taken_from_a_worker_goes_back_open_and_the_worker_goes_o
 
 
 def test_a_task_is_not_assigned_to_a_helper_and_the_refusal_names_who_takes_one(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_success('task make "Fix the cart" --environment main')
     story.expect_refusal(f"task assign 1 --to {story.helper.id}", "is a helper and takes no task", actor=story.agent)
     story.expect_refusal(f"task assign 1 --to {story.helper.id}", "the main agent and a worker with a cut worktree take a task", actor=story.agent)
@@ -143,7 +143,7 @@ def test_a_task_is_not_assigned_to_a_helper_and_the_refusal_names_who_takes_one(
 
 
 def test_a_task_is_not_assigned_to_a_worker_whose_work_is_delivered(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = delivered_worker(story, repository)
@@ -184,7 +184,7 @@ def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(delegated):
 
 
 def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success('task comment 1 "use the new cart" --environment main', actor=user)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "was also told")
@@ -214,7 +214,7 @@ def dispatch_sample(*arguments: str):
 
 
 def ended_worker_story(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
@@ -358,7 +358,7 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
 
 
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = story.new_row_id("worker dispatch --model sonnet --profile journal-medior --name Lovelace 1", actor=story.agent)
     story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', '"profile": "journal-medior"', '"given_name": "Lovelace"', actor=story.agent)

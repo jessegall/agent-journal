@@ -9,13 +9,13 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from core.modules.drivers.support.access_nudges import OUTWARD_JOURNAL_LINE
 from tests.stories.core.modules.helpers.start_helper import started
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
 @pytest.fixture
 def tag_story(new_story):
-    return new_story(fixture=BuilderWithUser)
+    return new_story(fixture=UserBuilder)
 
 
 @pytest.fixture

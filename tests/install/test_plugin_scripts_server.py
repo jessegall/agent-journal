@@ -56,7 +56,7 @@ def start_with_plugin(journal, client: Path, entry: dict[str, str], script: str,
     expect_line(journal, client, "plugin", "install", str(folder), "--yes")
 
 
-def wait_for_line(pipe: Path, process: subprocess.Popen[str] | None = None, limit_seconds: float = STARTED_LIMIT_SECONDS) -> str:
+def poll_line(pipe: Path, process: subprocess.Popen[str] | None = None, limit_seconds: float = STARTED_LIMIT_SECONDS) -> str:
     """The first line a script writes to the named pipe, read as it arrives; a command that ends first ends the wait."""
     reader = os.open(pipe, os.O_RDWR | os.O_NONBLOCK)
     deadline = time.monotonic() + limit_seconds
@@ -138,7 +138,7 @@ def test_s25_a_script_that_never_ends_shows_on_the_card_and_switching_off_stops_
     page = viewer_page(journal)
     process = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
-        assert "started" in wait_for_line(start_pipe, process)
+        assert "started" in poll_line(start_pipe, process)
         assert any(row["form"] == "guard" and row["started_at"] for row in page.card()), page.card()
         page.disable()
         stdout, stderr = process.communicate(timeout=TIMEOUT_SECONDS)
@@ -158,7 +158,7 @@ def test_s17_a_commit_script_that_never_ends_holds_up_no_listener_and_a_server_s
     os.mkfifo(blocked_pipe)
     start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, f"echo $$ > '{script_pid}'\necho started > '{start_pipe}'\nread answer < '{blocked_pipe}'")
     expect_line(journal, client, *SECOND_JOB_LINE)
-    assert "started" in wait_for_line(start_pipe)
+    assert "started" in poll_line(start_pipe)
     expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
     deadline = time.monotonic() + STARTED_LIMIT_SECONDS
     while LATER_JOB_TITLE not in expect_line(journal, client, "chat-mark", "list", "--environment", "main"):
@@ -175,7 +175,7 @@ def test_a_commit_delivery_a_server_stop_cut_short_and_one_still_queued_run_afte
     script = f"""echo run >> '{run_log}'\nif [ "$(wc -l < '{run_log}' | tr -d ' ')" = 1 ]; then echo started > '{started}'; read answer < '{unwritten_pipe}'; fi"""
     start_with_plugin(journal, client, {"event": TASK_CREATED, "commit": "script.sh"}, script)
     expect_line(journal, client, *SECOND_JOB_LINE)
-    assert "started" in wait_for_line(started)
+    assert "started" in poll_line(started)
     expect_line(journal, client, "task", "make", LATER_JOB_TITLE, "--brief", "Do it", "--environment", "main")
     journal.stop_with(client)
     assert run_log.read_text().split() == ["run"]
@@ -195,7 +195,7 @@ def test_s58_a_journal_line_inside_plugin_run_stays_marked_as_the_plugin(journal
     start_with_plugin(journal, client, {"event": "core.pins.pin.created", "commit": "script.sh"}, script, {"event": TASK_UPDATED, "guard": "refuse.sh"}, scripts={"refuse.sh": EVENT_SCRIPTS["refuse.sh"]})
     started_agent(journal, client)
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
-    assert "finished" in wait_for_line(finish_pipe)
+    assert "finished" in poll_line(finish_pipe)
     assert "Written inside the run" in expect_line(journal, client, "task", "show", "1")
     assert not script_calls(journal, "refuse.sh")
 
@@ -208,7 +208,7 @@ def test_s58_switching_the_plugin_off_stops_its_run(journal, client):
     started_agent(journal, client)
     expect_line(journal, client, "actor", "make", "user", "Ada")
     expect_line(journal, client, "pin", "make", "Notes", "--link", "https://example.org/notes", "--environment", "main")
-    assert "started" in wait_for_line(start_pipe)
+    assert "started" in poll_line(start_pipe)
     viewer_page(journal).disable()
     expect_process_ended(int(run_pid.read_text()))
 
@@ -229,7 +229,7 @@ def test_s67_the_server_stops_while_a_guard_runs_and_nothing_is_written(journal,
     initial_counts = row_counts(journal)
     process = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     try:
-        assert "started" in wait_for_line(start_pipe, process)
+        assert "started" in poll_line(start_pipe, process)
         journal.stop_with(client)
         stdout, stderr = process.communicate(timeout=TIMEOUT_SECONDS)
     finally:
@@ -249,7 +249,7 @@ def test_s76_the_caller_goes_away_while_a_guard_runs_and_nothing_is_written(jour
     page = viewer_page(journal)
     initial_counts = row_counts(journal)
     process = subprocess.Popen([str(client), *SECOND_JOB_LINE], env=journal.environment(), cwd=journal.home.folder.parent, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    assert "started" in wait_for_line(start_pipe, process)
+    assert "started" in poll_line(start_pipe, process)
     process.kill()
     process.communicate()
     deadline = time.monotonic() + 2 * MINUTE_SECONDS

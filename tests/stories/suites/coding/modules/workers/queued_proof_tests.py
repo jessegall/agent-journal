@@ -7,13 +7,13 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
 
 
 def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
     story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
     story.run("agent start s-reader claude worker --environment main")

@@ -1,10 +1,10 @@
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import PhaseWithThreeTasks, PlanWithTasks
+from tests.stories.core.support.fixtures import ThreeTasksPhase, TasksPlan
 from tests.stories.core.modules.plans.phases import plan_with_three_phases
 
 
 def plan_with_tasks(new_story):
-    return new_story(fixture=PlanWithTasks)
+    return new_story(fixture=TasksPlan)
 
 
 def test_a_task_is_placed_at_the_end_of_a_phase(new_story):
@@ -40,7 +40,7 @@ def test_deleting_a_task_removes_its_place_first(new_story):
 
 
 def test_a_task_moved_out_of_the_middle_of_a_phase_closes_its_place_and_the_next_task_takes_the_end(new_story):
-    story = new_story(fixture=PhaseWithThreeTasks)
+    story = new_story(fixture=ThreeTasksPhase)
     story.run("phase place 2 --phase 2")
     story.expect_success(lines.FIRST_PHASE_PLACES, "1  1  1  1", "3  1  3  2")
     story.run('task make "Fourth" --environment main')
@@ -48,7 +48,7 @@ def test_a_task_moved_out_of_the_middle_of_a_phase_closes_its_place_and_the_next
 
 
 def test_a_task_deleted_from_the_middle_of_a_phase_closes_its_place(new_story):
-    story = new_story(fixture=PhaseWithThreeTasks)
+    story = new_story(fixture=ThreeTasksPhase)
     story.expect_text("task delete 2", "task:2")
     story.expect_success(lines.FIRST_PHASE_PLACES, "1  1  1  1", "3  1  3  2")
 

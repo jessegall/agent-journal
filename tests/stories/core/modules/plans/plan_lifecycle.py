@@ -1,7 +1,7 @@
 import pytest
 
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.support.fixtures import PlanFirstTaskClosed, UserJoined
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.plan_steps import ready_plan
@@ -33,7 +33,7 @@ def test_a_plan_moves_from_draft_to_completed(new_story):
 
 @pytest.fixture
 def ready_plan_task(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(lines.NEW_PLAN, actor=story.agent)
     phase = story.new_row_id('phase make --plan 1 "First" --goal "The first part is done"', actor=story.agent)
     task = story.new_row_id(f'task make "Planned work" --brief "Do the work" --phase {phase} --environment main', actor=story.agent)
@@ -92,7 +92,7 @@ def test_a_plan_closes_by_itself_when_its_last_task_ends(new_story):
 
 
 def test_a_plan_is_cancelled_by_itself_when_every_task_is_cancelled(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)
     story.run('phase make --plan 1 "First" --goal "it works"', actor=story.agent)
     story.run('task make "Only task" --environment main', actor=story.agent)

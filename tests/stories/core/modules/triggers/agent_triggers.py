@@ -4,12 +4,12 @@ from core.modules.triggers.support.trigger_settings import AGENTS_ENABLE_SETTING
 from core.modules.triggers.support.trigger_nudges import TRIGGER_LINE as TRIGGER_FIRED
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 class AgentTriggerMade(StoryFixture):
     """The main agent made a trigger, so its enabling waits on a docked card."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run(TRIGGER_LINE, actor=story.agent)
@@ -26,7 +26,7 @@ def prompt_lines(story) -> list[str]:
 
 
 def test_an_agents_trigger_stays_quiet_until_the_user_enables_it(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(TRIGGER_LINE, actor=story.agent)
     expect_absent_prompt_lines(story, TRIGGER_TEXT)
     story.expect_success("trigger enable 1", actor=story.user)
@@ -34,32 +34,32 @@ def test_an_agents_trigger_stays_quiet_until_the_user_enables_it(new_story):
 
 
 def test_a_trigger_the_user_makes_is_on_at_once(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(TRIGGER_LINE, actor=story.user)
     expect_prompt_lines(story, TRIGGER_TEXT)
 
 
 def test_an_agent_cannot_enable_a_trigger(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run(TRIGGER_LINE, actor=story.agent)
     story.expect_refusal("trigger enable 1 --reason needed", "A person was asked in the dock", actor=story.agent)
 
 
 def test_an_agent_cannot_change_what_an_enabled_trigger_does(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run(TRIGGER_LINE, actor=story.user)
     story.expect_refusal('trigger edit 1 --text "Do something else" --reason needed', "A person was asked in the dock", actor=story.agent)
 
 
 def test_the_setting_lets_an_agents_trigger_act_at_once(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {AGENTS_ENABLE_SETTING} true --project", actor=story.user)
     story.expect_success(TRIGGER_LINE, actor=story.agent)
     expect_prompt_lines(story, TRIGGER_TEXT)
 
 
 def test_an_agents_trigger_shows_in_the_main_chat_until_it_is_removed(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.run(TRIGGER_LINE, actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main", "waits for you")

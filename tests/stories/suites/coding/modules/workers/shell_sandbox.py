@@ -3,14 +3,14 @@ import shlex
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line
 from core.base.shell_sandbox import ShellSandbox
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 
 def test_a_workers_shell_uses_its_registered_worktree(new_story):
-    story = install_runner(new_story(fixture=OrchestratorWithOpenTask))
+    story = install_runner(new_story(fixture=OpenTaskOrchestrator))
     story.container.bind(ShellSandbox, ShellSandbox(story.home))
     repository = repository_environment(story)
     worker = dispatched_worker(story)

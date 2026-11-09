@@ -7,7 +7,7 @@ from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 
 WORKER_SESSION = "s-2"
 CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", "search", ["-n", "total", "src/cart.py"]))
@@ -27,7 +27,7 @@ def worker_with_started_task(story: Story) -> Actor:
 
 
 def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
+    story = new_story(fixture=OpenTaskBuilder)
     started_worker(story)
     story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "your task has not started yet: only reading and journal commands run until it does")
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
@@ -60,7 +60,7 @@ def test_a_worker_is_refused_a_whole_chain_with_a_full_test_run_and_may_run_name
 
 
 class WorkingAgent(StoryFixture):
-    parent = BuilderWithOpenTask
+    parent = OpenTaskBuilder
 
     def steps(self, story):
         worker_with_started_task(story)

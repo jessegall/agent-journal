@@ -50,7 +50,7 @@ def test_the_shim_still_runs_a_version_4_project_and_says_so_when_there_is_no_pr
     (old / ".journal" / "src").mkdir(parents=True)
     (old / ".journal" / "src" / "journal.sh").write_text('echo "version 4 journal $*"\n')
     assert run_journal(scratch, old).stdout.strip() == "version 4 journal overview"
-    nowhere = tmp_path / "nowhere"
-    nowhere.mkdir()
-    missing = run_journal(scratch, nowhere)
+    missing_place = tmp_path / "nowhere"
+    missing_place.mkdir()
+    missing = run_journal(scratch, missing_place)
     assert missing.returncode == 1 and "no .journal/ here or above" in missing.stderr

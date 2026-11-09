@@ -34,7 +34,7 @@ class BuilderStarted(StoryFixture):
         story.expect_success(f"agent show {story.agent.id}", "session: s-1", "role: main")
 
 
-class BuilderWithOpenTask(StoryFixture):
+class OpenTaskBuilder(StoryFixture):
     """Task 1, Fix the cart, is open in main and nobody holds it."""
 
     parent = BuilderStarted
@@ -46,11 +46,11 @@ class BuilderWithOpenTask(StoryFixture):
         story.expect_success(lines.TASK_DETAILS, "state: open")
 
 
-class OrchestratorWithOpenTask(StoryFixture):
+class OpenTaskOrchestrator(StoryFixture):
     """The main agent in main has Auto off and Keep going on, so it sends tasks to workers, and task 1, Fix
     the cart, is open."""
 
-    parent = BuilderWithOpenTask
+    parent = OpenTaskBuilder
 
     def steps(self, story: Story) -> None:
         story.run("setting set journal.suites.coding.auto-mode off --environment main")
@@ -60,7 +60,7 @@ class OrchestratorWithOpenTask(StoryFixture):
         story.expect_text("setting show journal.suites.coding.auto-mode --environment main", "value: False")
 
 
-class HelperUnderBuilder(HelperExpectation, StoryFixture):
+class BuilderHelper(HelperExpectation, StoryFixture):
     """The main agent's session s-1 has a helper with session sub-1 under it: story.helper."""
 
     parent = BuilderStarted
@@ -69,10 +69,10 @@ class HelperUnderBuilder(HelperExpectation, StoryFixture):
         story.helper = Actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
 
 
-class BuilderWithStartedTask(StoryFixture):
+class StartedTaskBuilder(StoryFixture):
     """The main agent started task 1, Fix the cart, and holds it."""
 
-    parent = BuilderWithOpenTask
+    parent = OpenTaskBuilder
 
     def steps(self, story: Story) -> None:
         story.run(lines.TASK_START, actor=story.agent)
@@ -81,7 +81,7 @@ class BuilderWithStartedTask(StoryFixture):
         story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
 
 
-class BuilderWithUser(StoryFixture):
+class UserBuilder(StoryFixture):
     """A person, Ada, beside the started builder: story.user."""
 
     parent = BuilderStarted
@@ -93,10 +93,10 @@ class BuilderWithUser(StoryFixture):
         story.expect_success(f"actor show {story.user.id}", "type: user", "name: Ada")
 
 
-class BuilderWithBriefedTask(StoryFixture):
+class BriefedTaskBuilder(StoryFixture):
     """Task 1, Fix the cart, has a brief and is open; nobody holds it."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story) -> None:
         story.run('task make "Fix the cart" --brief "the total is in cents" --environment main', actor=story.agent)
@@ -105,10 +105,10 @@ class BuilderWithBriefedTask(StoryFixture):
         story.expect_success(lines.TASK_DETAILS, "state: open", "brief: the total is in cents")
 
 
-class BuilderWithUnreadTask(StoryFixture):
+class UnreadTaskBuilder(StoryFixture):
     """The main agent started task 1 and has not read its brief, so it is blocked."""
 
-    parent = BuilderWithBriefedTask
+    parent = BriefedTaskBuilder
 
     def steps(self, story) -> None:
         story.container.get(TaskBriefRequirement).is_required = True
@@ -118,10 +118,10 @@ class BuilderWithUnreadTask(StoryFixture):
         story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
 
 
-class BuilderWithReadTask(StoryFixture):
+class ReadTaskBuilder(StoryFixture):
     """The builder's agent holds task 1 and ran its brief, so it is no longer blocked."""
 
-    parent = BuilderWithUnreadTask
+    parent = UnreadTaskBuilder
 
     def steps(self, story) -> None:
         story.run("task overview 1", actor=story.agent)

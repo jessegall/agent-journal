@@ -16,7 +16,7 @@ from tests.stories.core.modules.processes.support.process_samples import start_p
 from suites.coding.modules.workers.rules.unstarted_worker_rule import START_SECONDS
 from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import INACTIVE_HELPER_GRACE_MINUTES
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 MAIN_SESSION = "s-1"
@@ -37,28 +37,28 @@ def line_count(story, line: str) -> int:
     return story.run(f"agent-line list --agent {story.agent.id}").output_text.count(line)
 
 
-def becomes_the_merger(story, agent_id: int) -> None:
+def merger_change(story, agent_id: int) -> None:
     database = story.container.get(Database)
     with database.transaction():
         database.connection.execute("UPDATE agents SET profile = ? WHERE id = ?", (MERGER_PROFILE, agent_id))
 
 
-class MergerUnderBuilder(StoryFixture):
-    parent = HelperUnderBuilder
+class BuilderMerger(StoryFixture):
+    parent = BuilderHelper
 
     def steps(self, story):
-        becomes_the_merger(story, story.helper.id)
+        merger_change(story, story.helper.id)
 
 
 class StartedMerger(StoryFixture):
     parent = StartedHelper
 
     def steps(self, story):
-        becomes_the_merger(story, helper_agent(story).id)
+        merger_change(story, helper_agent(story).id)
 
 
 def idle_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     return story, worker
@@ -80,7 +80,7 @@ def test_the_inactive_line_wakes_the_main_agent(new_story):
 
 
 def test_a_worker_that_never_made_a_call_is_named_with_the_command_for_its_log_and_wakes_the_main_agent(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.advance(timedelta(seconds=START_SECONDS))
@@ -113,7 +113,7 @@ def test_the_inactive_line_of_a_worker_with_a_queued_run_says_so(new_story):
 
 
 def test_a_worker_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main_agent_again_every_five_minutes(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.hook(worker_session(story, worker), HookSamples.prompt("Fix the cart"))
@@ -128,7 +128,7 @@ def test_a_worker_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main
 
 
 def test_a_helper_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main_agent_with_a_request_to_check_on_it(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     line = inactive_line("helper", story.helper.id)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
@@ -136,7 +136,7 @@ def test_a_helper_that_has_used_no_tool_for_fifteen_minutes_is_named_to_its_main
 
 
 def test_a_helper_that_used_a_tool_within_the_limit_is_not_named(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     line = inactive_line("helper", story.helper.id)
     story.advance(minutes(GRACE_MINUTES - 1))
     story.hook("sub-1", HELPER_PROMPT)
@@ -146,7 +146,7 @@ def test_a_helper_that_used_a_tool_within_the_limit_is_not_named(new_story):
 
 
 def test_an_idle_merger_is_not_named(new_story):
-    story = new_story(fixture=MergerUnderBuilder)
+    story = new_story(fixture=BuilderMerger)
     story.tick(MAIN_SESSION)
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
@@ -154,7 +154,7 @@ def test_an_idle_merger_is_not_named(new_story):
 
 
 def test_a_helper_that_ended_is_not_named(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_success(f"agent end {story.helper.id}")
     story.advance(minutes(GRACE_MINUTES))
     story.tick(MAIN_SESSION)
@@ -162,7 +162,7 @@ def test_a_helper_that_ended_is_not_named(new_story):
 
 
 def test_a_worker_that_ended_is_not_named(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success(f"agent end {worker.id}")
@@ -172,7 +172,7 @@ def test_a_worker_that_ended_is_not_named(new_story):
 
 
 def test_the_setting_sets_how_long_a_helper_is_quiet_before_it_is_named(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     later = GRACE_MINUTES * 2
     story.expect_success(f"setting make {INACTIVE_HELPER_GRACE_MINUTES} {later} --environment main", f"key: {INACTIVE_HELPER_GRACE_MINUTES}")
     story.hook("sub-1", HookSamples.session_start())
@@ -192,7 +192,7 @@ def test_a_worker_is_not_named_within_its_grace(new_story):
 
 
 @pytest.fixture
-def worker_ended_with_a_job(new_story):
+def ended_job_worker(new_story):
     """A worker another agent ended and then sent a job, which no launcher could start."""
     story, worker = idle_worker(new_story)
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
@@ -202,8 +202,8 @@ def worker_ended_with_a_job(new_story):
     return story
 
 
-def test_an_ended_worker_whose_job_has_not_started_is_named_after_the_grace_and_again_every_five_minutes(worker_ended_with_a_job):
-    story = worker_ended_with_a_job
+def test_an_ended_worker_whose_job_has_not_started_is_named_after_the_grace_and_again_every_five_minutes(ended_job_worker):
+    story = ended_job_worker
     line = f"worker:{story.worker.id} has had work waiting for {GRACE_MINUTES} minutes and has not started: journal worker status {story.worker.id}"
     story.advance(minutes(GRACE_MINUTES - 1))
     story.tick(MAIN_SESSION)
@@ -225,7 +225,7 @@ def test_a_worker_stopped_for_good_with_its_job_sent_before_is_not_named(new_sto
     story.expect_rows(line_count(story, "has had work waiting") == 0)
 
 
-def expect_named_for_its_waiting_job(story, monkeypatch) -> None:
+def expect_waiting_job_name(story, monkeypatch) -> None:
     helper = helper_agent(story)
     story.expect_success(f"agent end {helper.id}", actor=Actor(helper.id, ActorType.AGENT))
     resumable_session(story, helper, monkeypatch)
@@ -237,10 +237,10 @@ def expect_named_for_its_waiting_job(story, monkeypatch) -> None:
 
 
 def test_an_ended_helper_whose_job_has_not_started_is_named(new_story, monkeypatch):
-    expect_named_for_its_waiting_job(new_story(fixture=StartedHelper), monkeypatch)
+    expect_waiting_job_name(new_story(fixture=StartedHelper), monkeypatch)
 
 
 def test_an_ended_merger_whose_job_has_not_started_is_named_too(new_story, monkeypatch):
     story = new_story(fixture=StartedMerger)
     story.advance(minutes(1))
-    expect_named_for_its_waiting_job(story, monkeypatch)
+    expect_waiting_job_name(story, monkeypatch)
