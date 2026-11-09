@@ -54,7 +54,7 @@ def test_a_logged_in_route_does_not_answer_401_with_a_login(hosted_server, rule)
     expect_value(hosted_answer(hosted_server, rule, logged_in=True).status != 401, True)
 
 
-@pytest.mark.parametrize("rule", rules_of(RouteAudience.NOT_OPEN), ids=ids_of(rules_of(RouteAudience.NOT_OPEN)))
+@pytest.mark.parametrize("rule", rules_of(RouteAudience.CLOSED_HOSTED), ids=ids_of(rules_of(RouteAudience.CLOSED_HOSTED)))
 def test_a_closed_route_answers_404_even_with_a_login(hosted_server, rule):
     answer = hosted_answer(hosted_server, rule, logged_in=True)
     expect_value((answer.status, CLOSED_DOOR_REASON in answer.text), (404, True))
