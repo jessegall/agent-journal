@@ -17,6 +17,7 @@ class AgentLine(SessionPrivate, Model):
 
     hidden_state = AgentLineState.HIDDEN
     model_name = "agent_line"
+    events_expire = True
     cli_name = "agent-line"
     hidden_fields = frozenset(["nudge_json"])
     lifecycle = AgentLineLifecycle

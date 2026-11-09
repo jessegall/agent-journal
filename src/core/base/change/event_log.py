@@ -123,3 +123,6 @@ class EventLog:
 
     def newest_id(self) -> int:
         return self.table.newest_id()
+
+    def prune(self, row_tables: Sequence[str], cutoff_at: str, limit: int) -> int:
+        return self.table.delete_passed(row_tables, cutoff_at, limit)

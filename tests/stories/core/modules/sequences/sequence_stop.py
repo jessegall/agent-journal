@@ -2,6 +2,8 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
+from tests.stories.core.modules.processes.support.process_samples import install_runner, start_process
+from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.fixtures.started_sequence import StartedSequence
 
@@ -164,4 +166,13 @@ def test_an_agent_with_a_second_sequence_on_top_is_held_by_the_top_one(new_story
 
 def test_an_agent_with_no_sequence_stops_as_before(new_story):
     story = new_story(fixture=UserJoined)
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+
+
+def test_an_agent_with_a_running_sequence_a_task_in_hand_and_a_watched_run_stops_without_a_journal_exception(new_story):
+    story = install_runner(new_story(fixture=FollowedSequence))
+    story.expect_success(lines.NEW_TASK, actor=story.agent)
+    story.expect_success(lines.TASK_START, actor=story.agent)
+    start_process(story, "make build")
+    story.hook("s-1", HookSamples.sample("pre_tool_use", {"name": "Monitor", "category": "monitor", "input": {"command": "wait"}}))
     story.expect_hook_allowed("s-1", HookSamples.stop())

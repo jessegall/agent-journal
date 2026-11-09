@@ -25,7 +25,7 @@ class BookkeepingTable:
 
     def newest_page(self, number: int, size: int, parsed: Callable[[sqlite3.Row], T]) -> Page[T]:
         rows = self.database.rows(Statement(f"SELECT * FROM {self.table} ORDER BY id DESC LIMIT ? OFFSET ?", (size, (number - 1) * size)))
-        return Page(tuple(parsed(row) for row in rows), number, size, self.count())
+        return Page(tuple(parsed(row) for row in rows), number, size, self.count() if number > 1 else self.id_span())
 
     def rows_past(self, row_id: int, limit: int) -> list[sqlite3.Row]:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id > ? ORDER BY id LIMIT ?", (row_id, limit)))
@@ -61,3 +61,11 @@ class BookkeepingTable:
 
     def count(self) -> int:
         return self.database.rows(Statement(f"SELECT count(*) FROM {self.table}"))[0][0]
+
+    def id_span(self) -> int:
+        return self.database.rows(Statement(f"SELECT coalesce(max(id) - min(id) + 1, 0) FROM {self.table}"))[0][0]
+
+    def delete_passed(self, row_tables: Sequence[str], cutoff_at: str, limit: int) -> int:
+        marks = ", ".join("?" for _ in row_tables)
+        return self.database.update(Statement(f"DELETE FROM {self.table} WHERE id IN (SELECT id FROM {self.table} WHERE row_table IN ({marks}) AND created_at < ?"
+                                              f" AND id <= (SELECT coalesce(min(event_id), 0) FROM listener_cursors) ORDER BY id LIMIT ?)", (*row_tables, cutoff_at, limit)))
