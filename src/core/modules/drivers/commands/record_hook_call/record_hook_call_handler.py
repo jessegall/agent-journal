@@ -36,7 +36,8 @@ from core.modules.drivers.commands.support.rule_history_writer import RuleHistor
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.models.hook_call import DISPLAYED_MESSAGE_ID, DISPLAYED_PART, DISPLAYED_TEXT, MONITOR_DESCRIPTION, SUMMARY_CHARACTERS, HookCall
+from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.nudger import Nudger
 from core.base.driver.search_category import SearchCategory
 from core.modules.drivers.support.suite_choice import SuiteChoice
@@ -52,8 +53,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     runs_once = True
 
     def __init__(self, required_commands: RequiredCommands, bus: Bus, database: Database, queries: Queries, repository: Repository, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent) -> None:
-        self.home, self.share, self.compaction_end = home, share, compaction_end
+                 history: RuleHistoryWriter, timing: Timing, providers: Providers, nudges: NudgeLog, nudger: Nudger, agents: AgentRows, event_rows: EventRows, system_log: SystemLogWriter, home: JournalHome, share: ContextShare, compaction_end: CompactionEndPercent, hook_calls: HookCallQuery) -> None:
+        self.home, self.share, self.compaction_end, self.hook_calls = home, share, compaction_end, hook_calls
         self.event_rows = event_rows
         self.system_log = system_log
         self.required_commands = required_commands
@@ -83,14 +84,17 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             percent = self.share.percent(command.event.program, command.event.session)
             if percent is not None:
                 metadata["context_percent"] = percent
-        if command.event.displayed_text:
-            metadata[DISPLAYED_TEXT] = command.event.displayed_text
+        displayed_text = self.hook_calls.displayed_block(agent.id, command.event)
+        if displayed_text:
+            metadata[DISPLAYED_TEXT] = displayed_text
+        if command.event.displayed_part and not command.event.is_final_display:
+            metadata.update({DISPLAYED_PART: command.event.displayed_part, DISPLAYED_MESSAGE_ID: command.event.displayed_message_id})
         if tool is not None and command.event.event == HookEventName.PRE_TOOL_USE:
             metadata.update({"journal_commands": list(tool.journal_commands), "program": command.event.program, "transcript_path": command.event.transcript.text})
         if self.is_monitoring(command):
             metadata[MONITOR_DESCRIPTION] = str(command.event.tool_input().get("description", ""))
         call = self.repository.save(HookCall(session_agent_id=agent.id, creator_id=context.actor.id, hook=command.event.event,
-                                             firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
+                                             firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command, displayed_text),
                                              writes_files=tool is not None and tool.is_writing_files(), lines_added=tool.lines_added if tool is not None else 0,
                                              lines_removed=tool.lines_removed if tool is not None else 0, suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
@@ -147,7 +151,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         tool = command.event.tool
         return tool is not None and tool.category is ToolType.MONITOR
 
-    def summary(self, command: RecordHookCall) -> str:
+    def summary(self, command: RecordHookCall, displayed_text: str) -> str:
         tool = command.event.tool
         if self.is_monitoring(command):
             return str(command.event.tool_input().get("command", ""))[:SUMMARY_CHARACTERS]
@@ -155,4 +159,4 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             return ProjectPaths.relative_line(tool.shell.display_text, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.display_text[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
             return tool.files[0][-SUMMARY_CHARACTERS:]
-        return HookCall.summarize(command.event.prompt or command.event.displayed_text)
+        return HookCall.summarize(command.event.prompt or displayed_text)

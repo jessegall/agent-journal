@@ -18,6 +18,8 @@ SESSION_START = "session_start"
 PROMPT = "prompt"
 SUMMARY_CHARACTERS = 200
 DISPLAYED_TEXT = "displayed"
+DISPLAYED_PART = "displayed_part"
+DISPLAYED_MESSAGE_ID = "displayed_message_id"
 MONITOR_DESCRIPTION = "monitor_description"
 STOP_ALLOWED = "stop_allowed"
 STOP_REFUSED = "stop_refused"
@@ -77,6 +79,14 @@ class HookCall(EnvironmentScoped, Model):
     @property
     def displayed_text(self) -> str:
         return self.driver_text(DISPLAYED_TEXT)
+
+    @property
+    def displayed_part(self) -> str:
+        return self.driver_text(DISPLAYED_PART)
+
+    @property
+    def displayed_message_id(self) -> str:
+        return self.driver_text(DISPLAYED_MESSAGE_ID)
 
     @property
     def ended_session(self) -> str:

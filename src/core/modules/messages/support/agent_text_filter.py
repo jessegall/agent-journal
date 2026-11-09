@@ -31,7 +31,7 @@ class AgentTextFilter:
         if prompt is None:
             return False
         reply = self.messages.latest_turn_message(agent_id, prompt.creation_timestamp(), created_at)
-        return reply is not None and not self.messages.has_person_message_after(reply.id)
+        return reply is not None and not self.messages.has_person_message_after(reply.id) and not self.hook_calls.refused_stop_exists(agent_id, reply.creation_timestamp(), created_at)
 
     def is_duplicate_reply(self, agent_id: int, text: str, created_at: Timestamp) -> bool:
         return self.is_after_reply(agent_id, text, created_at) and self.repeats_reply(agent_id, text, created_at)
