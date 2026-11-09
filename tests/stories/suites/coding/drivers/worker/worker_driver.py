@@ -55,8 +55,8 @@ def test_a_worker_is_refused_every_raw_test_line(new_story):
     story = install_runner(new_story(fixture=WorkingAgent))
     suite_sample = HookSamples.shell("echo before && pytest tests", ShellPart("echo", "read", ["before"]), ShellPart("pytest", "test run", ["tests"], is_full_test_run=True))
     cart_sample = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", "test run", ["tests/cart.py"]))
-    story.expect_hook_refusal(WORKER_SESSION, suite_sample, "your test commands")
-    story.expect_hook_refusal(WORKER_SESSION, cart_sample, "your test commands")
+    story.expect_hook_refusal(WORKER_SESSION, suite_sample, "You have no test commands")
+    story.expect_hook_refusal(WORKER_SESSION, cart_sample, "You have no test commands")
 
 
 class WorkingAgent(StoryFixture):
