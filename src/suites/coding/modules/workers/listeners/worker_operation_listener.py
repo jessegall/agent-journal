@@ -16,9 +16,11 @@ from core.modules.processes.support.queued_process_start import QueuedProcessSta
 
 
 class WorkerOperationListener(CommitListener[Created[WorkerOperation]]):
-    """Starts accepted worker commands through the journal runner after their reservation commits."""
+    """Starts accepted worker commands through the journal runner after their reservation commits, in the urgent
+    round, so a slow listener cannot hold a command back until its run counts as lost."""
 
     name = "workers.operation-launch"
+    run_order = -1
     disabled_scopes = [ActorScope]
 
     def __init__(self, rows: EventRows, launch: QueuedProcessLaunch, folder: OutputFolder, bus: Bus) -> None:
