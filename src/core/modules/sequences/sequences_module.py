@@ -37,6 +37,7 @@ from core.modules.sequences.migrations.m006_open_run_subject_index import OpenRu
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.models.sequence_run_row import SequenceRunRow
+from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
 from core.modules.sequences.rules.sequence_trigger_rule import SequenceTriggerRule
@@ -63,7 +64,7 @@ class SequencesModule(Module):
     block_conditions = [SequenceStepStarted]
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     library_shares = [SequenceLibraryShare]
-    models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
+    models = [ModelDeclaration(Sequence, query=SequenceQuery, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
