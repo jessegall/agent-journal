@@ -7,7 +7,7 @@ from core.base.driver.nudge_type import NudgeType
 WORKER_OPERATION_NEXT = NudgeDeclaration("workers.operation_next", NudgeType.STEERING,
     'task:{task} is yours next; output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_TESTS = NudgeDeclaration("workers.operation_tests", NudgeType.STEERING,
-    'task:{task} tests queued: stop now; output {output}', turn_limited=False, wakes_agent=True)
+    'task:{task} tests queued: this hand-in is done, so you can run tests yourself now, or stop; output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_CONFLICT = NudgeDeclaration("workers.operation_conflict", NudgeType.STEERING,
     'worker:{worker} has a merge conflict: output {output}', turn_limited=False, wakes_agent=True)
 WORKER_OPERATION_MERGED = NudgeDeclaration("workers.operation_merged", NudgeType.STEERING,

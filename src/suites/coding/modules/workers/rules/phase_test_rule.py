@@ -52,7 +52,7 @@ class PhaseTestRule(DriverRule):
         if not flags:
             return RuleAnswer.allowed()
         group = self.phases.waiting_group(hook.agent_id)
-        if group is None:
+        if group is None or self.phases.is_handed_in(hook.agent_id):
             return RuleAnswer.refused(TEST_REQUEST_UNNEEDED.nudge()) if any(flag.is_flagged for flag in flags) else RuleAnswer.allowed()
         if any(flag.is_flagged and not flag.reason for flag in flags):
             return RuleAnswer.refused(TEST_REQUEST_REASON_MISSING.nudge())

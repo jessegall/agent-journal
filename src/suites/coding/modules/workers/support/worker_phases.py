@@ -86,6 +86,10 @@ class WorkerPhases:
     def has_phase_wait(self, worker_id: int) -> bool:
         return self.waiting_group(worker_id) is not None
 
+    def is_handed_in(self, worker_id: int) -> bool:
+        worktree = self.worktrees.worker_worktree(worker_id)
+        return worktree is not None and self.queries.query(Task).find(worktree.task_id).state is TaskState.TESTING
+
     def waiting_group(self, worker_id: int) -> WorkerTestGroup | None:
         worktree = self.worktrees.worker_worktree(worker_id)
         if worktree is None:
