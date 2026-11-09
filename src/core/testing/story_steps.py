@@ -7,9 +7,10 @@ class StorySteps:
     that body cost in database points and processor time, counted from the test's start or from the story's
     own start when the test body opens it."""
 
-    def __init__(self, story: Story, start: str) -> None:
+    def __init__(self, story: Story, start: str, fixture: str = "") -> None:
         self.story = story
         self.start = start
+        self.fixture = fixture
         self.first_step = 0
         self.last_step = 0
         self.first_path_step = 0

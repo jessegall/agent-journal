@@ -1,4 +1,6 @@
+import ast
 import inspect
+import textwrap
 from pathlib import Path
 from typing import ClassVar
 
@@ -24,6 +26,17 @@ class StoryFixture:
 
     def expect(self, story: Story) -> None:
         return None
+
+    @classmethod
+    def adds_a_step(cls) -> bool:
+        """Whether its own steps method uses the story it is given."""
+        if "steps" not in cls.__dict__:
+            return False
+        function = ast.parse(textwrap.dedent(inspect.getsource(cls.steps))).body[0]
+        if not isinstance(function, ast.FunctionDef):
+            return False
+        story_name = function.args.args[1].arg
+        return any(isinstance(node, ast.Name) and node.id == story_name for statement in function.body for node in ast.walk(statement))
 
     @classmethod
     def chain(cls) -> tuple[type["StoryFixture"], ...]:

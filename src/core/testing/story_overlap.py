@@ -2,8 +2,12 @@ import math
 from collections import Counter, defaultdict
 from collections.abc import Sequence
 from itertools import combinations, groupby, pairwise
+from pathlib import PurePosixPath
+
+from core.testing.story_fixture import StoryFixture
 
 OVERLAP_LIMIT_STEPS = 2
+FILE_OPENING_STEPS = 3
 OVERLAP_LIMIT_SHARE = 0.6
 
 LISTENER_STEP = "listeners"
@@ -18,9 +22,11 @@ class StoryOverlap:
     def __init__(self) -> None:
         self.stories: dict[str, list[str]] = {}
         self.story_paths: dict[str, list[str]] = {}
+        self.story_fixtures: dict[str, str] = {}
 
-    def add(self, test_id: str, start: str, lines: Sequence[str], path: Sequence[str]) -> None:
+    def add(self, test_id: str, start: str, lines: Sequence[str], path: Sequence[str], fixture: str = "") -> None:
         self.stories[test_id] = [start, *(line for line in lines if not line.startswith(LISTENER_STEP))]
+        self.story_fixtures[test_id] = fixture
         self.story_paths[test_id] = [start, *path]
 
     def report_lines(self) -> list[str]:
@@ -89,3 +95,37 @@ class StoryOverlap:
     def step_keys(start: str, steps: Sequence[str]) -> set[str]:
         path = [start, *steps]
         return {f"{start}: {step}" for step in path} | {f"{start}: {step} then {following}" for step, following in pairwise(path)}
+
+    def no_fixture_lines(self) -> list[str]:
+        """Names each story that starts from no fixture and a fixture its folder's other stories start from."""
+        fixtures = {test_id.partition("[")[0]: fixture for test_id, fixture in self.story_fixtures.items()}
+        used: dict[str, Counter[str]] = defaultdict(Counter)
+        for test_id, fixture in fixtures.items():
+            if fixture:
+                used[self.folder(test_id)][fixture] += 1
+        return [self.no_fixture_line(test_id, used[self.folder(test_id)]) for test_id, fixture in sorted(fixtures.items()) if not fixture]
+
+    @staticmethod
+    def no_fixture_line(test_id: str, folder_fixtures: Counter[str]) -> str:
+        if folder_fixtures:
+            return f"story starts from no fixture, start it from {folder_fixtures.most_common(1)[0][0]} or a fixture built on it: {test_id}"
+        return f"story starts from no fixture, write a StoryFixture for its start and use it: {test_id}"
+
+    @staticmethod
+    def folder(test_id: str) -> str:
+        return str(PurePosixPath(test_id.partition("::")[0]).parent)
+
+    def file_opening_lines(self) -> list[str]:
+        """Names stories of different files that start the same way and open with the same steps."""
+        openings: dict[tuple[str, ...], set[str]] = defaultdict(set)
+        for test_id, (start, *steps) in self.stories.items():
+            if len(steps) >= FILE_OPENING_STEPS:
+                openings[(start, *steps[:FILE_OPENING_STEPS])].add(test_id.partition("[")[0])
+        return [f"stories of {len({name.partition('::')[0] for name in names})} files share their first {FILE_OPENING_STEPS} steps, move them into a fixture: {', '.join(sorted(names))}"
+                for names in openings.values() if len({name.partition("::")[0] for name in names}) > 1]
+
+    @staticmethod
+    def empty_fixture_lines(fixtures: Sequence[type[StoryFixture]]) -> list[str]:
+        """Names each fixture that builds on another and adds no step to it."""
+        return [f"fixture adds no step to {fixture.parent.__name__} that it builds on, remove it or give it a step: {fixture.__module__}.{fixture.__name__}"
+                for fixture in fixtures if fixture.parent is not None and not fixture.adds_a_step()]

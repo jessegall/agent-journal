@@ -1,3 +1,4 @@
+from core.testing.story_fixture import StoryFixture
 from core.testing.story_overlap import StoryOverlap
 from core.testing.hook_samples import HookSamples
 from core.testing.story_path import StoryPath
@@ -86,3 +87,75 @@ def test_a_hook_is_written_as_its_event_and_tool_and_what_the_agent_was_told():
 def test_a_refused_hook_is_another_step_than_an_allowed_hook():
     stop = HookSamples.stop().action
     assert StoryPath.hook(stop, HookReply(refusal="no")) != StoryPath.hook(stop, HookReply())
+
+
+def overlap_with_fixtures(stories: dict[str, tuple[str, str, list[str]]]) -> StoryOverlap:
+    overlap = StoryOverlap()
+    for test_id, (start, fixture, lines) in stories.items():
+        overlap.add(test_id, start, lines, lines, fixture)
+    return overlap
+
+
+def test_a_story_that_starts_from_no_fixture_is_named_with_a_fixture_of_its_folder():
+    lines = [command("task list")]
+    overlap = overlap_with_fixtures({"stories/tasks/a.py::test_first": ("Started", "Started", lines), "stories/tasks/b.py::test_bare": ("", "", lines)})
+    assert overlap.no_fixture_lines() == ["story starts from no fixture, start it from Started or a fixture built on it: stories/tasks/b.py::test_bare"]
+
+
+def test_a_story_that_starts_from_no_fixture_in_a_folder_of_bare_stories_is_told_to_write_one():
+    overlap = overlap_with_fixtures({"stories/tasks/a.py::test_bare": ("", "", [command("task list")])})
+    assert overlap.no_fixture_lines() == ["story starts from no fixture, write a StoryFixture for its start and use it: stories/tasks/a.py::test_bare"]
+
+
+def test_the_cases_of_one_story_with_a_fixture_are_not_named_as_without_one():
+    lines = [command("task list")]
+    assert overlap_with_fixtures({f"{FIRST}[one]": ("Started", "Started", lines), f"{FIRST}[two]": ("Started", "Started", lines)}).no_fixture_lines() == []
+
+
+def test_stories_of_different_files_that_open_with_the_same_three_steps_are_named():
+    opening = [command("task list"), command("plan list"), command("doc list")]
+    overlap = overlap_with_fixtures({FIRST: ("Started", "Started", [*opening, command("task show")]), SECOND: ("Started", "Started", [*opening, command("plan show")]),
+                                     THIRD: ("Started", "Started", [command("agent list")])})
+    assert overlap.file_opening_lines() == [f"stories of 2 files share their first 3 steps, move them into a fixture: {FIRST}, {SECOND}"]
+
+
+def test_stories_of_one_file_are_not_named_as_sharing_an_opening_across_files():
+    opening = [command("task list"), command("plan list"), command("doc list")]
+    overlap = overlap_with_fixtures({"a.py::test_one": ("Started", "Started", opening), "a.py::test_two": ("Started", "Started", opening)})
+    assert overlap.file_opening_lines() == []
+
+
+def test_two_steps_in_common_across_files_are_not_an_opening_to_move():
+    opening = [command("task list"), command("plan list")]
+    overlap = overlap_with_fixtures({FIRST: ("Started", "Started", [*opening, command("doc list")]), SECOND: ("Started", "Started", [*opening, command("doc show")])})
+    assert overlap.file_opening_lines() == []
+
+
+def test_the_same_opening_from_another_start_is_not_shared():
+    opening = [command("task list"), command("plan list"), command("doc list")]
+    assert overlap_with_fixtures({FIRST: ("Started", "Started", opening), SECOND: ("Joined", "Joined", opening)}).file_opening_lines() == []
+
+
+def test_a_fixture_that_builds_on_another_and_adds_no_step_is_named():
+    class Base(StoryFixture):
+        def steps(self, story):
+            story.expect_success("actor list")
+
+    class Empty(Base):
+        parent = Base
+
+        def steps(self, story):
+            return None
+
+    class Inherits(Base):
+        parent = Base
+
+    class Adds(Base):
+        parent = Base
+
+        def steps(self, story):
+            story.expect_success("task list")
+
+    named = StoryOverlap.empty_fixture_lines([Base, Empty, Inherits, Adds])
+    assert [line.rpartition(".")[2] for line in named] == ["Empty", "Inherits"], named
+    assert all("adds no step to Base" in line for line in named)
