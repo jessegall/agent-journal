@@ -81,7 +81,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 	folder, parts := NewFolder(options.Home, options.Process), Parts(options.Line)
 	listing := options.Listing
 	listing.Shell = options.Shell
-	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+CountWait(folder.Path, options.Count, listing)+SlotWait(options.Home, options.Process, options.Queue, options.SlotWaitLimitSeconds)+Script(parts, folder.Path, ProgressListing{Line: options.ProgressCount, Position: options.ProgressPosition, Pattern: options.ProgressPattern, Options: listing})); err != nil {
+	if err := folder.Start(options.Line, parts, LockWait(options.Home, options.Process, parts, options.Aliases, options.OnlyReads)+SlotWait(options.Home, options.Process, options.Queue, options.SlotWaitLimitSeconds)+CountWait(folder.Path, options.Count, listing)+Script(parts, folder.Path, ProgressListing{Line: options.ProgressCount, Position: options.ProgressPosition, Pattern: options.ProgressPattern, Options: listing})); err != nil {
 		fmt.Fprintf(stdout, "the journal could not keep process %d: %v\n", options.Process, err)
 		return Bypass(options, stdout)
 	}

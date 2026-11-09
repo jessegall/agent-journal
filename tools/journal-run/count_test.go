@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestCountWaitListsBeforeTheSlotWait(t *testing.T) {
+func TestCountWaitListsAfterTheSlotWait(t *testing.T) {
 	folder := t.TempDir()
 	program := listingBinary(t)
 	script := CountWait(folder, "printf 'collected 8 items\\n'", ListingOptions{Program: program}) + "test -e " + quoted(filepath.Join(folder, "counted"))
@@ -27,8 +27,8 @@ func TestCountWaitListsBeforeTheSlotWait(t *testing.T) {
 	os.WriteFile(filepath.Join(options.Home, "processes", "4", "slot"), nil, 0o644)
 	run(t, options, newClient())
 	scriptBytes, _ := os.ReadFile(filepath.Join(options.Home, "processes", "4", "run.sh"))
-	if strings.Index(string(scriptBytes), "--count-listing") < 0 || strings.Index(string(scriptBytes), "--count-listing") > strings.Index(string(scriptBytes), "__journal_slot") {
-		t.Fatalf("listing follows slot wait: %s", scriptBytes)
+	if strings.Index(string(scriptBytes), "--count-listing") < 0 || strings.Index(string(scriptBytes), "--count-listing") < strings.Index(string(scriptBytes), "__journal_slot") {
+		t.Fatalf("listing comes before the slot wait: %s", scriptBytes)
 	}
 }
 
