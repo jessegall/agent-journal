@@ -48,7 +48,7 @@ class ColdSessions:
 
     def exceeds_context_limit(self, agent: Agent) -> bool:
         limit = self.settings.number(CONTEXT_LIMIT_TOKENS)
-        return self.settings.flag(CONTEXT_LIMIT_ENABLED) and (self.providers.provider(agent.program).context_tokens(self.home, agent.session) or 0) >= limit
+        return self.settings.flag(CONTEXT_LIMIT_ENABLED) and (self.providers.context_tokens(agent.program, self.home, agent.session) or 0) >= limit
 
     def is_cold(self, agent: Agent) -> bool:
         return self.is_cold_with_activity(agent, self.queries.query(AgentActivity).find(agent.id))

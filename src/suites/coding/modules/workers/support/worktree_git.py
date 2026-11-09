@@ -203,10 +203,10 @@ class WorktreeGit:
 
     def is_rebuilt(self, worktree: Worktree, path: str) -> bool:
         name = self.built_name(path)
-        if name is None:
-            return False
-        siblings = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
-        return name in {self.built_name(sibling) for sibling in siblings}
+        return name is not None and name in {self.built_name(sibling) for sibling in self.siblings(worktree, path)}
+
+    def siblings(self, worktree: Worktree, path: str) -> list[str]:
+        return self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--", str(Path(path).parent)).stdout.splitlines()
 
     @staticmethod
     def built_name(path: str) -> str | None:
@@ -253,16 +253,17 @@ class WorktreeGit:
 
     @contextmanager
     def without_instruction_files(self, folder: str) -> Generator[None]:
-        original_texts = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
-        texts = {name: FileAccess.shared().read(Path(folder) / name) for name in original_texts}
-        for name in original_texts:
+        written = [line[len(SKIP_WORKTREE_MARK):] for line in self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "-v", "--", *INSTRUCTION_FILES).stdout.splitlines() if line.startswith(SKIP_WORKTREE_MARK)]
+        kept = {name: self.git_folder(folder) / f"{name}.kept" for name in written}
+        for name in written:
+            FileAccess.shared().replace(Path(folder) / name, kept[name])
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
             self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", name)
         try:
             yield
         finally:
-            for name in original_texts:
-                FileAccess.shared().write(Path(folder) / name, texts[name])
+            for name in written:
+                FileAccess.shared().replace(kept[name], Path(folder) / name)
                 self.git(folder, GIT_LIMIT_SECONDS, "update-index", "--skip-worktree", "--", name)
 
     def rebase(self, worktree: Worktree) -> bool:

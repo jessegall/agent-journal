@@ -24,6 +24,12 @@ class Providers:
     def reported_model(self, program: str, home: JournalHome, session: str) -> str:
         return self.provider(program).reported_model(home, session)
 
+    def executable(self, program: str) -> str:
+        return self.provider(program).executable
+
+    def context_tokens(self, program: str, home: JournalHome, session: str) -> int | None:
+        return self.provider(program).context_tokens(home, session)
+
     def all(self) -> list[Provider]:
         return [self.provider(entry.name) for entry in self.registry.providers]
 

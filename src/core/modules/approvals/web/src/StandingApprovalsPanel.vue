@@ -1,18 +1,14 @@
 <script setup>
-import {computed, ref} from "vue";
-import {Btn, WindowRoom, useWindow} from "@journal/window-kit";
+import {computed} from "vue";
+import {Btn, WindowRoom, useRunLine, useWindow} from "@journal/window-kit";
 
 // the standing yeses of the environment: each says what it covers, and a person removes one so the same request asks again
 const view = useWindow();
 const {rows, failure} = view.props.standing;
 const standing = computed(() => rows.value ?? []);
-const removeFailure = ref("");
+const {refusal: removeFailure, run} = useRunLine(() => view.reload("standing"));
 
-async function remove(row) {
-    const answer = await view.run(["standing-approval", "delete", String(row.id)]);
-    removeFailure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) await view.reload("standing");
-}
+const remove = (row) => run(["standing-approval", "delete", String(row.id)]);
 
 const covers = (row) => (row.scope === "same" ? "the same request" : "any request like it");
 </script>
