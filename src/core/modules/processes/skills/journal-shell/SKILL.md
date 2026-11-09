@@ -102,7 +102,9 @@ A tool prints a line per step when you ask it to, and a reader counts those line
 A running command whose process tree prints nothing and uses no processor time for the setting `hang-seconds` of the
 processes module (300 by default) is stopped, and you are woken with the output number and how long it was idle. Its
 output stays kept: read its last lines with `--tail 20`. A command that is silent but busy, with its processor time
-rising, is left alone.
+rising, is left alone, except a test run: when it prints nothing for the setting `look-seconds` (900 by default) you are
+woken and asked to read its output and decide whether it works or hangs. The ask comes again after each `hang-seconds`,
+and the run is stopped after the third one if it still prints nothing.
 
 ## A stopped run keeps its output
 

@@ -24,7 +24,9 @@ class ProcessSetting(Enum):
                                   SettingType.NUMBER, default=90)
     HANG_SECONDS = SettingValue("hang-seconds", "Seconds before an idle run is stopped", "Seconds a run prints nothing and uses no processor time before it is stopped and its agent told.",
                                 SettingType.NUMBER, default=300)
-    RUN_BATCH_SIZE = SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
+    LOOK_SECONDS = SettingValue("look-seconds", "Seconds before an agent is asked to look", "Seconds a test run prints nothing while it uses processor time before its agent is asked to read its output and decide. The ask repeats after the seconds before an idle run is stopped, and the run is stopped after three asks.",
+                                SettingType.NUMBER, default=900)
+    RUN_BATCH_SIZE =SettingValue("run-batch-size", "Runs at once", "How many queued runs go at once on this machine; the others wait for a spot. Reads and edits never wait.",
                                   SettingType.NUMBER, default=2)
     MAIN_RUNS_USE_SLOTS = SettingValue("main-runs-take-slots", "Main agent runs take spots", "When on, the main agent's runs count against the runs at once, so fewer queued runs start; none is ever stopped.",
                                         SettingType.FLAG, default=False)
