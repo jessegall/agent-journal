@@ -75,7 +75,7 @@ class TaskQuery(Query[Task]):
 
     def main_reserved(self, task_ids: Sequence[int]) -> Self:
         running_main_agents = Select("agents").matching(Among("role", [AgentRole.MAIN])).matching(IsNull("ended_at")).column("id")
-        return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents))
+        return self.matching(Among("id", task_ids)).matching(SubqueryMatch("delegated_to", running_main_agents)).matching(IsNull("holder_id")).matching(Among("state", [TaskState.OPEN, TaskState.BLOCKED]))
 
     def open_tasks(self) -> Self:
         return self.filter(state=TaskState.OPEN)
