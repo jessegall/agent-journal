@@ -43,7 +43,7 @@ class GraphFiles:
         if not self.running_path.is_file():
             return False
         text = FileAccess.shared().read(self.running_path).strip()
-        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else text.isdigit() and ProcessIds.exists(int(text))
+        is_claimed = time.time() - self.running_path.stat().st_mtime < CLAIM_GRACE_SECONDS if not text else ProcessIds.text_exists(text)
         if not is_claimed:
             self.running_path.unlink(missing_ok=True)
         return is_claimed

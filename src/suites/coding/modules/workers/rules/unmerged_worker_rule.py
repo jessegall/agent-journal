@@ -59,7 +59,7 @@ class UnmergedWorkerRule(DriverRule):
         return RuleAnswer.with_nudges(*nudges).running(*stale)
 
     def is_with_merger(self, worktree: Worktree, hook: AgentHook) -> bool:
-        if not self.settings.flag(MERGER_ENABLED) or worktree.handed_to_main_at is not None:
+        if not self.settings.flag(MERGER_ENABLED) or worktree.returned_at is not None:
             return False
         if worktree.tests_passed_at is None:
             return True

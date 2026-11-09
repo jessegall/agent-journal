@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.modules.drivers.commands.decline_permission.decline_permission import DeclinePermission
-from core.modules.drivers.commands.support.permission_request_subcommand import PermissionRequestSubcommand
+from core.modules.drivers.commands.support.change_permission_request_subcommand import ChangePermissionRequestSubcommand
 
 
-class DeclinePermissionSubcommand(PermissionRequestSubcommand[DeclinePermission]):
+class DeclinePermissionSubcommand(ChangePermissionRequestSubcommand[DeclinePermission]):
     """`journal permission decline <request>`: the main agent, or a person, answers an agent's request for
     leave once."""
 

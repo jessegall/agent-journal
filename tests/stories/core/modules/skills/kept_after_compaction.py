@@ -47,8 +47,6 @@ def kept_skill_records(folder: Path, skills: dict[str, str], is_recorded: bool =
 
 def late_compaction_record(story, folder: Path, skills: dict[str, str], program: str = "claude", later_files: tuple[dict[str, object], ...] = (),
                                             previous_value: tuple[dict[str, object], ...] = (), is_recorded: bool = True) -> None:
-    """The real order: the session start hook of a compaction runs first, and only then does the program write its
-    record of the skills it put back; the agent's first tool use comes after that."""
     transcript = folder / "session.jsonl"
     transcript.write_text("")
     raw = {"source": "compact", "transcript_path": str(transcript)}
