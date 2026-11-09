@@ -159,7 +159,7 @@ class MissingBodyModule(Module):
     marks = [mark(Plain.NOTE, body="absent.js")]
 
 
-class RowMarkWithoutModelModule(Module):
+class ModellessRowMarkModule(Module):
     name = "good"
     requires_core = ">=5,<6"
     marks = [mark(Plain.NOTE, click=MarkClick.OPEN_ROW)]

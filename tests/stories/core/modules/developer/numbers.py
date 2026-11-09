@@ -7,7 +7,7 @@ from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsOn
+from tests.stories.core.modules.developer.support.performance_fixture import DevelopmentToolsEnabled
 
 
 def numbers(story, flags=""):
@@ -26,7 +26,7 @@ def test_the_counts_keep_the_average_and_slowest_of_each_hook_and_sort_by_the_sl
 
 
 def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
-    story = new_story(fixture=DevelopmentToolsOn)
+    story = new_story(fixture=DevelopmentToolsEnabled)
     tools = story.container.get(PerformanceTools)
     tools.run(ReaderTimeTool, "vitest", 12)
     tools.run(ReaderTimeTool, "vitest", 30)
@@ -34,7 +34,7 @@ def test_a_reader_is_counted_by_its_name_while_hook_durations_is_on(new_story):
 
 
 def test_an_http_route_is_counted_in_points_while_call_costs_are_on(new_story):
-    story = new_story(fixture=DevelopmentToolsOn)
+    story = new_story(fixture=DevelopmentToolsEnabled)
     tools = story.container.get(PerformanceTools)
     tools.run(RouteCostTool, "/cli", Points(rows=4))
     tools.run(RouteCostTool, "/cli", Points(rows=10))

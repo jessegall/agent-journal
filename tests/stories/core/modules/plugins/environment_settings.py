@@ -7,13 +7,13 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.support.plugin_samples import sample_plugin_folder
 from tests.stories.core.modules.processes.support.process_samples import install_runner
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
 @pytest.fixture
 def configured_plugin(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     folder = sample_plugin_folder(story.home.folder.parent)
     program = folder / "run.sh"
     program.write_text(program.read_text().replace('line=$(cat)', 'line=$(cat)\nprintf "%s\\n" "$line" >> "$JOURNAL_PLUGIN_DATA/inputs"'))

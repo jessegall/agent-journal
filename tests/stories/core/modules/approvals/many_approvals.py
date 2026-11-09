@@ -9,14 +9,14 @@ from core.testing.hook_samples import HookSamples
 from server.viewer.line_route import LineRoute
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 from tests.stories.core.modules.approvals.recovery import phone_request, phone_viewer
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, UserBuilder
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
 @pytest.fixture
 def pending_requests(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for number in range(12):
         story.new_row_id(f'rule make "Check shop {number}"', actor=story.agent)
     requests = tuple(story.container.get(Queries).query(ApprovalRequest).oldest().all_rows())
@@ -53,7 +53,7 @@ def test_delivering_many_notices_reads_each_agent_line_once(pending_requests):
 
 
 def test_a_task_wait_does_not_create_a_person_approval(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     task = story.new_row_id('task make "Check the shop" --environment main', actor=story.agent)
     story.expect_success(f'task block {task} --until-user --reason "Ask the main agent to review the shop"', actor=story.agent)
     story.expect_rows(not tuple(story.container.get(Queries).query(ApprovalRequest).all_rows()))

@@ -25,12 +25,12 @@ CHECK_READERS = {"pyright", "tsc", "eslint", "go-vet", "php-lint", "mypy", "ruff
 PACKAGE_READERS = {"npm-install", "pip-install", "curl", "wget", "docker-pull", "composer-install", "bundle-install", "gem-install", "uv-install", "yarn-install", "pnpm-install", "brew-install", "git-clone"}
 STEPS_WITHOUT_FAILURE = {"dune-test", "cabal-test"}
 ADDED_STEPPED = {"prove", "zig-test", "crystal-spec", "ginkgo", "meson-test", "deno-test", "dart-test", "dune-test", "cabal-test", "scala-cli-test", "sbt-test", "pio-test", "tox", "nox", "ctest", "bazel-test"}
-READERS_WITH_A_SINGLE_OUTPUT = {"hatch-test", "dbt-test", "cabal-test", "pio-test", "flutter-test", "ctest"}
+SINGLE_OUTPUT_READERS = {"hatch-test", "dbt-test", "cabal-test", "pio-test", "flutter-test", "ctest"}
 READERS = {reader.name: reader for reader in STOCK_READERS}
 SAMPLES = sorted(FIXTURES.glob("*/*.out"))
 
 
-def category_of(name: str) -> CommandCategory:
+def read_category(name: str) -> CommandCategory:
     if name in TEST_READERS:
         return CommandCategory.TEST_RUN
     if name in CHECK_READERS:
@@ -60,11 +60,11 @@ def test_every_fixture_belongs_to_a_stock_reader():
 
 
 def test_a_passed_and_a_failed_output_exist_for_every_test_reader():
-    assert sorted(name for name in TEST_READERS - READERS_WITH_A_SINGLE_OUTPUT if not (FIXTURES / name / "failed.out").exists() or not (FIXTURES / name / "passed.out").exists()) == []
+    assert sorted(name for name in TEST_READERS - SINGLE_OUTPUT_READERS if not (FIXTURES / name / "failed.out").exists() or not (FIXTURES / name / "passed.out").exists()) == []
 
 
 def test_a_test_reader_with_one_output_has_it_in_its_folder():
-    assert sorted(name for name in READERS_WITH_A_SINGLE_OUTPUT if not (FIXTURES / name / "passed.out").exists()) == []
+    assert sorted(name for name in SINGLE_OUTPUT_READERS if not (FIXTURES / name / "passed.out").exists()) == []
 
 
 @pytest.mark.parametrize("sample", [sample for sample in SAMPLES if sample.with_suffix(".source").exists()], ids=sample_id)
@@ -77,7 +77,7 @@ def test_a_sourced_output_names_its_page_or_says_it_was_run(sample):
 def test_the_reader_reads_the_command_of_its_output(sample):
     reader = reader_row(READERS[sample.parent.name])
     command = sample.with_suffix(".command").read_text().strip()
-    assert ReaderSelection.reads_command(reader, command, category_of(reader.name)), command
+    assert ReaderSelection.reads_command(reader, command, read_category(reader.name)), command
 
 
 @pytest.mark.parametrize("sample", SAMPLES, ids=sample_id)
@@ -85,7 +85,7 @@ def test_the_reader_finds_a_summary_and_passes_the_judge(sample):
     reader = reader_row(READERS[sample.parent.name])
     text = ColourCodes.removed(sample.read_text())
     assert ReaderRun().summary(reader, text), text[-300:]
-    assert judge().misses(reader, category_of(reader.name), text) == ()
+    assert judge().misses(reader, read_category(reader.name), text) == ()
 
 
 @pytest.mark.parametrize("sample", [sample for sample in SAMPLES if sample.stem == "failed"], ids=sample_id)
@@ -120,7 +120,7 @@ def test_the_steps_of_a_failed_output_include_a_failure(sample):
 
 @pytest.mark.parametrize("name", sorted(set(READERS) - TEST_READERS))
 def test_a_stock_reader_has_the_fields_of_its_category(name):
-    assert judge().fields_missing(reader_row(READERS[name]), category_of(name)) == ()
+    assert judge().fields_missing(reader_row(READERS[name]), read_category(name)) == ()
 
 
 def test_no_fixture_names_a_home_folder_other_than_the_made_up_user():

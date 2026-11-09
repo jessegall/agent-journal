@@ -8,7 +8,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from core.testing.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_lines_3, expect_value_with, expect_value_without_line
@@ -24,7 +24,7 @@ VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).w
 
 
 class CartPlan(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
     checkpoint = False
 
     def steps(self, story):
@@ -140,7 +140,7 @@ def started_cart_plan(new_story):
 
 
 class ReadyCartPlan(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run('plan make "Cart plan" --environment main')

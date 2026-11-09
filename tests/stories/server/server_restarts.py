@@ -24,13 +24,13 @@ SCHEMA_STOP = json.loads((SCHEMA_EXAMPLES / "stop.json").read_text())
 def test_a_request_after_the_code_changed_gets_409_runs_nothing_and_the_server_releases_its_files(changing_code_server):
     story, code_file, task_listing = changing_code_server
     code_file.write_text("x = 22\n")
-    story.expect_stale_answer_and_released_files('task make "Fourth" --environment main', task_listing)
+    story.expect_stale_answer_released_files('task make "Fourth" --environment main', task_listing)
 
 
 def test_a_stale_server_leaves_the_restart_mark_before_it_answers_and_the_next_server_removes_it(changing_code_server):
     story, code_file, task_listing = changing_code_server
     code_file.write_text("x = 22\n")
-    story.expect_stale_answer_and_released_files('task make "Fourth" --environment main', task_listing)
+    story.expect_stale_answer_released_files('task make "Fourth" --environment main', task_listing)
     restart_mark = ServerFiles(story.story.home).restart_mark
     expect_exists_version_four(restart_mark)
     with ServerProcess(story.story.home) as server:
@@ -77,7 +77,7 @@ def test_a_stop_request_is_answered_and_the_server_stops(task_server):
 def test_a_server_process_stopped_by_sigterm_removes_its_socket_and_pid_file_and_lets_the_lock_go(new_story):
     with ServerProcess(new_story(fixture=ThreeTasks).home) as server:
         server.expect_health()
-        server.expect_stop_on_sigterm()
+        server.expect_sigterm_stop()
 
 
 def test_a_second_server_process_beside_a_running_one_exits_at_once(new_story):
@@ -89,7 +89,7 @@ def test_a_second_server_process_beside_a_running_one_exits_at_once(new_story):
 def test_a_stop_ends_the_server_at_once_while_a_client_still_holds_its_connection_open(new_story):
     with ServerProcess(new_story(fixture=ThreeTasks).home) as server:
         server.expect_health()
-        server.expect_stop_with_an_idle_connection()
+        server.expect_idle_connection_stop()
 
 
 

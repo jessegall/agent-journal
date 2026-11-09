@@ -5,7 +5,7 @@ import pytest
 from core.base.actor import Actor
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.testing.story import Story
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, merged_worker_lines, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
@@ -19,7 +19,7 @@ class CheckedWork:
 
 @pytest.fixture
 def checked_work(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)

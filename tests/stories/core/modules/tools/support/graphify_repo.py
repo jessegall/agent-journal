@@ -33,24 +33,24 @@ class GraphifyRepo:
     def call_count(self) -> int:
         return len(self.calls.read_text().splitlines()) if self.calls.is_file() else 0
 
-    def hold_graphify(self) -> None:
+    def block_graphify(self) -> None:
         self.claim.write_text("")
 
     def release_graphify(self) -> None:
         self.claim.unlink(missing_ok=True)
 
-    def wait_for_calls(self, count: int) -> None:
+    def poll_calls(self, count: int) -> None:
         self.wait(lambda: self.call_count() >= count)
 
     def head(self) -> str:
         return subprocess.run(["git", "-C", str(self.folder), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
 
-    def refreshed_for(self) -> str:
+    def refreshed(self) -> str:
         stamp = self.folder / "graphify-out/.journal-refresh"
         return stamp.read_text().split()[0] if stamp.is_file() else ""
 
-    def wait_for_refresh(self) -> None:
-        self.wait(lambda: self.refreshed_for() == self.head() and not (self.folder / "graphify-out/.journal-running").is_file())
+    def poll_refresh(self) -> None:
+        self.wait(lambda: self.refreshed() == self.head() and not (self.folder / "graphify-out/.journal-running").is_file())
 
     def wait(self, ready) -> None:
         deadline = time.time() + 10

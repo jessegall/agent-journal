@@ -8,7 +8,7 @@ import pytest
 from core.base.caller.caller_request import CallerRequest
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderStarted, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import BuilderStarted, OpenTaskOrchestrator
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
@@ -69,7 +69,7 @@ def test_a_second_build_of_the_same_program_and_folder_is_refused(saved_pytest):
 
 @pytest.mark.real_git
 def test_a_worker_runs_the_shared_pytest_in_its_own_checkout(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('alias add pytest-run ".venv/bin/python3 -m pytest {args}" --category "test run" --agents', actor=story.agent)
     worker = dispatched_worker(story)

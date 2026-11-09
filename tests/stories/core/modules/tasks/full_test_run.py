@@ -8,14 +8,14 @@ from core.modules.processes.models.process import Process
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 
 SUITE_SAMPLE = HookSamples.shell("pytest tests", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests"], is_full_test_run=True))
 CART_SAMPLE = HookSamples.shell("pytest tests/cart.py", ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/cart.py"]))
 
 
 def run_story(new_story, sample):
-    story = install_runner(new_story(fixture=BuilderWithStartedTask))
+    story = install_runner(new_story(fixture=StartedTaskBuilder))
     story.expect_success("task test 1", actor=story.agent)
     story.advance(timedelta(seconds=1))
     story.hook("s-1", sample)
@@ -30,7 +30,7 @@ def test_a_full_run_that_passes_closes_the_tasks_in_testing_and_names_them_when_
 
 
 def test_a_task_that_went_to_testing_after_the_run_started_stays(new_story):
-    story = install_runner(new_story(fixture=BuilderWithStartedTask))
+    story = install_runner(new_story(fixture=StartedTaskBuilder))
     story.hook("s-1", SUITE_SAMPLE)
     process = next(story.container.get(Queries).query(Process).newest().all_rows())
     story.advance(timedelta(seconds=1))

@@ -8,14 +8,14 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 
 
 class DocumentReady(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.expect_success(f'agent edit {story.agent.id} --given-name "Lady Lovelace"')

@@ -12,7 +12,7 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-class BuildWithWatch(StoryFixture):
+class WatchBuild(StoryFixture):
     """A background build whose agent has an open watch."""
 
     parent = BuilderStarted
@@ -23,20 +23,20 @@ class BuildWithWatch(StoryFixture):
 
 @pytest.fixture
 def running_process(new_story):
-    story = install_runner(new_story(fixture=BuildWithWatch))
+    story = install_runner(new_story(fixture=WatchBuild))
     return story, story.container.get(ProcessQuery).find(1)
 
 
 def move_after_answers(story, monkeypatch, expected_commands, move):
     original_read = HookRuleAnswers.evaluate
 
-    def read_then_move(reader, event, agent):
+    def read_move(reader, event, agent):
         answers = original_read(reader, event, agent)
         assert set(expected_commands) <= {type(command).__name__ for _, command in answers.commands}
         move()
         return answers
 
-    monkeypatch.setattr(HookRuleAnswers, "evaluate", read_then_move)
+    monkeypatch.setattr(HookRuleAnswers, "evaluate", read_move)
 
 
 def expect_commands_answered(story, reply, *command_names):

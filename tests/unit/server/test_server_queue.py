@@ -20,7 +20,7 @@ def hook_thread(queue: ServerQueue, priority: QueuePriority, name: str, order: l
     return thread
 
 
-def wait_for_waiting_hooks(queue: ServerQueue, count: int) -> None:
+def poll_waiting_hooks(queue: ServerQueue, count: int) -> None:
     with queue.changed:
         assert queue.changed.wait_for(lambda: len(queue.waiting_hooks) == count, WAIT_SECONDS)
 
@@ -29,9 +29,9 @@ def test_the_main_agents_hook_goes_before_a_workers_that_came_first():
     queue, order = ServerQueue(), []
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         worker = hook_thread(queue, QueuePriority.AGENT_HOOK, "worker", order)
-        wait_for_waiting_hooks(queue, 1)
+        poll_waiting_hooks(queue, 1)
         main = hook_thread(queue, QueuePriority.MAIN_AGENT_HOOK, "main", order)
-        wait_for_waiting_hooks(queue, 2)
+        poll_waiting_hooks(queue, 2)
     worker.join(), main.join()
     assert order == ["main", "worker"]
 
@@ -40,9 +40,9 @@ def test_hooks_of_one_priority_run_in_the_order_they_came():
     queue, order = ServerQueue(), []
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         first = hook_thread(queue, QueuePriority.AGENT_HOOK, "first", order)
-        wait_for_waiting_hooks(queue, 1)
+        poll_waiting_hooks(queue, 1)
         second = hook_thread(queue, QueuePriority.AGENT_HOOK, "second", order)
-        wait_for_waiting_hooks(queue, 2)
+        poll_waiting_hooks(queue, 2)
     first.join(), second.join()
     assert order == ["first", "second"]
 
@@ -110,33 +110,33 @@ def start_hook_thread(queue: ServerQueue, owner: str, entered: threading.Event, 
 
 def test_hooks_of_two_agents_run_at_the_same_time():
     queue = ServerQueue(running_hooks_count=2)
-    first_in, second_in, release = threading.Event(), threading.Event(), threading.Event()
-    threads = [start_hook_thread(queue, "agent-1", first_in, release), start_hook_thread(queue, "agent-2", second_in, release)]
-    assert first_in.wait(WAIT_SECONDS) and second_in.wait(WAIT_SECONDS)
+    first_entry, second_entry, release = threading.Event(), threading.Event(), threading.Event()
+    threads = [start_hook_thread(queue, "agent-1", first_entry, release), start_hook_thread(queue, "agent-2", second_entry, release)]
+    assert first_entry.wait(WAIT_SECONDS) and second_entry.wait(WAIT_SECONDS)
     release.set()
     [thread.join() for thread in threads]
 
 
 def test_two_hooks_of_one_agent_never_run_together():
     queue = ServerQueue(running_hooks_count=2)
-    first_in, second_in, release = threading.Event(), threading.Event(), threading.Event()
-    first = start_hook_thread(queue, "agent-1", first_in, release)
-    assert first_in.wait(WAIT_SECONDS)
-    second = start_hook_thread(queue, "agent-1", second_in, threading.Event())
-    wait_for_waiting_hooks(queue, 1)
-    assert not second_in.is_set()
+    first_entry, second_entry, release = threading.Event(), threading.Event(), threading.Event()
+    first = start_hook_thread(queue, "agent-1", first_entry, release)
+    assert first_entry.wait(WAIT_SECONDS)
+    second = start_hook_thread(queue, "agent-1", second_entry, threading.Event())
+    poll_waiting_hooks(queue, 1)
+    assert not second_entry.is_set()
     release.set()
-    assert second_in.wait(WAIT_SECONDS)
+    assert second_entry.wait(WAIT_SECONDS)
     first.join(), second.join()
 
 
 def test_a_waiting_hook_of_a_busy_agent_does_not_hold_up_another_agent():
     queue = ServerQueue(running_hooks_count=2)
-    first_in, blocked_in, second_agent_entered, release = threading.Event(), threading.Event(), threading.Event(), threading.Event()
-    first = start_hook_thread(queue, "agent-1", first_in, release)
-    assert first_in.wait(WAIT_SECONDS)
-    blocked = start_hook_thread(queue, "agent-1", blocked_in, threading.Event())
-    wait_for_waiting_hooks(queue, 1)
+    first_entry, block_place, second_agent_entered, release = threading.Event(), threading.Event(), threading.Event(), threading.Event()
+    first = start_hook_thread(queue, "agent-1", first_entry, release)
+    assert first_entry.wait(WAIT_SECONDS)
+    blocked = start_hook_thread(queue, "agent-1", block_place, threading.Event())
+    poll_waiting_hooks(queue, 1)
     second_agent_thread = start_hook_thread(queue, "agent-2", second_agent_entered, threading.Event())
     assert second_agent_entered.wait(WAIT_SECONDS)
     release.set()
@@ -145,12 +145,12 @@ def test_a_waiting_hook_of_a_busy_agent_does_not_hold_up_another_agent():
 
 def test_no_more_hooks_run_than_the_count():
     queue = ServerQueue(running_hooks_count=1)
-    first_in, second_in, release = threading.Event(), threading.Event(), threading.Event()
-    first = start_hook_thread(queue, "agent-1", first_in, release)
-    assert first_in.wait(WAIT_SECONDS)
-    second = start_hook_thread(queue, "agent-2", second_in, threading.Event())
-    wait_for_waiting_hooks(queue, 1)
-    assert not second_in.is_set()
+    first_entry, second_entry, release = threading.Event(), threading.Event(), threading.Event()
+    first = start_hook_thread(queue, "agent-1", first_entry, release)
+    assert first_entry.wait(WAIT_SECONDS)
+    second = start_hook_thread(queue, "agent-2", second_entry, threading.Event())
+    poll_waiting_hooks(queue, 1)
+    assert not second_entry.is_set()
     release.set()
     first.join(), second.join()
 
@@ -164,7 +164,7 @@ def viewer_thread(queue: ServerQueue, window: str, priority: WindowPriority, ord
     return thread
 
 
-def wait_for_waiting_viewers(queue: ServerQueue, count: int) -> None:
+def poll_waiting_viewers(queue: ServerQueue, count: int) -> None:
     with queue.changed:
         assert queue.changed.wait_for(lambda: len(queue.waiting_viewers) == count, WAIT_SECONDS)
 
@@ -180,7 +180,7 @@ def test_a_normal_window_waits_behind_a_running_hook():
     queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS), []
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         thread = viewer_thread(queue, "tasks.tasks", WindowPriority.NORMAL, order)
-        wait_for_waiting_viewers(queue, 1)
+        poll_waiting_viewers(queue, 1)
         assert order == []
     thread.join(WAIT_SECONDS)
     assert order == ["tasks.tasks"]
@@ -192,9 +192,9 @@ def test_among_equal_windows_the_one_that_sent_fewer_goes_first():
     viewer_thread(queue, "agents.agents", WindowPriority.NORMAL, []).join(WAIT_SECONDS)
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         busy = viewer_thread(queue, "agents.agents", WindowPriority.NORMAL, order)
-        wait_for_waiting_viewers(queue, 1)
+        poll_waiting_viewers(queue, 1)
         plan_thread = viewer_thread(queue, "plans.plans", WindowPriority.NORMAL, order)
-        wait_for_waiting_viewers(queue, 2)
+        poll_waiting_viewers(queue, 2)
     busy.join(WAIT_SECONDS), plan_thread.join(WAIT_SECONDS)
     assert order == ["plans.plans", "agents.agents"]
 
@@ -210,7 +210,7 @@ def test_no_more_viewer_requests_run_than_the_limit_unless_their_wait_is_over():
     queue, order = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS, running_viewers_count=1), []
     with queue.viewer_turn("task list", "tasks.tasks", WindowPriority.NORMAL):
         thread = viewer_thread(queue, "plans.plans", WindowPriority.NORMAL, order)
-        wait_for_waiting_viewers(queue, 1)
+        poll_waiting_viewers(queue, 1)
         assert order == []
     thread.join(WAIT_SECONDS)
     assert order == ["plans.plans"]
@@ -220,6 +220,6 @@ def test_a_waiting_viewer_request_names_its_priority():
     queue = ServerQueue(viewer_wait_limit_seconds=WAIT_SECONDS)
     with queue.hook_turn(QueuePriority.AGENT_HOOK, WAIT_SECONDS):
         thread = viewer_thread(queue, "tasks.tasks", WindowPriority.NORMAL, [])
-        wait_for_waiting_viewers(queue, 1)
+        poll_waiting_viewers(queue, 1)
         assert [entry.priority for entry in queue.read().waiting] == ["normal"]
     thread.join(WAIT_SECONDS)

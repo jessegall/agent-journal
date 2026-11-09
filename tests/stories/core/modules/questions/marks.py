@@ -3,7 +3,7 @@ from core.testing.story_fixture import StoryFixture
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, expect_mark_count, expect_marks_text
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 
 QUESTION_LINE = 'question ask "Which database?" --context "A story asks this so its card and answer can be checked." --options sqlite postgres --environment main'
 
@@ -75,7 +75,7 @@ class AgentQuestion(StoryFixture):
 
 
 class PersonQuestion(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         with_question(story)

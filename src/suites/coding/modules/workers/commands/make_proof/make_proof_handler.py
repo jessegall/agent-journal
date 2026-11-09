@@ -9,6 +9,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.proof_test_line import ProofTestLine
 
 PIPE_TOKENS = frozenset(("|", "|&", ">", ">>", ">&", "&>", "--tail", "--head", "--cut"))
 FIRST_POINT = 1
@@ -20,8 +21,8 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
 
     command = MakeProof
 
-    def __init__(self, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository) -> None:
-        self.worktrees, self.proofs, self.repository = worktrees, proofs, repository
+    def __init__(self, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository, test_line: ProofTestLine) -> None:
+        self.worktrees, self.proofs, self.repository, self.test_line = worktrees, proofs, repository, test_line
 
     def handle(self, command: MakeProof, context: Context) -> Proof:
         worktree = self.worktrees.worker_worktree(context.actor.id)
@@ -34,6 +35,7 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
             raise Refusal(f"the points of a brief start at {FIRST_POINT}, not {command.point}", f"journal task show {command.task_id} lists them")
         if self.is_piped(command.test_command):
             raise Refusal("a proof's test runs without a pipe, a redirect or a reading flag such as --tail, since the journal reads its whole output", "give the bare test command")
+        self.test_line.check(command.test_command)
         existing = task_proofs.filter(point=command.point).first()
         if existing is None:
             return self.repository.save(Proof(task_id=command.task_id, worktree_id=worktree.id, creator_id=context.actor.id, point=command.point,

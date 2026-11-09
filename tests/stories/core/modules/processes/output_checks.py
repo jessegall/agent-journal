@@ -3,7 +3,7 @@ from datetime import timedelta
 from core.base.driver.command_category import CommandCategory
 from core.base.module.module_finder import ModuleFinder
 from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 CHECK_WORDS = "still runs after {minutes} minutes: check it does its work"
 
@@ -25,7 +25,7 @@ def waited(story, minutes: int, process) -> int:
 
 
 def test_a_confirmed_wait_is_woken_at_5_15_30_and_45_minutes(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(minutes=4, seconds=59))
     check_tick(story)
@@ -45,7 +45,7 @@ def test_a_confirmed_wait_is_woken_at_5_15_30_and_45_minutes(new_story):
 
 
 def test_a_wake_nobody_confirms_comes_again_after_the_same_wait(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(minutes=3))
     story.expect_rows(waited(story, 2, process) == 1, waited(story, 4, process) == 1, waited(story, 1, process) == 2)
@@ -53,7 +53,7 @@ def test_a_wake_nobody_confirms_comes_again_after_the_same_wait(new_story):
 
 
 def test_a_confirm_said_twice_moves_the_next_wake_one_step_only(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     story.expect_rows(waited(story, 5, process) == 1)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
@@ -64,7 +64,7 @@ def test_a_confirm_said_twice_moves_the_next_wake_one_step_only(new_story):
 
 
 def test_an_ended_output_is_not_woken_for_and_cannot_be_confirmed(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = moved_run(story, "make package", category=CommandCategory.BUILD)
     end_run(story, process, "built\n")
     story.run_listeners()

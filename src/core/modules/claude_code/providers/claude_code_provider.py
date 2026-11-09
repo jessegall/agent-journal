@@ -156,9 +156,8 @@ class ClaudeCodeProvider(Provider):
             return path
         return next(projects.glob(f"*/{session}.jsonl"), None) if projects.is_dir() else None
 
-    def skills_kept_after_compaction(self, event: HookEvent) -> Mapping[str, str]:
-        path = self.transcript_path(event)
-        return ClaudeKeptSkills(path).digests() if path is not None else {}
+    def skills_kept_after_compaction(self, transcript: Path | None) -> Mapping[str, str]:
+        return ClaudeKeptSkills(transcript).digests() if transcript is not None else {}
 
     def session_matches_folder(self, project: Path, session: str) -> bool:
         return (self.folders.folder(CONFIG_VARIABLE, ".claude") / "projects" / ClaudeFolderName.folder_name(project) / f"{session}.jsonl").is_file()

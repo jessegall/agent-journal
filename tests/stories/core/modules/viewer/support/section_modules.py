@@ -10,9 +10,9 @@ MODULE_FILE = "tests.stories.core.modules.viewer.support.section_modules"
 UNKNOWN_SLOT = f"{MODULE_FILE}:UnknownSlotModule"
 UNDEPENDED_SLOT = f"{MODULE_FILE}:UndependedSlotModule"
 SLOTLESS_MODULE = f"{MODULE_FILE}:NoSlotModule"
-PANE_WITH_SLOTS = f"{MODULE_FILE}:PaneWithSlotsModule"
-SECTION_SUITE_MODULE = f"{MODULE_FILE}:SuiteNamesASectionModule"
-BUTTON_ON_AN_INSPECTOR_SLOT = f"{MODULE_FILE}:ButtonOnAnInspectorSlotModule"
+PANE_WITH_SLOTS = f"{MODULE_FILE}:SlotsModulePane"
+SECTION_SUITE_MODULE = f"{MODULE_FILE}:SuiteNamesSectionModule"
+INSPECTOR_SLOT_BUTTON = f"{MODULE_FILE}:InspectorSlotModuleButton"
 GOOD_SECTION = f"{MODULE_FILE}:GoodSectionModule"
 
 
@@ -39,7 +39,7 @@ class NoSlotModule(Module):
     windows = [section("no_slot.notes")]
 
 
-class PaneWithSlotsModule(Module):
+class SlotsModulePane(Module):
     name = "pane_slots"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.plans"]
@@ -51,7 +51,7 @@ class SectionSuite(Suite):
     windows = ["section_suite.notes"]
 
 
-class SuiteNamesASectionModule(Module):
+class SuiteNamesSectionModule(Module):
     name = "section_suite"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.plans"]
@@ -59,7 +59,7 @@ class SuiteNamesASectionModule(Module):
     windows = [section("section_suite.notes", "inspector.plan")]
 
 
-class ButtonOnAnInspectorSlotModule(Module):
+class InspectorSlotModuleButton(Module):
     name = "inspector_button"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.plans"]

@@ -17,7 +17,7 @@ from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.missing_runner_error import MissingRunnerError
 from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from tests.stories.core.modules.chat.support.mark_samples import marks_text, expect_marks_text
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value_with
@@ -35,7 +35,7 @@ def recording_launch(monkeypatch) -> list[int]:
 
 
 def queued_story(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -53,7 +53,7 @@ def ended(story, process_id: int, code: int) -> None:
 
 
 def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
     repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -118,7 +118,7 @@ def test_an_orphaned_proof_returns_to_the_worker_and_runs_again_at_delivery(new_
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 def mixed_proof_story(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- the total\n- the tax"', actor=story.agent)
@@ -151,7 +151,7 @@ def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(ne
 
 
 def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
@@ -164,7 +164,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
 
 
 def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     calls = []
     monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
     monkeypatch.setattr("subprocess.Popen", lambda command, **options: calls.append((command, options)))
@@ -179,7 +179,7 @@ def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monk
 
 
 def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     repository.checkout(ENVIRONMENT_BRANCH)
@@ -213,7 +213,7 @@ def run_test_process(story, process_id):
 
 
 def affected_test_story(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
@@ -266,7 +266,7 @@ def test_an_empty_picker_result_finishes_without_an_extra_test(new_story, monkey
 
 
 def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
@@ -286,7 +286,7 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
 
 @pytest.mark.parametrize("setting", ("affected-tests-command", "project-test-command"))
 def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, setting):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success(f'setting set journal.suites.coding.workers.{setting} "python3 command.py" --environment main')

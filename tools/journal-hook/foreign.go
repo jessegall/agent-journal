@@ -69,8 +69,8 @@ var projectDirectoryVariables = map[string]string{"claude": "CLAUDE_PROJECT_DIR"
 
 // managedVariables are the variables the program would give a project hook run for the checkout at root.
 func managedVariables(program, root string) []string {
-	name, known := projectDirectoryVariables[program]
-	if !known {
+	name, ok := projectDirectoryVariables[program]
+	if !ok {
 		return nil
 	}
 	return []string{name + "=" + root}

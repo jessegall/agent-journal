@@ -82,7 +82,7 @@ class SampleEnd(Command[None]):
     row_id: int
 
 
-class EndsItsLayer(DriverRule):
+class EndsLayer(DriverRule):
     """Ends the layer it is asked for."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -161,7 +161,7 @@ def test_a_newer_layer_is_asked_before_an_older_exclusive_one_which_then_silence
 
 
 def test_a_layer_whose_rule_ends_it_silences_nothing_beneath(tmp_path):
-    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", EndsItsLayer, 2, "samples.OldWait")]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", EndsLayer, 2, "samples.OldWait")]
     assert outcomes(tmp_path, rules, [OldWait]) == [("o.old", "wait:1", "allowed"), ("d.driver", "", "lines")]
 
 

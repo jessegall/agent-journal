@@ -19,7 +19,7 @@ from suites.coding.modules.checks.support.block_conditions.check_passed import C
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
-def check_of(story, opened_at=None):
+def read_check(story, opened_at=None):
     clock_time = story.clock.timestamp()
     agent_id = story.agent.id
     event = HookEvent.parsed(HookSamples.session_start().with_fields(session="s-1", firing="check", fired_at_ms=0).body)
@@ -80,7 +80,7 @@ def test_a_stored_condition_is_built_again_and_one_no_module_registers_counts_as
 
 
 def expect_true_built_conditions(conditions, text, text_2, story) -> None:
-    actual = conditions.built(text, text_2).is_true(check_of(story))
+    actual = conditions.built(text, text_2).is_true(read_check(story))
     assert actual, actual
 
 
@@ -90,85 +90,85 @@ def expect_isinstance(conditions, text) -> None:
 
 
 def expect_absent_true_tool_uses(number, story) -> None:
-    actual = ToolUses(number).is_true(check_of(story))
+    actual = ToolUses(number).is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_true_time_reached(later, story) -> None:
-    actual = TimeReached(later.text).is_true(check_of(story))
+    actual = TimeReached(later.text).is_true(read_check(story))
     assert actual, actual
 
 
 def expect_absent_true_time_reached(later, story) -> None:
-    actual = TimeReached(later.text).is_true(check_of(story))
+    actual = TimeReached(later.text).is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_true_check_passed(number, story) -> None:
-    actual = CheckPassed(number).is_true(check_of(story))
+    actual = CheckPassed(number).is_true(read_check(story))
     assert actual, actual
 
 
 def expect_absent_true_check_passed(number, story) -> None:
-    actual = CheckPassed(number).is_true(check_of(story))
+    actual = CheckPassed(number).is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_true_questions_closed(story) -> None:
-    actual = QuestionsClosed().is_true(check_of(story))
+    actual = QuestionsClosed().is_true(read_check(story))
     assert actual, actual
 
 
 def expect_true_question_answered(number, story) -> None:
-    actual = QuestionAnswered(number).is_true(check_of(story))
+    actual = QuestionAnswered(number).is_true(read_check(story))
     assert actual, actual
 
 
 def expect_absent_true_questions_closed(story) -> None:
-    actual = QuestionsClosed().is_true(check_of(story))
+    actual = QuestionsClosed().is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_absent_true_question_answered(number, story) -> None:
-    actual = QuestionAnswered(number).is_true(check_of(story))
+    actual = QuestionAnswered(number).is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_true_task_closed(number, story) -> None:
-    actual = TaskClosed(number).is_true(check_of(story))
+    actual = TaskClosed(number).is_true(read_check(story))
     assert actual, actual
 
 
 def expect_absent_true_task_closed(number, story) -> None:
-    actual = TaskClosed(number).is_true(check_of(story))
+    actual = TaskClosed(number).is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_true_task_logged(number, story, opened_at) -> None:
-    actual = TaskLogged(number).is_true(check_of(story, opened_at))
+    actual = TaskLogged(number).is_true(read_check(story, opened_at))
     assert actual, actual
 
 
 def expect_absent_true_task_logged(number, story, opened_at) -> None:
-    actual = TaskLogged(number).is_true(check_of(story, opened_at))
+    actual = TaskLogged(number).is_true(read_check(story, opened_at))
     assert not actual, actual
 
 
 def expect_true_started_task(story) -> None:
-    actual = StartedTaskExists().is_true(check_of(story))
+    actual = StartedTaskExists().is_true(read_check(story))
     assert actual, actual
 
 
 def expect_true_task_started(number, story) -> None:
-    actual = TaskStarted(number).is_true(check_of(story))
+    actual = TaskStarted(number).is_true(read_check(story))
     assert actual, actual
 
 
 def expect_absent_true_started_task(story) -> None:
-    actual = StartedTaskExists().is_true(check_of(story))
+    actual = StartedTaskExists().is_true(read_check(story))
     assert not actual, actual
 
 
 def expect_absent_true_task_started(number, story) -> None:
-    actual = TaskStarted(number).is_true(check_of(story))
+    actual = TaskStarted(number).is_true(read_check(story))
     assert not actual, actual

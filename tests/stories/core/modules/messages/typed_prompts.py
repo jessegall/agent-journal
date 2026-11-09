@@ -7,7 +7,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.messages.lost_hooks import TOOL_FINISHED, codex_row, expect_chat_count, run_hook, transcript, prompt_row, entry_timestamp
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def prompt_summaries(story) -> list[str]:
@@ -16,7 +16,7 @@ def prompt_summaries(story) -> list[str]:
 
 @pytest.fixture
 def builder(new_story):
-    return new_story(fixture=BuilderWithUser)
+    return new_story(fixture=UserBuilder)
 
 
 def test_a_typed_prompt_whose_hook_went_unchecked_reaches_the_journal(builder, tmp_path):

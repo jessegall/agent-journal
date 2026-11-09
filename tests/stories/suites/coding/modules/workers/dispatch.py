@@ -3,14 +3,14 @@ from core.base.actor_type import ActorType
 from core.base.query.queries import Queries
 from core.modules.actors.models.actor_record import ActorRecord
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 WORKER_START = "agent start s-2 claude worker --environment main"
 
 
 def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_checkout_is_on_another(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     worker_id = dispatched_worker(story).id
@@ -24,7 +24,7 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
 
 
 def test_a_dispatch_in_an_environment_that_names_no_branch_is_refused_and_makes_nothing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story, branch="")
     actors = tuple(story.container.get(Queries).query(ActorRecord).all_rows())
     story.expect_refusal(DISPATCH, "environment main has no branch: journal environment edit main --branch <branch>", actor=story.agent)
@@ -33,14 +33,14 @@ def test_a_dispatch_in_an_environment_that_names_no_branch_is_refused_and_makes_
 
 
 def test_a_dispatch_from_a_branch_that_does_not_exist_is_refused_and_makes_nothing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story, branch="version-6")
     story.expect_refusal(DISPATCH, f"branch version-6 does not exist in {repository.folder}", actor=story.agent)
     expect_clean_environment(story, repository)
 
 
 def test_a_worker_that_dispatches_a_worker_is_refused_and_makes_nothing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = Actor(story.new_row_id(f"{WORKER_START} --parent {story.agent.id}"), ActorType.AGENT)
     actors = tuple(story.container.get(Queries).query(ActorRecord).all_rows())
@@ -53,7 +53,7 @@ def test_a_worker_that_dispatches_a_worker_is_refused_and_makes_nothing(new_stor
 
 
 def test_a_dispatch_whose_worktree_command_fails_is_refused_with_its_output_and_removes_the_worktree_and_its_branch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo npm is not installed >&2; exit 1"]' --environment main""", "key: journal.suites.coding.workers.worktree-commands")
     story.expect_refusal(DISPATCH, "npm is not installed", actor=story.agent)
@@ -61,7 +61,7 @@ def test_a_dispatch_whose_worktree_command_fails_is_refused_with_its_output_and_
 
 
 def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     repository = repository_environment(story)
     story.expect_success('task cancel 1 --reason "a story needs it cancelled"', actor=story.agent)
     story.expect_refusal(DISPATCH, "task 1 is cancelled: only an open or a blocked task can be assigned to a worker", actor=story.agent)
@@ -72,7 +72,7 @@ def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_
 
 
 def test_a_persons_dispatch_without_a_program_is_refused_naming_the_flag(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     person = story.new_row_id('actor make user "Ada"')
     story.expect_refusal(DISPATCH, "a person's dispatch needs the program the worker runs", actor=Actor(person, ActorType.USER))
@@ -80,7 +80,7 @@ def test_a_persons_dispatch_without_a_program_is_refused_naming_the_flag(new_sto
 
 
 def test_a_zero_worker_run_limit_refuses_dispatch_without_creating_a_worker(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success("setting make journal.suites.coding.workers.worker-run-limit 0 --environment main", "key: journal.suites.coding.workers.worker-run-limit")
     story.expect_refusal(DISPATCH, "0 workers are running", actor=story.agent)
@@ -88,7 +88,7 @@ def test_a_zero_worker_run_limit_refuses_dispatch_without_creating_a_worker(new_
 
 
 def test_a_persons_dispatch_with_a_program_uses_the_tasks_environment(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     worker_id = story.new_row_id(f"{DISPATCH} --program claude", actor=person)

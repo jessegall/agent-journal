@@ -20,7 +20,7 @@ from tests.stories.server.support.server_client import server_story  # noqa: E40
 
 VIEWER_FOLDER = CHECKOUT / "src" / "viewer"
 LOOK_SCRIPT = "tests/lookAtScreen.mjs"
-DEFAULT_FIXTURE = "tests.stories.core.support.coding_fixtures:BuilderWithUser"
+DEFAULT_FIXTURE = "tests.stories.core.support.coding_fixtures:UserBuilder"
 DEFAULT_CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 TOUR_SETTING = "setting set journal.core.viewer.tour-completed true --project"
 LOGIN_NAME = "Ada"

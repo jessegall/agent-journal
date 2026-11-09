@@ -1,11 +1,11 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 
 
 def test_task_question_and_file_feed_search_bars_stay_at_the_top_with_a_bottom_border(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     for number in range(30):
         story.hook("s-1", HookSamples.edit(f"src/search_{number}.py", 3, 1).with_fields(event="post_tool_use"))

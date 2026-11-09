@@ -14,7 +14,7 @@ class StubAnswer:
     code: int
     body: bytes = b""
     headers: Mapping[str, str] | None = None
-    wait_for_release: bool = False
+    poll_release: bool = False
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,7 @@ class StubServer:
         class Handler(BaseHTTPRequestHandler):
             def respond(self) -> None:
                 received.append(StubRequest(self.command, self.path, dict(self.headers.items())))
-                if fixed.wait_for_release:
+                if fixed.poll_release:
                     release.wait()
                 self.send_response(fixed.code)
                 for name, value in (fixed.headers or {}).items():

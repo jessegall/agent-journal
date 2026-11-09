@@ -119,7 +119,7 @@ class EveryHelperRules(Clerk):
     driver_rules = [EveryHelperRule]
 
 
-class ReadOnlyHelperRule(DriverRule):
+class ReaderHelperRule(DriverRule):
     name = "sample.read-only-helper"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
@@ -129,14 +129,14 @@ class ReadOnlyHelperRule(DriverRule):
         return RuleAnswer(refusal="sample rule holds for read-only helpers")
 
 
-class ReadOnlyHelperRules(Clerk):
-    driver_rules = [ReadOnlyHelperRule]
+class ReaderHelperRules(Clerk):
+    driver_rules = [ReaderHelperRule]
 
 
-class SuiteWithHelperType(Suite):
+class HelperTypeSuite(Suite):
     name = "sample-helpers"
     helper_types = [HelperType("suite-clerk", "Suite clerk")]
 
 
 class SuiteRegistersHelperType(Clerk):
-    suites = [SuiteWithHelperType]
+    suites = [HelperTypeSuite]

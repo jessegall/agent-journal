@@ -6,24 +6,24 @@ from tests.stories.core.support.fixtures import ThreeTasks
 
 REVIEW_REQUEST = "review request task 1 --points 2 --environment main"
 REVIEWER_START = "agent start s-2 claude reviewer --environment main"
-REVIEWERS_ON = "setting make journal.core.reviews.reviewer true"
+REVIEWERS_ENABLED = "setting make journal.core.reviews.reviewer true"
 EMPTY_REVIEWERS = "setting make journal.core.reviews.reviewers-most 0"
 REVIEW_DETAILS = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
 
 
-def reviewer_of(story: Story) -> Actor:
+def read_reviewer(story: Story) -> Actor:
     """The reviewer agent ReviewTaken started: the agent after the main one."""
     return Actor(story.agent.id + 1, ActorType.AGENT)
 
 
-class ReviewersOn(StoryFixture):
+class ReviewersEnabled(StoryFixture):
     """Three open tasks, and the reviewers switched on."""
 
     parent = ThreeTasks
 
     def steps(self, story: Story) -> None:
-        story.run(REVIEWERS_ON)
+        story.run(REVIEWERS_ENABLED)
 
     def expect(self, story: Story) -> None:
         story.expect_text("setting list", "reviews.reviewer  true")
@@ -32,7 +32,7 @@ class ReviewersOn(StoryFixture):
 class NoReviewersAllowed(StoryFixture):
     """Reviewers on, and none allowed in the project, so a review waits queued."""
 
-    parent = ReviewersOn
+    parent = ReviewersEnabled
 
     def steps(self, story: Story) -> None:
         story.run(EMPTY_REVIEWERS)
@@ -44,7 +44,7 @@ class NoReviewersAllowed(StoryFixture):
 class OneReviewerAllowed(StoryFixture):
     """Reviewers on, and room for one in the project."""
 
-    parent = ReviewersOn
+    parent = ReviewersEnabled
 
     def steps(self, story: Story) -> None:
         story.run("setting make journal.core.reviews.reviewers-most 1")
@@ -53,7 +53,7 @@ class OneReviewerAllowed(StoryFixture):
         story.expect_text("setting list", "reviews.reviewers-most  1")
 
 
-class ReviewWithReviewer(StoryFixture):
+class ReviewerReview(StoryFixture):
     """Review 1 of task 1 requested while reviewers are allowed, so a reviewer was added and holds it."""
 
     parent = OneReviewerAllowed
@@ -77,14 +77,14 @@ class ReviewRequested(StoryFixture):
         story.expect_success(REVIEW_DETAILS, "state: queued", "subject_model: task", "subject_id: 1")
 
 
-class ReviewInProgress(StoryFixture):
+class ProgressReview(StoryFixture):
     """Review 1 given to a reviewer agent: reviewer_of(story)."""
 
     parent = ReviewRequested
 
     def steps(self, story: Story) -> None:
         story.new_row_id(REVIEWER_START)
-        story.run(f"review assign 1 --reviewer-id {reviewer_of(story).id}", actor=story.agent)
+        story.run(f"review assign 1 --reviewer-id {read_reviewer(story).id}", actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_DETAILS, "state: reviewing", f"reviewer_id: {reviewer_of(story).id}")
+        story.expect_success(REVIEW_DETAILS, "state: reviewing", f"reviewer_id: {read_reviewer(story).id}")

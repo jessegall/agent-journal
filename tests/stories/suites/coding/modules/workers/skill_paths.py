@@ -6,13 +6,13 @@ from core.modules.skills.support.skill_nudges import SKILL_TOOL_USES
 from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.skills.support.skill_samples import PATH
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 
 @pytest.mark.parametrize("program,skills_folder", [("claude", ".claude/skills"), ("codex", ".agents/skills")])
 def test_a_workers_skill_refusal_names_the_whole_long_folder(new_story, program, skills_folder):
-    story = new_story(f"{PATH}:LongPathSkillsModule", fixture=OrchestratorWithOpenTask)
+    story = new_story(f"{PATH}:LongPathSkillsModule", fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     session = worker_session(story, worker)

@@ -5,7 +5,7 @@ from core.modules.processes.models.process import Process
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 MARKS = "chat-mark list --environment 1 --oldest"
 
@@ -13,7 +13,7 @@ MARKS = "chat-mark list --environment 1 --oldest"
 class SavedRun(StoryFixture):
     """A run the agent started that the runner has not begun yet."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story: Story) -> None:
         start_process(story, "make package", category=CommandCategory.BUILD)
@@ -56,7 +56,7 @@ def test_a_run_stopped_before_it_starts_never_shows_a_mark(new_story):
 
 
 def test_a_line_shows_its_mark_when_its_named_part_starts_not_its_first(new_story):
-    story = install_runner(new_story(fixture=BuilderWithUser))
+    story = install_runner(new_story(fixture=UserBuilder))
     process = start_process(story, "cd cart && make package", category=CommandCategory.BUILD)
     story.expect_text(f"process-part list --process {process.id} --environment main", "make package", actor=story.user)
     part_started(story, process, 1)

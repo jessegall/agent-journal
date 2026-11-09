@@ -47,12 +47,12 @@ def test_a_start_removes_a_journal_skill_no_module_declares(new_story):
 
 def test_a_start_leaves_a_skill_that_is_not_the_journals(new_story):
     story = new_story(fixture=BuilderStarted)
-    own_file = skill_file(story, "my-own-skill")
-    own_file.parent.mkdir(parents=True, exist_ok=True)
-    own_file.write_text("my words")
+    agent_file = skill_file(story, "my-own-skill")
+    agent_file.parent.mkdir(parents=True, exist_ok=True)
+    agent_file.write_text("my words")
     BootingWork().run(story.container)
     story.run_listeners()
-    expect_file_2(own_file, "my words")
+    expect_file_2(agent_file, "my words")
 
 
 def test_a_start_republishes_the_skills_of_a_plugin_that_is_on(new_story):

@@ -1,4 +1,4 @@
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 
@@ -8,7 +8,7 @@ BODY = "\\n".join(["Intro line", "## Rules", HEAD, "|---|---|---|---|---|", *(RO
 
 
 def test_a_wide_table_in_a_document_keeps_readable_columns_and_scrolls_sideways_in_its_own_box(new_story, tmp_path):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     story.expect_success(f'doc make "Cart rules" --abstract "How the cart counts money" --body "{BODY}"', "doc 1: Cart rules", actor=story.user)
     with server_story(story) as server:

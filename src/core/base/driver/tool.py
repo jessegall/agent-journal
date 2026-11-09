@@ -47,6 +47,11 @@ class Tool:
         return self.shell is not None and self.shell.is_journal_line
 
     @property
+    def journal_commands(self) -> tuple[str, ...]:
+        parts = [part for part in (self.shell.parts if self.shell is not None else ()) if part.classification.category is CommandCategory.JOURNAL and part.arguments]
+        return tuple(sorted({part.subcommand or part.arguments[0] for part in parts} | {" ".join(part.arguments[:2]) for part in parts}))
+
+    @property
     def is_readonly(self) -> bool:
         if self.category.reads_files:
             return True

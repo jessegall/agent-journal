@@ -1,7 +1,7 @@
 import json
 
 from core.base.change.event_log import EventLog
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
 from tests.stories.support.story_checks import expect_value
 
@@ -24,7 +24,7 @@ def revision(story, environment: str) -> str:
 
 
 def test_s60_project_change_refreshes_inheriting_environment(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("environment make other /work/other", actor=story.user)
     story.expect_text(f"setting show {HELPERS} --environment other", "value: True", actor=story.user)
     story.expect_success(f"setting set {HELPERS} off --project", actor=story.user)
@@ -33,7 +33,7 @@ def test_s60_project_change_refreshes_inheriting_environment(new_story):
 
 
 def test_s60_overridden_environment_keeps_value(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success(f"setting set {MERGER} on --environment main", actor=story.user)
     story.expect_success("environment make other /work/other", actor=story.user)
     story.expect_success(f"setting set {MERGER} off --project", actor=story.user)
@@ -42,7 +42,7 @@ def test_s60_overridden_environment_keeps_value(new_story):
 
 
 def test_s60_cross_environment_draft_is_stale(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("environment make other /work/other", actor=story.user)
     draft = revision(story, "other")
     story.expect_success(f"setting set {HELPERS} off --project", actor=story.user)
@@ -51,7 +51,7 @@ def test_s60_cross_environment_draft_is_stale(new_story):
 
 
 def test_s60_a_project_change_reaches_a_viewer_of_another_environment_as_a_reference_only(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     with server_story(story) as server:
         server.story.run('actor make user "Ada"')
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

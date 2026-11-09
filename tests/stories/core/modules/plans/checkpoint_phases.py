@@ -1,7 +1,7 @@
 from core.testing.story_fixture import StoryFixture
 
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import PlanWithCheckpoint
+from tests.stories.core.support.fixtures import CheckpointPlan
 
 
 def test_a_task_inside_a_checkpoint_phase_is_started_next(new_story):
@@ -16,7 +16,7 @@ def test_no_task_after_a_checkpoint_phase_starts_while_the_checkpoint_phase_has_
 
 
 class CompletedCheckpointTask(StoryFixture):
-    parent = PlanWithCheckpoint
+    parent = CheckpointPlan
 
     def steps(self, story):
         story.run(lines.TASK_START, actor=story.agent)

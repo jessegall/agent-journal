@@ -18,8 +18,8 @@ READ_BYTES = 4096
 WINDOW_SIZE = struct.pack("HHHH", 40, 120, 0, 0)
 ENTER = b"\r"
 PROGRAM_LINE = "the stand-in program runs"
-STAND_IN_PROGRAM = f'#!/bin/sh\necho "{PROGRAM_LINE}"\nexec python3 -c "import signal; signal.pause()"\n'
-OPENS_NOTHING = "#!/bin/sh\nexit 0\n"
+FAKE_PROGRAM = f'#!/bin/sh\necho "{PROGRAM_LINE}"\nexec python3 -c "import signal; signal.pause()"\n'
+EMPTY_OPEN = "#!/bin/sh\nexit 0\n"
 SUITE_QUESTION = "Which suite?"
 ENVIRONMENT_QUESTION = "Which environment?"
 RUNNING_QUESTION = "A main agent is running in this environment"
@@ -27,10 +27,10 @@ CONVERSATION_QUESTION = "Which conversation?"
 PROMPT_QUESTION = "Permission prompts?"
 
 
-def stand_in_programs(folder: Path) -> Path:
+def fake_programs(folder: Path) -> Path:
     """A folder for the path of a launch: a program in place of Claude Code that only runs, and openers that open no browser."""
     folder.mkdir()
-    for name, text in (("claude", STAND_IN_PROGRAM), ("open", OPENS_NOTHING), ("xdg-open", OPENS_NOTHING)):
+    for name, text in (("claude", FAKE_PROGRAM), ("open", EMPTY_OPEN), ("xdg-open", EMPTY_OPEN)):
         program = folder / name
         program.write_text(text)
         program.chmod(0o755)
@@ -79,7 +79,7 @@ class LaunchTerminal:
                 raise AssertionError(f"the launch never drew {text!r}, it drew: {bytes(self.screen[self.read_up_to:])!r}")
             self.read_up_to = self.screen.find(wanted, self.read_up_to) + len(wanted)
 
-    def press_enter_on(self, question: str) -> None:
+    def press_enter(self, question: str) -> None:
         self.wait_for(question)
         os.write(self.controller, ENTER)
 
@@ -87,24 +87,24 @@ class LaunchTerminal:
         self.wait_for(SUITE_QUESTION)
         os.write(self.controller, str(self.suite_number).encode() + ENTER)
 
-    def wait_at_the_last_question(self) -> None:
+    def last_question_wait(self) -> None:
         self.pick_suite()
         for question in (ENVIRONMENT_QUESTION, CONVERSATION_QUESTION):
-            self.press_enter_on(question)
+            self.press_enter(question)
         self.wait_for(PROMPT_QUESTION)
 
-    def expect_program_after_the_last_question(self) -> None:
+    def expect_last_question_program(self) -> None:
         os.write(self.controller, ENTER)
         self.wait_for(PROGRAM_LINE)
 
-    def expect_program_after_the_menu(self) -> None:
-        self.wait_at_the_last_question()
-        self.expect_program_after_the_last_question()
+    def expect_menu_program(self) -> None:
+        self.last_question_wait()
+        self.expect_last_question_program()
 
-    def expect_program_after_stopping_the_running_main(self) -> None:
+    def expect_stopping_running_main_program(self) -> None:
         self.pick_suite()
         for question in (ENVIRONMENT_QUESTION, RUNNING_QUESTION, CONVERSATION_QUESTION, PROMPT_QUESTION):
-            self.press_enter_on(question)
+            self.press_enter(question)
         self.wait_for(PROGRAM_LINE)
 
     def expect_ended(self) -> None:

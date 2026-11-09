@@ -2,8 +2,8 @@ from core.modules.skills.commands.request_skill.request_skill import RequestSkil
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_files import SkillFiles
+from core.modules.skills.support.skill_block import SkillBlock
 from core.modules.skills.support.skill_nudges import READ_SKILL_FIRST
-from core.modules.skills.support.block_conditions.skill_loaded import SkillLoaded
 from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
 from core.base.role_group import RoleGroup
 from core.base.driver.agent_hook import AgentHook
@@ -54,7 +54,7 @@ class PhraseTriggerRule(DriverRule):
             if folder is not None:
                 nudge = READ_SKILL_FIRST.nudge(instruction=self.files.instruction(folder, hook))
                 if hook.event.event is HookEventName.PRE_TOOL_USE:
-                    return RuleAnswer.blocked(hook, nudge, SkillLoaded(folder)).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
+                    return SkillBlock.answer(hook, nudge, folder).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
                 nudges.append(nudge)
         return RuleAnswer.with_nudges(*nudges).running(*commands, *(FireTrigger(trigger.id) for trigger in matching))
 

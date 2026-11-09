@@ -11,7 +11,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from server.listener_thread import ListenerThread
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.viewer.attachments import IMAGE_BYTES, uploaded
@@ -60,7 +60,7 @@ def viewer(story: Story, window: str, arguments: list[str]):
 
 
 class TrailReady(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story: Story) -> None:
         story.expect_success('task make "Existing cart work" --brief "Keep the receipt" --environment main', actor=story.agent)

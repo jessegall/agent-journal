@@ -34,7 +34,8 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
 
     def save_block(self, command: BlockUntil, context: Context, existing: AgentBlock | None) -> AgentBlock:
         if existing is not None:
-            return self.repository.update(existing, context, nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text)
+            return self.repository.update(existing, context, nudge_text=command.nudge.text, condition_name=command.condition.name, condition_text=command.condition.text,
+                                      countdown_text=command.countdown.text if command.countdown else existing.countdown_text)
         return self.repository.save(AgentBlock(session_agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text, grace_tool_uses=self.tool_uses(command.after),
                                                grace_seconds=command.after.seconds if command.after is not None else 0, countdown_key=command.countdown.key if command.countdown else "",

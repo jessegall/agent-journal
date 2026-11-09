@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.command.bus import Bus
 from suites.coding.modules.workers.commands.record_own_test_failure.record_own_test_failure import RecordOwnTestFailure
 from suites.coding.modules.workers.support.worker_test_failures import ALL_RUN_TESTS, WorkerTestFailures
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, FIRST_PROOF, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
@@ -19,14 +19,14 @@ def proved_worker(story):
 
 
 def test_a_hand_in_must_say_what_differs_from_the_task(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)
     story.expect_refusal("worker deliver --wait", "what did you do differently", actor=worker)
     story.expect_refusal("worker next --wait", "what did you do differently", actor=worker)
 
 
 def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository, worker = proved_worker(story)
     story.expect_success(f'worker deliver --wait --differences "{OMISSION}"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
@@ -38,7 +38,7 @@ def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story
 
 
 def test_no_difference_writes_no_line_and_the_merge_asks_nothing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository, worker = proved_worker(story)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
@@ -48,7 +48,7 @@ def test_no_difference_writes_no_line_and_the_merge_asks_nothing(new_story):
 
 
 def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)
     story.expect_success('task log 1 "one two three four five six seven eight nine ten"', actor=worker)
     story.expect_success('task log 1 --important "I could not work out the rounding"', actor=worker)
@@ -59,7 +59,7 @@ def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story
 
 
 def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker_and_shown_to_the_main_agent(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     _, worker = proved_worker(story)
     bus = story.container.get(Bus)
     for _ in range(5):
@@ -70,6 +70,6 @@ def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker
 
 
 def test_a_failed_run_is_counted_for_each_test_file_it_names(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_rows(WorkerTestFailures.test_names("vitest run tests/windowData.test.js tests/chat_test.go --reporter=dot") == ["tests/windowData.test.js", "tests/chat_test.go"],
                       WorkerTestFailures.test_names("journal viewer-tests") == [ALL_RUN_TESTS])

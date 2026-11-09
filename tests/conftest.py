@@ -50,19 +50,19 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if INSTALL_FOLDER in item.path.parts[item.path.parts.index("tests"):]:
             item.add_marker(INSTALL_MARK)
-        if drives_a_browser(item.path):
+        if browser_driver(item.path):
             item.add_marker(BROWSER_MARK)
-    kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and is_in_this_job(item, config)]
+    kept = [item for item in items if (item.get_closest_marker(REAL_PROGRAM_MARK) is not None) == wanted and belongs_job(item, config)]
     config.hook.pytest_deselected(items=[item for item in items if item not in kept])
     items[:] = kept
 
 
 @cache
-def drives_a_browser(path: Path) -> bool:
+def browser_driver(path: Path) -> bool:
     return BROWSER_CALL in path.read_text()
 
 
-def is_in_this_job(item: pytest.Item, config: pytest.Config) -> bool:
+def belongs_job(item: pytest.Item, config: pytest.Config) -> bool:
     """A test of a separate job runs when its job is asked for by its mark, or its file or job folder is named."""
     job = next((mark for mark in SEPARATE_JOBS if item.get_closest_marker(mark) is not None), None)
     if job is None or config.getoption("markexpr") == job:
@@ -76,9 +76,9 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: p
     terminalreporter.write_line(f"{len(real_reports)} stories used a real Claude Code or Codex")
 
 
-def names_real_program(command: object, stand_in_folder: Path) -> bool:
+def names_real_program(command: object, fake_folder: Path) -> bool:
     tokens = command.split() if isinstance(command, str) else list(command) if isinstance(command, (list, tuple)) else []
-    return bool(tokens) and Path(str(tokens[0])).name in REAL_PROGRAMS and not Path(str(tokens[0])).is_relative_to(stand_in_folder)
+    return bool(tokens) and Path(str(tokens[0])).name in REAL_PROGRAMS and not Path(str(tokens[0])).is_relative_to(fake_folder)
 
 
 @pytest.fixture(autouse=True)

@@ -2,7 +2,7 @@ from core.base.scope.scopes import Scopes
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.scope.environment_rows import TwoEnvironmentsAtWork, staging_agent
+from tests.stories.core.base.scope.environment_rows import TwoWorkingEnvironments, staging_agent
 
 BATCH_SIZE = "journal.core.processes.run-batch-size"
 
@@ -10,7 +10,7 @@ BATCH_SIZE = "journal.core.processes.run-batch-size"
 class ProjectAndStagingValues(StoryFixture):
     """The run batch size is 3 for the project and 7 in environment staging."""
 
-    parent = TwoEnvironmentsAtWork
+    parent = TwoWorkingEnvironments
 
     def steps(self, story):
         story.run(f"setting set {BATCH_SIZE} 3 --project", actor=story.user)
@@ -55,6 +55,6 @@ def test_a_person_s_request_reads_the_setting_of_the_environment_it_names(new_st
 
 
 def test_the_suite_choice_reads_the_suite_of_the_scope(new_story):
-    story = new_story(fixture=TwoEnvironmentsAtWork)
+    story = new_story(fixture=TwoWorkingEnvironments)
     with story.container.get(Scopes).read_scope((), None, 2):
         story.expect_rows(story.container.get(SuiteChoice).suite().name == "coding")

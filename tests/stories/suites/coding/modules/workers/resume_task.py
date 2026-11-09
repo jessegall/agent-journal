@@ -19,7 +19,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
@@ -28,7 +28,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 @pytest.mark.parametrize("answer", [b"started 123456789\n", b"started\n"], ids=["with-pid", "without-pid"])
 @pytest.mark.parametrize("merged", [False, True], ids=["open-worktree", "merged-worktree"])
 def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch, program, model, merged, answer):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = GitRepository.sample(story.home.project_folder)
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))} --branch {ENVIRONMENT_BRANCH}")
     worker_name = f"{program.title()}{'Merged' if merged else 'Open'}{'Pid' if b'123456789' in answer else 'Bare'}"
@@ -100,7 +100,7 @@ def stopped_worker_with_entered_job(story) -> Actor:
 
 
 def test_an_entered_line_without_a_process_does_not_block_a_new_task_start(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     worker = stopped_worker_with_entered_job(story)
     task_id = story.new_row_id('task make "Another task" --brief "Read the totals"', actor=story.agent)
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")

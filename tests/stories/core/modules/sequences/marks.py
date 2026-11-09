@@ -9,7 +9,7 @@ from tests.stories.core.modules.chat.support.mark_samples import expect_absent_m
 from tests.stories.core.modules.sequences.sequences import ReleaseSequence
 
 
-class RunningRelease(StoryFixture):
+class ActiveRelease(StoryFixture):
     parent = ReleaseSequence
 
     def steps(self, story):
@@ -17,7 +17,7 @@ class RunningRelease(StoryFixture):
         story.expect_success("sequence follow", actor=story.agent)
 
 
-class HelperRunningRelease(StoryFixture):
+class HelperActiveRelease(StoryFixture):
     parent = ReleaseSequence
 
     def steps(self, story):
@@ -27,7 +27,7 @@ class HelperRunningRelease(StoryFixture):
 
 
 def test_finishing_the_last_step_shows_a_mark_but_moving_a_step_does_not(new_story):
-    story = new_story(fixture=RunningRelease)
+    story = new_story(fixture=ActiveRelease)
     story.expect_success("sequence next", actor=story.agent)
     story.run_listeners()
     expect_marks_text(story, "Sequence 1 started: Release")
@@ -40,7 +40,7 @@ def test_finishing_the_last_step_shows_a_mark_but_moving_a_step_does_not(new_sto
 
 
 def test_giving_up_a_sequence_shows_a_mark(new_story):
-    story = new_story(fixture=RunningRelease)
+    story = new_story(fixture=ActiveRelease)
     story.expect_success('sequence abandon --why "not today" --sure', actor=story.agent)
     story.run_listeners()
     expect_marks_text(story, "Sequence 1 given up: Release")
@@ -49,7 +49,7 @@ def test_giving_up_a_sequence_shows_a_mark(new_story):
 
 @pytest.mark.parametrize("action", ["finish", "abandon"])
 def test_another_agent_ending_a_sequence_shows_no_mark(new_story, action):
-    story = new_story(fixture=HelperRunningRelease)
+    story = new_story(fixture=HelperActiveRelease)
     helper = Actor(story.container.get(Queries).query(Agent).filter(session="s-2").first().id, ActorType.AGENT)
     if action == "finish":
         story.expect_success("sequence next", actor=helper)

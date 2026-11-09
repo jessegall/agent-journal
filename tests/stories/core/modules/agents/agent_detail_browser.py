@@ -1,4 +1,4 @@
-from tests.stories.core.modules.agents.helper_transcripts import row, transcript_of
+from tests.stories.core.modules.agents.helper_transcripts import row, read_transcript
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.driver.diff_count import DiffCount
 from core.modules.agents.models.agent import Agent
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 import os
 
 
@@ -14,8 +14,8 @@ def test_open_worker_and_helper_details_fill_the_window_and_scroll_inside_it(new
     story = new_story(fixture=UserJoined)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     transcript = [row("assistant", f"Transcript row {number}\n" + "A longer message in the agent conversation.\n" * 8) for number in range(120)]
-    transcript_of(tmp_path, monkeypatch, "detail-worker", *transcript)
-    transcript_of(tmp_path, monkeypatch, "detail-helper", *transcript)
+    read_transcript(tmp_path, monkeypatch, "detail-worker", *transcript)
+    read_transcript(tmp_path, monkeypatch, "detail-helper", *transcript)
     worker = story.new_row_id(f"agent start detail-worker claude worker --parent {story.agent.id} --environment main")
     helper = story.new_row_id(f"agent start detail-helper claude helper --parent {story.agent.id} --environment main")
     with server_story(story) as server:
@@ -23,10 +23,10 @@ def test_open_worker_and_helper_details_fill_the_window_and_scroll_inside_it(new
 
 
 def test_agent_details_animate_and_lists_reach_the_edges(new_story, tmp_path, monkeypatch):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     helper = story.new_row_id(f"agent start s-2 claude worker --parent {story.agent.id} --environment main")
-    transcript_of(tmp_path, monkeypatch, "s-2", row("assistant", "The work is complete"))
+    read_transcript(tmp_path, monkeypatch, "s-2", row("assistant", "The work is complete"))
     environment_id = story.row(Agent, helper).environment_id
     story.container.get(Bus).run(RecordFileEdit(helper, DiffCount("src/cart.py", True, 3, 1)), story.agent, environment_id=environment_id)
     story.expect_text(f"file-edit list --agent {helper}", "src/cart.py", actor=story.user)

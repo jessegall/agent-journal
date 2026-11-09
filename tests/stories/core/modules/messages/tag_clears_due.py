@@ -12,11 +12,11 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 def start_story_with_image_block(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     bus = story.container.get(Bus)
     pending = story.home.pending_files / "0123456789abcdef"
     pending.mkdir(parents=True)

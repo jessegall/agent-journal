@@ -11,13 +11,13 @@ from core.testing.expect_reply import expect_reply_allowed
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.modules.processes.support.reader_block_fixtures import worker_run
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 
 class AdmissionQueue(StoryFixture):
     """A main agent and a worker share one available run slot."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run("agent start s-reader claude worker --environment main")

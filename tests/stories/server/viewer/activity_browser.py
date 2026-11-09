@@ -1,11 +1,11 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.browser_story import expect_browser
 from tests.stories.server.support.server_client import server_story
 
 
 def test_activity_groups_agent_events_and_animates_new_items(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     story.hook("s-1", HookSamples.prompt("First instruction"))
     story.hook("s-1", HookSamples.prompt("Second instruction"))

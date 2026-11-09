@@ -40,8 +40,8 @@ def test_the_lock_helper_stops_a_running_server_waits_for_it_to_drain_and_holds_
     journal.wait_healthy()
     with ServerLock(journal.home):
         assert server.wait(timeout=10) == 0 and not journal.healthy()
-        assert not journal.lock_is_free()
-    assert journal.lock_is_free()
+        assert not journal.lock_free()
+    assert journal.lock_free()
 
 
 def test_a_client_started_while_the_lock_is_held_waits_and_starts_the_new_server_after_the_release(journal, client):
@@ -71,7 +71,7 @@ def test_a_server_that_will_not_stop_in_the_limit_makes_the_helper_refuse_and_ch
     with pytest.raises(ServerWontStopError, match="did not stop in 1 seconds"):
         with ServerLock(journal.home, stop_limit_seconds=1):
             pytest.fail("the lock was taken from a server that did not stop")
-    assert lock_process.poll() is None and not journal.lock_is_free()
+    assert lock_process.poll() is None and not journal.lock_free()
 
 
 def test_releasing_after_a_crash_of_the_holder_lets_the_next_start_proceed(journal):
@@ -84,10 +84,10 @@ def test_releasing_after_a_crash_of_the_holder_lets_the_next_start_proceed(journ
         lock_process.kill()
         first_line += lock_process.stdout.read()
     assert first_line == "held", first_line
-    assert not journal.lock_is_free()
+    assert not journal.lock_free()
     lock_process.kill()
     lock_process.wait(timeout=10)
-    assert journal.lock_is_free()
+    assert journal.lock_free()
     journal.start_server()
     journal.wait_healthy()
 
@@ -116,9 +116,9 @@ def test_a_client_run_after_the_stop_and_before_the_lock_starts_no_server_and_th
     try:
         answer = subprocess.run([str(client), "setting", "list"], env=journal.environment(), cwd=journal.home.folder.parent, capture_output=True, text=True,
                                 timeout=TIMEOUT_SECONDS)
-        assert not (journal.home.folder / "server.pid").exists() and journal.lock_is_free(), answer.stdout + answer.stderr
+        assert not (journal.home.folder / "server.pid").exists() and journal.lock_free(), answer.stdout + answer.stderr
     finally:
         files.clear_maintenance()
     with ServerLock(journal.home):
-        assert files.maintenance.exists() and not journal.lock_is_free()
-    assert not files.maintenance.exists() and journal.lock_is_free()
+        assert files.maintenance.exists() and not journal.lock_free()
+    assert not files.maintenance.exists() and journal.lock_free()

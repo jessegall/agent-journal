@@ -47,7 +47,7 @@ def literal_text(node: ast.AST) -> str | None:
     return None
 
 
-def index_of(trees: list[ast.Module]) -> CodeIndex:
+def read_index(trees: list[ast.Module]) -> CodeIndex:
     literals: list[Literal] = []
     used: set[str] = set()
     for tree in trees:
@@ -73,7 +73,7 @@ def index_of(trees: list[ast.Module]) -> CodeIndex:
 
 def source_index() -> CodeIndex:
     files = [path for path in SOURCE.rglob("*.py") if not any(part in SKIPPED_FOLDERS for part in path.parts)]
-    return index_of([ast.parse(path.read_text(encoding="utf-8")) for path in files])
+    return read_index([ast.parse(path.read_text(encoding="utf-8")) for path in files])
 
 
 def declared_settings() -> dict[str, str]:
@@ -89,15 +89,15 @@ def test_every_declared_setting_is_read_by_some_code_or_listed_with_its_reason()
 
 
 def test_a_setting_listed_as_unread_is_still_declared():
-    gone = sorted(key for key in UNREAD_SETTINGS if key not in declared_settings())
-    assert not gone, f"remove from UNREAD_SETTINGS, no longer declared: {gone}"
+    removed = sorted(key for key in UNREAD_SETTINGS if key not in declared_settings())
+    assert not removed, f"remove from UNREAD_SETTINGS, no longer declared: {removed}"
 
 
 def test_a_key_held_by_a_constant_nothing_uses_counts_as_unread():
-    index = index_of([ast.parse('LOST = f"{MODULE}.lost-switch"\nUSED = f"{MODULE}.used-switch"\nsetting = settings.flag(USED)\n')])
+    index = read_index([ast.parse('LOST = f"{MODULE}.lost-switch"\nUSED = f"{MODULE}.used-switch"\nsetting = settings.flag(USED)\n')])
     assert not index.is_read("journal.x.lost-switch", "lost-switch")
     assert index.is_read("journal.x.used-switch", "used-switch")
 
 
 def test_a_key_written_where_it_is_read_counts_as_read():
-    assert index_of([ast.parse('value = settings.flag("journal.x.direct")\n')]).is_read("journal.x.direct", "direct")
+    assert read_index([ast.parse('value = settings.flag("journal.x.direct")\n')]).is_read("journal.x.direct", "direct")

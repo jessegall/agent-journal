@@ -7,7 +7,7 @@ from core.base.driver.nudge_declaration import LONGEST_FIELD_CHARACTERS
 from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMING_HINTS, StreamingHints
 
 
-@pytest.mark.parametrize("command,part_of_hint", [
+@pytest.mark.parametrize("command,hint_part", [
     ("npx vitest run", "--reporter=verbose"),
     ("npm test -- --watch=false | head", GENERAL_HINT),
     ("CI=1 go test ./...", "go test with -v"),
@@ -19,8 +19,8 @@ from core.modules.processes.support.streaming_hints import GENERAL_HINT, STREAMI
     ("npm run build", "read the script"),
     ("./deploy.sh staging", GENERAL_HINT),
 ])
-def test_a_command_gets_the_hint_of_its_tool(command, part_of_hint):
-    assert part_of_hint in StreamingHints.hint(command)
+def test_a_command_gets_the_hint_of_its_tool(command, hint_part):
+    assert hint_part in StreamingHints.hint(command)
 
 
 def test_every_hint_fits_a_nudge_field_whole():
@@ -39,7 +39,7 @@ def test_tests_builds_and_python_are_watched_for_silence(category, program, is_w
     assert SilentRuns.is_watched(part) is is_watched
 
 
-@pytest.mark.parametrize("command,is_held_back", [
+@pytest.mark.parametrize("command,is_delayed", [
     ("go test ./...", True),
     ("CI=1 go test -v ./internal/a ./internal/b", True),
     ("go test ./internal/a", False),
@@ -48,5 +48,5 @@ def test_tests_builds_and_python_are_watched_for_silence(category, program, is_w
     ("cd tools && go test ./... | tee out", True),
     ("npm test", False),
 ])
-def test_go_test_over_several_packages_holds_back_the_output_of_each(command, is_held_back):
-    assert StreamingHints.runs_packages_serially(command) is is_held_back
+def test_go_test_over_several_packages_holds_back_the_output_of_each(command, is_delayed):
+    assert StreamingHints.runs_packages_serially(command) is is_delayed

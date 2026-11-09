@@ -14,7 +14,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from core.testing.story import Story
 from suites.coding.modules.workers.models.worker_operation import WorkerOperation
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import server_story
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
@@ -31,7 +31,7 @@ class WorkerRunnerStory(NamedTuple):
 
 @pytest.fixture
 def worker_runner(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)

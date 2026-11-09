@@ -27,24 +27,24 @@ from core.testing.shell_part import ShellPart
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.support.process_samples import end_run, ended_run, install_runner, moved_run, start_process
-from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BuilderStarted, UserBuilder
 from tests.stories.support.story_checks import expect_value_line, expect_value_with, expect_value_without_line
 
-NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
-AFTER = NOTHING.with_fields(event="post_tool_use")
+READ_NOTES = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
+AFTER = READ_NOTES.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
 ENDED = "output 1 ended"
 
 
-def lines_of(story, sample) -> list[str]:
+def read_lines(story, sample) -> list[str]:
     return list(story.hook("s-1", sample).lines)
 
 
 def test_the_end_of_a_background_run_tells_the_agent_once_to_read_its_summary(ended_test_output):
     story, process = ended_test_output
-    expect_lines_of(story, NOTHING, ENDED)
+    expect_lines(story, READ_NOTES, ENDED)
     story.expect_text("output read 1 --summary", "2 failed, 1 passed", actor=story.agent)
-    expect_absent_lines_of(story, NOTHING, ENDED)
+    expect_absent_lines(story, READ_NOTES, ENDED)
 
 
 def test_one_hook_reuses_the_ended_runs_output(ended_test_output):
@@ -93,7 +93,7 @@ def ended_lines(new_story, line, text=TESTS_REPORT, category=None):
     process = moved_run(story, line, category=category)
     end_run(story, process, text)
     story.advance(timedelta(seconds=1))
-    return story, process, lines_of(story, NOTHING)
+    return story, process, read_lines(story, READ_NOTES)
 
 
 def test_a_plain_command_is_not_asked_for_a_reader(ended_plain_output):
@@ -110,7 +110,7 @@ def test_a_chain_is_asked_for_a_reader_of_its_real_run_not_of_its_first_word(end
 def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(unread_build_output):
     story, lines = unread_build_output
     expect_value_line(lines, "no reader reads deploy.sh yet")
-    expect_absent_lines_of(story, NOTHING, "no reader reads")
+    expect_absent_lines(story, READ_NOTES, "no reader reads")
 
 
 def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(ended_loop_output):
@@ -137,12 +137,12 @@ def test_a_run_that_printed_nothing_gets_no_advice(empty_build_output):
 def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     ended_run(story, "pytest -q", TESTS_REPORT, exit_code=1)
-    expect_absent_lines_of(story, NOTHING, "ended")
+    expect_absent_lines(story, READ_NOTES, "ended")
 
 
 def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(unmatched_reader_output):
     story, process = unmatched_reader_output
-    expect_lines_of(story, NOTHING, "reader deploys picked none")
+    expect_lines(story, READ_NOTES, "reader deploys picked none")
 
 
 def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no_summary_to_add_one(new_story):
@@ -152,7 +152,7 @@ def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no
     end_run(story, process, "".join(f"step {number}\n" for number in range(60)))
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    lines = lines_of(story, NOTHING)
+    lines = read_lines(story, READ_NOTES)
     expect_value_line(lines, "reader deploys kept 60 of 60 lines")
     expect_value_line(lines, "reader deploys found no summary")
 
@@ -164,7 +164,7 @@ def test_a_test_run_whose_reader_finds_progress_only_on_its_last_line_is_told_to
     end_run(story, process, "".join("........\n" for _ in range(60)) + "Tests 60 of 60\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    expect_lines_of(story, NOTHING, "ran with no progress")
+    expect_lines(story, READ_NOTES, "ran with no progress")
 
 
 def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_story):
@@ -174,7 +174,7 @@ def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_
     end_run(story, process, "step 3/9\nstep 9/9\n")
     story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
     story.advance(timedelta(seconds=1))
-    expect_lines_of(story, NOTHING, "ran with no progress")
+    expect_lines(story, READ_NOTES, "ran with no progress")
 
 
 class SilentVitestRun(StoryFixture):
@@ -198,17 +198,17 @@ class SavedBuildMoved(StoryFixture):
 
 
 def expect_streaming_line(story, text: str) -> None:
-    lines = lines_of(story, NOTHING)
+    lines = read_lines(story, READ_NOTES)
     assert any(text in line for line in lines), lines
 
 
 def expect_without_hint(story) -> None:
-    lines = lines_of(story, NOTHING)
+    lines = read_lines(story, READ_NOTES)
     assert not any("not streaming" in line or "still runs" in line for line in lines), lines
 
 
 def expect_without_failure_line(story) -> None:
-    lines = lines_of(story, NOTHING)
+    lines = read_lines(story, READ_NOTES)
     assert not any("failed and printed nothing" in line for line in lines), lines
 
 
@@ -256,17 +256,17 @@ def test_a_saved_command_that_fails_with_output_is_only_told_how_it_ended(new_st
 
 def test_a_program_that_has_a_reader_is_not_asked_for_one(program_reader_output):
     story, process = program_reader_output
-    expect_absent_lines_of(story, NOTHING, "no reader reads pytest")
+    expect_absent_lines(story, READ_NOTES, "no reader reads pytest")
 
 
 def test_a_reader_is_judged_on_a_chain_of_commands_by_the_part_it_reads(chain_reader_output):
     story, process = chain_reader_output
-    expect_lines_of(story, NOTHING, "reader deploys picked none")
+    expect_lines(story, READ_NOTES, "reader deploys picked none")
 
 
 def test_a_run_not_shown_in_the_chat_is_never_asked_about_a_reader(unshown_output):
     story, process = unshown_output
-    expect_absent_lines_of(story, NOTHING, "reader deploys")
+    expect_absent_lines(story, READ_NOTES, "reader deploys")
 
 
 def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new_story):
@@ -283,7 +283,7 @@ def test_a_chains_reader_reads_only_its_part_and_gives_the_card_its_progress(new
 
 
 def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_background(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = start_process(story, "sleep 60")
     folder = story.container.get(OutputFolder)
     expect_folder(folder, process, "move", "")
@@ -293,7 +293,7 @@ def test_a_persons_message_asks_the_main_agents_foreground_run_to_move_to_the_ba
 
 
 def test_an_agents_own_message_moves_nothing(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     process = start_process(story, "sleep 60")
     story.run('message send "working on it" --environment main', actor=story.agent)
     story.run_listeners()
@@ -331,7 +331,7 @@ def ended_chain_output(new_story):
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     end_run(story, process, "one\ntwo\n")
     story.advance(timedelta(seconds=1))
-    lines = lines_of(story, NOTHING)
+    lines = read_lines(story, READ_NOTES)
     return story, parts, command, process, lines
 
 
@@ -405,11 +405,11 @@ def unshown_output(deploy_reader):
     return story, process
 
 
-def expect_lines_of(story, sample, expected) -> None:
+def expect_lines(story, sample, expected) -> None:
     expect_reply_line(story.hook("s-1", sample), expected)
 
 
-def expect_absent_lines_of(story, sample, expected) -> None:
+def expect_absent_lines(story, sample, expected) -> None:
     expect_absent_reply_line(story.hook("s-1", sample), expected)
 
 

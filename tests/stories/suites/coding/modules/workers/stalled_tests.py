@@ -4,7 +4,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from suites.coding.modules.workers.listeners.worker_test_listener import WorkerTestListener
 from suites.coding.modules.workers.ticks.stalled_worker_tests import StalledWorkerTests
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.test_queue import PROOF, recording_launch
 
@@ -13,7 +13,7 @@ RUNNING = "the tests of task 1 are running"
 
 @pytest.fixture
 def two_tasks(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
@@ -75,7 +75,7 @@ def test_the_tick_queues_a_test_a_proof_edit_left_behind(edited_proof):
 
 
 def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)

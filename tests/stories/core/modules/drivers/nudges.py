@@ -30,7 +30,7 @@ from core.modules.processes.support.process_nudges import READER_REQUEST, RUN_NA
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
@@ -86,7 +86,7 @@ def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():
 
 
 def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     log = story.container.get(NudgeLog)
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
 
@@ -128,7 +128,7 @@ def expect_endswith_nudge(nudge, text) -> None:
 
 
 def test_many_nudges_read_records_together(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     log = story.container.get(NudgeLog)
     database = story.container.get(Database)
     nudges = [Nudge(f"sample.{number}", NudgeType.STEERING, f"Line {number}") for number in range(12)]
@@ -144,7 +144,7 @@ def test_many_nudges_read_records_together(new_story):
 
 
 def test_a_hook_reads_only_the_records_of_its_own_lines(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     log = story.container.get(NudgeLog)
     remaining_nudges = [Nudge(f"sample.other.{number}", NudgeType.STEERING, f"Line {number}") for number in range(30)]
     selected_nudge = Nudge("sample.own", NudgeType.STEERING, "Own line")
@@ -157,7 +157,7 @@ def test_a_hook_reads_only_the_records_of_its_own_lines(new_story):
 
 
 def test_a_line_on_a_clock_finds_its_newest_record_though_its_text_changed(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     log = story.container.get(NudgeLog)
     interval = Interval(Seconds(300))
     first = Nudge("sample.clock", NudgeType.STEERING, "Used 10", interval=interval)
@@ -171,7 +171,7 @@ def test_a_line_on_a_clock_finds_its_newest_record_though_its_text_changed(new_s
 
 
 def test_a_reader_request_notice_sees_its_last_reminder(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     log = story.container.get(NudgeLog)
     answer = RuleAnswer.with_nudges(Nudge(f"{READER_REQUEST.key}.7", NudgeType.STEERING, "Add a reader"))
     context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
@@ -181,7 +181,7 @@ def test_a_reader_request_notice_sees_its_last_reminder(new_story):
 
 
 def test_a_hooks_rules_are_asked_with_no_write_lock_held(new_story, monkeypatch):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     database, transaction_states = story.container.get(Database), []
     first_request = DriverRules.ask
 

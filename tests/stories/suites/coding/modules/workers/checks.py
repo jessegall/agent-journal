@@ -1,5 +1,5 @@
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, delivered_worker, dispatched_worker, repository_environment
 
 SHORTFALL = "the rounding has no test"
@@ -7,7 +7,7 @@ PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'
 
 
 def test_a_proof_the_main_agent_checks_is_checked(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     delivered_worker(story, repository)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
@@ -15,7 +15,7 @@ def test_a_proof_the_main_agent_checks_is_checked(new_story):
 
 
 def test_a_short_proof_moves_the_task_back_to_started_and_tells_the_worker_what_is_missing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success(PROOF_SHORT, "state: short", f"shortfall: {SHORTFALL}", actor=story.agent)
@@ -26,7 +26,7 @@ def test_a_short_proof_moves_the_task_back_to_started_and_tells_the_worker_what_
 
 
 def test_a_short_proof_shown_again_and_delivered_is_checked(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success(PROOF_SHORT, "state: short", actor=story.agent)
@@ -38,7 +38,7 @@ def test_a_short_proof_shown_again_and_delivered_is_checked(new_story):
 
 
 def test_a_worker_edits_an_unchecked_proof_and_cannot_edit_it_after_check(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     proof = story.new_row_id('proof make 1 --task 1 "first evidence"', actor=worker)
@@ -51,7 +51,7 @@ def test_a_worker_edits_an_unchecked_proof_and_cannot_edit_it_after_check(new_st
 
 
 def test_a_proof_must_name_the_workers_current_task(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_refusal('proof make 1 "evidence" --task 99', 'current task is 1', actor=worker)
@@ -59,7 +59,7 @@ def test_a_proof_must_name_the_workers_current_task(new_story):
 
 
 def test_the_main_agent_can_return_a_checked_proof_with_a_reason(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success('proof check 1', 'state: checked', actor=story.agent)
@@ -69,7 +69,7 @@ def test_the_main_agent_can_return_a_checked_proof_with_a_reason(new_story):
 
 
 def test_a_short_proof_is_replaced_with_the_command_its_refusal_names(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
@@ -78,7 +78,7 @@ def test_a_short_proof_is_replaced_with_the_command_its_refusal_names(new_story)
 
 
 def test_a_proof_is_returned_and_a_job_sent_while_the_delivered_workers_task_is_started_again(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     story.expect_success("task retest 1", "state: started", actor=story.agent)

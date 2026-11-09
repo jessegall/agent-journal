@@ -9,7 +9,7 @@ from core.modules.claude_code.providers.support.claude_folder_name import Claude
 from core.modules.drivers.models.helper_job import HelperJob
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 
 JOB = "Now read the listener side."
 START = 'helper start journal-researcher --brief "Read src/cart.py" --environment main'
@@ -18,7 +18,7 @@ START = 'helper start journal-researcher --brief "Read src/cart.py" --environmen
 class StartedHelper(StoryFixture):
     """A main agent with a person beside it and one helper of journal-researcher on src/cart.py."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         launcher = FakeLauncher(story.home.socket("launcher"))
@@ -42,7 +42,7 @@ def resumable_session(story, helper, monkeypatch) -> None:
     transcript.write_text("{}\n")
 
 
-def jobs_of(story, helper):
+def read_jobs(story, helper):
     return list(story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).oldest().all_rows())
 
 
@@ -60,7 +60,7 @@ def test_a_send_to_a_running_helper_adds_to_its_open_job(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
     story.expect_success(f'helper send {helper.id} "{JOB}" --steer', actor=story.agent)
-    jobs = jobs_of(story, helper)
+    jobs = read_jobs(story, helper)
     story.expect_rows(len(jobs) == 1, JOB in jobs[0].brief)
     story.expect_text(f"agent-line list --agent {helper.id}", JOB)
 
@@ -73,7 +73,7 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story, mon
     story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.wait_for_requests()
-    story.expect_rows(len(jobs_of(story, helper)) == 2, helper.session in " ".join(launcher.requests[0]["command"]), JOB in " ".join(launcher.requests[0]["command"]))
+    story.expect_rows(len(read_jobs(story, helper)) == 2, helper.session in " ".join(launcher.requests[0]["command"]), JOB in " ".join(launcher.requests[0]["command"]))
 
 
 def test_a_long_job_arrives_whole(new_story):
@@ -81,7 +81,7 @@ def test_a_long_job_arrives_whole(new_story):
     helper = helper_agent(story)
     job = "y" * 6000
     story.expect_success(f'helper send {helper.id} "{job}" --steer', actor=story.agent)
-    story.expect_rows(job in jobs_of(story, helper)[0].brief)
+    story.expect_rows(job in read_jobs(story, helper)[0].brief)
 
 
 def test_a_send_refuses_an_agent_that_is_no_helper(new_story):
@@ -106,7 +106,7 @@ def test_a_stop_ends_the_helper_and_its_job(new_story):
     helper = helper_agent(story)
     story.expect_success(f"helper stop {helper.id}", actor=story.agent)
     story.run_listeners()
-    job = jobs_of(story, helper)[0]
+    job = read_jobs(story, helper)[0]
     story.expect_rows(job.ended_at is not None, job.returned == "Stopped")
 
 
@@ -118,7 +118,7 @@ def test_another_agent_may_not_stop_a_helper(new_story):
 
 def test_a_helper_that_ends_closes_its_job(new_story):
     story = new_story(fixture=EndedHelper)
-    story.expect_rows(jobs_of(story, helper_agent(story))[0].ended_at is not None)
+    story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is not None)
 
 
 def test_a_job_naming_files_an_ended_helper_knows_goes_to_that_helper(new_story):

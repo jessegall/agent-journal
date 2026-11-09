@@ -18,7 +18,7 @@ from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from tests.stories.core.support import story_lines as lines
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator, BuilderHelper
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_refusal_hook
 
@@ -112,7 +112,7 @@ def paused_story(new_story, fixture):
 
 
 def test_a_paused_agent_with_a_task_in_hand_may_stop(new_story):
-    story = paused_story(new_story, BuilderWithStartedTask)
+    story = paused_story(new_story, StartedTaskBuilder)
     expect_refusal_hook(story, "s-1")
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_hook_allowed("s-1", HookSamples.stop())
@@ -121,7 +121,7 @@ def test_a_paused_agent_with_a_task_in_hand_may_stop(new_story):
 
 
 def test_a_paused_agent_is_given_no_new_task_at_its_stop(new_story):
-    story = paused_story(new_story, OrchestratorWithOpenTask)
+    story = paused_story(new_story, OpenTaskOrchestrator)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_hook_allowed("s-1", HookSamples.stop())
     story.expect_success(lines.TASK_DETAILS, "state: open")
@@ -133,7 +133,7 @@ def test_a_paused_agent_can_still_run_journal_lines(paused_task_holder):
 
 
 def test_a_helper_of_a_paused_agent_is_paused_too(new_story):
-    story = paused_story(new_story, HelperUnderBuilder)
+    story = paused_story(new_story, BuilderHelper)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_hook_refusal("sub-1", BUILD_SAMPLE, "the user paused you")
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
@@ -147,7 +147,7 @@ def test_the_pause_ends_with_the_agent(paused_task_holder):
 
 
 def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_story):
-    story = paused_story(new_story, HelperUnderBuilder)
+    story = paused_story(new_story, BuilderHelper)
     worker = next(agent for agent in story.container.get(Queries).query(Agent).all_rows() if agent.parent_id == story.agent.id)
     story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
     overlay = PausedOverlay(story.container.get(AgentRows))
@@ -158,7 +158,7 @@ def test_a_worker_pauses_on_its_own_and_not_with_the_agent_that_sent_it(new_stor
 
 @pytest.fixture
 def paused_task_holder(new_story):
-    story = paused_story(new_story, BuilderWithStartedTask)
+    story = paused_story(new_story, StartedTaskBuilder)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     return story
 

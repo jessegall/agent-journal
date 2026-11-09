@@ -14,7 +14,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
-class ResumeAsked(StoryFixture):
+class ResumeRequested(StoryFixture):
     """A person paused the agent, and the agent asked to be resumed, so the dock holds the question."""
 
     parent = UserJoined
@@ -26,7 +26,7 @@ class ResumeAsked(StoryFixture):
 
 @pytest.fixture
 def resume_approval(new_story):
-    story = new_story(fixture=ResumeAsked)
+    story = new_story(fixture=ResumeRequested)
     approval = story.container.get(Queries).query(ApprovalRequest).first()
     story.expect_rows(approval is not None)
     return story, approval
@@ -68,7 +68,7 @@ def test_the_same_attempt_again_keeps_one_open_card(resume_approval):
 
 
 def test_a_command_run_as_approved_by_an_approval_asks_nobody_again_whoever_runs_it(new_story):
-    story = new_story(fixture=ResumeAsked)
+    story = new_story(fixture=ResumeRequested)
     story.expect_text(f"approval list", "Resume the paused agent", actor=story.user)
     story.container.get(Bus).run(ResumeAgent(story.agent.id), story.agent, environment_id=1, approval_id=1)
     story.expect_rows(story.row(Agent, story.agent.id).paused_at is None)

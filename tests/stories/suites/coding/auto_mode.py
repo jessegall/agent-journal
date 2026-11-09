@@ -2,7 +2,7 @@ from core.testing.story_fixture import StoryFixture
 
 import pytest
 
-from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
+from tests.stories.core.support.coding_fixtures import StartedTaskBuilder
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 
 
@@ -31,7 +31,7 @@ def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(n
 
 
 def test_closing_a_task_with_another_in_hand_starts_a_critical_open_task_but_no_other(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.run('task make "Second in hand" --environment main', actor=story.agent)
     story.run("task start 2", actor=story.agent)
     story.run('task make "Fix the totals" --environment main --priority high', actor=story.agent)
@@ -78,7 +78,7 @@ def test_a_task_that_waits_on_an_open_task_is_not_given_next(new_story):
 
 
 def test_a_released_task_is_not_given_back_at_once(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run('task release 1 --reason "later"', actor=story.agent)
     story.run_listeners()
@@ -87,7 +87,7 @@ def test_a_released_task_is_not_given_back_at_once(new_story):
 
 
 def test_a_task_queued_for_a_worker_is_not_started_for_the_main_agent(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     repository_environment(story)
     story.run('task make "Running at the worker" --environment main', actor=story.agent)
     story.run('task make "Queued at the worker" --environment main --priority critical', actor=story.agent)
@@ -102,7 +102,7 @@ def test_a_task_queued_for_a_worker_is_not_started_for_the_main_agent(new_story)
 
 
 class PrioritizedTasks(StoryFixture):
-    parent = BuilderWithStartedTask
+    parent = StartedTaskBuilder
 
     def steps(self, story):
         task_pair(story)
@@ -118,7 +118,7 @@ def next_task_after_close(new_story):
 
 @pytest.fixture
 def closed_last_task(new_story):
-    story = new_story(fixture=BuilderWithStartedTask)
+    story = new_story(fixture=StartedTaskBuilder)
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     return story

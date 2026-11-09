@@ -5,7 +5,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
@@ -13,7 +13,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 
 @pytest.fixture
 def forty_task_inspector(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     repository_environment(story)
     worker = dispatched_worker(story).id

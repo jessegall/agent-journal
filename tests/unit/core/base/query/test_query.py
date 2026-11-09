@@ -17,7 +17,7 @@ from core.base.query.query import Query
 from core.base.query.unknown_column_error import UnknownColumnError
 from tests.unit.core.base.model.test_table import LogEntry
 
-AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+FIXED_TIME = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ def entries(tmp_path):
     statements = TableStatements(table)
     for number in range(1, 8):
         entry = LogEntry(title=f"Book {number}", shelf_id=None if number % 2 else 3)
-        database.insert(statements.insert(table.row(entry, table.columns), AT))
+        database.insert(statements.insert(table.row(entry, table.columns), FIXED_TIME))
     yield Queries(database, tables).query(LogEntry)
     database.close()
 
@@ -82,7 +82,7 @@ def test_all_rows_stops_after_a_short_page(entries: Query[LogEntry], row_count: 
     statements = TableStatements(entries.table)
     for number in range(8, row_count + 1):
         entry = LogEntry(title=f"Book {number}")
-        entries.database.insert(statements.insert(entries.table.row(entry, entries.table.columns), AT))
+        entries.database.insert(statements.insert(entries.table.row(entry, entries.table.columns), FIXED_TIME))
     reads: list[str] = []
     entries.database.connection.set_trace_callback(reads.append)
 
@@ -97,7 +97,7 @@ def test_all_rows_reads_a_long_table_without_a_statement_per_small_page(entries:
     statements = TableStatements(entries.table)
     for number in range(8, 61):
         entry = LogEntry(title=f"Book {number}")
-        entries.database.insert(statements.insert(entries.table.row(entry, entries.table.columns), AT))
+        entries.database.insert(statements.insert(entries.table.row(entry, entries.table.columns), FIXED_TIME))
     reads: list[str] = []
     entries.database.connection.set_trace_callback(reads.append)
 
@@ -112,12 +112,12 @@ class ShelfEntries(Query[LogEntry]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, LogEntry)
 
-    def on_shelf(self, shelf_id: int) -> "ShelfEntries":
+    def shelved(self, shelf_id: int) -> "ShelfEntries":
         return self.filter(shelf_id=shelf_id)
 
 
 def test_a_query_with_named_filters_is_a_plain_class_the_container_builds(entries: Query[LogEntry]):
     container = Container()
     container.bind(Database, entries.database)
-    on_shelf = container.get(ShelfEntries).on_shelf(3).oldest().page().rows
-    assert [entry.id for entry in on_shelf] == [2, 4, 6]
+    shelved = container.get(ShelfEntries).shelved(3).oldest().page().rows
+    assert [entry.id for entry in shelved] == [2, 4, 6]

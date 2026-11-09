@@ -7,7 +7,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.drivers.support.confirmed_skips import TRIED
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 
 RULE = "workers.allowed-command-types"
 REASON = "it is wrong here"
@@ -18,7 +18,7 @@ REMOVAL = HookSamples.shell("rm src/cart.py", ShellPart("rm", "edit", ["src/cart
 
 @pytest.fixture
 def refused_worker(new_story):
-    story = new_story(fixture=BuilderWithOpenTask)
+    story = new_story(fixture=OpenTaskBuilder)
     worker = Actor(story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(lines.TASK_START, actor=worker)
     story.expect_success("""setting make journal.suites.coding.worker-command-types '["read", "search"]' --environment main""")

@@ -4,14 +4,14 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.modules.processes.process_queue_read import queue_page
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 
 
 class QueuedWorker(StoryFixture):
     """One run takes the only spot, no reader is asked for, and a worker is the agent that runs commands."""
 
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story) -> None:
         story.expect_success("setting set journal.core.processes.run-batch-size 1 --environment main", actor=story.user)
@@ -21,7 +21,7 @@ class QueuedWorker(StoryFixture):
 
 
 def test_finished_reads_and_searches_of_any_agent_stay_out_of_the_queue(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for role in ("main", "worker"):
         if role == "worker":
             story.agent = Actor(story.new_row_id("agent start queue-reader claude worker --environment main"), ActorType.AGENT)
@@ -56,7 +56,7 @@ def test_a_queued_test_moves_from_waiting_to_running_to_recent_even_after_newer_
 
 
 def test_main_agent_tests_and_builds_remain_visible(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for category in (CommandCategory.TEST_RUN, CommandCategory.BUILD):
         process = start_process(story, "make cart && cd .", category=category)
         expect_value(process.is_queue_run, False)

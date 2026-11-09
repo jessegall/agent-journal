@@ -15,10 +15,10 @@ from core.modules.drivers.support.suite_choice import SuiteChoice
 from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
-from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, NativeHelperUnderBuilder, RuleForEveryHelper, RuleForReadOnlyHelpers, WorkerStarted
+from tests.stories.suites.coding.modules.workers.support.helper_types import ClerkStarted, HelperStarted, BuilderNativeHelper, EveryHelperRule, ReaderHelpersRule, WorkerStarted
 
 READ_SAMPLE = HookSamples.tool_use("Read", ToolType.READ, ["README.md"], None)
-FIXTURES = {"helper": HelperStarted, "helper": NativeHelperUnderBuilder, "worker": WorkerStarted, "clerk": ClerkStarted}
+FIXTURES = {"helper": HelperStarted, "helper": BuilderNativeHelper, "worker": WorkerStarted, "clerk": ClerkStarted}
 
 
 def test_shipped_types_restore_their_access_inheritance_and_worker_roster(new_story):
@@ -69,22 +69,22 @@ def test_a_helper_has_saved_commands_from_its_first_start(new_story):
 
 @pytest.mark.parametrize("role", ["helper", "worker", "clerk"])
 def test_a_rule_that_names_the_helper_role_holds_for_a_worker_and_every_other_kind(new_story, role):
-    story = new_story(fixture=RuleForEveryHelper)
+    story = new_story(fixture=EveryHelperRule)
     story.expect_hook_refusal(f"s-{role}", READ_SAMPLE, "sample rule holds for every helper")
 
 
 def test_a_rule_that_names_the_helper_role_leaves_the_main_agent_alone(new_story):
-    story = new_story(fixture=RuleForEveryHelper)
+    story = new_story(fixture=EveryHelperRule)
     story.expect_hook_allowed("s-1", READ_SAMPLE)
 
 
 def test_a_rule_for_read_only_helpers_holds_for_a_read_only_helper(new_story):
-    story = new_story(fixture=RuleForReadOnlyHelpers)
+    story = new_story(fixture=ReaderHelpersRule)
     story.expect_hook_refusal("s-helper", READ_SAMPLE, "sample rule holds for read-only helpers")
 
 
 def test_a_rule_for_read_only_helpers_leaves_a_worker_alone(new_story):
-    story = new_story(fixture=RuleForReadOnlyHelpers)
+    story = new_story(fixture=ReaderHelpersRule)
     story.expect_hook_allowed("s-worker", READ_SAMPLE)
 
 

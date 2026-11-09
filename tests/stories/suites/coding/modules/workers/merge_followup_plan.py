@@ -4,7 +4,7 @@ from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -18,7 +18,7 @@ def set_commands(story, commands: list[str]) -> None:
 
 
 def merge_story(new_story, commands: list[str]):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     UserJoined().steps(story)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)

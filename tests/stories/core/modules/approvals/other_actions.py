@@ -11,14 +11,14 @@ from core.modules.settings.models.setting import Setting
 from tests.stories.core.modules.memories.support.memory_owners import MainAndWorkerMemories, WORKER_FACT
 from tests.stories.core.modules.templates.sending import CRITIQUE
 from tests.stories.core.modules.templates.support.sending_templates import SendingTemplates
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.checks.checks import StoppedCheck
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
 
 @pytest.fixture
 def approval_story(new_story):
-    return new_story(fixture=BuilderWithUser)
+    return new_story(fixture=UserBuilder)
 
 
 def test_a_person_adds_an_agents_mcp_server_request_in_the_viewer(approval_story):

@@ -285,17 +285,17 @@ def conditioned_story(new_story, condition: str):
 
 
 @pytest.fixture
-def never_ready_service(new_story):
+def unready_service(new_story):
     return conditioned_story(new_story, "false")
 
 @pytest.fixture
-def later_ready_service(new_story):
+def delayed_service(new_story):
     return conditioned_story(new_story, 'test -f "$JOURNAL_PLUGIN_DATA/ready"')
 
 
 
-def test_a_service_whose_condition_kept_it_from_starting_is_not_listed(never_ready_service):
-    story = never_ready_service
+def test_a_service_whose_condition_kept_it_from_starting_is_not_listed(unready_service):
+    story = unready_service
     try:
         story.services.run(story.processes)
         story.expect_absent("plugin services", "served answers")
@@ -314,8 +314,8 @@ def test_a_condition_past_its_limit_counts_as_failed_and_is_the_plugins_fault(ne
         story.processes.close()
 
 
-def test_a_service_whose_condition_later_passes_starts_once_it_is_checked_again(later_ready_service):
-    story = later_ready_service
+def test_a_service_whose_condition_later_passes_starts_once_it_is_checked_again(delayed_service):
+    story = delayed_service
     try:
         story.services.run(story.processes)
         story.expect_rows(("served", "answers") not in story.processes.running)

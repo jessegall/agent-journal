@@ -10,9 +10,9 @@ from core.base.repository.repository import Repository
 from core.modules.library.models.library_copy import LibraryCopy
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.testing.story import Story
-from tests.stories.core.modules.library.support.stored_text import every_stored_text
+from tests.stories.core.modules.library.support.stored_text import stored_texts
 from tests.stories.core.modules.secrets.support.private_home import private_folder
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.shared_server_binary import SharedServerBinary
 
 __all__ = ["private_folder"]
@@ -44,7 +44,7 @@ def new_item(server: SharedServerBinary, token: str, share: str, fields: dict[st
 
 
 def connected(new_story, server: SharedServerBinary, token: str) -> Story:
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.expect_text(f"library connect {server.address} --token {token}", "Connected: ", actor=story.user)
     return story
 
@@ -142,7 +142,7 @@ def test_versions_name_who_wrote_each_one_newest_first(new_story, shared_server)
 
 
 def test_with_no_connection_each_read_refuses_in_plain_words(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     for line in ("library list", "library show doc 1", "library versions doc 1"):
         story.expect_refusal(line, "This journal is not connected to a shared server.", actor=story.agent)
 
@@ -165,8 +165,8 @@ def test_the_reads_write_no_row(new_story, shared_server):
     server, tokens = shared_server
     item_id = new_item(server, tokens.admin, "doc", doc_fields("Agate no rows"))
     story = connected(new_story, server, tokens.editor)
-    stored_text = every_stored_text(story)
+    stored_text = stored_texts(story)
     story.expect_text("library list --search agate", "Agate no rows", actor=story.agent)
     story.expect_text(f"library show doc {item_id}", "title: Agate no rows", actor=story.agent)
     story.expect_text(f"library versions doc {item_id}", "version 1", actor=story.agent)
-    story.expect_rows(every_stored_text(story) == stored_text)
+    story.expect_rows(stored_texts(story) == stored_text)

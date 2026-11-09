@@ -3,7 +3,7 @@ import pytest
 
 from core.base.query.queries import Queries
 from core.modules.settings.models.setting import Setting
-from tests.stories.core.modules.usage.agent_rows import AgentsWithStates
+from tests.stories.core.modules.usage.agent_rows import StatesAgents
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.support.browser_story import expect_browser
 
@@ -14,7 +14,7 @@ PROFILES = "journal.core.helpers.read-only-helper-profile-limits"
 
 @pytest.fixture
 def agent_limits_server(new_story):
-    story = new_story(fixture=AgentsWithStates)
+    story = new_story(fixture=StatesAgents)
     story.expect_success(f"setting set {RUN} 3 --project", actor=story.user)
     story.expect_success(f"setting set {KEPT} 5 --project", actor=story.user)
     story.expect_success(f"setting set {RUN} 1 --environment main", actor=story.user)

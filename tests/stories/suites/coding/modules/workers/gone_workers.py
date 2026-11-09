@@ -12,7 +12,7 @@ from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.testing.fake_launcher import FakeLauncher
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser, OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
 
 MAIN_SESSION = "s-1"
@@ -34,13 +34,13 @@ def expect_restart(story, launcher: FakeLauncher) -> None:
 
 
 @pytest.fixture(autouse=True)
-def no_program_on_the_machine(monkeypatch):
+def missing_program(monkeypatch):
     monkeypatch.setattr(LeftoverProcess, "command_line", staticmethod(lambda pid: ""))
 
 
 @pytest.fixture
 def worker_story(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     repository_environment(story)
     return story
@@ -237,7 +237,7 @@ def test_a_send_to_a_paused_worker_says_it_waits_for_the_resume(running_worker):
 
 
 def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     story.use_processes(RUNNING_PROGRAM)
     launcher = start_launcher(story, f"started {WORKER_PID}\n".encode())
     helper = story.new_row_id('helper start journal-researcher --brief "Read src/cart.py" --environment main', actor=story.agent)

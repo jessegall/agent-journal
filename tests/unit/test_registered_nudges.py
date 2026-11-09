@@ -78,7 +78,7 @@ def test_every_line_is_in_a_register_of_its_module(name, text, path):
         return
     module = next(parent for parent in path.parents if list(parent.glob("*_module.py")))
     module_sources = [source_text(source) for source in (module / "support").glob("*.py")] + [source_text(source) for source in module.glob("*_module.py")]
-    registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", text_of_file) for text_of_file in module_sources)
+    registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", file_text) for file_text in module_sources)
     assert registered, f"{name} of {path} is in no register"
 
 

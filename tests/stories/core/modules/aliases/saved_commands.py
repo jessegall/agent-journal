@@ -30,7 +30,7 @@ class BuildSaved(StoryFixture):
         story.run_listeners()
 
 
-def hook_of(story: Story, saved_lines: dict[str, str]) -> Iterator[AliasHook]:
+def read_hook(story: Story, saved_lines: dict[str, str]) -> Iterator[AliasHook]:
     install_runner(story)
     with server_story(story) as server:
         story.home.saved_command_file.parent.mkdir(parents=True, exist_ok=True)
@@ -41,12 +41,12 @@ def hook_of(story: Story, saved_lines: dict[str, str]) -> Iterator[AliasHook]:
 
 @pytest.fixture
 def unsaved_hook(new_story):
-    yield from hook_of(new_story(fixture=BuilderStarted), {})
+    yield from read_hook(new_story(fixture=BuilderStarted), {})
 
 
 @pytest.fixture
 def saved_hook(new_story):
-    yield from hook_of(new_story(fixture=BuildSaved), {"build-npm": "npm run build"})
+    yield from read_hook(new_story(fixture=BuildSaved), {"build-npm": "npm run build"})
 
 
 def expect_read_flag(hook: AliasHook, line: str, expanded: str, read_flag: str) -> None:

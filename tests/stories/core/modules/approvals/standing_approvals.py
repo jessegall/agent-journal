@@ -29,53 +29,53 @@ def standing_yeses(story: Story) -> list[StandingApproval]:
     return list(story.container.get(Queries).query(StandingApproval).all_rows())
 
 
-def accepted_always(story: Story, request: ApprovalRequest, scope: str) -> None:
+def permanent_acceptance(story: Story, request: ApprovalRequest, scope: str) -> None:
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(request.id), "--always", scope])
 
 
-def ask_for_resume(story: Story) -> None:
+def resume_request(story: Story) -> None:
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_refusal(f"agent resume {story.agent.id} --reason needed", ASKED, actor=story.agent)
 
 
-def resume_under_standing_yes(story: Story) -> None:
+def resume_approved(story: Story) -> None:
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_text(f"agent resume {story.agent.id} --reason needed", "accepted approval", actor=story.agent)
 
 
-class ResumeAsked(StoryFixture):
+class ResumeRequested(StoryFixture):
     """A person paused the agent and the agent asked to be resumed, so the dock holds the question."""
 
     parent = UserJoined
 
     def steps(self, story: Story) -> None:
-        ask_for_resume(story)
+        resume_request(story)
 
 
-class ResumeAlwaysSame(StoryFixture):
+class ResumeFixedSession(StoryFixture):
     """The person accepted that question and kept a standing yes for the same request."""
 
-    parent = ResumeAsked
+    parent = ResumeRequested
 
     def steps(self, story: Story) -> None:
-        accepted_always(story, requests(story)[0], "same")
+        permanent_acceptance(story, requests(story)[0], "same")
 
 
 def test_accept_once_keeps_no_standing_yes_and_the_next_request_asks_again(new_story):
-    story = new_story(NOTES, fixture=ResumeAsked)
+    story = new_story(NOTES, fixture=ResumeRequested)
     with viewer_client(story) as viewer:
         viewer.value("messages.chat", ["approval", "accept", str(requests(story)[0].id)])
     story.expect_rows(standing_yeses(story) == [], story.row(Agent, story.agent.id).paused_at is None)
-    ask_for_resume(story)
+    resume_request(story)
     story.expect_rows([request.state for request in requests(story)] == [ApprovalState.ACCEPTED, ApprovalState.OPEN])
 
 
 def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_still_asks_about_another_kind(new_story):
-    story = new_story(NOTES, fixture=ResumeAlwaysSame)
+    story = new_story(NOTES, fixture=ResumeFixedSession)
     standing = standing_yeses(story)
     story.expect_rows(len(standing) == 1, standing[0].scope is StandingScope.EXACT, standing[0].creator_id == story.user.id, detail=str(standing))
-    resume_under_standing_yes(story)
+    resume_approved(story)
     covered = requests(story)[1]
     story.expect_rows(covered.state is ApprovalState.ACCEPTED, covered.standing_id == standing[0].id, story.row(Agent, story.agent.id).paused_at is None, detail=str(covered))
     story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
@@ -83,9 +83,9 @@ def test_always_for_the_same_request_accepts_the_same_request_with_no_card_and_s
 
 
 def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_story):
-    story = new_story(NOTES, fixture=ResumeAlwaysSame)
+    story = new_story(NOTES, fixture=ResumeFixedSession)
     story.expect_text("standing-approval list", "ResumeAgent", actor=story.user)
-    resume_under_standing_yes(story)
+    resume_approved(story)
     story.run_listeners()
     story.expect_text("chat-mark list --environment main", f"Standing yes {standing_yeses(story)[0].id} accepted approval {requests(story)[1].id}", actor=story.user)
     notices = docked(story, ApprovalDockType.STANDING_USED.value)
@@ -96,24 +96,24 @@ def test_a_request_a_standing_yes_accepted_leaves_a_chat_mark_naming_it(new_stor
 def test_always_for_any_request_like_it_covers_the_same_kind_and_target_whatever_follows(new_story):
     story = new_story(NOTES, fixture=UserJoined)
     story.expect_refusal(save_preset("Mine"), ASKED, actor=story.agent)
-    accepted_always(story, requests(story)[0], "like")
+    permanent_acceptance(story, requests(story)[0], "like")
     story.expect_rows(standing_yeses(story)[0].scope is StandingScope.LIKE)
     story.expect_text(save_preset("Other"), "accepted approval", actor=story.agent)
     story.expect_rows(len(requests(story)) == 2, requests(story)[1].state is ApprovalState.ACCEPTED, requests(story)[1].standing_id == standing_yeses(story)[0].id)
-    ask_for_resume(story)
+    resume_request(story)
     story.expect_rows(requests(story)[2].state is ApprovalState.OPEN)
 
 
 def test_a_removed_standing_yes_asks_again(new_story):
-    story = new_story(NOTES, fixture=ResumeAlwaysSame)
+    story = new_story(NOTES, fixture=ResumeFixedSession)
     story.expect_success(f"standing-approval delete {standing_yeses(story)[0].id}", actor=story.user)
     story.expect_rows(standing_yeses(story) == [])
-    ask_for_resume(story)
+    resume_request(story)
     story.expect_rows(requests(story)[1].state is ApprovalState.OPEN)
 
 
 def test_an_agent_cannot_make_or_remove_a_standing_yes(new_story):
-    story = new_story(NOTES, fixture=ResumeAlwaysSame)
+    story = new_story(NOTES, fixture=ResumeFixedSession)
     story.expect_refusal(f"standing-approval delete {standing_yeses(story)[0].id}", "an agent cannot", actor=story.agent)
 
 

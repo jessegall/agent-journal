@@ -14,7 +14,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.modules.processes.support.process_samples import expect_rewritten, install_runner, runner_line, user_waits, with_parse_error
-from tests.stories.core.support.coding_fixtures import BuilderStarted, HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderHelper
 from core.testing.expect_reply import expect_reply_allowed
 from tests.stories.support.story_checks import expect_lines_reply_line, expect_refusal_hook_rule, expect_updated_input_hook, expect_updated_input_reply
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
@@ -85,7 +85,7 @@ def test_the_limit_drops_to_10_seconds_while_a_message_waits_for_the_user(new_st
 
 
 def test_a_helper_s_line_runs_through_the_runner_as_a_run_of_its_own(new_story):
-    story = install_runner(new_story(fixture=HelperUnderBuilder))
+    story = install_runner(new_story(fixture=BuilderHelper))
     story.container.get(ShellSandbox).is_required = True
     story.hook("s-1", SERVER)
     expect_updated_input_hook(story, "sub-1", SERVER, {"command": runner_line(story, 2, "node serve.js", session="sub-1")})

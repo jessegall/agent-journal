@@ -9,14 +9,14 @@ from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from tests.stories.support.story_checks import expect_value
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.phase_steps import worker_on_plan
+from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 
 
 @pytest.fixture
 def worker_batch(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('task make "Tax" --brief "Calculate tax" --environment main')
     story.expect_success('task make "Receipt" --brief "Print receipt" --environment main')
@@ -43,10 +43,10 @@ def test_a_worker_reads_its_current_task_and_remaining_assignments(worker_batch)
 
 
 def test_a_worker_in_a_phase_reads_the_phase_and_the_tasks_waiting_for_its_end(new_story, monkeypatch):
-    on_plan = worker_on_plan(new_story, monkeypatch)
-    on_plan.prove_and_move_on()
-    on_plan.story.expect_text("worker status", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=on_plan.worker)
-    status = json.loads(on_plan.story.run("worker status --json", actor=on_plan.worker).output_text)
+    planned_worker = start_planned_worker(new_story, monkeypatch)
+    planned_worker.prove_advance()
+    planned_worker.story.expect_text("worker status", "Current phase: phase 1 (Build)", "Tasks waiting for its end: 1", actor=planned_worker.worker)
+    status = json.loads(planned_worker.story.run("worker status --json", actor=planned_worker.worker).output_text)
     expect_value(status["phase"] == {"id": 1, "title": "Build", "tasks_waiting": 1}, True)
 
 
@@ -78,7 +78,7 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
 
 
 def test_status_without_a_worker_names_the_missing_worktree(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     story.expect_text("worker status", "has no worker worktree", actor=story.agent)
 
 

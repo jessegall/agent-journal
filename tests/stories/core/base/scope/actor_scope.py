@@ -15,7 +15,7 @@ from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.modules.processes.worker_outputs import worker_run
-from tests.stories.core.support.coding_fixtures import HelperUnderBuilder
+from tests.stories.core.support.coding_fixtures import BuilderHelper
 from core.testing.expect_row import expect_row
 
 TASK_LINE = 'task make "Fix the cart" --environment main'
@@ -28,7 +28,7 @@ DOC_LINE = 'doc make "Cart rules" --abstract "How the cart counts" --body "Cents
 
 @pytest.fixture
 def subagent_task(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run(TASK_LINE, actor=story.helper)
     story.run_listeners()
     return story
@@ -42,7 +42,7 @@ def test_a_helpers_task_move_stays_out_of_the_main_chat_and_is_stored_as_its_own
 
 
 def test_a_main_agents_task_move_still_shows_in_the_main_chat(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run(TASK_LINE, actor=story.agent)
     story.run_listeners()
     story.expect_text(MAIN_CHAT, MADE)
@@ -54,14 +54,14 @@ def test_a_task_move_of_the_journal_itself_has_no_scope_and_shows(new_story):
 
 
 def test_a_line_another_agent_caused_is_hidden_and_its_own_is_not(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     line = AgentLine(session_agent_id=story.agent.id, creator_id=story.helper.id, text="words")
     expect_state_scoped_2(line, story, AgentLineState.HIDDEN)
     expect_state_scoped(line, story, AgentLineState.WAITING)
 
 
 def test_when_lets_only_the_events_its_function_says_true_to_through(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run(TASK_LINE, actor=story.helper)
     scopes = story.container.get(Scopes)
     log = story.container.get(EventLog)
@@ -75,14 +75,14 @@ def test_when_lets_only_the_events_its_function_says_true_to_through(new_story):
 
 
 def test_a_helpers_document_still_docks_above_the_main_chat(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run(DOC_LINE, actor=story.helper)
     story.run_listeners()
     story.expect_text(MAIN_DOCK, "Cart rules")
 
 
 def test_a_helpers_dock_item_stays_out_of_the_main_chat_and_pushes_nothing_out(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run(DOC_LINE, actor=story.agent)
     story.run_listeners()
     story.run('memory make "The cart counts in cents" --weight 5 --environment main', actor=story.helper)
@@ -93,13 +93,13 @@ def test_a_helpers_dock_item_stays_out_of_the_main_chat_and_pushes_nothing_out(n
 
 
 def test_a_helpers_message_send_is_refused_and_a_main_agents_is_not(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_refusal('message send "The cart is done" --environment main', "only a main agent", actor=story.helper)
     story.expect_success('message send "The cart is done" --environment main', actor=story.agent)
 
 
 def test_the_commands_of_the_main_agent_leave_out_a_helpers_and_the_helpers_page_shows_them(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     ended_run(story, "pytest -q", "ok\n")
     worker_run(story, story.helper, "make build")
     story.expect_absent("process feed", "make build")
@@ -115,19 +115,19 @@ def test_a_helper_reads_only_its_own_rows_and_a_person_reads_them_all(subagent_t
 
 
 def test_a_helpers_reminder_does_not_fire_at_the_main_agent(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_success('reminder make "Log the task" --every-minutes 10 --environment main', actor=story.helper)
     story.advance(timedelta(minutes=11))
     story.expect_absent_hook_line("s-1", HookSamples.edit("src/cart.py"), "reminder:1: Log the task")
 
 
 def test_a_helpers_question_is_refused_and_it_reports_to_the_agent_that_sent_it_instead(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_refusal(QUESTION_LINE, "put it in your report to the main agent", actor=story.helper)
 
 
 def test_a_main_agents_question_still_reaches_the_chat(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.expect_success(QUESTION_LINE, actor=story.agent)
     story.run_listeners()
     story.expect_text(MAIN_DOCK, "questions.open")
@@ -141,14 +141,14 @@ def test_an_edit_of_a_shown_mark_under_an_agent_leaves_it_in_the_main_chat(new_s
 
 
 def test_a_helpers_reaction_still_reaches_the_main_agent(new_story):
-    story = new_story(fixture=HelperUnderBuilder)
+    story = new_story(fixture=BuilderHelper)
     story.run('message send "The cart is done" --environment main', actor=story.agent)
     story.run('message react 1 "👍"', actor=story.helper)
     story.expect_absent("agent-line list --state hidden", "message 1")
 
 
 class GlobalTaskMark(StoryFixture):
-    parent = HelperUnderBuilder
+    parent = BuilderHelper
 
     def steps(self, story):
         story.run(TASK_LINE)
@@ -160,22 +160,22 @@ def expect_agent_id_mark(mark, expected) -> None:
     assert actual is expected, actual
 
 
-def applied_for(story, model, actor_id):
+def applied_setting(story, model, actor_id):
     scopes = story.container.get(Scopes)
     with scopes.opened(actor_id):
         return scopes.applied(model)
 
 
 def expect_agent_id_scoped(mark, text, story, expected) -> None:
-    actual = applied_for(story, mark.changed(text=text), story.helper.id).session_agent_id
+    actual = applied_setting(story, mark.changed(text=text), story.helper.id).session_agent_id
     assert actual is expected, actual
 
 
 def expect_state_scoped(line, story, expected) -> None:
-    actual = applied_for(story, line, story.agent.id).state
+    actual = applied_setting(story, line, story.agent.id).state
     assert actual is expected, actual
 
 
 def expect_state_scoped_2(line, story, expected) -> None:
-    actual = applied_for(story, line, story.helper.id).state
+    actual = applied_setting(story, line, story.helper.id).state
     assert actual is expected, actual

@@ -1,11 +1,11 @@
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.window_data_route import window_data
 
 
 def test_numbers_sort_and_reset_through_the_window_route(new_story):
-    story = new_story(fixture=HookRecordingOn)
+    story = new_story(fixture=HookRecordingEnabled)
     story.hook("s-1", HookSamples.stop())
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))

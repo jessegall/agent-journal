@@ -1,11 +1,11 @@
 import json
 
-from tests.stories.core.support.fixtures import PlanWithPhases
+from tests.stories.core.support.fixtures import PhasesPlan
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
 
 
 def plan_with_three_phases(new_story):
-    return new_story(fixture=PlanWithPhases)
+    return new_story(fixture=PhasesPlan)
 
 
 def test_phases_are_made_in_order_at_the_end_of_their_plan(new_story):

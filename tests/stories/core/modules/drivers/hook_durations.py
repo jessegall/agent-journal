@@ -2,7 +2,7 @@ from core.testing.story_fixture import StoryFixture
 
 from core.base.timing import Timing
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from core.testing.expect_reply import expect_absent_reply_line
 from tests.stories.support.story_checks import expect_startswith_listed, expect_value_with, expect_value_without
 
@@ -17,7 +17,7 @@ def terminal_line(story) -> str:
 
 
 def test_no_hook_duration_reaches_the_terminal_while_the_developer_switch_is_off(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     expect_terminal_line(story, "")
 
 
@@ -63,7 +63,7 @@ def test_the_agent_is_never_told_what_a_hook_cost_and_the_terminal_says_when_it_
 
 
 def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_setting_is_on(new_story):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     expect_terminal_hook_without(story, "s-1", "to the agent:")
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
@@ -71,7 +71,7 @@ def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_sett
 
 
 class HookLogging(StoryFixture):
-    parent = BuilderWithUser
+    parent = UserBuilder
 
     def steps(self, story):
         story.run(f'setting switch {MASTER} on --project', actor=story.user)

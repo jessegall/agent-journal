@@ -54,11 +54,11 @@ class Rows:
     """Stands in for the process and message queries: whether the line went past the limit and whether a
     message waits."""
 
-    def __init__(self, over_limit: bool = False, waiting: bool = False) -> None:
-        self.over_limit, self.waiting = over_limit, waiting
+    def __init__(self, excess: bool = False, waiting: bool = False) -> None:
+        self.excess, self.waiting = excess, waiting
 
     def has_moved_run(self, text: str, seconds: int = 0) -> bool:
-        return self.over_limit
+        return self.excess
 
 
 class Messages:
@@ -80,8 +80,8 @@ def line(*parts: Part, journal_shell: bool = False) -> ShellLine:
     return ShellLine(" && ".join(item.text for item in parts), tuple(parts), (), journal_shell, "")
 
 
-def limit(over_limit: bool = False, waiting: bool = False, journal_commands: bool = False) -> ForegroundLimit:
-    return ForegroundLimit(Settings(), Background(journal_commands), Rows(over_limit), Messages(waiting))  # type: ignore[arg-type]
+def limit(excess: bool = False, waiting: bool = False, journal_commands: bool = False) -> ForegroundLimit:
+    return ForegroundLimit(Settings(), Background(journal_commands), Rows(excess), Messages(waiting))  # type: ignore[arg-type]
 
 
 def test_a_journal_only_line_has_no_foreground_limit():
@@ -103,19 +103,19 @@ def test_a_test_run_gets_fewer_seconds_while_a_message_waits():
 
 
 def test_a_test_run_that_went_past_the_limit_before_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(line(part("pytest", CommandCategory.TEST_RUN)), 1).background
+    assert limit(excess=True).decide(line(part("pytest", CommandCategory.TEST_RUN)), 1).background
 
 
 def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_background():
     head = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", 1)
-    rows = Rows(over_limit=False)
+    rows = Rows(excess=False)
     rows.has_moved_run = lambda text, seconds=0: text == "tail"
     decided = ForegroundLimit(Settings(), Background(), rows, Messages(False)).decide(line(head, part("tail", CommandCategory.READ)), 1)  # type: ignore[arg-type]
     assert not decided.background
 
 
 def test_file_commands_move_at_once_after_a_long_run():
-    decided = limit(over_limit=True).decide(line(part("grep", CommandCategory.SEARCH), part("cut", CommandCategory.READ), part("sed", CommandCategory.EDIT)), 1)
+    decided = limit(excess=True).decide(line(part("grep", CommandCategory.SEARCH), part("cut", CommandCategory.READ), part("sed", CommandCategory.EDIT)), 1)
     assert decided.background
 
 

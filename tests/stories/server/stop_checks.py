@@ -1,14 +1,14 @@
 import pytest
 
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.server_client import server_story
-from tests.stories.suites.coding.drivers.orchestrator.orchestrator import OrchestratorWithReadyPlanTask
+from tests.stories.suites.coding.drivers.orchestrator.orchestrator import ReadyPlanTaskOrchestrator
 
 
 @pytest.fixture
 def stop_server(new_story):
-    with server_story(new_story(fixture=BuilderWithUser)) as server:
+    with server_story(new_story(fixture=UserBuilder)) as server:
         yield server
 
 
@@ -46,7 +46,7 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
 
 @pytest.mark.parametrize("places,answer", [(0, "allowed"), (1, "refused")])
 def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, places, answer):
-    story = new_story(fixture=OrchestratorWithReadyPlanTask)
+    story = new_story(fixture=ReadyPlanTaskOrchestrator)
     story.expect_success(f"setting set journal.suites.coding.workers.worker-run-limit {places} --environment main")
     with server_story(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
@@ -61,7 +61,7 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, pla
 
 
 def test_a_diagnostic_check_does_not_start_a_task_after_a_plan_refuses_stop(new_story):
-    story = new_story(fixture=OrchestratorWithReadyPlanTask)
+    story = new_story(fixture=ReadyPlanTaskOrchestrator)
     story.expect_success("setting set journal.suites.coding.auto-mode on --environment main")
     story.expect_success("plan approve 1 --environment main", actor=story.user)
     story.expect_success('task make "Loose task" --brief "Do this after the plan starts" --environment main', actor=story.agent)

@@ -11,7 +11,7 @@ from tests.stories.core.support.fixtures import UserJoined
 CHECKED_STEPS = [{"checks": [1]}, {"checks": [1]}]
 
 
-class SequenceWithFailedCheck(StoryFixture):
+class FailedCheckSequence(StoryFixture):
     """A failing check 1, a two step sequence whose steps both list it, and the agent on step 1."""
 
     parent = UserJoined
@@ -23,10 +23,10 @@ class SequenceWithFailedCheck(StoryFixture):
         story.run("sequence follow", actor=story.agent)
 
 
-class SequenceWithPassedCheck(StoryFixture):
+class PassedCheckSequence(StoryFixture):
     """The same run, with check 1 changed to pass and run."""
 
-    parent = SequenceWithFailedCheck
+    parent = FailedCheckSequence
 
     def steps(self, story):
         story.run('check edit 1 --command "true"', actor=story.user)
@@ -34,19 +34,19 @@ class SequenceWithPassedCheck(StoryFixture):
 
 
 def test_a_step_does_not_advance_while_a_check_it_lists_has_not_passed(new_story):
-    story = new_story(fixture=SequenceWithFailedCheck)
+    story = new_story(fixture=FailedCheckSequence)
     story.run("check run 1", actor=story.user)
     story.expect_refusal("sequence next", "step 1 of sequence 1 waits on checks that have not passed: check 1", actor=story.agent)
     story.expect_refusal("sequence next", "journal check run 1", actor=story.agent)
 
 
 def test_a_step_advances_once_the_check_it_lists_passes(new_story):
-    story = new_story(fixture=SequenceWithPassedCheck)
+    story = new_story(fixture=PassedCheckSequence)
     story.expect_text("sequence next", "sequence 1, step 2: Tag the release", actor=story.agent)
 
 
 def test_the_sequence_does_not_finish_while_the_check_of_its_last_step_fails(new_story):
-    story = new_story(fixture=SequenceWithPassedCheck)
+    story = new_story(fixture=PassedCheckSequence)
     story.run("sequence next", actor=story.agent)
     story.run("sequence follow", actor=story.agent)
     story.run('check edit 1 --command "false"', actor=story.user)
@@ -58,7 +58,7 @@ def test_the_sequence_does_not_finish_while_the_check_of_its_last_step_fails(new
 
 
 def test_a_check_that_never_ran_has_not_passed(new_story):
-    story = new_story(fixture=SequenceWithFailedCheck)
+    story = new_story(fixture=FailedCheckSequence)
     story.expect_refusal("sequence next", "waits on checks that have not passed: check 1", actor=story.agent)
 
 
@@ -71,7 +71,7 @@ def test_a_check_that_does_not_exist_has_not_passed(new_story):
 
 
 def test_abandoning_works_whatever_the_checks_say(new_story):
-    story = new_story(fixture=SequenceWithFailedCheck)
+    story = new_story(fixture=FailedCheckSequence)
     story.expect_refusal('sequence abandon --why "not today"', "again with --sure", actor=story.agent)
     story.expect_text('sequence abandon --why "not today" --sure', "sequence 1 abandoned", actor=story.agent)
     story.expect_refusal("sequence next", "no sequence is running", actor=story.agent)
@@ -86,7 +86,7 @@ def test_a_step_with_no_checks_advances_as_before(new_story):
 
 
 def test_the_step_line_and_sequence_show_name_the_checks(new_story):
-    story = new_story(fixture=SequenceWithFailedCheck)
+    story = new_story(fixture=FailedCheckSequence)
     story.expect_text("sequence show 1", "1. Run the suite (checks that must pass: 1)", actor=story.user)
     story.expect_text("sequence follow", "these checks must pass before it moves on: check 1", actor=story.agent)
 

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingOn
+from tests.stories.core.modules.developer.support.hook_recording_fixture import HookRecordingEnabled
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
@@ -16,7 +16,7 @@ from server.request_log import SETTINGS_REFRESH_SECONDS
 
 @pytest.fixture
 def attributed_server(new_story):
-    story = new_story(fixture=HookRecordingOn)
+    story = new_story(fixture=HookRecordingEnabled)
     story.expect_success("environment make elsewhere /work/elsewhere")
     story.expect_success("setting set journal.core.developer.tools.hooks.request-log-size 10000 --project", actor=story.user)
     with server_story(story, listener_thread_started=False) as server:

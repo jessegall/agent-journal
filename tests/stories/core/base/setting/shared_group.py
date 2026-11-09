@@ -3,7 +3,7 @@ from tests.stories.core.base.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_output, expect_count_shown, expect_value
 
-OWN_ADDRESS = "good.sharing.tunnel.address"
+LOCAL_ADDRESS = "good.sharing.tunnel.address"
 PLACED_ADDRESS = "remote.access.tunnel.address"
 TUNNEL = "https://tunnel.example.org"
 
@@ -17,23 +17,23 @@ def shared_story(new_story):
 def test_the_tree_shows_a_group_in_the_module_that_places_it_and_in_its_own(new_story):
     story = shared_story(new_story)
     shown = story.run("setting tree", actor=story.user).output_text
-    expect_count_shown(shown, OWN_ADDRESS, 2)
+    expect_count_shown(shown, LOCAL_ADDRESS, 2)
     placed = shown.split("remote.access: ")[1]
-    expect_index_placed_less(placed, "good.sharing.tunnel:", placed.index(OWN_ADDRESS))
+    expect_index_placed_less(placed, "good.sharing.tunnel:", placed.index(LOCAL_ADDRESS))
 
 
 def test_a_value_saved_through_the_place_shows_in_the_owners_group_with_one_key(new_story):
     story = shared_story(new_story)
     story.run(f"setting set {PLACED_ADDRESS} {TUNNEL} --project", actor=story.user)
-    story.expect_success(f"setting show {OWN_ADDRESS}", f"value: {TUNNEL}", "from: project", actor=story.user)
-    story.expect_success(f"setting show {PLACED_ADDRESS}", f"key: {OWN_ADDRESS}", f"value: {TUNNEL}", actor=story.user)
-    story.expect_text("setting list", OWN_ADDRESS)
+    story.expect_success(f"setting show {LOCAL_ADDRESS}", f"value: {TUNNEL}", "from: project", actor=story.user)
+    story.expect_success(f"setting show {PLACED_ADDRESS}", f"key: {LOCAL_ADDRESS}", f"value: {TUNNEL}", actor=story.user)
+    story.expect_text("setting list", LOCAL_ADDRESS)
     story.expect_no_text("setting list", PLACED_ADDRESS, actor=story.user)
 
 
 def test_a_value_saved_in_the_owners_group_shows_where_the_group_is_placed(new_story):
     story = shared_story(new_story)
-    story.run(f"setting set {OWN_ADDRESS} {TUNNEL} --project", actor=story.user)
+    story.run(f"setting set {LOCAL_ADDRESS} {TUNNEL} --project", actor=story.user)
     story.expect_success(f"setting show {PLACED_ADDRESS}", f"value: {TUNNEL}", actor=story.user)
     expect_count_output(story, "setting tree", TUNNEL, 2)
 
@@ -53,7 +53,7 @@ def test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_remove
     story.container.get(ModuleRemoval).remove("good")
     code, report = story.synced()
     expect_value(code, 0)
-    story.expect_no_text("setting tree", OWN_ADDRESS, actor=story.user)
+    story.expect_no_text("setting tree", LOCAL_ADDRESS, actor=story.user)
 
 
 def expect_index_placed_less(placed, text, expected) -> None:

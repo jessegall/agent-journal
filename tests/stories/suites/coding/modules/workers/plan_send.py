@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.worker_operation import WorkerOperatio
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.core.support.plan_steps import ready_plan
 from tests.stories.suites.coding.modules.workers.kept_workers import stopped
 from tests.stories.suites.coding.modules.workers.queued_commands import run_operation
@@ -31,7 +31,7 @@ def assignment_marks(story):
 
 @pytest.fixture
 def idle_plan(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     joined_person(story)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -78,7 +78,7 @@ def test_sending_one_phase_leaves_the_other_phase_unassigned(idle_plan):
 
 
 def test_a_large_plan_dispatch_updates_dependencies_without_repeated_reads(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     joined_person(story)
     repository_environment(story)
     story.expect_success('plan make "Many tasks" --environment main', actor=story.user)
@@ -112,7 +112,7 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
 
 
 def test_a_task_blocked_for_a_reason_goes_to_a_busy_worker_and_waits_for_its_turn(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
@@ -130,7 +130,7 @@ def test_a_new_worker_is_not_started_on_blocked_tasks_alone(idle_plan):
 
 
 def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     joined_person(story)
     repository_environment(story)
     story.expect_success('plan make "Two phases" --environment main', actor=story.user)
@@ -149,7 +149,7 @@ def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(ne
 
 
 def test_an_open_task_given_to_an_ended_worker_with_a_blocked_task_is_sent_to_it(new_story, monkeypatch):
-    story = new_story(fixture=OrchestratorWithOpenTask)
+    story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)

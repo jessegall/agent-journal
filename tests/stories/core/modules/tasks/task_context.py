@@ -26,7 +26,7 @@ from core.modules.tasks.support.task_brief_requirement import TaskBriefRequireme
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_scenario, LinkedTrail, Scenario
 
 
-class TaskWithoutSource(StoryFixture):
+class SourcelessTask(StoryFixture):
     parent = LinkedTrail
 
     def steps(self, story):
@@ -229,7 +229,7 @@ def test_oversized_text_is_projected_before_loading(linked_scenario):
 
 
 def test_a_late_source_request_is_reserved_in_the_initial_page(new_story):
-    linked_scenario = Scenario(new_story(fixture=TaskWithoutSource))
+    linked_scenario = Scenario(new_story(fixture=SourcelessTask))
     for number in range(8):
         linked_scenario.person("viewer.shell", "task", "comment", "1", f"Earlier comment {number}")
     source = linked_scenario.person("messages.chat", "message", "send", "The late source request")

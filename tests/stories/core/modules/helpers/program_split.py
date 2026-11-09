@@ -12,14 +12,14 @@ from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.base.provider.program_hooks import ProgramHooks
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
-from tests.stories.core.support.coding_fixtures import BuilderWithUser
+from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import SPLIT, real_program_checks, set_split, viewer_client
 from tests.stories.support.program_states import real_program_states
 
 
 @pytest.fixture
 def helper_split_story(new_story, tmp_path):
-    story = new_story(fixture=BuilderWithUser)
+    story = new_story(fixture=UserBuilder)
     folder = tmp_path / 'helper-project'
     folder.mkdir()
     story.expect_success(f'environment edit 1 --folder "{folder}"')

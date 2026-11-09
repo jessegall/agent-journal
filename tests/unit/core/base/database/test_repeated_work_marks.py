@@ -7,7 +7,7 @@ from core.base.database.statement import Statement
 VERSION_CHECK = Statement("SELECT id, version FROM agents WHERE id IN (?)", [694])
 
 
-class MarkedDatabase:
+class TaggedDatabase:
     """A stand-in database whose content mark moves when another connection commits."""
 
     def __init__(self) -> None:
@@ -23,7 +23,7 @@ class MarkedDatabase:
         return False
 
 
-def read(work: RepeatedWork, database: MarkedDatabase, commit_during_read: bool) -> None:
+def read(work: RepeatedWork, database: TaggedDatabase, commit_during_read: bool) -> None:
     work.mark_read()
     if commit_during_read:
         database.mark = (database.mark[0] + 1, 0, 0)
@@ -31,7 +31,7 @@ def read(work: RepeatedWork, database: MarkedDatabase, commit_during_read: bool)
 
 
 def test_a_commit_during_the_first_read_files_the_second_read_as_new_work():
-    database = MarkedDatabase()
+    database = TaggedDatabase()
     work = RepeatedWork(database)
     with work.request():
         read(work, database, commit_during_read=True)
@@ -39,7 +39,7 @@ def test_a_commit_during_the_first_read_files_the_second_read_as_new_work():
 
 
 def test_the_same_read_twice_with_no_commit_is_a_repeat():
-    database = MarkedDatabase()
+    database = TaggedDatabase()
     work = RepeatedWork(database)
     with pytest.raises(RepeatedCallsError), work.request():
         read(work, database, commit_during_read=False)

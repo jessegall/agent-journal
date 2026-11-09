@@ -32,7 +32,7 @@ class SecondModule(FirstModule):
     name = "second"
 
 
-class ShownModule(Module):
+class DisplayedModule(Module):
     name = "shown"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
@@ -40,11 +40,11 @@ class ShownModule(Module):
     inspectors = [InspectorDeclaration(Reminder, components=[InspectorComponent("shown.chain")], actions=[action()])]
 
 
-class ValidModule(ShownModule):
+class ValidModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, reads="reminder list", events=["reminder.*"], components=[InspectorComponent("shown.chain", tab="Chain")], actions=[action()])]
 
 
-class PaneComponentModule(ShownModule):
+class PaneComponentModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, components=[InspectorComponent("shown.board")])]
 
 
@@ -55,31 +55,31 @@ class UnrelatedWindowModule(Module):
     windows = [window("stranger.chain", WindowPlace.SECTION)]
 
 
-class ForeignComponentModule(ShownModule):
+class ForeignComponentModule(DisplayedModule):
     name = "borrower"
     windows = []
     inspectors = [InspectorDeclaration(Reminder, components=[InspectorComponent("stranger.chain")])]
 
 
-class UnknownReadModule(ShownModule):
+class UnknownReadModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, reads="reminder fly")]
 
 
-class UnknownEventModule(ShownModule):
+class UnknownEventModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, events=["rocket.launch"])]
 
 
-class OtherRowModule(ShownModule):
+class SecondRowModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, actions=[ButtonDeclaration("shown.start", tuple(["row.plan"]), "Start the reminder", "reminder delete {row_id}", icon="start")])]
 
 
-class NoIconModule(ShownModule):
+class NoIconModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, actions=[action(icon="")])]
 
 
-class UnknownIconModule(ShownModule):
+class UnknownIconModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, actions=[action(icon="rocket")])]
 
 
-class PanelWordModule(ShownModule):
+class PanelWordModule(DisplayedModule):
     inspectors = [InspectorDeclaration(Reminder, actions=[action(label="Close the reminder")])]

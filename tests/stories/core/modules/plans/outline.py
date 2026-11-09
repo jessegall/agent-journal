@@ -4,12 +4,12 @@ from datetime import timedelta
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import PlanWithCheckpoint, UserJoined
+from tests.stories.core.support.fixtures import CheckpointPlan, UserJoined
 from tests.stories.support.story_checks import expect_index, expect_lines_2
 
 
 def test_the_outline_brings_each_phase_with_its_tasks_in_one_answer(new_story):
-    story = new_story(fixture=PlanWithCheckpoint)
+    story = new_story(fixture=CheckpointPlan)
     answer = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
     expect_phases_answer(answer)
     expect_tasks_phases_answer("tasks", "title", answer)
@@ -36,7 +36,7 @@ def test_the_plan_board_pages_older_plans_by_id(new_story):
 
 
 def test_the_timeline_says_when_each_task_was_made_logged_and_ended_newest_first(new_story):
-    story = new_story(fixture=PlanWithCheckpoint)
+    story = new_story(fixture=CheckpointPlan)
     story.advance(timedelta(seconds=5))
     story.run(lines.TASK_START, actor=story.agent)
     story.run('task log 1 "The cart adds up"', actor=story.agent)
@@ -53,7 +53,7 @@ def test_a_plan_with_nothing_placed_has_an_empty_timeline(new_story):
 
 
 def test_the_outline_names_the_worker_holding_a_task_and_not_the_main_agent(new_story):
-    story = new_story(fixture=PlanWithCheckpoint)
+    story = new_story(fixture=CheckpointPlan)
     worker = Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
     story.run(lines.TASK_START, actor=worker)
     story.run("task start 2", actor=story.agent)
@@ -64,7 +64,7 @@ def test_the_outline_names_the_worker_holding_a_task_and_not_the_main_agent(new_
 
 
 def test_a_plan_whose_tasks_the_main_agent_holds_is_not_delegated(new_story):
-    story = new_story(fixture=PlanWithCheckpoint)
+    story = new_story(fixture=CheckpointPlan)
     story.run(lines.TASK_START, actor=story.agent)
     outline = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
     expect_delegated(outline, False, [])
