@@ -16,7 +16,7 @@ SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, [], None)
 LOG_SEARCH = HookSamples.tool_use("Grep", ToolType.SEARCH, ["/var/log/system.log"], None)
 SHELL_SEARCH = HookSamples.shell("grep -rn cart src", ShellPart("grep", CommandCategory.SEARCH, ["-rn", "cart", "src"]))
 GRAPHIFY_QUERY = HookSamples.shell('graphify query "the cart"', ShellPart("graphify", CommandCategory.SEARCH, ["query", "the cart"], subcommand="query"))
-USE_GRAPHIFY = "searches of the code without Graphify: use graphify explain with a name you know"
+USE_GRAPHIFY = "searches of the code without Graphify: use graphify query, path or explain"
 
 
 def search(story, sample=SEARCH):
@@ -64,7 +64,7 @@ def test_after_twenty_five_searches_every_search_that_is_not_graphify_is_refused
     story = blocked
     story.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     reply = search(story)
-    expect_value("use graphify explain with a name you know" in reply.refusal, True)
+    expect_value("use graphify query, path or explain" in reply.refusal, True)
     expect_value(bool(search(story, SHELL_SEARCH).refusal), True)
 
 
