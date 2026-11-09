@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
@@ -43,7 +44,8 @@ class Task(EnvironmentScoped, Model, StateHolder):
         check_title(self.cli_name, self.title)
 
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
-        return self.moved(TaskLifecycle.start, holder_id=actor.id, started_at=timestamp)
+        assigned_to = actor.id if self.delegated_to is None and actor.type is ActorType.AGENT else self.delegated_to
+        return self.moved(TaskLifecycle.start, holder_id=actor.id, started_at=timestamp, delegated_to=assigned_to)
 
     def close(self, timestamp: Timestamp, actor: Actor, outcome: str) -> "Task":
         return self.moved(TaskLifecycle.close, outcome=outcome, closed_at=timestamp, holder_id=None)

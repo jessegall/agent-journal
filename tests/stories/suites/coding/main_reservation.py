@@ -1,3 +1,4 @@
+from tests.stories.core.support.coding_fixtures import BuilderStarted
 import json
 
 from core.testing.hook_samples import HookSamples
@@ -141,3 +142,18 @@ def test_a_person_moves_a_task_reserved_for_the_main_agent_to_a_worker(new_story
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.user)
     story.expect_success(f"task assign 1 --to {worker.id}", actor=story.user)
     story.expect_text("task show 1", f"delegated_to: {worker.id}", actor=story.agent)
+
+
+def test_a_blocked_task_can_be_assigned_to_a_main_agent_and_stays_blocked(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_success('task make "Waits for a person" --environment main', actor=story.user)
+    story.expect_success('task block 1 --reason "needs an answer"', actor=story.user)
+    story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.user)
+    story.expect_text("task info 1", "state: blocked", f"delegated to: agent {story.agent.id}", actor=story.agent)
+
+
+def test_a_task_an_agent_starts_is_assigned_to_it(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run('task make "Taken by the agent" --environment main', actor=story.user)
+    story.expect_success("task start 1", actor=story.agent)
+    story.expect_text("task info 1", f"delegated to: agent {story.agent.id}", actor=story.agent)

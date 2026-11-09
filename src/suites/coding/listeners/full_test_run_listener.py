@@ -1,11 +1,12 @@
+from core.base.agent_role import AgentRole
 from core.base.command.context import Context
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.nudger import Nudger
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
@@ -52,5 +53,7 @@ class FullTestRunListener(SaveListener[Created[Process] | ProcessEnded]):
             self.nudger.send(run.session_agent_id, declaration, SOURCE, context, tasks=names)
 
     def testing_tasks(self, run: Process) -> tuple[Task, ...]:
-        waiting = self.queries.query(Task).filter(state=TaskState.TESTING).matching(IsNull("delegated_to")).oldest().all_rows()
+        testing = tuple(self.queries.query(Task).filter(state=TaskState.TESTING).oldest().all_rows())
+        roles = {agent.id: agent.role for agent in self.queries.query(Agent).find_many(sorted({task.delegated_to for task in testing if task.delegated_to is not None}))}
+        waiting = [task for task in testing if task.delegated_to is None or roles[task.delegated_to] == AgentRole.MAIN]
         return tuple(task for task in waiting if task.updated_at is not None and run.created_at is not None and task.updated_at <= run.created_at)

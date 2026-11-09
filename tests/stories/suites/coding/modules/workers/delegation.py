@@ -180,7 +180,7 @@ def test_a_task_is_not_assigned_to_who_holds_it_or_when_it_has_ended(delegated):
     story, _, worker = delegated
     story.expect_refusal(f"task assign 1 --to {worker.id}", "nothing to move", actor=story.agent)
     story.run('task cancel 2 --reason "no"', actor=story.agent)
-    story.expect_refusal(f"task assign 2 --to {story.agent.id}", "only an open or started task moves", actor=story.agent)
+    story.expect_refusal(f"task assign 2 --to {story.agent.id}", "only an open, blocked or started task moves", actor=story.agent)
 
 
 def test_a_comment_on_a_task_with_no_worker_tells_no_worker_and_links_none(new_story):
