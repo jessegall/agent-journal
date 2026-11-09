@@ -29,6 +29,7 @@ from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.task_return_reminder_rule import TaskReturnReminderRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
+from core.modules.tasks.rules.auto_mode_task_stop_rule import AutoModeTaskStopRule
 from core.modules.tasks.commands.choose_next_task.choose_next_task_handler import ChooseNextTaskHandler
 from core.modules.tasks.commands.choose_next_task.choose_next_task_subcommand import ChooseNextTaskSubcommand
 from core.modules.tasks.commands.assign_task.assign_task_handler import AssignTaskHandler
@@ -158,7 +159,7 @@ class TasksModule(Module):
     listeners = [TaskTagRemoverListener, TaskDependencyWaitListener, WaitingTaskListener, TaskRowsListener, TaskBlockRenewalListener, DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener, TaskBriefAssignedListener, TaskBriefCompactionListener, AutoNextTaskListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
-    driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [TaskFiledRule, TaskStartRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, AutoModeTaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, skeleton=TASKS_TASKS_SKELETON, search=WindowSearch(TaskSearcher, "Search the tasks"), icon=WindowIcon.TASK, reads=["task board", "task tags", "task graph", "task list", "task show", "task inspect", "task comments", "link list", "plan place", "plan places", "plan board", "plan outline", "task-log list"],
                                options=[ChoiceOption("rows", "Tasks per page", [("5", "5"), ("10", "10"), ("25", "25"), ("50", "50")], "10")],
               runs=["task assign", "phase place", "task make", "task edit", "task tag", "task untag", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*", "task_tag.*", "task_wait.*", "task_log.*"],
