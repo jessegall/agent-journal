@@ -38,8 +38,11 @@ class PruneWindowPermissionsHandler(Handler[PruneWindowPermissions, int]):
             return self.kept.scoped_read("window_permissions", lambda: tuple(self.queries.query(WindowPermission).all_rows()), name="viewer.permission_catalogue")
 
     def drop_kept(self, permission: WindowPermission) -> None:
+        def without_permission(rows: tuple[WindowPermission, ...]) -> tuple[WindowPermission, ...]:
+            return tuple(row for row in rows if row.id != permission.id)
+
         with self.scopes.read_scope((), None, permission.environment_id):
-            self.kept.scoped_update("window_permissions", lambda rows: tuple(row for row in rows if row.id != permission.id), name="viewer.permission_catalogue")
+            self.kept.scoped_update("window_permissions", without_permission, name="viewer.permission_catalogue")
 
     def has_subject(self, subject: str) -> bool:
         return self.registry.has_window(subject) or self.registry.dock(subject) is not None or bool(self.registry.subject_button_lines(subject))

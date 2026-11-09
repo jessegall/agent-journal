@@ -15,6 +15,7 @@ from core.base.change.missing_row_error import MissingRowError
 
 
 M = TypeVar("M", bound=Model, covariant=True)
+R = TypeVar("R", bound=Model)
 METADATA = "metadata"
 BOOKKEEPING_FIELDS = ("id", "version", METADATA, "created_at", "updated_at", "move")
 
@@ -31,11 +32,11 @@ class Change(Generic[M]):
         if self.old_row is None and self.new_row is None:
             raise MissingRowError("a change needs an old row, a new row or both")
 
-    @classmethod
-    def event_change(cls, event: Changed[M], context: Context) -> "Change[M]":
+    @staticmethod
+    def event_change(event: Changed[R], context: Context) -> "Change[R]":
         if isinstance(event, Deleted):
-            return cls(event.old_row or event.row, None, context)
-        return cls(event.old_row, event.row, context)
+            return Change(event.old_row or event.row, None, context)
+        return Change(event.old_row, event.row, context)
 
     @property
     def row(self) -> M:

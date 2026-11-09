@@ -1,4 +1,5 @@
 from core.base.library.library_item import LibraryItem
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
@@ -7,10 +8,9 @@ class LibraryItemBody:
 
     @staticmethod
     def parsed(body: object) -> LibraryItem:
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return LibraryItem(str(body["kind"]), int(body["id"]), int(body["version"]), dict(body["fields"]), str(body.get("creator", "")), str(body.get("updated_by", "")),
-                               str(body.get("updated_at", "")), str(body.get("removed_at", "")))
+            return LibraryItem(str(fields["kind"]), LibraryAnswer.number(fields["id"]), LibraryAnswer.number(fields["version"]), LibraryAnswer.fields(fields["fields"]), str(fields.get("creator", "")),
+                               str(fields.get("updated_by", "")), str(fields.get("updated_at", "")), str(fields.get("removed_at", "")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error

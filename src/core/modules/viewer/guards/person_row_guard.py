@@ -17,11 +17,14 @@ class PersonRowGuard(Guard[E]):
     question: ClassVar[str] = "Allow this change?"
     is_safety = True
 
+    def person_id(self, event: E) -> int:
+        raise NotImplementedError(f"{type(self).__name__} names no person")
+
     def check(self, event: E, context: Context) -> None:
         if isinstance(event, Deleted) and context.actor.type in (ActorType.CORE, ActorType.MODULE):
             return
         actor = context.actor
         if actor.type is ActorType.AGENT:
-            raise UserApprovalRefusal(self.question, required_person_id=event.row.person_id, command=context.command)
-        if actor.type is not ActorType.USER or actor.id != event.row.person_id:
+            raise UserApprovalRefusal(self.question, required_person_id=self.person_id(event), command=context.command)
+        if actor.type is not ActorType.USER or actor.id != self.person_id(event):
             raise self.refusal

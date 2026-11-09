@@ -21,10 +21,10 @@ class LibraryToken:
 
     @classmethod
     def parsed(cls, body: object) -> "LibraryToken":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(int(body["id"]), int(body["user_id"]), str(body.get("label", "")), str(body.get("last_used_at", "")), str(body.get("revoked_at", "")))
+            return cls(LibraryAnswer.number(fields["id"]), LibraryAnswer.number(fields["user_id"]), str(fields.get("label", "")), str(fields.get("last_used_at", "")),
+                       str(fields.get("revoked_at", "")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

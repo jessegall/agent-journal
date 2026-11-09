@@ -15,5 +15,4 @@ class ProcessPruneListener(SaveListener[OutputEnded]):
         self.bus, self.rows = bus, rows
 
     def handle(self, event: OutputEnded, context: Context) -> None:
-        output = event.row
         self.bus.dispatch(PruneProcesses(), context)

@@ -70,7 +70,9 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
             if options is None:
                 return AgentFilterOptions((), ())
             upgrade_retired = self.queries.query(Agent).matching(EndedAgents()).filter(retirement_reason=UPGRADE_RETIREMENT_REASON).count()
-            return AgentFilterOptions(tuple(sorted(role for role in json.loads(options.roles) if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in json.loads(options.profiles) if profile)), upgrade_retired)
+            roles: list[str] = json.loads(options.roles)
+            profile_names: list[str] = json.loads(options.profiles)
+            return AgentFilterOptions(tuple(sorted(role for role in roles if role != AgentRole.MAIN)), tuple((name, titles.get(name, name)) for name in sorted(profile for profile in profile_names if profile)), upgrade_retired)
         activity = self.activity.current()
         rows = self.queries.query(AgentListing)
         if arguments.reusable:

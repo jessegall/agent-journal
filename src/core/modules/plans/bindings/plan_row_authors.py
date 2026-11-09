@@ -19,7 +19,11 @@ class PlanRowAuthors(PlanAuthors):
     def are_authors(self, agent_id: int, edits: Sequence[PlanEdit]) -> bool:
         plan_ids = self.plan_ids(edits)
         plans = self.plans(sorted({plan_id for plan_id in plan_ids.values() if plan_id is not None}))
-        return all(plan_ids[edit] in plans and plans[plan_ids[edit]].creator_id == agent_id for edit in edits)
+        return all(self.is_author(agent_id, plan_ids[edit], plans) for edit in edits)
+
+    @staticmethod
+    def is_author(agent_id: int, plan_id: int | None, plans: dict[int, Plan]) -> bool:
+        return plan_id is not None and plan_id in plans and plans[plan_id].creator_id == agent_id
 
     def plans(self, plan_ids: Sequence[int]) -> dict[int, Plan]:
         marks = ", ".join("?" for _ in plan_ids)

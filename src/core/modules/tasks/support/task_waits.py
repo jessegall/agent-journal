@@ -65,5 +65,7 @@ class TaskWaits:
         self.replace_cached(wait, ())
 
     def replace_cached(self, wait: TaskWait, pending: tuple[TaskWait, ...]) -> None:
-        self.kept.update("task_waits", lambda waits: tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id)),
-                         "ended_at IS NULL", name="tasks.pending_waits")
+        def with_pending(waits: tuple[TaskWait, ...]) -> tuple[TaskWait, ...]:
+            return tuple(sorted([row for row in waits if row.id != wait.id] + list(pending), key=lambda row: row.id))
+
+        self.kept.update("task_waits", with_pending, "ended_at IS NULL", name="tasks.pending_waits")

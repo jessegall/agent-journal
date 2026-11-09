@@ -153,13 +153,13 @@ class PluginServices:
         if path.is_file() and path.stat().st_size > SERVICE_LOG_LIMIT_BYTES:
             access.write_binary(path, access.binary(path)[-SERVICE_LOG_LIMIT_BYTES:])
 
-    def poll_socket(self, path: Path, process: ChildProcess) -> None:
+    def poll_socket(self, path: Path, process: ChildProcess | AdoptedProcess) -> None:
         deadline = time.monotonic() + SOCKET_LIMIT_SECONDS
         while self.is_starting(path, process, deadline):
             time.sleep(SOCKET_POLL_SECONDS)
 
     @staticmethod
-    def is_starting(path: Path, process: ChildProcess, deadline: float) -> bool:
+    def is_starting(path: Path, process: ChildProcess | AdoptedProcess, deadline: float) -> bool:
         return not path.is_socket() and process.running() and time.monotonic() < deadline
 
     def environment(self, key: tuple[str, str], manifest: PluginManifest) -> dict[str, str]:

@@ -9,6 +9,7 @@ from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.memories.commands.memory_list.memory_list_subcommand import MemoryListSubcommand
+from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_holder import MemoryHolder
 from core.modules.memories.support.memory_holder_row import MemoryHolderRow
 
@@ -31,7 +32,7 @@ class MemoryPageSubcommand(ReadSubcommand[MemoryPage]):
         if caller.actor.type is ActorType.AGENT:
             raise UserApprovalRefusal("Show memories for all agents in the viewer?", returns_output=True)
         page = self.memories.read(arguments, caller)
-        ids = {row.agent_id for row in page.rows if row.agent_id is not None}
+        ids = {row.agent_id for row in page.rows if isinstance(row, Memory) and row.agent_id is not None}
         holders = self.queries.query(MemoryHolder).matching(Among("agent_id", tuple(sorted(ids)))).all_rows() if ids else ()
         return MemoryPage(page, tuple(MemoryHolderRow.built(holder, self.types) for holder in holders))
 

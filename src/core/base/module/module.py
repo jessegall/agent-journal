@@ -45,7 +45,7 @@ from core.base.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 
-ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
+ListenerClass = type[DeletionListener[Never]] | type[SaveListener[Never]] | type[CommitListener[Never]]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
 HandlerClass = type[Handler[Never, object]]
 
@@ -65,7 +65,7 @@ class Module:
     views: ClassVar[list[type[ViewModel]]] = []
     handlers: ClassVar[list[HandlerClass]] = []
     subcommands: ClassVar[list[SubcommandClass]] = []
-    guards: ClassVar[list[type[Guard]]] = []
+    guards: ClassVar[list[type[Guard[Never]]]] = []
     listeners: ClassVar[list[ListenerClass]] = []
     file_events: ClassVar[list[str]] = []
     former_event_keys: ClassVar[dict[str, str]] = {}

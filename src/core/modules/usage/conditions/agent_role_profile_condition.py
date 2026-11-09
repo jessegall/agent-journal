@@ -10,7 +10,7 @@ class AgentRoleProfileCondition:
     profiles: list[str]
 
     def statement(self) -> Statement:
-        statements = []
+        statements: list[Statement] = []
         if self.roles:
             statements.append(Among("role", self.roles).statement())
         if self.profiles:

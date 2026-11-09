@@ -33,7 +33,7 @@ class Plugin(Model):
     config_document: str = "null"
     config_pointers: str = "[]"
 
-    def change_name(self, old_row: "Plugin | None") -> str | None:
-        if old_row is None or old_row.config_version == self.config_version:
+    def change_name(self, old_row: Model | None) -> str | None:
+        if not isinstance(old_row, Plugin) or old_row.config_version == self.config_version:
             return None
         return CONFIG_CHANGED
