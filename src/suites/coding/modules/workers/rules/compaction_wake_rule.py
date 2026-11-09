@@ -21,6 +21,7 @@ class CompactionWakeRule(DriverRule):
     name = "workers.compaction-wake"
     hook = HookEventName.TICK
     drivers = ["*"]
+    history = True
     roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
     disabled_scopes = [ActorScope]
     wakes_agent = True
