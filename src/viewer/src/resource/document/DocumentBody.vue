@@ -1,5 +1,6 @@
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
+import {INSPECTOR_ACTIONS} from "../../../kit/windowContextKey.js";
 import {render} from "../../text/index.js";
 import Btn from "../../kit/Btn.vue";
 import DropList from "../../kit/DropList.vue";
@@ -18,6 +19,7 @@ import {numbered} from "./documentMarks.js";
 // the body of a document or a report: its tabs, its text with the comments beside it, and at the foot the comment box; the head, the actions and the links belong to the shared inspector layout
 const NARROW_WIDTH = 760;
 const props = defineProps({term: {type: String, required: true}, id: {type: Number, required: true}, read: {type: Function, required: true}});
+const actionBar = inject(INSPECTOR_ACTIONS, ref(null));
 const panel = ref(null);
 const width = useMeasuredWidth(panel);
 const narrow = computed(() => width.value !== null && width.value < NARROW_WIDTH);
@@ -123,9 +125,14 @@ watch(notesMode, () => {
 <template>
     <div ref="panel" class="document-inspector" data-document-inspector>
         <template v-if="row">
-            <div class="document-edit" data-document-actions>
-                <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
-            </div>
+            <Teleport :to="actionBar" :disabled="!actionBar">
+                <span :class="['document-actions', {placed: actionBar}]" data-document-actions>
+                    <Btn bordered data-text-edit @click="editing = true">Edit</Btn>
+                    <template v-if="shownTab === 'text' && chapters.length > 1">
+                        <DropList :label="narrow ? '' : 'Chapters'" icon="list" :items="chapters" data-text-chapters @pick="words?.showHeading($event.value)" />
+                    </template>
+                </span>
+            </Teleport>
         </template>
         <nav class="document-tabs">
             <button type="button" :class="['document-tab-button', {on: shownTab === 'text'}]" data-document-tab="text" @click="tab = 'text'">Text</button>
@@ -134,10 +141,6 @@ watch(notesMode, () => {
             </template>
             <template v-if="term === 'doc'">
                 <button type="button" :class="['document-tab-button', {on: shownTab === 'revisions'}]" data-document-tab="revisions" @click="tab = 'revisions'">Revisions <em>{{ revisions.length || "" }}</em></button>
-            </template>
-            <span class="document-tabs-space" />
-            <template v-if="shownTab === 'text' && chapters.length > 1">
-                <DropList :label="narrow ? '' : 'Chapters'" icon="list" :items="chapters" data-text-chapters @pick="words?.showHeading($event.value)" />
             </template>
         </nav>
         <div class="document-body">
@@ -192,11 +195,17 @@ watch(notesMode, () => {
     min-height: 0;
 }
 
-.document-edit {
+.document-actions {
     display: flex;
     flex: none;
+    flex-wrap: wrap;
+    gap: 8px;
     justify-content: flex-end;
     padding: 8px 16px 0;
+}
+
+.document-actions.placed {
+    display: contents;
 }
 
 .document-tabs {
@@ -233,10 +242,6 @@ watch(notesMode, () => {
     color: var(--text-4);
     font-size: 11.5px;
     font-style: normal;
-}
-
-.document-tabs-space {
-    flex: 1;
 }
 
 .document-body {

@@ -36,7 +36,7 @@ test("any other agent's badge reads its name, without the main look", () => {
 test("a plan card shows the main agent through the shared badge", () => {
     const element = drawn(PlanAgents, {planId: 1105, agents: [MAIN]});
     expect(nameOf(element)).toBe("main agent");
-    expect(element.querySelector("[data-plan-agent]").title).toBe("Open main agent");
+    expect(element.querySelector("[data-plan-agent]").hasAttribute("data-agent-tip")).toBe(true);
     expect(element.querySelector("[data-agent-main]")).not.toBeNull();
 });
 

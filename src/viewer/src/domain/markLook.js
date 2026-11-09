@@ -4,6 +4,7 @@ import {go, peekRef} from "../route.js";
 export const STOPPED_VARIANTS = new Set(["failed", "stopped", "lost", "blocked", "cancelled", "orphaned"]);
 import {actionLabel, refAction} from "./markAction.js";
 
+const AGENT_MODEL = "agents";
 const OUTCOME_TONES = {passed: "good", failed: "danger", warned: "warn", running: ""};
 // a mark whose variant is a tone, as a plugin's cards are, is drawn in it
 const VARIANT_TONES = {good: "good", warn: "warn", danger: "danger"};
@@ -26,6 +27,8 @@ export function markLook(mark, declaration) {
         group: type.group || "",
         tone: type.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : VARIANT_TONES[mark.variant] || "",
         label: mark.text,
+        // a mark about an agent shows the agent's tooltip on its icon
+        agentId: mark.target_model === AGENT_MODEL ? mark.target_id : 0,
         // an opened mark shows its whole lines in its body, so their cut-off first part is not a second line
         detail: type.body_url || mark.lines ? "" : mark.detail || "",
         figure: mark.figure || "",

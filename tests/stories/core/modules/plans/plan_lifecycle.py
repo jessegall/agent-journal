@@ -111,3 +111,14 @@ def test_a_started_plan_goes_back_for_approval_and_a_person_approves_it_again(ne
     story.expect_refusal("plan approve 1 --environment main", "approved by a person on its docked plan card", actor=story.agent)
     story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
     story.expect_success("plan start 1", "state: started", actor=story.agent)
+
+
+def test_cancelling_a_plan_of_many_tasks_cancels_each_open_task(new_story):
+    story = new_story(fixture=UserBuilder)
+    story.expect_success(lines.NEW_PLAN, actor=story.agent)
+    phase = story.new_row_id('phase make --plan 1 "First" --goal "The first part is done"', actor=story.agent)
+    tasks = [story.new_row_id(f'task make "Planned work {number}" --brief "Do the work" --phase {phase} --environment main', actor=story.agent) for number in range(12)]
+    story.expect_success(lines.PLAN_CANCEL, "state: cancelled", actor=story.agent)
+    story.run_listeners()
+    for task in tasks:
+        story.expect_success(f"task show {task}", "state: cancelled")

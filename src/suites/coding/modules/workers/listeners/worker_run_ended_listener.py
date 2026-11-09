@@ -26,7 +26,7 @@ from core.base.command.context import Context
 class WorkerRunEndedListener(SaveListener[ProcessEnded]):
     """A worker that has stopped while a run of its own went on in the background is told when the run
     ends, by a job line, which starts it again on its session; one a person or another agent stopped, or
-    that asked for help, stays stopped."""
+    that asked for help after the run started, stays stopped."""
 
     name = "workers.run-ended"
     disabled_scopes = [ActorScope]
@@ -49,7 +49,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
         worktree = self.worktrees.worker_worktree(agent.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
             return
-        if self.stop.was_stopped(agent) or self.stop.has_open_help_request(agent.id):
+        if self.stop.was_stopped(agent) or self.stop.has_help_request_opened_since(agent.id, process.started_at or process.creation_timestamp()):
             return
         self.nudger.send(agent.id, WORKER_RUN_ENDED, WORKER_JOB_SOURCE, context, output=process.id)
 
