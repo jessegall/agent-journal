@@ -139,9 +139,9 @@ def test_loading_the_skill_during_the_countdown_ends_it(defaults_loaded):
 def test_a_block_raised_again_for_another_skill_waits_for_the_skill_its_text_names(started_tasks):
     story = started_tasks
     story.expect_hook_refusal("s-1", JOURNAL_TASK_LIST, "load this first with the Skill tool: journal-tasks")
-    drain_countdown(story, MEMORY_LIST, "journal-memory")
-    story.expect_hook_refusal("s-1", MEMORY_LIST, "load this first with the Skill tool: journal-memory")
+    story.expect_hook_refusal("s-1", MEMORY_LIST, "load this first with the Skill tool: journal-tasks")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", read_digest(story, "journal-tasks")), story.agent)
+    drain_countdown(story, MEMORY_LIST, "journal-memory")
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "load this first with the Skill tool: journal-memory")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-memory", read_digest(story, "journal-memory")), story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("src/cart.py"))

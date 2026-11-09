@@ -23,7 +23,10 @@ def test_each_program_names_how_it_loads_a_required_skill(new_story):
     story.run_listeners()
     story.expect_success("skill required", "read this first: .agents/skills/journal-notes/SKILL.md", actor=codex)
     codex_edit = HookSamples.edit('src/cart.py').with_fields(program='codex', session='s-2')
-    for _ in range(3):
+    for _ in range(4):
+        story.run_listeners()
         story.advance(timedelta(seconds=1))
         story.expect_hook_allowed('s-2', codex_edit)
+    story.run_listeners()
+    story.advance(timedelta(seconds=1))
     story.expect_hook_refusal('s-2', codex_edit, 'read this first: .agents/skills/journal-notes/SKILL.md')

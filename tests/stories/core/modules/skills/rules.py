@@ -7,7 +7,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.modules.skills.agent_skills import read_row
 from tests.stories.core.base.driver.support.fixtures import LeadStarted
 from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, expect_countdown, start, drain_countdown
+from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, expect_countdown, start, drain_countdown, start_countdown
 from tests.stories.support.story_checks import expect_value
 
 EDIT = HookSamples.edit("src/cart.py")
@@ -36,7 +36,8 @@ def test_with_a_skill_due_three_tool_uses_pass_naming_it_and_the_next_is_refused
 
 def test_reading_the_due_skill_during_the_countdown_ends_it(due_notes):
     story = due_notes
-    expect_countdown(story, EDIT, "journal-notes", 3)
+    start_countdown(story, EDIT)
+    expect_countdown(story, EDIT, "journal-notes", 2)
     read_row(story, ".claude/skills/journal-notes/SKILL.md")
     for _ in range(4):
         story.expect_hook_allowed("s-1", EDIT)

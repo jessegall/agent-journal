@@ -1,3 +1,4 @@
+from tests.stories.core.modules.skills.due import drain_countdown
 import pytest
 from concurrent.futures import ThreadPoolExecutor
 
@@ -99,6 +100,7 @@ def test_a_skill_trigger_makes_a_skill_due_when_the_person_uses_its_word(new_sto
 @pytest.mark.parametrize("sample", [HookSamples.edit("cart.py"), HookSamples.shell("echo cart", ShellPart("echo", CommandCategory.UNKNOWN, ["cart"]))])
 def test_a_skill_trigger_refuses_the_tool_then_allows_it_after_the_skill_is_read(new_story, sample):
     story = new_story(fixture=SkillTriggerReady)
+    drain_countdown(story, sample, "journal")
     story.expect_hook_refusal("s-1", sample, "load this first with the Skill tool: journal")
     entry = next(skill for skill in story.container.get(SkillCatalogue).skills() if skill.folder == "journal")
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal", entry.digest), story.agent)
@@ -193,5 +195,6 @@ def test_a_required_plugin_skill_is_due_at_start_and_after_compaction(skills_pag
 def test_two_matching_triggers_for_one_skill_do_not_repeat_its_requirement(new_story):
     story = new_story(fixture=SkillTriggerReady)
     story.expect_success('trigger make cart --do skill --skill journal --match-mode word', actor=story.user)
+    drain_countdown(story, HookSamples.edit("cart.py"), "journal")
     story.expect_hook_refusal("s-1", HookSamples.edit("cart.py"), "load this first with the Skill tool: journal")
     story.expect_text(f"agent-skill list --agent {story.agent.id}", "journal", "due")

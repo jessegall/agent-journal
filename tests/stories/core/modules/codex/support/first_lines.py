@@ -49,10 +49,10 @@ def expect_image_read(story) -> None:
     binary = GoBuild.built("journal-hook", home.parent / "journal-hook")
     with server_story(story):
         story.expect_success(f"skill require {story.agent.id} journal-memory")
-        for _ in range(SKILL_TOOL_USES + 1):
+        for _ in range(SKILL_TOOL_USES + 2):
             codex_tool(binary, home, "apply_patch", {"patch": "*** Begin Patch\n*** Add File: preview.txt\n+new\n*** End Patch"})
         writes = list(story.container.get(Queries).query(HookCall).filter(tool="apply_patch").oldest().all_rows())
-        assert len(writes) == SKILL_TOOL_USES + 1 and "read this first" in writes[-1].refusal, writes
+        assert len(writes) == SKILL_TOOL_USES + 2 and "read this first" in writes[-1].refusal, writes
         finished = codex_tool(binary, home, "view_image", {"path": str(home.parent / "preview.png")})
     assert finished.returncode == 0, finished.stderr
     calls = list(story.container.get(Queries).query(HookCall).filter(tool="view_image").all_rows())
