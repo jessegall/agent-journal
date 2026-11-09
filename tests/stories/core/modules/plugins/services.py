@@ -307,6 +307,13 @@ def test_switching_a_plugin_off_and_on_starts_its_stopped_service(controlled_ser
     story.expect_rows(story.processes.running[SERVED].running())
 
 
+def test_removing_a_plugin_has_stopped_its_services_when_it_reports_done(controlled_service):
+    story = controlled_service
+    process = story.processes.running[SERVED]
+    story.expect_success("plugin remove served", actor=story.user)
+    story.expect_rows(not process.running(), SERVED not in story.processes.running)
+
+
 def test_the_person_stops_and_restarts_a_service_from_the_plugins_window(controlled_service):
     story = controlled_service
     first = story.processes.running[SERVED]
