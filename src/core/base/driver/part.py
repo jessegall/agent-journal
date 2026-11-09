@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.base.driver.classification import Classification
@@ -23,6 +24,9 @@ class Part:
     read_flag: str = ""
     timeout_duration: str | None = None
     nested_journal_commands: tuple[tuple[str, ...], ...] = ()
+
+    def names_any(self, names: Sequence[str]) -> bool:
+        return any(name in self.text for name in names)
 
     @classmethod
     def parsed(cls, data: object) -> "Part":

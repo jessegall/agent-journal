@@ -62,7 +62,7 @@ class AccessRule(ReadonlyRule):
         return super().answer(hook)
 
     def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:
-        if shell.contains_fragment(self.identity_variables()):
+        if shell.has_part_naming(self.identity_variables()):
             return True
         return any(self.is_outward(" ".join(part.arguments[:2])) and not self.plan_author_line(part.arguments, agent_id)
                    for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments)
@@ -87,8 +87,11 @@ class AccessRule(ReadonlyRule):
 
     def permitted(self, hook: AgentHook, tool: Tool) -> PermissionRequest | None:
         allowed = self.queries.query(PermissionRequest).filter(asker_id=hook.agent_id, state=PermissionState.ALLOWED).oldest().all_rows()
-        requested = (tool.shell.display_text if tool.shell is not None else "", *tool.files)
-        return next((request for request in allowed if request.action in requested), None)
+        return next((request for request in allowed if self.is_requested(request.action, tool)), None)
+
+    @staticmethod
+    def is_requested(action: str, tool: Tool) -> bool:
+        return (tool.shell is not None and tool.shell.is_permitted_line(action)) or action in tool.files
 
     def is_listed(self, hook: AgentHook, tool: Tool) -> bool:
         if tool.name in self.providers.provider(hook.event.program).safe_tools:
