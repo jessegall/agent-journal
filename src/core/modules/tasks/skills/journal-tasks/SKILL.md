@@ -78,3 +78,5 @@ A wait is a block the journal can see, never words in a log line. A blocked task
 - When you are stuck, say so with `journal wait stuck "<why>"`.
 
 File work you put off in words as a task: work put off in words is lost.
+
+When the user asks for something that makes a task no longer right, cancel that task yourself, at once and without asking, with `journal task cancel <n> --reason "<why>"`.

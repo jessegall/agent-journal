@@ -7,7 +7,7 @@ from core.modules.helpers.migrations.m001_helper_limit_key import HelperCapKeyMi
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
 from core.base.module.module import Module
-from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.migrations.m004_provider_outages import ProviderOutagesMigration
 from core.modules.helpers.migrations.m005_helper_job_counts_index import HelperJobCountsIndexMigration
@@ -42,6 +42,12 @@ from core.modules.helpers.ticks.helper_limits_tick import HelperLimitsTick
 from core.modules.helpers.ticks.usage_limit_marker import UsageLimitMarker
 from core.modules.helpers.migrations.m006_usage_limits import UsageLimitsMigration
 from core.modules.helpers.migrations.m007_read_only_helper_setting_keys import HelperSettingKeysMigration
+from core.modules.helpers.migrations.m008_helper_grants import HelperGrantsMigration
+from core.modules.helpers.models.helper_grant import HelperGrant
+from core.modules.helpers.commands.grant_helper.grant_helper_handler import GrantHelperHandler
+from core.modules.helpers.commands.grant_helper.grant_helper_subcommand import GrantHelperSubcommand
+from core.modules.helpers.commands.run_granted_command.run_granted_command_handler import RunGrantedCommandHandler
+from core.modules.helpers.commands.run_granted_command.run_granted_command_subcommand import RunGrantedCommandSubcommand
 from core.modules.helpers.models.usage_limit import UsageLimit
 from core.modules.helpers.guards.usage_cap_guard import UsageCapGuard
 from core.modules.helpers.commands.set_usage_limit.set_usage_limit_handler import SetUsageLimitHandler
@@ -65,16 +71,16 @@ class HelpersModule(Module):
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
-    migrations = [OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
-    models = [ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
+    migrations = [HelperGrantsMigration, OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
+    models = [ModelDeclaration(HelperGrant, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills"]
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS
     guards = [UsageCapGuard, ProviderOutageAccessGuard, OpenJobRetireGuard, ProviderOutageProgramGuard, ProgramSplitGuard]
-    handlers = [SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
+    handlers = [GrantHelperHandler, RunGrantedCommandHandler, SetUsageLimitHandler, RefreshHourlyLimitsHandler, MakeProviderOutageHandler, SendProgramFaultHandler, StartHelperHandler, SendHelperHandler, StopHelperHandler, EndHelperJobHandler, RecordProgramExitHandler, EndHelpersPastLimitsHandler, SendHelperLimitWarningHandler, EndProviderOutagesHandler]
     tick_handlers = [TickHandler(TickInterval(seconds=60), HelperLimitsTick(), "helper limits"), TickHandler(TickInterval(seconds=3), UsageLimitMarker(), "usage limit marks")]
     nudges = HELPER_NUDGES
     skills = [SkillDeclaration("journal-helpers", "Start a helper for a bounded read, send it more, stop it, and read its report; read it before the first helper command of a session", keywords=["helper start"])]
-    subcommands = [ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
+    subcommands = [GrantHelperSubcommand, RunGrantedCommandSubcommand, ColdSessionsSubcommand, SetUsageLimitSubcommand, AgentMixSubcommand, StartHelperSubcommand, SendHelperSubcommand, StopHelperSubcommand, RecordProgramExitSubcommand, HelperAvailabilitySubcommand, MakeProviderOutageSubcommand, EndProviderOutagesSubcommand]
     listeners = [NewMainHelpersListener, HelperResumeListener, HelperProgramListener, HelperEndedListener, HelperJobMarkListener, HelperJobSourceListener, DeletedHelperSourceListener, ProviderOutageMarkListener]
     driver_rules = [UnstartedHelperRule, HelperReportRule, HelperSkillReadRule]

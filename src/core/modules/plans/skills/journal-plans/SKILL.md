@@ -31,7 +31,8 @@ and then it is followed.
 - `journal plan outline <n>` lists its phases and tasks, `journal plan progress <n>` its counts,
   `journal plan inspect <n>` both, and `journal plan list` every plan.
 - `journal plan block <n> --reason "<why>"` when one thing stops all of it; `journal plan unblock <n>` opens it.
-- `journal plan cancel <n>` abandons it.
+- `journal plan cancel <n>` abandons it. When the user asks for something that makes a plan no longer right, cancel that plan
+  yourself, at once and without asking.
 - On each actual start or unblock, a main agent receives a pointer to `journal plan context <n>` and reads it
   before changing project files. Title edits do not begin a new execution episode; a replacement main agent
   reads the current episode even when the plan started earlier. A plan with no tasks still has context.
