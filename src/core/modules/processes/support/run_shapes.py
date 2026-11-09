@@ -1,7 +1,7 @@
 import re
 from core.modules.processes.support.run_shape import RunShape
 
-LOOKED_AT_CHARACTERS = 1 << 20
+INSPECTED_CHARACTERS = 1 << 20
 SHAPES = (
     RunShape("--- PASS:/--- FAIL:", re.compile(r"(?m)^\s*--- (?:PASS|FAIL):"), "step", r"(?m)^\s*--- (?:(?P<passed>PASS)|(?P<failed>FAIL)):", False),
     RunShape("PASSED/FAILED", re.compile(r"\b(?:PASSED|FAILED)\b"), "step", r"\b(?:(?P<passed>PASSED)|(?P<failed>FAILED))\b", False),
@@ -16,5 +16,5 @@ class RunShapes:
 
     @staticmethod
     def found(output: str) -> RunShape | None:
-        text = output[:LOOKED_AT_CHARACTERS]
+        text = output[:INSPECTED_CHARACTERS]
         return next((shape for shape in SHAPES if shape.found.search(text)), None)

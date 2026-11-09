@@ -11,9 +11,9 @@ from install.code_replacement import CodeReplacement
 from install.run_drain import RunDrain
 from install.chat_update_steps import ChatUpdateSteps
 
-TAKEN_OVER_STATUS = 200
+HANDOVER_STATUS = 200
 OLD_SERVER_STATUS = 404
-NO_ANSWER_STATUS = 0
+UNANSWERED_STATUS = 0
 
 
 class WorkingTreeInstall(CodeHandover):
@@ -36,10 +36,10 @@ class WorkingTreeInstall(CodeHandover):
         try:
             return super().takeover_status(tag)
         except (OSError, http.client.HTTPException):
-            return NO_ANSWER_STATUS if self.server_pid() == running_pid else TAKEN_OVER_STATUS
+            return UNANSWERED_STATUS if self.server_pid() == running_pid else HANDOVER_STATUS
 
     def refuse(self, tag: str, status: int) -> None:
-        if status == NO_ANSWER_STATUS:
+        if status == UNANSWERED_STATUS:
             self.kill_server()
         elif status != OLD_SERVER_STATUS:
             super().refuse(tag, status)
