@@ -1,4 +1,3 @@
-from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.command.bus import Bus
 from core.base.command.context import Context
@@ -30,7 +29,7 @@ class AssignPlanHandler(Handler[AssignPlan, Plan]):
         self.queries, self.repository, self.bus, self.outlines, self.agents = queries, repository, bus, outlines, agents
 
     def handle(self, command: AssignPlan, context: Context) -> Plan:
-        self.check_caller(context)
+        self.agents.require_main(context.actor, "assign a plan")
         plan = self.queries.query(Plan).find(command.plan_id)
         if plan.state in ENDED_STATES:
             raise Refusal(f"plan {plan.id} is {plan.state.value}", "only a plan that is not finished is assigned")
@@ -50,10 +49,3 @@ class AssignPlanHandler(Handler[AssignPlan, Plan]):
         if not main_agents:
             raise Refusal("no main agent is running to take the plan", "name an agent with --to")
         return main_agents[0]
-
-    def check_caller(self, context: Context) -> None:
-        if context.actor.type is not ActorType.AGENT:
-            return
-        caller = self.agents.find(context.actor.id)
-        if caller.role != AgentRole.MAIN:
-            raise Refusal(f"a {caller.role} cannot assign a plan", "ask the main agent or a person")

@@ -1,6 +1,9 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
+from core.base.refusal import Refusal
 from core.base.agent_role import AgentRole
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
@@ -39,6 +42,13 @@ class AgentRows:
 
     def is_main(self, agent_id: int) -> bool:
         return self.find(agent_id).role == AgentRole.MAIN
+
+    def require_main(self, actor: Actor, action: str) -> None:
+        if actor.type is not ActorType.AGENT:
+            return
+        caller = self.find(actor.id)
+        if caller.role != AgentRole.MAIN:
+            raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a person")
 
     def is_visible(self, agent_id: int) -> bool:
         return self.rows.find(Agent, agent_id) is not None
