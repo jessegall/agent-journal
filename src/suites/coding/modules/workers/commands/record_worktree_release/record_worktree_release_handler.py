@@ -11,6 +11,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.support.dependency_waits import DependencyWaits
 from suites.coding.modules.workers.commands.record_worktree_release.record_worktree_release import RecordWorktreeRelease
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -20,8 +21,8 @@ ASSIGNED_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
-    """Abandons a worktree and releases the tasks still assigned to its worker, those it moved past with proofs not
-    all checked included."""
+    """Abandons a worktree, or keeps a merged one as it is, and releases the tasks still assigned to its worker,
+    those it moved past with proofs not all checked included."""
 
     command = RecordWorktreeRelease
     runs_once = True
@@ -31,7 +32,7 @@ class RecordWorktreeReleaseHandler(Handler[RecordWorktreeRelease, Worktree]):
 
     def handle(self, command: RecordWorktreeRelease, context: Context) -> Worktree:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        abandoned = self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.abandon), context)
+        abandoned = worktree if worktree.state is WorktreeState.MERGED else self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.abandon), context)
         task = self.rows.required(Task, worktree.task_id)
         changed_ids: list[int] = []
         if task.delegated_to == worktree.session_agent_id and task.state in ASSIGNED_STATES:

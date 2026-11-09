@@ -49,7 +49,7 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
         worktree = self.worktrees.worker_worktree(agent.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
             return
-        if self.stop.was_stopped(agent) or self.stop.has_help_request_opened_since(agent.id, process.started_at or process.creation_timestamp()):
+        if self.stop.was_stopped(agent) or self.stop.has_help_request_opened_after(agent.id, process.started_at or process.creation_timestamp()):
             return
         self.nudger.send(agent.id, WORKER_RUN_ENDED, WORKER_JOB_SOURCE, context, output=process.id)
 

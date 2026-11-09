@@ -43,6 +43,6 @@ class WorkerStop:
         return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES)).exists,
                               "session_agent_id = ? AND state = ? AND type IN (?, ?)", [worker_id, WaitState.OPEN, *WORK_ENDED_TYPES], name="workers.open_help_request")
 
-    def has_help_request_opened_since(self, worker_id: int, since_at: Timestamp) -> bool:
-        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES)).matching(Minimum("opened_at", since_at.text)).exists,
-                              "session_agent_id = ? AND state = ? AND type IN (?, ?) AND opened_at >= ?", [worker_id, WaitState.OPEN, *WORK_ENDED_TYPES, since_at.text], name="workers.help_request_opened_since")
+    def has_help_request_opened_after(self, worker_id: int, opened_after: Timestamp) -> bool:
+        return self.kept.read(self.tables.table(Wait).name, self.queries.query(Wait).filter(session_agent_id=worker_id, state=WaitState.OPEN).matching(Among("type", WORK_ENDED_TYPES)).matching(Minimum("opened_at", opened_after.text)).exists,
+                              "session_agent_id = ? AND state = ? AND type IN (?, ?) AND opened_at >= ?", [worker_id, WaitState.OPEN, *WORK_ENDED_TYPES, opened_after.text], name="workers.help_request_opened_after")
