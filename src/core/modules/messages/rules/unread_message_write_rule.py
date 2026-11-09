@@ -13,7 +13,8 @@ from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_nudges import UNREAD_COUNTDOWN, UNREAD_REFUSAL, UNREAD_TOOL_USES
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
-from core.modules.messages.rules.message_delivery_rule import LISTED_MESSAGES
+
+MESSAGE_COUNT_SHOWN = 3
 
 
 class UnreadMessageWriteRule(DriverRule):
@@ -28,9 +29,11 @@ class UnreadMessageWriteRule(DriverRule):
         self.messages = messages
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        delivered = list(self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest().all_rows())
+        waiting = self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest()
+        delivered = waiting.limited(MESSAGE_COUNT_SHOWN)
         if not delivered:
             return RuleAnswer.allowed()
-        message_numbers = ", ".join(str(message.id) for message in delivered[:LISTED_MESSAGES])
-        return RuleAnswer.allowed().blocking_after(hook, UNREAD_REFUSAL.nudge(count=len(delivered)), MessagesRead([message.id for message in delivered]),
+        count = waiting.count() if len(delivered) == MESSAGE_COUNT_SHOWN else len(delivered)
+        message_numbers = ", ".join(str(message.id) for message in delivered)
+        return RuleAnswer.allowed().blocking_after(hook, UNREAD_REFUSAL.nudge(count=count), MessagesRead([message.id for message in delivered]),
                                                    Interval(ToolUseSpan(UNREAD_TOOL_USES)), UNREAD_COUNTDOWN.nudge("{left}", messages=message_numbers))
