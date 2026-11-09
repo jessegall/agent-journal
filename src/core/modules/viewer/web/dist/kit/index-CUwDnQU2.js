@@ -12649,7 +12649,7 @@ const i3 = {
       ]))
     ], 512));
   }
-}, g3 = /* @__PURE__ */ z(p3, [["__scopeId", "data-v-de610667"]]), bC = {
+}, g3 = /* @__PURE__ */ z(p3, [["__scopeId", "data-v-139c6f0f"]]), bC = {
   __name: "HostedInspector",
   props: {
     term: { type: String, required: !0 },
@@ -14239,7 +14239,7 @@ function SC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const MC = lu(() => import("./VoiceFigure-D7-r2IIh.js").then((e) => e.V)), _C = "1.2.0", CC = "3.5";
+const MC = lu(() => import("./VoiceFigure-HW6PrDoO.js").then((e) => e.V)), _C = "1.2.0", CC = "3.5";
 export {
   Nf as $,
   Oe as A,

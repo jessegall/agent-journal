@@ -7,7 +7,7 @@ from core.base.chat.mark_button import MarkButton
 
 @dataclass(frozen=True)
 class DockDeclaration:
-    """A module's docked card, with its title, body, fold noun, facts and actions. A card whose declaration names a
+    """A module's docked card, with its title, body, fold word, facts and actions. A card whose declaration names a
     word shows that word and its row number at its foot; a card with no word shows no row line."""
 
     type: StrEnum

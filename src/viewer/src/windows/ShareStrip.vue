@@ -13,7 +13,7 @@ defineProps({
 <template>
     <header class="share-strip">
         <span class="badge"><Icon :name="icon" :size="13" /></span>
-        <span class="noun">Shared {{ term }}</span>
+        <span class="term">Shared {{ term }}</span>
         <template v-for="fact in facts" :key="fact">
             <span class="fact">{{ fact }}</span>
         </template>
