@@ -14,9 +14,12 @@ class ContextResets:
 
     def last_compaction(self, agent_id: int) -> str:
         call = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").first()
-        return call.created_at.text if call is not None and call.created_at is not None else ""
+        return self.created_text(call)
 
     def last_clear(self, agent_id: int) -> str:
         starts = self.queries.query(HookCall).filter(session_agent_id=agent_id, hook=HookEventName.SESSION_START).descending("id").all_rows()
-        call = next((start for start in starts if start.is_clear_start), None)
+        return self.created_text(next((start for start in starts if start.is_clear_start), None))
+
+    @staticmethod
+    def created_text(call: HookCall | None) -> str:
         return call.created_at.text if call is not None and call.created_at is not None else ""
