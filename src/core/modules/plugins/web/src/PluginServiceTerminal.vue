@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {OutputLines, usePoll, useWindow} from "@journal/window-kit";
 
-// the latest output of one running plugin service in the viewer's output terminal, read again while it shows
+// the latest output of one plugin service in the viewer's output terminal, read again while it shows
 const props = defineProps({plugin: {type: String, required: true}, service: {type: String, required: true}});
 const LINES = 200;
 const view = useWindow();
@@ -37,7 +37,7 @@ usePoll(load, () => true);
 }
 
 .service-terminal :deep(.output-lines) {
-    max-height: 220px;
+    max-height: 60vh;
     margin: 0;
     padding: 8px 10px;
     font-family: var(--mono, monospace);

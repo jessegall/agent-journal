@@ -22,8 +22,6 @@ const {rows: descriptions} = context.props.descriptions;
 const descriptionOf = (row) => descriptions.value.find((each) => each.plugin === row.name)?.description ?? "";
 const {rows: services} = context.props.services;
 const servicesOf = (row) => services.value.filter((service) => service.plugin === row.name);
-const {rows: events} = context.props.events;
-const eventsOf = (row) => events.value.filter((event) => event.plugin === row.name);
 const refusal = ref("");
 const source = ref("");
 const making = ref(false);
@@ -187,7 +185,7 @@ async function showRecord(row) {
             </template>
             <div class="cards">
                 <template v-for="row in rows" :key="row.id">
-                    <PluginCard :plugin="row" :description="descriptionOf(row)" :services="servicesOf(row)" :events="eventsOf(row)" :board="boardOf(row)" @toggle="switchOver(row)" @settings="showSettings(row)" @board="showBoard(row)" @record="showRecord(row)" @latest="checkLatest(row)" @remove="removing = row">
+                    <PluginCard :plugin="row" :description="descriptionOf(row)" :services="servicesOf(row)" :board="boardOf(row)" @toggle="switchOver(row)" @settings="showSettings(row)" @board="showBoard(row)" @record="showRecord(row)" @latest="checkLatest(row)" @remove="removing = row">
                         <template v-if="latest[row.name]">
                             <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
                             <template v-if="latest[row.name].is_newer">

@@ -239,19 +239,20 @@ test("a card says what the plugin is for and which of its services run", async (
     expect(element.querySelector('[data-plugin-service="sins b"]').textContent).toContain("stopped");
 });
 
-test("a running service opens its terminal on a click and closes it on the next, and a stopped one does not", async () => {
+test("the card names its services and has no list of events", async () => {
     const {element} = await drawn();
     await settle();
-    const running = element.querySelector('[data-plugin-service="sins a"]');
-    expect(running.querySelector(".service-name").textContent).toBe("a");
-    expect(element.querySelector('[data-plugin-service="sins b"]').disabled).toBe(true);
-    expect(element.querySelector("[data-plugin-service-terminal]")).toBeNull();
-    running.click();
+    expect(element.querySelector("[data-plugin-runs] .label").textContent).toBe("Services");
+    expect(element.textContent).not.toContain("Listens to");
+});
+
+test.each(["sins a", "sins b"])("clicking the service %s opens its log in a dialog", async (service) => {
+    const {element} = await drawn();
     await settle();
-    expect(element.querySelector("[data-plugin-service-terminal]").textContent).toContain("watching 3 folders");
-    running.click();
+    expect(document.querySelector("[data-plugin-service-terminal]")).toBeNull();
+    element.querySelector(`[data-plugin-service="${service}"]`).click();
     await settle();
-    expect(element.querySelector("[data-plugin-service-terminal]")).toBeNull();
+    expect(document.querySelector("[role=dialog] [data-plugin-service-terminal]")).not.toBeNull();
 });
 
 test("a page with no plugin says so and still offers to make one", async () => {
