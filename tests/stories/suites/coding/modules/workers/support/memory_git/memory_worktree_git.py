@@ -1,10 +1,12 @@
 import shutil
 import subprocess
-from pathlib import Path
+from collections.abc import Sequence
+from pathlib import Path, PurePosixPath
 
 from core.base.refusal import Refusal
 from core.base.file_status import FileStatus
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
@@ -48,7 +50,7 @@ class MemoryWorktreeGit(WorktreeGit):
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")
         return self.history.branches[branch]
 
-    def cut(self, folder: str, worktree: Worktree) -> None:
+    def cut(self, folder: str, worktree: Worktree, start: str) -> None:
         path = Path(worktree.folder)
         if path.exists() or path.is_symlink():
             self.runs.check_owner(worktree)
@@ -57,15 +59,15 @@ class MemoryWorktreeGit(WorktreeGit):
             self.runs.stop(worktree)
             shutil.rmtree(path)
         try:
-            self.added_worktree(folder, worktree)
+            self.added_worktree(folder, worktree, start)
         except Refusal:
             self.remove(folder, worktree)
             raise
 
-    def added_worktree(self, folder: str, worktree: Worktree) -> None:
+    def added_worktree(self, folder: str, worktree: Worktree, start: str) -> None:
         if self.history.has_branch(worktree.branch) or not self.history.has_branch(worktree.base_branch):
             raise Refusal(f"git worktree add failed in {folder}", f"branch {worktree.branch} exists or {worktree.base_branch} does not")
-        self.history.create_branch(worktree.branch, worktree.base_branch)
+        self.history.create_branch(worktree.branch, start)
         path = Path(worktree.folder)
         path.mkdir(parents=True)
         self.folder_files(path).write(self.history.tip(worktree.branch).tree)
@@ -238,9 +240,31 @@ class MemoryWorktreeGit(WorktreeGit):
             shutil.rmtree(path)
         self.prune()
 
-    def has_task_commit(self, worktree: Worktree, task_id: int) -> bool:
-        commits = self.history.new_commits(worktree.base_commit, self.history.branches[worktree.branch])
-        return any(commit.message.splitlines()[0].startswith(f"task {task_id}: ") for commit in commits)
+    def branch_commits(self, folder: str, revisions: str) -> tuple[TaskBranchCommit, ...]:
+        base, tip = revisions.split("..")
+        branch = self.history.folder_branch(Path(folder)) if tip == "HEAD" else tip.removeprefix("refs/heads/")
+        if not self.history.has_branch(branch):
+            return ()
+        commits = self.history.new_commits(self.history.branches.get(base, base), self.history.branches[branch])
+        return tuple(TaskBranchCommit.parsed(commit.id[:10], commit.message) for commit in commits if len(commit.parents) == 1)
+
+    def earlier_branch(self, folder: str, worktree: Worktree, task_ids: Sequence[int]) -> str | None:
+        if not self.history.has_branch(worktree.base_branch):
+            return None
+        prefix = f"{PurePosixPath(worktree.branch).parent}/"
+        base_tip = self.history.branches[worktree.base_branch]
+        found = [(commit.id, name) for name, tip in self.history.branches.items() if name.startswith(prefix) for commit in self.history.new_commits(base_tip, tip)
+                 if len(commit.parents) == 1 and TaskBranchCommit.parsed(commit.id[:10], commit.message).has_task_subject(task_ids)]
+        return max(found)[1] if found else None
+
+    def merge_base(self, folder: str, base_branch: str, branch: str) -> str:
+        return self.history.merge_base(self.history.branches[base_branch], self.history.branches[branch])
+
+    def worker_files(self, worktree: Worktree) -> tuple[str, ...]:
+        tip = self.history.branches[worktree.branch]
+        commits = [commit for commit in self.history.new_commits(self.history.branches[worktree.base_branch], tip) if len(commit.parents) == 1]
+        committed = (name for commit in commits for name in TreeChanges(self.history.commits[commit.parents[0]].tree, commit.tree).names())
+        return tuple(dict.fromkeys((*committed, *(change.relative for change in self.file_changes(worktree.folder, tip)))))
 
     def uncommitted_files(self, folder: str) -> tuple[str, ...]:
         return self.uncommitted_names(folder)

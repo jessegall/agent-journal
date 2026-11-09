@@ -127,12 +127,12 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
         extra_links = tuple(link for link in links if link not in configured)
         opened = self.bus.run(OpenKeptWorktree(worker.id, tasks[0].id), actor, environment_id=worker.environment_id)
         try:
-            base_commit = self.git.tip(environment.folder, environment.branch)
-            self.git.cut(environment.folder, opened)
+            start = self.git.start(environment.folder, opened, tuple(task.id for task in tasks))
+            self.git.cut(environment.folder, opened, start.point)
             try:
                 self.bus.run(PrepareWorktree(opened.folder, environment.folder, environment.name, extra_links, command.library_copies, worker.profile), actor,
                              environment_id=worker.environment_id)
-                self.bus.run(RecordWorktreeCut(opened.id, base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links)))), library_copies=json.dumps(tuple(dict.fromkeys((*configured_copies, *command.library_copies))))), actor, environment_id=worker.environment_id)
+                self.bus.run(RecordWorktreeCut(opened.id, start.base_commit, tuple(task.id for task in tasks), library_links=json.dumps(tuple(dict.fromkeys((*configured, *links)))), library_copies=json.dumps(tuple(dict.fromkeys((*configured_copies, *command.library_copies))))), actor, environment_id=worker.environment_id)
             except Exception:
                 self.git.remove(environment.folder, opened)
                 raise

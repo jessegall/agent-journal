@@ -10,12 +10,14 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.brief_points import brief_point_count
+from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.delivery_differences import follows_brief
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
 
-NO_CHANGE_HINT = 'make the change, block the task on what it waits for, or if it is already built hand in with --differences "<why no change was needed>"'
+BUILT_HINT = 'prove each point and hand in with --differences "already built: <where>"'
+UNCHANGED_TASK_HINT = 'make the change, block the task on what it waits for, or if it is already built hand in with --differences "<why no change was needed>"'
 
 
 class WorkerTaskCommit:
@@ -53,6 +55,16 @@ class WorkerTaskCommit:
 
     def check_built(self, worktree: Worktree, task: Task, changes: WorktreeChanges) -> None:
         if not changes.files:
-            raise Refusal("your worktree has no change", NO_CHANGE_HINT)
-        if task.state is TaskState.STARTED and not self.git.has_task_commit(worktree, task.id):
-            raise Refusal(f"task {task.id} changed no file, so it is not built", NO_CHANGE_HINT)
+            raise Refusal("your worktree has no change", UNCHANGED_TASK_HINT)
+        if task.state is not TaskState.STARTED:
+            return
+        commits = self.git.task_commits(worktree, task.id)
+        if not any(commit.worker_id == worktree.session_agent_id for commit in commits):
+            raise Refusal(f"task {task.id} changed no file, so it is not built", self.no_change_hint(commits))
+
+    @staticmethod
+    def no_change_hint(commits: tuple[TaskBranchCommit, ...]) -> str:
+        if not commits:
+            return UNCHANGED_TASK_HINT
+        workers = ", ".join(dict.fromkeys(str(commit.worker_id) for commit in commits))
+        return f"the task already has commits {', '.join(commit.short_id for commit in commits)} from worker {workers}: {BUILT_HINT}"

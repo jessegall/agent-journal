@@ -18,13 +18,13 @@ DELIVERY_EVENTS = ("worker_clocking_out", "worker_delivering")
 
 
 class WorkerStepCheck:
-    """Checks plugin rules against a worker's changes since its merge base before a handoff or merge."""
+    """Checks plugin rules against the files of a worker's own commits before a handoff or merge."""
 
     def __init__(self, step_check: PluginStepCheck, git: WorktreeGit, environments: EnvironmentRows, clock: Clock, bus: Bus, checkouts: AgentCheckouts) -> None:
         self.step_check, self.git, self.environments, self.clock, self.bus, self.checkouts = step_check, git, environments, clock, bus, checkouts
 
     def check(self, worktree: Worktree, events: Sequence[str], hint: str) -> None:
-        changes = self.git.comparison(worktree)
+        changes = self.git.comparison(worktree).filtered(self.git.worker_files(worktree))
         checkout = self.checkouts.checkout(worktree.session_agent_id)
         data = {"worker": worktree.session_agent_id, "task": worktree.task_id, "branch": worktree.branch, "base": changes.base,
                 "worktree": worktree.folder, "files": list(changes.files), "changes": [change.checkout_file(checkout).values() for change in changes.changes]}

@@ -3,20 +3,22 @@ import fcntl
 import json
 import re
 import subprocess
-from collections.abc import Generator
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from functools import lru_cache
 from core.base.file_version import FileVersion
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from core.base.conflict_files import ConflictFiles
 from core.base.instruction_imports import INSTRUCTION_FILES
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.file_status import FileStatus
+from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_file_change import WorktreeFileChange
+from suites.coding.modules.workers.support.worktree_start import WorktreeStart
 from suites.coding.modules.workers.support.worker_folder_runs import WorkerFolderRuns
 
 GIT_LIMIT_SECONDS = 60
@@ -29,6 +31,9 @@ BUILT_FOLDER = "/web/dist/"
 HASHED_BUILT_FILE = re.compile(r"(.+)-[\w-]{8}\.[^.]+")
 # git quotes a name with a space, a quote or another letter it finds odd, unless it separates names with NUL
 NAME_SEPARATOR = "\0"
+COMMIT_SEPARATOR = "\x1e"
+COMMIT_FORMAT = "--format=%h%x00%B%x1e"
+SHORT_COMMIT_FLAG = "--abbrev=10"
 # With -M -z a rename is three fields: status, old name, new name.
 RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
@@ -54,7 +59,7 @@ class WorktreeGit:
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")
         return revision.stdout.strip()
 
-    def cut(self, folder: str, worktree: Worktree) -> None:
+    def cut(self, folder: str, worktree: Worktree, start: str) -> None:
         path = Path(worktree.folder)
         if path.exists() or path.is_symlink():
             self.runs.check_owner(worktree)
@@ -64,10 +69,27 @@ class WorktreeGit:
             self.runs.stop(worktree)
             shutil.rmtree(path)
         try:
-            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
+            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, start)
         except Exception:
             self.remove(folder, worktree)
             raise
+
+    def start(self, folder: str, worktree: Worktree, task_ids: Sequence[int]) -> WorktreeStart:
+        branch = self.earlier_branch(folder, worktree, task_ids)
+        if branch is None:
+            return WorktreeStart(worktree.base_branch, self.tip(folder, worktree.base_branch))
+        return WorktreeStart(branch, self.merge_base(folder, worktree.base_branch, branch))
+
+    def earlier_branch(self, folder: str, worktree: Worktree, task_ids: Sequence[int]) -> str | None:
+        pattern = f"{PurePosixPath(worktree.branch).parent}/*"
+        tasks = "|".join(str(task_id) for task_id in task_ids)
+        newest = self.git(folder, GIT_LIMIT_SECONDS, "log", "-1", "--no-merges", "--format=%H", "-E", f"--grep=^task ({tasks}): ", f"--branches={pattern}", "--not", worktree.base_branch).stdout.strip()
+        if not newest:
+            return None
+        return self.checked(folder, GIT_LIMIT_SECONDS, "for-each-ref", "--contains", newest, "--sort=-version:refname", "--sort=-committerdate", "--format=%(refname:short)", f"refs/heads/{pattern}").stdout.split()[0]
+
+    def merge_base(self, folder: str, base_branch: str, branch: str) -> str:
+        return self.checked(folder, GIT_LIMIT_SECONDS, "merge-base", base_branch, branch).stdout.strip()
 
     def test_checkout(self, worktree: Worktree) -> str:
         folder = self.test_folder(worktree)
@@ -397,9 +419,15 @@ class WorktreeGit:
         else:
             self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
 
-    def has_task_commit(self, worktree: Worktree, task_id: int) -> bool:
-        subjects = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--format=%s", f"{worktree.base_commit}..HEAD").stdout.splitlines()
-        return any(subject.startswith(f"task {task_id}: ") for subject in subjects)
+    def task_commits(self, worktree: Worktree, task_id: int) -> tuple[TaskBranchCommit, ...]:
+        return tuple(commit for commit in self.branch_commits(worktree.folder, f"{worktree.base_commit}..HEAD") if commit.has_task_subject([task_id]))
+
+    def branch_commits(self, folder: str, revisions: str) -> tuple[TaskBranchCommit, ...]:
+        log = self.git(folder, GIT_LIMIT_SECONDS, "log", "--no-merges", SHORT_COMMIT_FLAG, COMMIT_FORMAT, revisions)
+        if log.returncode != 0:
+            return ()
+        fields = (record.strip().split(NAME_SEPARATOR, 1) for record in log.stdout.split(COMMIT_SEPARATOR) if record.strip())
+        return tuple(TaskBranchCommit.parsed(short_id, message) for short_id, message in fields)
 
     def uncommitted_files(self, folder: str) -> tuple[str, ...]:
         listing = self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain", "--untracked-files=all").stdout
@@ -409,9 +437,15 @@ class WorktreeGit:
         return tuple(change.relative for change in self.file_changes(worktree.folder, worktree.base_commit))
 
     def comparison(self, worktree: Worktree) -> WorktreeChanges:
-        base = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "merge-base", worktree.base_branch, worktree.branch).stdout.strip()
+        base = self.merge_base(worktree.folder, worktree.base_branch, worktree.branch)
         changes = self.file_changes(worktree.folder, base)
         return WorktreeChanges(base, tuple(change.relative for change in changes), changes)
+
+    def worker_files(self, worktree: Worktree) -> tuple[str, ...]:
+        listing = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "log", "--no-merges", "--name-only", "-z", "--format=", f"{worktree.base_branch}..HEAD").stdout
+        committed = (name.strip("\n") for name in listing.split(NAME_SEPARATOR))
+        waiting = self.file_changes(worktree.folder, "MERGE_HEAD" if self.is_merging(worktree) else "HEAD")
+        return tuple(dict.fromkeys(name for name in (*committed, *(change.relative for change in waiting)) if name))
 
     def file_changes(self, folder: str, base: str) -> tuple[WorktreeFileChange, ...]:
         tracked = self.tracked_changes(self.git(folder, GIT_LIMIT_SECONDS, "diff", "--name-status", "-M", "-z", base).stdout)

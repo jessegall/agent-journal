@@ -61,7 +61,7 @@ def test_a_dispatch_failing_once_a_row_refers_to_its_worker_ends_the_worker_and_
     story = dispatch_story
     bus = story.container.get(Bus)
 
-    def line_failure(git, folder, worktree):
+    def line_failure(git, folder, worktree, start):
         bus.run(RecordBypassLine(worktree.session_agent_id, 1), Actor.core(), environment_id=worktree.environment_id)
         raise Refusal(STEP_FAILURE, "try again")
 

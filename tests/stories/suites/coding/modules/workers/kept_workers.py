@@ -246,7 +246,7 @@ def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypat
     worker = merged_kept_worker(story, repository_environment(story))
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
 
-    def refused_cut(git, folder, worktree):
+    def refused_cut(git, folder, worktree, start):
         raise Refusal("the cut failed")
 
     monkeypatch.setattr(WorktreeGit, "cut", refused_cut)

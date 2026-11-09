@@ -88,11 +88,11 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         task_sources = self.copies.copies(tasks, source)
         opened = self.bus.run_with_context(OpenWorkerWorktree(start, task.id, command.new_agent_reason.strip(), choice.reason, command.starts_program), context)
         try:
-            base_commit = self.git.tip(environment.folder, environment.branch)
-            self.git.cut(environment.folder, opened.worktree)
+            start = self.git.start(environment.folder, opened.worktree, tuple(listed.id for listed in tasks))
+            self.git.cut(environment.folder, opened.worktree, start.point)
             try:
                 self.bus.run_with_context(PrepareWorktree(opened.worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies, profile.name), context)
-                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links)))), json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_COPIES), *command.library_copies))))), context)
+                worktree = self.bus.run_with_context(RecordWorktreeCut(opened.worktree.id, start.base_commit, tuple(listed.id for listed in tasks), task_sources, json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_LINKS), *command.library_links)))), json.dumps(tuple(dict.fromkeys((*self.settings.texts(LIBRARY_COPIES), *command.library_copies))))), context)
             except Exception:
                 self.git.remove(environment.folder, opened.worktree)
                 raise
