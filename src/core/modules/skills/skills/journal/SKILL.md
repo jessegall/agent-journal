@@ -1,6 +1,6 @@
 ---
 name: journal
-description: Find your way in the journal: what it is, its basic ideas and which skill to load for what; load at the start of every session, with the etiquette skill
+description: Find your way in the journal: what it is, its basic ideas and which skill to load for what; read it before your first command of every session, with the etiquette skill
 ---
 
 # The journal
@@ -29,11 +29,14 @@ After a compaction or a new start, run `journal overview` before anything else: 
 loading the skills it lists with the program’s native method. `journal skill required` lists them on its own. Search before you say you do not know
 or ask the user again: `journal search find "<words>"`.
 
-| Read | For | The journal asks for it |
-|---|---|---|
-| journal-etiquette, journal-messages | the chat, messages and questions | at every start; a message, a question |
-| journal-tasks, journal-plans | work in hand, blocks, waits; ordered tasks | a task or plan command |
-| journal-shell, journal-memory, journal-rules | commands, outputs, readers, aliases; memories; project rules | an output or alias; a memory command; a rule command |
-| journal-sequences, journal-documents, journal-templates | steps; documents and reports; templates | their commands |
-| journal-checks, journal-dumps, journal-flowcharts | checks; dropped material; flowcharts | their commands and words |
-| journal-plugins, journal-secrets | plugins; keys and logins | their commands and words |
+| Read | For | The journal asks for it | Who |
+|---|---|---|---|
+| journal | what the journal is, its basic ideas and which skill to load for what | at every start | all |
+| journal-etiquette, journal-messages | the chat, messages and questions | at every start; a message, a question | all |
+| journal-tasks, journal-sequences, journal-documents, journal-checks, journal-library | work in hand, blocks, waits; steps; documents and reports; checks; the team's library | their commands and words | all |
+| journal-shell, journal-memory, journal-rules, journal-secrets, journal-graphify | commands, outputs, readers, aliases; memories; project rules; keys and logins; code search | an output or alias; a memory or rule command; a key; a search of the code | all |
+| journal-workers | sending a worker, and working as one | a dispatch; a worker's task | all |
+| journal-plans, journal-planning, journal-plan-dispatch, journal-plan-review-applying, journal-templates | ordered tasks; how thorough a plan is; getting a plan made; working a review into a plan; templates | a plan command; a review | main agent |
+| journal-helpers, journal-merger, journal-work-modes | read-only helpers; merging a worker's work; auto mode, presets and the worker limit | a helper command; a merge; a work control | main agent |
+| journal-dumps, journal-flowcharts, journal-plugins, journal-transcriptions | dropped material; flowcharts; plugins; transcripts | their commands and words | main agent |
+| journal-functional-design, journal-user-stories | writing a functional design; writing user stories | a design or a story book to write | worker |

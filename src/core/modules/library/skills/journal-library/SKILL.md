@@ -1,6 +1,6 @@
 ---
 name: journal-library
-description: Find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed
+description: Use the library to find, read, get and share a team's documents, sequences and checks; read it when a shared item is needed
 ---
 
 # Library

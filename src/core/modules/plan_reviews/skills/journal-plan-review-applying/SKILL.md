@@ -1,6 +1,6 @@
 ---
 name: journal-plan-review-applying
-description: Working a critique of a plan into the plan is a light job; read it before you work a report of reviews into a plan or end its review
+description: Work a critique of a plan into the plan, which is a light job; read it before you work a report of reviews into a plan or end its review
 ---
 
 # Applying a plan's reviews

@@ -36,7 +36,7 @@ class ProjectRulesModule(Module):
     guards = [RuleApprovalGuard]
     settings = RULE_SETTINGS
     nudges = RULE_NUDGES
-    skills = [SkillDeclaration("journal-rules", "Project rules are standing instructions every agent gets at its start; read it before the first rule command of a session", keywords=("rule", "rules"), commands=["rule"])]
+    skills = [SkillDeclaration("journal-rules", "Declare project rules, the standing instructions every agent gets at its start; read it before the first rule command of a session", keywords=("rule", "rules"), commands=["rule"])]
     driver_rules = [StartRulesRule]
     windows = [WindowDeclaration("project-rules.rules", "Rules", "rules.js", WindowLoading.COMPONENT, skeleton=PROJECT_RULES_RULES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.RULE, reads=["rule list"],
                                  keys=[WindowKey("rules", "rule list", events=["rule.*"], arguments=["limit", "before-id", "after-id"], page_size=50)],

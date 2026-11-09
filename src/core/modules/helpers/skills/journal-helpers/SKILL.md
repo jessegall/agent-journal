@@ -11,12 +11,12 @@ dispatch`, and work that writes goes to one or stays with you.
 
 - Choose the profile from what the job is: `journal-researcher` for research and checks, `journal-code-reviewer` for a review,
   `journal-debugger` to trace a fault, `journal-planner` for a design. A job that writes goes to a worker.
-- Choose the model first: the least expensive one that fits the job. Reuse a kept helper only when it is on that model,
-  and never because a stronger one happens to be there. When no kept helper on that model is idle and no place is free,
-  retire a finished helper and start one on the simpler model.
+- Pick the cheapest model that fits the job. Reuse a kept helper only when it is on that model, never because a
+  stronger one happens to be there. With no idle kept helper on that model and no free place, retire a finished
+  helper and start one on the simpler model.
 - A helper stays kept after its process stops. It is idle until retired, and can take another job on the same
-  agent number and session. Give new work to a compatible idle helper, even when the subject changes; prefer the
-  one that already knows the work. A missing session, a nearly full context or an unfinished job can prevent reuse.
+  agent number and session. Give new work to a compatible idle helper, whatever the subject; prefer the
+  helper that already knows the work. A missing session, a nearly full context or an unfinished job can prevent reuse.
 - `journal helper start <profile> --brief "<the job>"` starts one; `--program`, `--model` and `--name` choose how, and
   `journal profile list` names the profiles. It works in your folder, on the profile's model. When a compatible idle
   helper can take the job, a start is refused with its send command. Use `--fresh "<why>"` only when a separate
@@ -47,10 +47,10 @@ dispatch`, and work that writes goes to one or stays with you.
 ## Keeping the right mix
 
 Keep a mix that matches the work: the models a profile actually uses, with more places for those used most. A profile that
-rarely runs keeps at most one agent per model, unless they know different work. When retiring, prefer the agent idle the
-longest on the model with the most spare agents; one that knows the work coming next is worth keeping. `journal agent mix`
-prints the jobs of each kind of agent by model lately, the agents kept and how long they have been idle. A start refused
-for no free place names a suggestion. The journal never retires an agent itself.
+rarely runs keeps at most one agent per model, unless they know different work. When retiring, prefer the agent that has idled
+longest, among the models with most agents to spare; one that knows the work coming next is worth keeping. `journal agent mix`
+lists, for each kind of agent and model, the recent jobs, the agents kept and the time each has idled. When a start is
+refused because no place is free, the refusal suggests one to retire; the journal retires no agent by itself.
 
 ## Running and kept limits
 
@@ -64,8 +64,8 @@ replaces the project's list. Limits written in a profile file have no effect.
 
 ## As a read-only helper
 
-- A full context is no reason to hurry or stop: it is compacted, and you get your task's overview, your memories and
-  the memory marks back, so nothing you keep is lost. Keep working as before.
+- A full context does not stop you: when it fills it is compacted, and your task's overview, your memories and the
+  memory marks come back, so keep working as before.
 - You read, search, run journal reads and read version control. You write no file and run no program, and journal lines
   that change another agent's work are refused. Each refusal says what to do instead.
 - Report by stopping: your last words are your report.
