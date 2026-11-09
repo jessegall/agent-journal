@@ -4,6 +4,7 @@ import pytest
 
 from core.base.clock import Clock
 from core.modules.processes.support.queued_process_launch import QueuedProcessLaunch
+from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, start_planned_worker
 
 MAIN_SESSION = "s-1"
@@ -83,6 +84,15 @@ def test_a_worker_waiting_on_the_tests_of_its_hand_in_is_not_told_to_go_on(ended
     ended_during_tests.story.expect_text("proof show 1", "state: running", actor=ended_during_tests.story.agent)
     ended_during_tests.story.expect_rows(not any("stopped with" in line for line in ended_during_tests.main_agent_lines()))
     ended_during_tests.story.expect_rows(not any("tasks left" in line for line in ended_during_tests.worker_lines()))
+
+
+def test_a_worker_whose_tests_are_running_is_not_restarted_while_it_holds_a_started_task(ended_during_tests):
+    worker = ended_during_tests
+    worker.story.expect_success("task start 4", actor=worker.worker)
+    worker.story.expect_text(f"worker status {worker.worker.id}", "Point: wait", actor=worker.story.agent)
+    worker.story.tick(MAIN_SESSION)
+    WorkerResumeRetry()(worker.story.container)
+    worker.story.expect_rows(not any("tasks left" in line for line in worker.worker_lines()), detail=str(worker.worker_lines()))
 
 
 def test_a_worker_that_ended_while_its_hand_in_runs_leaves_no_stopped_line(handoff_worker):
