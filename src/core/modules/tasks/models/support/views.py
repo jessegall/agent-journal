@@ -1,4 +1,4 @@
-TASK_HELPER_MATCH = "helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND (helper.role != 'main' OR helper.id = tasks.delegated_to)"
+TASK_HELPER_MATCH = "helper.id = coalesce(tasks.delegated_to, tasks.holder_id) AND (helper.role != 'main' OR (helper.id = tasks.delegated_to AND tasks.holder_id IS NULL))"
 USER_TASK_WAIT = "EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND target = 'user')"
 AUTOMATIC_TASK_WAIT = "EXISTS(SELECT 1 FROM task_waits WHERE task_id = tasks.id AND ended_at IS NULL AND (command != '' OR target != 'user'))"
 
@@ -8,7 +8,7 @@ OPEN_DEPENDENCIES_SELECT = (
     " JOIN tasks ON tasks.id = task_dependencies.dependency_id"
     " JOIN tasks AS dependent ON dependent.id = task_dependencies.task_id"
     " WHERE tasks.closed_at IS NULL"
-    " AND NOT (tasks.state IN ('started', 'testing') AND tasks.delegated_to IS NOT NULL AND tasks.delegated_to = dependent.delegated_to)"
+    " AND NOT (tasks.state IN ('started', 'testing') AND tasks.delegated_to IS NOT NULL AND tasks.delegated_to IS dependent.delegated_to)"
 )
 
 TASK_TAGS_SELECT = (
