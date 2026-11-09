@@ -14,7 +14,8 @@ class Subcommand(Generic[C, R]):
     """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and
     how the result is printed. It holds no rule; the command's guards do. A subcommand that sets background is
     run in the background at once when an agent types it. One that sets outward reaches past the journal, so
-    a read-only agent may not run it."""
+    a read-only agent may not run it. An answer that waits on what the commit listeners started is printed by
+    after_listeners."""
 
     disabled_scopes: ClassVar[WholeScopes] = ()
 
@@ -32,5 +33,8 @@ class Subcommand(Generic[C, R]):
 
     def write_output(self, value: object, output: Output) -> None:
         render_value(value, output)
+
+    def after_listeners(self, value: object, output: Output) -> None:
+        return None
 def is_subcommand_class(class_type: type) -> TypeIs[type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]]:
     return issubclass(class_type, (Subcommand, ReadSubcommand))

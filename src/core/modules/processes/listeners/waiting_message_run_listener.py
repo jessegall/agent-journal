@@ -9,7 +9,6 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.base.change.created import Created
 from core.modules.messages.support.message_targets import MessageTargets
 
-MOVE_FILE = "move"
 
 
 class WaitingMessageRunListener(CommitListener[Created[Message]]):
@@ -32,4 +31,4 @@ class WaitingMessageRunListener(CommitListener[Created[Message]]):
         processes = self.kept.scoped_read("processes", lambda: tuple(self.processes.agent(target.id).filter(state=ProcessState.RUNNING).all_rows()),
                                             "session_agent_id = ? AND state = ?", [target.id, ProcessState.RUNNING], name="processes.message_foreground_runs")
         for process in processes:
-            self.folder.write(process.id, MOVE_FILE, "1")
+            self.folder.ask_move(process.id)

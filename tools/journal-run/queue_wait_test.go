@@ -54,3 +54,30 @@ func TestQueueWaitDefaultsToFiveSecondsAndReadsTheSetting(t *testing.T) {
 		t.Fatal("the queue wait setting was not read")
 	}
 }
+
+func TestCountedQueueCountsTheTimeInTheQueueInTheForegroundLimit(t *testing.T) {
+	options := options(t, "sleep 5")
+	options.Queue = true
+	options.QueueWait = 2 * time.Second
+	options.LimitSeconds = 2
+	options.CountedQueue = true
+	go func() {
+		time.Sleep(1500 * time.Millisecond)
+		_ = os.WriteFile(filepath.Join(NewFolder(options.Home, options.Process).Path, "slot"), nil, 0o644)
+	}()
+	started := time.Now()
+	output, code := run(t, options, newClient())
+	if code != 0 || time.Since(started) > 3*time.Second || !strings.Contains(output, "moved to the background: output 4; you will be told when it ends") {
+		t.Fatalf("counted queue response %d after %s: %q", code, time.Since(started), output)
+	}
+}
+
+func TestCountedQueueIsReadFromItsVariable(t *testing.T) {
+	t.Setenv(countedQueueVariable, "1")
+	if !countedQueue() {
+		t.Fatal("the counted queue variable was not read")
+	}
+	if countedQueue() {
+		t.Fatal("the counted queue variable stayed set for runs inside this one")
+	}
+}

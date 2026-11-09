@@ -27,6 +27,9 @@ COUNT_OUTPUT = "count.out"
 COUNT_STATUS = "counted"
 
 COUNT_LINES = 20
+MOVE_FILE = "move"
+
+
 
 class OutputFolder:
     """The one class that knows .journal/processes/<number>/: the line, the parts, each part's <position>.out
@@ -59,6 +62,12 @@ class OutputFolder:
 
     def has_slot(self, process_id: int) -> bool:
         return (self.home.folder / FOLDER_NAME / str(process_id) / SLOT_FILE).exists()
+
+    def ask_move(self, process_id: int) -> None:
+        self.write(process_id, MOVE_FILE, "1")
+
+    def has_move_request(self, process_id: int) -> bool:
+        return (self.home.folder / FOLDER_NAME / str(process_id) / MOVE_FILE).exists()
 
     def write_pid(self, process_id: int, pid: int) -> None:
         self.write_number(process_id, PID_FILE, pid)

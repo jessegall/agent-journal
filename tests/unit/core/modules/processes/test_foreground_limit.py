@@ -7,6 +7,7 @@ from core.base.driver.shell_line import ShellLine
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit
 from core.modules.processes.support.part_command import PartCommand
+from core.modules.processes.support.run_waits import RunWaits
 
 
 class Settings:
@@ -81,7 +82,7 @@ def line(*parts: Part, journal_shell: bool = False) -> ShellLine:
 
 
 def limit(excess: bool = False, waiting: bool = False, journal_commands: bool = False) -> ForegroundLimit:
-    return ForegroundLimit(Settings(), Background(journal_commands), Rows(excess), Messages(waiting))  # type: ignore[arg-type]
+    return ForegroundLimit(Settings(), Background(journal_commands), Rows(excess), Messages(waiting), RunWaits())  # type: ignore[arg-type]
 
 
 def test_a_journal_only_line_has_no_foreground_limit():
@@ -110,7 +111,7 @@ def test_a_pipe_that_ran_after_a_long_command_sends_no_quick_test_to_the_backgro
     head = Part("pytest", "pytest", "", (), Classification(CommandCategory.TEST_RUN, ()), (), (), "", 1)
     rows = Rows(excess=False)
     rows.has_moved_run = lambda text, seconds=0: text == "tail"
-    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False)).decide(line(head, part("tail", CommandCategory.READ)), 1)  # type: ignore[arg-type]
+    decided = ForegroundLimit(Settings(), Background(), rows, Messages(False), RunWaits()).decide(line(head, part("tail", CommandCategory.READ)), 1)  # type: ignore[arg-type]
     assert not decided.background
 
 

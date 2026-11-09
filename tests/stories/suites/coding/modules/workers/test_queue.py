@@ -30,7 +30,8 @@ TAILED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "journa
 
 def recording_launch(monkeypatch) -> list[int]:
     started: list[int] = []
-    monkeypatch.setattr(WorkerTestLaunch, "start", lambda _launch, process, _line, _session: started.append(process.id))
+    for method in ("start", "start_waited"):
+        monkeypatch.setattr(WorkerTestLaunch, method, lambda _launch, process, _line, _session: started.append(process.id))
     return started
 
 

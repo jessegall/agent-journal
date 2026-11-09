@@ -28,14 +28,14 @@ func TestARunsEndIsToldAgainWhileAReachableServerRestarts(t *testing.T) {
 // slowRestartClient takes twenty seconds of the tracker's time to fail its first try while the server restarts, and answers the next.
 type slowRestartClient struct {
 	*recordingClient
-	current   *time.Time
-	tries int
+	current *time.Time
+	tries   int
 }
 
 func (client *slowRestartClient) Run(arguments ...string) error {
 	client.tries++
 	if client.tries == 1 {
-		*client.now = client.now.Add(20 * time.Second)
+		*client.current = client.current.Add(20 * time.Second)
 		return os.ErrDeadlineExceeded
 	}
 	return client.recordingClient.Run(arguments...)

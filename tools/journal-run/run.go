@@ -27,6 +27,7 @@ type Options struct {
 	Background           bool
 	Queue                bool
 	QueueWait            time.Duration
+	CountedQueue            bool
 	SlotWaitLimitSeconds int
 	OnlyReads            bool
 	ReadOnlyShell        bool
