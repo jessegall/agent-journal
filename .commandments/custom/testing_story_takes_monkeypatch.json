@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "parameter",
+        "where": [
+            {
+                "name": "monkeypatch"
+            },
+            {
+                "fileMatches": "(^|/)tests/stories/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "_browser\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "story-takes-monkeypatch",
+        "description": "A story takes monkeypatch, so it replaces a part of the journal instead of running it.",
+        "rule": "Run the real commands and hooks; move time with story.advance and set a setting through its command. Put a fake that every story needs in core.testing.",
+        "skill": "stories-stay-in-the-story-kit"
+    }
+}
