@@ -1,3 +1,4 @@
+from core.base.database.kept_rows import KeptRows
 from core.base.plan_authors import PlanAuthors
 from core.base.query.queries import Queries
 from core.modules.plans.models.phase import Phase
@@ -8,10 +9,13 @@ from core.modules.plans.models.plan_task import PlanTask
 class PlanRowAuthors(PlanAuthors):
     """Finds the plan a line changes, through the plan, phase or task it names, and whether the agent made it."""
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, kept: KeptRows) -> None:
+        self.queries, self.kept = queries, kept
 
     def is_author(self, agent_id: int, line: str, row_id: int) -> bool:
+        return self.kept.scoped_current(lambda: self.is_creator(agent_id, line, row_id), name=f"plans.author:{agent_id}:{line}:{row_id}")
+
+    def is_creator(self, agent_id: int, line: str, row_id: int) -> bool:
         plan_id = self.plan_id(line.split(" ", 1)[0], row_id)
         plan = self.queries.query(Plan).filter(id=plan_id).first() if plan_id is not None else None
         return plan is not None and plan.creator_id == agent_id

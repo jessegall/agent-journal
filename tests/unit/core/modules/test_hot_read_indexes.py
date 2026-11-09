@@ -44,6 +44,7 @@ def database(tmp_path):
     (Statement("SELECT * FROM affected_tests WHERE worktree_id = ? ORDER BY id DESC LIMIT 1", [1]), "affected_tests_worktree"),
     (Statement("SELECT * FROM worker_worktrees WHERE environment_id = ?", [1]), "worker_worktrees_environment"),
     (Statement("SELECT * FROM proofs WHERE state IN (?, ?) ORDER BY id LIMIT 25", ("queued", "running")), "proofs_state"),
+    (Statement("SELECT * FROM proofs WHERE creator_id = ? ORDER BY id LIMIT 25", [1]), "proofs_creator"),
     (Statement("SELECT * FROM affected_tests WHERE state = ? ORDER BY id LIMIT 25", ["queued"]), "affected_tests_state"),
     (Statement("SELECT * FROM checks WHERE hidden = ? AND removed_at IS NULL ORDER BY id", [0]), "checks_open_hidden"),
     (Statement("SELECT * FROM outputs WHERE reader_id = ?", [1]), "outputs_reader"),
