@@ -28,7 +28,7 @@ func TestARunsEndIsToldAgainWhileAReachableServerRestarts(t *testing.T) {
 // slowRestartClient takes twenty seconds of the tracker's time to fail its first try while the server restarts, and answers the next.
 type slowRestartClient struct {
 	*recordingClient
-	now   *time.Time
+	current   *time.Time
 	tries int
 }
 
@@ -44,15 +44,15 @@ func (client *slowRestartClient) Run(arguments ...string) error {
 func (client *slowRestartClient) Restarting() bool { return client.tries < 2 }
 
 func TestTheTimeSpentTellingAnEndWhileTheServerRestartsDoesNotMoveAQuickRunToTheBackground(t *testing.T) {
-	now := time.Unix(0, 0)
-	client := &slowRestartClient{recordingClient: newClient(), now: &now}
-	tracker := Tracker{Client: client, Options: Options{LimitSeconds: 15}, Now: func() time.Time { return now }}
-	started := now
+	current := time.Unix(0, 0)
+	client := &slowRestartClient{recordingClient: newClient(), current: &current}
+	tracker := Tracker{Client: client, Options: Options{LimitSeconds: 15}, Now: func() time.Time { return current }}
+	started := current
 	tracker.report("process", "end", "7")
-	if now.Sub(started) < 20*time.Second {
-		t.Fatalf("the restart took %s", now.Sub(started))
+	if current.Sub(started) < 20*time.Second {
+		t.Fatalf("the restart took %s", current.Sub(started))
 	}
 	if tracker.mayMove(started) {
-		t.Fatalf("a run that ran for no time moved after %s of restart", now.Sub(started))
+		t.Fatalf("a run that ran for no time moved after %s of restart", current.Sub(started))
 	}
 }

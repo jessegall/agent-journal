@@ -42,7 +42,7 @@ type Tracker struct {
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
-	started := tracker.now()
+	started := tracker.current()
 	queueStarted := started
 	for {
 		tracker.reportParts(stdout)
@@ -53,11 +53,11 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 			return tracker.orphan(stdout)
 		}
 		if tracker.waitsForSlot() {
-			if tracker.now().Sub(queueStarted)-tracker.Waited >= tracker.Options.QueueWait {
+			if tracker.current().Sub(queueStarted)-tracker.Waited >= tracker.Options.QueueWait {
 				return tracker.move(stdout)
 			}
 			tracker.wait()
-			started = tracker.now()
+			started = tracker.current()
 			tracker.Waited = 0
 			continue
 		}
@@ -79,10 +79,10 @@ func (tracker *Tracker) waitsForSlot() bool {
 // mayMove says whether the run reached its foreground limit or was asked to move.
 func (tracker *Tracker) mayMove(started time.Time) bool {
 	limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
-	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && tracker.now().Sub(started)-tracker.Waited >= limit)
+	return tracker.Options.Background || tracker.Folder.MoveAsked() || (limit > 0 && tracker.current().Sub(started)-tracker.Waited >= limit)
 }
 
-func (tracker *Tracker) now() time.Time {
+func (tracker *Tracker) current() time.Time {
 	if tracker.Now != nil {
 		return tracker.Now()
 	}
@@ -204,11 +204,11 @@ func (tracker *Tracker) showPart(stdout io.Writer, position int) {
 
 // report tells the journal of an end, and tells it again while the server is away, as during a restart.
 func (tracker *Tracker) report(arguments ...string) {
-	began := tracker.now()
+	began := tracker.current()
 	retried := false
 	defer func() {
 		if retried {
-			tracker.Waited += tracker.now().Sub(began)
+			tracker.Waited += tracker.current().Sub(began)
 		}
 	}()
 	for attempt := 0; attempt < reportAttempts; attempt++ {

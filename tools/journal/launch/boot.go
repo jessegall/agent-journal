@@ -360,8 +360,8 @@ func (menu *boot) running() (bool, error) {
 }
 
 func (menu *boot) conversation() (bool, error) {
-	if named := menu.request.NamedSession(); named != "" {
-		menu.choice.Session = named
+	if labelled := menu.request.NamedSession(); labelled != "" {
+		menu.choice.Session = labelled
 		return true, nil
 	}
 	conversations, err := menu.journal.Conversations(menu.choice.Environment, menu.request.Program)
@@ -428,7 +428,7 @@ func indexOf(values []string, value string) int {
 // program's name; that one is resumed, and the menu does not ask which conversation to carry on.
 func (request Request) NamedSession() string {
 	for index, argument := range request.ProgramArguments {
-		if value, found := strings.CutPrefix(argument, ResumeFlag+"="); found {
+		if value, ok := strings.CutPrefix(argument, ResumeFlag+"="); ok {
 			return value
 		}
 		if argument == ResumeFlag && index+1 < len(request.ProgramArguments) {

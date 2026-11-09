@@ -32,9 +32,9 @@ class TaskCountsSubcommand(ReadSubcommand[TaskCounts]):
         range_group.add_argument("--since", default=None, help="count the tasks completed after this time")
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskCounts:
-        since = Timestamp.parsed(arguments.since) if arguments.since else Timestamp(self.clock.timestamp().value - timedelta(hours=arguments.hours))
-        completed = self.cards.cards(TaskState.COMPLETED, []).matching(Greater("closed_at", since.text)).count()
-        return TaskCounts(self.cards.matching_states(TaskState.STARTED, TaskState.TESTING).count(), self.cards.matching_states(TaskState.BLOCKED).count(), self.cards.matching_states(TaskState.OPEN).count(), completed, since.text)
+        start_time = Timestamp.parsed(arguments.since) if arguments.since else Timestamp(self.clock.timestamp().value - timedelta(hours=arguments.hours))
+        completed = self.cards.cards(TaskState.COMPLETED, []).matching(Greater("closed_at", start_time.text)).count()
+        return TaskCounts(self.cards.matching_states(TaskState.STARTED, TaskState.TESTING).count(), self.cards.matching_states(TaskState.BLOCKED).count(), self.cards.matching_states(TaskState.OPEN).count(), completed, start_time.text)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskCounts):

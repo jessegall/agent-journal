@@ -27,13 +27,13 @@ func TestEveryCommandMovesAfterFifteenSeconds(t *testing.T) {
 			if err := folder.Start(test.line, Parts(test.line), ""); err != nil {
 				t.Fatal(err)
 			}
-			now := time.Unix(0, 0)
+			current := time.Unix(0, 0)
 			tracker := Tracker{Options: setup, Client: newClient(), Folder: folder,
-				Reported: map[int]bool{}, Positions: map[int]bool{1: true}, Now: func() time.Time { return now },
-				Wait: func() { now = now.Add(time.Second) }}
+				Reported: map[int]bool{}, Positions: map[int]bool{1: true}, Now: func() time.Time { return current },
+				Wait: func() { current = current.Add(time.Second) }}
 			var output strings.Builder
-			if code := tracker.Run(&output); code != 0 || !detached || now.Sub(time.Unix(0, 0)) != 15*time.Second || !strings.Contains(output.String(), "moved to the background: output 4") {
-				t.Fatalf("code %d, detached %t, at %s: %s", code, detached, now, output.String())
+			if code := tracker.Run(&output); code != 0 || !detached || current.Sub(time.Unix(0, 0)) != 15*time.Second || !strings.Contains(output.String(), "moved to the background: output 4") {
+				t.Fatalf("code %d, detached %t, at %s: %s", code, detached, current, output.String())
 			}
 		})
 	}
@@ -47,9 +47,9 @@ func TestACommandFinishingBeforeTheLimitStaysInTheForeground(t *testing.T) {
 	if err := folder.Start(setup.Line, Parts(setup.Line), ""); err != nil {
 		t.Fatal(err)
 	}
-	now := time.Unix(0, 0)
+	current := time.Unix(0, 0)
 	tracker := Tracker{Options: setup, Client: newClient(), Folder: folder, Reported: map[int]bool{},
-		Now: func() time.Time { return now }, Wait: func() { now = now.Add(time.Second); _ = folder.WriteEnd(0) }}
+		Now: func() time.Time { return current }, Wait: func() { current = current.Add(time.Second); _ = folder.WriteEnd(0) }}
 	var output strings.Builder
 	if code := tracker.Run(&output); code != 0 || strings.Contains(output.String(), "background") {
 		t.Fatalf("code %d: %s", code, output.String())

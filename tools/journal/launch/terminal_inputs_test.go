@@ -97,8 +97,8 @@ func TestATerminalsAnswersToItsProgramsQuestionsAreNotTypedText(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			line := &inputLine{}
 			line.keys([]byte("ab" + answer + "c"))
-			if got := string(line.text); got != "abc" {
-				t.Fatalf("pending text is %q", got)
+			if actual := string(line.text); actual != "abc" {
+				t.Fatalf("pending text is %q", actual)
 			}
 		})
 	}
@@ -109,8 +109,8 @@ func TestATerminalAnswerSplitAcrossTwoReadsIsNotTypedText(t *testing.T) {
 	line.keys([]byte("\x1bP>|iTe"))
 	line.keys([]byte("rm2 3.7.3\x1b"))
 	line.keys([]byte("\\x"))
-	if got := string(line.text); got != "x" {
-		t.Fatalf("pending text is %q", got)
+	if actual := string(line.text); actual != "x" {
+		t.Fatalf("pending text is %q", actual)
 	}
 }
 
@@ -118,8 +118,8 @@ func TestAKeyWithAnEscapeSequenceStaysOutOfTheLineAndTypingGoesOn(t *testing.T) 
 	for _, key := range []string{"\x1b[A", "\x1b[3~", "\x1bOP", "\x1bO1;5P", "\x1bb"} {
 		line := &inputLine{}
 		line.keys([]byte("a" + key + "b"))
-		if got := string(line.text); got != "ab" {
-			t.Fatalf("after %q the pending text is %q", key, got)
+		if actual := string(line.text); actual != "ab" {
+			t.Fatalf("after %q the pending text is %q", key, actual)
 		}
 	}
 }

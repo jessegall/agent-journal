@@ -4,8 +4,8 @@ import "testing"
 
 func TestANamedSessionIsResumedAndNotHandedOnTwice(t *testing.T) {
 	request := Request{ProgramArguments: []string{"--model", "opus", "--resume", "7083dde2", "--verbose"}}
-	if got := request.NamedSession(); got != "7083dde2" {
-		t.Fatalf("named session %q", got)
+	if actual := request.NamedSession(); actual != "7083dde2" {
+		t.Fatalf("named session %q", actual)
 	}
 	kept := request.ArgumentsBesideSession()
 	if len(kept) != 3 || kept[0] != "--model" || kept[1] != "opus" || kept[2] != "--verbose" {
@@ -15,21 +15,21 @@ func TestANamedSessionIsResumedAndNotHandedOnTwice(t *testing.T) {
 
 func TestANamedSessionWithAnEqualsSignIsResumed(t *testing.T) {
 	request := Request{ProgramArguments: []string{"--resume=abc"}}
-	if got := request.NamedSession(); got != "abc" || len(request.ArgumentsBesideSession()) != 0 {
-		t.Fatalf("named %q kept %v", got, request.ArgumentsBesideSession())
+	if actual := request.NamedSession(); actual != "abc" || len(request.ArgumentsBesideSession()) != 0 {
+		t.Fatalf("named %q kept %v", actual, request.ArgumentsBesideSession())
 	}
 }
 
 func TestNoNamedSessionLetsTheMenuAsk(t *testing.T) {
-	if got := (Request{ProgramArguments: []string{"--model", "opus"}}).NamedSession(); got != "" {
-		t.Fatalf("named %q", got)
+	if actual := (Request{ProgramArguments: []string{"--model", "opus"}}).NamedSession(); actual != "" {
+		t.Fatalf("named %q", actual)
 	}
 }
 
 func TestTheOpenMainAgentsConversationComesFirst(t *testing.T) {
 	listed := []Conversation{{Session: "today"}, {Session: "october"}}
 	titled := []Conversation{{Session: "october"}, {Session: "today"}}
-	if got := OpenFirst(titled, listed); got[0].Session != "today" || got[1].Session != "october" {
-		t.Fatalf("order %v", got)
+	if actual := OpenFirst(titled, listed); actual[0].Session != "today" || actual[1].Session != "october" {
+		t.Fatalf("order %v", actual)
 	}
 }
