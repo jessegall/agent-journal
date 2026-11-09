@@ -27,7 +27,7 @@ class DocShowSubcommand(LibraryAwareShow[TextReading], TextShowSubcommand):
         self.lookup = lookup
 
     def local(self, arguments: Namespace, caller: Caller) -> TextReading:
-        return self.text_reading(arguments)
+        return self.reading(arguments)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, LibraryReading):

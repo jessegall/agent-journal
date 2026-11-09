@@ -4,6 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.provider.managed_hook import ManagedHook
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
+from core.base.type_guards import is_list
 from core.modules.settings.commands.remove_managed_hooks.remove_managed_hooks import RemoveManagedHooks
 
 
@@ -21,5 +22,5 @@ class RemoveManagedHooksSubcommand(Subcommand[RemoveManagedHooks, list[ManagedHo
         return RemoveManagedHooks(arguments.stamp)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, list):
+        if is_list(value):
             output.line(f"removed {len(value)} managed hooks")

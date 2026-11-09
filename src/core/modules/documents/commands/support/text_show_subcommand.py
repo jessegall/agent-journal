@@ -31,9 +31,9 @@ class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
         TextLines.reading_flags(parser)
 
     def read(self, arguments: Namespace, caller: Caller) -> TextReading | LibraryReading:
-        return self.text_reading(arguments)
+        return self.reading(arguments)
 
-    def text_reading(self, arguments: Namespace) -> TextReading:
+    def reading(self, arguments: Namespace) -> TextReading:
         return TextReading(self.queries.query(self.model).find(arguments.id), arguments)
 
     def write_output(self, value: object, output: Output) -> None:

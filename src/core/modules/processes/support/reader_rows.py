@@ -13,7 +13,13 @@ class ReaderRows:
         return self.kept.read("readers", lambda: tuple(self.readers.all_rows()), name="processes.readers")
 
     def save(self, reader: Reader) -> None:
-        self.kept.update("readers", lambda rows: tuple(({row.id: row for row in rows} | {reader.id: reader}).values()), name="processes.readers")
+        def with_reader(rows: tuple[Reader, ...]) -> tuple[Reader, ...]:
+            return tuple(({row.id: row for row in rows} | {reader.id: reader}).values())
+
+        self.kept.update("readers", with_reader, name="processes.readers")
 
     def remove(self, reader: Reader) -> None:
-        self.kept.update("readers", lambda rows: tuple(row for row in rows if row.id != reader.id), name="processes.readers")
+        def without_reader(rows: tuple[Reader, ...]) -> tuple[Reader, ...]:
+            return tuple(row for row in rows if row.id != reader.id)
+
+        self.kept.update("readers", without_reader, name="processes.readers")

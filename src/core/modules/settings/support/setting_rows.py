@@ -27,10 +27,16 @@ class SettingRows:
         return {(row.key, row.environment_id): row for row in self.queries.query(model).all_rows()}
 
     def remember(self, row: Setting | SecretSetting) -> None:
-        self.kept.update(TABLES[type(row)], lambda rows: {**rows, (row.key, row.environment_id): row}, name="settings.rows")
+        def with_row(rows: dict[tuple[str, int | None], Setting | SecretSetting]) -> dict[tuple[str, int | None], Setting | SecretSetting]:
+            return {**rows, (row.key, row.environment_id): row}
+
+        self.kept.update(TABLES[type(row)], with_row, name="settings.rows")
 
     def remove(self, row: Setting | SecretSetting) -> None:
-        self.kept.update(TABLES[type(row)], lambda rows: {key: value for key, value in rows.items() if key != (row.key, row.environment_id)}, name="settings.rows")
+        def without_row(rows: dict[tuple[str, int | None], Setting | SecretSetting]) -> dict[tuple[str, int | None], Setting | SecretSetting]:
+            return {key: value for key, value in rows.items() if key != (row.key, row.environment_id)}
+
+        self.kept.update(TABLES[type(row)], without_row, name="settings.rows")
 
     def stored_keys(self) -> list[str]:
         return list(dict.fromkeys(key for model in (Setting, SecretSetting) for key, _ in self.kept_table(model)))

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from functools import cached_property
 
 from core.modules.library.models.enums.library_role import LibraryRole
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.state_entry import StateEntry
 
@@ -18,11 +19,10 @@ class ServerState:
 
     @classmethod
     def parsed(cls, body: object) -> "ServerState":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            entries = tuple(StateEntry(str(entry["kind"]), int(entry["id"]), int(entry["version"]), bool(entry["removed"])) for entry in body["items"])
-            return cls(str(body["server_key"]), LibraryRole(body["role"]), str(body["etag"]), entries)
+            entries = tuple(StateEntry.parsed(entry) for entry in LibraryAnswer.members(fields, "items"))
+            return cls(str(fields["server_key"]), LibraryRole(fields["role"]), str(fields["etag"]), entries)
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

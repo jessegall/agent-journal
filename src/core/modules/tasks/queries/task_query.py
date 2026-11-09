@@ -47,12 +47,16 @@ class TaskQuery(Query[Task]):
     def replace_cached(self, task: Task, present: tuple[Task, ...]) -> None:
         started = [row for row in present if row.state is TaskState.STARTED]
         queued = [row for row in present if row.state is TaskState.OPEN]
+        def with_started(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
+            return tuple(sorted([row for row in tasks if row.id != task.id] + started, key=lambda row: row.started_at or row.creation_timestamp(), reverse=True))
+
+        def with_queued(tasks: tuple[Task, ...]) -> tuple[Task, ...]:
+            return tuple(sorted([row for row in tasks if row.id != task.id] + queued, key=lambda row: row.id))
+
         if task.holder_id is not None:
-            self.kept.update(self.table.name, lambda tasks: tuple(sorted([row for row in tasks if row.id != task.id] + started, key=lambda row: row.started_at, reverse=True)),
-                             "holder_id = ? AND state = ?", [task.holder_id, TaskState.STARTED], name="tasks.current_tasks")
+            self.kept.update(self.table.name, with_started, "holder_id = ? AND state = ?", [task.holder_id, TaskState.STARTED], name="tasks.current_tasks")
         if task.delegated_to is not None:
-            self.kept.update(self.table.name, lambda tasks: tuple(sorted([row for row in tasks if row.id != task.id] + queued, key=lambda row: row.id)),
-                             "delegated_to = ? AND state = ?", [task.delegated_to, TaskState.OPEN], name="tasks.queued_tasks")
+            self.kept.update(self.table.name, with_queued, "delegated_to = ? AND state = ?", [task.delegated_to, TaskState.OPEN], name="tasks.queued_tasks")
 
     def unclosed(self) -> Self:
         return self.matching(IsNull("closed_at"))

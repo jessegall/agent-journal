@@ -11,3 +11,6 @@ class LayoutOwnerGuard(PersonRowGuard[Changed[ViewerLayout]]):
     name = "viewer.layout-owner"
     refusal = Refusal("this layout belongs to another person")
     question = "Change this saved layout?"
+
+    def person_id(self, event: Changed[ViewerLayout]) -> int:
+        return event.row.person_id

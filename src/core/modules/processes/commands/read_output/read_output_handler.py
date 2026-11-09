@@ -30,7 +30,7 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
             self.looks.answered(command.process_id, context.timestamp.value.timestamp())
         kept = self.outputs.process_output(command.process_id)
         if kept is not None and kept.state is OutputState.KEPT:
-            values = {}
+            values: dict[str, object] = {}
             if kept.read_at is None:
                 values["read_at"] = context.timestamp
             if self.is_full_read(command, kept):

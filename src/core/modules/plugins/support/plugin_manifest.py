@@ -10,7 +10,7 @@ from functools import lru_cache
 from core.base.journal_version import JOURNAL_VERSION
 from core.base.refusal import Refusal
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
-from core.base.type_guards import is_list, is_mapping
+from core.base.type_guards import is_list, is_mapping, is_object_mapping
 from core.modules.plugins.support.manifest_listener import SERVICE_PREFIX, ManifestListener
 from core.modules.plugins.support.plugin_event_entry import PluginEventEntry
 from core.modules.plugins.support.plugin_answer import PluginAnswer
@@ -112,7 +112,7 @@ class PluginManifest:
             fields: object = json.loads(FileAccess.shared().read(path))
         except json.JSONDecodeError as error:
             return Refusal(f"the manifest {path} is not valid JSON: {error}", "correct the file, or remove and install the plugin again")
-        if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
+        if not is_object_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
             return Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
         return fields
 

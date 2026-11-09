@@ -8,10 +8,10 @@ from core.base.library.library_ref import LibraryRef
 from core.base.refusal import Refusal
 
 
-Local = TypeVar("Local", covariant=True)
+L = TypeVar("L")
 
 
-class LibraryAwareShow(Generic[Local]):
+class LibraryAwareShow(Generic[L]):
     """What a show command of a shared type adds to reading its own rows: an item of the team's library read live
     by its library number, and, when a plain number names no row here, the library item with that number. The
     command gives its own reading of a row in `local`."""
@@ -20,10 +20,10 @@ class LibraryAwareShow(Generic[Local]):
     cli_name: str
     lookup: LibraryLookup
 
-    def local(self, arguments: Namespace, caller: Caller) -> Local:
+    def local(self, arguments: Namespace, caller: Caller) -> L:
         raise NotImplementedError
 
-    def read(self, arguments: Namespace, caller: Caller) -> Local | LibraryReading:
+    def read(self, arguments: Namespace, caller: Caller) -> L | LibraryReading:
         if isinstance(arguments.id, LibraryRef):
             return self.library_reading(arguments)
         try:

@@ -56,5 +56,7 @@ class PluginOutputListener(CommitListener[Created[PluginOutput]]):
         for line in answer.commands[:MOST_COMMAND_LINES]:
             self.console.run(shlex.split(line), Caller(actor, plugin_script=plugin.name), io.StringIO())
         published = self.skill_files.names(self.folders.code(plugin.name), manifest)
-        for name in [name for name in answer.required_skills if name in published and row.session_agent_id is not None]:
+        if row.session_agent_id is None:
+            return
+        for name in [name for name in answer.required_skills if name in published]:
             self.bus.run(RequestSkill(row.session_agent_id, name), actor, cause_id=logged.id)

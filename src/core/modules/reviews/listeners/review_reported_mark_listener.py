@@ -29,6 +29,8 @@ class ReviewReportedMarkListener(CommitListener[Moved[Review]]):
         self.bus, self.actors, self.queries = bus, actors, queries
 
     def handle(self, event: Moved[Review], logged: LoggedEvent) -> None:
+        if event.move is None:
+            return
         variant, outcome = REPORTED[event.move.name]
         review = event.row
         key = f"{variant.value}:{review.id}:{logged.id}"

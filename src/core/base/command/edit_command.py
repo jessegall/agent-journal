@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import TypeIs, TypeVar
 
 from core.base.command.command import Command
 from core.base.command.move_command import ROW_ID
@@ -16,3 +16,7 @@ class EditCommand(Command[M]):
 
     def changed_fields(self) -> dict[str, object]:
         return {name: value for name, value in self.field_values([ROW_ID]).items() if value is not None}
+
+
+def is_edit_command(value: object) -> TypeIs[EditCommand[Model]]:
+    return isinstance(value, EditCommand)

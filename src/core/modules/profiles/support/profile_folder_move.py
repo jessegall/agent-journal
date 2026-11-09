@@ -5,6 +5,7 @@ from pathlib import Path
 from core.base.access import Access
 from core.base.file_access import FileAccess
 from core.base.log_level import LogLevel
+from core.base.profile.agent_profile import AgentProfile
 from core.base.refusal import Refusal
 from core.base.system_log_writer import SystemLogWriter
 from core.base.text_digest import TextDigest
@@ -61,9 +62,9 @@ class ProfileFolderMove:
         if self.is_published(path, text):
             return False
         registered = self.files.registered(path.stem)
-        fields = self.native_fields(path, text)
-        profile = self.files.checked_type(self.files.profile(path, fields))
-        fields = self.personal_fields(profile, fields)
+        native = self.native_fields(path, text)
+        profile = self.files.checked_type(self.files.profile(path, native))
+        fields = self.personal_fields(profile, native)
         if registered is not None:
             registered = self.files.checked_type(registered)
             fields = {name: value for name, value in fields.items() if name == "legacy_writing" or (name in ProfileFields.__annotations__ and hasattr(registered, name) and value != getattr(registered, name))}
@@ -88,8 +89,8 @@ class ProfileFolderMove:
         return True
 
     @staticmethod
-    def personal_fields(profile, fields: ProfileFields) -> ProfileFields:
-        values: ProfileFields = {name: getattr(profile, name) for name in ("description", "body", "agent_type", "access", "program", "preferred_program", "model", "codex_model", "independent", "mcp_tools")}
+    def personal_fields(profile: AgentProfile, fields: ProfileFields) -> dict[str, object]:
+        values: dict[str, object] = {name: getattr(profile, name) for name in ("description", "body", "agent_type", "access", "program", "preferred_program", "model", "codex_model", "independent", "mcp_tools")}
         if fields.get("legacy_writing") == "true":
             values["legacy_writing"] = "true"
         return values
@@ -98,11 +99,10 @@ class ProfileFolderMove:
     def native_fields(path: Path, text: str) -> ProfileFields:
         if path.suffix == ".toml":
             native = tomllib.loads(text)
+            codex_model = str(native.get("model", ""))
             fields = ProfileFields(name=path.stem, description=str(native.get("description", "")), body=str(native.get("developer_instructions", "")),
-                                   agent_type=str(native.get("type", native.get("kind", "helper"))), model="", codex_model=str(native.get("model", "")),
+                                   agent_type=str(native.get("type", native.get("kind", "helper"))), model="", codex_model="" if codex_model == "inherit" else codex_model,
                                    independent=bool(native.get("independent", False)), mcp_tools=ProfileFormat.tools(native.get("mcp_tools", [])))
-            if fields["codex_model"] == "inherit":
-                fields["codex_model"] = ""
             if native.get("sandbox_mode") == "workspace-write":
                 fields.update(access=Access.READ, legacy_writing="true")
             return ProfileFolderMove.complete_fields(fields)

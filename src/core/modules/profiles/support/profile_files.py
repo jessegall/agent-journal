@@ -1,4 +1,5 @@
 import json
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
 
@@ -116,14 +117,18 @@ class ProfileFiles:
         return self.profile(path, self.fields(path))
 
     def profile(self, path: Path, fields: ProfileFields) -> AgentProfile:
-        values = {name: fields[name] for name in OVERLAID_FIELDS if name in fields}
-        notes = self.notes(path, fields)
-        return AgentProfile(path.stem, values.pop("description", ""), values.pop("body", ""),
-                            agent_type=fields.get("agent_type", "helper"), path=str(path.relative_to(self.home.project_folder)), notes=notes, source_digest=fields.get("source_digest", ""), **values)
+        overlay = {name: value for name, value in self.overlay(fields).items() if name not in ("description", "body")}
+        profile = AgentProfile(path.stem, fields.get("description", ""), fields.get("body", ""), agent_type=fields.get("agent_type", "helper"),
+                               path=str(path.relative_to(self.home.project_folder)), notes=self.notes(path, fields), source_digest=fields.get("source_digest", ""))
+        return replace(profile, **overlay)
+
+    @staticmethod
+    def overlay(fields: Mapping[str, object]) -> dict[str, object]:
+        return {name: fields[name] for name in OVERLAID_FIELDS if name in fields}
 
     def notes(self, path: Path, fields: ProfileFields) -> tuple[str, ...]:
         notes: list[str] = []
-        if fields.get("legacy_writing") == "true" or fields.get("legacy_writing") is True:
+        if fields.get("legacy_writing") == "true":
             notes.append("Could write before")
         if path.with_name(f"{path.stem}.clash.md").is_file():
             notes.append(f"Changed original kept in {path.stem}.clash.md")
@@ -133,33 +138,40 @@ class ProfileFiles:
         return self.overlaid_fields(registered, path, self.fields(path))
 
     def overlaid_fields(self, registered: AgentProfile, path: Path, fields: ProfileFields) -> AgentProfile:
-        changed = tuple(name for name in OVERLAID_FIELDS if name in fields)
+        overlay = self.overlay(fields)
+        changed = tuple(overlay)
         text_changed = "body" in changed and fields.get("module_text") != self.digest.hex_digest(registered.body)
-        return replace(registered, **{name: fields[name] for name in changed}, changed=changed, module_text_changed=text_changed, module_body=registered.body,
+        return replace(registered, **overlay, changed=changed, module_text_changed=text_changed, module_body=registered.body,
                        path=str(path.relative_to(self.home.project_folder)), notes=self.notes(path, fields), source_digest=fields.get("source_digest", ""))
 
     def save(self, profile: AgentProfile) -> AgentProfile:
-        fields = {name: getattr(profile, name) for name in OVERLAID_FIELDS}
+        fields: dict[str, object] = {name: getattr(profile, name) for name in OVERLAID_FIELDS}
         fields.update(name=profile.name, agent_type=profile.agent_type)
         if profile.source_digest:
             fields["source_digest"] = profile.source_digest
         if "Could write before" in profile.notes:
             fields["legacy_writing"] = "true"
         self.save_fields(profile.name, fields)
-        return self.row(profile.name)
+        return self.stored(profile.name)
 
     def save_changes(self, registered: AgentProfile, profile: AgentProfile) -> AgentProfile:
         registered = self.checked_type(registered)
-        fields = {name: getattr(profile, name) for name in OVERLAID_FIELDS if getattr(profile, name) != getattr(registered, name)}
+        fields: dict[str, object] = {name: getattr(profile, name) for name in OVERLAID_FIELDS if getattr(profile, name) != getattr(registered, name)}
         fields.update(name=profile.name, **{"module_text": self.digest.hex_digest(registered.body), "module": registered.module})
         if profile.source_digest:
             fields["source_digest"] = profile.source_digest
         if "Could write before" in profile.notes:
             fields["legacy_writing"] = "true"
         self.save_fields(profile.name, fields)
-        return self.row(profile.name)
+        return self.stored(profile.name)
 
-    def save_fields(self, name: str, fields: ProfileFields) -> None:
+    def stored(self, name: str) -> AgentProfile:
+        profile = self.row(name)
+        if isinstance(profile, ProfileProblem):
+            raise Refusal(profile.problem, f"fix or remove {profile.path}")
+        return profile
+
+    def save_fields(self, name: str, fields: Mapping[str, object]) -> None:
         path = self.path(name)
         path.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(path, ProfileFormat.text(fields))

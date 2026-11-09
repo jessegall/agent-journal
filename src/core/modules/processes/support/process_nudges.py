@@ -10,7 +10,8 @@ READERS_MISSING_FIELDS = NudgeDeclaration("processes.readers_missing_fields", Nu
 
 READER_REQUEST_REMINDER = Seconds(600)
 READER_REQUEST = NudgeDeclaration("processes.reader_request", NudgeType.STEERING, "reader request {request}: agent {agent} needs a reader for output {output}", interval=Interval(READER_REQUEST_REMINDER), turn_limited=False)
-READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", ToolUseSpan(5))
+READER_REQUEST_SPAN = ToolUseSpan(5)
+READER_REQUEST_COUNTDOWN = CountDown("processes.reader_request_countdown", "reader of {command}", READER_REQUEST_SPAN)
 READER_REQUEST_REFUSAL = NudgeDeclaration("processes.reader_request_refusal", NudgeType.REFUSAL, 'reader request {request} needs a reader')
 
 READER_BLOCK = NudgeDeclaration("processes.reader_block", NudgeType.REFUSAL, "no proper reader reads output {output}")
