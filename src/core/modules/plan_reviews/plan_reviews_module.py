@@ -22,7 +22,7 @@ class PlanReviewsModule(Module):
     requires_core = ">=5,<6"
     seed_reason = "its only state and rounds come from what a plan does"
     move_reason = "version 4 plan reviews were dropped when a journal moved"
-    dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer"]
+    dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer", "journal.core.actors"]
     skills = [SkillDeclaration("journal-plan-review-applying", "Work a critique of a plan into the plan, which is a light job; read it before you work a report of reviews into a plan or end its review", keywords=("review", "critique"), commands=tuple(["plan reviewed"]))]
     added_states = tuple([REVIEW_STATE])
     listeners = [CritiqueReportListener]
