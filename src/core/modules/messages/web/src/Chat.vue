@@ -70,9 +70,21 @@ const shownVoice = ref("");
 watch(figureVoice, (chosen) => {
     if (chosen) shownVoice.value = chosen;
 }, {immediate: true});
+const toolRunning = ref(false);
+const commandShown = ref(false);
+let fadeTimer = 0;
+// a finished command stays on the strip for five seconds and then gives way to the thinking word; a running one stays as long as it runs
+const COMMAND_LINGER_MS = 5000;
 const {data: toolProp, failure: toolFailure} = view.props.tool;
 watch([toolProp, toolFailure], () => {
     const tool = toolFailure.value ? {} : (toolProp.value ?? {});
+    const changed = (tool.tool ?? "") !== runningTool.value || Boolean(tool.running) !== toolRunning.value;
+    if (changed) {
+        clearTimeout(fadeTimer);
+        commandShown.value = Boolean(tool.tool);
+        if (tool.tool && !tool.running) fadeTimer = setTimeout(() => { commandShown.value = false; }, COMMAND_LINGER_MS);
+    }
+    toolRunning.value = Boolean(tool.running);
     runningTool.value = tool.tool ?? "";
     waitingFor.value = tool.wait_target ?? "";
     thinking.value = Boolean(tool.thinking);
@@ -476,7 +488,7 @@ const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollH
         <template v-if="view.option('floors').value">
             <FigureFloors />
         </template>
-        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" :idle="waitingFor ? `waiting for ${waitingFor}` : 'waiting'" /></p>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="commandShown ? runningTool : ''" :idle="waitingFor ? `waiting for ${waitingFor}` : runningTool || thinking ? 'thinking' : 'idle'" /></p>
         <div data-figure-chat-foot class="chat-foot">
             <DockStack :items="docked" :folded="short" :collapsed="!docksOpen" :insides-folded="scrolledUp" :data-figure-docked-bars="dockedRows.size ? '' : null" />
         </div>
