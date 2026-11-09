@@ -25,7 +25,7 @@ def delegated_story(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     return story, repository, worker
 
 
@@ -71,7 +71,7 @@ def test_a_worker_judges_only_its_changes_and_the_main_agent_judges_all(judge_wo
 def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.run('worker dispatch 1 --model sonnet --name "Noah Webster"', actor=story.agent)
+    story.run('worker dispatch --test-command python=pytest 1 --model sonnet --name "Noah Webster"', actor=story.agent)
     story.run_listeners()
     story.expect_text("chat-mark main --environment main --type workers.worker", "Noah Webster started task 1", actor=story.agent)
     story.run("chat-mark main --environment main --type workers.tests", actor=story.agent).expect_no_text("Noah Webster started task 1")
@@ -81,7 +81,7 @@ def test_a_dispatch_shows_a_mark_naming_the_worker_its_model_and_its_queue(new_s
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    story.run('worker dispatch 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
+    story.run('worker dispatch --test-command python=pytest 1 2 --model sonnet --name "Noah Webster"', actor=story.agent)
     story.run_listeners()
     expect_marks_text(story, "Noah Webster started task 1")
     story.expect_text("chat-mark list --json", "sonnet", "Queued: task 2", actor=story.agent)
@@ -360,7 +360,7 @@ def test_a_merged_worker_with_a_task_still_assigned_is_not_listed_as_running(new
 def test_a_workers_facts_carry_its_model_profile_and_name_with_no_status_file(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    worker = story.new_row_id("worker dispatch --model sonnet --profile journal-medior --name Lovelace 1", actor=story.agent)
+    worker = story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --profile journal-medior --name Lovelace 1", actor=story.agent)
     story.expect_text("usage agents --environment main --json", f'"id": {worker}', '"model": "sonnet"', '"profile": "journal-medior"', '"given_name": "Lovelace"', actor=story.agent)
 
 

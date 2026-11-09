@@ -53,7 +53,7 @@ class ReaderRequests:
         samples = self.parts.kept_samples(["*"]).matching(scope).limited(5)
         sample_id = next((sample.process_id for sample in samples if sample.exit_code != 2 or not self.judge.is_rejected(
             sample.exit_code, self.judge.output_text(sample.process_id, sample.position))), process.id)
-        return self.open_request(process, spec, reason, sample_id, context)
+        return self.saved_request(process, spec, reason, sample_id, context)
 
     def after_run(self, process: Process, part: ProcessPart, reader: Reader | None, context: Context) -> None:
         if reader is None and part.reader_request_id is None:
@@ -84,11 +84,14 @@ class ReaderRequests:
         return self.requests.open().filter(creator_id=scope.agent_id, command=scope.command).first()
 
     def open_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
-        key = self.command_key(spec)
-        command = spec.command or spec.text
-        existing = self.open_row(ReaderSampleScope(process.session_agent_id, command))
+        existing = self.open_row(ReaderSampleScope(process.session_agent_id, spec.command or spec.text))
         if existing is not None:
             return existing.id
+        return self.saved_request(process, spec, reason, sample_process_id, context)
+
+    def saved_request(self, process: Process, spec: PartSpec, reason: str, sample_process_id: int, context: Context) -> int:
+        key = self.command_key(spec)
+        command = spec.command or spec.text
         current_time = self.clock.timestamp()
         minutes = self.settings.integer(ProcessSetting.READER_BLOCK_MINUTES)
         expires_at = Timestamp(current_time.value + timedelta(minutes=minutes)) if MainAgentFinder.newest(self.queries) else current_time

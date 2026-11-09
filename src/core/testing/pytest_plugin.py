@@ -7,6 +7,9 @@ from pathlib import Path
 
 import pytest
 
+from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE, SOURCE_FOLDER
+from core.base.module.source_hash import SourceHash
+
 from core.base.registry.lazy_loading import LazyLoading
 from core.testing.heavy_run_gate import HeavyRunGate
 from core.testing.run_cpu import RunCpu
@@ -54,6 +57,7 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
         HeavyRunGate().enter(lambda line: print(line, file=sys.stderr, flush=True))
         os.environ[GATE_LOCK_VARIABLE] = "1"
     if chooses_template_folder(config):
+        pinned_code_text()
         run_template_folder()
     if not config.getoption("numprocesses", None):
         return
@@ -66,6 +70,13 @@ def pytest_cmdline_main(config: pytest.Config) -> None:
 def chooses_template_folder(config: pytest.Config) -> bool:
     is_listing = any(config.getoption(option, False) for option in LISTING_OPTIONS)
     return not (hasattr(config, "workerinput") or is_listing or TEMPLATE_FOLDER_VARIABLE in os.environ) and RunSize(config.args, 1).reaches_stories()
+
+
+def pinned_code_text() -> str:
+    # The first process of a run hashes the code and its runners inherit it, so a file edited during the run changes nothing.
+    if PINNED_CODE_VARIABLE not in os.environ:
+        os.environ[PINNED_CODE_VARIABLE] = SourceHash.text(tuple([SOURCE_FOLDER]))
+    return os.environ[PINNED_CODE_VARIABLE]
 
 
 def run_template_folder() -> Path:

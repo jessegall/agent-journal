@@ -18,7 +18,7 @@ def test_a_second_dispatch_shows_only_its_worktree_totals_and_keeps_its_pace_on_
     story.advance(timedelta(hours=2))
     for title in ("Add tax", "Add receipt"):
         story.run(f'task make "{title}" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet 2 3")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2 3")
     story.expect_success('actor make user "Ada"')
     with server_story(story) as server:
         expect_browser(server, "workerProgress.browser.mjs", [str(worker.id), story.clock.timestamp().text, "0 of 2 tasks", "", "new"])

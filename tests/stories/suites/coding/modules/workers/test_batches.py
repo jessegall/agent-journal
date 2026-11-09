@@ -25,7 +25,7 @@ def batch(new_story, monkeypatch):
     repository_environment(story)
     for title in ("Tax", "Totals", "Shipping", "Release"):
         story.expect_success(f'task make "{title}" --brief "Check {title}"', actor=story.agent)
-    worker = dispatched_story_worker(story, "worker dispatch --model sonnet 1 2 3 4 5", monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3 4 5", monkeypatch)
     configure(worker, BATCH, "4")
     return worker
 
@@ -140,7 +140,7 @@ def test_a_large_batch_moves_on_without_repeated_row_reads(new_story, monkeypatc
     for number in range(2, 14):
         story.expect_success(f'task make "Job {number}" --brief "Do job {number}"', actor=story.agent)
     memory_id = story.new_row_id('memory make "Remember the cart" --task 1 --environment main', actor=story.agent)
-    worker = dispatched_story_worker(story, "worker dispatch --model sonnet " + " ".join(str(number) for number in range(1, 14)), monkeypatch)
+    worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet " + " ".join(str(number) for number in range(1, 14)), monkeypatch)
     configure(worker, BATCH, "12")
     for _ in range(11):
         worker.prove_advance()
@@ -185,7 +185,7 @@ def test_a_task_already_built_is_handed_in_by_saying_so_and_the_main_agent_reads
 
 
 def test_a_worker_revises_the_proof_of_an_earlier_task_of_its_batch(second):
-    second.story.expect_success(f'proof make 1 --task 1 "cart.py:1, revised" --test "{TEST_LINE}"', actor=second.worker)
+    second.story.expect_success('proof make 1 --task 1 "cart.py:1, revised" --test "python tests/cart.py"', actor=second.worker)
     second.story.expect_text("proof list --task 1", "revised", actor=second.story.agent)
 
 

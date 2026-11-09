@@ -93,7 +93,6 @@ def test_free_runs_end_at_the_next_hand_in(first_failed):
     for _ in range(5):
         expect_reply_allowed(first_failed.run_test())
     first_failed.story.expect_success("worker deliver --wait --differences none", actor=first_failed.worker)
-    expect_reply_refusal(first_failed.run_test(), "not started yet")
 
 
 def test_the_second_hand_in_runs_only_what_failed_and_what_passed_stays_checked(first_failed):

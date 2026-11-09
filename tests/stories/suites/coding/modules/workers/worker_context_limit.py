@@ -93,7 +93,7 @@ def finished_task_ids(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     story.expect_success("task overview 1", actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, by reading"', actor=worker)

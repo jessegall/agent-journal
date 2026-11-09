@@ -97,7 +97,7 @@ def expect_worker_absent(story, line: str, reason: str) -> None:
 
 def test_s14_inheritance_allowed_providers_refuse_the_program_of_the_sender_and_allow_a_named_one(split_story, split_viewer):
     viewer_options(split_viewer, "worker allowed_providers=codex")
-    expect_worker_absent(split_story, "worker dispatch 1", "worker may not use claude")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "worker may not use claude")
     expect_program(split_story, dispatch(split_story, flags="--program codex"), "codex")
 
 
@@ -115,14 +115,14 @@ def test_s16_inheritance_the_common_split_only_chooses_among_the_allowed_provide
 def test_s16_inheritance_an_empty_allowed_providers_list_leaves_no_program_for_the_split(split_story, split_viewer):
     split_viewer.value("settings.settings", ["setting", "set", "journal.core.helpers.program-split", "claude 80,codex 20", "--project"])
     viewer_options(split_viewer, "worker allowed_providers=")
-    expect_worker_absent(split_story, "worker dispatch 1", "no program can take this worker")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "no program can take this worker")
 
 
 def test_s17_inheritance_allowed_models_narrow_the_model_of_the_profile_and_refuse_another(split_story, split_viewer):
     viewer_options(split_viewer, "worker allowed_models=claude:opus")
     expect_program(split_story, dispatch(split_story), "claude", "opus")
     second = new_task(split_story, "Total the cart")
-    split_story.expect_refusal(f"worker dispatch --model sonnet {second}", "cannot run on claude", actor=split_story.agent)
+    split_story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {second}", "cannot run on claude", actor=split_story.agent)
 
 
 def test_s18_inheritance_a_model_default_of_the_agent_options_replaces_the_profile_model(split_story, split_viewer):
@@ -134,12 +134,12 @@ def test_s19_inheritance_a_strict_route_to_a_program_the_options_forbid_creates_
     split_story.new_row_id("worker-route make --program codex --tags strict --strict --environment main", actor=split_story.agent)
     split_story.expect_success("task tag 1 strict --confirm", actor=split_story.agent)
     viewer_options(split_viewer, "worker allowed_providers=claude")
-    expect_worker_absent(split_story, "worker dispatch 1", "must go to codex")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "must go to codex")
 
 
 def test_s52_inheritance_a_configured_model_list_naming_no_model_of_the_program_denies_instead_of_allowing_all(split_story, split_viewer):
     split_viewer.value("settings.settings", ["setting", "set", ALLOWED_MODELS, json.dumps(["codex gpt-6.1-sol"]), "--environment", "main"])
-    expect_worker_absent(split_story, "worker dispatch 1", "no allowed automatic model")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "no allowed automatic model")
 
 
 def stopped_worker(story):
@@ -152,7 +152,7 @@ def stopped_worker(story):
 
 def test_s11_lifecycle_new_workers_off_refuses_a_dispatch_and_starts_nothing(split_story, split_viewer):
     viewer_options(split_viewer, "worker allow_new=off")
-    expect_worker_absent(split_story, "worker dispatch 1", "new worker sessions are switched off")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "new worker sessions are switched off")
 
 
 def test_s11_lifecycle_new_helpers_off_refuses_a_helper_start_and_starts_nothing(new_story):
@@ -175,7 +175,7 @@ def test_s12_lifecycle_resume_off_or_a_forbidden_program_refuses_a_job_for_a_sto
 
 def test_s13_lifecycle_an_empty_profile_list_refuses_a_dispatch_of_every_profile(split_story, split_viewer):
     viewer_options(split_viewer, "worker allowed_profiles=")
-    expect_worker_absent(split_story, "worker dispatch 1", "may not use the profile journal-worker")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "may not use the profile journal-worker")
 
 
 RUN_LIMIT = "journal.suites.coding.workers.worker-run-limit"
@@ -203,27 +203,27 @@ def test_s21_inheritance_an_explicit_profile_limit_changes_only_that_profile(new
 
 def test_s21_inheritance_a_worker_run_limit_of_zero_starts_no_worker(split_story, split_viewer):
     split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "0", "--environment", "main"])
-    expect_worker_absent(split_story, "worker dispatch 1", "0 workers are running")
+    expect_worker_absent(split_story, "worker dispatch --test-command python=pytest 1", "0 workers are running")
 
 
 def test_pending_openings_share_one_limit(split_story, split_viewer):
     split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "1", "--environment", "main"])
     expect_program(split_story, dispatch(split_story), "claude")
     second = new_task(split_story, "Total the cart")
-    split_story.expect_refusal(f"worker dispatch {second}", "1 workers are running", actor=split_story.agent)
+    split_story.expect_refusal(f"worker dispatch --test-command python=pytest {second}", "1 workers are running", actor=split_story.agent)
     expect_value(len(split_story.run("worker-worktree list", actor=split_story.agent).output_text.strip().splitlines()), 1)
 
 
 def test_failed_opening_releases_place_once(split_story, split_viewer):
     split_viewer.value("settings.settings", ["setting", "set", RUN_LIMIT, "1", "--environment", "main"])
     split_story.run("environment edit 1 --branch missing-branch")
-    failed = split_story.run("worker dispatch 1", actor=split_story.agent)
+    failed = split_story.run("worker dispatch --test-command python=pytest 1", actor=split_story.agent)
     expect_value(failed.code != 0, True)
     split_story.expect_text("worker-worktree list", "nothing found")
     split_story.expect_success(f"environment edit 1 --branch {ENVIRONMENT_BRANCH}")
     expect_program(split_story, dispatch(split_story), "claude")
     second = new_task(split_story, "Total the cart")
-    split_story.expect_refusal(f"worker dispatch {second}", "1 workers are running", actor=split_story.agent)
+    split_story.expect_refusal(f"worker dispatch --test-command python=pytest {second}", "1 workers are running", actor=split_story.agent)
 
 
 def test_special_designer_and_merger_profiles_each_show_once_with_the_common_helper_limits(new_story):

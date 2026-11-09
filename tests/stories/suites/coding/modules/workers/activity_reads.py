@@ -39,7 +39,7 @@ def four_tasks(new_story):
 def four_workers(four_tasks):
     story = four_tasks
     for number in range(1, 5):
-        story.expect_success(f"worker dispatch --fresh 'A new worker' --model sonnet {number}", actor=story.agent)
+        story.expect_success(f"worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet {number}", actor=story.agent)
     return story
 
 
@@ -77,7 +77,7 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
 def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_tasks):
     story = four_tasks
     with patch.object(Database, "rows", autospec=True, side_effect=Database.rows) as reads:
-        story.expect_success("worker dispatch --fresh 'A new worker' --model sonnet 1 2 3 4", actor=story.agent)
+        story.expect_success("worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet 1 2 3 4", actor=story.agent)
     batch_reads = [call for call in reads.call_args_list if "FROM tasks WHERE id IN (?, ?, ?, ?)" in call.args[1].sql and "delegated_to" not in call.args[1].sql]
     expect_value(len(batch_reads), BATCH_READS)
 
@@ -113,7 +113,7 @@ def test_five_workers_read_their_running_outputs_within_the_tick_limit(four_work
     story = four_workers
     story.run("setting set journal.suites.coding.workers.worker-run-limit 5 --environment main")
     task_id = story.new_row_id('task make "Job 5" --brief "Finish job 5" --environment main', actor=story.agent)
-    story.expect_success(f"worker dispatch --fresh 'A new worker' --model sonnet {task_id}", actor=story.agent)
+    story.expect_success(f"worker dispatch --test-command python=pytest --fresh 'A new worker' --model sonnet {task_id}", actor=story.agent)
     workers = story.container.get(Queries).query(Agent).filter(parent_id=story.agent.id, role="worker").oldest().all_rows()
     folder = story.container.get(OutputFolder)
     bus = story.container.get(Bus)

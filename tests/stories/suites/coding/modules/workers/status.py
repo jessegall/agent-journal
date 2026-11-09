@@ -20,7 +20,7 @@ def worker_batch(new_story):
     repository = repository_environment(story)
     story.expect_success('task make "Tax" --brief "Calculate tax" --environment main')
     story.expect_success('task make "Receipt" --brief "Print receipt" --environment main')
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     return story, repository, worker
 
 
@@ -68,7 +68,7 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
     monkeypatch.setattr(WorkerTestLaunch, "start", lambda *_arguments: None)
     story.expect_success("setting make journal.core.processes.run-batch-size 0 --environment main")
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('proof make 1 --task 1 "cart story" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart story" --test "python tests/cart.py"', actor=worker)
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.run_listeners()
     status = json.loads(story.run(f"worker status {worker.id} --json", actor=story.agent).output_text)

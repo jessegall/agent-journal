@@ -7,3 +7,6 @@ class AgentStops:
 
     def is_final(self, agent: Agent) -> bool:
         return agent.ended_at is not None
+
+    def takes_messages(self, agent: Agent) -> bool:
+        return not self.is_final(agent)

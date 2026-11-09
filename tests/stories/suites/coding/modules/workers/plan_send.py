@@ -54,7 +54,7 @@ def idle_plan(new_story, monkeypatch):
 
 def test_idle_worker_refusal_keeps_the_plan_and_phase(idle_plan):
     story, worker = idle_plan
-    story.expect_refusal("worker dispatch --model sonnet --plan 1 --phase 1", f"journal worker send {worker.id} --plan 1 --phase 1", actor=story.agent)
+    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", f"journal worker send {worker.id} --plan 1 --phase 1", actor=story.agent)
 
 
 def test_a_plan_sent_to_an_idle_worker_keeps_its_order_and_blocked_tasks(idle_plan):
@@ -90,7 +90,7 @@ def test_a_large_plan_dispatch_updates_dependencies_without_repeated_reads(new_s
         story.expect_success(f"task block {task} --on task:1", actor=story.agent)
     ready_plan(story, actor=story.user)
     story.expect_success("plan approve 1 --environment main", actor=story.user)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet --plan 1")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --plan 1")
     tasks = story.container.get(Queries).query(Task).find_many(list(range(1, 15)))
     story.expect_rows(all(task.delegated_to == worker.id for task in tasks))
 
@@ -126,7 +126,7 @@ def test_a_task_blocked_for_a_reason_goes_to_a_busy_worker_and_waits_for_its_tur
 
 def test_a_new_worker_is_not_started_on_blocked_tasks_alone(idle_plan):
     story, _worker = idle_plan
-    story.expect_refusal("worker dispatch --fresh 'A second worker' --model sonnet 3", "every task here is blocked", actor=story.agent)
+    story.expect_refusal("worker dispatch --test-command python=pytest --fresh 'A second worker' --model sonnet 3", "every task here is blocked", actor=story.agent)
 
 
 def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(new_story):
@@ -143,7 +143,7 @@ def test_a_worker_given_a_plan_takes_a_later_phase_only_after_the_earlier_one(ne
     story.expect_success(f"phase place {second_phase_task} --phase 2", actor=story.agent)
     ready_plan(story, actor=story.user)
     story.expect_success("plan approve 1 --environment main", actor=story.user)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet --plan 1")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --plan 1")
     next_task = story.container.get(WorkerNextTask).following(worker.id)
     story.expect_rows(next_task is not None and next_task.id == first_phase_task)
 

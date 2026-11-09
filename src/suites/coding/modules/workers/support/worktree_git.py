@@ -39,6 +39,7 @@ RENAME_STATUS = "R"
 DIFF_STATUSES = {"A": FileStatus.ADDED, "D": FileStatus.DELETED}
 STASH_MESSAGE = "journal merge of "
 STASH_LOCK_FILE = "journal-stash.lock"
+DEPENDENCY_FOLDER_NAMES = {"node_modules", "bower_components", "vendor", ".venv", "venv", "env", ".bundle"}
 SKIP_WORKTREE_MARK = "S "
 
 UNTRACKED_STATUS = "?? "
@@ -111,10 +112,14 @@ class WorktreeGit:
         folder = Path(worktree.folder)
         return str(folder.parent.with_name(f"{folder.parent.name}-tests") / folder.name)
 
-    @staticmethod
-    def library_names(worktree: Worktree) -> tuple[str, ...]:
+    def library_names(self, worktree: Worktree) -> tuple[str, ...]:
         linked = {path.name for path in Path(worktree.folder).iterdir() if path.is_symlink()}
-        return tuple(sorted(linked | set(json.loads(worktree.library_links)) | set(json.loads(worktree.library_copies))))
+        return tuple(sorted(linked | set(self.dependency_folders(worktree.folder)) | set(json.loads(worktree.library_links)) | set(json.loads(worktree.library_copies))))
+
+    def dependency_folders(self, folder: str) -> tuple[str, ...]:
+        listing = self.git(folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z").stdout
+        names = (name.rstrip("/") for name in listing.split(NAME_SEPARATOR))
+        return tuple(name for name in names if PurePosixPath(name).name in DEPENDENCY_FOLDER_NAMES)
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
         self.refuse_conflicts(worktree)

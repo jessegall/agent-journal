@@ -5,7 +5,7 @@ from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
 class WorkerAgentStops(AgentStops):
-    """A worker that ended comes back for a line unless someone stopped it on purpose."""
+    """A worker that ended comes back for a line unless someone stopped it on purpose; a message always reaches it."""
 
     def __init__(self, stops: WorkerStop) -> None:
         self.stops = stops
@@ -14,3 +14,6 @@ class WorkerAgentStops(AgentStops):
         if agent.role != CodingHelperRole.WORKER or agent.ended_at is None:
             return super().is_final(agent)
         return self.stops.was_stopped(agent)
+
+    def takes_messages(self, agent: Agent) -> bool:
+        return agent.role == CodingHelperRole.WORKER or super().takes_messages(agent)

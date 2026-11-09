@@ -41,6 +41,7 @@ from suites.coding.modules.workers.support.retired_worker_refusal import Retired
 from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.started_task_release import StartedTaskRelease
+from suites.coding.modules.workers.commands.name_worker_tests.name_worker_tests import NameWorkerTests
 from suites.coding.modules.workers.support.worker_task_advance import WorkerTaskAdvance
 from core.modules.messages.support.work_sources import WorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
@@ -141,6 +142,8 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             raise
 
     def handle(self, command: SendWorker, context: Context) -> AgentLine:
+        if command.test_commands:
+            self.bus.run_with_context(NameWorkerTests(command.worker_id, command.test_commands), context)
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None and self.task_ids:
             return self.kept_tasks.waiting(self.rows.required(Agent, command.worker_id), self.task_ids, context)

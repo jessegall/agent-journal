@@ -22,9 +22,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.support.story_checks import expect_absent_value, expect_answers, expect_value_with
 
-PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "pytest tests/cart.py"'
-PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "pytest tests/cart.py | tail -3"'
-REDIRECTED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "pytest tests/cart.py > out.txt"'
+PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py"'
+PIPED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py | tail -3"'
+REDIRECTED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "python tests/cart.py > out.txt"'
 TAILED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "journal pytest-run tests/cart.py --tail 5"'
 
 
@@ -38,7 +38,7 @@ def queued_story(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -56,7 +56,7 @@ def test_a_proof_refuses_a_test_with_a_pipe_or_a_redirect(new_story, monkeypatch
     story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
     repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     story.expect_refusal(PIPED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
     story.expect_refusal(REDIRECTED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
     story.expect_refusal(TAILED_PROOF, "without a pipe, a redirect or a reading flag", actor=worker)
@@ -122,7 +122,7 @@ def mixed_proof_story(new_story, monkeypatch):
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- the total\n- the tax"', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success('proof make 2 --task 1 "cart.py:1, looked at it"', actor=worker)
@@ -154,7 +154,7 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, looked at it"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -187,12 +187,12 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, m
     repository.committed("run_tests.py", "import sys\nfrom pathlib import Path\nassert sys.argv[1:] == ['tests/other test.py']\nassert Path('base.txt').read_text() == 'rebased\\n'\n", "Tests")
     story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
     story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 run_tests.py" --environment main')
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "rebased\n", "Base change")
-    story.expect_success('alias edit cart-test --line "python3 -c"', actor=story.agent)
-    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "python3 -c \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\' tests/cart.py"', actor=worker)
+    story.expect_success(f'worker send --wait {worker.id} "go on" --test-command "probe=python3 -c"', actor=story.agent)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\' tests/cart.py"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.run_listeners()
     run_test_process(story, started[0])
@@ -219,7 +219,7 @@ def affected_test_story(new_story, monkeypatch):
     repository = repository_environment(story)
     story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
     story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest -q" --environment main')
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -272,7 +272,7 @@ def test_picked_tests_run_when_the_proof_has_no_test_command(new_story, monkeypa
     repository = repository_environment(story)
     story.expect_success('setting set journal.suites.coding.workers.affected-tests-command "python3 pick.py" --environment main')
     story.expect_success('setting set journal.suites.coding.workers.project-test-command "python3 -m pytest" --environment main')
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, checked the cart"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -291,7 +291,7 @@ def test_a_single_setting_does_not_run_the_picker(new_story, monkeypatch, settin
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success(f'setting set journal.suites.coding.workers.{setting} "python3 command.py" --environment main')
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)

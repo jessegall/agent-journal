@@ -29,6 +29,7 @@ class LibraryFolders:
 
     def place(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
         for name in links:
+            (Path(target) / name).parent.mkdir(parents=True, exist_ok=True)
             (Path(target) / name).symlink_to(Path(folder).resolve() / name, target_is_directory=True)
         for name in copies:
             self.copy(Path(folder) / name, Path(target) / name)

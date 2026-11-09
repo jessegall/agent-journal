@@ -185,7 +185,7 @@ def test_a_read_only_helper_changes_no_project_file(new_story, helper_fixture, a
 
 @pytest.mark.parametrize("helper_fixture", PROGRAMS)
 @pytest.mark.parametrize("arguments", [("agent", "start", "s-9", "claude", "main"), ("agent", "stop", "1"), ("agent", "type", "1", "x"), ("worker", "release", "5", "x"), ("helper", "start", "x"), ("worker", "dispatch", "1")],
-                         ids=["agent start", "agent stop", "agent type", "worker release", "helper start", "worker dispatch"])
+                         ids=["agent start", "agent stop", "agent type", "worker release", "helper start", "worker dispatch --test-command python=pytest"])
 def test_a_read_only_helper_acts_on_no_other_agent(new_story, helper_fixture, arguments):
     story, session = helper_story(new_story, helper_fixture)
     story.expect_hook_refusal(session, journal_line(*arguments), OUTWARD_JOURNAL_LINE.nudge().text)

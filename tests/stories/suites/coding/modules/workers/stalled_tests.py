@@ -17,7 +17,7 @@ def two_tasks(new_story, monkeypatch):
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     return story, worker, started
@@ -56,7 +56,7 @@ def edited_proof(two_tasks):
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.run_listeners()
     story.expect_success('proof short 1 "the total is missing"', actor=story.agent)
-    story.expect_success('proof edit 1 --task 1 "cart.py:1, the cart story and the total" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success('proof edit 1 --task 1 "cart.py:1, the cart story and the total" --test "python tests/cart.py"', actor=worker)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
     return story, worker, started
 
@@ -79,7 +79,7 @@ def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(new_st
     recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.run('task make "Tax" --brief "The tax"', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 --task 1 "cart.py:1, read by hand"', actor=worker)
     story.expect_success("worker next --wait --differences none", actor=worker)

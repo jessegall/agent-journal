@@ -57,10 +57,10 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(new_story, monke
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     monkeypatch.setenv("JOURNAL_HOME", str(story.home.folder.resolve()))
     repository = repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success('alias edit cart-test --line "python3 -c"', actor=story.agent)
-    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "python3 -c pass tests/cart.py"', actor=worker)
+    story.expect_success(f'worker send --wait {worker.id} "go on" --test-command "probe=python3 -c"', actor=story.agent)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe pass tests/cart.py"', actor=worker)
     story.expect_success("setting set journal.suites.coding.workers.merger-on false --project", actor=story.user)
     with server_story(story):
         story.expect_success("worker deliver --wait --differences none", actor=worker)

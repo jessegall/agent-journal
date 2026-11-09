@@ -36,7 +36,7 @@ def worker_scenario(new_story):
 
 
 def dispatch(scenario: Scenario, tasks: str = "1") -> Actor:
-    return Actor(scenario.story.new_row_id(f"worker dispatch --model sonnet {tasks}", actor=scenario.story.agent), ActorType.AGENT)
+    return Actor(scenario.story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {tasks}", actor=scenario.story.agent), ActorType.AGENT)
 
 
 @pytest.fixture
@@ -54,7 +54,7 @@ def advance(scenario: WorkerTrail, worker: Actor) -> None:
 
 def test_dispatch_uses_task_overview_context(worker_scenario):
     worker_scenario.story.container.get(TaskBriefRequirement).is_required = True
-    outcome = worker_scenario.command("worker dispatch --model sonnet 1")
+    outcome = worker_scenario.command("worker dispatch --test-command python=pytest --model sonnet 1")
     feature("journal task overview 1" in outcome.output_text, outcome.output_text)
     worktree = worker_scenario.story.container.get(WorktreeQuery).open_worktrees()[0]
     worker = Actor(worktree.session_agent_id, ActorType.AGENT)

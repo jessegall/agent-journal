@@ -24,7 +24,7 @@ def stopped_worker(story):
     (repository.folder / COPY).mkdir()
     (repository.folder / COPY / LIBRARY_FILE).write_text("library\n")
     repository.git("config", "core.excludesfile", "")
-    story.run("worker dispatch --model sonnet --library-copy vendor 1", actor=story.agent)
+    story.run("worker dispatch --test-command python=pytest --model sonnet --library-copy vendor 1", actor=story.agent)
     worker = story.container.get(WorktreeQuery).all_worktrees()[-1].session_agent_id
     folder = Path(story.container.get(WorktreeQuery).worker_worktree(worker).folder)
     (folder / CHANGED_FILE).write_text("my change\n")

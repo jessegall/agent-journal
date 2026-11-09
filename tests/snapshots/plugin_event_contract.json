@@ -7385,6 +7385,42 @@
       "worktree_id"
     ]
   },
+  "suites.coding.workers.worker_test_command.created": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "name",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_command.deleted": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "name",
+      "worker_id"
+    ]
+  },
+  "suites.coding.workers.worker_test_command.updated": {
+    "forms": [
+      "commit",
+      "guard",
+      "listen"
+    ],
+    "fields": [
+      "command",
+      "name",
+      "worker_id"
+    ]
+  },
   "suites.coding.workers.worker_test_failure.created": {
     "forms": [
       "commit",

@@ -257,6 +257,9 @@ class MemoryWorktreeGit(WorktreeGit):
                  if len(commit.parents) == 1 and TaskBranchCommit.parsed(commit.id[:10], commit.message).has_task_subject(task_ids)]
         return max(found)[1] if found else None
 
+    def dependency_folders(self, folder: str) -> tuple[str, ...]:
+        return ()
+
     def merge_base(self, folder: str, base_branch: str, branch: str) -> str:
         return self.history.merge_base(self.history.branches[base_branch], self.history.branches[branch])
 

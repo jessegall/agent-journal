@@ -94,7 +94,7 @@ def test_the_worker_itself_and_a_helper_cannot_switch_the_sandbox(new_story):
 def test_a_dispatch_with_no_sandbox_starts_the_worker_switched_off(new_story):
     story = sandboxed_story(new_story)
     repository_environment(story)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet --no-sandbox 1")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --no-sandbox 1")
     story.expect_text(f"usage agents --agent {worker.id} --json", '"sandbox_off": true', actor=story.agent)
 
 

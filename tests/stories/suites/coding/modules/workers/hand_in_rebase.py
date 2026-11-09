@@ -24,7 +24,7 @@ class StoppedDelivery(BaseException):
     pass
 
 
-def moved_base_worker(story, repository, line="worker dispatch --model sonnet 1"):
+def moved_base_worker(story, repository, line="worker dispatch --test-command python=pytest --model sonnet 1"):
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("tax.py", "TAX = 1\n", "The first tax")
     worker = dispatched_worker(story, line)
@@ -72,7 +72,7 @@ def test_worker_next_rebases_before_the_next_task_starts(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('task make "Second job" --environment main', actor=story.agent)
-    worker = moved_base_worker(story, repository, "worker dispatch --model sonnet 1 2")
+    worker = moved_base_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1 2")
     story.expect_success("worker next --wait --differences none", actor=worker)
     expect_tip(story, repository, worker)
 
@@ -99,7 +99,7 @@ def test_a_proof_runs_on_the_rebased_code(new_story, monkeypatch):
     launches = recording_launch(monkeypatch)
     repository = repository_environment(story)
     worker = moved_base_worker(story, repository)
-    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success('proof make 1 --task 1 "cart.py:1, the cart total story" --test "python tests/cart.py"', actor=worker)
     story.expect_success(DELIVERY, actor=worker)
     story.run_listeners()
     story.expect_rows(len(launches) == 1)
@@ -156,7 +156,7 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
     repository = repository_environment(story)
     worker = moved_base_worker(story, repository)
     story.expect_success('task make "Another job" --environment main', actor=story.agent)
-    sibling = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    sibling = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     repository.changed(sibling.id, "sibling.py", "OTHER = 1\n")
     worktree = story.container.get(Queries).query(Worktree).filter(session_agent_id=sibling.id).first()
     stash = story.container.get(WorktreeGit).stash(worktree)
@@ -170,7 +170,7 @@ def test_a_hand_in_leaves_another_workers_stash_untouched(new_story):
 
 def sibling_worker(story, repository):
     story.expect_success('task make "Another job" --environment main', actor=story.agent)
-    sibling = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    sibling = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     repository.changed(sibling.id, "sibling.py", "OTHER = 1\n")
     return sibling
 

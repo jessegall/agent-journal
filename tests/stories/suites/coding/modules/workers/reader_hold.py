@@ -174,7 +174,7 @@ def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run("setting set journal.core.processes.readers-forced on --environment main")
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)

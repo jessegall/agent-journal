@@ -99,7 +99,7 @@ def expect_worker_commands(story) -> None:
     repository_environment(story)
     for profile in ("journal-medior", "journal-senior"):
         task = story.new_row_id(f'task make "Work for {profile}" --brief "1. Keep the total in cents" --environment main', actor=story.agent)
-        worker = dispatched_worker(story, f"worker dispatch {task} --model sonnet --profile {profile}")
+        worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest {task} --model sonnet --profile {profile}")
         story.expect_success(f"task overview {task}", actor=worker)
         story.expect_success(f'task log {task} "Checked the total"', actor=worker)
         story.expect_success(f'proof make 1 --task {task} "cart.py:1 checked"', actor=worker)

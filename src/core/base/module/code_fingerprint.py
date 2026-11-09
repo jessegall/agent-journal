@@ -1,4 +1,5 @@
 import hashlib
+import os
 from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar
@@ -11,6 +12,8 @@ from core.base.version import CORE_VERSION
 
 CORE_FOLDER = Path(__file__).resolve().parents[2]
 BUILT_WINDOWS_FOLDER = Path("web") / "dist"
+SOURCE_FOLDER = CORE_FOLDER.parent
+PINNED_CODE_VARIABLE = "JOURNAL_PINNED_CODE_TEXT"
 
 
 class CodeFingerprint:
@@ -34,8 +37,16 @@ class CodeFingerprint:
 
     def refreshed(self, modules: Sequence[type[Module]]) -> str:
         folders = self.folders(modules)
-        self.kept_texts[folders] = SourceHash.text(folders) if Journal.is_running_unit_tests() else self.folder_text(folders)
+        self.kept_texts[folders] = self.test_run_text(folders) if Journal.is_running_unit_tests() else self.folder_text(folders)
         return self.selected_text(self.kept_texts[folders], modules)
+
+    @staticmethod
+    def test_run_text(folders: tuple[Path, ...]) -> str:
+        source_hash = os.environ.get(PINNED_CODE_VARIABLE)
+        if source_hash is None:
+            return SourceHash.text(folders)
+        other_folders = tuple(folder for folder in folders if not folder.is_relative_to(SOURCE_FOLDER))
+        return source_hash + SourceHash.text(other_folders) if other_folders else source_hash
 
     @staticmethod
     def selected_text(code_text: str, modules: Sequence[type[Module]]) -> str:

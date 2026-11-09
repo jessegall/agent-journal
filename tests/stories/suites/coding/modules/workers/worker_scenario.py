@@ -19,7 +19,7 @@ def expect_states(story, **states) -> None:
 
 def proved(story, repository, worker, point_file: str, text: str, task: int = 1) -> None:
     repository.changed(worker.id, point_file, text)
-    story.expect_success(f'proof make 1 --task {task} "{point_file}:1, its story" --test "pytest tests/{point_file}"', actor=worker)
+    story.expect_success(f'proof make 1 --task {task} "{point_file}:1, its story" --test "python tests/{point_file}"', actor=worker)
 
 
 def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_the_tested_task_closes(new_story, monkeypatch):
@@ -28,7 +28,7 @@ def test_a_worker_that_took_a_queued_task_while_its_tests_ran_stays_on_it_and_th
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     story.expect_success('task make "Print the receipt" --brief "Print the receipt" --environment main', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.run_listeners()
@@ -45,7 +45,7 @@ def test_a_worker_moves_on_to_a_queued_task_that_depends_on_the_one_it_hands_ove
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
     story.expect_success("task depend 2 --on 1", actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_text("worker next --wait --differences none", "tests of task 1 are queued", actor=worker)
     story.run_listeners()
@@ -57,7 +57,7 @@ def test_a_proof_with_no_test_leaves_a_task_to_close_when_its_tests_pass(new_sto
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "read by hand, no test to run"', actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)
@@ -70,7 +70,7 @@ def test_a_proof_test_whose_end_the_server_missed_still_completes_its_task(new_s
     story = new_story(fixture=OpenTaskOrchestrator)
     started = recording_launch(monkeypatch)
     repository = repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_success("worker deliver --wait --differences none", actor=worker)
     story.run_listeners()
@@ -93,7 +93,7 @@ def test_a_worker_takes_three_tasks_one_tested_after_the_other_hands_them_in_onc
     story.expect_success('task make "Print the receipt" --brief "Print the receipt" --environment main', actor=story.agent)
 
     # the main agent gives one worker three tasks: the first starts, the others wait in its queue
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     expect_states(story, task1="started", task2="open", task3="open")
 
     # the first task: delivering is refused while tasks are queued; next commits it and queues its test
@@ -152,7 +152,7 @@ def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(new_
     recording_launch(monkeypatch)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     proved(story, repository, worker, "cart.py", "TOTAL = 2\n")
     story.expect_success("worker next --wait --differences none", actor=worker)
     story.expect_success(f"agent end {worker.id}", actor=worker)

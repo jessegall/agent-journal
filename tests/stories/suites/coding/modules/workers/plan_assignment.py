@@ -12,8 +12,8 @@ def story_with_two_workers(new_story):
     story = planned_story(new_story)
     first_job = story.new_row_id('task make "First worker job" --environment main', actor=story.agent)
     second_job = story.new_row_id('task make "Second worker job" --environment main', actor=story.agent)
-    first = dispatched_worker(story, f"worker dispatch --model sonnet {first_job}")
-    second = dispatched_worker(story, f"worker dispatch --model sonnet --fresh \"a second worker\" {second_job}")
+    first = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet {first_job}")
+    second = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet --fresh \"a second worker\" {second_job}")
     return story, first, second
 
 

@@ -113,7 +113,7 @@ def test_at_the_kept_maximum_a_dispatch_is_refused_with_a_retire_line(new_story)
     story.expect_success("setting set journal.suites.coding.workers.worker-kept-limit 1 --environment main", actor=story.user)
     worker = dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_refusal(f"worker dispatch --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{worker.id}", actor=story.agent)
+    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{worker.id}", actor=story.agent)
 
 
 def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):
@@ -198,8 +198,8 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
     stopped(story, worker)
     second, third = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
-    story.expect_refusal(f"worker dispatch --model sonnet {second} {third}", f"journal worker send {worker.id} --task {second} {third}", actor=story.agent)
-    new_worker = dispatched_worker(story, f"worker dispatch --model sonnet --fresh 'Another model of thinking' {second} {third}")
+    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {second} {third}", f"journal worker send {worker.id} --task {second} {third}", actor=story.agent)
+    new_worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet --fresh 'Another model of thinking' {second} {third}")
     worktree = story.container.get(WorktreeQuery).worker_worktree(new_worker.id)
     story.expect_rows(worktree.new_agent_reason == "Another model of thinking")
 
@@ -270,7 +270,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
     monkeypatch.setattr(ClaudeCodeProvider, "context_window", lambda provider, home, session: ContextWindow(80, None))
     stopped(story, worker)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    dispatched_worker(story, f"worker dispatch --model sonnet {task_id}")
+    dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet {task_id}")
 
 
 def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_story):
@@ -293,7 +293,7 @@ def test_a_plain_job_after_merge_starts_a_task_and_keeps_the_worktree_links(new_
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     repository.library("node_modules", "index.js", "module.exports = 1\n")
-    worker = checked_worker(story, repository, "worker dispatch --model sonnet 1 --library-link node_modules")
+    worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet 1 --library-link node_modules")
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     session = worker_session(story, worker)

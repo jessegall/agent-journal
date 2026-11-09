@@ -1,32 +1,18 @@
 import shlex
 
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.shell_line import JOURNAL_PROGRAM
-from core.base.refusal import Refusal
-from core.modules.aliases.models.alias import ARGS_MARK
-from core.modules.aliases.queries.alias_query import AliasQuery
-
-TEST_FILE_ENDINGS = (".py", ".js", ".mjs", ".ts", ".go")
+from suites.coding.modules.workers.support.worker_test_arguments import WorkerTestArguments
+from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 
 class ProofTestLine:
-    """Refuses a proof's test unless it is a saved test command naming the test files, so a worker cannot run a test
-    command of its own or the whole suite through a proof."""
+    """Turns a proof's test, given as one of the worker's test names and its test files, into the line that runs."""
 
-    def __init__(self, aliases: AliasQuery) -> None:
-        self.aliases = aliases
+    def __init__(self, names: WorkerTestNames) -> None:
+        self.names = names
 
-    def check(self, line: str) -> None:
+    def resolved(self, line: str, worker_id: int) -> str:
         if not line:
-            return
-        tokens = shlex.split(line)
-        if not self.is_saved(line, tokens):
-            raise Refusal("a proof's test must be a saved test command", "journal alias list --category 'test run' lists them; ask the main agent to add one")
-        if not any("::" in token or token.split("::")[0].endswith(TEST_FILE_ENDINGS) for token in tokens):
-            raise Refusal("a proof's test must name its test files, never the whole suite", "name each test file the proof covers")
-
-    def is_saved(self, line: str, tokens: list[str]) -> bool:
-        saved = [alias for alias in self.aliases.all_rows() if alias.category is CommandCategory.TEST_RUN]
-        if len(tokens) > 1 and tokens[0] == JOURNAL_PROGRAM and tokens[1] in {alias.name for alias in saved}:
-            return True
-        return any(line.startswith(alias.line.replace(ARGS_MARK, "").strip()) for alias in saved)
+            return line
+        name, *test_arguments = shlex.split(line)
+        WorkerTestArguments.check(test_arguments)
+        return self.names.line(worker_id, name, test_arguments)

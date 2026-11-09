@@ -114,14 +114,14 @@ def test_a_reserved_task_is_not_sent_to_a_worker(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
-    story.expect_refusal("worker dispatch --model sonnet 1", f"task 1 is reserved for agent {story.agent.id}", actor=story.agent)
+    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet 1", f"task 1 is reserved for agent {story.agent.id}", actor=story.agent)
     expect_reserved(story, 1)
 
 
 def test_a_plan_sent_to_a_worker_leaves_the_task_reserved_for_the_main_agent(new_story):
     story = planned_story(new_story)
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet --plan 1 --phase 1")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1")
     expect_reserved(story, 1)
     story.expect_text("task show 2", f"delegated_to: {worker.id}", actor=story.agent)
     story.expect_refusal("task start 1", f"task 1 is reserved for agent {story.agent.id}", actor=worker)
@@ -137,7 +137,7 @@ def test_a_reserved_task_is_not_offered_to_send_to_a_worker(new_story):
 
 def test_a_person_moves_a_task_reserved_for_the_main_agent_to_a_worker(new_story):
     story = planned_story(new_story)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.user)
     story.expect_success(f"task assign 1 --to {worker.id}", actor=story.user)
     story.expect_text("task show 1", f"delegated_to: {worker.id}", actor=story.agent)

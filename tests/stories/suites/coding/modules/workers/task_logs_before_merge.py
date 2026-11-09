@@ -61,7 +61,7 @@ def test_logs_include_each_task_in_a_worker_batch(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('task make "Calculate tax" --brief "Add tax" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch --model sonnet 1 2")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2")
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('task log 1 "Cart finished"', actor=worker)
     story.expect_success('proof make 1 --task 1 "cart.py:1"', actor=worker)

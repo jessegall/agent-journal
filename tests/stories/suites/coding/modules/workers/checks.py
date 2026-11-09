@@ -42,10 +42,10 @@ def test_a_worker_edits_an_unchecked_proof_and_cannot_edit_it_after_check(new_st
     repository_environment(story)
     worker = dispatched_worker(story)
     proof = story.new_row_id('proof make 1 --task 1 "first evidence"', actor=worker)
-    story.expect_success(f'proof edit {proof} --task 1 "corrected evidence" --test "pytest tests/cart.py"', actor=worker)
+    story.expect_success(f'proof edit {proof} --task 1 "corrected evidence" --test "python tests/cart.py"', actor=worker)
     story.expect_success(f'proof show {proof}', 'text: corrected evidence', 'test_command: pytest tests/cart.py', actor=worker)
-    story.expect_refusal(f'proof edit {proof} --task 1 "piped" --test "pytest | tail"', 'without a pipe, a redirect or a reading flag', actor=worker)
-    story.expect_refusal(f'proof edit {proof} --task 1 "redirected" --test "pytest > out"', 'without a pipe, a redirect or a reading flag', actor=worker)
+    story.expect_refusal(f'proof edit {proof} --task 1 "piped" --test "python | tail"', 'without a pipe, a redirect or a reading flag', actor=worker)
+    story.expect_refusal(f'proof edit {proof} --task 1 "redirected" --test "python > out"', 'without a pipe, a redirect or a reading flag', actor=worker)
     story.expect_success(f'proof check {proof}', actor=story.agent)
     story.expect_refusal(f'proof edit {proof} --task 1 "too late"', 'checked already', actor=worker)
 
@@ -74,7 +74,7 @@ def test_a_short_proof_is_replaced_with_the_command_its_refusal_names(new_story)
     worker = delivered_worker(story, repository)
     story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
     story.expect_refusal('proof short 1 "again"', "journal proof revise 1", actor=story.agent)
-    story.expect_success('proof revise 1 "cart.py:1, the right task" --test "pytest tests/cart.py"', 'state: shown', 'text: cart.py:1, the right task', 'test_command: pytest tests/cart.py', actor=worker)
+    story.expect_success('proof revise 1 "cart.py:1, the right task" --test "python tests/cart.py"', 'state: shown', 'text: cart.py:1, the right task', 'test_command: pytest tests/cart.py', actor=worker)
 
 
 def test_a_proof_is_returned_and_a_job_sent_while_the_delivered_workers_task_is_started_again(new_story):

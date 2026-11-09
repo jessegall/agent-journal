@@ -18,7 +18,7 @@ def running_delivery(new_story, monkeypatch):
     story = new_story(fixture=OpenTaskOrchestrator)
     recording_launch(monkeypatch)
     repository = repository_environment(story)
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
     story.expect_success("worker deliver --wait --differences none", actor=worker)

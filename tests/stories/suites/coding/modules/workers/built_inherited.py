@@ -9,7 +9,7 @@ pytestmark = pytest.mark.real_git
 
 SECOND_JOB = 'task make "Second job" --brief "Do the second job" --environment main'
 SECOND_PROOF = 'proof make 1 --task 2 "second.py:1, the second story"'
-FRESH_DISPATCH = 'worker dispatch --model sonnet --fresh "a new session"'
+FRESH_DISPATCH = 'worker dispatch --test-command python=pytest --model sonnet --fresh "a new session"'
 ALREADY_BUILT = 'worker deliver --wait --differences "already built: cart.py"'
 
 
@@ -171,7 +171,7 @@ def test_the_newest_earlier_work_is_the_one_inherited(added_second):
 def test_a_kept_worker_sent_a_built_task_finds_the_earlier_work_too(base_story):
     story, repository = base_story
     story.expect_success(SECOND_JOB, actor=story.agent)
-    kept = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    kept = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     repository.changed(kept.id, "second.py", "SECOND = 1\n")
     story.expect_success(SECOND_PROOF, actor=kept)
     story.expect_success(DELIVERY, actor=kept)

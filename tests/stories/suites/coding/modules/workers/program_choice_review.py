@@ -157,7 +157,7 @@ def unavailable_split(split_story, split_viewer):
 def test_split_with_none_eligible_differs_from_unset(unavailable_split, agent_role):
     story, ends_at = unavailable_split
     if agent_role == 'worker':
-        story.expect_refusal('worker dispatch 1', ends_at, actor=story.agent)
+        story.expect_refusal('worker dispatch --test-command python=pytest 1', ends_at, actor=story.agent)
         story.expect_text('worker-worktree list', 'nothing found')
         return
     FakeLauncher(story.home.socket('launcher'))
@@ -298,7 +298,7 @@ def test_score_refusal_only_for_routes_that_could_match_names_all_tasks(split_st
     story = split_story
     story.expect_success('worker-route make --tier fast --complexity-to 2 --environment main', actor=story.agent)
     task_id = new_task(story, 'Unscored')
-    story.expect_refusal(f'worker dispatch 1 {task_id}', 'complexity', actor=story.agent)
+    story.expect_refusal(f'worker dispatch --test-command python=pytest 1 {task_id}', 'complexity', actor=story.agent)
     story.expect_rows('task 1' in story.results[-1].output_text, f'task {task_id}' in story.results[-1].output_text)
 
 
@@ -428,7 +428,7 @@ def test_profile_tier_alone_beats_default_models_bad_file_is_a_problem(split_sto
 def test_rare_model_is_never_automatic(split_story, split_viewer, program, model):
     story = split_story
     split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', f'{program} {model}', '--project'])
-    story.expect_refusal(f'worker dispatch 1 --program {program} --tier strongest', 'name', actor=story.agent)
+    story.expect_refusal(f'worker dispatch --test-command python=pytest 1 --program {program} --tier strongest', 'name', actor=story.agent)
     expect_program(story, dispatch(story, flags=f'--program {program} --model {model}'), program, model)
 
 
@@ -525,7 +525,7 @@ def test_codex_hooks_run_in_the_worker_folder(new_story, monkeypatch, program, m
     binary = GoBuild.built("journal-hook", story.home.folder / "journal-hook-test")
     ProgramHooks.hooks(CodexProvider, repository.folder).write(shlex.quote(str(binary)), story.home.project_folder)
     launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n")
-    worker = dispatched_worker(story, f"worker dispatch --program {program} --model {model} 1")
+    worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --program {program} --model {model} 1")
     story.run_listeners()
     folder = repository.worktree_folder(worker.id)
     session = worker_session(story, worker)

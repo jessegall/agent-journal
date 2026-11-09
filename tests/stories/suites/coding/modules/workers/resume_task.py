@@ -33,7 +33,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(new_story, monkeypatch,
     repository = GitRepository.sample(story.home.project_folder)
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))} --branch {ENVIRONMENT_BRANCH}")
     worker_name = f"{program.title()}{'Merged' if merged else 'Open'}{'Pid' if b'123456789' in answer else 'Bare'}"
-    worker = checked_worker(story, repository, f"worker dispatch --program {program} --model {model} --name {worker_name} 1")
+    worker = checked_worker(story, repository, f"worker dispatch --test-command python=pytest --program {program} --model {model} --name {worker_name} 1")
     if merged:
         repository.checkout(ENVIRONMENT_BRANCH)
         story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)

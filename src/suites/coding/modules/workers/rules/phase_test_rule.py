@@ -1,3 +1,4 @@
+import shlex
 from dataclasses import replace
 
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -28,6 +29,7 @@ from suites.coding.modules.workers.support.worker_nudges import PHASE_TEST_REFUS
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.test_request_identity import TestRequestIdentity
 from suites.coding.modules.workers.support.worker_test_flag import WorkerTestFlag
+from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.support.coding_helper_role import CodingHelperRole
 
 
@@ -40,7 +42,8 @@ class PhaseTestRule(DriverRule):
     drivers = ["*"]
     roles = [CodingHelperRole.WORKER]
 
-    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, queries: Queries, saved_commands: SavedCommandRule, identity: TestRequestIdentity, settings: SettingValues) -> None:
+    def __init__(self, phases: WorkerPhases, commands: BackgroundCommands, worktrees: WorktreeQuery, queries: Queries, saved_commands: SavedCommandRule, identity: TestRequestIdentity, settings: SettingValues, names: WorkerTestNames) -> None:
+        self.names = names
         self.phases, self.commands, self.worktrees, self.queries, self.saved_commands, self.identity, self.settings = phases, commands, worktrees, queries, saved_commands, identity, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -48,7 +51,7 @@ class PhaseTestRule(DriverRule):
         if tool is None or tool.shell is None:
             return RuleAnswer.allowed()
         test_parts = [part for part in tool.shell.parts if self.is_test_part(part, tool.shell)]
-        flags = [WorkerTestFlag.parsed(part) for part in test_parts]
+        flags = [self.resolved_flag(part, hook.agent_id) for part in test_parts]
         if not flags:
             return RuleAnswer.allowed()
         group = self.phases.waiting_group(hook.agent_id)
@@ -72,7 +75,15 @@ class PhaseTestRule(DriverRule):
         return self.line_answer(answers)
 
     def is_test_part(self, part: Part, shell: ShellLine) -> bool:
-        return self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN and not ASKING_FLAGS.intersection(part.arguments)
+        return (WorkerTestFlag.is_worker_test(part) or self.commands.part_command(part, shell).category is CommandCategory.TEST_RUN) and not ASKING_FLAGS.intersection(part.arguments)
+
+    def resolved_flag(self, part: Part, worker_id: int) -> WorkerTestFlag:
+        flag = WorkerTestFlag.parsed(part)
+        if not WorkerTestFlag.is_worker_test(part):
+            return flag
+        name, *test_arguments = shlex.split(flag.command)[3:] or [""]
+        line = self.names.known_line(worker_id, name, test_arguments)
+        return flag if line is None else replace(flag, command=line)
 
     def part_answer(self, flag: WorkerTestFlag, saved_refusal: Nudge | None, worker_id: int, task_id: int, group: WorkerTestGroup, request: WorkerTestRequest | None, remaining: int) -> RuleAnswer:
         is_allowed = request is not None and request.state is WorkerTestRequestState.ALLOWED

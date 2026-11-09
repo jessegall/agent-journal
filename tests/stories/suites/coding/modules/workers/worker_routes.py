@@ -115,7 +115,7 @@ def test_batch_across_programs_is_refused(split_story):
     story.expect_success('worker-route make --program claude --tags windows --environment main', actor=story.agent)
     story.expect_success('task tag 1 networking --confirm', actor=story.agent)
     second = new_task(story, 'Windows task', '--tag windows --confirm')
-    story.expect_refusal(f'worker dispatch 1 {second}', 'codex', actor=story.agent)
+    story.expect_refusal(f'worker dispatch --test-command python=pytest 1 {second}', 'codex', actor=story.agent)
     refusal = story.results[-1].output_text
     story.expect_rows('claude' in refusal, str(second) in refusal, '1' in refusal)
     story.expect_text('worker-worktree list', 'nothing found')
@@ -143,7 +143,7 @@ def test_batch_across_programs_is_refused_plan_names_phase(split_story, split_vi
     split_viewer.value('messages.chat', ['plan', 'approve', str(plan)])
     story.expect_success('worker-route make --program codex --tags linux --environment main', actor=story.agent)
     story.expect_success('worker-route make --program claude --tags windows --environment main', actor=story.agent)
-    story.expect_refusal(f'worker dispatch --plan {plan}', '--phase', actor=story.agent)
+    story.expect_refusal(f'worker dispatch --test-command python=pytest --plan {plan}', '--phase', actor=story.agent)
 
 
 def test_strict_route_refuses_when_its_program_is_out(split_story):
@@ -151,7 +151,7 @@ def test_strict_route_refuses_when_its_program_is_out(split_story):
     route = story.new_row_id('worker-route make --program codex --tags strict --strict --environment main', actor=story.agent)
     story.expect_success('task tag 1 strict --confirm', actor=story.agent)
     _, ends_at = outage(story)
-    story.expect_refusal('worker dispatch 1', ends_at, actor=story.agent)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1', ends_at, actor=story.agent)
     story.expect_rows('codex' in story.results[-1].output_text)
     story.expect_text('worker-worktree list', 'nothing found')
 
@@ -171,7 +171,7 @@ def test_strict_route_refuses_when_its_program_is_out_non_strict_uses_split(spli
 def test_complexity_route_needs_a_score(split_story):
     story = split_story
     story.expect_success('worker-route make --complexity-from 4 --program codex --environment main', actor=story.agent)
-    story.expect_refusal('worker dispatch 1', 'journal task edit 1 --complexity', actor=story.agent)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1', 'journal task edit 1 --complexity', actor=story.agent)
     story.expect_text('worker-worktree list', 'nothing found')
 
 
@@ -257,14 +257,14 @@ def protected_route_story(split_story):
 def test_agent_naming_another_program_is_refused_before_git(protected_route_story):
     story, route = protected_route_story
     with patch.object(WorktreeGit, 'git', side_effect=AssertionError('route must be checked before git')):
-        story.expect_refusal('worker dispatch 1 --program claude', f'route {route}', actor=story.agent)
+        story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', f'route {route}', actor=story.agent)
     story.expect_text('worker-worktree list', 'nothing found')
     story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
 
 
 def test_agent_naming_another_program_is_refused_before_git_explicit_skip_is_logged(protected_route_story):
     story, route = protected_route_story
-    story.expect_refusal('worker dispatch 1 --program claude', 'route 1', actor=story.agent)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1 --program claude', 'route 1', actor=story.agent)
     confirmed_skip(story, "workers.route-holds", story.agent, "The person asked for a comparison")
     worker = dispatch(story, flags='--program claude --skip-guard workers.route-holds --skip-reason "The person asked for a comparison"')
     expect_program(story, worker, 'claude')
@@ -312,7 +312,7 @@ def test_agent_cannot_change_a_route_a_person_made_agent_change_has_a_mark(split
 def test_worker_cannot_dispatch_by_a_route(split_story):
     story = split_story
     worker = Actor(story.new_row_id(f'agent start worker-session claude worker --parent {story.agent.id} --environment main'), ActorType.AGENT)
-    story.expect_refusal('worker dispatch 1 --model sonnet', 'a worker dispatches no workers', actor=worker)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1 --model sonnet', 'a worker dispatches no workers', actor=worker)
     story.expect_text('worker-worktree list', 'nothing found')
 
 
@@ -321,7 +321,7 @@ def test_worker_cannot_dispatch_by_a_route_even_with_a_matching_route(split_stor
     story.expect_success('worker-route make --program codex --tags nested --environment main', actor=story.agent)
     story.expect_success('task tag 1 nested --confirm', actor=story.agent)
     worker = Actor(story.new_row_id(f'agent start nested-worker claude worker --parent {story.agent.id} --environment main'), ActorType.AGENT)
-    story.expect_refusal('worker dispatch 1', 'a worker dispatches no workers', actor=worker)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1', 'a worker dispatches no workers', actor=worker)
     story.expect_text('worker-worktree list', 'nothing found')
 
 

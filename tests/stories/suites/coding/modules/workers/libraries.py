@@ -33,7 +33,7 @@ def test_a_worktree_gets_codexs_hooks_so_a_codex_worker_is_heard_and_git_never_s
 def test_a_program_that_picks_its_own_session_is_bound_to_its_worker_row_by_its_first_hook(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    worker = dispatched_worker(story, "worker dispatch --program codex --model gpt-6.1-sol 1")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest --program codex --model gpt-6.1-sol 1")
     launch_name = story.container.get(Queries).query(Agent).find(worker.id).session
     story.hook("real-codex-session", HookSamples.sample("session_start").with_fields(launch=launch_name, program="codex"))
     expect_session(story, worker, "real-codex-session")

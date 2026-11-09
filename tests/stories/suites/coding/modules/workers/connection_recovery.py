@@ -282,7 +282,7 @@ def test_the_silence_setting_changes_the_first_wake_delay(recovery):
 
 def test_reconnection_wakes_each_silent_worker_with_work(recovery):
     task_id = recovery.story.new_row_id('task make "Second job" --brief "Finish it" --environment main')
-    second = dispatched_worker(recovery.story, f"worker dispatch --model sonnet {task_id}")
+    second = dispatched_worker(recovery.story, f"worker dispatch --test-command python=pytest --model sonnet {task_id}")
     recovery.launches.clear()
     recovery.online = False
     recovery.tick()
@@ -404,6 +404,35 @@ def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_fr
     recovery.advance(20 * 60)
     story.tick("s-1")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
+    WorkerResumeRetry()(story.container)
+    story.expect_rows(len(recovery.launches) > 0)
+
+
+def test_a_message_to_a_stopped_worker_starts_it(recovery):
+    story, worker = recovery.story, recovery.worker
+    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"agent end {worker.id}", actor=person)
+    recovery.launches.clear()
+    recovery.advance(1)
+    story.expect_success(f'message send "Look again" --to agent:{worker.id}', actor=story.agent)
+    story.run_listeners()
+    story.tick("s-1")
+    WorkerResumeRetry()(story.container)
+    story.expect_rows(len(recovery.launches) > 0)
+
+
+def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_frees(recovery):
+    story, worker = recovery.story, recovery.worker
+    person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"agent end {worker.id}", actor=person)
+    story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 0 --environment main", actor=story.user)
+    recovery.launches.clear()
+    recovery.advance(1)
+    story.expect_success(f'message send "Look again" --to agent:{worker.id}', actor=story.agent)
+    story.run_listeners()
+    story.tick("s-1")
+    story.expect_rows(not recovery.launches)
     story.expect_success("setting set journal.suites.coding.workers.worker-run-limit 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(len(recovery.launches) > 0)

@@ -8,9 +8,11 @@ import shlex
 import stat
 
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
+from core.base.actor_type import ActorType
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker import DispatchWorker
+from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
@@ -34,7 +36,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--phase", type=int, default=None, help="with --plan, only the tasks of this phase")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
-        parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
+        parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not commands")
         parser.add_argument("--tier", type=ModelTier.automatic, choices=[ModelTier.FAST, ModelTier.GENERAL, ModelTier.STRONGEST], default=None)
         parser.add_argument("--model", default="", help="the model the worker runs on, else the profile's: journal worker models lists them")
         parser.add_argument("--profile", default="", help="the worker profile it starts from, else journal-worker")
@@ -43,12 +45,16 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("--no-program", action="store_true", help="a person only: cut the worktree and start no program")
         parser.add_argument("--session", default="", help="with --no-program, the session whose hooks are the worker's")
         parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
+        parser.add_argument("--test-command", action="append", default=[], metavar="NAME=COMMAND", help="a test command the worker may run as journal worker test <name>; an agent gives at least one")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
         if arguments.session and not arguments.no_program:
             raise Refusal("--session is the session of a program that is not started", "add --no-program")
         task_ids = self.picked(arguments)
-        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox)
+        commands = TestCommandEntry.parsed(arguments.test_command)
+        if not commands and caller.actor.type is ActorType.AGENT:
+            raise Refusal("a worker gets the test commands it may run", TEST_COMMAND_EXAMPLE)
+        return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox, test_commands=commands)
 
     def picked(self, arguments: Namespace) -> tuple[int, ...]:
         if arguments.plan is None:

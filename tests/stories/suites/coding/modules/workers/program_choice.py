@@ -46,7 +46,7 @@ def test_nothing_set_dispatches_as_today_on_codex(split_story):
 
 def test_nothing_set_dispatches_as_today_person_needs_program(split_story):
     story = split_story
-    story.expect_refusal('worker dispatch 1 --environment main', '--program', actor=story.user)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1 --environment main', '--program', actor=story.user)
     story.expect_text('worker-worktree list', 'nothing found')
 
 
@@ -58,7 +58,7 @@ def test_tier_flag_picks_the_model_of_each_program(split_story, program, model):
 
 
 def test_tier_flag_picks_the_model_of_each_program_rare_needs_a_name(split_story):
-    split_story.expect_refusal('worker dispatch 1 --tier rare', 'name the model', actor=split_story.agent)
+    split_story.expect_refusal('worker dispatch --test-command python=pytest 1 --tier rare', 'name the model', actor=split_story.agent)
 
 
 @pytest.mark.parametrize('program,model', [('codex', 'gpt-6.1-sol'), ('claude', 'opus')])
@@ -95,7 +95,7 @@ def test_allowed_models_narrow_a_tier(split_story, split_viewer):
 def test_allowed_models_narrow_a_tier_named_model_is_refused(split_story, split_viewer):
     story = split_story
     split_viewer.value('settings.settings', ['setting', 'set', 'journal.core.helpers.allowed-models', 'claude sonnet', '--project'])
-    story.expect_refusal('worker dispatch 1 --model opus --program claude', 'sonnet', actor=story.agent)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1 --model opus --program claude', 'sonnet', actor=story.agent)
 
 
 def test_split_passes_over_a_program_not_installed(split_story, monkeypatch, split_viewer):
@@ -211,7 +211,7 @@ def test_every_program_out_refuses_a_dispatch(split_story, split_viewer):
     _, earliest = outage(story, 'claude', 10)
     outage(story, 'codex', 20)
     set_split(story, viewer=split_viewer)
-    story.expect_refusal('worker dispatch 1', earliest, actor=story.agent)
+    story.expect_refusal('worker dispatch --test-command python=pytest 1', earliest, actor=story.agent)
     story.expect_text('worker-worktree list', 'nothing found')
     story.expect_rows(not list((story.home.folder.parent / 'project' / '.journal' / 'worktrees').glob('*/*')))
 

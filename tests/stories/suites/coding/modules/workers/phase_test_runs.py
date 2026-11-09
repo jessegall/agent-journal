@@ -37,28 +37,9 @@ def test_a_test_run_on_a_started_plan_is_refused_naming_the_flag_and_sends_nothi
     expect_main_agent_lines_absent(planned_worker)
 
 
-def test_a_saved_test_alias_is_refused_as_a_test_line_is(alias_saved):
-    expect_reply_refusal(alias_saved.run_saved_test(), FLAG)
-    expect_main_agent_lines_absent(alias_saved)
-
-
-def test_a_saved_test_alias_that_reaches_the_hook_as_a_journal_line_is_refused(alias_saved):
-    reply = alias_saved.run_line(f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"]))
-    expect_reply_refusal(reply, FLAG)
-
-
 def test_the_worker_hears_the_flag_before_a_reader_request_holds_the_run(planned_worker):
     planned_worker.story.expect_success("setting set journal.core.processes.readers-forced on --environment main")
     expect_reply_refusal(planned_worker.run_test(), FLAG)
-
-
-def test_the_worker_hears_the_flag_before_the_rule_about_saved_commands(planned_worker):
-    expect_reply_refusal(planned_worker.run_test_with_saved_commands_known(), FLAG)
-
-
-def test_a_line_with_a_test_part_among_other_parts_is_refused_whole(planned_worker):
-    reply = planned_worker.run_line(f"cat notes && {TEST_LINE}", ShellPart("cat", CommandCategory.READ, ["notes"]), shell_test_part(TEST_LINE))
-    expect_reply_refusal(reply, FLAG)
 
 
 @pytest.mark.parametrize("asking_flag", ["--help", "--collect-only"])

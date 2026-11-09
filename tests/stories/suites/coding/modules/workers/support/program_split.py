@@ -58,7 +58,7 @@ def set_split(story, shares='claude 80,codex 20', viewer=None):
 
 
 def dispatch(story, tasks='1', flags='', actor=None):
-    worker_id = story.new_row_id(f'worker dispatch {tasks} {flags}', actor=actor or story.agent)
+    worker_id = story.new_row_id(f'worker dispatch --test-command python=pytest {tasks} {flags}', actor=actor or story.agent)
     return Actor(worker_id, ActorType.AGENT)
 
 

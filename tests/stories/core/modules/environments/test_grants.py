@@ -32,8 +32,8 @@ def test_the_granted_agent_may_dispatch_a_worker_with_no_program_in_its_test_env
     story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
     story.expect_success('task make "Real work" --brief "Work of the agent itself" --environment main', actor=story.user)
     story.expect_success('task make "Fake work" --brief "A fake agent works it" --environment story-engine', actor=story.user)
-    story.expect_refusal("worker dispatch 1 --no-program --environment main", "only a person dispatches a worker with no program", actor=story.agent)
-    outcome = story.run("worker dispatch 2 --no-program --environment story-engine", actor=story.agent)
+    story.expect_refusal("worker dispatch --test-command python=pytest 1 --no-program --environment main", "only a person dispatches a worker with no program", actor=story.agent)
+    outcome = story.run("worker dispatch --test-command python=pytest 2 --no-program --environment story-engine", actor=story.agent)
     expect_value("only a person dispatches a worker with no program" not in outcome.output_text, True)
 
 
@@ -41,7 +41,7 @@ def test_the_granted_agent_is_readable_while_it_dispatches_in_its_test_environme
     story = new_story(fixture=BuilderStarted)
     story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
     story.expect_success('task make "Fake work" --brief "A fake agent works it" --environment story-engine', actor=story.user)
-    outcome = story.run("worker dispatch 1 --no-program --program claude --session s-7 --environment story-engine --fresh 'a story'", actor=story.agent)
+    outcome = story.run("worker dispatch --test-command python=pytest 1 --no-program --program claude --session s-7 --environment story-engine --fresh 'a story'", actor=story.agent)
     expect_value("no agent" not in outcome.output_text, True)
 
 

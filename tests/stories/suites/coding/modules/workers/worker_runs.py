@@ -31,7 +31,7 @@ def worker_with_background_run(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     story.run("setting set journal.suites.coding.workers.worker-run-most-tests 0 --environment main")
-    worker = Actor(story.new_row_id("worker dispatch --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
     run = bus.run(StartProcess(worker.id, None, "make test", "/work", "zsh", CommandCategory.TEST_RUN, 30, [part]), worker, environment_id=1)

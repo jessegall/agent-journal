@@ -47,7 +47,7 @@ def test_tasks_a_running_worker_has_queued_let_the_main_agent_stop(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    story.run("worker dispatch 1 2 --model sonnet", actor=story.agent)
+    story.run("worker dispatch --test-command python=pytest 1 2 --model sonnet", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
@@ -56,7 +56,7 @@ def test_an_open_task_no_worker_has_holds_the_main_agent_at_stop(new_story):
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
-    story.run("worker dispatch 1 2 --model sonnet", actor=story.agent)
+    story.run("worker dispatch --test-command python=pytest 1 2 --model sonnet", actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait for a worker: 3")
 
 
@@ -64,7 +64,7 @@ def test_tasks_a_released_worker_gave_back_hold_the_main_agent_at_stop(new_story
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch 1 2 --model sonnet")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest 1 2 --model sonnet")
     story.expect_success(f'worker release {worker.id} "wrong job"', actor=story.agent)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "open tasks wait for a worker: 1, 2")
 
@@ -116,7 +116,7 @@ def test_tasks_queued_with_a_worker_whose_row_ended_but_whose_worktree_is_open_l
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch 1 2 --model sonnet")
+    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest 1 2 --model sonnet")
     story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree list", f"worker-{worker.id}")
     story.expect_hook_allowed("s-1", HookSamples.stop())

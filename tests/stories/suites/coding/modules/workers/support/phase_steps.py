@@ -22,9 +22,9 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 from tests.stories.suites.coding.modules.workers.test_queue import ended, recording_launch
 
-PLAN_DISPATCH = "worker dispatch --model sonnet --plan 1"
-PHASE_DISPATCH = "worker dispatch --model sonnet --plan 1 --phase 1"
-EXTERNAL_DISPATCH = "worker dispatch --model sonnet 1 2"
+PLAN_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet --plan 1"
+PHASE_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1"
+EXTERNAL_DISPATCH = "worker dispatch --test-command python=pytest --model sonnet 1 2"
 TEST_LINE = "pytest tests/cart.py"
 SECOND_TEST_LINE = "pytest tests/totals.py"
 TEST_ALIAS = "cart-test"
@@ -51,6 +51,18 @@ def planned_story(new_story, approve: bool = True, build_test: str = ""):
 
 def asking_main(line: str, why: str) -> str:
     return f'{line} --ask-main "{why}"'
+
+
+def named_line(line: str) -> str:
+    return " && ".join(f"journal worker test python {' '.join(shlex.split(text)[1:])}" for text in line.split(" && "))
+
+
+def named_test_part(line: str) -> ShellPart:
+    return ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", "python", *shlex.split(line)[1:]])
+
+
+def named_proof_line(line: str) -> str:
+    return f"python {line.removeprefix('pytest ')}" if line.startswith("pytest ") else line
 
 
 def shell_test_part(line: str) -> ShellPart:
@@ -83,7 +95,7 @@ class StoryWorker:
         return self.story.hook(self.session, HookSamples.shell(line, *parts))
 
     def run_test(self, line: str = TEST_LINE) -> HookReply:
-        return self.run_line(line, *(shell_test_part(text) for text in line.split(" && ")))
+        return self.run_line(named_line(line), *(named_test_part(text) for text in line.split(" && ")))
 
     def save_test_alias(self, line: str = TEST_LINE) -> None:
         self.story.expect_success(f'alias edit {TEST_ALIAS} --line "{line}"', actor=self.story.agent)
@@ -109,7 +121,7 @@ class StoryWorker:
     def prove(self, test_line: str = "", point: int = 1) -> LineOutcome:
         self.repository.changed(self.worker.id, "cart.py", CART_CHANGE)
         self.repository.changed(self.worker.id, f"task_{self.current_task()}.txt", "done\n")
-        test_flag = f' --test "{test_line}"' if test_line else ""
+        test_flag = f' --test "{named_proof_line(test_line)}"' if test_line else ""
         return self.story.run(f'proof make {point} --task {self.current_task()} "cart.py:1, the cart total"{test_flag}', actor=self.worker)
 
     def prove_advance(self, test_line: str = "") -> LineOutcome:

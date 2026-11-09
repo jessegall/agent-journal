@@ -60,10 +60,10 @@ def test_an_allowed_request_does_not_spend_the_phase_allowance(spent):
 
 
 def test_another_worker_in_the_same_phase_has_its_own_count(new_story, monkeypatch):
-    first = start_planned_worker(new_story, monkeypatch, dispatch="worker dispatch --model sonnet 1")
+    first = start_planned_worker(new_story, monkeypatch, dispatch="worker dispatch --test-command python=pytest --model sonnet 1")
     for remaining in (2, 1, 0):
         expect_counted(first, remaining)
-    second_worker = first.added_worker("worker dispatch --model sonnet 2")
+    second_worker = first.added_worker("worker dispatch --test-command python=pytest --model sonnet 2")
     expect_counted(second_worker, 2)
 
 
@@ -86,13 +86,6 @@ def test_test_parts_in_one_shell_line_each_use_a_run_and_a_refused_line_spends_n
     expect_counted(worker, 2)
     expect_reply_allowed(worker.run_test(f"{TEST_LINE} && {TEST_LINE}"))
     expect_reply_refusal(worker.run_test(), "--ask-main")
-
-
-def test_saved_aliases_use_the_same_allowance(worker):
-    worker.save_test_alias()
-    for _ in range(3):
-        expect_reply_allowed(worker.run_line(f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"])))
-    expect_reply_refusal(worker.run_saved_test(), "--ask-main")
 
 
 def test_help_and_collection_do_not_use_the_allowance(worker):

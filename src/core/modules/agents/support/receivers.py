@@ -16,3 +16,7 @@ class Receivers:
         if not self.stops.is_final(agent):
             return agent
         return MainAgentFinder.newest(self.queries) or agent
+
+    def message_receiver(self, agent_id: int) -> Agent:
+        agent = self.agents.find(agent_id)
+        return agent if self.stops.takes_messages(agent) else self.receiver(agent_id)

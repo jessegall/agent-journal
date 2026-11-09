@@ -29,7 +29,7 @@ def pending_workers(new_story):
     for number in range(3):
         task_id = 1 if number == 0 else story.new_row_id(
             f'task make "Cart change {number}" --brief "Change the cart total"', actor=story.agent)
-        worker = dispatched_worker(story, f"worker dispatch {task_id} --model sonnet")
+        worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest {task_id} --model sonnet")
         repository.changed(worker.id, "cart.py", f"TOTAL = {number + 1}\n")
         story.expect_success(f'proof make 1 --task {task_id} "cart.py:1, the total story"', actor=worker)
         story.expect_success(DELIVERY, actor=worker)

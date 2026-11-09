@@ -58,7 +58,7 @@ def test_s57_uncertain_command_needs_reconciliation(new_story, monkeypatch):
 def test_s57_later_merge_waits_for_required_followup(new_story):
     story, worker, repository = merge_story(new_story, ["false"])
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    second = Actor(story.new_row_id("worker dispatch --model sonnet 2", actor=story.agent), ActorType.AGENT)
+    second = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 2", actor=story.agent), ActorType.AGENT)
     repository.changed(second.id, "second.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 2 "second.py:1, the second story"', "point: 1", actor=second)
     story.expect_success(DELIVERY, actor=second)

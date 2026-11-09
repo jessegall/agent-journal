@@ -10,13 +10,16 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
+from core.base.actor_type import ActorType
 from core.base.refusal import Refusal
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks
 from suites.coding.modules.workers.support.worker_route_policy import WorkerRoutePolicy
 from suites.coding.modules.workers.support.worker_route_request import WorkerRouteRequest
+from suites.coding.modules.workers.support.test_command_entry import TEST_COMMAND_EXAMPLE, TestCommandEntry
 from suites.coding.modules.workers.support.plan_worker_tasks import PlanWorkerTasks
+from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 
 class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
@@ -29,7 +32,8 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
     outward = True
 
     def __init__(self, home: JournalHome, agents: AgentRows, requests: WorkerCommandRequest,
-                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes, plan_tasks: PlanWorkerTasks) -> None:
+                 tasks: KeptWorkerTasks, policy: WorkerRoutePolicy, flags: WriteFlags, scopes: Scopes, plan_tasks: PlanWorkerTasks, test_names: WorkerTestNames) -> None:
+        self.test_names = test_names
         self.requests = requests
         self.home, self.agents = home, agents
         self.tasks, self.policy, self.flags, self.scopes = tasks, policy, flags, scopes
@@ -46,20 +50,23 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
         parser.add_argument("--no-sandbox", action="store_true", help="the worker runs its shell lines outside the sandbox")
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into a new worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into a new worktree")
+        parser.add_argument("--test-command", action="append", default=[], metavar="NAME=COMMAND", help="a test command the worker may run, added to those it has")
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         if arguments.phase is not None and arguments.plan is None:
             raise Refusal("--phase needs --plan", "add --plan <plan>")
         if arguments.plan is not None and arguments.task:
             raise Refusal("a send takes tasks or a plan, not both", "drop the task numbers or drop --plan")
+        commands = TestCommandEntry.parsed(arguments.test_command)
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):
             task_ids = self.plan_tasks.task_ids(arguments.plan, arguments.phase) if arguments.plan is not None else tuple(arguments.task)
             if task_ids:
+                self.check_test_commands(arguments.worker_id, commands, caller)
                 worker = self.agents.find(arguments.worker_id)
                 self.policy.check_tasks(self.tasks.check_tasks(task_ids, caller.actor.id),
                                         WorkerRouteRequest(worker.program, caller.actor.type, self.flags.skipped_guards(arguments)))
         job = arguments.job or arguments.job_flag
-        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox)
+        command = SendWorker(arguments.worker_id, job, task_ids, tuple(arguments.library_link), tuple(arguments.library_copy), not arguments.no_sandbox, commands)
         argv = ["worker", "send", str(arguments.worker_id), job]
         if arguments.plan is not None:
             argv.extend(("--plan", str(arguments.plan)))
@@ -73,7 +80,13 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             argv.extend(("--library-link", link))
         for copy in arguments.library_copy:
             argv.extend(("--library-copy", copy))
+        for value in arguments.test_command:
+            argv.extend(("--test-command", value))
         return self.requests.command(command, arguments.worker_id, argv, arguments, caller)
+
+    def check_test_commands(self, worker_id: int, commands: tuple[TestCommandEntry, ...], caller: Caller) -> None:
+        if not commands and caller.actor.type is ActorType.AGENT and not self.test_names.rows(worker_id):
+            raise Refusal(f"worker {worker_id} has no test command for new work", TEST_COMMAND_EXAMPLE)
 
     def write_output(self, value: object, output: Output) -> None:
         if WorkerCommandRequest.write_output(value, output):

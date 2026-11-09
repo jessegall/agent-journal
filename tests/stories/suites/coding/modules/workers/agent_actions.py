@@ -16,7 +16,7 @@ def agent_task_server(new_story, monkeypatch):
     story.expect_success("setting set journal.suites.coding.auto-mode off --environment main", actor=story.user)
     repository_environment(story)
     first = story.new_row_id('task make "First calculation" --brief "Check the cart calculation"', actor=story.agent)
-    worker_id = story.new_row_id(f"worker dispatch --model sonnet {first}", actor=story.agent)
+    worker_id = story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {first}", actor=story.agent)
     story.expect_success(f"agent end {worker_id}", actor=story.user)
     task_id = story.new_row_id('task make "Check rounding" --brief "Check the rounding calculation"', actor=story.agent)
     worker = story.container.get(Queries).query(Agent).find(worker_id)

@@ -47,6 +47,7 @@ TEST_REQUEST_ALLOWED = NudgeDeclaration("workers.test_request_allowed", NudgeTyp
 TEST_REQUEST_REASON_MISSING = NudgeDeclaration("workers.test_request_no_reason", NudgeType.SAFETY_REFUSAL, 'the flag needs a reason: run it again with --ask-main "<why>"', turn_limited=False)
 TEST_REQUEST_UNNEEDED = NudgeDeclaration("workers.test_needs_no_request", NudgeType.SAFETY_REFUSAL, 'you need not ask: run the command without the flag', turn_limited=False)
 PHASE_TEST_RUN_ALLOWED = NudgeDeclaration("workers.phase_test_run_allowed", NudgeType.STEERING, "Do not test in the middle of a phase or batch: the journal tests at its end. Test runs left here: {remaining}", turn_limited=False)
+WORKER_TEST_LINE_REFUSED = NudgeDeclaration("workers.named_tests_only", NudgeType.SAFETY_REFUSAL, "A test runs only through your test commands. Yours: {names}", turn_limited=False)
 PHASE_TEST_REFUSED = NudgeDeclaration("workers.phase_test_refused", NudgeType.SAFETY_REFUSAL, 'No test runs left in this phase or batch: hand in and go on. Only if you must run one, --ask-main "<why>".', turn_limited=False)
 WORKER_RUN_ENDED = NudgeDeclaration("workers.run_ended", NudgeType.STEERING, 'your run {output} ended: read it, then go on',
                                    plural_text='your runs {output} ended: read each, then go on', id_field="output")

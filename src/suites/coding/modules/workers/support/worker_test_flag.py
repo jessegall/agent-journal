@@ -9,6 +9,7 @@ from core.modules.processes.models.process_part import ProcessPart
 FLAG = "--ask-main"
 FLAG_WITH_VALUE = f"{FLAG}="
 JOURNAL_READ_FLAGS = ("--tail", "--head", "--cut")
+WORKER_TEST_ARGUMENTS = ("worker", "test")
 
 
 @dataclass(frozen=True)
@@ -19,6 +20,10 @@ class WorkerTestFlag:
     is_flagged: bool
     reason: str
     command: str
+
+    @staticmethod
+    def is_worker_test(part: Part) -> bool:
+        return part.program == JOURNAL and tuple(part.arguments[:2]) == WORKER_TEST_ARGUMENTS
 
     @classmethod
     def parsed(cls, part: Part) -> "WorkerTestFlag":

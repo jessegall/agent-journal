@@ -88,21 +88,9 @@ def test_an_allowed_command_written_with_other_spacing_and_quoting_is_the_same_c
     expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "used"))
 
 
-def test_a_saved_alias_allowed_through_a_journal_line_runs_with_a_reading_flag(alias_saved):
-    alias_saved.run_line(f'journal {TEST_ALIAS} {FLAG} "{REASON}"', ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, FLAG, REASON]))
-    alias_saved.story.expect_success(ALLOW, actor=alias_saved.story.agent)
-    expect_reply_allowed(alias_saved.run_line(f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"])))
-    expect_requests(alias_saved, RunRequest(1, f"journal {TEST_ALIAS}", REASON, "used"))
-
-
 def test_a_line_with_two_flagged_parts_sends_a_request_for_each(planned_worker):
     planned_worker.run_test(f"{asking_main(TEST_LINE, REASON)} && {asking_main(SECOND_TEST_LINE, SECOND_REASON)}")
     expect_requests(planned_worker, REQUESTED, RunRequest(2, SECOND_TEST_LINE, SECOND_REASON, "requested"))
-
-
-def test_a_flagged_saved_test_alias_sends_one_request(alias_saved):
-    expect_reply_refusal(alias_saved.run_saved_test(asking_main(TEST_LINE, REASON)), "main agent")
-    expect_requests(alias_saved, REQUESTED)
 
 
 def test_an_allowed_request_tells_the_worker_and_that_command_runs_once(requested):
@@ -149,7 +137,7 @@ def test_a_worker_cannot_allow_its_own_request(requested):
 
 def test_a_worker_cannot_allow_the_request_of_another_worker(requested):
     task_id = requested.story.new_row_id('task make "Docs" --brief "The docs"', actor=requested.story.agent)
-    second_worker = dispatched_worker(requested.story, f"worker dispatch --model sonnet {task_id}")
+    second_worker = dispatched_worker(requested.story, f"worker dispatch --test-command python=pytest --model sonnet {task_id}")
     requested.story.expect_refusal(ALLOW, "main agent", actor=second_worker)
     expect_requests(requested, REQUESTED)
 
@@ -182,35 +170,6 @@ def test_a_person_is_never_asked_about_a_request(requested):
 def test_each_step_of_a_request_is_on_the_task_log(allowed):
     expect_reply_allowed(allowed.run_test())
     allowed.story.expect_text("task inspect 1 --json", TEST_LINE, REASON, "allowed the run of request 1", "ran request 1", actor=allowed.story.agent)
-
-
-def test_an_allowed_request_runs_once_as_pytest_as_python_dash_m_and_as_its_saved_command(alias_saved):
-    module_form = f"python3 -m {TEST_LINE}"
-    alias_form = (f"journal {TEST_ALIAS} --tail 20", ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, "--tail", "20"]))
-    runs = (lambda: alias_saved.run_test(TEST_LINE), lambda: alias_saved.run_test(module_form), lambda: alias_saved.run_line(*alias_form))
-    for number, run in enumerate(runs, 1):
-        alias_saved.run_test(asking_main(TEST_LINE, REASON))
-        alias_saved.story.expect_success(f"worker allow-test {number}", actor=alias_saved.story.agent)
-        expect_reply_allowed(run())
-    expect_requests(alias_saved, *(RunRequest(number, TEST_LINE, REASON, "used") for number in (1, 2, 3)))
-
-
-def test_a_request_asked_through_the_saved_command_is_allowed_for_pytest_and_python_dash_m(alias_saved):
-    alias_saved.run_line(f'journal {TEST_ALIAS} {FLAG} "{REASON}"', ShellPart("journal", CommandCategory.JOURNAL, [TEST_ALIAS, FLAG, REASON]))
-    alias_saved.story.expect_success(ALLOW, actor=alias_saved.story.agent)
-    expect_reply_allowed(alias_saved.run_test(f"python3 -m {TEST_LINE}"))
-    expect_requests(alias_saved, RunRequest(1, f"journal {TEST_ALIAS}", REASON, "used"))
-
-
-def test_a_line_refused_by_another_rule_does_not_use_up_an_allowed_run(allowed):
-    refusal_text = "read the task first"
-    allowed.story.container.get(Bus).run(BlockUntil(allowed.worker.id, Nudge("workers.refusal", NudgeType.REFUSAL, refusal_text), RanCommand("journal overview")), Actor.core())
-    expect_reply_refusal(allowed.run_test(), refusal_text)
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "allowed"))
-    allowed.run_line("journal overview", ShellPart("journal", CommandCategory.JOURNAL, ["overview"], subcommand="overview"))
-    expect_reply_allowed(allowed.run_test())
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "used"))
-    expect_reply_refusal(allowed.run_test(), FLAG)
 
 
 def test_a_test_request_and_approval_show_marks_for_the_worker(requested):

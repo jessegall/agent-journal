@@ -17,7 +17,7 @@ def test_a_second_dispatch_counts_only_its_tasks_from_its_worktree_start(new_sto
     story.expect_success(f"worker logs {first.id}", actor=story.agent)
     story.expect_success(f"worker merge --wait {first.id}", actor=story.agent)
     story.run('task make "Add tax" --environment main', actor=story.agent)
-    second = dispatched_worker(story, "worker dispatch --model sonnet 2")
+    second = dispatched_worker(story, "worker dispatch --test-command python=pytest --model sonnet 2")
     rows = json.loads(story.run("worker progress --environment main --json", actor=story.agent).output_text)["rows"]
     progress = next(row for row in rows if row["agent_id"] == second.id)
     expect_row(progress, completed_count=0, task_count=1)

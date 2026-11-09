@@ -32,6 +32,7 @@ from core.modules.helpers.support.allowed_models import AllowedModels
 from suites.coding.modules.workers.support.worker_routing import WorkerRouting
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
+from suites.coding.modules.workers.commands.name_worker_tests.name_worker_tests import NameWorkerTests
 from suites.coding.modules.workers.commands.open_worker_worktree.open_worker_worktree import OpenWorkerWorktree
 from suites.coding.modules.workers.commands.prepare_worktree.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.commands.record_worktree_cut.record_worktree_cut import RecordWorktreeCut
@@ -99,6 +100,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         except Exception:
             self.bus.run_with_context(CancelWorkerOpening(opened.worktree.id), context)
             raise
+        if command.test_commands:
+            self.bus.run_with_context(NameWorkerTests(opened.worker.id, command.test_commands), context)
         if not command.sandboxed:
             self.bus.run_with_context(SwitchWorkerSandbox(opened.worker.id, False), context)
         if choice.fallback is not None:

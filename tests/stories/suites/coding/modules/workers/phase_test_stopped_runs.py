@@ -22,21 +22,6 @@ def count_stop_run(allowed, count_text: str, status: int) -> None:
     allowed.story.expect_rows(allowed.story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
 
 
-@pytest.mark.parametrize("count_text,status", [("no number\n", 0), ("collected 100 items\n", 143)])
-def test_an_allowed_run_stopped_by_an_unknown_count_before_it_starts_keeps_its_permission(allowed, count_text, status):
-    count_stop_run(allowed, count_text, status)
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "allowed"))
-    allowed.story.expect_text("task inspect 1 --json", "request 1 was not used", actor=allowed.story.agent)
-    expect_reply_allowed(allowed.run_test())
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "used"))
-
-
-def test_an_allowed_run_stopped_for_having_too_many_tests_before_it_starts_keeps_its_permission(allowed):
-    allowed.story.run("setting set journal.suites.coding.workers.worker-run-most-tests 5 --environment main")
-    count_stop_run(allowed, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
-    expect_requests(allowed, RunRequest(1, TEST_LINE, REASON, "allowed"))
-
-
 def test_an_allowed_run_that_started_stays_used_when_it_is_stopped(allowed):
     install_runner(allowed.story)
     expect_reply_allowed(allowed.run_test())

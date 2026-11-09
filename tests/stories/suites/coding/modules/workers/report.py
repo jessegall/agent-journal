@@ -73,7 +73,7 @@ def test_the_dispatch_refusal_names_the_command_that_tells_the_main_agent(new_st
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax rate" --environment main', actor=story.agent)
-    story.expect_refusal("worker dispatch --model sonnet 2", "journal worker report", actor=worker)
+    story.expect_refusal("worker dispatch --test-command python=pytest --model sonnet 2", "journal worker report", actor=worker)
 
 
 def test_a_main_agent_cannot_send_a_workers_report(new_story):

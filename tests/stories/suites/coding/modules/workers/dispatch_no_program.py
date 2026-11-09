@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 SESSION = "s-plugin-worker"
 PERSON = 'actor make user "Ada"'
-MISSING_PROGRAM = f"worker dispatch --program claude --model sonnet 1 --no-program --session {SESSION}"
+MISSING_PROGRAM = f"worker dispatch --test-command python=pytest --program claude --model sonnet 1 --no-program --session {SESSION}"
 
 
 def person(story) -> Actor:
@@ -52,4 +52,4 @@ def test_an_agent_cannot_dispatch_a_worker_with_no_program(new_story):
 def test_a_session_is_refused_without_no_program(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_refusal(f"worker dispatch --program claude --model sonnet 1 --session {SESSION}", "add --no-program", actor=person(story))
+    story.expect_refusal(f"worker dispatch --test-command python=pytest --program claude --model sonnet 1 --session {SESSION}", "add --no-program", actor=person(story))

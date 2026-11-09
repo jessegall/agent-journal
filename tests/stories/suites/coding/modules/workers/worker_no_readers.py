@@ -121,12 +121,6 @@ def test_a_worker_may_stop_with_no_reader_hold(forced):
     forced.expect_hook_allowed(WORKER, HookSamples.stop())
 
 
-def test_a_raw_test_line_of_a_worker_is_not_refused_for_a_saved_command(new_story, monkeypatch):
-    worker = unplanned_worker(new_story, monkeypatch)
-    worker.story.expect_success('alias add run-tests "pytest"', actor=worker.story.agent)
-    worker.story.expect_hook_allowed(worker.session, RAW_TEST)
-
-
 def test_the_main_agent_is_still_refused_a_raw_test_line(forced):
     forced.expect_success('alias add run-tests "pytest"', actor=forced.agent)
     part = ShellPart("pytest", CommandCategory.TEST_RUN, ["tests/one.py"]).prepared("pytest tests/one.py")

@@ -82,14 +82,14 @@ def last_task(planned_worker):
 def external_task_first(new_story, monkeypatch):
     story = planned_story(new_story)
     story.run('task make "Docs" --brief "The docs" --environment main', actor=story.agent)
-    return dispatched_story_worker(story, "worker dispatch --model sonnet 5 1", monkeypatch)
+    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 5 1", monkeypatch)
 
 
 @pytest.fixture
 def plan_task_first(new_story, monkeypatch):
     story = planned_story(new_story)
     story.run('task make "Docs" --brief "The docs" --environment main', actor=story.agent)
-    return dispatched_story_worker(story, "worker dispatch --model sonnet 1 5", monkeypatch)
+    return dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 5", monkeypatch)
 
 
 def displayed_task_states(worker) -> dict[int, str]:
