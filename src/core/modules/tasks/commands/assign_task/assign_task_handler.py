@@ -28,8 +28,8 @@ class AssignTaskHandler(Handler[AssignTask, Task]):
             raise Refusal(f"agent {agent.id} has ended", "journal agent list shows who is running")
         self.assignees.check(agent)
         delegated_to = agent.id if command.reserved else None
-        is_unassigned_in_hand = task.holder_id == agent.id and task.delegated_to is None
-        if task.state in (TaskState.OPEN, TaskState.BLOCKED) or is_unassigned_in_hand:
+        is_undelegated_holder = task.holder_id == agent.id and task.delegated_to is None
+        if task.state in (TaskState.OPEN, TaskState.BLOCKED) or is_undelegated_holder:
             return self.repository.save(replace(task, delegated_to=delegated_to), context)
         if task.state is not TaskState.STARTED:
             raise Refusal(f"task {task.id} is {task.state.value}: only an open, blocked or started task moves")
