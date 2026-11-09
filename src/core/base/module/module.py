@@ -39,6 +39,7 @@ from core.base.setting.setting_node import SettingNode
 from core.base.ticker.tick_handler import TickHandler
 from core.base.tunnel.tunnel import Tunnel
 from core.base.driver.block_condition import BlockCondition
+from core.base.step_condition import StepCondition
 from core.base.performance.performance_tool import PerformanceTool
 from core.base.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonDeclaration
@@ -57,6 +58,7 @@ class Module:
     name: ClassVar[str]
     requires_core: ClassVar[str]
     dependencies: ClassVar[list[str]] = []
+    step_conditions: ClassVar[list[type[StepCondition]]] = []
     parent_suite: ClassVar[str | None] = None
     models: ClassVar[list[ModelDeclaration]] = []
     migrations: ClassVar[list[type[Migration]]] = []

@@ -1,23 +1,27 @@
-import {createApp, h} from "vue";
+import {createApp, h, ref} from "vue";
 import {afterEach, expect, test} from "vitest";
 import PlanDetails from "../src/resource/PlanDetails.vue";
 import PlanPhases from "../src/resource/PlanPhases.vue";
-import {settle} from "./support/windowContext.js";
+import PlanPhasesWindow from "../../core/modules/plans/web/src/PlanPhasesWindow.vue";
+import {context, mounted, settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
 const PLAN = {
     id: 3, title: "Move the cart", brief: "Why the cart moves", state: "started", reason: "", total: 3, finished: 1, current_phase: 2, delegated: false,
     phases: [
-        {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 7, title: "Fix the totals", state: "completed"}]},
-        {id: 2, title: "Second", goal: "", checkpoint: false, tasks: [{id: 8, title: "Move the cart", state: "started"}, {id: 9, title: "Check it", state: "open"}]},
+        {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 7, title: "Fix the totals", state: "completed", priority: 200, complexity: null, tags: [], reason: "", automatic: false, delegated_to: null, delegated_is_main: false}]},
+        {id: 2, title: "Second", goal: "", checkpoint: false, tasks: [
+            {id: 8, title: "Move the cart", state: "started", priority: 300, complexity: 3, tags: ["cart"], reason: "", automatic: false, delegated_to: 12, delegated_is_main: false, helper_id: 12, helper_name: "Lovelace"},
+            {id: 9, title: "Check it", state: "blocked", priority: 200, complexity: null, tags: [], reason: "waits on task 8", automatic: false, delegated_to: null, delegated_is_main: false},
+        ]},
     ],
 };
 
-function drawn(component, props) {
+function drawn(component, props, slots = {}) {
     const element = document.createElement("div");
     document.body.append(element);
-    createApp({render: () => h(component, props)}).directive("tip", {}).mount(element);
+    createApp({render: () => h(component, props, slots)}).directive("tip", {}).mount(element);
     return element;
 }
 
@@ -41,11 +45,30 @@ test("a delegated plan names its worker, or says it is delegated", async () => {
     expect(element.querySelector("[data-plan-delegated]")).not.toBeNull();
 });
 
-test("the phases list each task, and a task opens through the select event", async () => {
-    const chosen = [];
-    const element = drawn(PlanPhases, {phases: PLAN.phases, currentPhase: 2, onSelect: (id) => chosen.push(id)});
+test("the phases leave the drawing of each task to the slot", async () => {
+    const element = drawn(PlanPhases, {phases: PLAN.phases, currentPhase: 2}, {task: ({task}) => h("i", {"data-slotted": task.id})});
     await settle();
-    expect([...element.querySelectorAll("[data-resource-task]")]).toHaveLength(3);
-    element.querySelector("[data-resource-task]").click();
-    expect(chosen).toEqual([7]);
+    expect([...element.querySelectorAll("[data-slotted]")].map((one) => one.dataset.slotted)).toEqual(["7", "8", "9"]);
+});
+
+test("the plan inspector draws each task as the Tasks window row, with its tags, agent, complexity, priority and reason", async () => {
+    const window = {...context({}), option: (key) => ref(key === "row" ? PLAN : undefined)};
+    const element = await mounted(PlanPhasesWindow, window);
+    expect([...element.querySelectorAll(".task[data-row]")].map((one) => one.dataset.row)).toEqual(["7", "8", "9"]);
+    const started = element.querySelector('.task[data-row="8"]');
+    expect(started.querySelector("[data-task-tag]").textContent).toBe("cart");
+    expect(started.querySelector("[data-task-agent] [role='tooltip'] b").textContent).toBe("Worker 12");
+    expect(started.querySelector("[data-task-complexity]")).not.toBeNull();
+    expect(started.querySelector("[data-task-priority]")).not.toBeNull();
+    expect(element.querySelector('.task[data-row="9"] [data-task-reason]').textContent).toBe("waits on task 8");
+    expect(element.querySelector('.task[data-row="9"] [data-task-warning]')).not.toBeNull();
+});
+
+test("an agent with only blocked tasks in a phase is Queued, and one with a started or testing task is Working", async () => {
+    const task = (id, state, helper) => ({id, title: `Task ${id}`, state, helper_id: helper, helper_name: `Agent ${helper}`});
+    const phases = [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [task(1, "blocked", 12), task(2, "blocked", 13), task(3, "testing", 13), task(4, "started", 14), task(5, "open", 15)]}];
+    const element = drawn(PlanPhases, {phases, currentPhase: 1}, {task: () => null});
+    await settle();
+    const words = Object.fromEntries([...element.querySelectorAll("[data-plan-phase-agent]")].map((agent) => [agent.textContent.trim().split(/\s+/)[1], agent.querySelector(".agent-word").textContent]));
+    expect(words).toEqual({12: "Queued", 13: "Working", 14: "Working", 15: "Queued"});
 });

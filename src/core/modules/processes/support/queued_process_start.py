@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
+from core.modules.processes.models.process import Process
+
 
 @dataclass(frozen=True)
 class QueuedProcessStart:
-    process_id: int
+    process: Process
     line: str
-    folder: str
     session: str
-

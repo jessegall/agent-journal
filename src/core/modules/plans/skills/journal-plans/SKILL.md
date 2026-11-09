@@ -19,6 +19,8 @@ and then it is followed.
 - A planner scores and tags each task as it writes it. Read `journal task tags` first and reuse its words.
   Give each `journal task make` its `--complexity <1-5>` and repeated `--tag <word>` flags; the score anchors are in
   journal-tasks. Use `--confirm` for a new word. A read-only planner sets these on creation and cannot edit them later.
+- `journal task depend <task> --on <other>` says what a task waits on; `journal task waits-on-nothing <task> --why "<why>"` says it
+  truly waits on nothing. Every task but the plan's first states one or the other, or an agent is refused at `plan ready`.
 - `journal plan ready <n>` when every phase has its tasks. A phase with one task is refused until you give the reason one
   task is enough: `--skip-guard plans.one-task-phase --skip-reason "<why>"`. Only the user approves; `journal plan start <n>`
   begins it.

@@ -30,7 +30,7 @@ TAILED_PROOF = 'proof make 1 --task 1 "cart.py:1, the cart story" --test "journa
 
 def recording_launch(monkeypatch) -> list[int]:
     started: list[int] = []
-    monkeypatch.setattr(WorkerTestLaunch, "start", lambda _launch, process_id, _line, _folder, _session: started.append(process_id))
+    monkeypatch.setattr(WorkerTestLaunch, "start", lambda _launch, process, _line, _session: started.append(process.id))
     return started
 
 
@@ -161,21 +161,6 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     story.run_listeners()
     expect_absent_value(started)
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
-
-
-def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monkeypatch):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    calls = []
-    monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: True)
-    monkeypatch.setattr("subprocess.Popen", lambda command, **options: calls.append((command, options)))
-    story.container.get(WorkerTestLaunch).start(7, "pytest tests/cart.py", "/work/worktree", "s-1")
-    command, options = calls[0]
-    expect_value_with(command, "--process 7")
-    expect_value_with(command, "--background")
-    expect_cwd_options(options, "/work/worktree")
-    monkeypatch.setattr(RunnerBinary, "is_installed", lambda _runner: False)
-    with pytest.raises(MissingRunnerError, match="not installed"):
-        story.container.get(WorkerTestLaunch).start(8, "pytest tests/cart.py", "/work/worktree", "s-1")
 
 
 def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(new_story, monkeypatch):

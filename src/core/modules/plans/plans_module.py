@@ -15,6 +15,11 @@ from core.modules.plans.commands.start_plan.start_plan import StartPlan
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.listeners.started_task_plan_listener import StartedTaskPlanListener
 from core.modules.plans.guards.one_task_phase_guard import OneTaskPhaseGuard
+from core.modules.plans.guards.unordered_tasks_guard import UnorderedTasksGuard
+from core.modules.plans.step_conditions.plan_brief_set import PlanBriefSet
+from core.modules.plans.step_conditions.plan_has_phases import PlanHasPhases
+from core.modules.plans.step_conditions.plan_phases_have_tasks import PlanPhasesHaveTasks
+from core.modules.plans.step_conditions.plan_tasks_ordered import PlanTasksOrdered
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
@@ -106,7 +111,8 @@ class PlansModule(Module):
     subcommands = [AssignPlanSubcommand, CommentPlanSubcommand, PlanCommentsSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
-    guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard]
+    guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
+    step_conditions = [PlanBriefSet, PlanHasPhases, PlanPhasesHaveTasks, PlanTasksOrdered]
     listeners = [TaskPlanRowsListener, ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  FinishedPlanListener, PlanMoveMarkListener, StartedPlanDockListener, StartedTaskPlanListener, NextPlanTaskStarterListener, PlanApprovalListener]
     marks = PLAN_MARKS

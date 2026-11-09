@@ -5,6 +5,7 @@ from core.base.command.completed_command_error import CompletedCommandError
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
 from core.base.refusal import Refusal
+from core.base.module.step_conditions import StepConditions
 from core.base.step_checks import StepChecks
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
@@ -25,8 +26,8 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
 
     command = MoveSequenceRun
 
-    def __init__(self, runs: SequenceRunQuery, repository: Repository, checks: StepChecks, rows: EventRows) -> None:
-        self.runs, self.repository, self.checks = runs, repository, checks
+    def __init__(self, runs: SequenceRunQuery, repository: Repository, checks: StepChecks, rows: EventRows, conditions: StepConditions) -> None:
+        self.runs, self.repository, self.checks, self.conditions = runs, repository, checks, conditions
         self.rows = rows
 
     def handle(self, command: MoveSequenceRun, context: Context) -> SequenceLine:
@@ -44,6 +45,7 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
             raise Refusal(f"step {current.step_number} of sequence {sequence.id} was never taken up", "journal sequence follow first")
         if command.action == NEXT:
             self.require_checks(sequence, current)
+            self.require_conditions(sequence, current)
             return self.next_step(sequence, current, context)
         undone_steps = ", ".join(sequence.steps[current.step_number - 1:])
         if not command.sure:
@@ -80,6 +82,13 @@ class MoveSequenceRunHandler(Handler[MoveSequenceRun, SequenceLine]):
         if unpassed:
             raise Refusal(f"step {current.step_number} of sequence {sequence.id} waits on checks that have not passed: {', '.join(f'check {number}' for number in unpassed)}",
                           f"run journal check run {unpassed[0]}, put right what it finds, then journal sequence next")
+
+    def require_conditions(self, sequence: Sequence, current: SequenceRun) -> None:
+        if current.subject_id is None:
+            return
+        problems = self.conditions.problems(SequenceGuards.step_guard(sequence.step_guards, current.step_number).conditions, current.subject_id)
+        if problems:
+            raise Refusal(f"step {current.step_number} of sequence {sequence.id} is not complete: {'; '.join(problems)}", "put that right, then go to the next step")
 
     def next_step(self, sequence: Sequence, current: SequenceRun, context: Context) -> SequenceLine:
         if current.step_number >= len(sequence.steps):

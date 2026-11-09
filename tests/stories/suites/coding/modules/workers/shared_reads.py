@@ -12,6 +12,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import (
     DELIVERY, dispatched_worker, repository_environment,
 )
 from tests.stories.suites.coding.modules.workers.support.program_split import SplitViewer
+from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 
 class WorkerReadsStory(NamedTuple):
@@ -84,6 +85,7 @@ def test_an_approved_plan_stop_shares_several_pending_workers(pending_workers, p
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "Cart" --goal "The cart is finished"', actor=story.agent)
     story.expect_success(f'task make "Finish" --phase {phase_id}', actor=story.agent)
     story.expect_success(f'task make "Verify" --phase {phase_id}', actor=story.agent)
+    state_tasks_wait_on_nothing(story, story.agent, plan_id)
     story.expect_success(f"plan ready {plan_id}", actor=story.agent)
     pending_viewer.value("messages.chat", ["plan", "approve", str(plan_id)])
     sample = HookSamples.stop().with_fields(session="s-1", environment="main")

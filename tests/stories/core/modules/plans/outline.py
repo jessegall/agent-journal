@@ -13,7 +13,7 @@ def test_the_outline_brings_each_phase_with_its_tasks_in_one_answer(new_story):
     answer = json.loads(story.run("plan outline 1 --json", actor=story.agent).output_text)
     expect_phases_answer(answer)
     expect_tasks_phases_answer("tasks", "title", answer)
-    expect_tasks_phase_phases("id", "title", "state", "helper_id", "helper_name", answer)
+    expect_tasks_phase_phases({"id", "title", "state", "priority", "complexity", "tags", "reason", "automatic", "delegated_to", "delegated_is_main", "helper_id", "helper_name"}, answer)
 
 
 def test_the_board_brings_the_open_plans_cards_and_both_counts_in_one_answer(new_story):
@@ -80,8 +80,8 @@ def expect_holders(holders, expected) -> None:
     assert actual is expected, actual
 
 
-def expect_tasks_phase_phases(text, text_2, text_3, text_4, text_5, answer) -> None:
-    actual = any((phase['tasks'] and {text, text_2, text_3, text_4, text_5} == set(phase['tasks'][0]) for phase in answer['phases']))
+def expect_tasks_phase_phases(keys, answer) -> None:
+    actual = any((phase['tasks'] and keys == set(phase['tasks'][0]) for phase in answer['phases']))
     assert actual, actual
 
 

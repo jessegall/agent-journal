@@ -28,7 +28,7 @@ class WorkerTestRunListener(CommitListener[Created[Process]]):
         worktree = self.worktrees.worker_worktree(process.session_agent_id)
         if worktree is None or worktree.folder != process.folder or self.is_launched_elsewhere(process):
             return
-        self.launch.start(process.id, process.line, process.folder, self.rows.required(Agent, process.session_agent_id).session)
+        self.launch.start(process, process.line, self.rows.required(Agent, process.session_agent_id).session)
 
     def is_launched_elsewhere(self, process: Process) -> bool:
         return any(self.queries.query(model).filter(process_id=process.id).exists() for model in (Proof, AffectedTest))

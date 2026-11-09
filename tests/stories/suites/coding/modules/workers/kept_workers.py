@@ -27,6 +27,7 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.worktree_samples import worktree_commit
+from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 REASON = '--reason "Its work is finished"'
 
@@ -282,6 +283,7 @@ def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "One" --goal "It is done"', actor=story.agent)
     story.expect_success(f'task make "First" --phase {phase_id}', actor=story.agent)
     story.expect_success(f'task make "Second" --phase {phase_id}', actor=story.agent)
+    state_tasks_wait_on_nothing(story, story.agent, plan_id)
     story.expect_success(f"plan ready {plan_id}", actor=story.agent)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.expect_success(f"plan approve {plan_id} --environment main", actor=person)

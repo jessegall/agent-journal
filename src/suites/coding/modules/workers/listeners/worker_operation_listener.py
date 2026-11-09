@@ -30,7 +30,7 @@ class WorkerOperationListener(CommitListener[Created[WorkerOperation]]):
             return
         agent = self.rows.required(Agent, process.session_agent_id)
         try:
-            self.launch.start(QueuedProcessStart(process.id, process.line, process.folder, agent.session), ForegroundRun(0, False, queued=True))
+            self.launch.start(QueuedProcessStart(process, process.line, agent.session), ForegroundRun(0, False, queued=True))
         except OSError as error:
             text = f"worker command could not start: {error}\n"
             self.folder.write_output(process.id, 1, text)

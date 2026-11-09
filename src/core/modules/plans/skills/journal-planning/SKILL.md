@@ -16,6 +16,9 @@ and finish it without having to decide anything for itself.
   `--skip-guard plans.one-task-phase --skip-reason "<why one task is enough>"`; otherwise split the phase.
 - Write each brief so it can be carried out alone: the files to change, what already does part of the work and is
   reused, the stories to write, the tests to run by name, and the proof that shows each point.
+- Say what waits on what. Every task but the plan's first waits on the work it needs: `journal task depend <task> --on <other>`,
+  or says why it waits on nothing: `journal task waits-on-nothing <task> --why "<why>"`. A plan with a task that says neither is
+  refused at `journal plan ready`. A loop of waits is always refused.
 - Point at code with an excerpt or `file:line`. Never put whole code in a task: the worker writes the code.
 - Order the phases so each one leaves the project working, and put a checkpoint where the user should look.
 - A phase runs without tests until its end, so keep phases small: a mistake early in a phase is found only there.

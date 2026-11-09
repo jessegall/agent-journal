@@ -9,6 +9,15 @@ LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 
 
+def test_a_folder_named_both_in_the_setting_and_at_dispatch_is_linked_once(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
+    story.expect_success("""setting make journal.suites.coding.workers.library-links '["node_modules"]' --environment main""", "key: journal.suites.coding.workers.library-links")
+    worker_id = dispatched_worker(story, f"{DISPATCH} --library-link node_modules").id
+    repository.expect_link(worker_id, "node_modules")
+
+
 def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_never_sees(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)

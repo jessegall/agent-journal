@@ -15,6 +15,9 @@ last step is done.
 - `journal sequence abandon --why "<why>"` names the steps it would leave undone; again with `--sure` it gives the run up.
 - `journal sequence make "<title>" --steps "first | second | third"` writes one, `journal sequence edit <n>` changes it,
   and `journal sequence show <n>` lists its steps.
+- An agent with a running sequence cannot stop, unless it is waiting on the answer to its question, a run it watches or its helper.
+- A step can list `refused_commands` in `--step-guards`, journal commands it refuses such as `plan ready`, and `conditions`, which a
+  module declares and which must hold before `journal sequence next` goes on. A plan's sequence holds an agent to these on each step.
 - `journal sequence list` shows every sequence with its number of steps.
 - A step can list checks in `--step-guards`, such as `[{"checks": [3]}]` for step 1. `journal sequence next` is refused
   until each listed check last passed, for a step and for the last step that ends the sequence: run

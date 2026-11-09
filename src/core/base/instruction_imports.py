@@ -19,7 +19,7 @@ class InstructionImports:
 
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.names: dict[Path, list[str]] = {}
+        self.names: dict[tuple[Path, int], list[str]] = {}
 
     def faults(self) -> list[InstructionImport]:
         repeated = [entry for file in self.files() for entry in self.imports(file)]
@@ -37,10 +37,10 @@ class InstructionImports:
             yield InstructionImport(str(file.relative_to(self.root)), name, count, is_circular)
 
     def import_names(self, file: Path) -> list[str]:
-        resolved = file.resolve()
-        if resolved not in self.names:
-            self.names[resolved] = self.imported_names(file)
-        return self.names[resolved]
+        version = (file.resolve(), file.stat().st_mtime_ns)
+        if version not in self.names:
+            self.names[version] = self.imported_names(file)
+        return self.names[version]
 
     @staticmethod
     def imported_names(file: Path) -> list[str]:

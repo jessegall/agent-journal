@@ -18,4 +18,4 @@ class OutlinePhase:
         return all(task.is_closed() for task in self.tasks)
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.id, "title": self.title, "goal": self.goal, "checkpoint": self.checkpoint, "tasks": [{"id": task.id, "title": task.title, "state": task.state, "helper_id": task.helper_id, "helper_name": task.helper_name} for task in self.tasks]}
+        return {"id": self.id, "title": self.title, "goal": self.goal, "checkpoint": self.checkpoint, "tasks": [{"id": task.id, "title": task.title, "state": task.state, "priority": task.priority, "complexity": task.complexity, "tags": list(task.tags), "reason": task.reason, "automatic": task.automatic, "delegated_to": task.delegated_to, "delegated_is_main": task.delegated_is_main, "helper_id": task.helper_id, "helper_name": task.helper_name} for task in self.tasks]}

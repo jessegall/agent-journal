@@ -29,12 +29,16 @@ def test_a_reason_lets_a_plan_with_a_one_task_phase_be_made_ready(new_story):
     story = new_story(fixture=OneTaskPhasePlan)
     story.expect_refusal("plan ready 1", "only if this refusal is wrong for the case in hand, never to get on faster: --skip-guard plans.one-task-phase", actor=story.agent)
     confirmed_skip(story, "plans.one-task-phase", story.agent)
+    story.expect_success("task depend 2 --on 1", actor=story.agent)
+    story.expect_success("task depend 3 --on 2", actor=story.agent)
     story.expect_success('plan ready 1 --skip-guard plans.one-task-phase --skip-reason "the phase is one command"', "state: ready", actor=story.agent)
 
 
 def test_a_plan_whose_phases_each_have_two_tasks_is_made_ready_without_a_reason(new_story):
     story = new_story(fixture=OneTaskPhasePlan)
     story.expect_success('task make "Test it" --brief "Test it" --phase 1 --environment main', actor=story.agent)
+    for task, before in ((2, 1), (3, 2), (4, 3)):
+        story.expect_success(f"task depend {task} --on {before}", actor=story.agent)
     story.expect_success("plan ready 1", "state: ready", actor=story.agent)
 
 
@@ -55,4 +59,5 @@ def test_a_helper_edits_and_makes_ready_a_plan_it_made(new_story):
     story.expect_success('task make "Build it" --brief "Build it" --phase 1 --environment main', actor=helper)
     story.expect_success('task make "Run it" --brief "Run it" --phase 1 --environment main', actor=helper)
     story.expect_success('task edit 1 --brief "Build it with the build command"', actor=helper)
+    story.expect_success("task depend 2 --on 1", actor=helper)
     story.expect_success("plan ready 1", "state: ready", actor=helper)

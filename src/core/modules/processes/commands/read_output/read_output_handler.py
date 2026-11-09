@@ -1,4 +1,4 @@
-
+from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
@@ -8,22 +8,26 @@ from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
+from core.modules.processes.support.look_asks import LookAsks
 from core.modules.processes.commands.read_output.support.output_texts import OutputTexts
 from core.modules.processes.commands.read_output.support.repeat_reads import RepeatReads
 
 
 class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
-    """Reads an output in the way asked and notes when it was first read; a later read writes nothing."""
+    """Reads an output in the way asked and notes when it was first read; a later read writes nothing. An agent's
+    read of a run still going answers the asks to look at it."""
 
     command = ReadOutput
 
-    def __init__(self, texts: OutputTexts, outputs: OutputQuery, repository: Repository, repeats: RepeatReads, delivery: OutputDelivery) -> None:
-        self.texts, self.outputs, self.repository, self.repeats, self.delivery = texts, outputs, repository, repeats, delivery
+    def __init__(self, texts: OutputTexts, outputs: OutputQuery, repository: Repository, repeats: RepeatReads, delivery: OutputDelivery, looks: LookAsks) -> None:
+        self.texts, self.outputs, self.repository, self.repeats, self.delivery, self.looks = texts, outputs, repository, repeats, delivery, looks
 
     def handle(self, command: ReadOutput, context: Context) -> OutputLines:
         self.repeats.check(command, context)
         lines = self.texts.lines(context.actor, command)
         self.repeats.note(command, context.actor, context.timestamp.text)
+        if context.actor.type is ActorType.AGENT and not self.repeats.has_ended(command.process_id):
+            self.looks.answered(command.process_id, context.timestamp.value.timestamp())
         kept = self.outputs.process_output(command.process_id)
         if kept is not None and kept.state is OutputState.KEPT:
             values = {}

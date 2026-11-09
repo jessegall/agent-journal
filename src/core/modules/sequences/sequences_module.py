@@ -41,13 +41,19 @@ from core.modules.sequences.queries.sequence_query import SequenceQuery
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.shares.sequence_library_share import SequenceLibraryShare
 from core.modules.sequences.rules.sequence_trigger_rule import SequenceTriggerRule
+from core.modules.sequences.guards.step_condition_name_guard import StepConditionNameGuard
+from core.modules.sequences.guards.plan_being_built_guard import PlanBeingBuiltGuard
+from core.modules.sequences.rules.sequence_stop_rule import SequenceStopRule
 from core.modules.sequences.rules.step_guard_rule import StepGuardRule
+from core.modules.sequences.rules.step_command_rule import StepCommandRule
 from core.modules.sequences.rules.unstarted_step_rule import UnstartedStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 from core.modules.sequences.support.sequence_marks import SEQUENCE_MARKS
 from core.modules.sequences.support.skeletons import SEQUENCES_SEQUENCES_SKELETON
+from core.base.driver.stop_blockers import StopBlockers
 from core.modules.sequences.support.sequence_step_started import SequenceStepStarted
+from core.modules.sequences.support.sequence_stop_blockers import SequenceStopBlockers
 
 BUILT = ["make", "show", "list"]
 RUN_BUILT = [*BUILT, "edit", "delete"]
@@ -60,21 +66,22 @@ class SequencesModule(Module):
     name = "journal.core.sequences"
     nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.documents", "journal.core.plans", "journal.core.questions"]
     block_conditions = [SequenceStepStarted]
+    bindings = {StopBlockers: SequenceStopBlockers}
     skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     library_shares = [SequenceLibraryShare]
     models = [ModelDeclaration(Sequence, query=SequenceQuery, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequenceSessionMigration, OpenRunOrderIndexMigration, SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration, CloseLegacyStepBlocksMigration, RunSubjectMigration, OpenRunSubjectIndexMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler, SaveStandardSequencesHandler]
-    guards = [StandardSequenceGuard]
+    guards = [StandardSequenceGuard, StepConditionNameGuard, PlanBeingBuiltGuard]
     subcommands = [MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceBoardSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
                    AdvanceStepSubcommand, AbandonSequenceSubcommand]
     views = [SequenceRunRow]
     listeners = [SequenceEventIndexListener, SequenceRowTriggerListener, SequenceEndListener, StandardSequencesListener, SequenceStartedMarkListener, SequenceEndedMarkListener]
     marks = SEQUENCE_MARKS
-    driver_rules = [UnstartedStepRule, StepGuardRule, SequenceTriggerRule]
+    driver_rules = [UnstartedStepRule, StepGuardRule, StepCommandRule, SequenceStopRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
     windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, skeleton=SEQUENCES_SEQUENCES_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.SEQUENCE,
                                  reads=["sequence list", "sequence show", "sequence-run list", "sequence board"], keys=[WindowKey("board", "sequence board", events=["sequence.*", "sequence_run.*"])], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

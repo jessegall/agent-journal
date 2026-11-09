@@ -24,7 +24,7 @@ class UnlaunchedWorkerTests:
                    if proof.state is ProofState.RUNNING and proof.process_id in runs and self.is_unlaunched(runs[proof.process_id], folder, current)]
         agents = {agent.id: agent for agent in container.get(Queries).query(Agent).find_many([process.session_agent_id for process, _ in stalled])}
         for process, line in stalled:
-            container.get(WorkerTestLaunch).start(process.id, line, process.folder, agents[process.session_agent_id].session)
+            container.get(WorkerTestLaunch).start(process, line, agents[process.session_agent_id].session)
 
     @staticmethod
     def is_unlaunched(process: Process, folder: OutputFolder, current: Timestamp) -> bool:

@@ -19,6 +19,7 @@ from tests.stories.suites.coding.modules.workers.support.route_expectations impo
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.suites.coding.modules.workers.support.program_split import (
     SAMPLE_MODULE, dispatch, expect_program, new_task, outage, uninstall_sample_module, set_split, split_story, split_viewer,
 )
@@ -139,6 +140,7 @@ def test_batch_across_programs_is_refused_plan_names_phase(split_story, split_vi
     new_task(story, 'Windows task', f'--phase {windows_phase} --tag windows --confirm')
     new_task(story, 'Linux follow-up', f'--phase {linux_phase} --tag linux --confirm')
     new_task(story, 'Windows follow-up', f'--phase {windows_phase} --tag windows --confirm')
+    state_tasks_wait_on_nothing(story, story.agent, plan)
     story.expect_success(f'plan ready {plan}', actor=story.agent)
     split_viewer.value('messages.chat', ['plan', 'approve', str(plan)])
     story.expect_success('worker-route make --program codex --tags linux --environment main', actor=story.agent)

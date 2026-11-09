@@ -15,6 +15,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from tests.stories.server.support.server_client import server_story
 from tests.stories.server.viewer.attachments import IMAGE_BYTES, uploaded
+from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 
 class MissingTrailBehaviour(AssertionError):
@@ -94,6 +95,7 @@ class ApprovedTrailPlan(StoryFixture):
     parent = TrailReady
 
     def steps(self, story: Story) -> None:
+        state_tasks_wait_on_nothing(story, story.agent)
         story.expect_success("plan ready 1", actor=story.agent)
         viewer(story, "messages.chat", ["plan", "approve", "1"])
 

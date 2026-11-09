@@ -24,6 +24,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
 from core.modules.tasks.support.task_brief_requirement import TaskBriefRequirement
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, linked_scenario, LinkedTrail, Scenario
+from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 
 
 class SourcelessTask(StoryFixture):
@@ -168,6 +169,7 @@ def test_plan_comments_and_report_references_reach_task_overview(linked_scenario
     linked_scenario.command('plan edit 1 --document-id 2')
     linked_scenario.make_task("Check the approved cart behavior")
     linked_scenario.command('phase place 2 --phase 1')
+    state_tasks_wait_on_nothing(linked_scenario.story, linked_scenario.story.agent, 1)
     linked_scenario.command('plan ready 1')
     linked_scenario.person("messages.chat", "plan", "approve", "1", "--message=Approved cart scope")
     outcome = linked_scenario.command("task overview 1")

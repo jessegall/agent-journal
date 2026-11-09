@@ -13,7 +13,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 MISSING_GROUP = 999999
 HANG_SECONDS = 300
 LOOK_SECONDS = 900
-LOOK_LINE = "hangs"
+LOOK_LINE = "processes.look"
 
 
 class FakeGroupCpuTime(GroupCpuTime):
@@ -147,6 +147,21 @@ def test_the_ask_repeats_after_the_hang_seconds_and_the_run_is_stopped_after_the
     story.expect_text("process show 1", "state: background", actor=story.agent)
     busy_for(story, tree, HANG_SECONDS)
     story.expect_text("process show 1", "state: stopped", actor=story.agent)
+
+
+def test_a_test_run_whose_agent_read_its_output_is_not_stopped_and_is_asked_again_after_the_look_seconds(new_story):
+    story = new_story(fixture=ActiveTestRun)
+    tree = started_tree(story, 12.0)
+    busy_for(story, tree, LOOK_SECONDS + 1)
+    busy_for(story, tree, HANG_SECONDS + 1)
+    expect_looks(story, 2)
+    story.expect_success("output read 1 --summary", actor=story.agent)
+    for _ in range(2):
+        busy_for(story, tree, HANG_SECONDS + 1)
+    expect_looks(story, 2)
+    busy_for(story, tree, LOOK_SECONDS)
+    expect_looks(story, 3)
+    story.expect_text("process show 1", "state: background", actor=story.agent)
 
 
 def test_a_test_run_that_prints_again_after_the_ask_is_asked_again_only_after_it_goes_silent_again(new_story):

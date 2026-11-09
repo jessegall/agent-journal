@@ -3,7 +3,7 @@ import {computed} from "vue";
 import {peekRef} from "../route.js";
 
 // the agents holding or queued for the tasks of one phase not yet closed, each once, with whether it works on one now or has them waiting
-const HELD_STATES = new Set(["started", "testing", "blocked"]);
+const HELD_STATES = new Set(["started", "testing"]);
 const CLOSED_STATES = new Set(["completed", "cancelled"]);
 const props = defineProps({tasks: {type: Array, required: true}});
 const agents = computed(() => {

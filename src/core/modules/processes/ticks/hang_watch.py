@@ -11,11 +11,11 @@ from core.modules.processes.models.support.hang_limits import HangLimits
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
+from core.modules.processes.support.look_asks import LookAsks
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 
 CPU_FILE = "cpu"
-LOOK_FILE = "look"
 LOOKS_BEFORE_STOP = 3
 
 
@@ -23,8 +23,8 @@ class HangWatch:
     """Stops each running command whose process tree printed nothing and used no processor time for the hang
     seconds, and tells the agent that started it. A test run that prints nothing for the look seconds while it
     uses processor time may be working or may spin, so its agent is asked to read its output and decide, again
-    after each hang seconds, and the run is stopped when the agent has been asked three times and it still prints
-    nothing. The tree's processor time and the moment it last changed are kept in the run's folder, with the
+    after each hang seconds until it reads the run's output, and the run is stopped when three asks stay
+    unanswered. The tree's processor time and the moment it last changed are kept in the run's folder, with the
     asks made. One listing of the machine's processes serves every run of a tick."""
 
     def __call__(self, container: Container) -> bool:
@@ -63,25 +63,19 @@ class HangWatch:
         return True
 
     def looked(self, container: Container, process: Process, silent: int, now: float, limits: HangLimits) -> bool:
-        folder = container.get(OutputFolder)
-        asks, last = self.asks(folder, process)
+        asks = container.get(LookAsks)
         if process.category is not CommandCategory.TEST_RUN or silent < limits.look:
-            if asks:
-                folder.write(process.id, LOOK_FILE, "")
+            asks.forgotten(process.id)
             return False
-        if asks and now - last < limits.hang:
+        state = asks.state(process.id)
+        if not state.is_due(now, limits.hang, limits.look):
             return False
-        if asks >= LOOKS_BEFORE_STOP:
+        if state.unanswered >= LOOKS_BEFORE_STOP:
             self.stop(container, process, silent)
             return True
-        folder.write(process.id, LOOK_FILE, f"{asks + 1} {now}")
+        asks.asked(process.id, now)
         container.get(Bus).run(AskAgentToLook(process.id, silent), Actor.core(), environment_id=process.environment_id)
         return True
-
-    @staticmethod
-    def asks(folder: OutputFolder, process: Process) -> tuple[int, float]:
-        recorded = folder.text(process.id, LOOK_FILE).split()
-        return (int(recorded[0]), float(recorded[1])) if len(recorded) == 2 else (0, 0.0)
 
     @staticmethod
     def stop(container: Container, process: Process, seconds: int) -> None:

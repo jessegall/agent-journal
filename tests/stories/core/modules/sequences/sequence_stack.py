@@ -8,7 +8,7 @@ from core.modules.sequences.models.sequence_run import SequenceRun
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import UserJoined
 
-CLEANUP_TRIGGERS = [{"trigger_type": "row", "event": "plan.create", "end_events": "plan.ready"}]
+CLEANUP_TRIGGERS = [{"trigger_type": "row", "event": "plan.create", "end_events": "plan.ready,plan.cancel"}]
 NEW_PLAN = 'plan make "The rebuild" --environment main'
 
 
@@ -82,7 +82,7 @@ def test_a_lower_sequence_ending_leaves_the_one_on_top_running(new_story):
     story.run(NEW_PLAN, actor=story.user)
     story.run_listeners()
     story.expect_success("sequence run 1", actor=story.agent)
-    story.expect_success("plan ready 1", actor=story.agent)
+    story.expect_success('plan cancel 1 --reason "replaced"', actor=story.agent)
     story.run_listeners()
     story.expect_rows(open_runs(story) == [1])
     story.expect_success("sequence follow", "sequence 1, step 1: Run the suite", actor=story.agent)
