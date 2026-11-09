@@ -13,10 +13,11 @@ from core.modules.agents.models.agent import Agent
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.queries.plan_query import PlanQuery
-from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_BLOCKED, PLAN_CANCELLED
+from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_APPROVED_WITH_MESSAGE, PLAN_BLOCKED, PLAN_CANCELLED, PLAN_WAITING
 from core.modules.plans.support.plan_approval import PlanApproval
 
 STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
+    PlanState.READY: PLAN_WAITING,
     PlanState.APPROVED: PLAN_APPROVED,
     PlanState.CANCELLED: PLAN_CANCELLED,
     PlanState.BLOCKED: PLAN_BLOCKED,
@@ -24,7 +25,7 @@ STATE_NUDGES: dict[PlanState, NudgeDeclaration] = {
 
 
 class PlanStateRule(DriverRule):
-    """A plan of the environment approved, cancelled or blocked since this rule last spoke is named to the
+    """A plan of the environment ready, approved, cancelled or blocked since this rule last spoke is named to the
     main agent."""
 
     name = "plans.state-lines"
