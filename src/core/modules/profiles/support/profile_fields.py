@@ -24,6 +24,7 @@ class ProfileFields(TypedDict, total=False):
     mcp_tools: tuple[str, ...]
     writable_folders: tuple[str, ...]
     skills: tuple[str, ...]
+    required_skills: tuple[str, ...]
     module: str
     module_text: str
     source_digest: str

@@ -13,7 +13,7 @@ class ProfileSkillsSubcommand(ReadSubcommand[ProfileSkillList]):
 
     cli_name = "profile"
     name = "skills"
-    row_line = "{key}: {state}"
+    row_line = "{key}: {status}"
     empty_line = "no skills"
 
     def __init__(self, files: ProfileFiles, skills: ProfileSkills) -> None:

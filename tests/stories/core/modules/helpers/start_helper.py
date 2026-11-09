@@ -9,6 +9,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
@@ -260,3 +261,17 @@ def test_a_profile_that_says_nothing_falls_back_to_another_program(new_story, mo
     launcher.drain_requests()
     launcher.server.close()
     story.expect_rows(answer["program"] == "codex")
+
+
+def test_a_helper_launch_waits_for_its_own_round_and_holds_no_ordinary_listener(new_story, monkeypatch):
+    story = new_story(fixture=LauncherRuns)
+    launcher = fake_launcher(story)
+    monkeypatch.setattr(CommitListenerRunner, "run", lambda _runner: None)
+    story.new_row_id(START, actor=story.agent)
+    runner = story.container.get(CommitListenerRunner)
+    runner.run_urgent()
+    runner.run_ordinary()
+    story.expect_rows(launcher.requests == [])
+    runner.run_program_stops()
+    launcher.drain_requests()
+    story.expect_rows(len(launcher.requests) == 1)
