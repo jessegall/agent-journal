@@ -1,4 +1,3 @@
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.metadata import Metadata
@@ -10,7 +9,6 @@ from suites.coding.modules.workers.commands.switch_worker_sandbox.switch_worker_
 from suites.coding.modules.workers.support.worker_sandbox_choice import SANDBOX_KEY
 from suites.coding.modules.workers.support.worker_settings import MODULE_KEY
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.agent_role import AgentRole
 
 
 class SwitchWorkerSandboxHandler(Handler[SwitchWorkerSandbox, Agent]):
@@ -22,16 +20,9 @@ class SwitchWorkerSandboxHandler(Handler[SwitchWorkerSandbox, Agent]):
         self.agents, self.repository = agents, repository
 
     def handle(self, command: SwitchWorkerSandbox, context: Context) -> Agent:
-        self.check_caller(context)
+        self.agents.require_main(context.actor, "switch a worker's sandbox")
         worker = self.agents.find(command.worker_id)
         if worker.role != CodingHelperRole.WORKER:
             raise Refusal(f"agent {worker.id} is a {worker.role}, not a worker", "journal worker status lists the workers")
         part = {**worker.metadata.module_part(MODULE_KEY), SANDBOX_KEY: command.sandboxed}
         return self.repository.save_metadata(worker, Metadata({**worker.metadata.values, MODULE_KEY: part}), context)
-
-    def check_caller(self, context: Context) -> None:
-        if context.actor.type is not ActorType.AGENT:
-            return
-        caller = self.agents.find(context.actor.id)
-        if caller.role != AgentRole.MAIN:
-            raise Refusal(f"a {caller.role} cannot switch a worker's sandbox", "ask the main agent or a person")
