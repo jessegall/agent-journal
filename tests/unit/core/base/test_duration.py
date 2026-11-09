@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from core.base.duration import Duration
-from core.base.duration_error import DurationError
+from engine.errors.duration_error import DurationError
 from core.base.timestamp import Timestamp
 
 

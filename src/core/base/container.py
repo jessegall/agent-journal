@@ -4,9 +4,9 @@ from typing import TypeVar, get_type_hints
 
 from functools import cache
 
-from core.base.missing_hint_error import MissingHintError
-from core.base.unbound_value_error import UnboundValueError
-from core.base.wrong_instance_error import WrongInstanceError
+from engine.errors.missing_hint_error import MissingHintError
+from engine.errors.unbound_value_error import UnboundValueError
+from engine.errors.wrong_instance_error import WrongInstanceError
 
 T = TypeVar("T")
 

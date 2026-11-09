@@ -89,8 +89,8 @@ def test_a_journal_only_line_has_no_foreground_limit():
     assert limit().decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).seconds == 0
 
 
-def test_a_journal_line_marked_for_the_background_stays_in_the_foreground():
-    assert not limit(journal_commands=True).decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).background
+def test_a_journal_line_that_declares_the_background_runs_there_with_no_foreground_limit():
+    assert limit(journal_commands=True).decide(line(part("journal", CommandCategory.JOURNAL), journal_shell=True), 1).background
 
 
 def test_a_test_run_and_a_build_run_in_line_up_to_the_foreground_seconds():

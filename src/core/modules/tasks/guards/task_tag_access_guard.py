@@ -4,7 +4,7 @@ from core.base.change.changed import Changed
 from core.base.command.context import Context
 from core.base.guard.guard import Guard
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.support.task_creation import TaskCreation
 from core.modules.tasks.models.task_tag import TaskTag

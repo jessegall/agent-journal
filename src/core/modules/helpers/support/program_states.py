@@ -9,7 +9,7 @@ from core.base.provider.unknown_program_error import UnknownProgramError
 from core.base.query.queries import Queries
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.timestamp import Timestamp
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.helpers.models.provider_outage import ProviderOutage

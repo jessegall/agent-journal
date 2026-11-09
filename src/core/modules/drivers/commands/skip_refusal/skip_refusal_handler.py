@@ -5,12 +5,12 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.command.request_user_approval import RequestUserApproval
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.guard.guard import Guard
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.has_value import HasValue
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository

@@ -4,7 +4,7 @@ from core.base.command.context import Context
 from core.base.command.completed_command_error import CompletedCommandError
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.module.step_conditions import StepConditions
 from core.base.step_checks import StepChecks
 from core.base.repository.repository import Repository

@@ -6,12 +6,13 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.container import Container
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.refusal import Refusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_roster_check import is_agent_roster
 
 
 class RetireAgentHandler(Handler[RetireAgent, Agent]):
@@ -62,4 +63,7 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
 
     def roster(self, agent: Agent) -> AgentRoster[Agent] | None:
         entry = next((entry for entry in self.registry.helper_types if entry.key == agent.role), None)
-        return self.container.get(entry.roster.loaded()) if entry is not None and entry.roster is not None else None
+        if entry is None or entry.roster is None:
+            return None
+        roster: object = self.container.get(entry.roster.loaded())
+        return roster if is_agent_roster(roster) else None

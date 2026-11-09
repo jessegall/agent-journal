@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.processes.commands.resume_run_queue.resume_run_queue import ResumeRunQueue
 from core.modules.processes.support.run_queue_halt import RunQueueHalt
 from core.modules.processes.support.run_slots import RunSlots

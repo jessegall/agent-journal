@@ -2,7 +2,7 @@ from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.sandbox_level import SandboxLevel
 from core.modules.processes.commands.record_sandbox.record_sandbox import RecordSandbox

@@ -2,7 +2,7 @@ from core.base.file_access import FileAccess
 from pathlib import Path
 
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.environments.models.environment import Environment
 from suites.coding.support.project_file_rows import ProjectFileRows

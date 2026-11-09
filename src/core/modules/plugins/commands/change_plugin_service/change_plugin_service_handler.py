@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.plugins.commands.change_plugin_service.change_plugin_service import ChangePluginService
 from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.runnable_plugins import RunnablePlugins

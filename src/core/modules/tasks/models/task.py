@@ -5,7 +5,7 @@ from core.base.model.environment_scoped import EnvironmentScoped
 from core.base.model.model import Model
 from core.base.model.state_holder import StateHolder
 from core.base.timestamp import Timestamp
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.support.task_priority import NORMAL_PRIORITY, TaskPriority
 from core.modules.tasks.models.support.task_complexity import TaskComplexity

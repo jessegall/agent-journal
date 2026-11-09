@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 SKIP_ALLOWED_CASE = "only if this refusal is wrong for the case in hand, never to get on faster"
 

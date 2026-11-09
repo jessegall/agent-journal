@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pathlib import PurePosixPath
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 TEST_FILE_ENDINGS = (".py", ".js", ".mjs", ".ts", ".go")
 SHELL_OPERATORS = {"|", ";", "&", "&&", "||", ">", ">>", "<"}

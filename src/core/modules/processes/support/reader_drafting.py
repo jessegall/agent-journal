@@ -1,7 +1,7 @@
 import re
 from dataclasses import replace
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.reader_request import ReaderRequest

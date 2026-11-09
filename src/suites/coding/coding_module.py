@@ -117,7 +117,7 @@ class CodingModule(Module):
                                        WindowKey("auto", "setting show journal.suites.coding.auto-mode", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"])]),
                WindowDeclaration("coding.agent-settings", "Agent settings", "agent-settings.js", WindowLoading.COMPONENT, skeleton=CODING_AGENT_SETTINGS_SKELETON, icon=WindowIcon.WINDOW,
-                                 reads=["work-settings show", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting set", "agent retire"],
+                                 reads=["work-settings show", "agent limits", "agent cards", "setting show"], runs=["work-settings apply", "work-settings preset", "setting set", "agent profile-limits", "agent retire"],
                                  events=["setting.*", "agent.*"],
                                  keys=[WindowKey("work", "work-settings show", events=["setting.*"]),
                                        WindowKey("limits", "agent limits", tab="agents", events=["agent.*", "setting.*"]),

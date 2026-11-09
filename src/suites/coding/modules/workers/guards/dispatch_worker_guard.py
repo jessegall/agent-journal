@@ -1,6 +1,6 @@
 from core.base.guard.guard import Guard
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.change.created import Created

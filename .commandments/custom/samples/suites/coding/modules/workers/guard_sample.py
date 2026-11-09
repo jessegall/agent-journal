@@ -1,7 +1,7 @@
 import subprocess
 
 from core.base.guard.guard import Guard
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 LIMIT_SECONDS = 60

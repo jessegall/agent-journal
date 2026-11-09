@@ -7,7 +7,7 @@ from pathlib import Path
 from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
 from core.base.leftover_process import LeftoverProcess
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.tunnel.tunnel_state import TunnelState
 from server.server_files import ServerFiles
 from tunnels.tunler.support.tunler_answer import TunlerAnswer

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.documents.support.outline import Outline
 
 
@@ -36,6 +36,7 @@ class TextChange:
         matching = outline.matching(wanted)
         if not matching:
             raise Refusal(f"no section {wanted}: the outline numbers them from 1", "the outline lists them with their numbers")
-        if len(matching) > 1:
+        target, *others = matching
+        if others:
             raise Refusal(f"{len(matching)} sections are headed {wanted}", "name the section by its number")
-        return outline.with_section_text(matching[0], body)
+        return outline.with_section_text(target, body)

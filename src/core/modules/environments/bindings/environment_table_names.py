@@ -1,5 +1,5 @@
 from core.base.environment_names import EnvironmentNames
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.environments.support.environment_rows import EnvironmentRows
 
 

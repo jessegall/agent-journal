@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.module.module_actors import ModuleActors
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.updates.commands.show_update_step.show_update_step import ShowUpdateStep

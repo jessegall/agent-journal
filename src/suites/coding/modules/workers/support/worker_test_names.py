@@ -5,7 +5,7 @@ from collections.abc import Sequence
 
 from core.base.database.kept_rows import KeptRows
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.models.worker_test_command import WorkerTestCommand
 
 CALL = "journal worker test <name> <test files>"

@@ -7,7 +7,7 @@ from pathlib import Path
 
 from core.base.clock import Clock
 from core.base.git.hook_files_git import GIT_LIMIT_SECONDS
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tools.support.graph_files import FAILED_FILE, RUNNING_FILE, GraphFiles
 from core.modules.tools.support.graph_status import GraphStatus

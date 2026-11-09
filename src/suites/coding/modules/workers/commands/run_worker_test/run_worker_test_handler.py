@@ -4,10 +4,9 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.driver.command_category import CommandCategory
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.commands.start_process.start_process import StartProcess
-from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.commands.run_worker_test.run_worker_test import RunWorkerTest
 from suites.coding.modules.workers.support.worker_test_run import WorkerTestRun
 from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
@@ -18,7 +17,7 @@ from suites.coding.modules.workers.support.worktree_libraries import WorktreeLib
 from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
 
 
-class RunWorkerTestHandler(Handler[RunWorkerTest, Process]):
+class RunWorkerTestHandler(Handler[RunWorkerTest, WorkerTestRun]):
     """Starts a worker's named test command as a queued test run in its worktree."""
 
     command = RunWorkerTest

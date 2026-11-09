@@ -10,7 +10,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.scope.environment_scope import EnvironmentScope
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.sharing.commands.support.share_targets import ShareTargets
 from core.modules.sharing.models.enums.share_link_state import ShareLinkState
 from core.modules.sharing.models.share_link import ShareLink

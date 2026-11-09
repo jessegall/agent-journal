@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.setting.setting_declaration import GROUP_TYPE
 from core.modules.settings.commands.switch_setting_group.switch_setting_group import SwitchSettingGroup
 from core.modules.settings.commands.support.setting_store import SettingStore

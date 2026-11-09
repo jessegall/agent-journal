@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.modules.settings.support.setting_text import SettingText
 

@@ -27,7 +27,7 @@ class BlockedWorkRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.current.started_tasks(hook.agent_id) or self.tasks.open_tasks().exists():
-            return RuleAnswer.allowed("started or open tasks are checked by the task stop rules")
+            return RuleAnswer.allowed("started tasks are checked by the task stop rule, and open ones by the main agent's stop rule")
         blocked = self.tasks.unopenable_blocks().oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
         if not blocked:
             return RuleAnswer.allowed("no blocked task needs a review")

@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.command.command import Command
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.memories.models.memory import Memory
 

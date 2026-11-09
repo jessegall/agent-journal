@@ -12,7 +12,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.driver.nudge import Nudge
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.file_access import FileAccess
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -29,6 +29,7 @@ from core.testing.fake_launcher import FakeLauncher
 from core.testing.story_helper_programs import StoryHelperPrograms
 from core.testing.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
+from suites.coding.modules.workers.commands.start_merger.start_merger_handler import StartMergerHandler
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
@@ -497,3 +498,18 @@ def test_a_worker_the_merger_passes_on_is_named_to_the_main_agent_with_its_merge
     story.advance(timedelta(minutes=15))
     story.tick("s-1")
     story.expect_rows(story.run(main_lines).output_text.count(f"worker:{worker.id} delivered") > first)
+
+
+def test_a_started_merger_fits_its_profile_so_its_end_does_not_retire_it(new_story, monkeypatch):
+    monkeypatch.setattr(ShellSandbox, "check", StoryShellSandbox.check)
+    monkeypatch.setattr(HelperPrograms, "checked", StoryHelperPrograms.checked)
+    monkeypatch.setattr(HelperPrograms, "installed", StoryHelperPrograms.installed)
+    story, _, _, started = queued_story(new_story, monkeypatch)
+    launcher = FakeLauncher.listening(story.home.socket("launcher"))
+    try:
+        ended(story, started[0], 0)
+    finally:
+        launcher.server.close()
+        story.home.socket("launcher").unlink(missing_ok=True)
+    merger = merger_agent(story)
+    story.expect_rows(story.container.get(StartMergerHandler).fits_profile(merger))

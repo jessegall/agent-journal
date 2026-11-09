@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 
 

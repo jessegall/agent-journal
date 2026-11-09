@@ -14,9 +14,9 @@ from core.base.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.command.move_command import MoveCommand
-from core.base.missing_rows_error import MissingRowsError
+from engine.errors.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.model.model import Model
 from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.listener.test_commit_listener_runner import container_with

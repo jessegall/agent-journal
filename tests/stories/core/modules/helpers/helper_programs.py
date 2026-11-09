@@ -5,7 +5,7 @@ import pytest
 from core.base.journal_home import JournalHome
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.providers import Providers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

@@ -3,7 +3,7 @@ from core.base.change.registry_synced import RegistrySynced
 from core.base.command.bus import Bus
 from core.base.command.request_user_approval import RequestUserApproval
 from core.base.command.close_user_approval import CloseUserApproval
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries

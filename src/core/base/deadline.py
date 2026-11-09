@@ -1,5 +1,5 @@
 import time
-from core.base.deadline_passed_error import DeadlinePassedError
+from engine.errors.deadline_passed_error import DeadlinePassedError
 
 
 class Deadline:

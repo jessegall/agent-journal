@@ -3,7 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 from core.base.command.bus import Bus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.query.queries import Queries
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.process_group import ProcessGroup

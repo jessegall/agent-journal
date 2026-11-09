@@ -16,7 +16,8 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class UnstartedHelperRule(DriverRule):
-    """On its parent's tick, records a failed launch for a helper that sent no hook within the unstarted helper seconds of its start."""
+    """On its parent's tick, records a failed launch for a helper the launcher took that sent no hook within
+    the unstarted helper seconds of that launch. A helper whose launch still waits is never failed."""
 
     name = "helpers.unstarted-helper"
     hook = HookEventName.TICK
@@ -34,5 +35,7 @@ class UnstartedHelperRule(DriverRule):
         return RuleAnswer.allowed().running(*(RecordAgentLaunchFailure(helper.id) for helper in silent))
 
     def is_silent(self, helper: Agent, hook: AgentHook, limit: Interval) -> bool:
-        started = limit.has_passed(self.spans, hook.agent_id, helper.creation_timestamp(), hook.timestamp)
+        if helper.launched_at is None:
+            return False
+        started = limit.has_passed(self.spans, hook.agent_id, helper.launched_at, hook.timestamp)
         return started and self.hook_calls.newest_agent_hook(helper.id) is None

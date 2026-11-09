@@ -2,7 +2,7 @@ import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 NAME_PATTERN = re.compile(r"[a-z]+(-[a-z]+)*")
 EXAMPLE = "--test-command python=pytest"

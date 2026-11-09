@@ -28,7 +28,7 @@ from core.base.model.move import Move
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues

@@ -14,7 +14,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.journal_home import LAUNCHER_SOCKET
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.processes.models.process import Process

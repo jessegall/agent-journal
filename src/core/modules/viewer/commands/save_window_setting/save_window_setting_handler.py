@@ -2,7 +2,7 @@ import json
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.viewer.commands.save_window_setting.save_window_setting import SaveWindowSetting

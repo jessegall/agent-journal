@@ -65,7 +65,7 @@ class HeavyRunGate:
 
     @staticmethod
     def active_tickets(tickets: Path) -> list[Path]:
-        active = []
+        active: list[Path] = []
         for ticket in sorted(tickets.iterdir()):
             if ProcessIds.text_exists(ticket.name.rpartition("-")[2]):
                 active.append(ticket)

@@ -1,7 +1,7 @@
 from collections.abc import Callable, Mapping
 from typing import TypeVar
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.library.support.library_client import LibraryClient
 from core.base.library.library_item import LibraryItem
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError

@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.mcp.commands.install_server.install_server import InstallServer
 from core.modules.mcp.models.mcp_server import McpServer

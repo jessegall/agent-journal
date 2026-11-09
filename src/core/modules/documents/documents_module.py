@@ -3,6 +3,8 @@ from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.commands.plan_context.read_plan_context_subcommand import ReadPlanContextSubcommand
 from core.modules.documents.commands.plan_context.read_plan_context_handler import ReadPlanContextHandler
 from core.modules.tasks.support.task_context_reader import TaskContextReader
+from core.modules.tasks.support.task_comment_reads import TaskCommentReads
+from core.modules.documents.support.row_task_comment_reads import RowTaskCommentReads
 from core.modules.documents.support.work_context_reader import WorkContextReader
 from core.base.ticker.tick_handler import TickHandler
 from core.base.ticker.tick_interval import TickInterval
@@ -95,7 +97,9 @@ from core.modules.documents.migrations.m007_link_corrections import LinkCorrecti
 from core.modules.documents.commands.remove_link.remove_link_handler import RemoveLinkHandler
 from core.modules.documents.commands.remove_link.remove_link_subcommand import RemoveLinkSubcommand
 from core.modules.documents.listeners.link_correction_reset_listener import LinkCorrectionResetListener
-from core.modules.tasks.commands.task_context.task_context_subcommand import TaskContextSubcommand
+from core.modules.documents.commands.task_context.task_context_subcommand import TaskContextSubcommand
+from core.modules.documents.commands.comment_task.comment_task_subcommand import CommentTaskSubcommand
+from core.modules.documents.commands.task_comments.task_comments_subcommand import TaskCommentsSubcommand
 
 
 class DocumentsModule(Module):
@@ -128,7 +132,7 @@ class DocumentsModule(Module):
     listeners = [CloseEndedDocumentListener, PlanDocumentLinkListener, ReplyLinkListener, WorkSourceLinkListener, DocMentionListener, ReportMentionListener, PlanMentionListener, TaskMentionListener, MessageMentionListener, PhaseMentionListener, TaskLogMentionListener, DeletedRowLinkListener, NewDocDockListener, NewReportDockListener, TextReadMarkListener, LinkCorrectionResetListener]
     marks = TEXT_MARKS
     docks = TEXT_DOCKS
-    bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader}
+    bindings = {RowLinks: StoredRowLinks, TaskContextReader: WorkContextReader, TaskCommentReads: RowTaskCommentReads}
     subcommands = [OpenDocSubcommand, CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, LinkReceiptsSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, ReadPlanContextSubcommand]
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, LinkReceiptsSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand, DocInspectSubcommand, ReportInspectSubcommand, RemoveLinkSubcommand, TaskContextSubcommand, CommentTaskSubcommand, TaskCommentsSubcommand, ReadPlanContextSubcommand]

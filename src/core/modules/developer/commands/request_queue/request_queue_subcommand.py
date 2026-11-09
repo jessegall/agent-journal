@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import asdict
 
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.request_queue import RequestQueue
 from core.base.request_queue_entry import RequestQueueEntry
 from core.base.request_queue_status import RequestQueueStatus

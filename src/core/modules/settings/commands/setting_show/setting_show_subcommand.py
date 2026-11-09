@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.modules.settings.commands.support.current_setting_output import CurrentSettingOutput
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.undeclared_settings import UndeclaredSettings

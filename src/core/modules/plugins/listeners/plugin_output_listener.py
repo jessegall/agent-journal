@@ -10,7 +10,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.plugins.models.enums.plugin_card_tone import PluginCardTone

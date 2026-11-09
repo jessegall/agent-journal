@@ -9,7 +9,7 @@ from core.base.scope.scopes import Scopes
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task, expect_docked_state, leave_tick

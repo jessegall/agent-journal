@@ -2,6 +2,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
+from core.base.file_version import NANOSECONDS
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
@@ -12,7 +13,6 @@ from core.modules.drivers.support.driver_nudges import FILE_LOADED
 
 READ_TOOL = "Read"
 PART_FIELDS = ("offset", "limit", "pages")
-NANOSECONDS = 1_000_000_000
 
 
 class RepeatedFileReadRule(DriverRule):

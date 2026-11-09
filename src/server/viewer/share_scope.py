@@ -2,7 +2,7 @@ from core.base.cli.usage_error import UsageError
 from core.base.environment_names import EnvironmentNames
 from core.base.container import Container
 from core.base.query.shared_rows import SharedRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.viewer.shared_windows import SharedWindows

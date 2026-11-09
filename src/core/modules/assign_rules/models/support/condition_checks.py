@@ -20,7 +20,8 @@ def check_complexity(operator: ConditionOperator, value: str, facts: TaskFacts) 
             return matches_complexity_range(facts.complexity, TaskComplexity(value), None)
         case ConditionOperator.MAXIMUM:
             return matches_complexity_range(facts.complexity, None, TaskComplexity(value))
-    return matches_complexity_range(facts.complexity, TaskComplexity(value), TaskComplexity(value))
+        case _:
+            return matches_complexity_range(facts.complexity, TaskComplexity(value), TaskComplexity(value))
 
 
 def check_priority(operator: ConditionOperator, value: str, facts: TaskFacts) -> bool:
@@ -45,7 +46,8 @@ def check_creator(operator: ConditionOperator, value: str, facts: TaskFacts) -> 
             return facts.creator_type is CreatorType.MAIN_AGENT
         case ConditionOperator.IS_HELPER:
             return facts.creator_type is CreatorType.HELPER
-    return facts.creator_id == int(value)
+        case _:
+            return facts.creator_id == int(value)
 
 
 def check_place(operator: ConditionOperator, value: str, facts: TaskFacts) -> bool:
@@ -70,4 +72,5 @@ def check_condition(field: ConditionField, operator: ConditionOperator, value: s
             return check_creator(operator, value, facts)
         case ConditionField.PLACE:
             return check_place(operator, value, facts)
-    return True
+        case _:
+            return True

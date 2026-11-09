@@ -6,7 +6,7 @@ from core.base.clock import Clock
 from core.base.code_versions import CodeVersions
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.unix_connection import UnixConnection
 from core.base.log_level import LogLevel
 from install.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps

@@ -43,17 +43,17 @@ class WorkerMoveMarkListener(MarkListener[Moved[Worktree]]):
     def handle(self, event: Moved[Worktree], logged: LoggedEvent) -> None:
         worktree = event.row
         agent = self.event_rows.required(Agent, worktree.session_agent_id)
-        if event.move is WorktreeLifecycle.return_worker:
+        if event.required_move is WorktreeLifecycle.return_worker:
             name = agent.given_name or f"Worker {agent.id}"
             reason = str(logged.data.get("pass_reason", ("", worktree.pass_reason))[1])
             self.show(logged, WorkerMarkType.WORKER, WorkerMarkVariant.PASS, f"The merger left {name} to the main agent", None, AGENTS_TABLE, agent.id, detail=reason)
             return
         task = self.event_rows.required(Task, worktree.task_id)
         queued = self.tasks.queued_tasks(agent.id)
-        variant, move = MOVE_TEXTS[event.move.name]
+        variant, move = MOVE_TEXTS[event.required_move.name]
         name = agent.given_name or f"Worker {agent.id}"
         choice_reason = f"; {worktree.route_reason}" if worktree.route_reason else ""
-        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{choice_reason}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
+        self.show(logged, WorkerMarkType.WORKER, variant, f"{name} {move.format(tasks=self.tasks_text(event.required_move, worktree, task))}", None, AGENTS_TABLE, agent.id, detail=f"On {agent.program} {agent.program_model}{choice_reason}{self.queue_text(queued)}\n\nTask {task.id}: {task.title}\n\n{task.brief}")
     def queue_text(self, queued: tuple[Task, ...]) -> str:
         names = ", ".join(f"task {row.id}" for row in queued)
         return f"\n\nQueued: {names}" if names else ""

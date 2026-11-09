@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from core.base.actor_type import ActorType
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.support.work_source_copy import WorkSourceCopy

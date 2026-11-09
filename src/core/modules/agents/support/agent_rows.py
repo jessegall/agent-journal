@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from core.base.database.kept_rows import KeptRows
 from core.base.listener.event_rows import EventRows
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.agent_role import AgentRole
 from core.base.scope.environment_scope import EnvironmentScope
 from core.base.scope.scopes import Scopes

@@ -4,7 +4,7 @@ from core.base.database.kept_rows import KeptRows
 from core.base.provider.providers import Providers
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import AGENTS_TABLE, Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 from core.modules.drivers.models.helper_job import HelperJob
@@ -24,8 +24,8 @@ class KeptHelpers:
         self.queries, self.providers, self.folders, self.kept_rows = queries, providers, folders, kept_rows
         self.states, self.share = states, share
 
-    def with_open_jobs(self, profile: str) -> set[int | None]:
-        return self.kept_rows.scoped_read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows()},
+    def with_open_jobs(self, profile: str) -> set[int]:
+        return self.kept_rows.scoped_read("helper_jobs", lambda: {job.helper_id for job in self.queries.query(HelperJob).filter(profile=profile).matching(IsNull("ended_at")).all_rows() if job.helper_id is not None},
                                    "profile = ? AND ended_at IS NULL", [profile], name="helpers.with_open_jobs")
 
     def kept(self, profile: str) -> tuple[Agent, ...]:
@@ -39,7 +39,7 @@ class KeptHelpers:
         open_jobs = self.with_open_jobs(selection.profile)
         return tuple(helper for helper in kept if self.is_available(helper, open_jobs, selection.program, selection.model))
 
-    def is_available(self, helper: Agent, open_jobs: set[int | None], program: str, model: str) -> bool:
+    def is_available(self, helper: Agent, open_jobs: set[int], program: str, model: str) -> bool:
         if helper.ended_at is None or helper.id in open_jobs or (program and helper.program != program) or (model and helper.program_model != model):
             return False
         provider = self.providers.provider(helper.program)

@@ -4,8 +4,8 @@ from core.base.command.handler import Handler
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from suites.coding.support.context_limit_check import ContextLimitCheck
+from suites.coding.modules.workers.support.worker_compaction import CONTROL_KEY
 
-CONTROL_KEY = "context"
 
 
 class CompactAgentContextHandler(Handler[CompactAgentContext, None]):

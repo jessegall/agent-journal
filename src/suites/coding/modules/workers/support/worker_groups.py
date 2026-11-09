@@ -25,7 +25,7 @@ class WorkerGroups:
         self.phases.plans.prepare([task.id for task in (*started, *ready)])
         if group.phase is not None:
             return sum(self.phases.phase(task) == group.phase for task in (*started, *ready))
-        planned = {row.task_id for row in self.plan_order.task_rows(ready)} if ready else set()
+        planned = {row.task_id for row in self.plan_order.task_rows(ready)} if ready else set[int]()
         unplanned = sum(task.id not in planned for task in ready)
         return min(self.settings.number(TEST_BATCH_SIZE) - len(group.tasks) + len(started), len(started) + unplanned)
 

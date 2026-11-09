@@ -3,7 +3,7 @@ from core.base.helper_type_book import HelperTypeBook
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.profile.agent_profile import AgentProfile
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.profiles.commands.save_profile.save_profile import SaveProfile
 from core.modules.profiles.support.profile_files import ProfileFiles
 from core.modules.profiles.support.profile_person import check_profile_person

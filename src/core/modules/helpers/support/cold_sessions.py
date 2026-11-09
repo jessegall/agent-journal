@@ -51,7 +51,7 @@ class ColdSessions:
         return self.settings.flag(CONTEXT_LIMIT_ENABLED) and (self.providers.context_tokens(agent.program, self.home, agent.session) or 0) >= limit
 
     def is_cold(self, agent: Agent) -> bool:
-        return self.is_cold_with_activity(agent, self.queries.query(AgentActivity).find(agent.id))
+        return self.is_cold_with_activity(agent, self.rows.required(AgentActivity, agent.id))
 
     def is_cold_with_activity(self, agent: Agent, activity: AgentActivity) -> bool:
         minutes, percent = self.settings.number(COLD_SESSION_MINUTES), self.settings.number(COLD_SESSION_CONTEXT_PERCENT)

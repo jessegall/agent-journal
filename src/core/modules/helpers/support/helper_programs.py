@@ -6,7 +6,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.providers import Providers
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 HOOK_RUNNER = "bin/journal-hook"
 

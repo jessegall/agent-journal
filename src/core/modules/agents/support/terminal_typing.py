@@ -1,5 +1,5 @@
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.agents.support.launcher_link import LauncherLink
 
 TERMINAL_ANSWER = b"typed"

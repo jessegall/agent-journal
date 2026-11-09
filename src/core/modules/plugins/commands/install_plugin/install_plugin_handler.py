@@ -3,10 +3,10 @@ import shutil
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.plugins.commands.install_plugin.install_plugin import InstallPlugin
 from core.modules.plugins.commands.support.plugin_install import PluginInstall

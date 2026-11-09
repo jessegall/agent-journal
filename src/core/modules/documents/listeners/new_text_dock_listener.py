@@ -1,5 +1,6 @@
 from typing import ClassVar
 
+from core.base.change.changed import RowChange
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
@@ -7,13 +8,12 @@ from core.base.module.module_actors import ModuleActors
 from core.base.scope.actor_scope import ActorScope
 from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.documents.models.enums.text_dock_type import TextDockType
-from core.base.change.event_subscriber import E
 
 
 DOCUMENTS_MODULE = "journal.core.documents"
 
 
-class NewTextDockListener(CommitListener[E]):
+class NewTextDockListener(CommitListener[RowChange]):
     """Docks a new project document or report in the chat where it was created."""
 
     dock_type: ClassVar[TextDockType]
@@ -22,7 +22,7 @@ class NewTextDockListener(CommitListener[E]):
     def __init__(self, bus: Bus, actors: ModuleActors) -> None:
         self.bus, self.actors = bus, actors
 
-    def handle(self, event: E, logged: LoggedEvent) -> None:
+    def handle(self, event: RowChange, logged: LoggedEvent) -> None:
         row = event.row
         if self.bus.scopes.environment_id is None:
             return

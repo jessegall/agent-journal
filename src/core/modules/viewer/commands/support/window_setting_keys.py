@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.setting.setting_group import SettingGroup
 from core.base.setting.setting_scope import SettingScope

@@ -1,7 +1,7 @@
 from core.modules.helpers.support.program_change_access import ProgramChangeAccess
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.plans.support.positions import Positions
 from suites.coding.modules.workers.commands.make_worker_route.make_worker_route import MakeWorkerRoute
@@ -23,4 +23,5 @@ class MakeWorkerRouteHandler(Handler[MakeWorkerRoute, WorkerRoute]):
             raise Refusal("a route needs an environment", "add --environment <name>")
         return self.repository.save(WorkerRoute(creator_id=context.actor.id,
                                                position=self.positions.next_position(WorkerRoute, "environment_id", context.environment_id),
-                                               **command.field_values(())), context)
+                                               program=command.program, tags=command.tags, minimum_complexity=command.minimum_complexity,
+                                               maximum_complexity=command.maximum_complexity, tier=command.tier, strict=command.strict), context)

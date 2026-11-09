@@ -3,6 +3,7 @@ import socket
 import threading
 from pathlib import Path
 
+from core.base.type_guards import is_mapping
 from core.modules.agents.support.launcher_link import STOP_FIELD, STOPPED_ANSWER
 
 ACCEPT_TIMEOUT_SECONDS = 10
@@ -32,7 +33,6 @@ class FakeLauncher:
         self.server.listen(1)
         self.server.settimeout(ACCEPT_TIMEOUT_SECONDS)
         self.thread.start()
-        return self
 
     def accepted(self) -> None:
         while True:
@@ -74,5 +74,5 @@ class FakeLauncher:
         assert {key: request.get(key) for key in expected} == expected, f"the launcher was handed {request}, not {expected}"
         command, variables = request.get("command"), request.get("variables")
         assert isinstance(command, list) and command, f"the agent's program has no command: {command}"
-        assert isinstance(variables, dict) and variables.get("JOURNAL_ENV") == "main" and variables.get("AGENT_JOURNAL_ACTIVE") == "1", \
+        assert is_mapping(variables) and variables.get("JOURNAL_ENV") == "main" and variables.get("AGENT_JOURNAL_ACTIVE") == "1", \
             f"the agent's hooks would not reach environment main: {variables}"

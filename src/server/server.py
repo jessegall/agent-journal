@@ -20,7 +20,7 @@ from core.base.journal_container import opened_container, synced_database_contai
 from core.base.file_access import FileAccess
 from core.base.journal_home import JournalHome
 from core.base.log_level import LogLevel
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.periodic_checks import PeriodicChecks
 from core.base.performance.performance_state import PerformanceState
 from core.base.ticker.tick_handler import TickHandler

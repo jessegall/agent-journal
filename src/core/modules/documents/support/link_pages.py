@@ -6,7 +6,7 @@ from core.base.page import Page
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.modules.documents.conditions.first_link_counterpart import FirstLinkCounterpart
 from core.modules.documents.conditions.link_counterparts import LinkCounterparts
@@ -102,7 +102,7 @@ class LinkPages:
         if not arguments.first_counterpart:
             return query.oldest().page(arguments.page, size)
         first = self.row_refs.parsed(arguments.first_counterpart)
-        priority = query.matching(LinkCounterparts(reference, [first])).oldest().first()
+        priority = query.matching(LinkCounterparts(reference, (first,))).oldest().first()
         if priority is None:
             return query.oldest().page(arguments.page, size)
         total = query.count()

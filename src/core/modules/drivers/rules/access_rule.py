@@ -11,6 +11,7 @@ from core.base.driver.tool import Tool
 from core.base.driver.tool_type import ToolType
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
+from core.base.driver.run_owners import RunOwners
 from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
@@ -26,6 +27,7 @@ MCP_PREFIX = "mcp__"
 LIMITED_TOOL_TYPES = (ToolType.QUESTION, ToolType.UNCATEGORISED)
 
 HELP_FLAG = "--help"
+RUN_STOP_LINE = "output stop"
 
 
 class AccessRule(ReadonlyRule):
@@ -40,9 +42,9 @@ class AccessRule(ReadonlyRule):
     allowed_tools = (ToolType.READ, ToolType.SEARCH, ToolType.SHELL)
     refuses_one_action = "An agent with read-only access reads, searches and runs journal commands, on every program and under every"
 
-    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors, folders: AgentFolders) -> None:
+    def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors, folders: AgentFolders, run_owners: RunOwners) -> None:
         self.registry, self.providers, self.profiles, self.queries, self.lookup = registry, providers, profiles, queries, lookup
-        self.plan_authors, self.folders = plan_authors, folders
+        self.plan_authors, self.folders, self.run_owners = plan_authors, folders, run_owners
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
@@ -65,9 +67,13 @@ class AccessRule(ReadonlyRule):
     def reaches_outward(self, shell: ShellLine, agent_id: int) -> bool:
         if shell.has_part_naming(self.identity_variables()):
             return True
-        outward = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and self.is_outward(" ".join(part.arguments[:2]))]
+        outward = [part.arguments for part in shell.parts_running_journal_command() if HELP_FLAG not in part.arguments and not self.is_stop_of_agent_run(part.arguments, agent_id) and self.is_outward(" ".join(part.arguments[:2]))]
         edits = [self.plan_edit(arguments) for arguments in outward]
         return any(edit is None for edit in edits) or (bool(edits) and not self.plan_authors.are_authors(agent_id, [edit for edit in edits if edit is not None]))
+
+    def is_stop_of_agent_run(self, arguments: Sequence[str], agent_id: int) -> bool:
+        process_id = next((int(word) for word in arguments[2:] if word.isdigit()), None)
+        return " ".join(arguments[:2]) == RUN_STOP_LINE and process_id is not None and self.run_owners.started_run(agent_id, process_id)
 
     @staticmethod
     def plan_edit(arguments: Sequence[str]) -> PlanEdit | None:

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 class WritableHostedFileRefusal(Refusal):

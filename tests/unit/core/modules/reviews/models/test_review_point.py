@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.reviews.models.enums.point_finding import PointFinding
 from core.modules.reviews.models.review_point import ReviewPoint
 

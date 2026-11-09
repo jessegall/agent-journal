@@ -1,6 +1,6 @@
 from core.base.helper_role import HelperRole
 from core.base.duration import Duration
-from core.base.duration_error import DurationError
+from engine.errors.duration_error import DurationError
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -37,7 +37,7 @@ class SavedCommandRule(DriverRule):
                 if part.timeout_duration is None:
                     continue
                 Duration.parse(part.timeout_duration)
-        except DurationError as error:
+        except DurationError:
             return RuleAnswer.refused(SAVED_COMMAND_TIMEOUT.nudge())
         if not shell.aliases_loaded:
             return RuleAnswer.allowed()

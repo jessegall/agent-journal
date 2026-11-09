@@ -11,7 +11,7 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.base.actor_type import ActorType
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.drivers.models.agent_line import AgentLine
 from suites.coding.modules.workers.commands.send_worker.send_worker import SendWorker
 from suites.coding.modules.workers.support.kept_worker_tasks import KeptWorkerTasks

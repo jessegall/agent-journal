@@ -28,4 +28,4 @@ class UnlaunchedWorkerTests:
 
     @staticmethod
     def is_unlaunched(process: Process, folder: OutputFolder, current: Timestamp) -> bool:
-        return folder.pid(process.id) is None and process.created_at.elapsed_seconds(current) > LAUNCH_GRACE_SECONDS
+        return folder.pid(process.id) is None and process.creation_timestamp().elapsed_seconds(current) > LAUNCH_GRACE_SECONDS

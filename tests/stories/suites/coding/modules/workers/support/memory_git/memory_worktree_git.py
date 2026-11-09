@@ -3,7 +3,7 @@ import subprocess
 from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.file_status import FileStatus
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit

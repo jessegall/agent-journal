@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.command.bus import Bus
 from core.base.command.context import Context
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 
 NONE_ANSWER = "none"

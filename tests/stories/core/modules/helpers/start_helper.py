@@ -1,4 +1,4 @@
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.testing.story_helper_programs import StoryHelperPrograms
 import json

@@ -1,6 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.change.changed import Changed
-from core.base.change.created import Created
 from core.base.scope.actor_scope import ActorScope
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.enums.approval_mark_type import ApprovalMarkType
@@ -20,7 +19,7 @@ class StandingApprovalMarkListener(MarkListener[Changed[ApprovalRequest]]):
 
     def handle(self, event: Changed[ApprovalRequest], logged: LoggedEvent) -> None:
         request = event.row
-        if isinstance(event, Created) or request.standing_id is None or request.state is not ApprovalState.ACCEPTED or event.old_row.state is ApprovalState.ACCEPTED:
+        if event.old_row is None or request.standing_id is None or request.state is not ApprovalState.ACCEPTED or event.old_row.state is ApprovalState.ACCEPTED:
             return
         standing = self.queries.query(StandingApproval).find(request.standing_id)
         self.show(logged, ApprovalMarkType.STANDING, ApprovalMarkVariant.ACCEPTED_STANDING,

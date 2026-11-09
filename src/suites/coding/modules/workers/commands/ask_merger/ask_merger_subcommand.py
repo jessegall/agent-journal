@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.ask_merger.ask_merger import AskMerger

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 UNCHOOSABLE = (CommandCategory.UNKNOWN, CommandCategory.JOURNAL)
 

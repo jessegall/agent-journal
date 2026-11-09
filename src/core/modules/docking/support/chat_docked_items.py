@@ -21,10 +21,16 @@ class ChatDockedItems:
                                      [dock_id, DockItemState.DOCKED.value], name=self.name(agent_id))
 
     def docked(self, item: DockItem) -> None:
-        self.kept.update("dock_items", lambda previous: [*previous, item], DOCKED, [item.dock_id, DockItemState.DOCKED.value], name=self.name(self.scopes.actor_id))
+        def with_item(previous: list[DockItem]) -> list[DockItem]:
+            return [*previous, item]
+
+        self.kept.update("dock_items", with_item, DOCKED, [item.dock_id, DockItemState.DOCKED.value], name=self.name(self.scopes.actor_id))
 
     def undocked(self, item: DockItem) -> None:
-        self.kept.update("dock_items", lambda previous: [kept for kept in previous if kept.id != item.id], DOCKED, [item.dock_id, DockItemState.DOCKED.value],
+        def without_item(previous: list[DockItem]) -> list[DockItem]:
+            return [kept for kept in previous if kept.id != item.id]
+
+        self.kept.update("dock_items", without_item, DOCKED, [item.dock_id, DockItemState.DOCKED.value],
                                 name=self.name(self.scopes.actor_id))
 
     @staticmethod

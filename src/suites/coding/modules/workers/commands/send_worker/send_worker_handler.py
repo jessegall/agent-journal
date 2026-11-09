@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from dataclasses import replace
@@ -6,7 +7,7 @@ from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.listener.event_rows import EventRows
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.helpers.support.agent_admission import AgentAdmission
 from core.base.repository.repository import Repository
 from core.base.scope.actor_scope import ActorScope
@@ -127,9 +128,9 @@ class SendWorkerHandler(Handler[SendWorker, AgentLine]):
             return command.job
         return f"{command.job}\n{worktree.base_branch} is merged into your worktree and clashes on {', '.join(self.conflicts)}: settle the conflict markers first."
 
-    def cut(self, worker: Agent, tasks: tuple[Task, ...], command: SendWorker, actor: Actor) -> None:
+    def cut(self, worker: Agent, tasks: Sequence[Task], command: SendWorker, actor: Actor) -> None:
         environment = self.environments.find(worker.environment_id)
-        last = self.worktrees.newest_worktree(worker.id)
+        last = self.worktrees.required_newest_worktree(worker.id)
         links = tuple(dict.fromkeys((*json.loads(last.library_links), *command.library_links)))
         with self.scopes.row_scope(worker):
             configured = self.settings.texts(LIBRARY_LINKS)

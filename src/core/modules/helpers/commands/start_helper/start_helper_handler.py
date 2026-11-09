@@ -6,7 +6,7 @@ from core.base.shell_sandbox import ShellSandbox
 from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.helper_type_book import HelperTypeBook
 from core.modules.agents.commands.start_agent.start_agent import StartAgent

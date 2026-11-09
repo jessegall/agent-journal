@@ -5,9 +5,9 @@ import pytest
 
 from core.base.container import Container
 from core.base.journal_home import JournalHome
-from core.base.missing_hint_error import MissingHintError
-from core.base.unbound_value_error import UnboundValueError
-from core.base.wrong_instance_error import WrongInstanceError
+from engine.errors.missing_hint_error import MissingHintError
+from engine.errors.unbound_value_error import UnboundValueError
+from engine.errors.wrong_instance_error import WrongInstanceError
 
 
 @dataclass(frozen=True)

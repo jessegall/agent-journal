@@ -1,6 +1,6 @@
 from core.base.guard.guard import Guard
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.support.brief_points import brief_point_count

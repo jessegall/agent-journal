@@ -7,7 +7,7 @@ from core.base.driver.nudge import Nudge
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.actor_scope import ActorScope
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_rows import AgentRows
@@ -21,6 +21,7 @@ from core.modules.helpers.commands.start_helper.start_helper import StartHelper
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PROFILE, MERGER_SOURCE
 from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
+from core.modules.helpers.support.profile_models import ProfileModels
 
 
 class StartMergerHandler(Handler[StartMerger, None]):
@@ -31,9 +32,9 @@ class StartMergerHandler(Handler[StartMerger, None]):
     command = StartMerger
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, profiles: ProfileFiles, providers: Providers, main_line: MainAgentLine) -> None:
+    def __init__(self, queries: Queries, bus: Bus, agents: AgentRows, profiles: ProfileFiles, providers: Providers, main_line: MainAgentLine, models: ProfileModels) -> None:
         self.queries, self.bus, self.agents, self.profiles, self.providers = queries, bus, agents, profiles, providers
-        self.main_line = main_line
+        self.main_line, self.models = main_line, models
 
     def handle(self, command: StartMerger, context: Context) -> None:
         main_agent = self.agents.main_agent()
@@ -69,4 +70,4 @@ class StartMergerHandler(Handler[StartMerger, None]):
     def fits_profile(self, kept: Agent) -> bool:
         profile = self.profiles.effective(MERGER_PROFILE)
         program = profile.program or kept.program
-        return kept.program == program and kept.program_model == self.providers.provider(program).profile_model(profile)
+        return kept.program == program and kept.program_model == self.models.model(profile, self.providers.provider(program), None, "helper")

@@ -1,9 +1,10 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.support.link_pages import LinkPages
 from core.modules.documents.support.message_receipt import MessageReceipt
@@ -41,7 +42,8 @@ class LinkReceiptsSubcommand(ReadSubcommand[tuple[MessageReceipt, ...]]):
                          first_counterpart=None, excludes_plan=False, target_model=None)
 
     def write_output(self, value: object, output: Output) -> None:
-        if not isinstance(value, tuple):
+        if not is_tuple(value):
             return
-        output.write("\n".join(f"message:{receipt.message_id}  {receipt.subject_links.total} named  {receipt.recipient_links.total} sent" for receipt in value),
-                     {"messages": {str(receipt.message_id): {"named": self.pages.payload(receipt.subject_links, output), "sent": self.pages.payload(receipt.recipient_links, output)} for receipt in value}})
+        receipts = [receipt for receipt in value if isinstance(receipt, MessageReceipt)]
+        output.write("\n".join(f"message:{receipt.message_id}  {receipt.subject_links.total} named  {receipt.recipient_links.total} sent" for receipt in receipts),
+                     {"messages": {str(receipt.message_id): {"named": self.pages.payload(receipt.subject_links, output), "sent": self.pages.payload(receipt.recipient_links, output)} for receipt in receipts}})

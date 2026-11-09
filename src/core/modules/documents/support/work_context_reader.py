@@ -11,7 +11,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries
 from core.base.query.query import Query
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.scope.scopes import Scopes
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.documents.support.row_comments import RowComments
@@ -78,12 +78,13 @@ class WorkContextReader:
         request = replace(request, page_size=min(request.page_size, 50))
         rows = self.related_rows(row)
         source = self.sources.work_source(caller)
-        excluded = [source.message_id] if source is not None and source.unavailable and source.message_id is not None else []
+        excluded = (source.message_id,) if source is not None and source.unavailable and source.message_id is not None else ()
         visible = self.visible(excluded)
         assigned = self.assignments.task_source(row.id, caller) if isinstance(row, Task) and caller.actor.type is ActorType.AGENT else None
-        assignment_queries = []
-        if self.usable_source(assigned, row):
-            assignment_queries = [visible.filter(id=assigned.message_id).matching(Among("type", PERSON_MESSAGE_TYPES))]
+        assignment_queries: list[MessageQuery] = []
+        assigned_message_id = self.usable_message_id(assigned, row)
+        if assigned_message_id is not None:
+            assignment_queries = [visible.filter(id=assigned_message_id).matching(Among("type", PERSON_MESSAGE_TYPES))]
         source_queries = tuple(visible.matching(SubqueryMatch("id", self.source_links(root).select.column("source_id"))) for root in rows)
         source_queries = (*assignment_queries, *source_queries)
         source_selects = tuple(query.scoped(query.select).column("id") for query in source_queries)
@@ -134,19 +135,17 @@ class WorkContextReader:
         if (request.attachment is not None or request.attachment_page is not None) and request.text_offset:
             raise Refusal("read message text and attachments separately")
 
-    def related_rows(self, row: Task | Plan) -> list[Task | Plan]:
+    def related_rows(self, row: Task | Plan) -> tuple[Task | Plan, ...]:
         if not isinstance(row, Task):
-            return [row]
+            return (row,)
         plan = self.plans.find(row.id)
-        return [row] if plan is None else [row, plan]
+        return (row,) if plan is None else (row, plan)
 
     @staticmethod
-    def usable_source(assigned: WorkSourceCopy | None, row: Task | Plan) -> bool:
-        return assigned is not None and assigned.environment_id == row.environment_id and not assigned.unavailable and assigned.message_id is not None
-
-    @staticmethod
-    def is_other_original(original: Message | None, primary: Message) -> bool:
-        return original is not None and original.id != primary.id
+    def usable_message_id(assigned: WorkSourceCopy | None, row: Task | Plan) -> int | None:
+        if assigned is None or assigned.environment_id != row.environment_id or assigned.unavailable:
+            return None
+        return assigned.message_id
 
     def visible(self, excluded: Sequence[int]) -> MessageQuery:
         users = self.queries.query(ActorRecord).filter(type=ActorType.USER).select.column("id")
@@ -181,14 +180,14 @@ class WorkContextReader:
     def page_rows(self, conversation: MessageQuery, primary: Message | None, request: WorkContextRequest) -> tuple[Message, ...]:
         pool = conversation.with_text_segment(0, CONTEXT_CHARACTERS)
         pool = pool.descending("created_at", "id") if request.order is WorkContextOrder.NEWEST else pool.ordered("created_at", "id")
-        reserved = ()
+        reserved: tuple[Message, ...] = ()
         offset = (request.page - 1) * request.page_size
         size = request.page_size
         if primary is not None:
-            anchors = [primary]
+            anchors: tuple[Message, ...] = (primary,)
             if request.order is WorkContextOrder.NEWEST:
                 original = conversation.with_text_segment(0, CONTEXT_CHARACTERS).ordered("created_at", "id").first()
-                if self.is_other_original(original, primary) and size > 1:
+                if original is not None and original.id != primary.id and size > 1:
                     anchors = (primary, original)
             pool = pool.matching(Among("id", tuple(message.id for message in anchors), negated=True))
             if request.page == 1:
@@ -234,7 +233,7 @@ class WorkContextReader:
                 relations[message.id].add(f"reply message:{message.parent_id}")
             labels = tuple(sorted(relations[message.id])) or tuple(["thread"])
             actor_id = message.session_agent_id if message.type is MessageType.AGENT else message.creator_id
-            author = self.author(message, actors.get(actor_id))
+            author = self.author(message, actors.get(actor_id) if actor_id is not None else None)
             rendered[message.id] = WorkContextMessage(message.id, text, author, None if is_journal_record else actor_id,
                 str(message.type), message.creation_timestamp().text, labels, offset, next_command,
                 attachments[message.id], len(message.files), self.attachment_next(message, attachments[message.id], command, 1), is_journal_record)
@@ -279,7 +278,7 @@ class WorkContextReader:
             return ()
         captions = MessageCaptions.decoded(message)
         names = message.files[(page - 1) * PAGE_ATTACHMENT_FILES:page * PAGE_ATTACHMENT_FILES]
-        previews = []
+        previews: list[WorkContextAttachment] = []
         for name in names:
             if len(name) > budget:
                 break

@@ -6,7 +6,7 @@ from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declar
 import pytest
 
 from core.base.command.bus import Bus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.messages.models.enums.message_mark_type import MessageMarkType
 from core.modules.messages.models.enums.message_mark_variant import MessageMarkVariant

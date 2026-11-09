@@ -2,7 +2,7 @@ import pytest
 
 from core.base.json_pointer import JsonPointer
 from core.base.json_schema import JsonSchema
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 SCHEMA = JsonSchema({
     "$defs": {"path": {"type": "string", "minLength": 1, "pattern": "^[a-z]"}},

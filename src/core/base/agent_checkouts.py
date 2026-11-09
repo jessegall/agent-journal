@@ -4,7 +4,7 @@ from core.base.checkout import Checkout
 from core.base.checkout_file import CheckoutFile
 from core.base.file_state import FileState
 from core.base.file_status import FileStatus
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 class AgentCheckouts:

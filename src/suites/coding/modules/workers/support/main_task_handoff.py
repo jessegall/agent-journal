@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.base.file_access import FileAccess
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 GIT_LIMIT_SECONDS = 30

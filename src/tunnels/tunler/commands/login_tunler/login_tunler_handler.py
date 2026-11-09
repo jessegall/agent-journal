@@ -1,6 +1,6 @@
 from core.base.command.context import Context
 from core.base.actor_type import ActorType
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.command.handler import Handler
 from tunnels.tunler.commands.login_tunler.login_tunler import LoginTunler
 from tunnels.tunler.support.tunler_client import TunlerClient

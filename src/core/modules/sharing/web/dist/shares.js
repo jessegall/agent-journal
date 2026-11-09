@@ -1,47 +1,47 @@
-if (!document.getElementById("window-styles-19df6170a20d")) { const style = document.createElement("style"); style.id = "window-styles-19df6170a20d"; style.textContent = ".shares[data-v-a8ee5ad5]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-a8ee5ad5],.shares-waiting[data-v-a8ee5ad5],.shares-opens[data-v-a8ee5ad5],.shares-open[data-v-a8ee5ad5]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-a8ee5ad5],.shares-waiting[data-v-a8ee5ad5],.shares-opens[data-v-a8ee5ad5]{align-items:flex-start}.shares-target[data-v-a8ee5ad5]{width:100%;min-width:0}.shares-option[data-v-a8ee5ad5],.shares-row[data-v-a8ee5ad5]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-a8ee5ad5]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-a8ee5ad5]{flex:1;min-width:0}.shares-link[data-v-a8ee5ad5],.shares-comment[data-v-a8ee5ad5]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-a8ee5ad5],.shares-failure[data-v-a8ee5ad5]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { computed as I, ref as c, openBlock as t, createBlock as x, unref as l, withCtx as d, createElementVNode as n, withModifiers as z, withDirectives as M, vModelText as O, createVNode as u, createCommentVNode as v, createElementBlock as i, Fragment as _, renderList as E, toDisplayString as o, createTextVNode as h } from "vue";
-import { useWindow as G, useListTools as H, WindowRoom as J, Segmented as Q, InfoTip as X, Switch as Z, Btn as f, ListTools as ee, RowList as se } from "@journal/window-kit";
-const ae = (N, T) => {
-  const r = N.__vccOpts || N;
-  for (const [C, V] of T)
-    r[C] = V;
+if (!document.getElementById("window-styles-a18a8b43067e")) { const style = document.createElement("style"); style.id = "window-styles-a18a8b43067e"; style.textContent = ".shares[data-v-1606c8ff]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-1606c8ff],.shares-waiting[data-v-1606c8ff],.shares-opens[data-v-1606c8ff],.shares-open[data-v-1606c8ff]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-1606c8ff],.shares-waiting[data-v-1606c8ff],.shares-opens[data-v-1606c8ff]{align-items:flex-start}.shares-target[data-v-1606c8ff]{width:100%;min-width:0}.shares-option[data-v-1606c8ff],.shares-row[data-v-1606c8ff]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-1606c8ff]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-1606c8ff]{flex:1;min-width:0}.shares-link[data-v-1606c8ff],.shares-comment[data-v-1606c8ff]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-1606c8ff],.shares-failure[data-v-1606c8ff]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { computed as O, ref as h, openBlock as l, createBlock as L, unref as t, withCtx as d, createElementVNode as n, withModifiers as H, withDirectives as U, vModelText as I, createVNode as u, createCommentVNode as v, createElementBlock as i, Fragment as b, renderList as P, toDisplayString as o, createTextVNode as m } from "vue";
+import { wordLabel as J, dated as F, useWindow as Q, useListTools as X, WindowRoom as Z, Segmented as ee, InfoTip as se, Switch as ae, Btn as k, ListTools as te, RowList as le } from "@journal/window-kit";
+const ne = { doc: "Document", report: "Report", plan: "Plan" }, A = (p) => ne[p] ?? J(p), q = (p) => p ? `ends ${F(p)}` : "never ends", oe = (p, N) => {
+  const r = p.__vccOpts || p;
+  for (const [S, R] of N)
+    r[S] = R;
   return r;
-}, te = { class: "shares" }, le = { class: "shares-option" }, ne = { class: "shares-option" }, oe = { class: "shares-option" }, re = {
+}, re = { class: "shares" }, ie = { class: "shares-option" }, de = { class: "shares-option" }, ue = { class: "shares-option" }, ve = {
   key: 0,
   class: "shares-opens",
   "data-share-opens": ""
-}, ie = {
+}, pe = {
   class: "shares-link",
   "data-share-address": ""
-}, de = { class: "shares-hint" }, ue = {
+}, ce = { class: "shares-hint" }, he = {
   key: 0,
   class: "shares-hint",
   "data-share-inside": ""
-}, ve = {
+}, me = {
   key: 1,
   class: "shares-failure",
   role: "alert",
   "data-share-refusal": ""
-}, pe = {
+}, fe = {
   key: 2,
   class: "shares-waiting",
   "data-share-waiting": ""
-}, ce = ["data-share-row"], he = { class: "shares-name" }, me = ["data-share-row"], fe = { class: "shares-row" }, ke = { class: "shares-name" }, ye = {
+}, ke = ["data-share-row"], we = { class: "shares-name" }, ye = ["data-share-row"], ge = { class: "shares-row" }, _e = { class: "shares-name" }, be = {
   key: 0,
   class: "shares-hint"
-}, we = {
+}, Ce = {
   key: 0,
   class: "shares-row"
-}, ge = {
+}, Se = {
   __name: "ShareRows",
-  setup(N) {
-    const T = [
+  setup(p) {
+    const N = [
       { key: "1d", label: "1 day" },
       { key: "7d", label: "7 days" },
       { key: "30d", label: "30 days" },
       { key: "never", label: "Never" }
-    ], r = G(), { rows: C, failure: V, loaded: q } = r.props.shares, P = I(() => C.value.filter((a) => a.state === "waiting")), A = I(() => C.value.filter((a) => a.state === "active")), L = H(A, { title: (a) => `${a.row_model} ${a.row_id}` }), w = c(new URLSearchParams(globalThis.location.search).get("share") ?? ""), R = c("7d"), g = c(""), B = c(!1), S = c(null), k = c(null), y = c(""), m = c({}), $ = c(!1), D = (a) => a.expires_at ? `ends ${a.expires_at}` : "never ends";
-    async function b(a) {
+    ], r = Q(), { rows: S, failure: R, loaded: K } = r.props.shares, B = O(() => S.value.filter((a) => a.state === "waiting")), T = O(() => S.value.filter((a) => a.state === "active")), V = X(T, { title: (a) => `${A(a.row_model)} ${a.row_id}` }), g = h(new URLSearchParams(globalThis.location.search).get("share") ?? ""), D = h("7d"), _ = h(""), E = h(!1), $ = h(null), w = h(null), y = h(""), f = h({}), x = h(!1);
+    async function C(a) {
       const e = await r.run(a);
       return y.value = e.ok ? "" : e.error, e.ok && r.reload("shares"), e;
     }
@@ -50,219 +50,219 @@ const ae = (N, T) => {
       const e = r.props.tunnel.failure.value ? null : r.props.tunnel.data.value, s = (e == null ? void 0 : e.address) || globalThis.location.origin;
       return { ...a.value, address: `${s}${a.value.link}`, outside: !!(e != null && e.address) };
     }
-    async function U() {
-      r.state["opens.target"] = w.value.trim(), await r.reload("opens"), y.value = r.props.opens.failure.value, S.value = y.value ? null : r.props.opens.rows.value;
+    async function M() {
+      r.state["opens.target"] = g.value.trim(), await r.reload("opens"), y.value = r.props.opens.failure.value, $.value = y.value ? null : r.props.opens.rows.value;
     }
-    w.value && U();
-    async function F() {
-      const a = await b(["share", "make", w.value.trim(), "--ends", R.value, ...g.value ? [`--password=${g.value}`] : [], ...B.value ? ["--comments"] : []]);
-      a.ok && (k.value = await W(a), g.value = "", S.value = null);
-    }
-    async function K(a) {
-      const e = await b(["share", "accept", String(a.id)]);
-      e.ok && (k.value = await W(e));
-    }
+    g.value && M();
     async function Y() {
-      for (const a of A.value) await b(["share", "revoke", String(a.id)]);
-      $.value = !1;
+      const a = await C(["share", "make", g.value.trim(), "--ends", D.value, ..._.value ? [`--password=${_.value}`] : [], ...E.value ? ["--comments"] : []]);
+      a.ok && (w.value = await W(a), _.value = "", $.value = null);
     }
     async function j(a) {
-      if (m.value[a.id]) {
-        const { [a.id]: s, ...p } = m.value;
-        return void (m.value = p);
+      const e = await C(["share", "accept", String(a.id)]);
+      e.ok && (w.value = await W(e));
+    }
+    async function z() {
+      for (const a of T.value) await C(["share", "revoke", String(a.id)]);
+      x.value = !1;
+    }
+    async function G(a) {
+      if (f.value[a.id]) {
+        const { [a.id]: s, ...c } = f.value;
+        return void (f.value = c);
       }
       const e = `comments.${a.id}`;
-      await r.reload(e), y.value = r.props[e].failure.value, y.value || (m.value = { ...m.value, [a.id]: r.props[e].rows.value });
+      await r.reload(e), y.value = r.props[e].failure.value, y.value || (f.value = { ...f.value, [a.id]: r.props[e].rows.value });
     }
-    return (a, e) => (t(), x(l(J), null, {
+    return (a, e) => (l(), L(t(Z), null, {
       default: d(() => [
-        n("div", te, [
+        n("div", re, [
           n("form", {
             class: "shares-make",
             "data-share-form": "",
-            onSubmit: z(F, ["prevent"])
+            onSubmit: H(Y, ["prevent"])
           }, [
-            M(n("input", {
-              "onUpdate:modelValue": e[0] || (e[0] = (s) => w.value = s),
+            U(n("input", {
+              "onUpdate:modelValue": e[0] || (e[0] = (s) => g.value = s),
               class: "shares-target",
               placeholder: "plans:2, docs:12 or reports:4",
               "aria-label": "What to share",
-              onChange: U
+              onChange: M
             }, null, 544), [
-              [O, w.value]
+              [I, g.value]
             ]),
-            n("div", le, [
+            n("div", ie, [
               e[6] || (e[6] = n("span", { class: "shares-label" }, "Ends after", -1)),
-              u(l(Q), {
-                options: T,
-                value: R.value,
+              u(t(ee), {
+                options: N,
+                value: D.value,
                 "data-share-ends": "",
-                onPick: e[1] || (e[1] = (s) => R.value = s)
+                onPick: e[1] || (e[1] = (s) => D.value = s)
               }, null, 8, ["value"])
             ]),
-            n("div", ne, [
+            n("div", de, [
               e[7] || (e[7] = n("span", { class: "shares-label" }, "Password", -1)),
-              M(n("input", {
-                "onUpdate:modelValue": e[2] || (e[2] = (s) => g.value = s),
+              U(n("input", {
+                "onUpdate:modelValue": e[2] || (e[2] = (s) => _.value = s),
                 class: "shares-password",
                 type: "password",
                 autocomplete: "new-password",
                 placeholder: "None",
                 "aria-label": "Password"
               }, null, 512), [
-                [O, g.value]
+                [I, _.value]
               ]),
-              g.value ? (t(), x(l(X), {
+              _.value ? (l(), L(t(se), {
                 key: 0,
                 lines: ["Visitors enter any name and this password."],
                 label: "About the password"
               })) : v("", !0)
             ]),
-            n("div", oe, [
+            n("div", ue, [
               e[8] || (e[8] = n("span", { class: "shares-label" }, "Visitors can comment", -1)),
-              u(l(Z), {
-                on: B.value,
+              u(t(ae), {
+                on: E.value,
                 title: "Let visitors choose a name when commenting",
-                onChange: e[3] || (e[3] = (s) => B.value = s)
+                onChange: e[3] || (e[3] = (s) => E.value = s)
               }, null, 8, ["on"])
             ]),
-            S.value ? (t(), i("div", re, [
+            $.value ? (l(), i("div", ve, [
               e[9] || (e[9] = n("span", { class: "shares-label" }, "Whoever has the link can view", -1)),
-              (t(!0), i(_, null, E(S.value, (s) => (t(), i("span", {
+              (l(!0), i(b, null, P($.value, (s) => (l(), i("span", {
                 key: s.id
               }, o(s.line), 1))), 128))
             ])) : v("", !0),
-            u(l(f), {
+            u(t(k), {
               variant: "primary",
               type: "submit",
-              disabled: !w.value.trim()
+              disabled: !g.value.trim()
             }, {
               default: d(() => [...e[10] || (e[10] = [
-                h("Create link", -1)
+                m("Create link", -1)
               ])]),
               _: 1
             }, 8, ["disabled"])
           ], 32),
-          k.value ? (t(), i(_, { key: 0 }, [
-            n("p", ie, o(k.value.address), 1),
-            n("p", de, "This link is shown once. Anyone who has it can read it" + o(k.value.expires_at ? ` until ${k.value.expires_at}` : "") + ".", 1),
-            k.value.outside ? v("", !0) : (t(), i("p", ue, "No tunnel is connected, so this address works only from this computer."))
+          w.value ? (l(), i(b, { key: 0 }, [
+            n("p", pe, o(w.value.address), 1),
+            n("p", ce, "This link is shown once. Anyone who has it can read it" + o(w.value.expires_at ? ` until ${t(F)(w.value.expires_at)}` : "") + ".", 1),
+            w.value.outside ? v("", !0) : (l(), i("p", he, "No tunnel is connected, so this address works only from this computer."))
           ], 64)) : v("", !0),
-          y.value ? (t(), i("p", ve, o(y.value), 1)) : v("", !0),
-          P.value.length ? (t(), i("section", pe, [
+          y.value ? (l(), i("p", me, o(y.value), 1)) : v("", !0),
+          B.value.length ? (l(), i("section", fe, [
             e[13] || (e[13] = n("h3", { class: "shares-label" }, "Pending requests", -1)),
-            (t(!0), i(_, null, E(P.value, (s) => (t(), i("div", {
+            (l(!0), i(b, null, P(B.value, (s) => (l(), i("div", {
               key: s.id,
               class: "shares-row",
               "data-share-row": s.id
             }, [
-              n("span", he, "An agent asks to share " + o(s.row_model) + " " + o(s.row_id) + ", " + o(D(s)) + o(s.locked ? ", with a password" : "") + o(s.comments ? ", with comments" : ""), 1),
-              u(l(f), {
+              n("span", we, "An agent asks to share " + o(t(A)(s.row_model)) + " " + o(s.row_id) + ", " + o(t(q)(s.expires_at)) + o(s.locked ? ", with a password" : "") + o(s.comments ? ", with comments" : ""), 1),
+              u(t(k), {
                 small: "",
                 variant: "primary",
                 "data-share-accept": "",
-                onClick: (p) => K(s)
+                onClick: (c) => j(s)
               }, {
                 default: d(() => [...e[11] || (e[11] = [
-                  h("Accept", -1)
+                  m("Accept", -1)
                 ])]),
                 _: 1
               }, 8, ["onClick"]),
-              u(l(f), {
+              u(t(k), {
                 small: "",
                 "data-share-deny": "",
-                onClick: (p) => b(["share", "deny", String(s.id)])
+                onClick: (c) => C(["share", "deny", String(s.id)])
               }, {
                 default: d(() => [...e[12] || (e[12] = [
-                  h("Deny", -1)
+                  m("Deny", -1)
                 ])]),
                 _: 1
               }, 8, ["onClick"])
-            ], 8, ce))), 128))
+            ], 8, ke))), 128))
           ])) : v("", !0),
-          u(l(ee), { tools: l(L) }, null, 8, ["tools"]),
-          u(l(se), {
-            rows: l(L).shown.value,
-            failure: l(V),
-            loaded: l(q),
+          u(t(te), { tools: t(V) }, null, 8, ["tools"]),
+          u(t(le), {
+            rows: t(V).shown.value,
+            failure: t(R),
+            loaded: t(K),
             empty: "No link is open",
             hint: "Active share links appear here.",
-            searching: l(L).filtering.value
+            searching: t(V).filtering.value
           }, {
             default: d(({ row: s }) => [
               n("div", {
                 class: "shares-open",
                 "data-share-row": s.id
               }, [
-                n("div", fe, [
-                  n("span", ke, o(s.row_model) + " " + o(s.row_id) + ", " + o(D(s)) + ", " + o(s.view_count) + " " + o(s.view_count === 1 ? "view" : "views") + o(s.locked ? ", with a password" : ""), 1),
-                  s.comments ? (t(), x(l(f), {
+                n("div", ge, [
+                  n("span", _e, o(t(A)(s.row_model)) + " " + o(s.row_id) + ", " + o(t(q)(s.expires_at)) + ", " + o(s.view_count) + " " + o(s.view_count === 1 ? "view" : "views") + o(s.locked ? ", with a password" : ""), 1),
+                  s.comments ? (l(), L(t(k), {
                     key: 0,
                     small: "",
                     "data-share-comments-open": "",
-                    onClick: (p) => j(s)
+                    onClick: (c) => G(s)
                   }, {
                     default: d(() => [...e[14] || (e[14] = [
-                      h("Comments", -1)
+                      m("Comments", -1)
                     ])]),
                     _: 1
                   }, 8, ["onClick"])) : v("", !0),
-                  u(l(f), {
+                  u(t(k), {
                     small: "",
                     "data-share-stop": "",
-                    onClick: (p) => b(["share", "revoke", String(s.id)])
+                    onClick: (c) => C(["share", "revoke", String(s.id)])
                   }, {
                     default: d(() => [...e[15] || (e[15] = [
-                      h("Stop sharing", -1)
+                      m("Stop sharing", -1)
                     ])]),
                     _: 1
                   }, 8, ["onClick"])
                 ]),
-                m.value[s.id] ? (t(), i(_, { key: 0 }, [
-                  m.value[s.id].length ? v("", !0) : (t(), i("p", ye, "No comments yet")),
-                  (t(!0), i(_, null, E(m.value[s.id], (p) => (t(), i("p", {
-                    key: p.id,
+                f.value[s.id] ? (l(), i(b, { key: 0 }, [
+                  f.value[s.id].length ? v("", !0) : (l(), i("p", be, "No comments yet")),
+                  (l(!0), i(b, null, P(f.value[s.id], (c) => (l(), i("p", {
+                    key: c.id,
                     class: "shares-comment",
                     "data-share-comment": ""
                   }, [
-                    n("strong", null, o(p.visitor_name), 1),
-                    h(" " + o(p.text), 1)
+                    n("strong", null, o(c.visitor_name), 1),
+                    m(" " + o(c.text), 1)
                   ]))), 128))
                 ], 64)) : v("", !0)
-              ], 8, me)
+              ], 8, ye)
             ]),
             _: 1
           }, 8, ["rows", "failure", "loaded", "searching"]),
-          A.value.length > 1 ? (t(), i(_, { key: 3 }, [
-            $.value ? (t(), i("div", we, [
-              u(l(f), {
+          T.value.length > 1 ? (l(), i(b, { key: 3 }, [
+            x.value ? (l(), i("div", Ce, [
+              u(t(k), {
                 small: "",
-                onClick: e[4] || (e[4] = (s) => $.value = !1)
+                onClick: e[4] || (e[4] = (s) => x.value = !1)
               }, {
                 default: d(() => [...e[16] || (e[16] = [
-                  h("Keep them", -1)
+                  m("Keep them", -1)
                 ])]),
                 _: 1
               }),
-              u(l(f), {
+              u(t(k), {
                 small: "",
                 variant: "danger",
                 "data-share-stop-every-confirm": "",
-                onClick: Y
+                onClick: z
               }, {
                 default: d(() => [...e[17] || (e[17] = [
-                  h("Yes, stop every share", -1)
+                  m("Yes, stop every share", -1)
                 ])]),
                 _: 1
               })
-            ])) : (t(), x(l(f), {
+            ])) : (l(), L(t(k), {
               key: 1,
               small: "",
               "data-share-stop-every": "",
-              onClick: e[5] || (e[5] = (s) => $.value = !0)
+              onClick: e[5] || (e[5] = (s) => x.value = !0)
             }, {
               default: d(() => [...e[18] || (e[18] = [
-                h("Stop every share", -1)
+                m("Stop every share", -1)
               ])]),
               _: 1
             }))
@@ -272,7 +272,7 @@ const ae = (N, T) => {
       _: 1
     }));
   }
-}, Ce = /* @__PURE__ */ ae(ge, [["__scopeId", "data-v-a8ee5ad5"]]);
+}, Le = /* @__PURE__ */ oe(Se, [["__scopeId", "data-v-1606c8ff"]]);
 export {
-  Ce as default
+  Le as default
 };

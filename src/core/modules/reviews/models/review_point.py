@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.model.model import Model
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.reviews.models.enums.point_finding import PointFinding
 
 

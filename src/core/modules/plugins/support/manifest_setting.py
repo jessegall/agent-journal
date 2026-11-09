@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 FLAG_VALUES = {"true": True, "on": True, "yes": True, "false": False, "off": False, "no": False}
 

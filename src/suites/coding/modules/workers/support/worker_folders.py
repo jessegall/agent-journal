@@ -25,9 +25,9 @@ class WorkerFolders(AgentFolders):
         worktrees = self.worktrees.with_removed().matching(Among("session_agent_id", ids)).oldest().all_rows()
         latest = {worktree.session_agent_id: worktree for worktree in worktrees}
         active = {worktree.session_agent_id: worktree for worktree in worktrees if worktree.removed_at is None}
-        locations = {}
+        locations: dict[int, tuple[bool, Path]] = {}
         for agent in agents:
-            parent = parents.get(agent.parent_id)
+            parent = parents.get(agent.parent_id) if agent.parent_id is not None else None
             available = parent is None or parent.role != CodingHelperRole.WORKER or parent.id in active
             worktree = latest.get(agent.id)
             if self.start_folder(agent).is_dir():

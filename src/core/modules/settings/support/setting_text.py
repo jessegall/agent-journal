@@ -1,6 +1,6 @@
 import json
 
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_type import SettingType
 from core.base.type_guards import is_text_list

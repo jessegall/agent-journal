@@ -14,7 +14,7 @@ class WorkSettings:
     revision: str
     controls: tuple[tuple[str, bool], ...]
     fields: tuple[WorkField, ...] = ()
-    depends: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
+    depends: Mapping[str, tuple[str, ...]] = field(default_factory=dict[str, tuple[str, ...]])
 
     def lines(self) -> Sequence[str]:
         return [f"workflow: {self.workflow}", f"revision: {self.revision}", *(f"{key}: {'on' if value else 'off'}" for key, value in self.controls),

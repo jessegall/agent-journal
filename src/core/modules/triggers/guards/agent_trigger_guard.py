@@ -1,5 +1,5 @@
 from core.base.guard.guard import Guard
-from core.base.user_approval_refusal import UserApprovalRefusal
+from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.triggers.models.trigger import Trigger
 from core.modules.triggers.support.trigger_approval import TriggerApproval
 from core.base.change.changed import Changed

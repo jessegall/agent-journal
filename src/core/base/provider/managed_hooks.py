@@ -14,7 +14,7 @@ from core.base.provider.hook_source import HookSource
 from core.base.provider.managed_hook import ManagedHook
 from core.base.provider.managed_state import ManagedState
 from core.base.provider.hook_effect import HookEffect
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 
 
 class ManagedHooks:

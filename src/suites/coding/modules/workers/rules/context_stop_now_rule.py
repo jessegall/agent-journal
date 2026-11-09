@@ -25,12 +25,12 @@ class ContextStopNowRule(DriverRule):
     roles = [AgentRole.MAIN, CodingHelperRole.WORKER]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, history: HookHistory, limit_check: ContextLimitCheck, tasks: TaskQuery, compaction: WorkerCompaction) -> None:
-        self.history, self.limit_check, self.tasks, self.compaction = history, limit_check, tasks, compaction
+    def __init__(self, hook_history: HookHistory, limit_check: ContextLimitCheck, tasks: TaskQuery, compaction: WorkerCompaction) -> None:
+        self.hook_history, self.limit_check, self.tasks, self.compaction = hook_history, limit_check, tasks, compaction
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.compaction.is_after_task(hook.agent_id):
             return RuleAnswer.with_nudges(CONTEXT_STOP_AFTER_TASK.nudge())
-        if self.limit_check.tokens(hook.agent_id) is None or self.tasks.started_tasks(hook.agent_id) or self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
+        if self.limit_check.tokens(hook.agent_id) is None or self.tasks.started_tasks(hook.agent_id) or self.hook_history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(CONTEXT_STOP_IMMEDIATE.nudge())

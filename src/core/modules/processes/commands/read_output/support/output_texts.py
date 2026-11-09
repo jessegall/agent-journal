@@ -1,5 +1,5 @@
 from core.base.actor import Actor
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.enums.process_state import ProcessState

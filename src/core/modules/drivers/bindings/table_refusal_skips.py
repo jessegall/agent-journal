@@ -43,5 +43,5 @@ class TableRefusalSkips(RefusalSkips):
         groups: dict[str, list[str]] = {}
         for guard in guards:
             groups.setdefault(flags.get(guard) or guard, []).append(guard)
-        refused = self.refusals.guards_refused_past(actor.id, "") if groups else set()
+        refused = self.refusals.guards_refused_past(actor.id, "") if groups else set[str]()
         return [next((guard for guard in group if guard in refused), group[0]) for group in groups.values()]

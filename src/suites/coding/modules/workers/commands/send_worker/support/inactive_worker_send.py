@@ -35,7 +35,9 @@ class InactiveWorkerSend:
         if task.delegated_to is None:
             return
         worker = self.rows.required(Agent, task.delegated_to)
-        if worker.paused_at is not None and worker.parent_id is not None:
+        if worker.parent_id is None:
+            return
+        if worker.paused_at is not None:
             self.nudger.send(worker.parent_id, WORKER_OPERATION_PAUSED, WORKER_JOB_SOURCE, context, worker=worker.id)
             return
         if not self.is_idle(worker):

@@ -4,7 +4,7 @@ from argparse import ArgumentParser, Namespace
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from core.base.caller.caller import Caller
 from core.base.query.queries import Queries
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
@@ -19,7 +19,7 @@ PROGRESS_PATTERN = re.compile(r"\b(tests? (queued|passed|running)|nothing left|s
 PROGRESS_LOG = "where it stands"
 
 
-class SendWorkerReportSubcommand(Subcommand[RecordParentReport, Message]):
+class SendWorkerReportSubcommand(Subcommand[RecordParentReport | SendMergerInput, Message]):
     """Sends a worker's report to its main agent while the worker continues its task."""
 
     cli_name = "worker"

@@ -61,9 +61,6 @@
                 "file": "src/core/base/agent_write_folder.py"
             },
             {
-                "file": "src/core/base/block_refusal.py"
-            },
-            {
                 "file": "src/core/base/checkout.py"
             },
             {
@@ -100,16 +97,10 @@
                 "file": "src/core/base/deadline.py"
             },
             {
-                "file": "src/core/base/deadline_passed_error.py"
-            },
-            {
                 "file": "src/core/base/declaration_names.py"
             },
             {
                 "file": "src/core/base/duration.py"
-            },
-            {
-                "file": "src/core/base/duration_error.py"
             },
             {
                 "file": "src/core/base/duration_unit.py"
@@ -199,15 +190,6 @@
                 "file": "src/core/base/metadata.py"
             },
             {
-                "file": "src/core/base/missing_file_refusal.py"
-            },
-            {
-                "file": "src/core/base/missing_hint_error.py"
-            },
-            {
-                "file": "src/core/base/missing_rows_error.py"
-            },
-            {
                 "file": "src/core/base/page.py"
             },
             {
@@ -230,9 +212,6 @@
             },
             {
                 "file": "src/core/base/recorded_refusal.py"
-            },
-            {
-                "file": "src/core/base/refusal.py"
             },
             {
                 "file": "src/core/base/refusal_log.py"
@@ -301,19 +280,10 @@
                 "file": "src/core/base/timing_log.py"
             },
             {
-                "file": "src/core/base/unbound_value_error.py"
-            },
-            {
                 "file": "src/core/base/unix_connection.py"
             },
             {
-                "file": "src/core/base/user_approval_refusal.py"
-            },
-            {
                 "file": "src/core/base/version_numbers.py"
-            },
-            {
-                "file": "src/core/base/wrong_instance_error.py"
             }
         ]
     },

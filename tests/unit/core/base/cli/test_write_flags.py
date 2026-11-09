@@ -20,7 +20,7 @@ from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
-from core.base.refusal import Refusal
+from engine.errors.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.samples.listener_sample import ShelfCounter
 from tests.unit.core.base.command.test_commands import MakeItem
