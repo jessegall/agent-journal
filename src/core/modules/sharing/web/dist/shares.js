@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-507f000b5cde")) { const style = document.createElement("style"); style.id = "window-styles-507f000b5cde"; style.textContent = ".shares[data-v-1b7137e7]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-1b7137e7],.shares-waiting[data-v-1b7137e7],.shares-opens[data-v-1b7137e7],.shares-open[data-v-1b7137e7]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-1b7137e7],.shares-waiting[data-v-1b7137e7],.shares-opens[data-v-1b7137e7]{align-items:flex-start}.shares-target[data-v-1b7137e7]{width:100%;min-width:0}.shares-option[data-v-1b7137e7],.shares-row[data-v-1b7137e7]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-1b7137e7]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-1b7137e7]{flex:1;min-width:0}.shares-link[data-v-1b7137e7],.shares-comment[data-v-1b7137e7]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-1b7137e7],.shares-failure[data-v-1b7137e7]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-19df6170a20d")) { const style = document.createElement("style"); style.id = "window-styles-19df6170a20d"; style.textContent = ".shares[data-v-a8ee5ad5]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-a8ee5ad5],.shares-waiting[data-v-a8ee5ad5],.shares-opens[data-v-a8ee5ad5],.shares-open[data-v-a8ee5ad5]{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}.shares-make[data-v-a8ee5ad5],.shares-waiting[data-v-a8ee5ad5],.shares-opens[data-v-a8ee5ad5]{align-items:flex-start}.shares-target[data-v-a8ee5ad5]{width:100%;min-width:0}.shares-option[data-v-a8ee5ad5],.shares-row[data-v-a8ee5ad5]{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.shares-label[data-v-a8ee5ad5]{margin:0;color:var(--text-3);font-size:12px;font-weight:500}.shares-name[data-v-a8ee5ad5]{flex:1;min-width:0}.shares-link[data-v-a8ee5ad5],.shares-comment[data-v-a8ee5ad5]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-a8ee5ad5],.shares-failure[data-v-a8ee5ad5]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { computed as I, ref as c, openBlock as t, createBlock as x, unref as l, withCtx as d, createElementVNode as n, withModifiers as z, withDirectives as M, vModelText as O, createVNode as u, createCommentVNode as v, createElementBlock as i, Fragment as _, renderList as E, toDisplayString as o, createTextVNode as h } from "vue";
 import { useWindow as G, useListTools as H, WindowRoom as J, Segmented as Q, InfoTip as X, Switch as Z, Btn as f, ListTools as ee, RowList as se } from "@journal/window-kit";
 const ae = (N, T) => {
@@ -273,7 +273,7 @@ const ae = (N, T) => {
       _: 1
     }));
   }
-}, Ce = /* @__PURE__ */ ae(ge, [["__scopeId", "data-v-1b7137e7"]]);
+}, Ce = /* @__PURE__ */ ae(ge, [["__scopeId", "data-v-a8ee5ad5"]]);
 export {
   Ce as default
 };
