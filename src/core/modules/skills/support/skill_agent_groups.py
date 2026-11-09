@@ -14,7 +14,8 @@ class SkillAgentGroups:
         self.registry, self.profiles, self.skills = registry, profiles, skills
 
     def labels(self) -> Mapping[str, tuple[str, ...]]:
-        book, folder_labels = self.registry.agent_group_book(), defaultdict(dict)
+        book = self.registry.agent_group_book()
+        folder_labels: defaultdict[str, dict[str, bool]] = defaultdict(dict)
         for profile in self.profiles.listed():
             group = None if isinstance(profile, ProfileProblem) else book.group(profile.agent_type, profile.name)
             if group is None or isinstance(profile, ProfileProblem):

@@ -19,7 +19,8 @@ class RuleApprovalGuard(Guard[Changed[ProjectRule]]):
     def check(self, event: Changed[ProjectRule], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT or isinstance(event, Created):
             return
-        if isinstance(event, Moved) and event.old_row.state is RuleState.PROPOSED:
+        previous = event.row if event.old_row is None else event.old_row
+        if isinstance(event, Moved) and previous.state is RuleState.PROPOSED:
             raise Refusal("a person was asked to decide this rule in the dock")
-        if event.row.state is RuleState.ACTIVE or event.old_row.state is RuleState.ACTIVE:
+        if event.row.state is RuleState.ACTIVE or previous.state is RuleState.ACTIVE:
             raise UserApprovalRefusal(f"Change this project rule?\n{event.row.text}", command=context.command)

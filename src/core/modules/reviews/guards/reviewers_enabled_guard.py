@@ -15,6 +15,5 @@ class ReviewersEnabledGuard(Guard[Created[Reviewer]]):
         self.settings = settings
 
     def check(self, event: Created[Reviewer], context: Context) -> None:
-        reviewer = event.row
         if not self.settings.enabled():
             raise Refusal("reviewers are switched off", f"turn them on with journal setting make {REVIEWER_SETTING} true")

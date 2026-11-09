@@ -13,7 +13,7 @@ from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards
 from core.modules.sequences.models.support.sequence_triggers import SequenceTriggers
 
-class SequenceShowSubcommand(LibraryAwareShow, ReadSubcommand[Sequence | LibraryReading]):
+class SequenceShowSubcommand(LibraryAwareShow[Sequence], ReadSubcommand[Sequence | LibraryReading]):
     """`journal sequence show <n or library:n>`: its title, how it starts, and its steps in order; a sequence of this
     journal, or one of the team's library read live."""
 

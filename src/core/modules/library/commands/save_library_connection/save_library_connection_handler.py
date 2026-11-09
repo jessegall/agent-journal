@@ -23,13 +23,14 @@ class SaveLibraryConnectionHandler(Handler[SaveLibraryConnection, LibraryConnect
 
     def handle(self, command: SaveLibraryConnection, context: Context) -> LibraryConnection:
         existing = self.connections.current()
-        values = {"server_key": command.server_key, "address": command.address, "name": command.name, "user_name": command.user_name, "role": command.role,
+        values: dict[str, object] = {"server_key": command.server_key, "address": command.address, "name": command.name, "user_name": command.user_name, "role": command.role,
                   "reached_at": context.timestamp, "failure": "", "stopped": ""}
         if existing is not None and existing.server_key != command.server_key:
             self.require_no_copies()
         self.bus.dispatch(SetSetting(ADDRESS_SETTING, command.address_text, True), context)
         if existing is None:
-            return self.repository.save(LibraryConnection(creator_id=context.actor.id, **values), context)
+            return self.repository.save(LibraryConnection(creator_id=context.actor.id, server_key=command.server_key, address=command.address, name=command.name, user_name=command.user_name,
+                                                          role=command.role, reached_at=context.timestamp, failure="", stopped=""), context)
         return self.repository.save(existing.changed(**values), context)
 
     def require_no_copies(self) -> None:

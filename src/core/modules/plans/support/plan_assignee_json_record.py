@@ -6,4 +6,4 @@ class PlanAssigneeJsonRecord(TypedDict):
 
     id: int
     name: str
-    is_main: bool
+    main: bool

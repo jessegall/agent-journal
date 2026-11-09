@@ -44,6 +44,6 @@ class Output(Model):
     def has_new_full_read(self, previous: "Output | None") -> bool:
         return self.fully_read_at is not None and (previous is None or previous.fully_read_at != self.fully_read_at)
 
-    def change_name(self, old_row: "Output | None") -> str | None:
-        newly_ended = self.ended_at is not None and (old_row is None or old_row.ended_at is None)
+    def change_name(self, old_row: Model | None) -> str | None:
+        newly_ended = self.ended_at is not None and (not isinstance(old_row, Output) or old_row.ended_at is None)
         return END_CHANGE if newly_ended else None

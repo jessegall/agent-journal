@@ -25,8 +25,10 @@ class ReaderRequestQuery(Query[ReaderRequest]):
         return self.kept.scoped_read(self.table.name, lambda: tuple(self.open().agent(agent_id).oldest().all_rows()), "creator_id = ? AND completed_at IS NULL", [agent_id], name="processes.agent_reader_requests")
 
     def remove_completed(self, completed: ReaderRequest) -> None:
-        self.kept.scoped_update(self.table.name, lambda requests: tuple(request for request in requests if request.id != completed.id),
-                                  "completed_at IS NULL", name="processes.open_reader_requests")
+        def remaining(requests: tuple[ReaderRequest, ...]) -> tuple[ReaderRequest, ...]:
+            return tuple(request for request in requests if request.id != completed.id)
+
+        self.kept.scoped_update(self.table.name, remaining, "completed_at IS NULL", name="processes.open_reader_requests")
 
     def agent(self, agent_id: int) -> Self:
         return self.filter(creator_id=agent_id)

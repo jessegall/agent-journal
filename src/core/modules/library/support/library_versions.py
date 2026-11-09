@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.version_line import VersionLine
 
@@ -13,10 +14,9 @@ class LibraryVersions:
 
     @classmethod
     def parsed(cls, body: object) -> "LibraryVersions":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(tuple(VersionLine.parsed(change) for change in body["versions"]))
+            return cls(tuple(VersionLine.parsed(change) for change in LibraryAnswer.members(fields, "versions")))
         except (KeyError, TypeError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

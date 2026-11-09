@@ -22,4 +22,4 @@ class JournalInstructionFileListener(CommitListener[JournalBooting | Created[Plu
 
     @staticmethod
     def ignores_event(event: JournalBooting | Created[Plugin] | Updated[Plugin] | Deleted[Plugin]) -> bool:
-        return isinstance(event, Updated) and event.old_row.enabled == event.row.enabled and event.old_row.files_digest == event.row.files_digest
+        return isinstance(event, Updated) and event.old_row is not None and event.old_row.enabled == event.row.enabled and event.old_row.files_digest == event.row.files_digest

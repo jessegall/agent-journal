@@ -10,6 +10,7 @@ from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.agents.models.agent import Agent
 from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.support.agent_type_limits import AgentTypeLimits
@@ -37,15 +38,15 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         pending = tuple(self.queries.query(Agent).matching(Among("id", pending_ids)).matching(IsNull("retired_at")).all_rows()) if pending_ids else ()
         installed_profiles = {profile.name: profile for profile in self.profiles.listed() if isinstance(profile, AgentProfile)}
         titles = {name: profile.display_title for name, profile in installed_profiles.items()}
-        counts = []
+        counts: list[AgentLimitCounts] = []
         for entry in self.registry.helper_types:
             if not entry.run_limit_key:
                 continue
             agents = tuple(agent for agent in kept if agent.role == entry.key)
             extra = tuple(agent for agent in pending if agent.role == entry.key and agent.ended_at is not None)
             limits = self.limits.read(entry)
-            profiles = []
-            installed = {name for name, profile in installed_profiles.items() if profile.agent_type == entry.key} if entry.profile_limits_key else set()
+            profiles: list[AgentProfileLimitCounts] = []
+            installed: set[str] = {name for name, profile in installed_profiles.items() if profile.agent_type == entry.key} if entry.profile_limits_key else set()
             for profile in sorted({agent.profile for agent in agents if agent.profile and entry.profile_limits_key} | installed):
                 matching = tuple(agent for agent in agents if agent.profile == profile)
                 profile_limits = self.limits.read(entry, profile)
@@ -60,9 +61,10 @@ class AgentLimitsSubcommand(ReadSubcommand[tuple[AgentLimitCounts, ...]]):
         return group.key if group else ""
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, tuple):
-            lines = [f"{row.label}: {row.running} running, {row.kept} kept; limits{' per profile' if row.profile_specific else ''}: running {row.run_limit}, kept {'no limit' if row.kept_limit == 0 else row.kept_limit}" for row in value]
-            rows = [asdict(row) for row in value]
+        if is_tuple(value):
+            counts = [row for row in value if isinstance(row, AgentLimitCounts)]
+            lines = [f"{row.label}: {row.running} running, {row.kept} kept; limits{' per profile' if row.profile_specific else ''}: running {row.run_limit}, kept {'no limit' if row.kept_limit == 0 else row.kept_limit}" for row in counts]
+            rows = [asdict(row) for row in counts]
             for row in rows:
                 row["per_profile"] = row.pop("profile_specific")
             output.write("\n".join(lines), {"rows": rows})
