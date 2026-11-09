@@ -8,6 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
+from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.support.run_visibility import RunVisibility
@@ -31,13 +32,13 @@ class RunAdmission:
         return (process.is_queue_run and self.settings.flag(ProcessSetting.MAIN_RUNS_USE_SLOTS)
                 and self.queries.query(Agent).find(process.session_agent_id).role == AgentRole.MAIN)
 
-    def may_start(self, process: Process, agent: Agent, current_time: Timestamp) -> bool:
+    def may_start(self, process: Process, agent: Agent, output: Output | None, current_time: Timestamp) -> bool:
         parts = self.visibility.parts(process.id)
         if not parts:
             return False
         if not self.needs_slot(process, agent):
             return True
-        if self.folder.count_status(process.id) is None and self.listings.has_listing(process, agent):
+        if self.folder.count_status(process.id) is None and self.listings.has_listing(process, agent, output):
             return False
         requests = self.queries.query(ReaderRequest).find_many([part.reader_request_id for part in parts if part.reader_request_id is not None])
         return not any(request.completed_at is None and request.expires_at > current_time and request.sample_process_id != process.id for request in requests)

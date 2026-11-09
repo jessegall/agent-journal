@@ -43,7 +43,7 @@ class Tools:
         return self.graphify.tick(Path(folder) if folder else self.home.project_folder)
 
     def worktree_graph(self, source: str, folder: str) -> list[str]:
-        if not any(self.hooks.enabled(tool) for tool in self.catalogue.all()):
+        if not Path(folder).is_dir() or not any(self.hooks.enabled(tool) for tool in self.catalogue.all()):
             return []
         self.graphify.copy_graph(Path(source), Path(folder))
         return [OUTPUT_FOLDER]

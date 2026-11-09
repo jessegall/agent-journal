@@ -1,6 +1,10 @@
 from core.modules.processes.commands.grant_run_slots.grant_run_slots import GrantRunSlots
 import pytest
 from pathlib import Path
+from unittest.mock import patch
+
+from core.base.database.database import Database
+from tests.stories.support.story_checks import expect_value
 
 from core.base.command.bus import Bus
 from core.base.actor import Actor
@@ -130,6 +134,17 @@ def test_a_queued_run_over_the_limit_by_its_listing_never_gets_a_spot(limited_ru
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.expect_rows(not folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
     story.expect_text(f"output show {process.id}", "test_count: 8", actor=story.agent)
+
+
+def test_a_grant_over_many_queued_worker_runs_reads_their_outputs_once(limited_run):
+    story, _ = limited_run
+    for number in range(12):
+        worker_run(story, f"pytest tests/cart_{number}.py", CommandCategory.TEST_RUN)
+    database = story.container.get(Database)
+    with patch.object(database, "rows", wraps=database.rows) as reads:
+        story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    output_reads = [call for call in reads.call_args_list if "FROM outputs " in call.args[0].sql]
+    expect_value(len(output_reads), 1)
 
 
 @pytest.mark.parametrize("status", [0, 1, 143])

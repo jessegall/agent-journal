@@ -3,6 +3,7 @@ from suites.coding.migrations.m007_read_only_helpers_key import HelpersKeyMigrat
 from suites.coding.migrations.m003_file_edit_session import FileEditSessionMigration
 from suites.coding.migrations.m004_main_agent_settings import MainAgentSettingsMigration
 from suites.coding.migrations.m005_main_driver import MainDriverMigration
+from suites.coding.migrations.m009_prune_file_edits import PruneFileEditsMigration
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.viewer.window_extension import WindowExtension
@@ -97,7 +98,7 @@ class CodingModule(Module):
               SkillDeclaration("journal-user-stories", "Write user stories for any system design from every angle, who acts, what they see, refusals, failures, recovery and abuse, and group them into story books; load it before you write stories or a functional design", keywords=("user story", "user stories", "story book")),
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration]
+    migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration]
     handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
     driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
     listeners = [FullTestRunListener]

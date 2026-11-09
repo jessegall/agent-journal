@@ -184,6 +184,16 @@ def test_a_new_worktree_gets_a_copy_of_the_graph_only_while_graphify_is_on(new_s
                       not (target / "graphify-out/.journal-running").exists())
 
 
+def test_a_removed_worktree_folder_is_not_made_again_for_the_graph(new_story, tmp_path):
+    story, repo = story_with_graphify(new_story, tmp_path)
+    source = tmp_path / "source"
+    target = tmp_path / "removed"
+    (source / "graphify-out").mkdir(parents=True)
+    (source / "graphify-out/graph.json").write_text("graph")
+    story.expect_success("tool on graphify", actor=story.user)
+    story.expect_rows(story.container.get(Tools).worktree_graph(str(source), str(target)) == [], not target.exists())
+
+
 def test_the_tools_window_is_a_project_page_that_reads_the_list_and_runs_its_buttons(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_declared_window("tools.tools", "component", "page")
