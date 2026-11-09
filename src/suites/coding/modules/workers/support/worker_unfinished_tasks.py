@@ -33,7 +33,9 @@ class WorkerUnfinishedTasks:
         tasks = self.tasks.filter(delegated_to=worker_id).all_rows()
         stamps = [stamp.text for task in tasks for stamp in (task.started_at, task.closed_at) if stamp]
         last_tool_use = self.hook_calls.agent(worker_id).filter(hook=HookEventName.PRE_TOOL_USE).newest().first()
-        return max([*stamps, *([last_tool_use.creation_timestamp().text] if last_tool_use is not None else [])], default="")
+        if last_tool_use is not None:
+            stamps.append(last_tool_use.creation_timestamp().text)
+        return max(stamps, default="")
 
     def has_running_process(self, worker_id: int) -> bool:
         return self.processes.agent(worker_id).running().exists()

@@ -29,8 +29,8 @@ class PluginChangesSubcommand(ReadSubcommand[tuple[CheckoutFile, ...]]):
         parser.add_argument("--since", default=BASE)
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[CheckoutFile, ...]:
-        since = "" if arguments.since == BASE else arguments.since
-        return self.checkouts.changed_files(self.checkouts.checkout(self.access.agent_id(arguments.agent, caller)), since)
+        start_time = "" if arguments.since == BASE else arguments.since
+        return self.checkouts.changed_files(self.checkouts.checkout(self.access.agent_id(arguments.agent, caller)), start_time)
 
     def write_output(self, value: object, output: Output) -> None:
         files = [file for file in value if isinstance(file, CheckoutFile)] if is_tuple(value) else []
