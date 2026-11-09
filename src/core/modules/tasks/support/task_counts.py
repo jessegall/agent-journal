@@ -6,10 +6,10 @@ TASK_COUNT_PERIODS = [("1", "Last hour"), ("6", "Last 6 hours"), ("24", "Last 24
 @dataclass(frozen=True)
 class TaskCounts:
     """How many tasks are in progress (started or in testing), blocked and open now, delegated ones included,
-    and how many were completed after `since`."""
+    and how many were completed after the moment counted from."""
 
     started: int
     blocked: int
     open: int
     completed: int
-    start_time: str
+    counted_from_at: str

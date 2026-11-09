@@ -10,7 +10,7 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
-from tests.stories.core.support.coding_fixtures import BuilderWithBriefedTask, BuilderWithUnreadTask, BuilderWithUser
+from tests.stories.core.support.coding_fixtures import BriefedTaskBuilder, UnreadTaskBuilder, UserBuilder
 
 REFUSAL = "you read this overview already and it is still in your context"
 COMPACTION = HookSamples.sample("compact")
@@ -21,7 +21,7 @@ OVERVIEW_LINES = ("task overview 1", "overview", "git-overview commits --environ
 class TwoOpenTasks(StoryFixture):
     """Tasks 1 and 2 are open and nobody holds them."""
 
-    parent = BuilderWithBriefedTask
+    parent = BriefedTaskBuilder
 
     def steps(self, story: Story) -> None:
         story.run('task make "Second" --brief "a second job" --environment main', actor=story.agent)
@@ -113,7 +113,7 @@ def test_a_failed_read_does_not_count_as_a_read(new_story):
 
 
 def test_a_task_handed_back_for_rework_can_be_read_again_in_the_same_window(new_story):
-    story = new_story(fixture=BuilderWithUnreadTask)
+    story = new_story(fixture=UnreadTaskBuilder)
     story.container.get(TaskBriefRequirement).is_required = True
     story.expect_text("task overview 1", "task 1: Fix the cart", actor=story.agent)
     story.expect_refusal("task overview 1", REFUSAL, actor=story.agent)

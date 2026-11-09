@@ -32,11 +32,11 @@ class TaskCountsSubcommand(ReadSubcommand[TaskCounts]):
         range_group.add_argument("--since", default=None, help="count the tasks completed after this time")
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskCounts:
-        start_time = Timestamp.parsed(arguments.since) if arguments.since else Timestamp(self.clock.timestamp().value - timedelta(hours=arguments.hours))
-        completed = self.cards.cards(TaskState.COMPLETED, []).matching(Greater("closed_at", start_time.text)).count()
-        return TaskCounts(self.cards.matching_states(TaskState.STARTED, TaskState.TESTING).count(), self.cards.matching_states(TaskState.BLOCKED).count(), self.cards.matching_states(TaskState.OPEN).count(), completed, start_time.text)
+        counted_from_at = Timestamp.parsed(arguments.since) if arguments.since else Timestamp(self.clock.timestamp().value - timedelta(hours=arguments.hours))
+        completed = self.cards.cards(TaskState.COMPLETED, []).matching(Greater("closed_at", counted_from_at.text)).count()
+        return TaskCounts(self.cards.matching_states(TaskState.STARTED, TaskState.TESTING).count(), self.cards.matching_states(TaskState.BLOCKED).count(), self.cards.matching_states(TaskState.OPEN).count(), completed, counted_from_at.text)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskCounts):
-            output.write(f"in progress: {value.started}\nblocked: {value.blocked}\nopen: {value.open}\ncompleted: {value.completed} since {value.since}",
-                         {"in_progress": value.started, "blocked": value.blocked, "open": value.open, "completed": value.completed, "since": value.since})
+            output.write(f"in progress: {value.started}\nblocked: {value.blocked}\nopen: {value.open}\ncompleted: {value.completed} since {value.counted_from_at}",
+                         {"in_progress": value.started, "blocked": value.blocked, "open": value.open, "completed": value.completed, "since": value.counted_from_at})

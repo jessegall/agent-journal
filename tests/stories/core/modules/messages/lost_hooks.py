@@ -241,7 +241,7 @@ def test_a_lost_hook_answer_retries_its_messages_after_another_writer_releases_t
                 writer.rollback()
                 reset_attempted.set()
 
-    monkeypatch.setattr(HookEndpoint, "dropped_answer", busy_answer_dropped)
+    monkeypatch.setattr(HookEndpoint, "answer_lost", busy_answer_dropped)
     server.post_hook_disconnect(hook_body("left-while-busy"))
     server.story.expect_rows(reset_attempted.wait(10), detail="the lost hook answer never attempted to reset its deliveries")
     folder = server.story.home.folder / "runtime" / "lost-hook-answers"
