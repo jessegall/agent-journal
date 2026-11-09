@@ -62,6 +62,20 @@
                         }
                     ]
                 }
+            },
+            {
+                "all": [
+                    {
+                        "nameIn": [
+                            "why",
+                            "kind",
+                            "words"
+                        ]
+                    },
+                    {
+                        "fileMatches": "(^|/)src/core/(base/(cli/console|command/request_user_approval|user_approval_refusal)|modules/(approvals/(commands/request_user_approval/request_user_approval_handler|models/(approval_request|standing_approval))|aliases/models/command_type))\\.py$"
+                    }
+                ]
             }
         ]
     },

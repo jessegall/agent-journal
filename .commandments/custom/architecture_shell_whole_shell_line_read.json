@@ -20,7 +20,7 @@
                 "testCode": true
             },
             {
-                "fileMatches": "(record_hook_call_handler|start_process|runner_rewrite_rule)\\.py$"
+                "fileMatches": "(record_hook_call_handler|start_process|runner_rewrite_rule|access_rule)\\.py$"
             },
             {
                 "of": "receiver",

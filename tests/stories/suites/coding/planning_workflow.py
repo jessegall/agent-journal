@@ -33,7 +33,7 @@ class BundledSequences(StoryFixture):
 
 
 @pytest.fixture
-def shipped(new_story):
+def bundled_story(new_story):
     return new_story(fixture=BundledSequences)
 
 
@@ -45,57 +45,57 @@ def profile(story, name):
     return Registry.read(story.container.get(Database)).profile(name).profile
 
 
-def test_the_functional_design_sequence_ships_and_walks_from_investigating_to_filing(shipped):
-    shipped.expect_text(f"sequence show {sequence_id(shipped, FUNCTIONAL_DESIGN)}", FUNCTIONAL_DESIGN, "Read the skill journal-functional-design", "user stories",
+def test_the_functional_design_sequence_ships_and_walks_from_investigating_to_filing(bundled_story):
+    bundled_story.expect_text(f"sequence show {sequence_id(bundled_story, FUNCTIONAL_DESIGN)}", FUNCTIONAL_DESIGN, "Read the skill journal-functional-design", "user stories",
                         "code examples", "phases", "journal doc make")
 
 
-def test_a_read_only_helper_can_follow_the_functional_design_sequence_to_its_end(shipped):
-    shipped.expect_success(f"sequence run {sequence_id(shipped, FUNCTIONAL_DESIGN)}", actor=shipped.helper)
-    shipped.expect_text("sequence-run list", FUNCTIONAL_DESIGN, actor=shipped.helper)
+def test_a_read_only_helper_can_follow_the_functional_design_sequence_to_its_end(bundled_story):
+    bundled_story.expect_success(f"sequence run {sequence_id(bundled_story, FUNCTIONAL_DESIGN)}", actor=bundled_story.helper)
+    bundled_story.expect_text("sequence-run list", FUNCTIONAL_DESIGN, actor=bundled_story.helper)
     for _ in range(4):
-        shipped.expect_success("sequence follow", actor=shipped.helper)
-        shipped.expect_success("sequence next", actor=shipped.helper)
-    runs = tuple(shipped.container.get(Queries).query(SequenceRun).all_rows())
-    shipped.expect_rows(not [run for run in runs if run.session_agent_id == shipped.helper.id and run.ended_at is None], detail=str(runs))
+        bundled_story.expect_success("sequence follow", actor=bundled_story.helper)
+        bundled_story.expect_success("sequence next", actor=bundled_story.helper)
+    runs = tuple(bundled_story.container.get(Queries).query(SequenceRun).all_rows())
+    bundled_story.expect_rows(not [run for run in runs if run.session_agent_id == bundled_story.helper.id and run.ended_at is None], detail=str(runs))
 
 
-def test_a_planner_making_a_plan_starts_the_plan_sequence_and_takes_its_goal_from_the_design(shipped):
-    shipped.run(lines.NEW_PLAN, actor=shipped.helper)
-    shipped.run_listeners()
-    shipped.expect_text("sequence-run list", PLAN_BUILDING, actor=shipped.helper)
-    shipped.expect_text(f"sequence show {sequence_id(shipped, PLAN_BUILDING)}", "When your job names a design document", "without deciding anything itself")
+def test_a_planner_making_a_plan_starts_the_plan_sequence_and_takes_its_goal_from_the_design(bundled_story):
+    bundled_story.run(lines.NEW_PLAN, actor=bundled_story.helper)
+    bundled_story.run_listeners()
+    bundled_story.expect_text("sequence-run list", PLAN_BUILDING, actor=bundled_story.helper)
+    bundled_story.expect_text(f"sequence show {sequence_id(bundled_story, PLAN_BUILDING)}", "When your job names a design document", "without deciding anything itself")
 
 
-def test_the_functional_designer_runs_on_the_strongest_model_and_starts_its_sequence(shipped):
-    designer = profile(shipped, FUNCTIONAL_DESIGNER)
-    shipped.expect_rows(designer.agent_type == "helper", designer.tier == ModelTier.STRONGEST, designer.model == "opus", designer.codex_model == "gpt-6.1-sol",
+def test_the_functional_designer_runs_on_the_strongest_model_and_starts_its_sequence(bundled_story):
+    designer = profile(bundled_story, FUNCTIONAL_DESIGNER)
+    bundled_story.expect_rows(designer.agent_type == "helper", designer.tier == ModelTier.STRONGEST, designer.model == "opus", designer.codex_model == "gpt-6.1-sol",
                         FUNCTIONAL_DESIGN in designer.body, "skill journal-functional-design" in designer.body, detail=designer.body)
 
 
-def test_the_planner_runs_on_a_cheaper_model_and_works_from_the_design(shipped):
-    planner = profile(shipped, PLANNER)
-    shipped.expect_rows(planner.agent_type == "helper", planner.tier == ModelTier.GENERAL, planner.model == "sonnet", planner.codex_model == "gpt-6.1-terra",
+def test_the_planner_runs_on_a_cheaper_model_and_works_from_the_design(bundled_story):
+    planner = profile(bundled_story, PLANNER)
+    bundled_story.expect_rows(planner.agent_type == "helper", planner.tier == ModelTier.GENERAL, planner.model == "sonnet", planner.codex_model == "gpt-6.1-terra",
                         "functional design document" in planner.body, "cheaper model" in planner.body, detail=planner.body)
 
 
-def test_the_main_agent_skill_names_who_to_dispatch_and_what_to_do_when_helpers_are_off(shipped):
-    shipped.run("skill write")
-    expect_skill_text(shipped, "journal-plan-dispatch", "name: journal-plan-dispatch", FUNCTIONAL_DESIGNER, PLANNER, "When read-only helpers are switched off", "journal-planning")
+def test_the_main_agent_skill_names_who_to_dispatch_and_what_to_do_when_helpers_are_off(bundled_story):
+    bundled_story.run("skill write")
+    expect_skill_text(bundled_story, "journal-plan-dispatch", "name: journal-plan-dispatch", FUNCTIONAL_DESIGNER, PLANNER, "When read-only helpers are switched off", "journal-planning")
 
 
-def test_the_functional_design_skill_asks_for_stories_examples_and_phases(shipped):
-    shipped.run("skill write")
-    expect_skill_text(shipped, "journal-functional-design", "name: journal-functional-design", "User stories", "Code examples", "Phases", "any application")
+def test_the_functional_design_skill_asks_for_stories_examples_and_phases(bundled_story):
+    bundled_story.run("skill write")
+    expect_skill_text(bundled_story, "journal-functional-design", "name: journal-functional-design", "User stories", "Code examples", "Phases", "any application")
 
 
-def test_the_planning_skill_stays_the_planners_and_takes_a_design_as_its_source(shipped):
-    shipped.run("skill write")
-    expect_skill_text(shipped, "journal-planning", "name: journal-planning", "functional design document", "cheaper model")
+def test_the_planning_skill_stays_the_planners_and_takes_a_design_as_its_source(bundled_story):
+    bundled_story.run("skill write")
+    expect_skill_text(bundled_story, "journal-planning", "name: journal-planning", "functional design document", "cheaper model")
 
 
-def test_with_helpers_switched_off_the_main_agent_cannot_start_a_functional_designer(shipped):
-    shipped.expect_success(f"setting set {STARTS_HELPERS_SETTING} false --project", actor=shipped.user)
-    launcher = FakeLauncher(shipped.home.socket("launcher"), request_count=1)
-    shipped.expect_refusal(f'helper start {FUNCTIONAL_DESIGNER} --brief "Design the cart" --environment main', "starts no read-only helper", actor=shipped.agent)
+def test_with_helpers_switched_off_the_main_agent_cannot_start_a_functional_designer(bundled_story):
+    bundled_story.expect_success(f"setting set {STARTS_HELPERS_SETTING} false --project", actor=bundled_story.user)
+    launcher = FakeLauncher(bundled_story.home.socket("launcher"), request_count=1)
+    bundled_story.expect_refusal(f'helper start {FUNCTIONAL_DESIGNER} --brief "Design the cart" --environment main', "starts no read-only helper", actor=bundled_story.agent)
     launcher.server.close()

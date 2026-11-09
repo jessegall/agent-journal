@@ -4,7 +4,6 @@ import pytest
 
 from core.base.command.command import Command
 from core.base.command.command_json import CommandJson
-from core.modules.agents.commands.retire_agent.retire_agent import RetireAgent
 
 
 @dataclass(frozen=True)
@@ -12,8 +11,14 @@ class ObjectHolder(Command[object]):
     value: object
 
 
+@dataclass(frozen=True)
+class SampleRetire(Command[object]):
+    agent_id: int
+    reason: str
+
+
 def test_a_command_is_kept_as_text_and_loaded_as_the_same_command():
-    command = RetireAgent(7, "done with it")
+    command = SampleRetire(7, "done with it")
     assert CommandJson.load(CommandJson.dump(command)) == command
 
 

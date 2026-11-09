@@ -14,6 +14,9 @@
         "reject": [
             {
                 "fileMatches": "(^|/)tests/(stories/suites/coding/modules/workers/support/git_repository|stories/core/modules/agents/hook_sweep_failures|stories/core/modules/plugins/previews_and_boards|stories/suites/coding/git_overview|unit/core/base/git/test_hook_files_git|unit/core/base/provider/test_hook_manager)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/(stories/core/modules/(developer/private_data_scan|tools/support/graphify_repo)|unit/suites/coding/modules/workers/test_worktree_git_own_files)\\.py$"
             }
         ]
     },

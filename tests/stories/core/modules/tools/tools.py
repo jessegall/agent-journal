@@ -82,7 +82,7 @@ def test_no_second_update_starts_while_one_runs(new_story, tmp_path):
     story.expect_text(f"tool refresh graphify --folder {repo.folder}", "refreshing", actor=story.agent)
     story.expect_rows(repo.call_count() == 1)
     repo.release_graphify()
-    repo.wait(lambda: not (repo.folder / "graphify-out/.journal-running").exists())
+    repo.wait(repo.folder / "graphify-out", lambda: not (repo.folder / "graphify-out/.journal-running").exists())
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     repo.poll_refresh()
     story.expect_rows(repo.call_count() == 2)
@@ -92,7 +92,7 @@ def test_a_failed_update_is_not_started_again_for_the_same_commit(new_story, tmp
     story, repo = story_with_graphify(new_story, tmp_path)
     repo.script.write_text(f'#!/bin/sh\necho "$PWD $*" >> "{repo.calls}"\nexit 1\n')
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
-    repo.wait(lambda: (repo.folder / "graphify-out/.journal-failed").is_file() and not (repo.folder / "graphify-out/.journal-running").exists())
+    repo.wait(repo.folder / "graphify-out", lambda: (repo.folder / "graphify-out/.journal-failed").is_file() and not (repo.folder / "graphify-out/.journal-running").exists())
     story.expect_success(f"{TICK} {repo.folder}", actor=story.agent)
     story.expect_rows(repo.call_count() == 1)
 

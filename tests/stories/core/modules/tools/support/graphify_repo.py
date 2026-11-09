@@ -1,7 +1,9 @@
 import subprocess
-import time
 from pathlib import Path
 
+from tests.stories.server.support.file_changes import FileChanges
+
+WAIT_SECONDS = 10
 COMMAND_SETTING = "journal.core.tools.graphify-command"
 INSTALL_SETTING = "journal.core.tools.graphify-install-command"
 
@@ -40,7 +42,7 @@ class GraphifyRepo:
         self.claim.unlink(missing_ok=True)
 
     def poll_calls(self, count: int) -> None:
-        self.wait(lambda: self.call_count() >= count)
+        self.wait(self.calls.parent, lambda: self.call_count() >= count)
 
     def head(self) -> str:
         return subprocess.run(["git", "-C", str(self.folder), "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
@@ -50,10 +52,10 @@ class GraphifyRepo:
         return stamp.read_text().split()[0] if stamp.is_file() else ""
 
     def poll_refresh(self) -> None:
-        self.wait(lambda: self.refreshed() == self.head() and not (self.folder / "graphify-out/.journal-running").is_file())
+        self.wait(self.folder / "graphify-out", lambda: self.refreshed() == self.head() and not (self.folder / "graphify-out/.journal-running").is_file())
 
-    def wait(self, ready) -> None:
-        deadline = time.time() + 10
-        while not ready() and time.time() < deadline:
-            time.sleep(0.05)
-        assert ready()
+    def wait(self, folder: Path, ready) -> None:
+        folder.mkdir(exist_ok=True)
+        with FileChanges(folder) as changes:
+            while not ready():
+                assert changes.wait(WAIT_SECONDS), folder

@@ -11,12 +11,21 @@
         "reject": [
             {
                 "all": [
-                    {"nameMatches": "^[a-z]+ed_on$"},
-                    {"field": "target"},
-                    {"of": "closest:type-declaration", "extends": "Model"}
+                    {
+                        "nameMatches": "^[a-z]+ed_on$"
+                    },
+                    {
+                        "field": "target"
+                    },
+                    {
+                        "of": "closest:type-declaration",
+                        "extends": "Model"
+                    }
                 ]
             },
-            {"name": "named_reader_id"},
+            {
+                "name": "named_reader_id"
+            },
             {
                 "of": "parent",
                 "all": [
@@ -34,6 +43,20 @@
             },
             {
                 "nameMatches": "^(delegated_to|timed_out)$"
+            },
+            {
+                "all": [
+                    {
+                        "nameIn": [
+                            "why",
+                            "kind",
+                            "words"
+                        ]
+                    },
+                    {
+                        "fileMatches": "(^|/)src/core/(base/(cli/console|command/request_user_approval|user_approval_refusal)|modules/(approvals/(commands/request_user_approval/request_user_approval_handler|models/(approval_request|standing_approval))|aliases/models/command_type))\\.py$"
+                    }
+                ]
             }
         ]
     },

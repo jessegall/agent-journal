@@ -60,16 +60,16 @@ def unlimited_runs(forced):
 
 
 @pytest.fixture
-def readers_off(forced):
+def readers_disabled(forced):
     forced.run("setting set journal.core.processes.readers-forced off --environment main")
     return forced
 
 
 @pytest.fixture
-def busy_worker(readers_off):
-    task = readers_off.new_row_id('task make "Busy" --brief "Work" --environment main', actor=readers_off.agent)
-    readers_off.expect_success(f"task start {task}", actor=reader_worker(readers_off))
-    return readers_off
+def busy_worker(readers_disabled):
+    task = readers_disabled.new_row_id('task make "Busy" --brief "Work" --environment main', actor=readers_disabled.agent)
+    readers_disabled.expect_success(f"task start {task}", actor=reader_worker(readers_disabled))
+    return readers_disabled
 
 
 def test_a_worker_build_with_no_reader_opens_no_request_and_holds_nothing(forced):
@@ -137,18 +137,18 @@ def test_a_worker_is_never_refused_or_taught_after_silent_runs(busy_worker):
     busy_worker.expect_rows(not any("reader" in line for line in hook_lines(busy_worker, WORKER, sample)))
 
 
-def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_off):
-    process = worker_run(readers_off, "custom-build run", CommandCategory.BUILD)
-    readers_off.advance(timedelta(seconds=10))
-    readers_off.expect_rows(not any(f"output {process.id}" in line for line in hook_lines(readers_off, WORKER, HookSamples.prompt("go on"))))
-    expect_unblocked(readers_off)
+def test_a_long_worker_run_asks_for_no_title_and_holds_nothing(readers_disabled):
+    process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
+    readers_disabled.advance(timedelta(seconds=10))
+    readers_disabled.expect_rows(not any(f"output {process.id}" in line for line in hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))))
+    expect_unblocked(readers_disabled)
 
 
-def test_a_silent_run_of_a_worker_says_nothing_about_its_output(readers_off):
-    readers_off.advance(timedelta(seconds=1))
-    worker_run(readers_off, "custom-test run", CommandCategory.TEST_RUN)
-    readers_off.advance(timedelta(minutes=10))
-    readers_off.expect_rows(not any("printed nothing" in line or "quiet" in line for line in hook_lines(readers_off, WORKER, HookSamples.prompt("go on"))))
+def test_a_silent_run_of_a_worker_says_nothing_about_its_output(readers_disabled):
+    readers_disabled.advance(timedelta(seconds=1))
+    worker_run(readers_disabled, "custom-test run", CommandCategory.TEST_RUN)
+    readers_disabled.advance(timedelta(minutes=10))
+    readers_disabled.expect_rows(not any("printed nothing" in line or "quiet" in line for line in hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))))
 
 
 def test_only_the_main_agent_hears_the_shorter_read_of_a_reader():

@@ -251,7 +251,7 @@ class WorktreeGit:
         texts = {name: FileAccess.shared().read(Path(folder) / name) for name in original_texts}
         for name in original_texts:
             self.checked(folder, GIT_LIMIT_SECONDS, "update-index", "--no-skip-worktree", "--", name)
-            self.checked(folder, GIT_LIMIT_SECONDS, "checkout", "--", name)
+            self.checked(folder, GIT_LIMIT_SECONDS, "restore", "--", name)
         try:
             yield
         finally:

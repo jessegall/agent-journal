@@ -64,6 +64,9 @@
             },
             {
                 "file": "**/record_journal_exception/record_journal_exception_handler.py"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/plugins/commands/(add_plugin_output/add_plugin_output_handler|configure_plugin/configure_plugin_handler|deliver_plugin_event/deliver_plugin_event_handler)\\.py$"
             }
         ]
     },

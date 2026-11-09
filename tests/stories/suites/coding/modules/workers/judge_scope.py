@@ -79,10 +79,10 @@ def conflict_resolved(repository, worker):
                 ids=["base-moved", "uncommitted-file", "changed-on-both-sides", "clash-settled"])
 def merged_base(request, judged_worker):
     story, repository, worker = judged_worker
-    before, after, files = request.param
-    before(repository, worker)
+    first_step, second_step, files = request.param
+    first_step(repository, worker)
     base_merged(story, worker)
-    after(repository, worker)
+    second_step(repository, worker)
     return story, worker, files
 
 

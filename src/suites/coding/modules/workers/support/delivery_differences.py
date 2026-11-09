@@ -19,7 +19,7 @@ def required_differences(arguments: Namespace) -> str:
     return arguments.differences.strip()
 
 
-def follows_brief(differences: str) -> bool:
+def is_none_answer(differences: str) -> bool:
     return differences.lower() == NONE_ANSWER
 
 
@@ -31,5 +31,5 @@ class DeliveryDifferences:
         self.bus = bus
 
     def record(self, task_id: int, differences: str, context: Context) -> None:
-        if not follows_brief(differences):
+        if not is_none_answer(differences):
             self.bus.dispatch(MakeTaskLog(task_id, differences, important=True), context)

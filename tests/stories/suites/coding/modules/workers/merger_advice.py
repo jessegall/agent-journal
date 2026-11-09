@@ -137,7 +137,7 @@ def planned(new_story, monkeypatch):
 
 
 @pytest.fixture
-def with_merger_off(new_story):
+def merger_disabled_plan(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository = repository_environment(story)
     return AdvisedWorker(MergerCase(story, repository, dispatched_worker(story), story.agent)).with_five_asks()
@@ -379,8 +379,8 @@ def test_the_asks_and_the_advice_are_counted_apart(five_questions):
     five_questions.story.expect_rows(len(five_questions.question_lines()) == 5, len(five_questions.merger_message_rows()) == 1, detail=str(five_questions.question_lines()))
 
 
-def test_the_ask_limit_holds_with_the_merger_off(with_merger_off):
-    expect_refused_with(with_merger_off.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=with_merger_off.worker)
+def test_the_ask_limit_holds_with_the_merger_off(merger_disabled_plan):
+    expect_refused_with(merger_disabled_plan.story, 'worker ask "Question 6"', QUESTION_LIMIT_LINE, actor=merger_disabled_plan.worker)
 
 
 def test_a_worker_that_answers_to_a_group_of_tasks_counts_asks_for_the_group_not_per_task(planned_with_three_asks):

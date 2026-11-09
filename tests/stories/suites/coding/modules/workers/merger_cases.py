@@ -171,9 +171,9 @@ def test_merger_repair_relinks_missing_libraries_and_tells_the_worker_once(linke
 
 
 def test_repair_with_nothing_missing_says_so_and_tells_the_worker_nothing(linked):
-    before = linked.worker_lines()
+    lines_at_start = linked.worker_lines()
     linked.story.expect_text(f"merger repair {linked.worker.id}", "nothing missing", actor=linked.merger)
-    linked.story.expect_rows(linked.worker_lines() == before, detail=linked.worker_lines())
+    linked.story.expect_rows(linked.worker_lines() == lines_at_start, detail=linked.worker_lines())
 
 
 def test_a_second_repair_finds_nothing_and_does_not_tell_the_worker_again(linked):
@@ -326,9 +326,9 @@ def test_the_merger_text_names_the_ladder_and_the_case_book(case):
     case.story.expect_rows("Ladder" in profile.body, "journal merger scope" in profile.body, "journal merger repair" in profile.body, "journal merger allow" in profile.body, "journal-merger" in profile.body, detail=profile.body)
 
 
-@pytest.mark.parametrize("words", ["journal merger scope", "journal merger repair", "journal merger allow", "already built", "add the case to this file"])
-def test_the_case_book_holds_each_known_case(words):
-    expect_value_with(merger_skill_text(), words)
+@pytest.mark.parametrize("case_text", ["journal merger scope", "journal merger repair", "journal merger allow", "already built", "add the case to this file"])
+def test_the_case_book_holds_each_known_case(case_text):
+    expect_value_with(merger_skill_text(), case_text)
 
 
 def test_the_branch_of_the_environment_is_not_touched_by_a_scope(own_files):

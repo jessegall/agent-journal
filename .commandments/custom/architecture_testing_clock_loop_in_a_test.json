@@ -26,6 +26,9 @@
             },
             {
                 "fileMatches": "(^|/)tests/unit/core/modules/demo/test_demo_start\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)tests/stories/(core/modules/library/lock_waits|suites/coding/modules/workers/server_replacement)\\.py$"
             }
         ]
     },

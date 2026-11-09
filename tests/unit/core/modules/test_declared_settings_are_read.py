@@ -6,9 +6,10 @@ from core.base.registry.setting_tree import SettingTree
 from core.base.setting.setting_declaration import GROUP_TYPE, REFERENCE_TYPE
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES
+from tests.unit.source_tree import source_tree
 from tunnels import DEFAULT_TUNNELS
 
-SOURCE = Path(__file__).resolve().parents[3] / "src"
+SOURCE = Path(__file__).resolve().parents[4] / "src"
 SKIPPED_FOLDERS = ("dist", "migrations", "__pycache__", "node_modules")
 
 # a declared setting nothing reads yet, with the task that gives it a reader or removes it
@@ -73,7 +74,7 @@ def read_index(trees: list[ast.Module]) -> CodeIndex:
 
 def source_index() -> CodeIndex:
     files = [path for path in SOURCE.rglob("*.py") if not any(part in SKIPPED_FOLDERS for part in path.parts)]
-    return read_index([ast.parse(path.read_text(encoding="utf-8")) for path in files])
+    return read_index([source_tree(path) for path in files])
 
 
 def declared_settings() -> dict[str, str]:
@@ -93,11 +94,17 @@ def test_a_setting_listed_as_unread_is_still_declared():
     assert not removed, f"remove from UNREAD_SETTINGS, no longer declared: {removed}"
 
 
-def test_a_key_held_by_a_constant_nothing_uses_counts_as_unread():
-    index = read_index([ast.parse('LOST = f"{MODULE}.lost-switch"\nUSED = f"{MODULE}.used-switch"\nsetting = settings.flag(USED)\n')])
+def sample_index(tmp_path, text: str) -> CodeIndex:
+    sample = tmp_path / "sample.py"
+    sample.write_text(text)
+    return read_index([source_tree(sample)])
+
+
+def test_a_key_held_by_a_constant_nothing_uses_counts_as_unread(tmp_path):
+    index = sample_index(tmp_path, 'LOST = f"{MODULE}.lost-switch"\nUSED = f"{MODULE}.used-switch"\nsetting = settings.flag(USED)\n')
     assert not index.is_read("journal.x.lost-switch", "lost-switch")
     assert index.is_read("journal.x.used-switch", "used-switch")
 
 
-def test_a_key_written_where_it_is_read_counts_as_read():
-    assert read_index([ast.parse('value = settings.flag("journal.x.direct")\n')]).is_read("journal.x.direct", "direct")
+def test_a_key_written_where_it_is_read_counts_as_read(tmp_path):
+    assert sample_index(tmp_path, 'value = settings.flag("journal.x.direct")\n').is_read("journal.x.direct", "direct")

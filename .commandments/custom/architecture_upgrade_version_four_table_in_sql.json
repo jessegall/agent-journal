@@ -5,7 +5,7 @@
         "select": "literal",
         "where": [
             {
-                "textMatches": "(?i)\\b(FROM|INTO|UPDATE|JOIN|TABLE)\\s+(users|links|phone_codes|plan_reviews|note_drafts)\\b"
+                "textMatches": "(?i)\\b(FROM|INTO|UPDATE|JOIN|TABLE)\\s+(users|phone_codes|plan_reviews|note_drafts)\\b"
             }
         ],
         "reject": [

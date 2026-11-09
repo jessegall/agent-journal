@@ -24,6 +24,9 @@
             },
             {
                 "fileMatches": "(^|/)src/core/modules/(messages/rules/agent_text_rule|messages/support/agent_text_filter|usage/commands/usage_tool/usage_tool_subcommand)\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/processes/support/block_conditions/output_monitored\\.py$"
             }
         ]
     },

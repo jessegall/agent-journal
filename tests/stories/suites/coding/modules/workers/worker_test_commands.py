@@ -19,8 +19,8 @@ PERSON_DISPATCH = "worker dispatch --program claude --model sonnet 1"
 PYTHON_RUN = "worker test python tests/cart.py"
 
 
-def worker_test_part(*words: str) -> ShellPart:
-    return ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", *words])
+def worker_test_part(*test_arguments: str) -> ShellPart:
+    return ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", *test_arguments])
 
 
 @pytest.fixture
@@ -138,11 +138,11 @@ def test_a_run_with_no_test_file_is_refused_as_the_whole_suite(worker_with_comma
     worker_with_commands.story.expect_refusal("worker test python -q", "name each test file", actor=worker_with_commands.worker)
 
 
-@pytest.mark.parametrize("words", ["tests/a.py '|' cat", "tests/a.py ';' ls", "tests/a.py '&&' ls", "tests/a.py '||' ls", "tests/a.py '>' out", "'`ls`.py'", "'$(ls).py'",
+@pytest.mark.parametrize("test_arguments", ["tests/a.py '|' cat", "tests/a.py ';' ls", "tests/a.py '&&' ls", "tests/a.py '||' ls", "tests/a.py '>' out", "'`ls`.py'", "'$(ls).py'",
                                    "/etc/a.py", "../a.py", "tests/a.py --rootdir=/tmp", "tests/a.py -C /tmp", "tests/a.py --prefix /tmp", "tests/a.py --cwd=/tmp", "tests/a.py --config=/tmp/x"],
                          ids=["pipe", "semicolon", "and", "or", "redirect", "backtick", "substitution", "absolute", "parent", "rootdir", "change-folder", "prefix", "cwd", "config"])
-def test_an_argument_cannot_change_the_program(worker_with_commands, words):
-    worker_with_commands.story.expect_refusal(f"worker test python {words}", "cannot change", actor=worker_with_commands.worker)
+def test_an_argument_cannot_change_the_program(worker_with_commands, test_arguments):
+    worker_with_commands.story.expect_refusal(f"worker test python {test_arguments}", "cannot change", actor=worker_with_commands.worker)
     expect_value(started_lines(worker_with_commands), [])
 
 
@@ -176,14 +176,14 @@ def phase_worker(new_story, monkeypatch):
     return start_planned_worker(new_story, monkeypatch, PHASE_DISPATCH)
 
 
-def worker_test_hook(worker, *words):
-    return worker.run_line("journal worker test " + " ".join(words), worker_test_part(*words))
+def worker_test_hook(worker, *test_arguments):
+    return worker.run_line("journal worker test " + " ".join(test_arguments), worker_test_part(*test_arguments))
 
 
 def test_the_bound_command_keeps_its_queue_place_and_the_phase_count(phase_worker):
-    before = phase_worker.status_json()["test_runs_available"]
+    runs_at_start = phase_worker.status_json()["test_runs_available"]
     expect_value(worker_test_hook(phase_worker, "python", "tests/cart.py").refusal, "")
-    expect_value(phase_worker.status_json()["test_runs_available"], before - 1)
+    expect_value(phase_worker.status_json()["test_runs_available"], runs_at_start - 1)
     phase_worker.story.expect_success(PYTHON_RUN, actor=phase_worker.worker)
     expect_value(worker_runs(phase_worker)[0].category is CommandCategory.TEST_RUN, True)
 

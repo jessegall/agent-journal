@@ -12,8 +12,8 @@ FILE_TEST_COMMAND = "python tests/cart.py"
 HAND_IN = "worker next --wait --differences none"
 
 
-def worker_test_hook(worker, *words):
-    return worker.run_line("journal worker test " + " ".join(words), ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", *words]))
+def worker_test_hook(worker, *test_arguments):
+    return worker.run_line("journal worker test " + " ".join(test_arguments), ShellPart("journal", CommandCategory.JOURNAL, ["worker", "test", *test_arguments]))
 
 
 @pytest.fixture
@@ -86,9 +86,9 @@ def test_a_run_inside_a_phase_carries_the_warning(group_worker):
 
 
 def test_a_run_after_the_hand_in_uses_no_run_of_the_group(handed_in_group):
-    before = handed_in_group.status_json()["test_runs_available"]
+    runs_at_start = handed_in_group.status_json()["test_runs_available"]
     expect_value(worker_test_hook(handed_in_group, "python", "tests/cart.py").refusal, "")
-    expect_value(handed_in_group.status_json()["test_runs_available"], before)
+    expect_value(handed_in_group.status_json()["test_runs_available"], runs_at_start)
 
 
 def test_the_end_of_the_group_tells_the_worker_its_tests_are_queued(handed_in_group):

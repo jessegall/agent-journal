@@ -47,7 +47,7 @@ class AskingWorker:
         flag = "" if topic is None else f" --about {topic}"
         return self.story.run(f'worker ask "{text}"{flag}', actor=self.worker)
 
-    def asked(self, text: str = QUESTION, topic: AskTopic | None = None) -> LineOutcome:
+    def post_question(self, text: str = QUESTION, topic: AskTopic | None = None) -> LineOutcome:
         outcome = self.ask(text, topic)
         assert outcome.code == 0, outcome.output_text
         return outcome
@@ -86,7 +86,7 @@ def asking(new_story):
 
 
 @pytest.fixture
-def asking_with_merger_off(new_story):
+def merger_disabled_worker(new_story):
     return asking_worker(new_story(fixture=MergerOffOrchestrator))
 
 
@@ -100,7 +100,7 @@ def asking_with_merger_running(new_story, monkeypatch):
 
 @pytest.fixture
 def open_question(asking):
-    asking.asked()
+    asking.post_question()
     return asking
 
 
@@ -125,7 +125,7 @@ def judged(new_story):
 
 @pytest.mark.parametrize("topic", list(AskTopic))
 def test_an_ask_for_each_topic_reaches_the_merger_with_its_facts_and_gives_the_meanwhile_line(asking, topic):
-    outcome = asking.asked(topic=topic)
+    outcome = asking.post_question(topic=topic)
     line = asking.merger_lines()[0]
     asking.story.expect_rows(topic.waiting_work() in outcome.output_text, line.topic is topic, QUESTION in line.text, f"worker {asking.worker.id}" in line.text, f"task 1" in line.text, detail=outcome.output_text + line.text)
     facts = asking.facts()
@@ -133,12 +133,12 @@ def test_an_ask_for_each_topic_reaches_the_merger_with_its_facts_and_gives_the_m
 
 
 def test_the_answer_of_an_ask_also_says_what_to_do_now(open_question):
-    outcome = open_question.asked(FIXTURE_QUESTION)
+    outcome = open_question.post_question(FIXTURE_QUESTION)
     open_question.story.expect_rows("Now:" in outcome.output_text, "Then:" in outcome.output_text, detail=outcome.output_text)
 
 
 def test_an_ask_without_a_topic_is_about_other(asking):
-    outcome = asking.asked()
+    outcome = asking.post_question()
     asking.story.expect_rows(asking.merger_lines()[0].topic is AskTopic.GENERAL, AskTopic.GENERAL.waiting_work() in outcome.output_text, detail=outcome.output_text)
 
 
@@ -157,7 +157,7 @@ def test_the_ask_is_logged_on_the_task(open_question):
 
 
 def test_the_facts_holds_the_files_the_worker_changed(changed_worker):
-    changed_worker.asked()
+    changed_worker.post_question()
     changed_worker.story.expect_rows(changed_worker.facts()["files"] == ["cart.py"], detail=str(changed_worker.facts()))
 
 
@@ -166,14 +166,14 @@ def test_the_facts_holds_the_last_three_outputs_of_the_worker(asking):
     asking.story.agent = asking.worker
     processes = [start_process(asking.story, f"echo step{number}") for number in range(4)]
     asking.story.agent = main
-    asking.asked()
+    asking.post_question()
     outputs = asking.facts()["outputs"]
     asking.story.expect_rows(len(outputs) == 3, all(f"output {process.id}" in text for process, text in zip(reversed(processes[1:]), outputs, strict=True)), "step3" in outputs[0], not any("step0" in text for text in outputs), detail=str(outputs))
 
 
 @pytest.mark.real_git
 def test_the_facts_holds_the_last_refusal_of_the_worker(judged):
-    judged.asked(topic=AskTopic.JUDGE)
+    judged.post_question(topic=AskTopic.JUDGE)
     judged.story.expect_rows("cart.py has a sin" in judged.facts()["refusal"], detail=str(judged.facts()))
 
 
@@ -181,13 +181,13 @@ def test_the_facts_holds_the_last_refusal_of_the_worker(judged):
 def test_a_refusal_that_a_later_hand_in_cleared_is_not_in_the_facts(judged):
     judged.repository.changed(judged.worker.id, "cart.py", CART_CHANGE)
     judged.story.expect_success(DELIVERY, actor=judged.worker)
-    judged.asked()
+    judged.post_question()
     judged.story.expect_rows(judged.facts()["refusal"] is None, judged.facts()["point"] == "wait", detail=str(judged.facts()))
 
 
 def test_a_worker_that_handed_in_may_still_ask(changed_worker):
     changed_worker.story.expect_success(DELIVERY, actor=changed_worker.worker)
-    changed_worker.asked(topic=AskTopic.TESTS)
+    changed_worker.post_question(topic=AskTopic.TESTS)
     changed_worker.story.expect_rows(changed_worker.facts()["point"] == "wait", changed_worker.facts()["files"] == ["cart.py"], detail=str(changed_worker.facts()))
 
 
@@ -208,20 +208,20 @@ def test_going_on_working_closes_the_question_and_the_stop_is_refused_again(open
 
 
 def test_asking_the_same_twice_sends_one_line_and_gives_the_same_answer(asking):
-    first = asking.asked()
-    second = asking.asked()
+    first = asking.post_question()
+    second = asking.post_question()
     asking.story.expect_rows(len(asking.merger_lines()) == 1, second.output_text == first.output_text, detail=second.output_text)
 
 
 def test_the_same_text_about_another_topic_is_a_new_ask(asking):
-    asking.asked(topic=AskTopic.TOOL)
-    asking.asked(topic=AskTopic.JUDGE)
+    asking.post_question(topic=AskTopic.TOOL)
+    asking.post_question(topic=AskTopic.JUDGE)
     asking.story.expect_rows([line.topic for line in asking.merger_lines()] == [AskTopic.TOOL, AskTopic.JUDGE])
 
 
 def test_another_question_while_one_is_open_is_a_new_line_and_work_closes_both(asking):
-    asking.asked()
-    asking.asked(FIXTURE_QUESTION)
+    asking.post_question()
+    asking.post_question(FIXTURE_QUESTION)
     asking.story.expect_rows(len(asking.merger_lines()) == 2)
     asking.worked_on()
     asking.story.expect_rows(OPEN_QUESTION_LINE not in asking.status_line(), detail=asking.status_line())
@@ -229,31 +229,31 @@ def test_another_question_while_one_is_open_is_a_new_line_and_work_closes_both(a
 
 def test_asking_again_after_going_on_is_a_new_line(open_question):
     open_question.worked_on()
-    open_question.asked()
+    open_question.post_question()
     open_question.story.expect_rows(len(open_question.merger_lines()) == 2)
 
 
 def test_the_main_agent_hears_nothing_of_an_ask_and_sees_no_stuck_mark(asking_with_merger_running):
-    asking_with_merger_running.asked()
+    asking_with_merger_running.post_question()
     lines = asking_with_merger_running.main_lines()
     marks = asking_with_merger_running.story.run("chat-mark list --environment 1").output_text
     asking_with_merger_running.story.expect_rows("is stuck" not in lines, QUESTION not in lines, "merger-line" not in lines, "is stuck" not in marks, detail=lines + marks)
 
 
 def test_an_ask_wakes_the_merger_which_reads_it_with_its_facts_once(asking_with_merger_running):
-    asking_with_merger_running.asked(topic=AskTopic.TOOL)
+    asking_with_merger_running.post_question(topic=AskTopic.TOOL)
     asking_with_merger_running.story.run_listeners()
     merger = Actor(merger_agent(asking_with_merger_running.story).id, ActorType.AGENT)
     asking_with_merger_running.story.expect_text("merger next", QUESTION, "tool", "point build", "task 1", actor=merger)
     asking_with_merger_running.story.expect_no_text("merger next", QUESTION, actor=merger)
 
 
-def test_with_the_merger_off_an_ask_reaches_the_main_agent_and_the_worker_may_stop(asking_with_merger_off):
-    outcome = asking_with_merger_off.asked(topic=AskTopic.BUILT)
-    line = asking_with_merger_off.merger_lines()[0]
-    asking_with_merger_off.story.expect_rows(AskTopic.BUILT.waiting_work() in outcome.output_text, f"merger-line:{line.id}" in asking_with_merger_off.main_lines(), detail=asking_with_merger_off.main_lines())
-    asking_with_merger_off.story.expect_text(f"merger-line show {line.id}", QUESTION, "point build", actor=asking_with_merger_off.story.agent)
-    asking_with_merger_off.story.expect_hook_allowed(asking_with_merger_off.session(), HookSamples.stop())
+def test_with_the_merger_off_an_ask_reaches_the_main_agent_and_the_worker_may_stop(merger_disabled_worker):
+    outcome = merger_disabled_worker.post_question(topic=AskTopic.BUILT)
+    line = merger_disabled_worker.merger_lines()[0]
+    merger_disabled_worker.story.expect_rows(AskTopic.BUILT.waiting_work() in outcome.output_text, f"merger-line:{line.id}" in merger_disabled_worker.main_lines(), detail=merger_disabled_worker.main_lines())
+    merger_disabled_worker.story.expect_text(f"merger-line show {line.id}", QUESTION, "point build", actor=merger_disabled_worker.story.agent)
+    merger_disabled_worker.story.expect_hook_allowed(merger_disabled_worker.session(), HookSamples.stop())
 
 
 def test_a_job_sent_to_a_worker_that_asked_gets_through(open_question):

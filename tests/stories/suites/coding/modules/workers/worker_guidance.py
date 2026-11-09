@@ -21,9 +21,9 @@ def expect_voice(worker, line: str) -> None:
     worker.story.expect_rows("Now:" in line, "Then:" in line, now_of(line) == now_of(status_line), detail=f"{line}\n{status_line}")
 
 
-def expect_step(worker, step: str, *words: str) -> str:
+def expect_step(worker, step: str, *status_parts: str) -> str:
     status = worker.status()
-    worker.story.expect_rows(f"Point: {step}" in status, *(word in status.splitlines()[0] for word in words), detail=status)
+    worker.story.expect_rows(f"Point: {step}" in status, *(word in status.splitlines()[0] for word in status_parts), detail=status)
     return status.splitlines()[0]
 
 

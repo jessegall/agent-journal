@@ -12,7 +12,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.brief_points import brief_point_count
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit
-from suites.coding.modules.workers.support.delivery_differences import follows_brief
+from suites.coding.modules.workers.support.delivery_differences import is_none_answer
 from suites.coding.modules.workers.support.worktree_changes import WorktreeChanges
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.protected_folders import ProtectedFolders
@@ -47,7 +47,7 @@ class WorkerTaskCommit:
             raise Refusal(f"your work clashes with {worktree.base_branch} in {', '.join(conflicts)}", AskTopic.CONFLICT.hint("settle the conflict markers in those files, then hand in again"))
         current = worktree.moved(WorktreeLifecycle.advance, base_commit=base_commit)
         changes = self.git.comparison(current)
-        if follows_brief(differences):
+        if is_none_answer(differences):
             self.check_built(current, task, changes)
         self.git.refuse_deleted_built_files(current, changes)
         if base_commit != worktree.base_commit:

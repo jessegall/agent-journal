@@ -45,7 +45,7 @@ class CodeFingerprint:
         source_hash = os.environ.get(PINNED_CODE_VARIABLE)
         if source_hash is None:
             return SourceHash.text(folders)
-        extra_folders = tuple(folder for folder in folders if not folder.is_relative_to(SOURCE_FOLDER))
+        extra_folders = tuple(folder for folder in folders if SOURCE_FOLDER not in (folder, *folder.parents))
         return source_hash + SourceHash.text(extra_folders) if extra_folders else source_hash
 
     @staticmethod
