@@ -9,6 +9,7 @@ from core.base.query.queries import Queries
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.waits.models.wait_target import WaitTarget
+from core.base.driver.nudge import Nudge
 from core.modules.questions.support.question_nudges import QUESTION_ANSWER_SOURCE
 
 
@@ -26,7 +27,7 @@ class QuestionChanges:
             questions = questions.matching(Greater("updated_at", last_answer_at.text))
         rows = tuple(questions.oldest().all_rows())
         waiting_ids = self.waiting_ids([question.id for question in rows])
-        lines = []
+        lines: list[Nudge] = []
         for question in rows:
             if question.id in waiting_ids:
                 continue

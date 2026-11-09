@@ -15,7 +15,7 @@ from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.type_guards import is_mapping
+from core.base.type_guards import is_mapping, is_object_mapping
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
@@ -59,8 +59,9 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         data: object = json.loads(delivery.data)
         event_data = {str(key): value for key, value in data.items()} if is_mapping(data) else {}
         file_checkout = self.delivery_checkout(delivery, event_data)
-        if file_checkout is not None:
-            event_data[FILE_FIELD] = self.with_file_state(file_checkout, event_data[FILE_FIELD])
+        file_values = event_data.get(FILE_FIELD)
+        if file_checkout is not None and is_object_mapping(file_values):
+            event_data[FILE_FIELD] = self.with_file_state(file_checkout, file_values)
         location = f"at {delivery.event}{COMMIT_SUFFIX if delivery.script else ''}"
         request = PluginRunRequest(check.runnable, PluginEvent(delivery.event, event_data), EventForm.COMMIT, self.policy.commit_limit_ms if delivery.script else DELIVERY_LIMIT_MS,
                                    location, environment, self.clock.timestamp(), delivery.session_agent_id, delivery.script, file_checkout)
@@ -82,7 +83,7 @@ class PluginDeliveryListener(CommitListener[Created[PluginDelivery]]):
         file = event_data.get(FILE_FIELD)
         return self.checkouts.file_checkout(delivery.session_agent_id, Path(str(file["path"]))) if is_mapping(file) and delivery.session_agent_id is not None else None
 
-    def with_file_state(self, checkout: Checkout, values: object) -> dict[str, object]:
+    def with_file_state(self, checkout: Checkout, values: Mapping[str, object]) -> dict[str, object]:
         file = CheckoutFile.restored(values)
         return file.with_state(self.checkouts.file_state(checkout, file.relative)).values()
 

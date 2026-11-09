@@ -1,6 +1,6 @@
 import threading
 from collections import Counter
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -18,7 +18,7 @@ class PluginServiceWaits:
         self.waiting: Counter[Path] = Counter()
 
     @contextmanager
-    def locked(self, path: Path) -> Iterator[None]:
+    def locked(self, path: Path) -> Generator[None]:
         with self.lock:
             if self.waiting[path] >= MOST_WAITING_CALLS:
                 raise PluginLateError(f"{MOST_WAITING_CALLS} calls already wait on its service")

@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import ClassVar
+from typing import ClassVar, Never
 
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.suite import Suite
@@ -15,5 +15,5 @@ class Driver:
     suite: ClassVar[type[Suite]]
     role: ClassVar[str]
     rules: ClassVar[Sequence[type[DriverRule]]] = []
-    guards: ClassVar[Sequence[type[Guard]]] = []
+    guards: ClassVar[Sequence[type[Guard[Never]]]] = []
     opening_lines: ClassVar[Sequence[str]] = []

@@ -29,5 +29,7 @@ class UnreadMessages:
         self.replace_cached(message, ())
 
     def replace_cached(self, message: Message, pending: tuple[Message, ...]) -> None:
-        self.kept.scoped_update("messages", lambda messages: tuple(sorted([row for row in messages if row.id != message.id] + list(pending), key=lambda row: row.id)),
-                                  "read_at IS NULL", name="messages.unread_person_messages")
+        def replaced(messages: tuple[Message, ...]) -> tuple[Message, ...]:
+            return tuple(sorted([row for row in messages if row.id != message.id] + list(pending), key=lambda row: row.id))
+
+        self.kept.scoped_update("messages", replaced, "read_at IS NULL", name="messages.unread_person_messages")

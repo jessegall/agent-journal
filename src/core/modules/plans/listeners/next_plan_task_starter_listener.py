@@ -31,12 +31,11 @@ class NextPlanTaskStarterListener(CommitListener[Moved[Task]]):
         self.plans.prepare([event.row_id for event in events])
 
     def handle(self, event: Moved[Task], logged: LoggedEvent) -> None:
-        place = self.plans.find_phase(event.row.id)
         plan = self.plans.find(event.row.id)
         assigner = self.assigners.assigner()
         if plan is None or assigner is None or plan.state is not PlanState.STARTED or self.tasks.holder(logged.actor_id).started().exists() or self.urgent_task_waits() or assigner.exceeds_context_limit(logged.actor_id):
             return
-        following = self.next_tasks.following(place.plan_id)
+        following = self.next_tasks.following(plan.id)
         if following is not None:
             self.bus.run(StartTask(following), Actor(logged.actor_id, ActorType.AGENT), cause_id=logged.id)
 

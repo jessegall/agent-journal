@@ -8,7 +8,7 @@ from core.base.library.library_ref import LibraryRef
 from core.base.refusal import Refusal
 
 
-L = TypeVar("L", covariant=True)
+L = TypeVar("L")
 
 
 class LibraryAwareShow(Generic[L]):

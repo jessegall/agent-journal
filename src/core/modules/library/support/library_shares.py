@@ -15,4 +15,5 @@ class LibraryShares:
     def lookup(self, name: str) -> LibraryShare[Model]:
         if name not in self.registry.library_shares:
             raise Refusal(f"this journal shares no {name} with the library", f"the shares are {', '.join(sorted(self.registry.library_shares)) or 'none'}")
-        return self.container.get(self.registry.library_shares[name].checked_class(LibraryShare))
+        share_class: type[LibraryShare[Model]] = self.registry.library_shares[name].checked_class(LibraryShare)
+        return self.container.get(share_class)

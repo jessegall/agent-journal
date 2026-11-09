@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.modules.library.support.library_token import LibraryToken
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 from core.modules.library.support.library_user import LibraryUser
 
@@ -17,10 +18,9 @@ class NewLibraryUser:
 
     @classmethod
     def parsed(cls, body: object) -> "NewLibraryUser":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(LibraryUser.parsed(body["user"]), LibraryToken.parsed(body["token"]), str(body["token_text"]))
+            return cls(LibraryUser.parsed(fields["user"]), LibraryToken.parsed(fields["token"]), str(fields["token_text"]))
         except KeyError as error:
             raise LibraryUnreachableError.unreadable() from error
 

@@ -17,4 +17,4 @@ class SuiteTaskAssigners:
         names = self.registry.ancestors(running) if running is not None else ()
         entries = (self.registry.suite(name) for name in names)
         paths = [entry.task_assigner for entry in entries if entry is not None and entry.task_assigner]
-        return self.container.get(DottedPath(paths[0]).loaded()) if paths else None
+        return self.container.get(DottedPath(paths[0]).checked_class(TaskAssigner)) if paths else None

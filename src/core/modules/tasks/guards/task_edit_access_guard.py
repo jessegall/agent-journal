@@ -2,7 +2,7 @@ from core.base.access import Access
 from core.base.actor_type import ActorType
 from core.base.change.updated import Updated
 from core.base.command.context import Context
-from core.base.command.edit_command import EditCommand
+from core.base.command.edit_command import is_edit_command
 from core.base.guard.guard import Guard
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
@@ -20,7 +20,7 @@ class TaskEditAccessGuard(Guard[Updated[Task]]):
         self.queries = queries
 
     def check(self, event: Updated[Task], context: Context) -> None:
-        if context.actor.type is not ActorType.AGENT or not isinstance(context.command, EditCommand):
+        if context.actor.type is not ActorType.AGENT or not is_edit_command(context.command):
             return
         agent = self.queries.query(Agent).find(context.actor.id)
         if agent.access == Access.READ and "complexity" in context.command.changed_fields():

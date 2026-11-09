@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.modules.library.support.library_answer import LibraryAnswer
 from core.modules.library.support.library_unreachable_error import LibraryUnreachableError
 
 
@@ -16,10 +17,9 @@ class VersionLine:
 
     @classmethod
     def parsed(cls, body: object) -> "VersionLine":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(int(body["version"]), str(body["action"]), str(body["user"]), str(body.get("token", "")), str(body["created_at"]))
+            return cls(LibraryAnswer.number(fields["version"]), str(fields["action"]), str(fields["user"]), str(fields.get("token", "")), str(fields["created_at"]))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

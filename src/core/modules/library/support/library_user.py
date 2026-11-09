@@ -20,10 +20,9 @@ class LibraryUser:
 
     @classmethod
     def parsed(cls, body: object) -> "LibraryUser":
-        if not isinstance(body, dict):
-            raise LibraryUnreachableError.unreadable()
+        fields = LibraryAnswer.fields(body)
         try:
-            return cls(int(body["id"]), str(body["name"]), LibraryRole(body["role"]), str(body.get("removed_at", "")))
+            return cls(LibraryAnswer.number(fields["id"]), str(fields["name"]), LibraryRole(fields["role"]), str(fields.get("removed_at", "")))
         except (KeyError, TypeError, ValueError) as error:
             raise LibraryUnreachableError.unreadable() from error
 

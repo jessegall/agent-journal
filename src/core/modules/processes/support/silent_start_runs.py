@@ -24,12 +24,12 @@ class SilentStartRuns:
 
     def runs(self, name: str) -> tuple[SilentRun, ...]:
         ended = self.processes.ended().with_part(Prefix("text", name)).newest().limited(RUNS_READ)
-        silent_runs = []
+        silent_runs: list[SilentRun] = []
         for process in ended:
             part = next((part for part in self.parts.process(process.id).all_rows() if self.name(part.text, part.program, part.category) == name), None)
             if part is not None and process.ended_at is not None:
                 output = self.outputs.process_output(process.id)
-                started_at = process.started_at or process.created_at
+                started_at = process.started_at or process.creation_timestamp()
                 silent_runs.append(SilentRun(process, part, int(started_at.elapsed_seconds(process.ended_at)), output is not None and output.progress > 0))
         return tuple(silent_runs)
 

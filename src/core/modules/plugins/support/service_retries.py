@@ -29,7 +29,7 @@ class ServiceRetries:
     failure, then after a pause that doubles up to ten minutes; one that failed three times in a row is
     named once to the user, and one that ran for five minutes starts over."""
 
-    retries: dict[tuple[str, str], ServiceRetry] = field(default_factory=dict)
+    retries: dict[tuple[str, str], ServiceRetry] = field(default_factory=dict[tuple[str, str], ServiceRetry])
 
     def is_due(self, key: tuple[str, str], now: datetime) -> bool:
         retry = self.retries.get(key)

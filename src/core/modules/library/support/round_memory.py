@@ -11,7 +11,7 @@ class RoundMemory:
     of an item that failed a local check, which are not tried again."""
 
     state: ServerState | None = None
-    skipped: set[tuple[int, int]] = field(default_factory=set)
+    skipped: set[tuple[int, int]] = field(default_factory=set[tuple[int, int]])
 
     def is_skipped(self, copy: LibraryCopy, entry: StateEntry) -> bool:
         return (copy.id, entry.version) in self.skipped

@@ -16,7 +16,6 @@ class ReviewersMostGuard(Guard[Created[Reviewer]]):
         self.reviewers, self.settings = reviewers, settings
 
     def check(self, event: Created[Reviewer], context: Context) -> None:
-        reviewer = event.row
         active = self.reviewers.active().count()
         if active >= self.settings.limit():
             raise Refusal(f"{active} reviewers are out, the limit {REVIEWERS_MOST_SETTING} sets", f"retire one with journal reviewer retire, or raise the limit with journal setting set {REVIEWERS_MOST_SETTING} <count>")

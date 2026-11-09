@@ -5,6 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.registry.registry import Registry
+from core.base.subcommand.subcommand import is_subcommand_class
 from core.modules.processes.support.background_commands import JOURNAL
 
 CUTTING_PROGRAMS = ("head", "tail", "cut", "grep", "sed", "awk")
@@ -32,4 +33,7 @@ class JournalPipeRule(DriverRule):
 
     def allows_pipes(self, part: Part) -> bool:
         subcommand = self.registry.subcommands.get(" ".join(part.arguments[:2]))
-        return subcommand is not None and subcommand.loaded().allows_pipes
+        if subcommand is None:
+            return False
+        loaded = subcommand.loaded()
+        return is_subcommand_class(loaded) and loaded.allows_pipes

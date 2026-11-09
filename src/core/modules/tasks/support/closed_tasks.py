@@ -13,9 +13,11 @@ from core.modules.tasks.queries.task_query import TaskQuery
 class ClosedTasks(Span):
     """A span of tasks closed in the agent's environment."""
 
-    unit = "closed tasks"
-
     count: int
+
+    @property
+    def unit(self) -> str:
+        return "closed tasks"
 
     def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool:
         return TaskQuery(reads.queries.database, reads.queries.tables, reads.kept).matching(Greater("closed_at", start.text)).count() >= self.count
