@@ -8,6 +8,7 @@ from suites.coding.modules.workers.support.worker_round import WorkerRound
 from suites.coding.modules.workers.support.worker_step_facts import WorkerStepFacts
 from suites.coding.modules.workers.support.worker_step_text import step_line
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
+from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 NEXT_COMMAND = 'journal worker next --differences "<what differs, or none>"'
 DELIVER_COMMAND = 'journal worker deliver --differences "<what differs, or none>"'
@@ -18,8 +19,8 @@ CONFLICT_FILES_FIELD = "lines"
 class WorkerGuidance:
     """What a worker should do now: the one source of every line that tells it."""
 
-    def __init__(self, steps: WorkerSteps, groups: WorkerGroups, phases: WorkerPhases, queries: Queries) -> None:
-        self.steps, self.groups, self.phases, self.queries = steps, groups, phases, queries
+    def __init__(self, steps: WorkerSteps, groups: WorkerGroups, phases: WorkerPhases, queries: Queries, names: WorkerTestNames) -> None:
+        self.steps, self.groups, self.phases, self.queries, self.names = steps, groups, phases, queries, names
 
     def line(self, worker_id: int) -> str:
         return self.point(worker_id).line
@@ -34,7 +35,7 @@ class WorkerGuidance:
             return WorkerPoint(worker_round, step, step_line(step, self.no_work_facts(worker_round)), None, len(worker_round.started), None)
         group = worker_round.group
         open_task_count = self.groups.open_task_count(group, worker_round.started, worker_round.ready)
-        runs = self.groups.test_runs_available(worktree, group)
+        runs = self.groups.test_runs_available(worktree, group) if self.names.rows(worktree.session_agent_id) else 0
         return WorkerPoint(worker_round, step, step_line(step, self.facts(worker_round, open_task_count, runs)), self.groups.group_key(group), open_task_count, runs)
 
     def question_line(self, worker_round: WorkerRound) -> str:
