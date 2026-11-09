@@ -77,7 +77,7 @@ class WorktreeGit:
             Path(folder).parent.mkdir(parents=True, exist_ok=True)
             self.checked(worktree.folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "--detach", folder, commit)
         else:
-            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "checkout", "--detach", "--force", commit)
+            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "reset", "--hard", commit)
             self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fd", *(flag for name in libraries for flag in ("-e", name)))
         for name in libraries:
             if not Path(folder, name).exists():

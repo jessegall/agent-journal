@@ -124,7 +124,7 @@ from core.modules.drivers.migrations.m041_permission_requests import PermissionR
 from core.modules.drivers.migrations.m042_hook_call_read_indexes import HookCallReadIndexesMigration
 from core.modules.drivers.migrations.m043_foreign_run_index import ForeignRunIndexMigration
 from core.modules.drivers.migrations.m044_refusal_skip_approval import RefusalSkipApprovalMigration
-from core.modules.drivers.migrations.m045_overview_reads import OverviewReadsMigration
+from core.modules.drivers.migrations.m046_overview_reads import OverviewReadsMigration
 from core.modules.drivers.models.overview_read import OverviewRead
 from core.modules.drivers.commands.record_overview_read.record_overview_read_handler import RecordOverviewReadHandler
 from core.modules.drivers.support.table_overview_reads import TableOverviewReads
