@@ -62,6 +62,6 @@ class WorkerRunEndedListener(SaveListener[ProcessEnded]):
                 return WORKER_OPERATION_NEXT.nudge(task=task.id, output=process.id)
             if self.proof_queue.tests_pending(worktree):
                 return WORKER_OPERATION_TESTS.nudge(task=task.id, output=process.id)
-        if operation.name is WorkerOperationName.MERGE and worktree is not None:
+        if operation.name is WorkerOperationName.MERGE and worktree is not None and not self.worktrees.merged_since(operation.worker_id, process.creation_timestamp()):
             return WORKER_OPERATION_CONFLICT.nudge(worker=operation.worker_id, output=process.id)
         return operation.name.finished_nudge(operation.worker_id, process.id)
