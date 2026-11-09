@@ -165,11 +165,11 @@ func TestTheSocketSaysHowLongAgoTheKeyboardOfAnOpenTerminalWasUsed(t *testing.T)
 		t.Fatal(err)
 	}
 	defer listener.Close()
-	answer, err := socketAnswer(path, WorkerRequest{AgentID: 7, Quiet: true})
+	answer, err := socketAnswer(path, WorkerRequest{AgentID: 7, Silent: true})
 	if err != nil || strings.TrimSpace(answer) != QuietAnswer+" 0" {
 		t.Fatalf("the launcher answered %q, %v", answer, err)
 	}
-	if answer, _ := socketAnswer(path, WorkerRequest{AgentID: 8, Quiet: true}); strings.TrimSpace(answer) != "" {
+	if answer, _ := socketAnswer(path, WorkerRequest{AgentID: 8, Silent: true}); strings.TrimSpace(answer) != "" {
 		t.Fatalf("the launcher answered %q for an agent it has no terminal of", answer)
 	}
 }

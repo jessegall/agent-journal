@@ -64,7 +64,7 @@ def test_s49_counts_groups_and_retirement(new_story):
 
 def test_s51_agent_details_are_paged(new_story):
     story = new_story(fixture=MainControlsActors)
-    story.expect_success("agent cards --show all --kept --environment main", actor=story.agent)
+    story.expect_success("agent cards --show all --reusable --environment main", actor=story.agent)
     with person_viewer(story) as viewer:
         status, answer = window_data(viewer.server, viewer.cookie, keys="count-agents", window="coding.agent-settings",
                                      query="environment=main&count-agents.role=helper&count-agents.page=1")

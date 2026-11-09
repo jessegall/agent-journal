@@ -17,4 +17,4 @@ class RunShapes:
     @staticmethod
     def found(output: str) -> RunShape | None:
         text = output[:INSPECTED_CHARACTERS]
-        return next((shape for shape in SHAPES if shape.found.search(text)), None)
+        return next((shape for shape in SHAPES if shape.located.search(text)), None)

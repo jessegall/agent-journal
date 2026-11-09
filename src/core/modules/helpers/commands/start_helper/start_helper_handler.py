@@ -127,7 +127,7 @@ class StartHelperHandler(Handler[StartHelper, HelperStarted]):
         return f"{program} is out{availability}: {state.line}; started as requested"
 
     def checked_start(self, program: str, program_model: str, profile: AgentProfile, parent: Agent, tier: ModelTier | None) -> str:
-        model = self.limits.checked_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name)
+        model = self.limits.checked_profile_model(program, program_model or self.models.model(profile, self.providers.provider(program), tier, "helper"), profile.name)
         self.programs.checked(program, self.folders.folder(parent))
         return model
 

@@ -46,7 +46,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
         if arguments.session and not arguments.no_program:
-            raise Refusal("--session names the session of a program that is not started", "add --no-program")
+            raise Refusal("--session is the session of a program that is not started", "add --no-program")
         task_ids = self.picked(arguments)
         return DispatchWorker(task_ids[0], tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program, task_ids[1:], arguments.model, arguments.profile, arguments.name, arguments.fresh, arguments.tier, arguments.plan, arguments.phase, session=arguments.session, starts_program=not arguments.no_program, sandboxed=not arguments.no_sandbox)
 

@@ -21,7 +21,7 @@ class ProofTestLine:
             return
         tokens = shlex.split(line)
         if not self.is_saved(line, tokens):
-            raise Refusal("a proof's test must be a saved test command", "journal alias list --category 'test run' names them; ask the main agent to add one")
+            raise Refusal("a proof's test must be a saved test command", "journal alias list --category 'test run' lists them; ask the main agent to add one")
         if not any("::" in token or token.split("::")[0].endswith(TEST_FILE_ENDINGS) for token in tokens):
             raise Refusal("a proof's test must name its test files, never the whole suite", "name each test file the proof covers")
 

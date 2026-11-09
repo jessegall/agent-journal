@@ -6,7 +6,7 @@ from core.base.refusal import Refusal
 from core.modules.helpers.models.usage_limit import UsageLimit
 
 
-class UsageLimitGuard(Guard[Changed[UsageLimit]]):
+class UsageCapGuard(Guard[Changed[UsageLimit]]):
     """A usage limit is a person's own: an agent neither sets, changes nor removes one."""
 
     name = "helpers.person-limits"

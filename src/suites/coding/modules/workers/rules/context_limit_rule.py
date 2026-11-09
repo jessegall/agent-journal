@@ -14,7 +14,7 @@ from suites.coding.support.context_limit_check import ContextLimitCheck
 RETRY_SECONDS = Seconds(600)
 
 
-class ContextLimitRule(DriverRule):
+class ContextSizeRule(DriverRule):
     """A stop compacts an agent at once when its context has reached the token limit, unless it holds a task it is to
     finish first and has not reached the second limit."""
 

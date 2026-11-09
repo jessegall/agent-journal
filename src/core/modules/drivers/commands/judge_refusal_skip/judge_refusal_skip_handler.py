@@ -25,7 +25,7 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
     def handle(self, command: JudgeRefusalSkip, context: Context) -> RefusalSkip:
         skip = self.queries.query(RefusalSkip).find(command.skip_id)
         if not skip.needs_approval:
-            raise Refusal(f"skip {skip.id} waits for no approval", "journal refusal show names its state")
+            raise Refusal(f"skip {skip.id} waits for no approval", "journal refusal show prints its state")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
         if context.actor.type is ActorType.AGENT and agent.parent_id != context.actor.id:
             raise Refusal(f"skip {skip.id} is for agent {agent.parent_id} to answer", "only the agent's parent or a person answers it")

@@ -34,7 +34,7 @@ def delivered(story, text: str) -> None:
 
 def test_a_reworded_repeat_of_one_of_the_last_five_messages_is_held(new_story):
     story = new_story(fixture=FirstMessageDelivered, environment="main")
-    story.expect_refusal(f'message send "{REWORDED}"', "refused by messages.repeated-message: this says much the same as your message 1",
+    story.expect_refusal(f'message send "{REWORDED}"', "refused by messages.repeated-message: this is much the same as your message 1",
                          actor=story.agent)
     confirmed_skip(story, "messages.repeated-message", story.agent, "the card number changed")
     story.advance(timedelta(seconds=1))

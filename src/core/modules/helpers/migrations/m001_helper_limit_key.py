@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class HelperLimitKeyMigration(Migration):
+class HelperCapKeyMigration(Migration):
     """Moves the helper limit to the helper run limit, which keeps its value at each level."""
 
     number = 1

@@ -66,7 +66,9 @@ func (inputs *TerminalInputs) Open(agentID int, source io.Reader) io.Reader {
 	inputs.mutex.Lock()
 	inputs.writers[agentID] = writer
 	inputs.mutex.Unlock()
-	go func() { _, _ = io.Copy(writer, keyboardReader{source, func(keys []byte) { inputs.noteKeys(agentID, keys) }}) }()
+	go func() {
+		_, _ = io.Copy(writer, keyboardReader{source, func(keys []byte) { inputs.noteKeys(agentID, keys) }})
+	}()
 	return reader
 }
 
@@ -284,10 +286,10 @@ func (inputs *TerminalInputs) noteKeys(agentID int, keys []byte) {
 
 // OnLogin sets what is done when a person enters the login command at the keyboard of an agent's terminal, which ends
 // the program's turn as an interrupt does.
-func (inputs *TerminalInputs) OnLogin(tell func(agentID int)) {
+func (inputs *TerminalInputs) OnLogin(notify func(agentID int)) {
 	inputs.mutex.Lock()
 	defer inputs.mutex.Unlock()
-	inputs.onLogin = tell
+	inputs.onLogin = notify
 }
 
 // Pending is the text the person typed at the keyboard of the agent's terminal and has not entered.

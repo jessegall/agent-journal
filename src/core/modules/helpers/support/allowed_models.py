@@ -13,13 +13,13 @@ class AllowedModels:
     def __init__(self, setting_values: SettingValues, scopes: Scopes, options: AgentOptions) -> None:
         self.setting_values, self.scopes, self.options = setting_values, scopes, options
 
-    def allowed(self, provider: Provider, agent_type: str = "", profile: str = "") -> list[str]:
+    def allowed(self, provider: Provider) -> list[str]:
         names = provider.model_names()
         listed = self.setting_values.texts(ALLOWED_MODELS)
-        if listed:
-            names = [name for name in names if f"{provider.name} {name}" in listed]
-        if not agent_type:
-            return names
+        return [name for name in names if f"{provider.name} {name}" in listed] if listed else names
+
+    def allowed_for(self, provider: Provider, agent_type: str, profile: str) -> list[str]:
+        names = self.allowed(provider)
         options = self.options.resolved(agent_type, profile).options
         if options.allowed_providers is not None and provider.name not in options.allowed_providers:
             return []

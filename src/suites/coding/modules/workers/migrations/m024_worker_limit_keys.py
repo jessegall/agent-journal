@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class WorkerLimitKeysMigration(Migration):
+class WorkerCapKeysMigration(Migration):
     """Moves the worker limit to the worker run limit, which keeps its value at each level."""
 
     number = 24

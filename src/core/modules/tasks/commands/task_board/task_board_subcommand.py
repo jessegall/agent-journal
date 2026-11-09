@@ -1,7 +1,7 @@
 from core.base.query.conditions.less import Less
 from core.base.query.condition import Condition
 from core.modules.tasks.conditions.closed_task_cursor import ClosedTaskCursor
-from core.modules.tasks.conditions.outside_a_plan import OutsideAPlan
+from core.modules.tasks.conditions.outside_a_plan import PlanlessTask
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -59,7 +59,7 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
 
     def shown_cards(self, state: TaskState | str, arguments: Namespace) -> Query[TaskCard]:
         cards = self.cards.cards(state, arguments.tag)
-        return cards.matching(OutsideAPlan()) if str(state) in arguments.hide_plan_tasks.split(",") else cards
+        return cards.matching(PlanlessTask()) if str(state) in arguments.hide_plan_tasks.split(",") else cards
 
     def group(self, state: TaskState | str, arguments: Namespace) -> TaskGroup:
         cards = self.shown_cards(state, arguments)

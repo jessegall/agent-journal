@@ -12,12 +12,12 @@ class RunShape:
     flag: str
     pattern: str
     states_total: bool
-    count: str = ""
+    count: str | None = None
 
     @property
     def total_note(self) -> str:
         return "states its total" if self.states_total else "states no total, so the command must print one first"
 
     def reader_options(self) -> str:
-        count = f' --count "{self.count}"' if self.count else ""
+        count = f' --count "{self.count}"' if self.count is not None else ""
         return f'--lines "{self.located.pattern}" --summary "(?i)passed|failed|done" --{self.flag} "{self.pattern}"{count}'

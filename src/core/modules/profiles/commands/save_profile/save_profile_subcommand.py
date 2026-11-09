@@ -47,7 +47,7 @@ class SaveProfileSubcommand(Subcommand[SaveProfile, AgentProfile]):
             if isinstance(profile, ProfileProblem) or profile.problem:
                 raise Refusal(profile.problem, "fix the file or use journal profile reset")
         else:
-            profile = AgentProfile(arguments.profile_name, description=arguments.description or "", body=arguments.body or "")
+            profile = AgentProfile(arguments.profile_name, description="", body="")
         fields = {name: value for name, value in vars(arguments).items() if name in ("title", "description", "body", "program", "preferred_program", "access", "independent", "uses_project_instructions") and value is not None}
         if arguments.tier is not None:
             fields["tier"] = ModelTier.automatic(arguments.tier) if arguments.tier else None

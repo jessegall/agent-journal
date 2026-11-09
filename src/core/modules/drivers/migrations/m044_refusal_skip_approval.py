@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class RefusalSkipApprovalMigration(Migration):
+class SkipApprovalMigration(Migration):
     """Adds whether a confirmed skip of a helper waits for its main agent's approval, and when it
     was approved."""
 

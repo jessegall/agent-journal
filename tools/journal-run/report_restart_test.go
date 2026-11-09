@@ -46,7 +46,7 @@ func (client *slowRestartClient) Restarting() bool { return client.tries < 2 }
 func TestTheTimeSpentTellingAnEndWhileTheServerRestartsDoesNotMoveAQuickRunToTheBackground(t *testing.T) {
 	current := time.Unix(0, 0)
 	client := &slowRestartClient{recordingClient: newClient(), current: &current}
-	tracker := Tracker{Client: client, Options: Options{LimitSeconds: 15}, Now: func() time.Time { return current }}
+	tracker := Tracker{Client: client, Options: Options{LimitSeconds: 15}, Clock: func() time.Time { return current }}
 	started := current
 	tracker.report("process", "end", "7")
 	if current.Sub(started) < 20*time.Second {

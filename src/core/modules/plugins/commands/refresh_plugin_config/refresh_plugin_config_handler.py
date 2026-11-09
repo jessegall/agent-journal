@@ -75,7 +75,7 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
     def config(self, plugin: Plugin) -> ManifestConfig:
         manifest = self.plugins.readable_manifest(plugin)
         if manifest is None or manifest.config is None:
-            raise Refusal(f"the plugin {plugin.name} declares no config", "a plugin names its config file and schema under config in its manifest")
+            raise Refusal(f"the plugin {plugin.name} declares no config", "a plugin declares its config file and schema under config in its manifest")
         return manifest.config
 
     def schema(self, config: ManifestConfig) -> JsonSchema:

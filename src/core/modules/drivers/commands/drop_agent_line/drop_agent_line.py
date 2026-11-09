@@ -6,5 +6,5 @@ from core.modules.drivers.models.lifecycles.agent_line_lifecycle import AgentLin
 
 
 @dataclass(frozen=True)
-class DropAgentLine(MoveCommand[AgentLine]):
+class RemoveAgentLine(MoveCommand[AgentLine]):
     move = AgentLineLifecycle.drop

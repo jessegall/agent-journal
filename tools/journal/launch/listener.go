@@ -47,7 +47,7 @@ type WorkerRequest struct {
 	Running     bool              `json:"running"`
 	AnyProgram  bool              `json:"any_program"`
 	LocalOnly   bool              `json:"local_only"`
-	Quiet       bool              `json:"quiet"`
+	Silent      bool              `json:"quiet"`
 }
 
 // ProgramStart is one program the launcher starts: its agent row, its folder, its command line and the variables it
@@ -304,7 +304,7 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs, prev
 		_ = json.NewEncoder(connection).Encode(previous)
 		return
 	}
-	if request.Quiet {
+	if request.Silent {
 		if inputs.IsOpen(request.AgentID) {
 			_, _ = io.WriteString(connection, QuietAnswer+" "+strconv.Itoa(inputs.QuietSeconds(request.AgentID))+"\n")
 			return

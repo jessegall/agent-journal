@@ -34,7 +34,7 @@ type Tracker struct {
 	// of each part the agent has seen.
 	Background []int
 	ShownBytes map[int]int
-	Now        func() time.Time
+	Clock      func() time.Time
 	Wait       func()
 	// Waited is the time spent telling the journal of an end while its server was away, which no limit counts: a command that ends while
 	// the server restarts is not moved to the background for the time the restart took.
@@ -83,8 +83,8 @@ func (tracker *Tracker) mayMove(started time.Time) bool {
 }
 
 func (tracker *Tracker) current() time.Time {
-	if tracker.Now != nil {
-		return tracker.Now()
+	if tracker.Clock != nil {
+		return tracker.Clock()
 	}
 	return time.Now()
 }
