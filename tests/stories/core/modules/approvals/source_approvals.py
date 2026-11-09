@@ -2,6 +2,9 @@ import pytest
 
 from core.base.query.queries import Queries
 from core.modules.approvals.models.approval_request import ApprovalRequest
+from core.modules.docking.models.enums.dock_item_state import DockItemState
+from core.modules.docking.queries.dock_item_query import DockItemQuery
+from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.triggers.models.trigger import Trigger
@@ -14,35 +17,19 @@ from tests.stories.suites.coding.modules.workers.support.program_split import vi
 from tests.stories.core.modules.approvals.support.legacy_setting_requests import UPGRADE
 
 
-@pytest.fixture
-def ready_plan(new_story):
+def test_a_ready_plan_is_docked_as_its_own_card_and_asks_no_approval_of_its_own(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
-    request = story.container.get(Queries).query(ApprovalRequest).first()
-    story.expect_rows(request is not None, request.requester_id == story.agent.id)
-    return story, request
+    cards = story.container.get(DockItemQuery).type_items(PlanDockType.WAITING.value).row_items(Plan.model_name, 1).filter(state=DockItemState.DOCKED).all_rows()
+    story.expect_rows(len(cards) == 1, story.container.get(Queries).query(ApprovalRequest).count() == 0)
 
 
-@pytest.fixture
-def plan_viewer(ready_plan):
-    with viewer_client(ready_plan[0]) as viewer:
-        yield viewer
-
-
-@pytest.mark.parametrize("decision,state", [("accept", PlanState.APPROVED), ("refuse", PlanState.READY)])
-def test_a_ready_plan_is_automatically_docked_for_the_persons_decision(ready_plan, plan_viewer, decision, state):
-    story, request = ready_plan
-    plan_viewer.value("messages.chat", ["approval", decision, str(request.id)])
-    plan = story.container.get(Queries).query(Plan).find(1)
-    story.expect_rows(plan.state is state)
-
-
-def test_a_refused_plan_is_not_asked_again_when_the_registry_changes(ready_plan, plan_viewer):
-    story, request = ready_plan
-    plan_viewer.value("messages.chat", ["approval", "refuse", str(request.id)])
+def test_a_person_approves_the_ready_plan_on_its_card_and_a_registry_change_asks_nothing_more(new_story):
+    story = new_story(fixture=ReadyApprovalPlan)
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    requests = tuple(story.container.get(Queries).query(ApprovalRequest).all_rows())
-    story.expect_rows(len(requests) == 1)
+    story.expect_rows(story.container.get(Queries).query(ApprovalRequest).count() == 0)
+    story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
+    story.expect_rows(story.container.get(Queries).query(Plan).find(1).state is PlanState.APPROVED)
 
 
 @pytest.fixture
