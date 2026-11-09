@@ -30,8 +30,8 @@ def test_a_search_uses_what_its_mark_read_once_and_reads_the_rows_itself_after_t
     story.hook("s-1", search_hook("journal search find door"))
     story.run_listeners()
     search = story.container.get(RowSearch)
-    real_result, calls = search.result, []
-    monkeypatch.setattr(search, "result", lambda terms, models: calls.append(terms) or real_result(terms, models))
+    original_search, calls = search.result, []
+    monkeypatch.setattr(search, "result", lambda terms, models: calls.append(terms) or original_search(terms, models))
     story.expect_text("search find door", "Mend the door", actor=story.agent)
     expect_value(calls, [])
     story.expect_text("search find door", "Mend the door", actor=story.agent)

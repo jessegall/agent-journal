@@ -29,7 +29,7 @@ class SearchFindSubcommand(ReadSubcommand[SearchResult]):
     def read(self, arguments: Namespace, caller: Caller) -> SearchResult:
         wanted = [model for model in arguments.model.split(",") if model]
         terms = [word for term in arguments.terms for word in term.split()] if arguments.split_terms else arguments.terms
-        kept = self.outcomes.taken(caller.actor.id, terms, wanted)
+        kept = self.outcomes.read_once(caller.actor.id, terms, wanted)
         local = kept if kept is not None else self.search.result(terms, wanted)
         shares = [share for share in self.registry.library_shares if not wanted or share in wanted]
         return replace(local, library=self.lookup.hits(terms, shares)) if shares else local

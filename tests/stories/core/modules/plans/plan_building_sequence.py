@@ -12,15 +12,15 @@ from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.support.story_checks import expect_value
 
-NOT_COMPLETE = "step {step} of sequence 1 is not complete"
-STILL_BUILDING = "plan 1 is still being built"
-NO_ORDER = "states no order"
-REFUSED_NOW = "does not allow this command"
+STEP_NOT_COMPLETE = "step {step} of sequence 1 is not complete"
+PLAN_BEING_BUILT = "plan 1 is still being built"
+ORDER_MISSING = "states no order"
+COMMAND_REFUSED = "does not allow this command"
 
 
 def journal_sample(line: str):
-    words = line.split()
-    return HookSamples.shell(f"journal {line}", ShellPart("journal", CommandCategory.JOURNAL, words, subcommand=words[0]))
+    arguments = line.split()
+    return HookSamples.shell(f"journal {line}", ShellPart("journal", CommandCategory.JOURNAL, arguments, subcommand=arguments[0]))
 
 
 class StandardSequences(StoryFixture):
@@ -138,7 +138,7 @@ def test_the_step_that_sets_the_order_comes_before_marking_the_plan_ready(new_st
 
 def test_a_plan_without_a_goal_cannot_leave_the_first_step(new_story):
     story = new_story(fixture=AgreeStep)
-    story.expect_refusal("sequence next", NOT_COMPLETE.format(step=1), actor=story.agent)
+    story.expect_refusal("sequence next", STEP_NOT_COMPLETE.format(step=1), actor=story.agent)
     story.expect_refusal("sequence next", "plan 1 has no brief", actor=story.agent)
 
 
@@ -161,7 +161,7 @@ def test_a_phase_without_tasks_holds_the_tasks_step(new_story):
 
 def test_a_task_with_no_order_holds_the_order_step(new_story):
     story = new_story(fixture=OrderStep)
-    story.expect_refusal("sequence next", NO_ORDER, actor=story.agent)
+    story.expect_refusal("sequence next", ORDER_MISSING, actor=story.agent)
 
 
 def test_the_order_step_names_the_tasks_that_lack_an_order(new_story):
@@ -230,7 +230,7 @@ def test_a_dependency_loop_cannot_be_skipped(new_story):
 ])
 def test_a_step_refuses_what_belongs_to_a_later_step(new_story, fixture, line):
     story = new_story(fixture=fixture)
-    story.expect_hook_refusal("s-1", journal_sample(line), REFUSED_NOW)
+    story.expect_hook_refusal("s-1", journal_sample(line), COMMAND_REFUSED)
 
 
 @pytest.mark.parametrize("fixture, line", [
@@ -248,7 +248,7 @@ def test_a_step_allows_its_own_work(new_story, fixture, line):
 @pytest.mark.parametrize("fixture", [AgreeStep, PhasesStep, TasksStep, Ordered])
 def test_the_plan_cannot_be_made_ready_by_command_before_the_last_step(new_story, fixture):
     story = new_story(fixture=fixture)
-    story.expect_refusal("plan ready 1", STILL_BUILDING, actor=story.agent)
+    story.expect_refusal("plan ready 1", PLAN_BEING_BUILT, actor=story.agent)
 
 
 def test_the_last_step_ends_when_the_plan_is_ready_and_the_agent_may_stop(new_story):
@@ -284,12 +284,12 @@ def test_cancelling_the_plan_lets_its_agent_stop(new_story):
 
 def test_a_helper_planner_cannot_skip_to_ready(new_story):
     story = new_story(fixture=PlannerHelper)
-    story.expect_hook_refusal("s-2", journal_sample("plan ready 1"), REFUSED_NOW)
+    story.expect_hook_refusal("s-2", journal_sample("plan ready 1"), COMMAND_REFUSED)
 
 
 def test_a_helper_planner_cannot_make_the_plan_ready_by_command_either(new_story):
     story = new_story(fixture=PlannerHelper)
-    story.expect_refusal("plan ready 1", STILL_BUILDING, actor=story.helper)
+    story.expect_refusal("plan ready 1", PLAN_BEING_BUILT, actor=story.helper)
 
 
 def test_a_helper_planner_cannot_stop_halfway(new_story):
@@ -299,7 +299,7 @@ def test_a_helper_planner_cannot_stop_halfway(new_story):
 
 def test_a_plan_with_unordered_tasks_cannot_be_made_ready_even_with_its_sequence_given_up(new_story):
     story = new_story(fixture=HandMadePlan)
-    story.expect_refusal("plan ready 1", NO_ORDER, actor=story.agent)
+    story.expect_refusal("plan ready 1", ORDER_MISSING, actor=story.agent)
 
 
 def test_a_plan_made_by_hand_goes_ready_once_its_order_is_stated(new_story):

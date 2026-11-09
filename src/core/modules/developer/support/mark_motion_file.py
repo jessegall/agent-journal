@@ -1,3 +1,5 @@
+import json
+
 from core.base.file_access import FileAccess
 from pathlib import Path
 
@@ -12,8 +14,8 @@ class MarkMotionFile:
     def __init__(self, home: JournalHome) -> None:
         self.path: Path = home.system_log.parent / "mark-motions.jsonl"
 
-    def add(self, frames: str) -> None:
-        lines = [*self.text().splitlines(), frames][-RECORDINGS_KEPT:]
+    def add_all(self, recordings: str) -> None:
+        lines = [*self.text().splitlines(), *(json.dumps(recording) for recording in json.loads(recordings))][-RECORDINGS_KEPT:]
         self.path.parent.mkdir(parents=True, exist_ok=True)
         FileAccess.shared().write(self.path, "\n".join(lines) + "\n")
 

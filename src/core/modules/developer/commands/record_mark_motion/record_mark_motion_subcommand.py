@@ -6,14 +6,14 @@ from core.modules.developer.commands.record_mark_motion.record_mark_motion impor
 
 
 class RecordMarkMotionSubcommand(Subcommand[RecordMarkMotion, None]):
-    """`journal developer record-mark-motion <frames>`: the viewer keeps one recording of a mark's motion."""
+    """`journal developer record-mark-motion <recordings>`: the viewer keeps the recordings of its marks' motion, a JSON array."""
 
     cli_name = "developer"
     name = "record-mark-motion"
     outward = True
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("frames")
+        parser.add_argument("recordings")
 
     def command(self, arguments: Namespace, caller: Caller) -> RecordMarkMotion:
-        return RecordMarkMotion(arguments.frames)
+        return RecordMarkMotion(arguments.recordings)

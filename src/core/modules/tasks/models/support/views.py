@@ -21,7 +21,7 @@ TASK_CARDS_SELECT = (
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic, "
     " (SELECT coalesce(nullif(agents.given_name, ''), 'Agent ' || agents.id) FROM agents WHERE agents.id = tasks.delegated_to) AS delegated_name,"
-    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS delegated_is_main"
+    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS main_delegate"
     " FROM tasks"
 )
 

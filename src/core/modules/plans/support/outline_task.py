@@ -17,7 +17,7 @@ class OutlineTask:
     reason: str
     automatic: bool
     delegated_to: int | None
-    delegated_is_main: bool
+    main_delegate: bool
     helper_id: int | None = None
     helper_name: str | None = None
 

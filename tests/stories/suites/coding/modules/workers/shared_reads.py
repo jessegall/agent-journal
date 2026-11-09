@@ -1,8 +1,12 @@
+import sqlite3
 from typing import NamedTuple
 
 import pytest
 
 from core.base.actor import Actor
+from core.base.query.queries import Queries
+from core.base.scope.scopes import Scopes
+from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from suites.coding.modules.workers.bindings.worker_agent_work import WorkerAgentWork
@@ -94,3 +98,36 @@ def test_an_approved_plan_stop_shares_several_pending_workers(pending_workers, p
     checks = {check["rule"]: check for check in records["rows"][0]["stop_checks"]}
     story.expect_rows(checks["workers.approved-plan-at-stop"]["reason"] == "no new worker can start",
                       not pending_viewer.server.context.reported_findings.keys)
+
+
+def test_one_request_reads_the_pending_work_once_inside_and_outside_a_worker_scope(pending_workers):
+    story, workers = pending_workers
+    work = story.container.get(WorkerAgentWork)
+    worker = story.container.get(Queries).query(Agent).find(workers[0].id)
+    scopes = story.container.get(Scopes)
+    with story.repeated_work.request():
+        outside = dict(work.pending())
+        with scopes.row_scope(worker):
+            inside = dict(work.pending())
+    story.expect_rows(outside == inside, len(outside) == len(workers), detail=f"{outside} {inside}")
+
+
+def test_one_request_reads_the_pending_work_once_when_another_connection_writes_during_the_read(pending_workers, monkeypatch):
+    story, workers = pending_workers
+    work = story.container.get(WorkerAgentWork)
+    other = sqlite3.connect(story.home.database, autocommit=True)
+    original_read = WorkerAgentWork.read
+    writes = []
+
+    def read_after_other_write(reading):
+        if not writes:
+            other.execute("CREATE TABLE other_connection_marks (id INTEGER)")
+        writes.append(reading)
+        return original_read(reading)
+
+    monkeypatch.setattr(WorkerAgentWork, "read", read_after_other_write)
+    with story.repeated_work.request():
+        first = dict(work.pending())
+        second = dict(work.pending())
+    other.close()
+    story.expect_rows(first == second, len(first) == len(workers), len(writes) == 2, detail=str(writes))
