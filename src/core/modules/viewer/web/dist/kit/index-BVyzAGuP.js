@@ -8636,7 +8636,7 @@ const bw = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
   setup(e, { emit: t }) {
     const n = e, a = t, s = O(null), { away: o, scrolled: l, arrived: i, toBottom: u } = yw(s);
     ge(
-      () => n.lines.length,
+      () => [n.lines, n.lines.length],
       () => je(() => {
         var f;
         i(), s.value && ((f = n.feed) == null || f.drawn(s.value));
@@ -8663,7 +8663,7 @@ const bw = /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[@-Z\\
       }, "Follow")) : k("", !0)
     ], 544));
   }
-}, $w = /* @__PURE__ */ z(ww, [["__scopeId", "data-v-5a8693fe"]]), xw = "*.*", Sw = {
+}, $w = /* @__PURE__ */ z(ww, [["__scopeId", "data-v-89621acd"]]), xw = "*.*", Sw = {
   __name: "ModuleBody",
   props: {
     declaration: { type: Object, required: !0 },
@@ -14239,7 +14239,7 @@ function SC(e, t, n) {
   const a = e[t];
   return { ...e, [t]: a.includes(n) ? a.filter((s) => s !== n) : [...a, n] };
 }
-const MC = lu(() => import("./VoiceFigure-HW6PrDoO.js").then((e) => e.V)), _C = "1.2.0", CC = "3.5";
+const MC = lu(() => import("./VoiceFigure-D_ciyLDA.js").then((e) => e.V)), _C = "1.2.0", CC = "3.5";
 export {
   Nf as $,
   Oe as A,

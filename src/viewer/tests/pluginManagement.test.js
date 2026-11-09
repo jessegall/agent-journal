@@ -24,7 +24,7 @@ async function drawn(refuse = false) {
     window.read = async (line) => {
         if (line === "plugin dashboards") return page([{id: "sins", plugin: "sins", title: "Sins board"}]);
         if (line === "plugin descriptions") return page([{id: "sins", plugin: "sins", description: "Judges the code"}]);
-        if (line === "plugin services") return page([{id: "sins a", plugin: "sins", service: "a", running: true, pid: 12}, {id: "sins b", plugin: "sins", service: "b", running: false, pid: null}]);
+        if (line === "plugin services") return page([ran.some((each) => each[2] === "stop") ? {id: "sins a", plugin: "sins", service: "a", running: false, pid: null} : {id: "sins a", plugin: "sins", service: "a", running: true, pid: 12}, {id: "sins b", plugin: "sins", service: "b", running: false, pid: null}]);
         if (line === "plugin list" || line === "plugin events") return page([PLUGIN]);
         line = line.split(" ");
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
@@ -253,6 +253,66 @@ test.each(["sins a", "sins b"])("clicking the service %s opens its log in a dial
     element.querySelector(`[data-plugin-service="${service}"]`).click();
     await settle();
     expect(document.querySelector("[role=dialog] [data-plugin-service-terminal]")).not.toBeNull();
+});
+
+const shownTerminal = async (service) => {
+    const {element, ran} = await drawn();
+    await settle();
+    element.querySelector(`[data-plugin-service="${service}"]`).click();
+    await settle();
+    return {terminal: document.querySelector("[role=dialog] [data-plugin-service-terminal]"), ran};
+};
+const barButton = (terminal, action) => terminal.querySelector(`[data-plugin-service-action="${action}"]`);
+
+test("the service dialog is a tall one whose terminal takes its whole body", async () => {
+    const {terminal} = await shownTerminal("sins a");
+    expect(terminal.closest(".dialog-panel").classList.contains("tall")).toBe(true);
+    expect(terminal.closest(".dialog-body").classList.contains("padded")).toBe(false);
+    expect(terminal.querySelector("pre.output-lines").textContent).toContain("watching 3 folders");
+});
+
+test("the bar above the log says a running service runs and offers to stop and restart it", async () => {
+    const {terminal} = await shownTerminal("sins a");
+    const bar = terminal.querySelector("[data-plugin-service-bar]");
+    expect(bar.compareDocumentPosition(terminal.querySelector("pre.output-lines")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(bar.textContent).toContain("Running, process 12");
+    expect(barButton(terminal, "stop")).not.toBeNull();
+    expect(barButton(terminal, "restart")).not.toBeNull();
+    expect(barButton(terminal, "start")).toBeNull();
+});
+
+test("the bar of a stopped service offers only to start it", async () => {
+    const {terminal} = await shownTerminal("sins b");
+    expect(terminal.querySelector("[data-plugin-service-bar]").textContent).toContain("Stopped");
+    expect(barButton(terminal, "start")).not.toBeNull();
+    expect(barButton(terminal, "stop")).toBeNull();
+    expect(barButton(terminal, "restart")).toBeNull();
+});
+
+test.each([["sins a", "stop", "a"], ["sins a", "restart", "a"], ["sins b", "start", "b"]])("on %s the bar's %s runs that change of the service", async (service, action, name) => {
+    const {terminal, ran} = await shownTerminal(service);
+    barButton(terminal, action).click();
+    await settle();
+    expect(ran).toEqual([["plugin", "service", action, "sins", name]]);
+});
+
+test("a change the journal refuses is said in the service dialog", async () => {
+    const {element} = await drawn(true);
+    await settle();
+    element.querySelector('[data-plugin-service="sins a"]').click();
+    await settle();
+    const terminal = document.querySelector("[role=dialog] [data-plugin-service-terminal]");
+    barButton(terminal, "stop").click();
+    await settle();
+    expect(terminal.querySelector("[role=alert]").textContent).toContain("no such plugin");
+});
+
+test("the bar of an open service shows the new state after a change", async () => {
+    const {terminal} = await shownTerminal("sins a");
+    barButton(terminal, "stop").click();
+    await settle();
+    expect(terminal.querySelector("[data-plugin-service-bar]").textContent).toContain("Stopped");
+    expect(barButton(terminal, "start")).not.toBeNull();
 });
 
 test("a page with no plugin says so and still offers to make one", async () => {

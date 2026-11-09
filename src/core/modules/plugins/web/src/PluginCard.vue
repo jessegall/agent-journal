@@ -8,7 +8,8 @@ import PluginServiceTerminal from "./PluginServiceTerminal.vue";
 const props = defineProps({plugin: {type: Object, required: true}, description: {type: String, default: ""}, services: {type: Array, default: () => []}, board: {type: Object, default: null}});
 const emit = defineEmits(["toggle", "settings", "board", "record", "latest", "remove"]);
 const more = ref(null);
-const shownService = ref(null);
+const shownServiceId = ref(null);
+const shownService = computed(() => props.services.find((service) => service.id === shownServiceId.value) ?? null);
 const menu = ref(false);
 const initials = computed(() => props.plugin.title.split(/[\s_-]+/).filter(Boolean).slice(0, 2).map((word) => word[0].toUpperCase()).join(""));
 const where = computed(() => props.plugin.source.replace(/^https?:\/\/(www\.)?/, ""));
@@ -46,7 +47,7 @@ function pick(event) {
             <div class="runs" data-plugin-runs>
                 <span class="label">Services</span>
                 <template v-for="service in services" :key="service.id">
-                    <button type="button" class="service" title="Show what this service prints" :data-plugin-service="service.id" @click="shownService = service">
+                    <button type="button" class="service" title="Show what this service prints" :data-plugin-service="service.id" @click="shownServiceId = service.id">
                         <span class="service-name">{{ service.service }}</span>
                         <span class="service-state">{{ service.running ? `running, process ${service.pid}` : "stopped" }}</span>
                     </button>
@@ -65,8 +66,8 @@ function pick(event) {
             </span>
         </footer>
         <template v-if="shownService">
-            <Dialog padded wide :title="`${shownService.service} log`" @close="shownService = null">
-                <PluginServiceTerminal :plugin="plugin.name" :service="shownService.service" />
+            <Dialog wide tall :title="`${shownService.service} log`" @close="shownServiceId = null">
+                <PluginServiceTerminal :plugin="plugin.name" :service="shownService" />
             </Dialog>
         </template>
         <template v-if="menu">

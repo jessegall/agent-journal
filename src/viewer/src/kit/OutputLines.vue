@@ -12,7 +12,7 @@ const box = ref(null);
 const {away, scrolled, arrived, toBottom} = useFollowing(box);
 
 watch(
-    () => props.lines.length,
+    () => [props.lines, props.lines.length],
     () => nextTick(() => {
         arrived();
         if (box.value) props.feed?.drawn(box.value);
