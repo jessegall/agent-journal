@@ -74,8 +74,8 @@ class LaunchTerminal:
     def wait_for(self, text: str) -> None:
         wanted = text.encode()
         with self.screen_changed:
-            found = self.screen_changed.wait_for(lambda: self.screen.find(wanted, self.read_up_to) >= 0, SCREEN_WAIT_SECONDS)
-            if not found:
+            matched = self.screen_changed.wait_for(lambda: self.screen.find(wanted, self.read_up_to) >= 0, SCREEN_WAIT_SECONDS)
+            if not matched:
                 raise AssertionError(f"the launch never drew {text!r}, it drew: {bytes(self.screen[self.read_up_to:])!r}")
             self.read_up_to = self.screen.find(wanted, self.read_up_to) + len(wanted)
 

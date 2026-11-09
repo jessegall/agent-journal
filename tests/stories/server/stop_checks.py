@@ -53,7 +53,7 @@ def test_an_approved_plan_waiting_to_start_checks_worker_capacity(new_story, pla
         server.viewer_line_value(cookie, {"line": ["plan", "approve", "1"], "environment": "main", "window": "messages.chat"})
         record = stop_record(server)
         check = next(check for check in record["stop_checks"] if check["rule"] == "workers.approved-plan-at-stop")
-        story.expect_rows(record["answer"] == answer, check["outcome"] == answer)
+        story.expect_rows(record["answer"] == answer, check["outcome"] == answer, detail=f"{record['answer']}: {check}")
         if places:
             story.expect_rows("plan:1 is approved" in record["refusal"], "start it, then assign its work" in check["reason"])
         else:

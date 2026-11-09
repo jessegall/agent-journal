@@ -5,7 +5,7 @@ from core.base.module.module_finder import ModuleFinder
 from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
-CHECK_WORDS = "still runs after {minutes} minutes: check it does its work"
+CHECK_TERMS = "still runs after {minutes} minutes: check it does its work"
 
 
 def check_tick(story):
@@ -32,16 +32,16 @@ def test_a_confirmed_wait_is_woken_at_5_15_30_and_45_minutes(new_story):
     story.expect_rows(wakes(story, process) == 0)
     story.advance(timedelta(seconds=1))
     check_tick(story)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=5), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_TERMS.format(minutes=5), actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_rows(waited(story, 9, process) == 1, waited(story, 1, process) == 2)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=15), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_TERMS.format(minutes=15), actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_rows(waited(story, 14, process) == 2, waited(story, 1, process) == 3)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=30), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_TERMS.format(minutes=30), actor=story.agent)
     story.expect_success(f"output confirm {process.id}", actor=story.agent)
     story.expect_rows(waited(story, 14, process) == 3, waited(story, 1, process) == 4)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_WORDS.format(minutes=45), actor=story.agent)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", CHECK_TERMS.format(minutes=45), actor=story.agent)
 
 
 def test_a_wake_nobody_confirms_comes_again_after_the_same_wait(new_story):

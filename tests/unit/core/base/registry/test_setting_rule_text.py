@@ -7,16 +7,16 @@ from core.base.setting.setting_value import SettingValue
 
 
 def test_a_rule_written_as_text_checks_a_value_like_the_rule():
-    written = SettingRuleText.rule_text(NumberRule(0, maximum=100))
-    assert not list(SettingRuleText().problems(written, "percent", 100))
-    assert list(SettingRuleText().problems(written, "percent", 101))
-    assert list(SettingRuleText().problems(written, "percent", 2.5))
+    saved = SettingRuleText.rule_text(NumberRule(0, maximum=100))
+    assert not list(SettingRuleText().problems(saved, "percent", 100))
+    assert list(SettingRuleText().problems(saved, "percent", 101))
+    assert list(SettingRuleText().problems(saved, "percent", 2.5))
 
 
 def test_a_list_rule_keeps_its_choices_through_the_text():
-    written = SettingRuleText.rule_text(ListRule(choices=("read", "edit")))
-    assert not list(SettingRuleText().problems(written, "types", ["read"]))
-    assert list(SettingRuleText().problems(written, "types", ["deploy"]))
+    saved = SettingRuleText.rule_text(ListRule(choices=("read", "edit")))
+    assert not list(SettingRuleText().problems(saved, "types", ["read"]))
+    assert list(SettingRuleText().problems(saved, "types", ["deploy"]))
 
 
 def test_no_rule_accepts_every_value():

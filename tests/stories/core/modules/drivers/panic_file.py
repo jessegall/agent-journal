@@ -7,7 +7,7 @@ from tests.stories.core.modules.chat.support.mark_samples import expect_marks_te
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value_with
 
-WRITE = HookSamples.shell("echo hold > .journal/panic", ShellPart("echo", CommandCategory.EDIT, ["hold"]), redirects=["> .journal/panic"])
+EDIT_SAMPLE = HookSamples.shell("echo hold > .journal/panic", ShellPart("echo", CommandCategory.EDIT, ["hold"]), redirects=["> .journal/panic"])
 TEXT = "who: main agent\nwhy: the journal does not answer\n"
 
 
@@ -55,6 +55,6 @@ def test_the_bypass_lines_are_reported_while_the_panic_file_exists(new_story):
 def test_a_main_agent_may_write_the_panic_file_only_after_the_server_failed_to_answer(new_story):
     story = new_story(fixture=BuilderStarted)
     home = panic_file(story)
-    story.expect_hook_refusal("s-1", WRITE, "the panic file is for a journal that does not answer")
+    story.expect_hook_refusal("s-1", EDIT_SAMPLE, "the panic file is for a journal that does not answer")
     home.bypass_log.write_text("1700000000 hook claude\n")
-    story.expect_hook_allowed("s-1", WRITE)
+    story.expect_hook_allowed("s-1", EDIT_SAMPLE)

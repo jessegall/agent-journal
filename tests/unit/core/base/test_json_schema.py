@@ -42,7 +42,7 @@ def test_a_document_that_fits_has_no_problems():
     ({"level": 1, "step": {"judges": ["tests"], "skips": []}}, "/step: has more than 1 keys"),
 ])
 def test_each_keyword_names_the_place_that_breaks_it(document, problem):
-    assert any(found.startswith(problem) for found in SCHEMA.problems(document)), SCHEMA.problems(document)
+    assert any(matched.startswith(problem) for matched in SCHEMA.problems(document)), SCHEMA.problems(document)
 
 
 def test_a_keyword_the_journal_does_not_check_refuses_the_schema():

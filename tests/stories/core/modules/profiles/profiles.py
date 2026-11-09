@@ -99,10 +99,10 @@ def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
 
 def test_saving_a_shipped_profile_with_only_a_program_keeps_its_description_and_body(new_story):
     story = new_story(fixture=UserBuilder)
-    before = story.container.get(ProfileFiles).effective("journal-merger")
+    previous = story.container.get(ProfileFiles).effective("journal-merger")
     story.expect_success("profile save journal-merger --program codex", actor=story.user)
     after = story.container.get(ProfileFiles).effective("journal-merger")
-    story.expect_rows(after.program == "codex", after.description == before.description, after.body == before.body, detail=str(after))
+    story.expect_rows(after.program == "codex", after.description == previous.description, after.body == previous.body, detail=str(after))
 
 
 def test_native_module_profiles_are_published_for_codex_only_where_it_has_a_folder(new_story):

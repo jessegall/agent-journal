@@ -1,5 +1,6 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
+from core.base.subcommand.overview_command import OverviewCommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.support.git_rows import GitRows
 from suites.coding.support.project_git import ProjectGit
@@ -8,7 +9,7 @@ from suites.coding.support.project_git import ProjectGit
 PAGE_SIZE_ROWS = 30
 
 
-class GitPageSubcommand(ReadSubcommand[GitRows]):
+class GitPageSubcommand(OverviewCommand, ReadSubcommand[GitRows]):
     """A read of the project's git history that pages through its rows."""
 
     cli_name = "git-overview"
@@ -19,3 +20,6 @@ class GitPageSubcommand(ReadSubcommand[GitRows]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--skip", type=int, default=0)
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+
+    def overview_target(self, arguments: Namespace) -> str:
+        return f"{arguments.skip} {arguments.limit}"

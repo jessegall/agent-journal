@@ -10,6 +10,8 @@ from core.base.caller.caller import Caller
 from core.base.change.event_log import EventLog
 from core.base.change.touched_rows import TouchedRows
 from core.base.subcommand.output import Output
+from core.base.subcommand.overview_command import OverviewCommand
+from core.base.subcommand.overview_reads import OverviewReads
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser
@@ -51,10 +53,10 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog, scopes: Scopes, refusal_skips: RefusalSkips, overview_reads: OverviewReads) -> None:
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
-        self.refusal_skips = refusal_skips
+        self.refusal_skips, self.overview_reads = refusal_skips, overview_reads
         self.environment_names, self.resolver, self.aliases, self.handoff, self.events, self.scopes = environment_names, resolver, aliases, handoff, events, scopes
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
@@ -92,7 +94,7 @@ class Console:
         approval = refusal.original
         if not isinstance(approval, UserApprovalRefusal):
             return None
-        line = WriteFlags.without_reason(argv) if getattr(parsed, "reason_is_ours", False) else tuple(argv)
+        line = WriteFlags.without_reason(argv) if getattr(parsed, "reason_flag_added", False) else tuple(argv)
         why = getattr(parsed, "reason", "")
         arguments = approval.arguments or (() if approval.command is not None else line)
         self.bus.run(CheckApprovalWorks(approval, arguments), caller.actor, environment_id=caller.environment_id)
@@ -145,9 +147,11 @@ class Console:
                    caller: Caller, output: Output) -> int:
         environment_id = caller.environment_id
         if not isinstance(subcommand, Subcommand):
+            self.check_overview(subcommand, arguments, caller)
             with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
                 value = subcommand.read(arguments, self.scoped_caller(subcommand, caller))
             subcommand.write_output(value, output)
+            self.note_overview(subcommand, arguments, caller)
             return SUCCESS_CODE
         self.commit_listeners.run()
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
@@ -155,6 +159,7 @@ class Console:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
         self.refusal_skips.check_guards(caller.actor, sorted(skipped), arguments.skip_reason)
+        self.check_overview(subcommand, arguments, caller)
         newest_event_id = self.events.newest_id()
         value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id, plugin_script=caller.plugin_script)
         actor_events = [event for event in self.events.events_after(newest_event_id) if event.actor_id == caller.actor.id]
@@ -162,8 +167,17 @@ class Console:
         output.confirmation = "\n".join(TouchedRows.built(event for event in actor_events if event.timestamp in command_timestamps).lines())
         with self.scopes.read_scope(subcommand.disabled_scopes, caller.read_actor_id, environment_id):
             subcommand.write_output(value, output)
+        self.note_overview(subcommand, arguments, caller)
         self.run_commit_listeners(argv)
         return SUCCESS_CODE
+
+    def check_overview(self, subcommand: Subcommand | ReadSubcommand, arguments: Namespace, caller: Caller) -> None:
+        if isinstance(subcommand, OverviewCommand):
+            self.overview_reads.check(caller.actor, f"{subcommand.cli_name} {subcommand.name}", subcommand.overview_target(arguments), subcommand.is_read_required(arguments, caller))
+
+    def note_overview(self, subcommand: Subcommand | ReadSubcommand, arguments: Namespace, caller: Caller) -> None:
+        if isinstance(subcommand, OverviewCommand):
+            self.overview_reads.note(caller.actor, f"{subcommand.cli_name} {subcommand.name}", subcommand.overview_target(arguments))
 
     def dispatched(self, argv: list[str], caller: Caller, context: Context) -> object:
         subcommand, parser = self.line_parser.parser(argv)

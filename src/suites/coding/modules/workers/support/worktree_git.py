@@ -1,5 +1,6 @@
 from core.base.file_access import FileAccess
 import fcntl
+import json
 import re
 import subprocess
 from collections.abc import Generator
@@ -67,6 +68,31 @@ class WorktreeGit:
         except Exception:
             self.remove(folder, worktree)
             raise
+
+    def test_checkout(self, worktree: Worktree) -> str:
+        folder = self.test_folder(worktree)
+        commit = self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "HEAD").stdout.strip()
+        libraries = self.library_names(worktree)
+        if not Path(folder, ".git").exists():
+            Path(folder).parent.mkdir(parents=True, exist_ok=True)
+            self.checked(worktree.folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "--detach", folder, commit)
+        else:
+            self.checked(folder, CHECKOUT_LIMIT_SECONDS, "reset", "--hard", commit)
+            self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fd", *(flag for name in libraries for flag in ("-e", name)))
+        for name in libraries:
+            if not Path(folder, name).exists():
+                Path(folder, name).symlink_to(Path(worktree.folder, name).resolve(), target_is_directory=True)
+        return folder
+
+    @staticmethod
+    def test_folder(worktree: Worktree) -> str:
+        folder = Path(worktree.folder)
+        return str(folder.parent.with_name(f"{folder.parent.name}-tests") / folder.name)
+
+    @staticmethod
+    def library_names(worktree: Worktree) -> tuple[str, ...]:
+        linked = {path.name for path in Path(worktree.folder).iterdir() if path.is_symlink()}
+        return tuple(sorted(linked | set(json.loads(worktree.library_links)) | set(json.loads(worktree.library_copies))))
 
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
         self.refuse_conflicts(worktree)
@@ -308,6 +334,10 @@ class WorktreeGit:
         if registered and registered[0][1] != worktree.branch:
             raise Refusal(f"another git worktree owns {worktree.folder}", "keep its folder and remove the stale worker row")
         self.runs.stop(worktree)
+        tests_folder = self.test_folder(worktree)
+        if Path(tests_folder).exists():
+            self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", tests_folder)
+            shutil.rmtree(tests_folder, ignore_errors=True)
         if Path(worktree.folder).exists():
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
         if Path(worktree.folder).exists():

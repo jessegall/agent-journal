@@ -16,7 +16,7 @@ def run_journal(scratch: Scratch, folder, environment=None) -> subprocess.Comple
     return subprocess.run(["journal", "overview"], cwd=folder, env=environment or shim_environment(scratch), capture_output=True, text=True, timeout=TIMEOUT_SECONDS)
 
 
-def put_version_five_command(scratch: Scratch) -> None:
+def store_v5_command(scratch: Scratch) -> None:
     command = scratch.journal / "bin" / "journal"
     command.parent.mkdir(parents=True, exist_ok=True)
     command.write_text('#!/bin/sh\necho "version 5 journal $*"\n')
@@ -27,7 +27,7 @@ def test_an_upgraded_version_4_project_runs_its_version_5_journal_through_the_sh
     scratch = version_four_project(tmp_path)
     install(scratch, "upgrade", "--yes")
     assert (scratch.journal / "version-5.db").is_file() and not (scratch.journal / "journal.db").exists()
-    put_version_five_command(scratch)
+    store_v5_command(scratch)
     deep = scratch.project / "src" / "cart"
     deep.mkdir(parents=True)
     assert run_journal(scratch, scratch.project).stdout.strip() == "version 5 journal overview"

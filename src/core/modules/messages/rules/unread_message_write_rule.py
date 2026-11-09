@@ -28,9 +28,9 @@ class UnreadMessageWriteRule(DriverRule):
         self.messages = messages
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        delivered = self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest()
-        if delivered.first() is None:
+        delivered = list(self.messages.unread(hook.agent_id).matching(Greater("delivered_at", "")).oldest().all_rows())
+        if not delivered:
             return RuleAnswer.allowed()
-        message_numbers = ", ".join(str(message.id) for message in delivered.page(1, LISTED_MESSAGES).rows)
-        return RuleAnswer.allowed().blocking_after(hook, UNREAD_REFUSAL.nudge(count=delivered.count()), MessagesRead([message.id for message in delivered.all_rows()]),
+        message_numbers = ", ".join(str(message.id) for message in delivered[:LISTED_MESSAGES])
+        return RuleAnswer.allowed().blocking_after(hook, UNREAD_REFUSAL.nudge(count=len(delivered)), MessagesRead([message.id for message in delivered]),
                                                    Interval(ToolUseSpan(UNREAD_TOOL_USES)), UNREAD_COUNTDOWN.nudge("{left}", messages=message_numbers))

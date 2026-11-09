@@ -38,10 +38,10 @@ def prepared(story):
 def test_a_start_folder_links_the_project_and_holds_instructions_of_its_own(started_folder):
     folder = prepared(started_folder)
     project = started_folder.checkout
-    written = [(folder / name).read_text() for name in INSTRUCTION_FILES]
+    saved = [(folder / name).read_text() for name in INSTRUCTION_FILES]
     started_folder.expect_rows((folder / "src").is_symlink(), (folder / "src" / "cart.py").read_text() == "TOTAL = 9\n", (folder / "src").resolve() == (project / "src").resolve(),
-                               all("The project's own instructions" not in text for text in written), all(text.strip() for text in written), not (folder / "CLAUDE.md").is_symlink(),
-                               not (folder / ".claude").is_symlink(), detail=str(written))
+                               all("The project's own instructions" not in text for text in saved), all(text.strip() for text in saved), not (folder / "CLAUDE.md").is_symlink(),
+                               not (folder / ".claude").is_symlink(), detail=str(saved))
 
 
 def test_a_helper_with_a_start_folder_works_there_and_one_without_works_in_the_project(started_folder):
@@ -63,8 +63,8 @@ def test_a_start_folder_holds_only_the_skills_of_the_helpers_profile(started_fol
     for name in ("journal-helpers", "journal-planning"):
         (skills / name).mkdir(parents=True, exist_ok=True)
         (skills / name / "SKILL.md").write_text(f"# {name}\n")
-    held = prepared(started_folder) / ".claude" / "skills"
-    started_folder.expect_rows((held / "journal-helpers" / "SKILL.md").is_file(), not (held / "journal-planning").exists(), not held.is_symlink(), (held / "journal-helpers").is_symlink())
+    retained = prepared(started_folder) / ".claude" / "skills"
+    started_folder.expect_rows((retained / "journal-helpers" / "SKILL.md").is_file(), not (retained / "journal-planning").exists(), not retained.is_symlink(), (retained / "journal-helpers").is_symlink())
 
 
 def test_a_start_folder_made_with_the_whole_skills_folder_is_narrowed(started_folder):

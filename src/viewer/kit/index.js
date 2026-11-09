@@ -80,6 +80,7 @@ export {default as SwitchCase} from "../src/kit/SwitchCase.vue";
 export {useListTools} from "./useListTools.js";
 export {default as AutoScrollPane} from "./AutoScrollPane.vue";
 export {default as InnerTabs} from "./InnerTabs.vue";
+export {default as TaskBar} from "./TaskBar.vue";
 export {default as TabBody} from "./TabBody.vue";
 export {default as ListTools} from "./ListTools.vue";
 export {default as SearchBar} from "./SearchBar.vue";

@@ -5,6 +5,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.cli.console import Console
 from core.base.subcommand.output import Output
+from core.base.subcommand.overview_command import OverviewCommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.overview.support.overview_page import OverviewPage
 from core.modules.overview.support.overview_section import OverviewSection
@@ -12,7 +13,7 @@ from core.modules.overview.support.overview_settings import COMMANDS_KEY
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
-class OverviewSubcommand(ReadSubcommand[OverviewPage]):
+class OverviewSubcommand(OverviewCommand, ReadSubcommand[OverviewPage]):
     """`journal overview`: everything open or running here, as the commands the setting
     journal.core.overview.commands names show it, each under its own heading."""
 

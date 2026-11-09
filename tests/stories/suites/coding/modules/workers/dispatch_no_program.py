@@ -11,7 +11,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import E
 
 SESSION = "s-plugin-worker"
 PERSON = 'actor make user "Ada"'
-NO_PROGRAM = f"worker dispatch --program claude --model sonnet 1 --no-program --session {SESSION}"
+MISSING_PROGRAM = f"worker dispatch --program claude --model sonnet 1 --no-program --session {SESSION}"
 
 
 def person(story) -> Actor:
@@ -23,7 +23,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
     repository = repository_environment(story)
     launcher = FakeLauncher(story.home.socket("launcher"))
     try:
-        worker = Actor(story.new_row_id(NO_PROGRAM, actor=person(story)), ActorType.AGENT)
+        worker = Actor(story.new_row_id(MISSING_PROGRAM, actor=person(story)), ActorType.AGENT)
         story.run_listeners()
         story.expect_rows(launcher.requests == [], story.container.get(Queries).query(Agent).find(worker.id).session == SESSION)
         story.expect_text("worker-worktree list", f"worker-{worker.id}")
@@ -45,7 +45,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
 def test_an_agent_cannot_dispatch_a_worker_with_no_program(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_refusal(NO_PROGRAM, "only a person dispatches a worker with no program", actor=story.agent)
+    story.expect_refusal(MISSING_PROGRAM, "only a person dispatches a worker with no program", actor=story.agent)
     story.expect_success("worker-worktree list", "nothing found")
 
 

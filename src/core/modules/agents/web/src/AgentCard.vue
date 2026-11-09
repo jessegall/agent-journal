@@ -72,7 +72,7 @@ const statusSeen = computed(() => (props.facts?.last_activity ? `Seen: ${ago(pro
             <AgentActions :row="row" />
             <template v-if="row.role === 'helper' && !row.ended_at"><Btn variant="ghost" small data-helper-stop @click.stop="context.run(['helper', 'stop', String(row.id)])">Stop</Btn></template>
         </InformationBar></template>
-        <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :state="dotState" :per-hour="rate" /></template>
+        <template v-if="!open"><AgentTaskLine :tasks="tasks" :in-hand="row.role !== 'helper' && facts?.job_enabled ? jobTask || null : null" :job="row.role === 'helper' ? job : ''" :per-hour="rate" /></template>
         <AgentStatusDot :state="dotState" :doing="statusWords" :since="statusSince" :seen="statusSeen" />
         <template v-if="open"><AgentCardDetails :row="row" :facts="facts" :progress="progress" :wait-reason="waitReason" :tasks="tasks" :stopped-with-work="stoppedWithWork" :open="open" /></template>
     </div>

@@ -76,7 +76,7 @@ WINDOW = "coding.agent-settings"
 ORCHESTRATOR_LINE = ["work-settings", "preset", "orchestrator"]
 
 
-def work_reading(viewer) -> dict:
+def active_work_row(viewer) -> dict:
     status, answer = window_data(viewer.server, viewer.cookie, keys="work", window=WINDOW)
     assert (status, answer["keys"]["work"]["code"]) == (200, 0), answer["keys"]["work"]
     return answer["keys"]["work"]["value"]
@@ -86,10 +86,10 @@ def test_s44_the_window_applies_a_preset_in_one_step_and_reads_the_workflow_back
     story = new_story(fixture=MainControlsActors)
     story.expect_text("work-settings show --environment main", "workflow: builder", actor=story.user)
     with person_viewer(story) as viewer:
-        before = work_reading(viewer)
-        expect_value((before["workflow"], before["controls"][AUTO_MODE]), ("builder", True))
-        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", before["revision"]]})
-        after = work_reading(viewer)
+        previous = active_work_row(viewer)
+        expect_value((previous["workflow"], previous["controls"][AUTO_MODE]), ("builder", True))
+        viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", previous["revision"]]})
+        after = active_work_row(viewer)
         expect_value((after["workflow"], after["controls"][AUTO_MODE]), ("orchestrator", False))
 
 
@@ -98,10 +98,10 @@ def test_s51_the_window_refuses_a_draft_made_from_an_older_reading_and_changes_n
     story.expect_text("setting show journal.suites.coding.continue-while-delegatable --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
         viewer.set_setting(AUTO_MODE, "true")
-        old = work_reading(viewer)["revision"]
+        old = active_work_row(viewer)["revision"]
         viewer.set_setting("journal.suites.coding.continue-while-delegatable", "true")
         viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": [*ORCHESTRATOR_LINE, "--revision", old]}, 200, "changed since")
-        expect_value(work_reading(viewer)["workflow"], "custom")
+        expect_value(active_work_row(viewer)["workflow"], "custom")
 
 
 TEST_BATCH = "journal.suites.coding.workers.test-batch-size"
@@ -117,10 +117,10 @@ def test_s24_tests_tab_fields_are_read_and_applied_together(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_text(f"setting show {TEST_BATCH} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
-        settings = work_reading(viewer)
+        settings = active_work_row(viewer)
         expect_value(len(field_values(settings, "tests")) > 0, True)
         viewer.server.viewer_line_value(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{TEST_BATCH}=4", f"{FAILURES}=7"]})
-        after = field_values(work_reading(viewer), "tests")
+        after = field_values(active_work_row(viewer), "tests")
         expect_value((after[TEST_BATCH], after[FAILURES]), (4, 7))
 
 
@@ -128,21 +128,21 @@ def test_s30_advanced_tab_refuses_a_fraction_for_a_whole_number_and_changes_noth
     story = new_story(fixture=MainControlsActors)
     story.expect_text(f"setting show {RUN_LIMIT} --environment main", "value:", actor=story.user)
     with person_viewer(story) as viewer:
-        settings = work_reading(viewer)
-        before = field_values(settings, "advanced")[RUN_LIMIT]
+        settings = active_work_row(viewer)
+        previous = field_values(settings, "advanced")[RUN_LIMIT]
         viewer.server.expect_viewer_line(viewer.cookie, {"window": WINDOW, "environment": "main", "line": ["work-settings", "apply", "--revision", settings["revision"], f"{RUN_LIMIT}=2.5", f"{TEST_BATCH}=9"]}, 200, "whole number")
-        after = work_reading(viewer)
-        expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (before, True))
+        after = active_work_row(viewer)
+        expect_value((field_values(after, "advanced")[RUN_LIMIT], field_values(after, "tests")[TEST_BATCH] != 9), (previous, True))
 
 
 def test_the_context_limit_is_in_the_advanced_tab_and_the_modal_is_no_page(viewer_person):
     story, viewer = viewer_person
-    advanced = field_values(work_reading(viewer), "advanced")
+    advanced = field_values(active_work_row(viewer), "advanced")
     declared = next(window for window in Registry.read(story.container.get(Database)).windows if window.name == WINDOW)
     story.expect_rows({CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS} <= set(advanced), advanced[CONTEXT_LIMIT_ENABLED] is False, declared.place != WindowPlace.PAGE, WINDOW not in CodingSuite.windows, detail=str(advanced))
 
 
 def test_the_context_limit_action_is_a_choice_of_compact_or_clear(viewer_person):
     story, viewer = viewer_person
-    action = next(field for field in work_reading(viewer)["fields"] if field["key"] == CONTEXT_LIMIT_ACTION)
+    action = next(field for field in active_work_row(viewer)["fields"] if field["key"] == CONTEXT_LIMIT_ACTION)
     story.expect_rows(action["type"] == "choice", action["choices"] == ["compact", "clear"], detail=str(action))

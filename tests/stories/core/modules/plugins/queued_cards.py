@@ -216,9 +216,9 @@ def test_a_hook_does_not_recover_a_card_claim_while_the_tick_is_saving_it(new_st
         if isinstance(command, AddPluginOutput) and not visited:
             visited.append(True)
             query = story.container.get(Queries).query(AgentLine)
-            before = {row.id for row in query.all_rows()}
+            previous = {row.id for row in query.all_rows()}
             story.expect_hook_allowed("s-1", LISTING_SAMPLE)
-            expect_value({row.id for row in query.all_rows()}, before)
+            expect_value({row.id for row in query.all_rows()}, previous)
         return original(bus, command, *arguments, **options)
 
     monkeypatch.setattr(Bus, "run", run_hook)

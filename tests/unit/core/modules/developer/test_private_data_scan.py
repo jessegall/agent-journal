@@ -60,10 +60,10 @@ def test_a_real_name_or_address_is_a_finding(line, category):
 def test_no_tracked_file_holds_private_data():
     root = Path(__file__).parents[5]
     tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
-    scan, found = PrivateDataScan(), []
+    scan, matched = PrivateDataScan(), []
     for name in filter(None, tracked):
         path = root / name
         data = path.read_bytes() if path.is_file() else b"\0"
-        found += [] if b"\0" in data else [f"{name}:{finding.line} {finding.category}" for finding in scan.scan(Path(name), data.decode(errors="replace"))]
-    assert found == [], found[:20]
+        matched += [] if b"\0" in data else [f"{name}:{finding.line} {finding.category}" for finding in scan.scan(Path(name), data.decode(errors="replace"))]
+    assert matched == [], matched[:20]
 

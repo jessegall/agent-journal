@@ -16,9 +16,9 @@ def test_a_run_no_slower_per_test_than_the_ones_before_it_raises_nothing():
 
 
 def test_a_run_slower_per_test_than_the_ones_before_it_names_both_times():
-    found = FullRunRecords([FullRunRecord(4000, 0, 120.0), FullRunRecord(4000, 0, 121.0), FullRunRecord(4000, 0, 900.0)]).growth()
-    assert "0.225 seconds per test over 4000 tests" in found
-    assert "against 0.030" in found
+    matched = FullRunRecords([FullRunRecord(4000, 0, 120.0), FullRunRecord(4000, 0, 121.0), FullRunRecord(4000, 0, 900.0)]).growth()
+    assert "0.225 seconds per test over 4000 tests" in matched
+    assert "against 0.030" in matched
 
 
 def test_only_a_run_of_the_whole_suite_counts_as_full():

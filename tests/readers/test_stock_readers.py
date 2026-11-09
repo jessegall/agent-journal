@@ -125,6 +125,6 @@ def test_a_stock_reader_has_the_fields_of_its_category(name):
 
 def test_no_fixture_names_a_home_folder_other_than_the_made_up_user():
     folder = Path(__file__).parent / "fixtures"
-    homes = {match for path in folder.rglob("*") if path.is_file() for match in re.findall(r"/(?:Users|home)/[\w.-]+", path.read_text(errors="replace"))}
-    assert homes <= {"/home/user", "/Users/user"}, sorted(homes)
+    home_folders = {match for path in folder.rglob("*") if path.is_file() for match in re.findall(r"/(?:Users|home)/[\w.-]+", path.read_text(errors="replace"))}
+    assert home_folders <= {"/home/user", "/Users/user"}, sorted(home_folders)
 

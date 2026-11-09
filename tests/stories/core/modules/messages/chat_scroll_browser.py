@@ -17,11 +17,11 @@ def test_the_chat_scroll_position_only_grows_after_a_send_and_after_an_arrival(n
     story.expect_success("setting set journal.core.viewer.tour-completed true --project")
     for number in range(1, 31):
         story.expect_success(f'message send "Backlog message {number}" --environment main', actor=story.user)
-    picture = tmp_path / "chat-scroll.png"
-    ready = Path(f"{picture}.ready")
+    image = tmp_path / "chat-scroll.png"
+    ready = Path(f"{image}.ready")
     with server_story(story) as server:
         address = f"http://127.0.0.1:{server.viewer_port()}/?key={server.viewer_key('Ada')}&environment=main"
-        browser = subprocess.Popen(["node", "tests/chatScroll.browser.mjs", address, str(picture)], cwd=VIEWER_FOLDER, text=True,
+        browser = subprocess.Popen(["node", "tests/chatScroll.browser.mjs", address, str(image)], cwd=VIEWER_FOLDER, text=True,
                                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env={**os.environ})
         deadline = time.monotonic() + WAIT_SECONDS
         while not ready.exists() and browser.poll() is None and time.monotonic() < deadline:

@@ -35,8 +35,8 @@ def project_files(story):
 
 
 def changed_at(story, file, offset: timedelta) -> None:
-    moment = (story.container.get(Clock).timestamp().value + offset).timestamp()
-    os.utime(file, (moment, moment))
+    timestamp = (story.container.get(Clock).timestamp().value + offset).timestamp()
+    os.utime(file, (timestamp, timestamp))
 
 
 def test_a_second_whole_read_of_an_unchanged_file_names_it(new_story):

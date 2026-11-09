@@ -92,8 +92,8 @@ def test_usage_show_reads_pending_worker_reviews_once_for_several_workers(new_st
         story.expect_success(f"agent start s-{number} claude worker --environment main", actor=story.agent)
     reads = read_selects(story, "usage show --environment main --json")
     story.expect_rows(sum("FROM worker_work_reviews" in statement for statement in reads) <= 1)
-    result = story.run("usage show --environment main --json", actor=story.agent)
-    story.expect_rows(result.code == 0, len(json.loads(result.output_text)["agents"]) == 5)
+    outcome = story.run("usage show --environment main --json", actor=story.agent)
+    story.expect_rows(outcome.code == 0, len(json.loads(outcome.output_text)["agents"]) == 5)
 
 
 def expect_rows_loaded(story, line: str, expected) -> None:

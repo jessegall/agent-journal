@@ -59,10 +59,10 @@ def test_idle_worker_refusal_keeps_the_plan_and_phase(idle_plan):
 
 def test_a_plan_sent_to_an_idle_worker_keeps_its_order_and_blocked_tasks(idle_plan):
     story, worker = idle_plan
-    before = len(assignment_marks(story))
+    previous = len(assignment_marks(story))
     story.expect_success(f"worker send --wait {worker.id} --plan 1", actor=story.agent)
     marks = assignment_marks(story)
-    story.expect_rows(len(marks) == before + 1, marks[-1].text == f"Worker {worker.id} was given 3 tasks",
+    story.expect_rows(len(marks) == previous + 1, marks[-1].text == f"Worker {worker.id} was given 3 tasks",
                       all(f"Task {number}: Task {number}" in marks[-1].detail for number in (2, 3, 4)), marks[-1].target_id == worker.id)
     tasks = story.container.get(Queries).query(Task).find_many([2, 3, 4])
     story.expect_rows(all(task.delegated_to == worker.id for task in tasks))
@@ -99,7 +99,7 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
     story, worker = idle_plan
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
     story.expect_success(f"worker send --wait {worker.id} --task 3", actor=story.agent)
-    before = len(assignment_marks(story))
+    previous = len(assignment_marks(story))
     story.expect_rows(story.row(Task, 3).delegated_to == worker.id, story.container.get(WorktreeQuery).worker_worktree(worker.id) is None)
     story.expect_success('task cancel 2 --reason "Not needed"', actor=story.agent)
     operation = story.container.get(Queries).query(WorkerOperation).newest().first()
@@ -107,7 +107,7 @@ def test_a_blocked_task_waits_with_an_idle_worker_and_is_sent_to_it_when_it_open
     outcome = run_operation(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     marks = assignment_marks(story)
-    story.expect_rows(len(marks) == before + 1, marks[-1].text == f"Worker {worker.id} was given task 3", "Task 3: Task 3" in marks[-1].detail)
+    story.expect_rows(len(marks) == previous + 1, marks[-1].text == f"Worker {worker.id} was given task 3", "Task 3: Task 3" in marks[-1].detail)
     story.expect_text("task show 3", "state: started", f"holder_id: {worker.id}", actor=story.agent)
 
 
