@@ -27,7 +27,7 @@ def hosted_answer(server_and_path, rule: ViewerRouteRule, logged_in: bool):
 
 
 def path_constants() -> list[str]:
-    paths = [value for value in vars(viewer_request_handler).values() if isinstance(value, str) and value.startswith("/")]
+    paths = [value for name, value in vars(viewer_request_handler).items() if name.isupper() and isinstance(value, str) and value.startswith("/")]
     phone_files = [f"{viewer_request_handler.VIEWER_ROOT}{name}" for name in viewer_request_handler.PHONE_FILES]
     return sorted({*paths, *phone_files})
 
