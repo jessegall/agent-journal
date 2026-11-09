@@ -45,7 +45,7 @@ def submitted(fourth):
 
 
 def test_a_batch_waits_for_the_fourth_task_then_runs_all_its_proofs(submitted):
-    submitted.story.expect_rows(len(submitted.started) == 1, submitted.current_task() == 4)
+    submitted.story.expect_rows(len(submitted.started) == 4, submitted.current_task() == 4)
     submitted.end_all_tests()
     submitted.story.expect_rows(len(submitted.started) == 4, submitted.current_task() == 5)
     for task in (1, 2, 3, 4):
@@ -69,7 +69,7 @@ def test_a_short_batch_runs_at_the_workers_last_task(new_story, monkeypatch):
     worker.story.expect_rows(worker.current_task() == 2, len(worker.started) == 0)
     worker.prove(TEST_LINE)
     worker.story.expect_text("worker deliver --wait --differences none", "tests of batch", actor=worker.worker)
-    worker.story.expect_rows(len(worker.started) == 1)
+    worker.story.expect_rows(len(worker.started) == 2)
     worker.end_all_tests()
     worker.story.expect_rows(len(worker.started) == 2)
     worker.story.expect_text("task show 1", "state: completed", actor=worker.story.agent)
@@ -83,7 +83,7 @@ def test_failures_of_the_batch_return_together_and_only_failures_run_again(submi
     for _ in range(4):
         expect_reply_allowed(submitted.run_test())
     submitted.story.expect_text("worker next --wait --differences none", "queued", actor=submitted.worker)
-    submitted.story.expect_rows(len(submitted.started) == 5)
+    submitted.story.expect_rows(len(submitted.started) == 6)
     submitted.end_test(submitted.started[4])
     submitted.story.expect_rows(len(submitted.started) == 6)
     submitted.end_test(submitted.started[5])

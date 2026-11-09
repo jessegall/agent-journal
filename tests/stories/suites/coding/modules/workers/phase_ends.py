@@ -108,16 +108,16 @@ def test_the_last_task_of_a_phase_queues_the_tests_of_all_its_tasks_and_the_work
     declared_tests.story.expect_text("worker next --wait --differences none", "queued", actor=declared_tests.worker)
     declared_tests.story.expect_text("proof show 1", "state: running", actor=declared_tests.story.agent)
     declared_tests.story.expect_text("proof show 2", "state: checked", actor=declared_tests.story.agent)
-    declared_tests.story.expect_text("proof show 3", "state: queued", actor=declared_tests.story.agent)
+    declared_tests.story.expect_text("proof show 3", "state: running", actor=declared_tests.story.agent)
     expect_task_states(declared_tests, "testing", 1, 2, 3)
-    declared_tests.story.expect_rows(len(declared_tests.started) == 1)
+    declared_tests.story.expect_rows(len(declared_tests.started) == 2)
 
 
 def test_worker_deliver_at_the_end_of_a_phase_is_a_hand_in_too(single_phase_tests):
     single_phase_tests.story.expect_text("worker deliver --wait --differences none", "queued", actor=single_phase_tests.worker)
     single_phase_tests.story.expect_text("proof show 2", "state: checked", actor=single_phase_tests.story.agent)
     expect_task_states(single_phase_tests, "testing", 1, 2, 3)
-    single_phase_tests.story.expect_rows(len(single_phase_tests.started) == 1)
+    single_phase_tests.story.expect_rows(len(single_phase_tests.started) == 2)
 
 
 def test_the_tasks_of_a_phase_close_and_the_next_phases_task_starts_once_its_tests_pass(phase_passed):
