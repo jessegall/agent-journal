@@ -100,6 +100,18 @@ def test_a_failed_git_status_holds_the_retirement(new_story):
 
 
 @pytest.mark.real_git
+def test_a_removed_worktree_is_not_checked_through_git_when_a_worker_is_retired(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    worker = merged_kept_worker(story, repository)
+    stopped(story, worker)
+    leftover = repository.worktree_folder(worker.id)
+    (leftover / ".claude").mkdir(parents=True)
+    repository.uncommitted("notes.txt", "Work of someone else\n")
+    story.expect_success(f"agent retire {worker.id} {REASON}", f"retired agent {worker.id}", actor=story.agent)
+
+
+@pytest.mark.real_git
 def test_a_retire_runs_git_outside_the_transaction(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
