@@ -62,6 +62,8 @@ class WorkerSteps:
         worktree = worker_round.worktree
         if worktree.state is not WorktreeState.CUT or worker_round.started or worker_round.following is not None or self.proofs.tests_waiting(worktree.id):
             return False
+        if self.proofs.has_waiting_proofs(worktree.id):
+            return False
         return self.queries.query(Task).find(worktree.task_id).state is TaskState.BLOCKED
 
     def is_delivered(self, worker_round: WorkerRound) -> bool:
