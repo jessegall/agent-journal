@@ -125,3 +125,10 @@ def tick(story) -> None:
         story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())
     OutputReading().read(story.container)
     story.tick("s-1")
+
+
+def ended_hook_lines(story: Story, sample: HookSample) -> list[str]:
+    reply = story.hook("s-1", sample)
+    for process in story.container.get(ProcessQuery).running().all_rows():
+        end_run(story, process, "done\n")
+    return reply.lines

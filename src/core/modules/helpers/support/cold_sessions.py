@@ -4,6 +4,7 @@ from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.journal_home import JournalHome
+from core.base.listener.event_rows import EventRows
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
 from core.modules.agents.commands.replace_agent_session.replace_agent_session import ReplaceAgentSession
@@ -23,8 +24,8 @@ class ColdSessions:
     agent, which keeps its number, memories, tasks and worktree. A limit of 0 turns the check off. An agent
     past the context limit starts over the same way."""
 
-    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare) -> None:
-        self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share = queries, clock, providers, home, settings, bus, share
+    def __init__(self, queries: Queries, clock: Clock, providers: Providers, home: JournalHome, settings: SettingValues, bus: Bus, share: ContextShare, rows: EventRows) -> None:
+        self.queries, self.clock, self.providers, self.home, self.settings, self.bus, self.share, self.rows = queries, clock, providers, home, settings, bus, share, rows
 
     def replaced(self, agent: Agent) -> Agent:
         if not self.is_cold(agent) and not self.exceeds_context_limit(agent):
@@ -37,11 +38,11 @@ class ColdSessions:
         return self.bus.run(ReplaceAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
 
     def is_silent(self, agent: Agent) -> bool:
-        activity = self.queries.query(AgentActivity).find(agent.id)
+        activity = self.rows.required(AgentActivity, agent.id)
         return activity.is_inactive(self.clock.timestamp(), STALE_SESSION_SECONDS) or self.is_cold_with_activity(agent, activity)
 
     def require_replaced(self, agent: Agent) -> None:
-        activity = self.queries.query(AgentActivity).find(agent.id)
+        activity = self.rows.required(AgentActivity, agent.id)
         if activity.is_inactive(self.clock.timestamp(), STALE_SESSION_SECONDS):
             raise StaleSessionError(f"agent {agent.id} was about to resume session {agent.session}, whose last message is more than an hour old")
 
@@ -50,7 +51,7 @@ class ColdSessions:
         return self.settings.flag(CONTEXT_LIMIT_ENABLED) and (self.providers.context_tokens(agent.program, self.home, agent.session) or 0) >= limit
 
     def is_cold(self, agent: Agent) -> bool:
-        return self.is_cold_with_activity(agent, self.queries.query(AgentActivity).find(agent.id))
+        return self.is_cold_with_activity(agent, self.rows.required(AgentActivity, agent.id))
 
     def is_cold_with_activity(self, agent: Agent, activity: AgentActivity) -> bool:
         minutes, percent = self.settings.number(COLD_SESSION_MINUTES), self.settings.number(COLD_SESSION_CONTEXT_PERCENT)

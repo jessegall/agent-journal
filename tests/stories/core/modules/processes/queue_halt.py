@@ -9,7 +9,7 @@ from core.modules.processes.commands.grant_run_slots.grant_run_slots import Gran
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.run_queue import has_slot, queued, waits, expect_absent_slot, expect_absent_waits, expect_slot, expect_waits
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
+from tests.stories.core.modules.processes.support.process_samples import end_run, ended_hook_lines, install_runner
 from tests.stories.core.modules.processes.support.queue_fixtures import QueueAgents as BuilderStarted
 from tests.stories.support.story_checks import expect_value_with
 from core.modules.processes.support.output_folder import OutputFolder
@@ -27,7 +27,7 @@ def halted_story(new_story):
 
 
 def reminders(story) -> list[str]:
-    return [line for line in story.hook("s-1", VIEW_LINE).lines if REMINDER in line]
+    return [line for line in ended_hook_lines(story, VIEW_LINE) if REMINDER in line]
 
 
 def test_resuming_grants_the_spots_oldest_first(new_story):
