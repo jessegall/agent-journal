@@ -5,8 +5,8 @@ from core.base.database.kept_rows import KeptRows
 from core.base.model.tables import Tables
 from core.base.query.query import Query
 from core.base.query.conditions.among import Among
-from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
+from core.base.query.conditions.minimum import Minimum
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -43,7 +43,7 @@ class WorktreeQuery(Query[Worktree]):
         return self.kept.read_newest(self.table.name, self.with_removed().filter(session_agent_id=agent_id).newest().first, "session_agent_id = ?", [agent_id], name="workers.newest_worktree")
 
     def merged_since(self, agent_id: int, since: Timestamp) -> bool:
-        return self.with_removed().filter(session_agent_id=agent_id).matching(Greater("merged_at", since.text)).exists()
+        return self.with_removed().filter(session_agent_id=agent_id).matching(Minimum("merged_at", since.text)).exists()
 
     def open_worktrees(self) -> list[Worktree]:
         return list(self.kept.scoped_read(self.table.name, lambda: tuple(self.oldest().all_rows()), "removed_at IS NULL", name="workers.open_worktrees"))

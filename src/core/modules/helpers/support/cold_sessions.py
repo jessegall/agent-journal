@@ -34,7 +34,10 @@ class ColdSessions:
     def replaced_silent(self, agent: Agent) -> Agent:
         if not self.is_silent(agent) and not self.exceeds_context_limit(agent):
             return agent
-        return self.bus.run(ReplaceAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
+        replaced = self.bus.run(ReplaceAgentSession(agent.id), Actor.core(), environment_id=agent.environment_id)
+        if replaced.session == agent.session:
+            self.require_replaced(replaced)
+        return replaced
 
     def is_silent(self, agent: Agent) -> bool:
         activity = self.queries.query(AgentActivity).find(agent.id)
