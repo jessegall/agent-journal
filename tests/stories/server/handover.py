@@ -30,6 +30,7 @@ pytestmark = pytest.mark.install_job
 
 SOURCE = Path(__file__).resolve().parents[3] / "src"
 START_LIMIT_SECONDS = 60
+LISTEN_POLL_SECONDS = 0.2
 
 
 def health_status(home: JournalHome) -> int:
@@ -138,10 +139,20 @@ def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
     CodeHandover(home).run(SOURCE)
     wait_started(home)
     expect_changed_pid_file_server(home, running_pid)
-    listed = request_answer(ServerFiles(home).socket, "POST", "/cli",
-                            {"argv": ["template", "list", "--target", "plan", "--purpose", "critique"], "variables": {}, "folder": str(tmp_path)})
+    listed = wait_for_template_list(home, tmp_path, "Folder review")
     expect_row(listed, status=200, exit_code=0)
     expect_value_4("Folder review" in listed.text)
+
+
+def wait_for_template_list(home: JournalHome, folder: Path, title: str):
+    """The standard templates are written by a listener after the server starts serving, so the list is read until the title shows."""
+    deadline = time.monotonic() + START_LIMIT_SECONDS
+    while True:
+        listed = request_answer(ServerFiles(home).socket, "POST", "/cli",
+                                {"argv": ["template", "list", "--target", "plan", "--purpose", "critique"], "variables": {}, "folder": str(folder)})
+        if title in listed.text or time.monotonic() > deadline:
+            return listed
+        time.sleep(LISTEN_POLL_SECONDS)
 
 
 def publish_release(home, folder, source):
