@@ -46,8 +46,8 @@ class WorkerSessions(AgentLaunchGuard):
             finally:
                 fcntl.flock(opened, fcntl.LOCK_UN)
 
-    def prepare(self, worker: Agent) -> AgentSessionState:
-        current = self.rows.required(Agent, worker.id)
+    def prepare(self, agent: Agent) -> AgentSessionState:
+        current = self.rows.required(Agent, agent.id)
         if current.pid is None:
             return AgentSessionState.READY
         program = self.providers.provider(current.program).executable
@@ -56,7 +56,7 @@ class WorkerSessions(AgentLaunchGuard):
             return AgentSessionState.READY
         with self.bus.scopes.read_scope((), None, current.environment_id):
             span = self.settings.minutes(SILENT_AGENT_MINUTES)
-        activity = self.rows.required(AgentActivity, current.id)
+        activity = self.queries.query(AgentActivity).find(current.id)
         if not activity.is_inactive(self.clock.timestamp(), span.count) or self.processes.agent(current.id).running().exists():
             return AgentSessionState.RUNNING
         if self.program.stop_tree(current.pid, program):

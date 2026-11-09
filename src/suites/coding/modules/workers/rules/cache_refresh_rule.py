@@ -30,8 +30,8 @@ class CacheRefreshRule(DriverRule):
     roles = [AgentRole.MAIN]
     disabled_scopes = [ActorScope]
 
-    def __init__(self, history: HookHistory, hook_calls: HookCallQuery, queries: Queries, settings: SettingValues) -> None:
-        self.history, self.hook_calls, self.queries, self.settings = history, hook_calls, queries, settings
+    def __init__(self, hook_history: HookHistory, hook_calls: HookCallQuery, queries: Queries, settings: SettingValues) -> None:
+        self.hook_history, self.hook_calls, self.queries, self.settings = hook_history, hook_calls, queries, settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         minutes = self.settings.number(COLD_SESSION_MINUTES)
@@ -42,6 +42,6 @@ class CacheRefreshRule(DriverRule):
             return RuleAnswer.allowed()
         if not self.queries.query(AgentActivity).find(hook.agent_id).is_inactive(hook.timestamp, minutes * MINUTE_SECONDS):
             return RuleAnswer.allowed()
-        if self.history.has_recent_answer(self.name, hook, RETRY_SECONDS):
+        if self.hook_history.has_recent_answer(self.name, hook, RETRY_SECONDS):
             return RuleAnswer.allowed()
         return RuleAnswer.with_nudges(CACHE_KEEPALIVE.nudge()).running(WakeInactiveAgent(hook.agent_id))

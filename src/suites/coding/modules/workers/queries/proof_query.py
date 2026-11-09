@@ -7,6 +7,7 @@ from core.base.query.conditions.among import Among
 from core.base.query.query import Query
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.support.replaced_rows import replaced_rows
 from suites.coding.modules.workers.conditions.proof_task_testing import ProofTaskTesting
 
 
@@ -41,10 +42,13 @@ class ProofQuery(Query[Proof]):
                               "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
 
     def remember_test(self, proof: Proof) -> None:
-        self.kept.update(self.table.name, lambda rows: tuple(sorted([row for row in rows if row.id != proof.id] +
-                         ([proof] if proof.state in TEST_WAITING_STATES else []), key=lambda row: row.id)),
-                         "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
+        def with_proof(rows: tuple[Proof, ...]) -> tuple[Proof, ...]:
+            return replaced_rows(rows, proof.id, [proof] if proof.state in TEST_WAITING_STATES else [])
+
+        self.kept.update(self.table.name, with_proof, "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
 
     def remove_test(self, proof: Proof) -> None:
-        self.kept.update(self.table.name, lambda rows: tuple(row for row in rows if row.id != proof.id),
-                         "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")
+        def without_proof(rows: tuple[Proof, ...]) -> tuple[Proof, ...]:
+            return replaced_rows(rows, proof.id, [])
+
+        self.kept.update(self.table.name, without_proof, "state IN (?, ?)", list(TEST_WAITING_STATES), name="workers.test_proofs")

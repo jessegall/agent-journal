@@ -48,7 +48,7 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
                 self.libraries.exclude(command.folder, [str(file)])
 
     def handle(self, command: PrepareWorktree, context: Context) -> None:
-        environment_id = self.environment_names.environment_id(command.environment)
+        self.environment_names.environment_id(command.environment)
         links = (*self.settings.texts(LIBRARY_LINKS), *command.library_links)
         copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
         links = (*links, *(name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not (Path(command.folder) / name).exists()))

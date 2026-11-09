@@ -38,28 +38,28 @@ class WorkerSteps:
     def step(self, worker_round: WorkerRound) -> WorkerStep:
         if worker_round.is_asking:
             return WorkerStep.QUESTION
-        if worker_round.worktree is None:
+        worktree = worker_round.worktree
+        if worktree is None:
             return WorkerStep.BUILD if worker_round.started else WorkerStep.WAIT
         if worker_round.conflict is not None:
             return WorkerStep.CONFLICT
-        if self.is_blocked(worker_round):
+        if self.is_blocked(worker_round, worktree):
             return WorkerStep.BLOCKED
         if self.is_delivered(worker_round):
             return WorkerStep.WAIT
-        if self.phases.has_open_failure(worker_round.worktree):
+        if self.phases.has_open_failure(worktree):
             return WorkerStep.FIX
-        return self.working_step(worker_round)
+        return self.working_step(worker_round, worktree)
 
-    def working_step(self, worker_round: WorkerRound) -> WorkerStep:
-        if not worker_round.started or not self.is_proven(worker_round.worktree, worker_round.started[0]):
+    def working_step(self, worker_round: WorkerRound, worktree: Worktree) -> WorkerStep:
+        if not worker_round.started or not self.is_proven(worktree, worker_round.started[0]):
             return WorkerStep.BUILD
         return WorkerStep.TASK_PROVEN if self.continues_group(worker_round) else WorkerStep.GROUP_END
 
     def continues_group(self, worker_round: WorkerRound) -> bool:
         return worker_round.following is not None and worker_round.group is not None and self.phases.continues_group(worker_round.group, worker_round.following)
 
-    def is_blocked(self, worker_round: WorkerRound) -> bool:
-        worktree = worker_round.worktree
+    def is_blocked(self, worker_round: WorkerRound, worktree: Worktree) -> bool:
         if worktree.state is not WorktreeState.CUT or worker_round.started or worker_round.following is not None or self.proofs.tests_waiting(worktree.id):
             return False
         return self.queries.query(Task).find(worktree.task_id).state is TaskState.BLOCKED

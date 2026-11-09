@@ -47,6 +47,6 @@ class DeliverTaskSubcommand(Subcommand[Command[object], Task]):
         if not isinstance(value, Task):
             return
         if value.state is TaskState.TESTING and self.phases.is_grouped(value):
-            output.line(self.guidance.line(value.delegated_to))
+            output.line(self.guidance.task_line(value))
             return
         output.row(value)

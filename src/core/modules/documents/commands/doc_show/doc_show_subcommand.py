@@ -14,7 +14,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.text_lines import TextLines
 
 
-class DocShowSubcommand(LibraryAwareShow, TextShowSubcommand):
+class DocShowSubcommand(LibraryAwareShow[TextReading], TextShowSubcommand):
     """`journal doc show <n or library:n>`: a document of this journal, or one of the team's library read live."""
 
     id_type = staticmethod(LibraryRef.row_id)
@@ -27,7 +27,7 @@ class DocShowSubcommand(LibraryAwareShow, TextShowSubcommand):
         self.lookup = lookup
 
     def local(self, arguments: Namespace, caller: Caller) -> TextReading:
-        return TextShowSubcommand.read(self, arguments, caller)
+        return self.text_reading(arguments)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, LibraryReading):

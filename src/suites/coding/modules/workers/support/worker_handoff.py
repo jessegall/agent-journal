@@ -19,7 +19,7 @@ class WorkerHandoff:
     def is_pending(self, worker: Agent) -> bool:
         if self.operations.active(worker.id) is not None:
             return True
-        if self.operations.ended_after(worker.id, Timestamp(worker.ended_at.value - timedelta(seconds=OPERATION_END_SECONDS))):
+        if worker.ended_at is not None and self.operations.ended_after(worker.id, Timestamp(worker.ended_at.value - timedelta(seconds=OPERATION_END_SECONDS))):
             return True
         worktree = self.worktrees.worker_worktree(worker.id)
         return worktree is not None and worktree.state is WorktreeState.DELIVERED

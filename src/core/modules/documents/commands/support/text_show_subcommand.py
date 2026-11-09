@@ -31,8 +31,11 @@ class TextShowSubcommand(ReadSubcommand[TextReading | LibraryReading]):
         parser.add_argument("id", type=self.id_type)
         TextLines.reading_flags(parser)
 
-    def read(self, arguments: Namespace, caller: Caller) -> TextReading:
+    def text_reading(self, arguments: Namespace) -> TextReading:
         return TextReading(self.queries.query(self.model).find(arguments.id), arguments)
+
+    def read(self, arguments: Namespace, caller: Caller) -> TextReading | LibraryReading:
+        return self.text_reading(arguments)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, TextReading):

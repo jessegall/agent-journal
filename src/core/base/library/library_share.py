@@ -3,6 +3,7 @@ from collections.abc import Mapping
 from typing import ClassVar, Generic, TypeVar
 
 from core.base.command.context import Context
+from core.base.library.share_declaration import ShareDeclaration
 from core.base.model.model import Model
 from core.base.text_digest import TextDigest
 
@@ -11,12 +12,11 @@ Fields = Mapping[str, object]
 M = TypeVar("M", bound=Model)
 
 
-class LibraryShare(Generic[M]):
+class LibraryShare(ShareDeclaration, Generic[M]):
     """How the rows of one model are shared with a team: their name on the server, the model they are kept as here,
     the fields that travel, and how a row is made or changed from what the server sends. A module declares its
     own, so the library module knows no model by name."""
 
-    name: ClassVar[str]
     model: ClassVar[type[Model]]
 
     def fields(self, row: M) -> Fields:

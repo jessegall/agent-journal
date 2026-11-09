@@ -1,3 +1,4 @@
+from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.registry.helper_type_entry import HelperTypeEntry
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -17,6 +18,12 @@ class AgentTypeLimits:
         if entry is None or not entry.run_limit_key:
             return None
         return self.read(entry, profile)
+
+    def required(self, role: str, profile: str = "") -> TypeLimits:
+        limits = self.lookup(role, profile)
+        if limits is None:
+            raise Refusal(f"{role} agents have no limit", "a module declares a helper type with its run limit")
+        return limits
 
     def read(self, entry: HelperTypeEntry, profile: str = "") -> TypeLimits:
         profile_limits = entry.profile_limits_key and self.profile_limits(entry.profile_limits_key, profile)

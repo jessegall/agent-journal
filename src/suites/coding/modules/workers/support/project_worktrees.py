@@ -2,6 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 from core.base.refusal import Refusal
+from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.project_worktree import ProjectWorktree

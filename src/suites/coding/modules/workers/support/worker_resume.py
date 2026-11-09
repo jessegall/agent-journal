@@ -73,11 +73,12 @@ class WorkerResume:
         return permitted and self.program_state(worker).is_ready
 
     def replace_running_program(self, worker: Agent, actor: Actor) -> None:
-        if self.resume(worker, actor) is not LaunchAnswer.RUNNING:
+        ended_at = worker.ended_at
+        if ended_at is None or self.resume(worker, actor) is not LaunchAnswer.RUNNING:
             return
         self.program.stop(worker)
         if self.resume(worker, actor) is LaunchAnswer.RUNNING:
-            self.reports.report(worker, self.running_program_reason(worker), worker.ended_at)
+            self.reports.report(worker, self.running_program_reason(worker), ended_at)
 
     @staticmethod
     def running_program_reason(worker: Agent) -> str:
@@ -144,7 +145,7 @@ class WorkerResume:
         return self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", delivery_cutoff_at)).exists()
 
     def lost_job(self, worker: Agent) -> AgentLine | None:
-        activity = self.rows.required(AgentActivity, worker.id)
+        activity = self.queries.query(AgentActivity).find(worker.id)
         last_hook = activity.last_hook_at if activity.last_hook_at is not None else activity.created_at
         entered = self.queries.query(AgentLine).filter(session_agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", last_hook.text)).newest().all_rows()
         return next((line for line in entered if line.source in RESUMING_SOURCES), None)

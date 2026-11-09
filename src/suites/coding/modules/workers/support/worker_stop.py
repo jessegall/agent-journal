@@ -35,7 +35,8 @@ class WorkerStop:
         return bool(endings) and self.is_final(worker, endings[-1].actor_id)
 
     def is_job_due(self, worker: Agent, work: Sequence[Model]) -> bool:
-        if any(row.creation_timestamp().value > worker.ended_at.value for row in work):
+        ended_at = worker.ended_at
+        if ended_at is not None and any(row.creation_timestamp().value > ended_at.value for row in work):
             return True
         return not self.was_stopped(worker)
 
