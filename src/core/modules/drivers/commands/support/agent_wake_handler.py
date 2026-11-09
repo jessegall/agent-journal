@@ -10,7 +10,7 @@ from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 WakeCommand = TypeVar("WakeCommand", bound=Command[None])
 
 
-class AgentWakeHandler(Handler[WakeCommand, None]):
+class WakeAgentHandler(Handler[WakeCommand, None]):
     """Saves the wake line for an agent and types it, with the lines that wait."""
 
     wake_nudge: ClassVar[NudgeDeclaration]

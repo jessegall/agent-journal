@@ -43,7 +43,10 @@ class JournalInstructionFile:
 
     def append_import(self, file: Path) -> None:
         current_text = self.current_text(file)
-        self.save(file, current_text, self.with_import(OLD_BLOCK.sub("", current_text if current_text is not None else "")))
+        if current_text is None:
+            self.save(file, None, self.with_import(""))
+            return
+        self.save(file, current_text, self.with_import(OLD_BLOCK.sub("", current_text)))
 
     @staticmethod
     def with_import(text: str) -> str:

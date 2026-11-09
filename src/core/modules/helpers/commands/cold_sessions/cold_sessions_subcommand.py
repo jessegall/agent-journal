@@ -25,10 +25,10 @@ class ColdSessionsSubcommand(ReadSubcommand[tuple[ColdSession, ...]]):
         parser.add_argument("program")
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[ColdSession, ...]:
-        return tuple(ColdSession(agent.session, self.share.percent(arguments.program, agent.session) or 0)
+        return tuple(ColdSession(agent.session, self.share.percent(arguments.program, agent.session))
                      for agent in MainAgentFinder.sessions(self.queries, arguments.program) if self.cold.is_cold(agent))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, tuple):
             rows = [{"session": row.session, "context_percent": row.context_percent} for row in value if isinstance(row, ColdSession)]
-            output.write("\n".join(f"{row['session']} {row['context_percent']}%" for row in rows) or "no cold sessions", {"rows": rows})
+            output.write("\n".join(f"{row['session']} {'unknown' if row['context_percent'] is None else str(row['context_percent']) + '%'}" for row in rows) or "no cold sessions", {"rows": rows})

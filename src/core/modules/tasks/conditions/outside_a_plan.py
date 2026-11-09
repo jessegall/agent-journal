@@ -6,7 +6,7 @@ from core.base.query.select import Select
 
 
 @dataclass(frozen=True)
-class OutsideAPlan:
+class PlanlessTask:
     """Matches the tasks placed in no phase of a plan."""
 
     def statement(self) -> Statement:
