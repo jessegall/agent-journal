@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 
 import pytest
@@ -6,7 +7,7 @@ from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_HARD_TOKENS
 from core.testing.hook_samples import HookSamples
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.modules.usage.support.status_files import keep_status_file
+from tests.stories.core.modules.usage.support.status_files import keep_status_file, rewrite_status_file
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT, PRE_COMPACT, SESSION, LimitEnabled, has_context, set_value, stops, typing_recorded
 
@@ -165,5 +166,47 @@ def test_c9_a_stop_when_the_compaction_ended_and_the_reading_is_unsettled_types_
     compacted(agent, "manual")
     keep_status_file(agent, SESSION)
     agent.advance(TOO_LONG)
+    stops(agent)
+    expect_compactions_typed(agent, 1)
+
+
+GROWTH_TOKENS = LIMIT // 10
+SETTLED_TOKENS = LIMIT + 50_000
+
+
+def modified_at_story_time(story):
+    """The status file is modified now by the story's clock, which stands apart from the machine's."""
+    moment = story.clock.timestamp().value.timestamp()
+    os.utime(story.home.status_folder / f"{SESSION}.json", (moment, moment))
+
+
+def settled_reading(story, tokens):
+    story.advance(timedelta(seconds=1))
+    rewrite_status_file(story, SESSION, tokens)
+    modified_at_story_time(story)
+
+
+def test_e4_a_reading_over_the_limit_older_than_the_end_of_the_newest_compaction_is_not_due(agent):
+    has_context(agent, LIMIT + 1)
+    modified_at_story_time(agent)
+    agent.advance(timedelta(seconds=60))
+    compacted(agent, "auto")
+    keep_status_file(agent, SESSION)
+    stops(agent)
+    expect_compactions_typed(agent, 0)
+
+
+def test_e5_after_a_compaction_left_the_context_over_the_limit_one_is_due_only_once_it_has_grown_by_a_tenth_of_the_limit(agent):
+    has_context(agent, LIMIT + 1)
+    modified_at_story_time(agent)
+    agent.advance(timedelta(seconds=60))
+    compacted(agent, "auto")
+    settled_reading(agent, SETTLED_TOKENS)
+    stops(agent)
+    expect_compactions_typed(agent, 0)
+    settled_reading(agent, SETTLED_TOKENS + GROWTH_TOKENS - 1)
+    stops(agent)
+    expect_compactions_typed(agent, 0)
+    settled_reading(agent, SETTLED_TOKENS + GROWTH_TOKENS)
     stops(agent)
     expect_compactions_typed(agent, 1)
