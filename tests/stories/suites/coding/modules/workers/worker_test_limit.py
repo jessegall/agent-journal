@@ -126,17 +126,28 @@ def test_a_stopped_worker_is_started_again_with_the_count_and_limit(new_story):
     story.expect_rows("8 tests" in str(launcher.requests[0]["command"]), "limit 5" in str(launcher.requests[0]["command"]))
 
 
-def test_a_queued_run_over_the_limit_by_its_listing_never_gets_a_spot(limited_run):
+def test_a_queued_run_takes_its_spot_at_once_while_its_listing_is_still_counting(limited_run):
     story, process = limited_run
     folder = story.container.get(OutputFolder)
-    story.expect_rows(not folder.has_slot(process.id))
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(folder.has_slot(process.id), folder.count_status(process.id) is None, story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING, not folder.is_count_taken(process.id))
+
+
+def test_a_run_over_the_limit_by_its_listing_is_stopped_when_its_count_arrives(limited_run):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(folder.has_slot(process.id))
     folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 8 items\n", 0)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
-    story.expect_rows(not folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED)
+    lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED, len(lines) == 1, "8 tests" in lines[0].text)
     story.expect_text(f"output show {process.id}", "test_count: 8", actor=story.agent)
 
 
-def test_a_grant_over_many_queued_worker_runs_reads_their_outputs_once(limited_run):
+def test_a_grant_over_many_queued_worker_runs_reads_no_output(limited_run):
     story, _ = limited_run
     for number in range(12):
         worker_run(story, f"pytest tests/cart_{number}.py", CommandCategory.TEST_RUN)
@@ -144,17 +155,28 @@ def test_a_grant_over_many_queued_worker_runs_reads_their_outputs_once(limited_r
     with patch.object(database, "rows", wraps=database.rows) as reads:
         story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     output_reads = [call for call in reads.call_args_list if "FROM outputs " in call.args[0].sql]
-    expect_value(len(output_reads), 1)
+    expect_value(len(output_reads), 0)
+
+
+def test_a_run_under_the_limit_by_its_listing_goes_on_with_its_count(limited_run):
+    story, process = limited_run
+    folder = story.container.get(OutputFolder)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    folder.write_count(process.id, "\nJOURNAL_COUNT_PART_1\ncollected 4 items\n", 0)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.RUNNING, folder.is_count_taken(process.id))
+    story.expect_text(f"output show {process.id}", "test_count: 4", actor=story.agent)
 
 
 @pytest.mark.parametrize("status", [0, 1, 143])
 def test_a_listing_without_a_known_count_stops_the_run(limited_run, status):
     story, process = limited_run
     folder = story.container.get(OutputFolder)
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     folder.write_count(process.id, "no number\n" if status == 0 else "collected 100 items\n", status)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())
-    story.expect_rows(not folder.has_slot(process.id), story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
+    story.expect_rows(story.container.get(Queries).query(Process).find(process.id).state is ProcessState.STOPPED,
                       len(lines) == 1, "could not count" in lines[0].text)
 
 
@@ -167,6 +189,7 @@ def test_a_worker_test_tool_with_no_reader_runs_once_so_a_reader_can_be_drawn_fr
 
 def test_a_listing_that_fails_shows_why_in_the_output_summary(limited_run):
     story, process = limited_run
+    story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     story.container.get(OutputFolder).write_count(process.id, "zsh: no such file: vitest\n", 1)
     story.container.get(Bus).run(GrantRunSlots(), story.agent, environment_id=1)
     lines = tuple(story.container.get(Queries).query(AgentLine).filter(session_agent_id=process.session_agent_id, source="processes.worker-test-limit").all_rows())

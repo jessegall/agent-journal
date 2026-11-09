@@ -174,8 +174,8 @@ const statusSeen = computed(() => (props.facts?.last_activity ? `Seen: ${ago(pro
 
 .agent-card.open { min-height: 0; }
 
-.agent-card { --agent-padding: 14px; gap: 2px; padding: 9px 36px 9px var(--agent-padding); }
-.agent-head { gap: 6px; }
+.agent-card { --agent-padding: 14px; gap: 2px; padding: 9px var(--agent-padding); }
+.agent-head { gap: 6px; padding-right: 22px; }
 .agent-first-dispatched, .agent-last-heard { color: var(--text-3); font-size: 12px; white-space: nowrap; }
 .agent-first-dispatched { margin-left: auto; }
 .agent-name { flex: 0 1 auto; }

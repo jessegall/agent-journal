@@ -16,6 +16,7 @@ from suites.coding.modules.workers.commands.send_merger_report.send_merger_repor
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merger_nudges import MERGER_FINDINGS_PREFIX
 from suites.coding.modules.workers.support.worker_settings import DELIVERY_FAILURE_LIMIT
+from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 MERGE_REFUSAL_KEY = "workers.merge_refusal"
 MERGE_REFUSAL_REPORT = "Worker {worker} was sent back {count} times in a row on one piece of work: it does not seem able to fix it."
@@ -28,11 +29,12 @@ class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
 
     command = SendMergeFindings
 
-    def __init__(self, agents: AgentRows, bus: Bus, worktrees: WorktreeQuery, countdowns: Countdowns, settings: SettingValues) -> None:
-        self.agents, self.bus, self.worktrees, self.countdowns, self.settings = agents, bus, worktrees, countdowns, settings
+    def __init__(self, agents: AgentRows, bus: Bus, worktrees: WorktreeQuery, countdowns: Countdowns, settings: SettingValues, visits: MergerVisits) -> None:
+        self.agents, self.bus, self.worktrees, self.countdowns, self.settings, self.visits = agents, bus, worktrees, countdowns, settings, visits
 
     def handle(self, command: SendMergeFindings, context: Context) -> None:
         require_merger(self.agents, context)
+        self.visits.close_newest(context)
         main_agent = self.agents.main_agent()
         if main_agent is None:
             raise Refusal("no main agent runs")

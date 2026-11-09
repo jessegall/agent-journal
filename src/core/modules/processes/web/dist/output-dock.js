@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-21c9209ccdf7")) { const style = document.createElement("style"); style.id = "window-styles-21c9209ccdf7"; style.textContent = ".output-dock-inner[data-v-425bd607]{min-height:0;overflow:hidden}.output-dock-state[data-v-425bd607]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-425bd607]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-425bd607 .9s linear infinite}@keyframes output-spin-425bd607{to{transform:rotate(360deg)}}.output-dock-pending[data-v-425bd607]{display:inline-flex;align-items:center;flex:none;gap:3px}.output-dock-pending i[data-v-425bd607]{width:4px;height:4px;border-radius:50%;background:var(--text-3);animation:output-pending-425bd607 1.2s ease-in-out infinite}.output-dock-pending i[data-v-425bd607]:nth-child(2){animation-delay:.2s}.output-dock-pending i[data-v-425bd607]:nth-child(3){animation-delay:.4s}@keyframes output-pending-425bd607{0%,60%,to{opacity:.3}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.output-dock-pending i[data-v-425bd607]{animation:none}}.output-dock-title[data-v-425bd607]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-425bd607]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-percent[data-v-425bd607]{flex:none;align-self:center;width:32px;height:4px;margin-right:6px;overflow:hidden;border-radius:2px;background:var(--hover)}.output-dock-percent i[data-v-425bd607]{display:block;height:100%;background:var(--text-3)}.output-dock-terminal[data-v-425bd607]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-425bd607]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-425bd607]{height:100%;transition:width .4s ease}.output-dock-box[data-v-425bd607]{position:relative}.output-dock-reader[data-v-425bd607]{position:absolute;top:6px;right:14px;padding:2px 8px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.output-dock-reader[data-v-425bd607]:hover{background:var(--hover)}.output-dock-loading[data-v-425bd607]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-425bd607]{animation:output-fade-425bd607 .22s var(--ease) .32s backwards}@keyframes output-fade-425bd607{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-425bd607]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-8c713a5e]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-8c713a5e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-8c713a5e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-8c713a5e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-8c713a5e]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-393a83e0]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-393a83e0]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-393a83e0],.state.lost[data-v-393a83e0]{color:var(--red, #d4574b)}.line[data-v-393a83e0]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-393a83e0]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { computed as u, unref as a, ref as M, watch as V, openBlock as n, createElementBlock as p, createBlock as v, Teleport as k, createElementVNode as s, normalizeStyle as $, toDisplayString as m, createCommentVNode as g, createTextVNode as z, nextTick as ee } from "vue";
-import { useWindow as te, useDockCard as ae, useOutputPages as oe, useNow as se, usePoll as ne, Icon as ue, SkeletonLine as le, afterSkeletonMinimum as re } from "@journal/window-kit";
+if (!document.getElementById("window-styles-60a1145235f8")) { const style = document.createElement("style"); style.id = "window-styles-60a1145235f8"; style.textContent = ".output-dock-inner[data-v-2f29b64f]{min-height:0;overflow:hidden}.output-dock-state[data-v-2f29b64f]{display:flex;flex:none;justify-content:center;width:14px;color:var(--tone)}.output-dock-ring[data-v-2f29b64f]{width:10px;height:10px;border:1.5px solid color-mix(in srgb,var(--tone) 30%,transparent);border-top-color:var(--tone);border-radius:50%;animation:output-spin-2f29b64f .9s linear infinite}@keyframes output-spin-2f29b64f{to{transform:rotate(360deg)}}.output-dock-pending[data-v-2f29b64f]{display:inline-flex;align-items:center;flex:none;gap:3px}.output-dock-pending i[data-v-2f29b64f]{width:4px;height:4px;border-radius:50%;background:var(--text-3);animation:output-pending-2f29b64f 1.2s ease-in-out infinite}.output-dock-pending i[data-v-2f29b64f]:nth-child(2){animation-delay:.2s}.output-dock-pending i[data-v-2f29b64f]:nth-child(3){animation-delay:.4s}@keyframes output-pending-2f29b64f{0%,60%,to{opacity:.3}30%{opacity:1}}@media(prefers-reduced-motion:reduce){.output-dock-pending i[data-v-2f29b64f]{animation:none}}.output-dock-title[data-v-2f29b64f]{flex:1;font-size:13px;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-2f29b64f]{flex:none;color:var(--text-3);font-size:11.5px;font-variant-numeric:tabular-nums}.output-dock-percent[data-v-2f29b64f]{flex:none;align-self:center;width:32px;height:4px;margin-right:6px;overflow:hidden;border-radius:2px;background:var(--hover)}.output-dock-percent i[data-v-2f29b64f]{display:block;height:100%}.output-dock-terminal[data-v-2f29b64f]{overflow:auto;max-height:min(280px,calc(40cqh - 72px));margin:0;padding:8px 14px 8px 36px;background:var(--term);color:var(--text-2);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.output-dock-bar[data-v-2f29b64f]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-2f29b64f]{height:100%;transition:width .4s ease}.output-dock-box[data-v-2f29b64f]{position:relative}.output-dock-reader[data-v-2f29b64f]{position:absolute;top:6px;right:14px;padding:2px 8px;border:1px solid var(--border-2);border-radius:6px;background:none;color:var(--text-2);font:inherit;font-size:12px;cursor:pointer}.output-dock-reader[data-v-2f29b64f]:hover{background:var(--hover)}.output-dock-loading[data-v-2f29b64f]{padding:8px 14px 8px 36px;height:60px;background:var(--term)}.output-dock-terminal[data-v-2f29b64f]{animation:output-fade-2f29b64f .22s var(--ease) .32s backwards}@keyframes output-fade-2f29b64f{0%{opacity:0}}@media(prefers-reduced-motion:reduce){.output-dock-terminal[data-v-2f29b64f]{animation-duration:.1s;animation-delay:0ms}}.output[data-v-8c713a5e]{display:flex;flex-direction:column;height:100%;min-height:0}.bar[data-v-8c713a5e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-8c713a5e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-8c713a5e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-8c713a5e]{margin:0;padding:0 12px 12px;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-393a83e0]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-393a83e0]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-393a83e0],.state.lost[data-v-393a83e0]{color:var(--red, #d4574b)}.line[data-v-393a83e0]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-393a83e0]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { computed as u, unref as a, ref as $, watch as V, openBlock as n, createElementBlock as p, createBlock as v, Teleport as k, createElementVNode as s, normalizeStyle as T, toDisplayString as m, createCommentVNode as g, createTextVNode as z, nextTick as ee } from "vue";
+import { useWindow as te, useDockCard as ae, useOutputPages as oe, useNow as se, usePoll as ne, Icon as ue, SkeletonLine as re, afterSkeletonMinimum as le } from "@journal/window-kit";
 import { _ as de } from "./_plugin-vue_export-helper-CHgC5LLL.js";
 const ie = {
   class: "output-dock",
@@ -18,7 +18,7 @@ const ie = {
 }, Se = 2e3, Ne = 5e3, De = 24, Oe = {
   __name: "OutputDock",
   setup(xe) {
-    const T = {
+    const O = {
       running: "var(--tone-work)",
       good: "var(--tone-good)",
       bad: "var(--danger)",
@@ -35,20 +35,20 @@ const ie = {
       failed: "bad",
       stopped: "stopped",
       orphaned: "stopped"
-    }, l = te(), O = ae(), h = l.option("row"), b = l.option("head"), _ = l.option("foot"), C = l.option("time"), q = l.option("folded"), G = l.option("collapsed"), o = O.data, y = oe(
-      O.readOutput,
+    }, r = te(), x = ae(), h = r.option("row"), b = r.option("head"), _ = r.option("foot"), C = r.option("time"), q = r.option("folded"), G = r.option("collapsed"), o = x.data, y = oe(
+      x.readOutput,
       () => {
         var e;
         return (e = h.value) == null ? void 0 : e.target_id;
       }
-    ), x = y.lines, E = u(() => !a(q)), i = M(null), P = M(!1), X = se(), r = u(() => {
+    ), E = y.lines, I = u(() => !a(q)), i = $(null), P = $(!1), X = se(), l = u(() => {
       var e;
       return j[(e = o.value) == null ? void 0 : e.state] ?? "running";
-    }), I = () => r.value === "running", d = u(() => r.value !== "running"), L = u(() => {
+    }), L = () => l.value === "running", d = u(() => l.value !== "running"), M = u(() => {
       var e;
       return Number(((e = o.value) == null ? void 0 : e.progress) ?? 0) / 100;
     }), J = u(
-      () => d.value ? "100%" : `${Math.round(L.value * 100)}%`
+      () => d.value ? "100%" : `${Math.round(M.value * 100)}%`
     ), K = u(
       () => {
         var e;
@@ -57,7 +57,7 @@ const ie = {
     ), w = u(() => {
       var t;
       if (!a(G)) return "";
-      if (d.value) return r.value === "good" ? "100%" : "";
+      if (d.value) return l.value === "good" ? "100%" : "";
       const e = Math.round(Number(((t = o.value) == null ? void 0 : t.progress) ?? 0));
       return e > 0 ? `${e}%` : "";
     }), S = u(() => {
@@ -79,24 +79,24 @@ const ie = {
     });
     async function N() {
       var f;
-      if (!((f = h.value) == null ? void 0 : f.target_id) || (await O.reload(), !E.value)) return;
+      if (!((f = h.value) == null ? void 0 : f.target_id) || (await x.reload(), !I.value)) return;
       const t = i.value, c = !t || t.scrollHeight - t.scrollTop - t.clientHeight < De, D = performance.now();
-      await y.follow(), re(D, async () => {
+      await y.follow(), le(D, async () => {
         P.value = !0, await ee(), c && i.value && (i.value.scrollTop = i.value.scrollHeight), i.value && y.feed.drawn(i.value);
       });
     }
-    V(E, (e) => e && N());
-    const F = M(!1);
+    V(I, (e) => e && N());
+    const F = $(!1);
     async function U() {
       var t;
-      const e = await l.run(["output", "ask-reader", String((t = h.value) == null ? void 0 : t.target_id)]);
+      const e = await r.run(["output", "ask-reader", String((t = h.value) == null ? void 0 : t.target_id)]);
       (e == null ? void 0 : e.ok) !== !1 && (F.value = !0);
     }
     const Y = u(() => {
       var e, t;
       return !F.value && !((e = o.value) != null && e.reader_requested) && !((t = o.value) != null && t.reads_progress) && !d.value;
     });
-    return V(d, (e) => e && N()), l.follow(
+    return V(d, (e) => e && N()), r.follow(
       ["process.*"],
       (e) => {
         var t;
@@ -104,8 +104,8 @@ const ie = {
       }
     ), ne(
       N,
-      I,
-      () => E.value ? Se : Ne
+      L,
+      () => I.value ? Se : Ne
     ), (e, t) => {
       var c, D, f, R, B, H;
       return n(), p("div", ie, [
@@ -115,12 +115,12 @@ const ie = {
         }, [
           s("span", {
             class: "output-dock-state",
-            "data-state": r.value,
-            style: $({ "--tone": T[r.value] })
+            "data-state": l.value,
+            style: T({ "--tone": O[l.value] })
           }, [
-            I() ? (n(), p("span", pe)) : (n(), v(a(ue), {
+            L() ? (n(), p("span", pe)) : (n(), v(a(ue), {
               key: 1,
-              name: W[r.value],
+              name: W[l.value],
               size: 14
             }, null, 8, ["name"]))
           ], 12, ce),
@@ -128,20 +128,20 @@ const ie = {
             class: "output-dock-title",
             title: ((f = a(o)) == null ? void 0 : f.title) || ((R = a(o)) == null ? void 0 : R.line)
           }, m(((B = a(o)) == null ? void 0 : B.title) || ((H = a(o)) == null ? void 0 : H.line)), 9, ve),
-          L.value > 0 || d.value ? (n(), p("div", {
+          M.value > 0 || d.value ? (n(), p("div", {
             key: 0,
             class: "output-dock-bar",
-            "data-figure-bar": d.value ? r.value : "",
+            "data-figure-bar": d.value ? l.value : "",
             "data-figure-began": K.value
           }, [
             s("div", {
               class: "output-dock-fill",
-              style: $({ width: J.value, background: T[r.value] }),
+              style: T({ width: J.value, background: O[l.value] }),
               "data-figure-progress": d.value ? null : ""
             }, null, 12, _e)
           ], 8, ge)) : g("", !0)
         ], 8, ["to"])) : g("", !0),
-        a(a(_)) && I() && !L.value && !S.value ? (n(), v(k, {
+        a(a(_)) && L() && !M.value && !S.value ? (n(), v(k, {
           key: 1,
           to: a(a(_))
         }, [
@@ -186,7 +186,7 @@ const ie = {
             "aria-label": w.value
           }, [
             s("i", {
-              style: $({ width: w.value })
+              style: T({ width: w.value, background: O.running })
             }, null, 4)
           ], 8, me)) : (n(), p("span", he, m(Q.value), 1))
         ], 8, ["to"])) : g("", !0),
@@ -199,16 +199,16 @@ const ie = {
                 class: "output-dock-terminal",
                 "data-output-terminal": "",
                 onScroll: t[0] || (t[0] = (Z) => a(y).loadEarlier(Z.target))
-              }, m(a(x).length ? a(x).join(`
+              }, m(a(E).length ? a(E).join(`
 `) : "No output yet"), 545),
-              !a(x).length && Y.value ? (n(), p("button", {
+              !a(E).length && Y.value ? (n(), p("button", {
                 key: 0,
                 type: "button",
                 class: "output-dock-reader",
                 "data-output-reader-ask": "",
                 onClick: U
               }, " Ask the agent to draw a reader ")) : g("", !0)
-            ])) : (n(), v(a(le), {
+            ])) : (n(), v(a(re), {
               key: 0,
               class: "output-dock-loading",
               bars: [
@@ -221,7 +221,7 @@ const ie = {
       ]);
     };
   }
-}, Me = /* @__PURE__ */ de(Oe, [["__scopeId", "data-v-425bd607"]]);
+}, Me = /* @__PURE__ */ de(Oe, [["__scopeId", "data-v-2f29b64f"]]);
 export {
   Me as default
 };

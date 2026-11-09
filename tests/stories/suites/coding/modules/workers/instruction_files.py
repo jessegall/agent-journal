@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 import pytest
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -9,9 +11,17 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import C
 from tests.stories.support.story_checks import expect_value
 
 PROJECT_TEXT = "The project's own briefing.\n"
+NEWER_PROJECT_TEXT = "The project's newer briefing.\n"
 PLUGIN_TEXT = "Run the commandments before you hand in."
 BLOCK = [{"key": "briefing", "title": "Inject our briefing into the agent file", "file": "briefing.md"}]
 NOTES_PROFILE = 'profile save notes-worker --type worker --description "Works through notes" --body "Work through the notes." --keeps-project-instructions --injections \'{"journal": false}\''
+
+
+@dataclass(frozen=True)
+class WorkerBranch:
+    story: Story
+    repository: object
+    worker: Actor
 
 
 def project_with_instructions(story: Story):
@@ -112,3 +122,77 @@ def test_a_send_reads_each_instruction_file_of_the_worktree_once(new_story):
     project_with_instructions(story)
     worker = dispatched_worker(story)
     story.expect_success(f'worker send --wait {worker.id} "Go on with the job"', actor=story.agent)
+
+
+@pytest.fixture
+def branch_with_instruction_files(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = project_with_instructions(story)
+    worker = dispatched_worker(story)
+    repository.git("update-index", "--no-skip-worktree", "CLAUDE.md", "AGENTS.md", folder=repository.worktree_folder(worker.id))
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    return WorkerBranch(story, repository, worker)
+
+
+def hand_in(branch):
+    story = branch.story
+    story.expect_success(FIRST_PROOF, "point: 1", actor=branch.worker)
+    story.expect_success(DELIVERY, actor=branch.worker)
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    story.expect_success(f"worker logs {branch.worker.id}", actor=story.agent)
+    branch.repository.checkout(ENVIRONMENT_BRANCH)
+
+
+def merge_worker(branch):
+    branch.story.expect_success(f"worker merge --wait {branch.worker.id}", actor=branch.story.agent)
+
+
+@pytest.fixture
+def handed_in_branch(branch_with_instruction_files):
+    hand_in(branch_with_instruction_files)
+    return branch_with_instruction_files
+
+
+@pytest.mark.real_git
+def test_a_branch_that_carries_instruction_files_merges_and_keeps_the_project_s_text(handed_in_branch):
+    branch = handed_in_branch
+    merge_worker(branch)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "CLAUDE.md", PROJECT_TEXT)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "AGENTS.md", PROJECT_TEXT)
+
+
+@pytest.mark.real_git
+def test_a_project_that_changed_its_instruction_files_after_the_hand_in_keeps_them_through_the_merge(handed_in_branch):
+    branch = handed_in_branch
+    branch.repository.committed("CLAUDE.md", NEWER_PROJECT_TEXT, "the project changes its Claude file")
+    merge_worker(branch)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "CLAUDE.md", NEWER_PROJECT_TEXT)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "AGENTS.md", PROJECT_TEXT)
+
+
+@pytest.mark.real_git
+def test_a_project_that_changed_its_instruction_files_before_the_hand_in_has_no_clash_to_settle(branch_with_instruction_files):
+    branch = branch_with_instruction_files
+    branch.repository.checkout(ENVIRONMENT_BRANCH)
+    branch.repository.committed("CLAUDE.md", NEWER_PROJECT_TEXT, "the project changes its Claude file")
+    hand_in(branch)
+    merge_worker(branch)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "CLAUDE.md", NEWER_PROJECT_TEXT)
+    branch.repository.expect_file(ENVIRONMENT_BRANCH, "AGENTS.md", PROJECT_TEXT)
+
+
+@pytest.mark.real_git
+def test_a_branch_that_adds_instruction_files_a_project_has_not_got_does_not_add_them(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    repository = repository_environment(story)
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    repository.git("add", "-f", "CLAUDE.md", "AGENTS.md", folder=repository.worktree_folder(worker.id))
+    hand_in(WorkerBranch(story, repository, worker))
+    merge_worker(WorkerBranch(story, repository, worker))
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    expect_value(repository.git("ls-tree", "--name-only", ENVIRONMENT_BRANCH, "CLAUDE.md", "AGENTS.md").stdout, "")
