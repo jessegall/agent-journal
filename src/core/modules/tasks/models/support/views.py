@@ -20,7 +20,8 @@ TASK_CARDS_SELECT = (
     "SELECT tasks.id, tasks.environment_id, tasks.title, tasks.state, tasks.priority, tasks.complexity, tasks.reason, tasks.closed_at, tasks.delegated_to,"
     f" {TASK_TAGS_SELECT}"
     f" ({AUTOMATIC_TASK_WAIT} AND NOT {USER_TASK_WAIT}) AS automatic, "
-    " (SELECT coalesce(nullif(agents.given_name, ''), 'Agent ' || agents.id) FROM agents WHERE agents.id = tasks.delegated_to) AS delegated_name"
+    " (SELECT coalesce(nullif(agents.given_name, ''), 'Agent ' || agents.id) FROM agents WHERE agents.id = tasks.delegated_to) AS delegated_name,"
+    " coalesce((SELECT agents.role = 'main' FROM agents WHERE agents.id = tasks.delegated_to), 0) AS delegated_is_main"
     " FROM tasks"
 )
 

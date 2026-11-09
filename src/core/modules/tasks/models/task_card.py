@@ -29,3 +29,4 @@ class TaskCard(EnvironmentScoped, ViewModel):
     closed_at: str | None
     delegated_to: int | None
     delegated_name: str | None
+    delegated_is_main: bool

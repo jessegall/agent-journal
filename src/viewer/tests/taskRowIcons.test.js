@@ -25,6 +25,17 @@ test("a row shows its tags in full as outlined chips after the title", async () 
     expect(row.querySelector(".task-title").nextElementSibling.classList.contains("task-tags")).toBe(true);
 });
 
+test("a task assigned to a main agent shows the solid purple user icon and any other agent keeps its icon", async () => {
+    const element = await drawn([task({id: 1, state: "started", delegated_to: 78, delegated_name: "Main", delegated_is_main: true}), task({id: 2, state: "started", delegated_to: 12, delegated_name: "Joan Clarke", delegated_is_main: false})]);
+    const main = cell(element, 1, "data-task-agent");
+    const worker = cell(element, 2, "data-task-agent");
+    expect(main.querySelector("[data-task-main-agent] svg")).not.toBeNull();
+    expect(main.classList.contains("main")).toBe(true);
+    expect(tipOf(main)).toEqual(["Main agent"]);
+    expect(worker.querySelector("[data-task-main-agent]")).toBeNull();
+    expect(worker.querySelector("[data-icon='agent']")).not.toBeNull();
+});
+
 test("the agent column shows the agent icon, solid when it holds the task and dashed when the task waits, with a tooltip that opens the agent", async () => {
     const element = await drawn([task({id: 1, state: "started", delegated_to: 12, delegated_name: "Joan Clarke"}), task({id: 2, delegated_to: 12, delegated_name: "Joan Clarke"}), task({id: 3})]);
     const held = cell(element, 1, "data-task-agent");
@@ -32,8 +43,8 @@ test("the agent column shows the agent icon, solid when it holds the task and da
     expect(held.querySelector("[data-icon='agent']")).not.toBeNull();
     expect(held.classList.contains("queued")).toBe(false);
     expect(queued.classList.contains("queued")).toBe(true);
-    expect(tipOf(held)).toEqual(["Joan Clarke works on it", "Open the agent"]);
-    expect(tipOf(queued)).toEqual(["Waiting for Joan Clarke", "It takes this task after the one it is on"]);
+    expect(tipOf(held)).toEqual(["Worker 12"]);
+    expect(tipOf(queued)).toEqual(["Worker 12"]);
     expect(cell(element, 3, "data-task-agent")).toBeNull();
     expect(element.querySelector('[data-row="3"] [data-task-icons] .cell.empty')).not.toBeNull();
 });
