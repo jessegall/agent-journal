@@ -1,8 +1,8 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Icon, MenuItem, MenuLabel, MenuPanel, peekRef} from "@journal/window-kit";
+import {AgentBadge, Icon, MenuItem, MenuLabel, MenuPanel, agentLabel, peekRef} from "@journal/window-kit";
 
-// who has a plan, on its card: always one row, so every card keeps its height. One agent shows its name, several a button that lists them
+// who has a plan, on its card: always one row, so every card keeps its height. One agent shows its badge, several a button that lists them
 const props = defineProps({planId: {type: Number, required: true}, agents: {type: Array, default: () => []}});
 const named = computed(() => [...new Map(props.agents.map((agent) => [agent.id, agent])).values()]);
 const anchor = ref(null);
@@ -16,7 +16,7 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
             <span class="plan-agents-none" data-plan-agents-none>No agent assigned</span>
         </template>
         <template v-else-if="named.length === 1">
-            <button type="button" class="plan-agents-button" :title="`Open ${named[0].name}`" data-plan-agent @click="openAgent(named[0])">Agent: {{ named[0].name }}</button>
+            <button type="button" class="plan-agents-button" :title="`Open ${agentLabel(named[0].name, named[0].main)}`" data-plan-agent @click="openAgent(named[0])"><AgentBadge :name="named[0].name" :main="named[0].main" /></button>
         </template>
         <template v-else>
             <button ref="anchor" type="button" class="plan-agents-button" :aria-expanded="open" data-plan-agents-list @click="open = !open">
@@ -27,7 +27,7 @@ const openAgent = (agent) => peekRef(`agents:${agent.id}`);
                 <MenuPanel :anchor="anchor" :min-width="200" data-plan-agents-menu @close="open = false">
                     <MenuLabel>Agents on plan {{ planId }}</MenuLabel>
                     <template v-for="agent in named" :key="agent.id">
-                        <MenuItem data-plan-agent @click="openAgent(agent)">{{ agent.name }}</MenuItem>
+                        <MenuItem data-plan-agent @click="openAgent(agent)"><AgentBadge :name="agent.name" :main="agent.main" /></MenuItem>
                     </template>
                 </MenuPanel>
             </template>

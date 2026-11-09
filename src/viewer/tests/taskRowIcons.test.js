@@ -29,10 +29,10 @@ test("a task assigned to a main agent shows the solid purple user icon and any o
     const element = await drawn([task({id: 1, state: "started", delegated_to: 78, delegated_name: "Main", main_delegate: true}), task({id: 2, state: "started", delegated_to: 12, delegated_name: "Joan Clarke", main_delegate: false})]);
     const main = cell(element, 1, "data-task-agent");
     const worker = cell(element, 2, "data-task-agent");
-    expect(main.querySelector("[data-task-main-agent] svg")).not.toBeNull();
-    expect(main.classList.contains("main")).toBe(true);
-    expect(tipOf(main)).toEqual(["Main agent"]);
-    expect(worker.querySelector("[data-task-main-agent]")).toBeNull();
+    expect(main.querySelector("[data-agent-main-icon]")).not.toBeNull();
+    expect(main.querySelector("[data-agent-main]")).not.toBeNull();
+    expect(tipOf(main)).toEqual(["main agent"]);
+    expect(worker.querySelector("[data-agent-main-icon]")).toBeNull();
     expect(worker.querySelector("[data-icon='agent']")).not.toBeNull();
 });
 

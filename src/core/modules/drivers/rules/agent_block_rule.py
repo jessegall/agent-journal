@@ -70,4 +70,4 @@ class AgentBlockRule(DriverRule):
         if not block.countdown_text or not block.grace_tool_uses:
             return None
         remaining = block.grace_tool_uses - tool_uses - 1
-        return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(remaining)), turn_limited=False) if 0 <= remaining < block.countdown_from else None
+        return Nudge(block.countdown_key, NudgeType.STEERING, block.countdown_text.replace("{left}", str(remaining)), turn_limited=False) if 0 <= remaining < block.countdown_limit else None

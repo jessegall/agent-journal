@@ -39,7 +39,7 @@ class WorkerRoster(AgentRoster[Agent]):
         return ""
 
     def has_own_changes(self, agent: Agent, worktree: Worktree) -> bool:
-        if not Path(worktree.folder).exists():
+        if worktree.removed_at is not None or not Path(worktree.folder).exists():
             return False
         return any(not self.managed_files.has(agent, path) for path in self.git.uncommitted_files(worktree.folder))
 

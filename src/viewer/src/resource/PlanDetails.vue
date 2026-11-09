@@ -2,7 +2,8 @@
 import Folded from "../kit/Folded.vue";
 import ProgressBar from "../kit/ProgressBar.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {delegationWord} from "../domain/plans.js";
+import {soleAgent} from "../domain/plans.js";
+import AgentBadge from "../kit/AgentBadge.vue";
 import StateBadge from "../../kit/StateBadge.vue";
 import {stateLook} from "../domain/states.js";
 
@@ -33,10 +34,17 @@ defineProps({plan: {type: Object, required: true}, read: {type: Function, defaul
             </section>
         </template>
         <template v-if="plan.assignee">
-            <p class="delegation" data-plan-assignee>Agent: {{ plan.assignee.name }}</p>
+            <p class="delegation" data-plan-assignee><AgentBadge :name="plan.assignee.name" :main="plan.assignee.main" /></p>
         </template>
         <template v-else-if="plan.delegated">
-            <p class="delegation" data-plan-delegated>{{ delegationWord(plan) }}</p>
+            <p class="delegation" data-plan-delegated>
+                <template v-if="soleAgent(plan)">
+                    <AgentBadge :name="soleAgent(plan).name" :main="soleAgent(plan).main" />
+                </template>
+                <template v-else>
+                    Delegated
+                </template>
+            </p>
         </template>
         <template v-if="plan.brief">
             <section class="part">

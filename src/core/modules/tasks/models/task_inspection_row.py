@@ -22,3 +22,4 @@ class TaskInspectionRow(ViewModel):
     block_renewals: str
     helper_id: int | None
     helper_name: str | None
+    helper_main: bool

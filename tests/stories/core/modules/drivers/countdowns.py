@@ -7,13 +7,13 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.rules.agent_block_rule import AgentBlockRule
-from core.modules.drivers.support.countdowns import Countdowns, not_ended
+from core.modules.drivers.support.countdowns import Countdowns, condition_unmet
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 REPEATED = CountDown("stories.repeated", "stop repeating", TimesSpan(3))
 SILENT = CountDown("stories.silent", "stop repeating", TimesSpan(3), is_silent=True)
-LATE_LINE = CountDown("stories.late_line", "stop repeating", TimesSpan(5), line_below=2)
+LATE_LINE = CountDown("stories.late_line", "stop repeating", TimesSpan(5), line_limit=2)
 
 
 def context_of(story) -> Context:
@@ -24,7 +24,7 @@ def new_countdowns(story) -> Countdowns:
     return Countdowns(story.container.get(Queries), story.container.get(Repository))
 
 
-def tick(story, count_down: CountDown, actor_id: int, subject: str = "one", stop_condition=not_ended) -> int:
+def tick(story, count_down: CountDown, actor_id: int, subject: str = "one", stop_condition=condition_unmet) -> int:
     with story.container.get(Database).transaction():
         return new_countdowns(story).tick(count_down, actor_id, subject, context_of(story), stop_condition)
 
@@ -77,7 +77,7 @@ def test_a_countdown_says_its_line_only_below_the_count_it_is_given(new_story):
 def test_a_block_says_its_countdown_only_below_the_count_it_was_given(new_story):
     story = new_story(fixture=BuilderStarted)
     block = AgentBlock(session_agent_id=story.agent.id, creator_id=story.agent.id, nudge_key="stories.block", nudge_text="held", condition_name="c", condition_text="t",
-                       grace_tool_uses=5, countdown_key="stories.block_countdown", countdown_text="left {left}", countdown_from=2)
+                       grace_tool_uses=5, countdown_key="stories.block_countdown", countdown_text="left {left}", countdown_limit=2)
     rule = story.container.get(AgentBlockRule)
     story.expect_rows(rule.countdown(block, 2) is None)
     story.expect_rows(rule.countdown(block, 3).text == "left 1")

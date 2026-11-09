@@ -63,3 +63,13 @@ def test_a_planner_helper_line_with_two_parts_for_one_plan_reads_that_plan_once(
     line = HookSamples.shell("journal phase edit 1 --goal 'It builds' && journal plan ready 1", edit, ready).with_fields(event="pre_tool_use")
     with story.repeated_work.request():
         story.expect_hook_allowed(helper.session, line)
+
+
+def test_a_planner_helper_line_editing_many_tasks_of_its_plan_reads_the_tasks_once(helper_story):
+    story, helper = helper_story
+    helper_actor = Actor(helper.id, ActorType.AGENT)
+    tasks = [story.new_row_id(f'task make "Step {number}" --phase 1', actor=helper_actor) for number in range(12)]
+    parts = [ShellPart("journal", CommandCategory.JOURNAL, ["task", "edit", str(task), "--complexity", "2"], subcommand="task") for task in tasks]
+    line = HookSamples.shell(" && ".join(f"journal task edit {task} --complexity 2" for task in tasks), *parts).with_fields(event="pre_tool_use")
+    with story.repeated_work.request():
+        story.expect_hook_allowed(helper.session, line)

@@ -37,8 +37,8 @@ def test_a_reason_lets_a_plan_with_a_one_task_phase_be_made_ready(new_story):
 def test_a_plan_whose_phases_each_have_two_tasks_is_made_ready_without_a_reason(new_story):
     story = new_story(fixture=OneTaskPhasePlan)
     story.expect_success('task make "Test it" --brief "Test it" --phase 1 --environment main', actor=story.agent)
-    for task, earlier_task in ((2, 1), (3, 2), (4, 3)):
-        story.expect_success(f"task depend {task} --on {earlier_task}", actor=story.agent)
+    for task, required_task in ((2, 1), (3, 2), (4, 3)):
+        story.expect_success(f"task depend {task} --on {required_task}", actor=story.agent)
     story.expect_success("plan ready 1", "state: ready", actor=story.agent)
 
 
