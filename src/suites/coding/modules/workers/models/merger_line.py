@@ -24,3 +24,5 @@ class MergerLine(EnvironmentScoped, Model):
     facts_json: str | None = None
     worker_id: int | None = None
     group_key: str | None = None
+    visit_id: int | None = None
+    returned_at: Timestamp | None = None

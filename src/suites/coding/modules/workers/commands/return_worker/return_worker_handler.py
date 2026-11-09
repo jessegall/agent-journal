@@ -12,6 +12,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merger_nudges import MERGER_JOB, MERGER_PASSED, MERGER_PROFILE, MERGER_SOURCE, NO_WORKER_WAITING
 from suites.coding.modules.workers.commands.return_worker.return_worker import ReturnWorker
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
+from suites.coding.modules.workers.support.merger_visits import MergerVisits
 
 
 class ReturnWorkerHandler(Handler[ReturnWorker, None]):
@@ -19,11 +20,12 @@ class ReturnWorkerHandler(Handler[ReturnWorker, None]):
 
     command = ReturnWorker
 
-    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, repository: Repository, main_line: MainAgentLine) -> None:
-        self.agents, self.worktrees, self.repository, self.main_line = agents, worktrees, repository, main_line
+    def __init__(self, agents: AgentRows, worktrees: WorktreeQuery, repository: Repository, main_line: MainAgentLine, visits: MergerVisits) -> None:
+        self.agents, self.worktrees, self.repository, self.main_line, self.visits = agents, worktrees, repository, main_line, visits
 
     def handle(self, command: ReturnWorker, context: Context) -> None:
         require_merger(self.agents, context)
+        self.visits.close_newest(context)
         worktree: Worktree | None = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
             raise Refusal(f"worker {command.worker_id} has nothing delivered")
