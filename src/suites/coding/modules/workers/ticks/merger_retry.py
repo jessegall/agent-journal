@@ -11,15 +11,16 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from suites.coding.modules.workers.commands.read_next_merge.read_next_merge_handler import ReadNextMergeHandler
 from suites.coding.modules.workers.commands.start_merger.start_merger import StartMerger
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.support.merger_nudges import MERGER_PROFILE
+from suites.coding.modules.workers.support.merger_nudges import MERGER_LINE_AVAILABLE, MERGER_PROFILE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_PASSED
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class MergerRetry:
-    """Wakes an idle merger when the next worker can be merged."""
+    """Wakes an idle merger when the next worker can be merged or a line waits unread for it."""
 
     def __call__(self, container: Container) -> None:
         worktrees = container.get(WorktreeQuery).all_worktrees()
@@ -28,12 +29,25 @@ class MergerRetry:
             worktree = next(row for row in worktrees if row.environment_id == environment_id and ReadNextMergeHandler.waits(row))
             with container.get(Scopes).row_scope(worktree):
                 self.retry(container, worktree)
+        unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).oldest().all_rows()
+        for line in dict((row.environment_id, row) for row in reversed(tuple(unread))).values():
+            with container.get(Scopes).row_scope(line):
+                self.retry_line(container, line)
+
+    def retry_line(self, container: Container, line: MergerLine) -> None:
+        if not self.is_merger_idle(container):
+            return
+        container.get(Bus).run(StartMerger(MERGER_LINE_AVAILABLE.nudge(line=line.id), line.creation_timestamp()), Actor.core(), environment_id=line.environment_id)
+
+    @staticmethod
+    def is_merger_idle(container: Container) -> bool:
+        if not container.get(SettingValues).flag(MERGER_ENABLED):
+            return False
+        merger = container.get(Queries).query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
+        return merger is None or (merger.ended_at is not None and container.get(HelperJobRows).open_job(merger.id) is None)
 
     def retry(self, container: Container, worktree: Worktree) -> None:
-        if not container.get(SettingValues).flag(MERGER_ENABLED):
-            return
-        merger = container.get(Queries).query(Agent).filter(profile=MERGER_PROFILE).matching(IsNull("retired_at")).newest().first()
-        if merger is not None and (merger.ended_at is None or container.get(HelperJobRows).open_job(merger.id) is not None):
+        if not self.is_merger_idle(container):
             return
         environment = container.get(EnvironmentRows).find(worktree.environment_id)
         git = container.get(WorktreeGit)
