@@ -49,10 +49,6 @@ def planned_story(new_story, approve: bool = True, build_test: str = ""):
     return story
 
 
-def asking_main(line: str, why: str) -> str:
-    return f'{line} --ask-main "{why}"'
-
-
 def file_line(line: str) -> str:
     return " && ".join(f"journal worker test python {' '.join(shlex.split(text)[1:])}" for text in line.split(" && "))
 
@@ -68,16 +64,6 @@ def file_proof_line(line: str) -> str:
 def shell_test_part(line: str) -> ShellPart:
     program, *arguments = shlex.split(line)
     return ShellPart(program, CommandCategory.TEST_RUN, arguments)
-
-
-@dataclass(frozen=True)
-class RunRequest:
-    """A row of journal worker-test-request list, with the fields the stories compare."""
-
-    id: int
-    command: str
-    reason: str
-    state: str
 
 
 @dataclass(frozen=True)
@@ -176,11 +162,6 @@ class StoryWorker:
     def worker_lines(self) -> tuple[str, ...]:
         return agent_lines(self.story, self.worker)
 
-    def run_requests(self) -> tuple[RunRequest, ...]:
-        outcome = self.story.run("worker-test-request list --json", actor=self.story.agent)
-        assert outcome.code == 0, outcome.output_text
-        rows = sorted(json.loads(outcome.output_text)["rows"], key=lambda row: row["id"])
-        return tuple(RunRequest(row["id"], row["command"], row["reason"], row["state"]) for row in rows)
 
 
 def agent_lines(story: Story, agent: Actor) -> tuple[str, ...]:

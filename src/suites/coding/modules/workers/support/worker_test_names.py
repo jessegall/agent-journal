@@ -1,3 +1,5 @@
+from core.base.driver.part import Part
+from core.modules.processes.support.background_commands import JOURNAL
 import shlex
 from collections.abc import Sequence
 
@@ -9,8 +11,15 @@ from suites.coding.modules.workers.models.worker_test_command import WorkerTestC
 CALL = "journal worker test <name> <test files>"
 
 
+WORKER_TEST_ARGUMENTS = ("worker", "test")
+
+
 class WorkerTestNames:
     """The test commands a worker was given: the names it has and the line a name runs."""
+
+    @staticmethod
+    def is_worker_test(part: Part) -> bool:
+        return part.program == JOURNAL and tuple(part.arguments[:2]) == WORKER_TEST_ARGUMENTS
 
     def __init__(self, queries: Queries, kept: KeptRows) -> None:
         self.queries, self.kept = queries, kept

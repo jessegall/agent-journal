@@ -7,7 +7,7 @@ from core.modules.helpers.migrations.m001_helper_limit_key import HelperCapKeyMi
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
 from core.base.module.module import Module
-from core.base.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
+from core.base.module.model_declaration import ModelDeclaration
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.migrations.m004_provider_outages import ProviderOutagesMigration
 from core.modules.helpers.migrations.m005_helper_job_counts_index import HelperJobCountsIndexMigration
@@ -72,7 +72,7 @@ class HelpersModule(Module):
     move_reason = "version 4 had no helpers"
     requires_core = ">=5,<6"
     migrations = [HelperGrantsMigration, OpenHelperJobsIndexMigration, RetireOldHelpersMigration, HelperCapKeyMigration, ProviderOutagesMigration, HelperJobCountsIndexMigration, UsageLimitsMigration, HelperSettingKeysMigration]
-    models = [ModelDeclaration(HelperGrant, excluded_subcommands=ALL_SUBCOMMANDS), ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
+    models = [ModelDeclaration(HelperGrant, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(ProviderOutage), ModelDeclaration(UsageLimit, excluded_subcommands=["make"])]
     dependencies = ["journal.core.agents", "journal.core.profiles", "journal.core.messages", "journal.core.drivers", "journal.core.usage", "journal.core.chat", "journal.core.skills"]
     marks = PROGRAM_MARKS
     settings = HELPER_SETTINGS

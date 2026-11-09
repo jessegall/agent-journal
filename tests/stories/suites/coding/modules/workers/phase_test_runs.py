@@ -3,9 +3,9 @@ import pytest
 from core.base.driver.command_category import CommandCategory
 from core.testing.expect_reply import expect_absent_reply_refusal, expect_reply_allowed, expect_reply_refusal
 from core.testing.shell_part import ShellPart
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, asking_main, shell_test_part, start_planned_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_ALIAS, TEST_LINE, shell_test_part, start_planned_worker, unplanned_worker
 
-FLAG = "--ask-main"
+FLAG = "No test runs left"
 RULE = "workers.phase-tests"
 
 
@@ -92,11 +92,6 @@ def test_outside_a_plan_a_proof_with_no_test_waits_on_the_main_agent(proved_with
     excludes_plan = proved_without_test
     excludes_plan.story.run("worker next --wait --differences none", actor=excludes_plan.worker)
     excludes_plan.story.expect_text("proof show 1", "state: shown", actor=excludes_plan.story.agent)
-
-
-def test_outside_a_plan_the_flag_is_refused_with_no_need_to_ask(excludes_plan):
-    reply = excludes_plan.run_test(asking_main(TEST_LINE, "the rounding only shows in a real run"))
-    expect_reply_refusal(reply, "need not ask")
 
 
 def test_the_main_agent_hears_nothing_while_a_worker_is_refused_and_works_through_a_phase(planned_worker):

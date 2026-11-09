@@ -65,14 +65,14 @@ COMMAND_TYPES = "journal.suites.coding.worker-command-types"
 def test_s34_a_zero_allowance_sends_the_first_grouped_test_command_to_the_main_agent_for_approval(new_story, monkeypatch):
     worker = plan_worker(new_story, monkeypatch)
     configure(worker, RUNS, "0")
-    expect_reply_refusal(worker.run_test(), "--ask-main")
+    expect_reply_refusal(worker.run_test(), "No test runs left")
 
 
 def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(new_story, monkeypatch):
     worker = plan_worker(new_story, monkeypatch)
     expect_reply_allowed(worker.run_test())
     configure(worker, RUNS, "1")
-    expect_reply_refusal(worker.run_test(), "--ask-main")
+    expect_reply_refusal(worker.run_test(), "No test runs left")
     configure(worker, RUNS, "3")
     expect_reply_allowed(worker.run_test())
 
