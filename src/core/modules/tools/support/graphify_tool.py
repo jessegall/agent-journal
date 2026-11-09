@@ -13,7 +13,6 @@ from core.modules.tools.support.graph_status import GraphStatus
 from core.modules.tools.support.tool_setting import ToolSetting
 
 INSTALL_LIMIT_SECONDS = 600
-AGENT_INSTALLS = (tuple(["install"]), ("claude", "install"), ("codex", "install"))
 # Runs Graphify's incremental update, which re-extracts code with no LLM, then stamps the commit it ran for; the
 # claim is released whatever happens, and a failure is recorded for its commit so a tick does not start it again.
 REFRESH_SCRIPT = (
@@ -44,8 +43,7 @@ class GraphifyTool:
         if not line:
             raise Refusal("the Graphify install command is empty", "set journal.core.tools.graphify-install-command")
         self.run_install(line, folder)
-        for arguments in AGENT_INSTALLS:
-            self.run_install([*self.command(), *arguments], folder)
+        self.run_install([*self.command(), "install"], folder)
 
     @staticmethod
     def run_install(line: list[str], folder: Path) -> None:
