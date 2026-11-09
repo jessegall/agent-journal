@@ -7,6 +7,8 @@
         "src/install",
         "src/server",
         "tools/journal-hook",
+        "tools/journal",
+        "tools/journal-run",
         "src/viewer"
     ],
     "exclude": [
