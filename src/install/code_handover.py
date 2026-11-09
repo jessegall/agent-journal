@@ -48,10 +48,10 @@ class CodeHandover:
             self.steps.record(SERVING)
 
     def begin(self, source: Path) -> None:
-        self.begin_version(self.versions.add(source, self.clock))
+        self.begin_version(self.versions.add(source, self.clock), self.server_pid())
 
-    def begin_version(self, tag: str) -> None:
-        threading.Thread(target=self.background_takeover, args=(tag, self.server_pid()), name="code handover", daemon=True).start()
+    def begin_version(self, tag: str, running_pid: str) -> None:
+        threading.Thread(target=self.background_takeover, args=(tag, running_pid), name="code handover", daemon=True).start()
 
     def background_takeover(self, tag: str, running_pid: str) -> None:
         try:
