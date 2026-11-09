@@ -137,7 +137,7 @@ def test_agent_tabs_read_working_idle_and_retired_through_the_viewer(agents_wind
     server.story.expect_rows(helper_row["facts"]["helper_job"] == "Read src/cart.py")
     server.story.expect_rows(helper_row["facts"]["profile_title"] == "Researcher")
     server.story.expect_rows(helper_row["facts"]["job_returned"])
-    server.story.expect_rows("cannot resume" in next(row for row in idle if row["role"] == "worker")["resume_reason"])
+    server.story.expect_rows("starts a new session" in next(row for row in idle if row["role"] == "worker")["resume_reason"])
     server.story.expect_rows(next(row for row in idle if row["role"] == "worker")["facts"]["job_returned"] == "The worker found a repeated calculation.")
     retired = read("--show", "retired")["rows"]
     server.story.expect_rows(len(retired) == 1 and retired[0]["retirement_reason"] == UPGRADE_RETIREMENT_REASON)

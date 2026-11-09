@@ -1,3 +1,8 @@
+from core.base.module.model_declaration import ModelDeclaration
+from core.modules.developer.commands.record_private_data_finding.record_private_data_finding_handler import RecordPrivateDataFindingHandler
+from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
+from core.modules.developer.migrations.m002_private_data_marks import PrivateDataMarksMigration
+from core.modules.developer.models.private_data_mark import PrivateDataMark
 from core.modules.developer.commands.request_queue.request_queue_subcommand import RequestQueueSubcommand
 from core.modules.developer.commands.send_exception_line.send_exception_line_handler import SendExceptionLineHandler
 from core.modules.developer.support.developer_nudges import DEVELOPER_NUDGES
@@ -41,11 +46,12 @@ class DeveloperModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.settings", "journal.core.chat", "journal.core.environments"]
     settings = DEVELOPER_SETTINGS
-    migrations = [HookRequestsMigration]
+    models = [ModelDeclaration(PrivateDataMark, excluded_subcommands=["make", "edit", "delete"])]
+    migrations = [HookRequestsMigration, PrivateDataMarksMigration]
     views = [HookRequest]
     tick_handlers = [TickHandler(TickInterval(seconds=60), PrivateDataTick(), "private data scan")]
-    handlers = [ResetHookNumbersHandler, RecordMarkMotionHandler, SendExceptionLineHandler]
-    listeners = [ExceptionLineListener]
+    handlers = [RecordPrivateDataFindingHandler, ResetHookNumbersHandler, RecordMarkMotionHandler, SendExceptionLineHandler]
+    listeners = [ExceptionLineListener, PrivateDataMarkListener]
     nudges = DEVELOPER_NUDGES
     bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}
     performance_tools = [SlowTickTool, ReaderTimeTool, RouteCostTool]

@@ -1,0 +1,1 @@
+WORKER_TEST_RULE = "Never run the full test suite. Run only your new tests or the tests your change affects, in small batches so you can iterate quickly, and leave the heavier runs to the journal when you hand in. A worker that runs the full suite is refused and reported."

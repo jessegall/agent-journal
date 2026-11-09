@@ -210,7 +210,8 @@ def main(argv: list[str]) -> int:
             thread.signal_stop()
         PluginScriptProcesses.shared(home).stop_all()
         server.drain(ANSWER_LIMIT_SECONDS)
-        plugin_services.close()
+        if not server.is_handing_over:
+            plugin_services.close()
         tunnel.close()
         viewer.stop()
         deadline = time.monotonic() + STOP_LIMIT_SECONDS

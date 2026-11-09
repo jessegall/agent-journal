@@ -117,6 +117,9 @@ class Provider(ABC):
     @abstractmethod
     def resumed_arguments(self, session: str) -> Sequence[str]: ...
 
+    def is_session_chosen(self) -> bool:
+        return bool(self.new_session_arguments(""))
+
     @abstractmethod
     def helper_outcome(self, output: str, errors: str) -> HelperOutcome: ...
 
@@ -183,12 +186,11 @@ class Provider(ABC):
     def uses_web_reader(self, event: HookEvent) -> bool:
         return (event.tool_input().get("subagent_type") or event.raw.get("agent_type")) in self.web_reader_agents
 
-    def skills_kept_after_compaction(self, event: HookEvent) -> Mapping[str, str]:
+    def skills_kept_after_compaction(self, transcript: Path | None) -> Mapping[str, str]:
         return {}
 
     def transcript_path(self, event: HookEvent) -> Path | None:
-        path = event.raw.get("transcript_path")
-        return Path(path).expanduser() if isinstance(path, str) and path else None
+        return event.transcript.path
 
     def delivered_line(self, line: SessionLine) -> bool:
         return False

@@ -121,7 +121,7 @@ class AgentCardsSubcommand(ReadSubcommand[Page[AgentListingState] | AgentFilterO
         if not has_folder:
             return "The folder this agent worked in is gone."
         if not self.providers.provider(agent.program).session_matches_folder(folder, agent.session):
-            return "The saved session is gone; this agent cannot resume."
+            return "The saved session has no conversation to resume; this agent starts a new session on its next launch."
         return None
 
     def write_output(self, value: object, output: Output) -> None:

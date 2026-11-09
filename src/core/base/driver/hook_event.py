@@ -8,6 +8,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_event_version_error import HookEventVersionError
 from core.base.driver.old_hook_runner_error import OldHookRunnerError
 from core.base.driver.hook_fields import boolean, mapping, mappings, number, text
+from core.base.driver.hook_transcript import HookTranscript
 from core.base.driver.tool import Tool
 
 HOOK_EVENT_VERSION = 3
@@ -67,6 +68,11 @@ class HookEvent:
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
                    text(fields, "launch"), ForeignRun.parsed_many(fields["foreign"]), str(fields.get("child_agent", "")), str(fields.get("role", "")))
+
+    @property
+    def transcript(self) -> HookTranscript:
+        path = self.raw.get("transcript_path")
+        return HookTranscript(self.program, self.firing, path if isinstance(path, str) else "")
 
     @property
     def is_resume(self) -> bool:
