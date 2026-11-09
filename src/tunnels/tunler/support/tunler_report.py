@@ -2,6 +2,8 @@ import json
 from dataclasses import dataclass
 from typing import Self
 
+from core.base.type_guards import is_mapping
+
 
 @dataclass(frozen=True)
 class TunlerReport:
@@ -22,7 +24,7 @@ class TunlerReport:
             fields = json.loads(text)
         except ValueError:
             return cls()
-        if not isinstance(fields, dict):
+        if not is_mapping(fields):
             return cls()
         texts = {name: value if isinstance(value := fields.get(name), str) and value else None for name in ("user", "host", "current", "latest")}
         update_available = fields.get("update_available")

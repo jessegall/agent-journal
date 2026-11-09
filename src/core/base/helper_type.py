@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from core.base.access import Access
-from core.base.agent_roster import AgentRoster
 
 
 @dataclass(frozen=True)
@@ -17,7 +16,7 @@ class HelperType:
     separate_folder: bool = False
     default_profile: str = ""
     start_line: str = ""
-    roster: type[AgentRoster] | None = None
+    roster: type | None = None
     run_limit_key: str = ""
     kept_limit_key: str = ""
     profile_limits_key: str = ""

@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from core.base.database.database import Database
 from core.base.database.registry_table import RegistryTable
 from core.base.database.table_statements import TableStatements
+from core.base.model.added_state import AddedState
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
@@ -31,7 +32,7 @@ class StateRetirement:
         for entry in self.saved_additions():
             model = model_index.get(entry.model_name)
             lifecycle = book.lifecycle(model) if model is not None else None
-            if model is None or lifecycle is None or lifecycle.has_state(entry.state):
+            if model is None or lifecycle is None or lifecycle.has_state(AddedState(entry.state)):
                 continue
             moved = self.database.update(TableStatements(self.tables.table(model)).state_retirement(entry.state, entry.fallback_state, timestamp))
             if moved:

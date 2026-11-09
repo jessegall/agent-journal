@@ -3,7 +3,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
 from core.base.refusal import Refusal
-from core.base.type_guards import is_list, is_mapping
+from core.base.type_guards import is_list, is_mapping, is_number, is_text_mapping
 
 DEFINITIONS = "$defs"
 REFERENCE_PREFIX = "#/$defs/"
@@ -13,7 +13,7 @@ TYPE_CHECKS: Mapping[str, Callable[[object], bool]] = {
     "array": is_list,
     "string": lambda value: isinstance(value, str),
     "integer": lambda value: isinstance(value, int) and not isinstance(value, bool),
-    "number": lambda value: isinstance(value, (int, float)) and not isinstance(value, bool),
+    "number": is_number,
     "boolean": lambda value: isinstance(value, bool),
     "null": lambda value: value is None,
 }
@@ -35,7 +35,7 @@ class JsonSchema:
             return []
         if schema is False:
             return [f"{pointer or '/'}: nothing is allowed here"]
-        if not is_mapping(schema):
+        if not is_text_mapping(schema):
             raise Refusal(f"the schema at {pointer or '/'} is not an object", "fix the plugin's schema file")
         unknown = set(schema) - set(KEYWORDS) - IGNORED_KEYWORDS
         if unknown:
@@ -44,7 +44,7 @@ class JsonSchema:
 
     def reference(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         name = str(rule).removeprefix(REFERENCE_PREFIX)
-        definitions = self.document[DEFINITIONS] if DEFINITIONS in self.document else {}
+        definitions: object = self.document[DEFINITIONS] if DEFINITIONS in self.document else {}
         if not str(rule).startswith(REFERENCE_PREFIX) or not is_mapping(definitions) or name not in definitions:
             raise Refusal(f"the schema refers to {rule}, which it does not define", "refer to a definition under $defs")
         return self.checked(definitions[name], value, pointer)
@@ -69,7 +69,7 @@ class JsonSchema:
         if not is_mapping(value):
             return []
         properties = schema.get("properties")
-        declared = properties if is_mapping(properties) else {}
+        declared: Mapping[object, object] = properties if is_mapping(properties) else {}
         return [problem for name, inner in value.items() if name not in declared for problem in self.checked(rule, inner, f"{pointer}/{name}")]
 
     def items(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
@@ -97,7 +97,7 @@ class JsonSchema:
         return [f"{pointer or '/'}: is shorter than {rule} characters"]
 
     def minimum(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
-        if not TYPE_CHECKS["number"](value) or not isinstance(rule, (int, float)) or value >= rule:
+        if not is_number(value) or not isinstance(rule, (int, float)) or value >= rule:
             return []
         return [f"{pointer or '/'}: is below {rule}"]
 

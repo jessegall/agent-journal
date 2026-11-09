@@ -19,7 +19,7 @@ class WindowExtension:
     sources: Sequence[WindowSource] = ()
     links: Mapping[str, str] = field(default_factory=dict[str, str])
     keys: Sequence[WindowKey] = ()
-    key_events: Mapping[str, Sequence[str]] = field(default_factory=dict)
+    key_events: Mapping[str, Sequence[str]] = field(default_factory=dict[str, Sequence[str]])
 
     def extend(self, declaration: WindowDeclaration) -> WindowDeclaration:
         keys = tuple(replace(key, events=(*key.events, *self.key_events.get(key.name, ()))) for key in declaration.keys)

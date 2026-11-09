@@ -23,7 +23,7 @@ class HookEffect(StrEnum):
     @classmethod
     def detected(cls, hook: "ManagedHook", provider: type[Provider], event: HookEventName,
            rules: Sequence[type[HookToolRule]] = ()) -> list["HookEffect"]:
-        effects = []
+        effects: list[HookEffect] = []
         if event in provider.refusals:
             effects.append(cls.CAN_REFUSE)
         if event in provider.rewrites and re.search(hook.matcher or ".*", "Bash"):

@@ -9,6 +9,7 @@ class Span(Protocol):
     """One thing an interval waits for, counted from the moment the interval last fired, in its unit."""
 
     unit: ClassVar[str]
+    count: int
 
     def has_passed(self, reads: SpanQueries, agent_id: int, start: Timestamp, timestamp: Timestamp) -> bool: ...
 
