@@ -307,7 +307,7 @@ def ended_short_mark(new_story):
 @pytest.fixture
 def background_plain_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = started_run(story, "grep -n cart notes")
+    process = started_run(story, "grep -n cart notes", category=CommandCategory.SEARCH)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
     end_run(story, process, "done\n")
@@ -354,3 +354,16 @@ def expect_variants_button_buttons(mark, expected) -> None:
 def expect_label_button_runs(mark, expected) -> None:
     actual = [(button['label'], button['runs']) for button in mark.buttons]
     assert actual == expected, actual
+
+
+def test_a_script_moved_to_the_background_shows_its_mark_asks_for_its_title_and_ends_with_the_run(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "python3 /tmp/move_files.py")
+    story.run_listeners()
+    story.expect_text(MARKS, "Running python3 /tmp/move_files.py")
+    story.advance(timedelta(seconds=6))
+    story.expect_hook_allowed("s-1", monitor(f"journal output monitor {process.id}"), f"output {process.id} has its raw command as its title: give it a title")
+    story.expect_text("process list --state background", "python3 /tmp/move_files.py", actor=story.agent)
+    end_run(story, process, "moved\n")
+    story.run_listeners()
+    story.expect_text(MARKS, "Ran python3 /tmp/move_files.py")

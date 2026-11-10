@@ -19,7 +19,13 @@ class RunVisibility:
         if process.plugin:
             return None
         categorized = next((part for part in parts if part.is_visible), None)
-        return categorized or (parts[0] if parts and process.creator_id != process.session_agent_id else None)
+        if categorized is not None:
+            return categorized
+        if parts and process.creator_id != process.session_agent_id:
+            return parts[0]
+        if process.moved_at is None:
+            return None
+        return next((part for part in parts if not part.category.is_short), None)
 
     def parts(self, process_id: int) -> tuple[ProcessPart, ...]:
         return self.kept.read("process_parts", lambda: tuple(self.queries.query(ProcessPart).filter(process_id=process_id).oldest().all_rows()),
