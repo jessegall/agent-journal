@@ -1,5 +1,5 @@
-from core.base.module.module import Module
-from core.base.module.sync_notes import SyncNotes
+from engine.module.module import Module
+from engine.module.sync_notes import SyncNotes
 from engine.registry.setting_tree import SettingTree
 from core.modules.settings.support.undeclared_settings import UndeclaredSettings
 

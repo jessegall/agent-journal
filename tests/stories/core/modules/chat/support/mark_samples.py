@@ -16,7 +16,7 @@ from engine.chat.mark_family import MarkFamily
 from engine.chat.mark_group import MarkGroup
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.testing.story import Story
 
 SAMPLE = "tests.stories.core.modules.chat.support.mark_samples:ChatSampleModule"

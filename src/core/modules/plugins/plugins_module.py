@@ -31,8 +31,8 @@ from core.modules.plugins.commands.plugin_path.plugin_path_subcommand import Plu
 from core.modules.plugins.commands.plugin_file.plugin_file_subcommand import PluginFileSubcommand
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.modules.plugins.support.plugin_project_reads import PluginProjectReads
-from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.plugins.support.plugin_searcher import PluginSearcher
 from engine.setting.setting_scope import SettingScope

@@ -1,8 +1,8 @@
 from core.modules.secrets.migrations.m002_active_secret_index import ActiveSecretIndexMigration
 from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
-from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading

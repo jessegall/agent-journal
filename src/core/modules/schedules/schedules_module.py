@@ -2,8 +2,8 @@ from core.modules.schedules.migrations.m004_schedule_session import ScheduleSess
 from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
 from core.modules.schedules.support.schedule_marks import SCHEDULE_MARKS
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon

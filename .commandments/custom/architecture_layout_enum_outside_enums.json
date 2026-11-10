@@ -77,7 +77,7 @@
                 "file": "src/engine/model/event_form.py"
             },
             {
-                "file": "src/core/base/module/layer_tier.py"
+                "file": "src/engine/module/layer_tier.py"
             },
             {
                 "file": "src/core/base/profile/model_tier.py"

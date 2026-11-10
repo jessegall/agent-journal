@@ -1,7 +1,7 @@
 from engine.model.added_state import AddedState
 from engine.model.move import Move
 from engine.model.state_addition import StateAddition
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task

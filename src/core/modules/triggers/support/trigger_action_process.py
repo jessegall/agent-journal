@@ -1,7 +1,7 @@
 import subprocess
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.support.foreground_run import ForegroundRun

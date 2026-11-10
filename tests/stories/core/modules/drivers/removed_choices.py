@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.module.module_removal import ModuleRemoval
+from engine.module.module_removal import ModuleRemoval
 from server.viewer.windows_route import WindowsRoute
 from tests.stories.engine.driver.support.samples import SAMPLES
 from tests.stories.core.modules.drivers.support.extended_suites import PATH

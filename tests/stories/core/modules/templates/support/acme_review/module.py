@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.template.template_declaration import TemplateDeclaration
 
 

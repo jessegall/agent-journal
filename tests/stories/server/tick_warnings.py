@@ -1,6 +1,6 @@
 from engine.database.points import Points
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
-from core.base.module.performance_tools import PerformanceTools
+from engine.module.performance_tools import PerformanceTools
 from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
 from core.modules.processes.ticks.output_reading import OutputReading

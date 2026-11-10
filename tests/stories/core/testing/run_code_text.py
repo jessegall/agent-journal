@@ -1,6 +1,6 @@
 import os
 
-from core.base.module.code_fingerprint import CodeFingerprint, PINNED_CODE_VARIABLE
+from engine.module.code_fingerprint import CodeFingerprint, PINNED_CODE_VARIABLE
 from core.testing.pytest_plugin import pinned_code_text
 from tests.stories.support.story_checks import expect_value
 

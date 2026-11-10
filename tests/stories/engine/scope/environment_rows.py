@@ -7,7 +7,7 @@ from engine.change.event_log import EventLog
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.model.view_model import ViewModel
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.tasks.models.task import Task

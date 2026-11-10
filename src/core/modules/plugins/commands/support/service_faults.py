@@ -1,5 +1,5 @@
 from engine.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment

@@ -8,7 +8,7 @@ from engine.cli.usage_error import UsageError
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.outside_runs import OutsideRuns
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.errors.refusal import Refusal
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.support.plugin_answer import MOST_COMMAND_LINES

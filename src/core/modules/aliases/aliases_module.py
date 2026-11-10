@@ -2,8 +2,8 @@ from engine.cli.shell_aliases import ShellAliases
 from core.modules.aliases.migrations.m003_alias_agent_access import AliasAgentAccessMigration
 from core.modules.aliases.guards.reader_alias_guard import ReaderAliasGuard
 from core.modules.aliases.guards.saved_command_guard import SavedCommandGuard
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.modules.aliases.commands.add_alias.add_alias_handler import AddAliasHandler
 from core.modules.aliases.commands.add_alias.add_alias_subcommand import AddAliasSubcommand
 from core.modules.aliases.commands.edit_alias.edit_alias_handler import EditAliasHandler

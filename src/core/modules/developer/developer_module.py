@@ -1,5 +1,5 @@
 from core.modules.developer.migrations.m003_private_data_mark_environment_index import PrivateDataMarkEnvironmentIndexMigration
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding_handler import RecordPrivateDataFindingHandler
 from core.modules.developer.listeners.private_data_mark_listener import PrivateDataMarkListener
 from core.modules.developer.migrations.m002_private_data_marks import PrivateDataFlagsMigration
@@ -26,7 +26,7 @@ from core.modules.developer.commands.record_mark_motion.record_mark_motion_subco
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_handler import ResetHookNumbersHandler
 from core.modules.developer.commands.reset_hook_numbers.reset_hook_numbers_subcommand import ResetHookNumbersSubcommand
 from engine.database.request_watch import RequestWatch
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from core.modules.developer.ticks.private_data_tick import PrivateDataTick

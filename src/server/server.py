@@ -27,8 +27,8 @@ from engine.performance.performance_state import PerformanceState
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from engine.time.timing_log import TimingLog
-from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.module.module_finder import ModuleFinder
+from engine.module.code_fingerprint import CodeFingerprint
+from engine.module.module_finder import ModuleFinder
 from engine.database.reported_findings import ReportedFindings
 from server.booting_work import BootingWork
 from server.code_sync_work import CodeSyncWork

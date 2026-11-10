@@ -1,5 +1,5 @@
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.suggestions.support.suggestion_searcher import SuggestionSearcher
 from core.base.viewer.window_declaration import WindowDeclaration

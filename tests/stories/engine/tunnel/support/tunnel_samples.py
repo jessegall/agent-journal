@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.tunnel.tunnel import Tunnel
 from engine.tunnel.tunnel_state import TunnelState
 

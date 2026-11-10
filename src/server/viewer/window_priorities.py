@@ -1,8 +1,8 @@
 from engine.journal.journal_home import JournalHome
 from collections.abc import Sequence
 from functools import cached_property
-from core.base.module.module_finder import ModuleFinder
-from core.base.module.window_extensions import WindowExtensions
+from engine.module.module_finder import ModuleFinder
+from engine.module.window_extensions import WindowExtensions
 from core.base.viewer.window_priority import WindowPriority
 from core.base.viewer.window_declaration import WindowDeclaration
 

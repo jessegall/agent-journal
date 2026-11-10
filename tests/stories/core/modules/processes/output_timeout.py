@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
 from engine.driver.tool_type import ToolType
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from engine.query.queries import Queries
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process

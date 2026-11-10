@@ -3,8 +3,8 @@ from core.modules.questions.migrations.m007_question_context import QuestionCont
 from core.modules.questions.migrations.m006_question_environment_state_index import QuestionEnvironmentStateIndexMigration
 from core.modules.questions.migrations.m003_question_agent_state_index import QuestionAgentStateIndexMigration
 from core.modules.questions.support.question_nudges import QUESTION_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.modules.questions.commands.answer_question.answer_question import AnswerQuestion
 from core.modules.questions.commands.answer_question.answer_question_handler import AnswerQuestionHandler
 from core.modules.questions.commands.close_question.close_question import CloseQuestion

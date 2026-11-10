@@ -1,5 +1,5 @@
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.modules.assign_rules.commands.record_assign_decision.record_assign_decision_handler import RecordAssignDecisionHandler
 from core.modules.assign_rules.migrations.m001_assign_rules import AssignRulesMigration
 from core.modules.assign_rules.models.assign_decision import AssignDecision

@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 
 
 # @righteous architecture_layout_suite_top_folder_file

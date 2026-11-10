@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.helper_type.helper_type import HelperType
 from core.base.profile.agent_profile import AgentProfile
 from engine.template.template_declaration import TemplateDeclaration

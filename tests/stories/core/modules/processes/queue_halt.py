@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus

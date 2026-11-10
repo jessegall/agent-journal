@@ -10,7 +10,7 @@ class ClerkRegistered(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
-        story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:Clerk")
+        story.expect_sync_success("tests.stories.engine.module.support.agent_type_modules:Clerk")
 
 
 class HelperSession(StoryFixture):
@@ -44,7 +44,7 @@ class EveryHelperRule(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
-        story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:EveryHelperRules")
+        story.expect_sync_success("tests.stories.engine.module.support.agent_type_modules:EveryHelperRules")
         for role in ("helper", "worker", "clerk"):
             story.expect_success(f"agent start s-{role} claude {role} --parent {story.agent.id} --environment main")
 
@@ -55,6 +55,6 @@ class ReaderHelpersRule(StoryFixture):
     parent = OpenTaskOrchestrator
 
     def steps(self, story: Story) -> None:
-        story.expect_sync_success("tests.stories.core.base.module.support.agent_type_modules:ReaderHelperRules")
+        story.expect_sync_success("tests.stories.engine.module.support.agent_type_modules:ReaderHelperRules")
         for role in ("helper", "worker"):
             story.expect_success(f"agent start s-{role} claude {role} --parent {story.agent.id} --environment main")

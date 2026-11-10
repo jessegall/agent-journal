@@ -4,7 +4,7 @@ from engine.command.bus import Bus
 from engine.container.container import Container
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
 from engine.log.system_log_writer import SystemLogWriter

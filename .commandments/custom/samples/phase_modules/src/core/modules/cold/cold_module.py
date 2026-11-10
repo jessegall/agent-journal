@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 
 
 # @sin architecture_modules_module_without_seeder

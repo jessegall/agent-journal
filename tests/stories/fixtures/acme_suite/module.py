@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 
 from .acme_suite import AcmeSuite
 

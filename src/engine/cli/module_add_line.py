@@ -5,8 +5,8 @@ from typing import TextIO
 from engine.cli.console import REFUSED_CODE, SUCCESS_CODE, USAGE_CODE
 from engine.database.schema_mismatch_error import SchemaMismatchError
 from engine.model.tables import Tables
-from core.base.module.module_addition import ModuleAddition
-from core.base.module.module_error import ModuleError
+from engine.module.module_addition import ModuleAddition
+from engine.module.module_error import ModuleError
 from engine.subcommand.output import Output
 
 MODULE_ADDITION_ARGUMENTS = ["module", "add"]

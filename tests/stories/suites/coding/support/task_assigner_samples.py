@@ -3,7 +3,7 @@ from engine.enums.actor_type import ActorType
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.queries.task_query import TaskQuery
 from engine.change.moved import Moved

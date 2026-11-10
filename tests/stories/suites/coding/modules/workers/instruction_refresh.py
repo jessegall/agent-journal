@@ -1,5 +1,5 @@
 import pytest
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.instruction_files import PROJECT_TEXT, project_with_instructions, worktree_file_text
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker

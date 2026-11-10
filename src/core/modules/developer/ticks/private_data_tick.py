@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.container.container import Container
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.developer.commands.record_private_data_finding.record_private_data_finding import RecordPrivateDataFinding
 from core.modules.developer.support.developer_settings import PRIVATE_DATA_SETTING, TOOLS_SETTING

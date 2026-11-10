@@ -4,7 +4,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue

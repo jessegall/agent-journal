@@ -8,7 +8,7 @@ from core.modules.memories.migrations.m005_memory_scope_index import MemoryScope
 from core.modules.memories.migrations.m006_memory_owner import MemoryOwnerMigration
 from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -17,7 +17,7 @@ from core.modules.memories.commands.memory_page.memory_page_subcommand import Me
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_place import WindowPlace
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.memories.support.memory_searcher import MemorySearcher
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard

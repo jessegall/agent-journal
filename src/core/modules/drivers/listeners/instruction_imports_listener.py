@@ -2,7 +2,7 @@ from engine.enums.agent_role import AgentRole
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports import WarnInstructionImports
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.events.session_started import SessionStarted

@@ -3,7 +3,7 @@ from engine.driver.command_category import CommandCategory
 from engine.driver.driver import Driver
 from engine.driver.suite import Suite
 from engine.driver.tool_type import ToolType
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.drivers.rules.allowed_command_types_rule import AllowedCommandTypesRule
 from core.modules.drivers.rules.allowed_tools_rule import AllowedToolsRule
 from core.modules.drivers.rules.denied_programs_rule import DeniedProgramsRule

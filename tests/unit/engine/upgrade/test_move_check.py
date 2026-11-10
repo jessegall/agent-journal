@@ -1,5 +1,5 @@
-from core.base.module.module import Module
-from core.base.module.move_check import MoveCheck
+from engine.module.module import Module
+from engine.module.move_check import MoveCheck
 from engine.upgrade.version_four_move import VersionFourMove
 
 

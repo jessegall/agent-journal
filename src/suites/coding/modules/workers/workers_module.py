@@ -183,14 +183,14 @@ from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResume
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from suites.coding.modules.workers.commands.queue_worker_tests.queue_stalled_tests_handler import QueueStalledTestsHandler
 from core.base.viewer.window_icon import WindowIcon
-from core.base.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
+from engine.module.model_declaration import ModelDeclaration, ALL_SUBCOMMANDS
 from core.modules.messages.support.assigned_work_sources import AssignedWorkSources
 from suites.coding.modules.workers.bindings.worker_task_sources import WorkerTaskSources
 from suites.coding.modules.workers.models.worker_task_source import WorkerTaskSource
 from suites.coding.modules.workers.migrations.m023_worker_task_sources import WorkerTaskSourcesMigration
 from suites.coding.modules.workers.listeners.worker_job_source_listener import WorkerJobSourceListener
 from suites.coding.modules.workers.listeners.deleted_worker_source_listener import DeletedWorkerSourceListener
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.button_condition import ButtonCondition
 from core.base.viewer.button_declaration import ButtonDeclaration
 from core.base.viewer.text_field import TextField

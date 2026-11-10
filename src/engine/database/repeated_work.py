@@ -69,7 +69,7 @@ BULK_SEEDS = "engine/seed/demo.py"
 READ_HELPERS = ("engine/database/database.py", "engine/database/bookkeeping_table.py", "unittest/mock.py", "<string>")
 WATCH_FILES = ("engine/database/repeated_work.py", "engine/database/collecting_repeated_work.py", *READ_HELPERS)
 ALLOWED_FILE_READS = {
-    "core/base/module/source_hash.py": "A test run hashes each source file once per process for the code fingerprint, in whichever request asks first.",
+    "engine/module/source_hash.py": "A test run hashes each source file once per process for the code fingerprint, in whichever request asks first.",
     "core/modules/plugins/support/journal_instruction_file.py": "The check for doubled imports reads the same instruction files in the journal's start round.",
     "core/modules/plugins/support/plugin_code_diff.py": "An upgrade preview compares every file of a plugin, its manifest among them.",
     "core/modules/claude_code/providers/support/claude_trust.py": "A helper's start marks its parent's folder trusted and its launch marks its own start folder, each against the file as it is then.",

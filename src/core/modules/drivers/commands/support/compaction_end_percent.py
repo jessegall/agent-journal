@@ -2,7 +2,7 @@ from engine.command.context import Context
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_event_name import HookEventName
 from engine.row.metadata import Metadata
-from core.base.module.driver_entries import DRIVERS_MODULE
+from engine.module.driver_entries import DRIVERS_MODULE
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

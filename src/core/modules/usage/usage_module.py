@@ -1,4 +1,4 @@
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.usage.models.agent_listing import AgentListing
 from core.modules.usage.models.agent_counts import AgentCounts
 from core.modules.usage.models.agent_filter_options_view import AgentFilterOptionsView
@@ -7,7 +7,7 @@ from core.modules.usage.commands.agent_tip.agent_tip_subcommand import AgentTipS
 from core.modules.usage.commands.agent_limits.agent_limits_subcommand import AgentLimitsSubcommand
 from core.modules.usage.commands.set_profile_limits.set_profile_limits_handler import SetProfileLimitsHandler
 from core.modules.usage.commands.set_profile_limits.set_profile_limits_subcommand import SetProfileLimitsSubcommand
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon

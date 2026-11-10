@@ -2,7 +2,7 @@ from pathlib import Path
 from collections.abc import Sequence
 
 from engine.file.file_access import FileAccess
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.profile.model_tier import ModelTier
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.program_server_file import ProgramServerFile

@@ -6,7 +6,7 @@ from core.modules.viewer.commands.support.window_lines import WINDOW_SETTING_LIN
 from core.modules.viewer.viewer_module import ViewerModule
 from core.modules import DEFAULT_MODULES
 from suites import DEFAULT_SUITES
-from core.base.module.window_extensions import WindowExtensions
+from engine.module.window_extensions import WindowExtensions
 from core.base.viewer.window_place import WindowPlace
 from tests.stories.support.story_checks import expect_absent_value
 

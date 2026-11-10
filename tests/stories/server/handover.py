@@ -128,7 +128,7 @@ def test_new_code_that_fails_its_proof_leaves_the_old_server_serving(home, tmp_p
 
 
 def test_an_external_module_still_loads_after_a_server_handover(home, tmp_path):
-    source = Path(__file__).parents[1] / "core" / "base" / "module" / "support" / "folder_sample"
+    source = Path(__file__).parents[1] / "engine" / "module" / "support" / "folder_sample"
     folder = tmp_path / "installed_notes"
     shutil.copytree(source, folder)
     added = request_answer(ServerFiles(home).socket, "POST", "/cli",

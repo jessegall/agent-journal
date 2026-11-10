@@ -9,7 +9,7 @@ from engine.model.event_form import EventForm
 from engine.row.metadata import Metadata
 from engine.types.type_guards import is_list, is_text_mapping
 from engine.model.model import Model
-from core.base.module.driver_entries import DRIVERS_MODULE
+from engine.module.driver_entries import DRIVERS_MODULE
 from engine.types.type_guards import is_list, is_mapping
 from engine.enums.hook_answer import HookAnswer
 

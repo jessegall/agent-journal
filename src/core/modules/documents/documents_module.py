@@ -21,8 +21,8 @@ from core.modules.documents.listeners.close_ended_document_listener import Close
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
 from core.modules.documents.listeners.plan_document_link_listener import PlanDocumentLinkListener
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
-from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 from core.modules.documents.support.doc_searcher import DocSearcher

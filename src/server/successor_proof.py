@@ -7,7 +7,7 @@ from engine.time.clock import Clock
 from engine.database.database import Database
 from engine.container.journal_container import opened_container, sync_modules
 from engine.journal.journal_home import JournalHome
-from core.base.module.module_sync import ModuleSync
+from engine.module.module_sync import ModuleSync
 from server.server_backup import ServerBackup
 
 PLUGINS_FOLDER = "plugins"

@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.support.doc_library_share import DocLibraryShare
 

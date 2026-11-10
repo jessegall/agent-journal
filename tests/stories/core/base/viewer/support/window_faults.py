@@ -1,5 +1,5 @@
 from engine.driver.suite import Suite
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import tabs
 from core.base.viewer.window_declaration import WindowDeclaration

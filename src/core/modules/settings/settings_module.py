@@ -9,9 +9,9 @@ from core.base.viewer.window_place import WindowPlace
 from engine.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
 from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
-from core.base.module.module import Module
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.sync_notes import SyncNotes
+from engine.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.sync_notes import SyncNotes
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.guards.person_set_setting_guard import PersonSetSettingGuard
 from core.modules.settings.listeners.setting_rows_listener import SettingRowsListener

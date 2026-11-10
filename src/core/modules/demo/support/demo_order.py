@@ -1,6 +1,6 @@
-from core.base.module.module import Module
-from core.base.module.module_finder import ModuleFinder
-from core.base.module.module_order import ModuleOrder
+from engine.module.module import Module
+from engine.module.module_finder import ModuleFinder
+from engine.module.module_order import ModuleOrder
 from engine.seed.seeder import Seeder
 from core.modules.demo.support.seeding import Seeding
 

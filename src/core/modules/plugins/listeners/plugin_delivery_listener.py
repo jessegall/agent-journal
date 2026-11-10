@@ -13,7 +13,7 @@ from engine.model.event_form import EventForm
 from engine.listener.commit_listener_runner import PLUGIN_RUN_ORDER
 from engine.command.command import Command
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.types.type_guards import is_mapping, is_object_mapping
 from core.modules.environments.models.environment import Environment

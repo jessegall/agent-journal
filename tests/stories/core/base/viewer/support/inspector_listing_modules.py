@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.inspector_component import InspectorComponent
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 from core.base.viewer.inspector_width import InspectorWidth

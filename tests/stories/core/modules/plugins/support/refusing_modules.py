@@ -6,7 +6,7 @@ from engine.command.context import Context
 from engine.change.created import Created
 from engine.command.handler import Handler
 from engine.guard.guard import Guard
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

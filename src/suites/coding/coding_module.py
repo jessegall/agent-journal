@@ -10,9 +10,9 @@ from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_tab import WindowTab
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from suites.coding.support.coding_templates import CODING_TEMPLATES
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from engine.skill.skill_declaration import SkillDeclaration
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.agent.agent_group import AgentGroup
 from engine.helper_type.helper_type import HelperType
 from core.base.viewer.window_search import WindowSearch

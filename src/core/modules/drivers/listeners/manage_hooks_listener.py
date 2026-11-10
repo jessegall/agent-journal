@@ -2,8 +2,8 @@ from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener import CommitListener
-from core.base.module.driver_entries import DRIVERS_MODULE
-from core.base.module.module_actors import ModuleActors
+from engine.module.driver_entries import DRIVERS_MODULE
+from engine.module.module_actors import ModuleActors
 from core.modules.agents.commands.manage_program.manage_program import ManageProgram
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.drivers.events.session_started import SessionStarted

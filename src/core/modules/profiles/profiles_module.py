@@ -3,7 +3,7 @@ from core.modules.profiles.commands.remove_profile.remove_profile_subcommand imp
 from core.modules.profiles.commands.reset_profile.reset_profile_handler import ResetProfileHandler
 from core.modules.profiles.commands.reset_profile.reset_profile_subcommand import ResetProfileSubcommand
 from core.base.viewer.window_read_search import WindowReadSearch
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.key_loading import KeyLoading

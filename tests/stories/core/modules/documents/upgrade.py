@@ -12,8 +12,8 @@ from engine.upgrade.upgrade_failed_error import UpgradeFailedError
 from engine.database.database import Database
 from engine.database.row_insert import RowInsert
 from engine.database.moved_row import MovedRow
-from core.base.module.move_check import MoveCheck
-from core.base.module.module_finder import ModuleFinder
+from engine.module.move_check import MoveCheck
+from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.time.timestamp import Timestamp
 from core.modules.documents.documents_module import DocumentsModule

@@ -4,7 +4,7 @@ from engine.database.database import Database
 from engine.file.file_access import FileAccess
 from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from core.base.viewer.window_loading import WindowLoading
 from server.viewer.missing_module_file_error import MissingModuleFileError

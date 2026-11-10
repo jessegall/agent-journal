@@ -1,5 +1,5 @@
-from core.base.module.module_finder import ModuleFinder
-from core.base.module.performance_tools import PerformanceTools
+from engine.module.module_finder import ModuleFinder
+from engine.module.performance_tools import PerformanceTools
 from core.modules.developer.support.slow_tick_tool import SlowTickTool
 from core.modules.processes.ticks.output_reading import OutputReading
 from server.ticker import Ticker

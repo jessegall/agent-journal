@@ -10,8 +10,8 @@ from core.modules.triggers.migrations.m003_trigger_enabling import TriggerEnabli
 from core.modules.triggers.support.trigger_marks import TRIGGER_MARKS
 from core.modules.triggers.support.trigger_settings import TRIGGER_SETTINGS
 from core.modules.triggers.support.trigger_nudges import TRIGGER_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon

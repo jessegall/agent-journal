@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.model.view_model import ViewModel
-from core.base.module.module import Module
+from engine.module.module import Module
 
 MISSING_COLUMN = "tests.stories.core.base.support.view_samples:MissingColumnModule"
 EXTRA_COLUMN = "tests.stories.core.base.support.view_samples:ExtraColumnModule"

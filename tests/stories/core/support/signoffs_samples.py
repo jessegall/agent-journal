@@ -8,8 +8,8 @@ from engine.listener.deletion_listener import DeletionListener
 from engine.model.lifecycle import Lifecycle
 from engine.model.model import Model
 from engine.model.move import Move
-from core.base.module.module import Module
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository

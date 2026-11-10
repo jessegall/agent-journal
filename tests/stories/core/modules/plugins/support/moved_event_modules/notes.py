@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from tests.stories.core.modules.plugins.support import event_modules
 
 

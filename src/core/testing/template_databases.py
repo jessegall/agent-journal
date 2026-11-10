@@ -12,8 +12,8 @@ from engine.time.clock import Clock
 from engine.database.database import Database
 from engine.container.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
-from core.base.module.code_fingerprint import CORE_FOLDER
-from core.base.module.module_sync import ModuleSync
+from engine.module.code_fingerprint import CORE_FOLDER
+from engine.module.module_sync import ModuleSync
 from core.testing.manual_clock import ManualClock
 from core.testing.story import Story
 from core.testing.story_state import StoryState

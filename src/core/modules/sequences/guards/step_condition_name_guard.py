@@ -2,7 +2,7 @@ from engine.change.created import Created
 from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from core.base.module.step_conditions import StepConditions
+from engine.module.step_conditions import StepConditions
 from engine.errors.refusal import Refusal
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.support.sequence_guards import SequenceGuards

@@ -3,7 +3,7 @@ from collections.abc import Collection, Iterable
 
 from engine.command.bus import Bus
 from engine.driver.command_category import CommandCategory
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes

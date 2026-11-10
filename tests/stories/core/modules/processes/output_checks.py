@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

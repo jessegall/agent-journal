@@ -4,7 +4,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.driver.command_category import CommandCategory
 from engine.listener.commit_listener import CommitListener
 from engine.database.kept_rows import KeptRows
-from core.base.module.performance_tools import PerformanceTools
+from engine.module.performance_tools import PerformanceTools
 from core.modules.processes.queries.process_query import OPEN, ProcessQuery
 from core.modules.processes.models.process import Process
 

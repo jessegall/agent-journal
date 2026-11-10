@@ -8,8 +8,8 @@ from core.base.viewer.window_place import WindowPlace
 from core.base.viewer.window_read_search import WindowReadSearch
 from core.base.library.library_lookup import LibraryLookup
 from core.modules.library.support.server_library_lookup import ServerLibraryLookup
-from core.base.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ALL_SUBCOMMANDS, ModelDeclaration
+from engine.module.module import Module
 from engine.setting.setting_scope import SettingScope
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue

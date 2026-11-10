@@ -2,7 +2,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.command.move_row import MoveRow
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder

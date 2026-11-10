@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

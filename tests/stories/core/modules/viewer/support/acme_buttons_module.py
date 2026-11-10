@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.button_declaration import ButtonDeclaration, ButtonMenuItem, Choice, ChoiceField, TextField
 
 PATH = "tests.stories.core.modules.viewer.support.acme_buttons_module:AcmeButtonsModule"

@@ -1,5 +1,5 @@
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.modules.accounts.guards.account_rows_guard import AccountRowsGuard
 from core.modules.accounts.migrations.m001_accounts_tables import AccountsTablesMigration
 from core.modules.accounts.models.person_login import PersonLogin

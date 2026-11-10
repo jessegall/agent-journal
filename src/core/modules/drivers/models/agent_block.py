@@ -1,7 +1,7 @@
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
 from engine.driver.block_check import BlockCheck
-from core.base.module.block_conditions import BlockConditions
+from engine.module.block_conditions import BlockConditions
 from dataclasses import dataclass
 
 from engine.driver.count_down import COUNTDOWN_LINE_LIMIT

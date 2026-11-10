@@ -10,7 +10,7 @@ from engine.enums.actor_type import ActorType
 from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.listener.commit_listener_runner import CommitListenerRunner
-from core.base.module.module_removal import ModuleRemoval
+from engine.module.module_removal import ModuleRemoval
 from engine.errors.refusal import Refusal
 from engine.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines

@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT))
 
-CONTRACT_COMMANDS = ((str(ROOT / ".venv/bin/python3"), "-m", "pytest", "tests/unit/core/base/module/test_plugin_event_contract.py", "-q"), ("journal", "sins"))
+CONTRACT_COMMANDS = ((str(ROOT / ".venv/bin/python3"), "-m", "pytest", "tests/unit/engine/module/test_plugin_event_contract.py", "-q"), ("journal", "sins"))
 SOURCE_DERIVED_KEYS = {"module_fingerprints"}
 IMPORT_LINE = re.compile(r"\s*(from|import)\s")
 
@@ -22,7 +22,7 @@ def registry_text() -> str:
     from engine.database.database import Database
     from engine.container.journal_container import opened_container, synced_container
     from engine.journal.journal_home import JournalHome
-    from core.base.module.module_sync import ModuleSync
+    from engine.module.module_sync import ModuleSync
     from engine.registry.registry import Registry
 
     with tempfile.TemporaryDirectory() as folder:

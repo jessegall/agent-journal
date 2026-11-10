@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.overview.commands.overview.overview_subcommand import OverviewSubcommand
 from core.modules.overview.overlays.overview_overlay import OverviewOverlay
 from core.modules.overview.rules.overview_compaction_rule import OverviewCompactionRule

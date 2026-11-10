@@ -4,8 +4,8 @@ from pathlib import Path
 
 from engine.database.migration import Migration
 from engine.model.model import Model
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from engine.database.database import Database

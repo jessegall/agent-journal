@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.setting.setting_group import SettingGroup
 from engine.setting.setting_reference import SettingReference
 from engine.setting.setting_scope import SettingScope

@@ -5,7 +5,7 @@ import sqlite3
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from core.base.module.module_error import ModuleError
+from engine.module.module_error import ModuleError
 from server.server_backup import ServerBackup
 from server.successor_proof import SuccessorProof
 from server import successor_proof
@@ -27,7 +27,7 @@ def test_new_migrations_leave_a_database_copy_to_go_back_to(home, monkeypatch):
 
 def test_a_listed_module_that_refuses_the_new_core_fails_the_proof_on_the_empty_database(tmp_path):
     journal = JournalHome(tmp_path)
-    journal.module_list.write_text(json.dumps(["tests.unit.core.base.module.test_module_order:FutureCoreModule"]))
+    journal.module_list.write_text(json.dumps(["tests.unit.engine.module.test_module_order:FutureCoreModule"]))
     with pytest.raises(ModuleError, match="needs core"):
         SuccessorProof(journal).run()
 

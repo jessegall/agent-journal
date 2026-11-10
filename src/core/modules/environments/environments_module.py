@@ -3,8 +3,8 @@ from core.modules.environments.bindings.environment_table_names import Environme
 from core.modules.environments.guards.test_grant_guard import TestGrantGuard
 from core.modules.environments.migrations.m001_environments import EnvironmentsTableMigration
 from core.modules.environments.migrations.m002_test_environments import TestEnvironmentsMigration
-from core.base.module.module import Module
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.queries.environment_query import EnvironmentQuery
 from core.modules.environments.seeders.environments_seeder import EnvironmentsSeeder

@@ -2,7 +2,7 @@ import json
 
 from engine.driver.block_check import BlockCheck
 from engine.driver.block_condition import BlockCondition
-from core.base.module.block_conditions import BlockConditions
+from engine.module.block_conditions import BlockConditions
 
 
 class AnyCondition(BlockCondition):

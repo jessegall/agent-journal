@@ -1,4 +1,4 @@
-from core.base.module.module_removal import ModuleRemoval
+from engine.module.module_removal import ModuleRemoval
 from tests.stories.engine.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_count_output, expect_count_shown, expect_value

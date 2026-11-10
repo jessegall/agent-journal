@@ -3,7 +3,7 @@ import threading
 import pytest
 
 from engine.container.container import Container
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from engine.ticker.tick_handler import TickHandler
 from engine.ticker.tick_interval import TickInterval
 from server.ticker import Ticker

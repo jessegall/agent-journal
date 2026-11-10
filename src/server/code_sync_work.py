@@ -1,9 +1,9 @@
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.registry_table import RegistryTable
-from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.module.module_finder import ModuleFinder
-from core.base.module.module_sync import ModuleSync
+from engine.module.code_fingerprint import CodeFingerprint
+from engine.module.module_finder import ModuleFinder
+from engine.module.module_sync import ModuleSync
 from server.round_work import RoundWork
 
 

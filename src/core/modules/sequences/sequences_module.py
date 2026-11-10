@@ -2,8 +2,8 @@ from core.modules.sequences.migrations.m008_sequence_session import SequenceSess
 from core.modules.sequences.migrations.m007_open_run_order_index import OpenRunOrderIndexMigration
 from engine.skill.skill_declaration import SkillDeclaration
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.modules.sequences.listeners.sequence_event_index_listener import SequenceEventIndexListener
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon

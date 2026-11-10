@@ -1,4 +1,4 @@
-from core.base.module.code_fingerprint import CodeFingerprint
+from engine.module.code_fingerprint import CodeFingerprint
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.support.story_checks import expect_visited_limit
 

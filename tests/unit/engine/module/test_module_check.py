@@ -1,0 +1,174 @@
+from engine.module.window_check import WindowCheck
+from engine.module.mark_check import MarkCheck
+from engine.module.dock_check import DockCheck
+from engine.module.move_check import MoveCheck
+from engine.module.skill_check import SkillCheck
+from engine.module.button_check import ButtonCheck
+from dataclasses import dataclass
+from pathlib import Path
+
+from engine.journal.journal_home import JournalHome
+from engine.module.module_finder import ModuleFinder
+
+import pytest
+
+from engine.command.handlers.make_handler import MakeHandler
+from engine.guard.guard import Guard
+from engine.model.lifecycle import Lifecycle
+from engine.model.model import Model
+from engine.model.move import Move
+from engine.model.tables import Tables
+from engine.module.module import Module
+from engine.module.driver_entries import DriverEntries
+from engine.module.inspector_check import InspectorCheck
+from engine.module.module_check import ModuleCheck
+from engine.module.provider_check import ProviderCheck
+from engine.module.suite_check import SuiteCheck
+from engine.module.module_error import ModuleError
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.setting_check import SettingCheck
+from engine.module.state_check import StateCheck
+from engine.module.helper_type_check import HelperTypeCheck
+from engine.module.profile_check import ProfileCheck
+from engine.module.template_check import TemplateCheck
+from engine.model.event_form import EventForm
+from engine.registry.event_key_entry import EventKeyEntry
+from tests.unit.engine.model.test_lifecycle import ItemState
+from tests.unit.engine.model.test_model import Item
+from engine.change.moved import Moved
+from engine.command.context import Context
+from tests.unit.engine.model.test_lifecycle import ItemLifecycle
+
+
+class PausedItemGuard(Guard[Moved[Item]]):
+    name = "items.paused-only"
+    moves = tuple([ItemLifecycle.pause])
+
+    def check(self, event: Moved[Item], context: Context) -> None:
+        return None
+
+
+class ArchivedItemGuard(Guard[Moved[Item]]):
+    name = "items.archived-only"
+    moves = tuple([Move("archive", [ItemState.OPEN], ItemState.OPEN)])
+
+    def check(self, event: Moved[Item], context: Context) -> None:
+        return None
+
+
+class UpdateMoveLifecycle(Lifecycle):
+    states = ItemState
+    initial = [ItemState.OPEN]
+    editable = ()
+    deletable = ()
+
+    update = Move("update", [ItemState.OPEN], ItemState.PAUSED)
+
+
+class CreatedMoveLifecycle(Lifecycle):
+    states = ItemState
+    initial = [ItemState.OPEN]
+    editable = ()
+    deletable = ()
+
+    created = Move("created", [ItemState.OPEN], ItemState.PAUSED)
+
+
+class UnreachableStateLifecycle(Lifecycle):
+    states = ItemState
+    initial = [ItemState.OPEN]
+    editable = ()
+    deletable = ()
+
+    pause = Move("pause", [ItemState.OPEN], ItemState.PAUSED)
+
+
+class NoFirstStateLifecycle(Lifecycle):
+    states = ItemState
+    initial = ()
+    editable = ()
+    deletable = ()
+
+    pause = Move("pause", [ItemState.OPEN], ItemState.PAUSED)
+
+
+def model(lifecycle: type[Lifecycle], name: str = "book") -> type[Model]:
+    return dataclass(frozen=True, kw_only=True)(type("Book", tuple([Model]), {"model_name": name, "cli_name": name, "lifecycle": lifecycle,
+                                                                        "__annotations__": {"state": ItemState}, "state": ItemState.OPEN}))
+
+
+def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[type, ...] = (), handlers: tuple[type, ...] = ()) -> type[Module]:
+    return type(name.title() + "Module", tuple([Module]), {"name": name, "requires_core": ">=5", "models": models, "guards": guards, "handlers": handlers})
+
+
+def problems(*modules: type[Module]) -> str:
+    with pytest.raises(ModuleError) as raised:
+        module_check().check(modules, DriverEntries().rules(modules))
+    return str(raised.value)
+
+
+def test_every_event_of_every_model_is_known():
+    events = module_check().known_events([module("items", [ModelDeclaration(Item)])])
+    assert events == ("item.create", "item.update", "item.delete", "item.metadata", "item.pause", "item.close")
+
+
+def test_each_event_of_a_model_has_a_key_and_metadata_has_none():
+    keys = {entry.event: entry.key for entry in module_check().event_keys([module("journal.core.items", [ModelDeclaration(Item)])])}
+    assert keys == {"journal.booting": "core.journal.booting", "registry.sync": "core.registry.sync", "upgrade.moved": "core.upgrade.moved", "upgrade.finished": "core.upgrade.finished",
+                    "item.create": "core.items.item.created", "item.update": "core.items.item.updated", "item.delete": "core.items.item.deleted",
+                    "item.pause": "core.items.item.pause", "item.close": "core.items.item.close"}
+
+
+def test_a_file_event_keeps_its_name_whole_and_is_commit_only():
+    declaring = type("FilesModule", tuple([Module]), {"name": "journal.core.settings", "requires_core": ">=5", "file_events": ["managed-hook.changed"]})
+    entry = next(entry for entry in module_check().event_keys([declaring]) if entry.event == "managed-hook.changed")
+    assert entry == EventKeyEntry("core.settings.managed-hook.changed", "managed-hook.changed", "journal.core.settings", tuple([EventForm.COMMIT]), "a managed hook was changed")
+
+
+def test_a_model_with_no_forms_has_no_key_and_its_events_stay_known():
+    silent = dataclass(frozen=True, kw_only=True)(type("Silent", tuple([Model]), {"model_name": "silent", "cli_name": "silent", "event_forms": ()}))
+    modules = [module("items", [ModelDeclaration(silent)])]
+    assert "silent.create" in module_check().known_events(modules)
+    assert not [entry for entry in module_check().event_keys(modules) if entry.event.startswith("silent.")]
+
+
+def test_two_events_with_one_key_are_refused():
+    assert "two events have the key items.book.created" in problems(module("items", [ModelDeclaration(model(CreatedMoveLifecycle))]))
+
+
+def test_modules_without_problems_pass():
+    module_check().check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])], ())
+
+
+def test_a_guard_on_an_event_no_model_raises_is_refused():
+    assert "items.archived-only covers item.archive, which no model raises" in problems(module("items", [ModelDeclaration(Item)], [ArchivedItemGuard]))
+
+
+def test_two_modules_with_one_model_name_and_table_are_refused():
+    problem_text = problems(module("items", [ModelDeclaration(Item)]), module("support", [ModelDeclaration(Item)]))
+    assert "two models named item" in problem_text and "two tables named items" in problem_text
+
+
+def test_two_guards_with_one_name_are_refused():
+    assert "two guards, listeners or driver rules named items.paused-only" in problems(module("items", [ModelDeclaration(Item)], [PausedItemGuard]), module("support", (), [PausedItemGuard]))
+
+
+def test_a_move_named_like_a_standard_change_is_refused():
+    assert "move update is named like a standard change" in problems(module("books", [ModelDeclaration(model(UpdateMoveLifecycle))]))
+
+
+def test_a_state_no_move_reaches_is_refused():
+    assert "state closed is no move's target and not a first state" in problems(module("books", [ModelDeclaration(model(UnreachableStateLifecycle))]))
+
+
+def test_a_lifecycle_without_a_first_state_is_incomplete():
+    assert "lifecycle is incomplete" in problems(module("books", [ModelDeclaration(model(NoFirstStateLifecycle))]))
+
+
+def test_two_handlers_for_one_command_are_refused():
+    assert "two handlers carry out" in problems(module("items", [ModelDeclaration(Item)], handlers=[MakeHandler]), module("support", handlers=[MakeHandler]))
+
+
+def module_check() -> ModuleCheck:
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("journal")))), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck(), SkillCheck(), MoveCheck(), TemplateCheck(), ButtonCheck(), ModuleFinder(JournalHome(Path("journal"))), StateCheck(), HelperTypeCheck(), ProfileCheck(), InspectorCheck())
+

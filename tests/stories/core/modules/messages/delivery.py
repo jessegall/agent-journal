@@ -7,7 +7,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.terminal_typing import TerminalTyping

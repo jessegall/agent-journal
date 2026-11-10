@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.setting.setting_scope import SettingScope
 from engine.setting.setting_type import SettingType
 from engine.setting.setting_value import SettingValue

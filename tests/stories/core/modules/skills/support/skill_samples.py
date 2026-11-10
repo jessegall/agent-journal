@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.skill.skill_declaration import SkillDeclaration
 
 PATH = "tests.stories.core.modules.skills.support.skill_samples"

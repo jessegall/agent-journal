@@ -1,5 +1,5 @@
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.transcriptions.support.transcription_searcher import TranscriptionSearcher
 from engine.skill.skill_declaration import SkillDeclaration

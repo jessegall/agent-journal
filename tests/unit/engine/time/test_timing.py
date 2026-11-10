@@ -15,7 +15,7 @@ from engine.registry.registry import Registry
 from engine.time.timing import Timing
 from tests.unit.engine.command.test_bus import handlers
 from tests.unit.engine.command.test_commands import MakeItem
-from tests.unit.core.base.module.test_module_sync import ITEMS
+from tests.unit.engine.module.test_module_sync import ITEMS
 from tests.unit.core.base.sample_container import sample_container
 
 

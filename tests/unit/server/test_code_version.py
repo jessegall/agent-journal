@@ -2,9 +2,9 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE, CodeFingerprint
-from core.base.module.module_finder import ModuleFinder
-from core.base.module.source_hash import SourceHash
+from engine.module.code_fingerprint import PINNED_CODE_VARIABLE, CodeFingerprint
+from engine.module.module_finder import ModuleFinder
+from engine.module.source_hash import SourceHash
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 

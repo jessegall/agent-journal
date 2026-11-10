@@ -1,7 +1,7 @@
 import json
 
 from engine.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.memories.listeners.memory_mark_listener import MEMORIES_MODULE
 from core.modules.memories.models.enums.memory_mark_type import MemoryMarkType

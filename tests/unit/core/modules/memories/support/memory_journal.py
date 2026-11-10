@@ -6,7 +6,7 @@ from engine.database.database import Database
 from engine.database.statement import Statement
 from engine.container.journal_container import opened_container
 from engine.journal.journal_home import JournalHome
-from core.base.module.module_sync import ModuleSync
+from engine.module.module_sync import ModuleSync
 
 FIXED_TIME = "2026-10-31T09:00:00+00:00"
 

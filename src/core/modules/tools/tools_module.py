@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_key import WindowKey

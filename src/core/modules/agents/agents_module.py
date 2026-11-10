@@ -67,7 +67,7 @@ from core.modules.agents.support.agent_inspector import AGENT_INSPECTOR
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_place import WindowPlace
 from engine.caller.caller_resolver import CallerResolver
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.agents.migrations.m009_agent_access import AgentAccessMigration
 from core.modules.agents.commands.record_agent_launch_failure.launch_nudges import AGENT_START_FAILED
 from core.modules.agents.commands.record_agent_process.record_agent_process_handler import RecordAgentProcessHandler
@@ -98,7 +98,7 @@ from core.modules.agents.commands.remove_instruction_import.remove_instruction_i
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports_handler import WarnInstructionImportsHandler
 from core.modules.agents.listeners.boot_instruction_imports_listener import BootInstructionImportsListener
 from core.base.viewer.window_key import WindowKey
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 from core.modules.agents.support.skeletons import AGENTS_AGENTS_SKELETON, AGENTS_HELPERS_SKELETON, AGENTS_TRANSCRIPT_SKELETON
 

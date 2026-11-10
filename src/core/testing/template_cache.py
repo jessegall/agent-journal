@@ -4,8 +4,8 @@ import shutil
 import time
 from pathlib import Path
 
-from core.base.module.code_fingerprint import CORE_FOLDER
-from core.base.module.source_hash import SourceHash
+from engine.module.code_fingerprint import CORE_FOLDER
+from engine.module.source_hash import SourceHash
 from core.testing.folder_stat import FolderStat
 
 CACHE_FOLDER = Path.home() / ".cache" / "agent-journal" / "story-templates"

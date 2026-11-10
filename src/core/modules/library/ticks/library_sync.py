@@ -3,7 +3,7 @@ from engine.command.bus import Bus
 from engine.command.command import Command
 from core.base.library.library_item import LibraryItem
 from engine.model.model import Model
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.repository.stale_row_error import StaleRowError

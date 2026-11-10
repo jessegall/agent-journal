@@ -7,7 +7,7 @@ from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener import CommitListener
 from engine.enums.log_level import LogLevel
 from engine.enums.log_source import LogSource
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.log.system_log_writer import SystemLogWriter
 from core.modules.agents.models.agent import Agent

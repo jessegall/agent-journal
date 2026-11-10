@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from engine.database.statement import Statement
-from core.base.module.driver_entries import DRIVERS_MODULE
+from engine.module.driver_entries import DRIVERS_MODULE
 
 HAS_FOREIGN_RUNS = f"""json_array_length(metadata, '$."{DRIVERS_MODULE}".foreign') > 0"""
 

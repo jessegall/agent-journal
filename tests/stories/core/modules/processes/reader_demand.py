@@ -1,5 +1,5 @@
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 import pytest
 
 from engine.command.bus import Bus

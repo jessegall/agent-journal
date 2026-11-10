@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.inspector_declaration import InspectorDeclaration
 from core.modules.reminders.models.reminder import Reminder
 

@@ -11,7 +11,7 @@ from core.base.provider.providers import Providers
 from engine.registry.skill_entry import SkillEntry
 from engine.skill.skill_declaration import SKILL_FILE
 from engine.skill.skill_digest import SkillDigest
-from core.base.module.skill_check import FOLDER_PREFIX
+from engine.module.skill_check import FOLDER_PREFIX
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_projects import SkillProjects
 

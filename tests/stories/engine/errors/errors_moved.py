@@ -5,7 +5,7 @@ from pathlib import Path
 
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.base.module.module_sync import ModuleSync
+from engine.module.module_sync import ModuleSync
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
 
 ROOT = Path(__file__).resolve().parents[4]

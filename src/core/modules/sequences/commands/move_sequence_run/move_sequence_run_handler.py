@@ -5,7 +5,7 @@ from engine.command.completed_command_error import CompletedCommandError
 from engine.command.handler import Handler
 from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal
-from core.base.module.step_conditions import StepConditions
+from engine.module.step_conditions import StepConditions
 from engine.check.step_checks import StepChecks
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent

@@ -2,7 +2,7 @@ import json
 
 from engine.journal.journal_home import JournalHome
 from core.journal import main
-from tests.unit.core.base.module.test_module_sync import ITEM_COUNT, ITEMS
+from tests.unit.engine.module.test_module_sync import ITEM_COUNT, ITEMS
 
 
 def test_journal_module_sync_syncs_a_journal_never_synced_and_then_commands_run(tmp_path, monkeypatch, capsys):

@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 
 from engine.database.shared_tables import SharedTables
-from core.base.module.code_fingerprint import PINNED_CODE_VARIABLE
-from core.base.module.source_hash import SourceHash
+from engine.module.code_fingerprint import PINNED_CODE_VARIABLE
+from engine.module.source_hash import SourceHash
 
 from engine.registry.lazy_loading import LazyLoading
 from core.testing.heavy_run_gate import HeavyRunGate

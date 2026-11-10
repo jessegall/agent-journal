@@ -2,8 +2,8 @@ from core.modules.updates.models.release_install import ReleaseInstall
 from core.modules.updates.migrations.m002_release_installs import ReleaseInstallsMigration
 from core.modules.updates.commands.record_release_install.record_release_install_handler import RecordReleaseInstallHandler
 from core.modules.updates.listeners.release_install_listener import ReleaseInstallListener
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon

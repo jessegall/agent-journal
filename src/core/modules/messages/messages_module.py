@@ -83,14 +83,14 @@ from core.modules.messages.rules.unread_message_stop_rule import UnreadMessageSt
 from core.modules.messages.rules.unread_message_write_rule import UnreadMessageWriteRule
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.messages.models.message import Message
 from core.modules.messages.upgrade.messages_move import MessagesMove
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
@@ -98,7 +98,7 @@ from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 from core.modules.messages.support.block_conditions.messages_read import MessagesRead
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 from core.modules.messages.support.skeletons import MESSAGES_ATTACHMENTS_SKELETON, MESSAGES_CHAT_SKELETON
-from core.base.module.model_declaration import ALL_SUBCOMMANDS
+from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.messages.models.message_work_source import MessageWorkSource
 from core.modules.messages.migrations.m018_message_work_sources import MessageWorkSourcesMigration
 from core.modules.messages.commands.choose_work_source.choose_work_source_handler import ChooseWorkSourceHandler

@@ -1,5 +1,5 @@
-from core.base.module.module import Module
-from core.base.module.window_extensions import WindowExtensions
+from engine.module.module import Module
+from engine.module.window_extensions import WindowExtensions
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_loading import WindowLoading

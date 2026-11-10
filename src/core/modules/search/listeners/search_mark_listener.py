@@ -2,7 +2,7 @@ import json
 
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.listener.event_rows import EventRows
 from engine.errors.refusal import Refusal

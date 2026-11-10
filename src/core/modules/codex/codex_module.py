@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.codex.providers.codex_provider import CodexProvider
 
 

@@ -2,7 +2,7 @@ from core.modules.agents.events.agent_ended import AgentEnded
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from core.modules.reviews.commands.abandon_review.abandon_review import AbandonReview
 from core.modules.reviews.commands.end_reviewer.end_reviewer import EndReviewer
 from core.modules.reviews.queries.review_query import ReviewQuery

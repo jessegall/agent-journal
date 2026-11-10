@@ -6,7 +6,7 @@ from engine.driver.block_until import BlockUntil
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from core.base.module.block_conditions import BlockConditions
+from engine.module.block_conditions import BlockConditions
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

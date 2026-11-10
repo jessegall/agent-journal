@@ -1,7 +1,7 @@
 import time
 
-from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.module.folder_listing import FolderListing
+from engine.module.code_fingerprint import CodeFingerprint
+from engine.module.folder_listing import FolderListing
 from server.code_folders import CodeFolders
 
 

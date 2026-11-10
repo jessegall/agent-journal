@@ -1,5 +1,5 @@
 from engine.skill.skill_declaration import SkillDeclaration
-from core.base.module.model_declaration import ALL_SUBCOMMANDS
+from engine.module.model_declaration import ALL_SUBCOMMANDS
 from core.modules.plans.migrations.m008_plan_context_reads import PlanContextReadsMigration
 from core.modules.plans.migrations.m009_plan_waits import PlanWaitsMigration
 from core.modules.plans.models.plan_wait import PlanWait
@@ -59,7 +59,7 @@ from core.modules.plans.models.plan_outline_task import PlanOutlineTask
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_key import WindowKey
@@ -67,7 +67,7 @@ from core.base.viewer.key_loading import KeyLoading
 from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.upgrade.plans_move import PlansMove

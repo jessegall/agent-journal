@@ -6,7 +6,7 @@ from engine.driver.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge
 from engine.driver.nudge_type import NudgeType
 from engine.driver.rule_answer import RuleAnswer
-from core.base.module.block_conditions import BlockConditions
+from engine.module.block_conditions import BlockConditions
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.drivers.commands.close_agent_block.close_agent_block import CloseAgentBlock

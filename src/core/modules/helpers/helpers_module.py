@@ -7,8 +7,8 @@ from core.modules.helpers.commands.agent_mix.agent_mix_subcommand import AgentMi
 from core.modules.helpers.migrations.m001_helper_limit_key import HelperCapKeyMigration
 from core.modules.helpers.migrations.m002_settle_old_helpers import RetireOldHelpersMigration
 from core.modules.helpers.migrations.m003_open_helper_jobs_index import OpenHelperJobsIndexMigration
-from core.base.module.module import Module
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from core.modules.helpers.migrations.m004_provider_outages import ProviderOutagesMigration
 from core.modules.helpers.migrations.m005_helper_job_counts_index import HelperJobCountsIndexMigration

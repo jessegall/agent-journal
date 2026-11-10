@@ -10,7 +10,7 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.provider.hook_trust import HookTrust
 from core.base.provider.managed_hooks import ManagedHooks
 from core.base.profile.model_tier import ModelTier

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pathlib import Path
-from core.base.module.code_fingerprint import CORE_FOLDER
-from core.base.module.module_finder import ModuleFinder
+from engine.module.code_fingerprint import CORE_FOLDER
+from engine.module.module_finder import ModuleFinder
 
 
 SERVER_FOLDER = Path(__file__).resolve().parent

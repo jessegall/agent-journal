@@ -1,6 +1,6 @@
 from engine.command.bus import Bus
 from engine.command.server_stopping_error import ServerStoppingError
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.support.hook_facts import HookFacts
 from core.modules.plugins.support.plugin_call import PluginCall

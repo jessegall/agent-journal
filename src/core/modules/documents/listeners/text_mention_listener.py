@@ -6,7 +6,7 @@ from engine.change.deleted import Deleted
 from engine.command.bus import Bus
 from core.base.library.library_lookup import LibraryLookup
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.registry.registry import Registry
 from engine.scope.actor_scope import ActorScope

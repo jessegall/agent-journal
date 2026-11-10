@@ -103,7 +103,7 @@ from core.modules.tasks.upgrade.tasks_move import TasksMove
 from core.modules.tasks.commands.remove_task_dependency.remove_task_dependency_handler import RemoveTaskDependencyHandler
 from core.modules.tasks.commands.record_task_independence.record_task_independence_handler import RecordTaskIndependenceHandler
 from core.modules.tasks.migrations.m023_task_independence_reason import TaskIndependenceReasonMigration
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from core.modules.tasks.support.task_searcher import TaskSearcher
 from core.base.viewer.choice_option import ChoiceOption
@@ -115,7 +115,7 @@ from core.base.viewer.window_place import WindowPlace
 from core.modules.tasks.support.task_inspector import TASK_INSPECTOR
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_loading import WindowLoading
-from core.base.module.model_declaration import ModelDeclaration
+from engine.module.model_declaration import ModelDeclaration
 from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_dependency import TaskDependency

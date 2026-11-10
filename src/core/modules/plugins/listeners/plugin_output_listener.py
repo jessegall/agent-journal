@@ -7,7 +7,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.cli.console import Console
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

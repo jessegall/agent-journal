@@ -4,7 +4,7 @@ from engine.change.event_log import EventLog
 from engine.query.query import Query
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.references.row_ref import RowRef
 from tests.stories.core.modules.library.support.copy_stories import new_item, shared_server

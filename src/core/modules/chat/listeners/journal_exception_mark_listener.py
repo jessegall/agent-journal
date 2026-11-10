@@ -2,7 +2,7 @@ from engine.change.logged_event import LoggedEvent
 from engine.time.clock import Clock
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from engine.command.bus import Bus
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from engine.listener.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope

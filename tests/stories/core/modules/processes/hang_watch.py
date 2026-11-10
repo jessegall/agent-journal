@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 from engine.driver.command_category import CommandCategory
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module_finder import ModuleFinder
 from core.modules.processes.support.group_cpu_time import GroupCpuTime
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.story import Story

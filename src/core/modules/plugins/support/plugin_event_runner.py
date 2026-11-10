@@ -8,7 +8,7 @@ from engine.time.timestamp import Timestamp
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.model.event_form import EventForm
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from core.modules.plugins.models.plugin import Plugin

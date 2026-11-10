@@ -65,8 +65,8 @@ from core.modules.drivers.migrations.m030_hook_call_partial_indexes import HookC
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from engine.guard.change_filter import ChangeFilter
 from engine.driver.hook_route import HookRoute
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_key import WindowKey
 from core.base.viewer.window_icon import WindowIcon

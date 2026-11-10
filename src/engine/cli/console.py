@@ -31,8 +31,8 @@ from engine.environment.environment_names import EnvironmentNames
 from engine.log.error_log import ErrorLog
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.model.tables import Tables
-from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.module.module_finder import ModuleFinder
+from engine.module.code_fingerprint import CodeFingerprint
+from engine.module.module_finder import ModuleFinder
 from engine.registry.registry import Registry
 from engine.cli.read_limit_bypass import ReadLimitBypass
 from engine.driver.refusal_skips import RefusalSkips

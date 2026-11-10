@@ -40,7 +40,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.nudger import Nudger
 from engine.driver.search_category import SearchCategory
 from core.modules.drivers.support.suite_choice import SuiteChoice
-from core.base.module.driver_entries import DRIVERS_MODULE
+from engine.module.driver_entries import DRIVERS_MODULE
 
 LOG_LINE_CHARACTERS = 240
 

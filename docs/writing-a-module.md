@@ -13,7 +13,7 @@ A package has an `__init__.py` and a `module.py` with one `Module` subclass.
 This is the complete review module's `module.py`:
 
 ```python
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.template.template_declaration import TemplateDeclaration
 from core.base.viewer.button_declaration import ButtonCondition, ButtonDeclaration
 
@@ -62,7 +62,7 @@ type a unique key made of lowercase letters and dashes and a label:
 
 ```python
 from engine.helper_type.helper_type import HelperType
-from core.base.module.module import Module
+from engine.module.module import Module
 
 
 class ClerksModule(Module):
@@ -86,7 +86,7 @@ before changing the stored registry. Register a helper type in `helper_types` be
 Declare profiles on the module that owns them. Each profile names a registered agent type:
 
 ```python
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.profile.agent_profile import AgentProfile
 
 
@@ -138,7 +138,7 @@ The package's [module.py](../tests/stories/fixtures/acme_suite/module.py) regist
 Its complete `module.py` is:
 
 ```python
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.skeleton_part import SkeletonPart
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon

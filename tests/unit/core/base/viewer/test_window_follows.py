@@ -2,8 +2,8 @@ import re
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.module.module import Module
-from core.base.module.module_finder import ModuleFinder
+from engine.module.module import Module
+from engine.module.module_finder import ModuleFinder
 
 FOLLOW = re.compile(r"\b(?:view|context)\.follow\(\s*\[([^\]]*)\]")
 PATTERN = re.compile(r"['\"]([^'\"]+)['\"]")

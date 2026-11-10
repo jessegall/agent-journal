@@ -1,7 +1,7 @@
 import inspect
 from pathlib import Path
 
-from core.base.module.module_finder import DEFAULT_MODULE_LISTS
+from engine.module.module_finder import DEFAULT_MODULE_LISTS
 from engine.dotted_path.dotted_path import DottedPath
 from tunnels import DEFAULT_TUNNELS
 

@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from core.modules.claude_code.rules.native_memory_rule import NativeMemoryRule
 from core.modules.claude_code.support.claude_code_nudges import CLAUDE_CODE_NUDGES

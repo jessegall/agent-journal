@@ -6,8 +6,8 @@ from suites.coding.modules.checks.migrations.m006_open_check_result_index import
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
 from engine.skill.skill_declaration import SkillDeclaration
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.base.viewer.window_search import WindowSearch
 from suites.coding.modules.checks.support.check_searcher import CheckSearcher
 from core.base.viewer.window_declaration import WindowDeclaration

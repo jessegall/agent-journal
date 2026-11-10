@@ -31,7 +31,7 @@ from engine.hosting.hosting import Hosting
 from engine.journal.journal_home import JournalHome
 from engine.model.model import Model
 from core.modules import DEFAULT_MODULES
-from core.base.module.module import Module
+from engine.module.module import Module
 from engine.model.tables import Tables
 from engine.subcommand.output import Output
 from engine.query.queries import Queries

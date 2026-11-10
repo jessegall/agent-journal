@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from tests.unit.core.base.module.test_module_sync import ITEMS, synced
+from tests.unit.engine.module.test_module_sync import ITEMS, synced
 
 ROOT = Path(__file__).resolve().parents[4]
 STARTUP_LIMIT_SECONDS = 3.0

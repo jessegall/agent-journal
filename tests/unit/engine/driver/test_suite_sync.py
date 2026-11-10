@@ -8,9 +8,9 @@ from engine.driver.open_row import OpenRow
 from engine.driver.overlay import Overlay
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.suite import Suite
-from core.base.module.driver_entries import DriverEntries
-from core.base.module.module import Module
-from core.base.module.suite_check import SuiteCheck
+from engine.module.driver_entries import DriverEntries
+from engine.module.module import Module
+from engine.module.suite_check import SuiteCheck
 from engine.enums.agent_role import AgentRole
 
 

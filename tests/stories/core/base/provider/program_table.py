@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from tests.stories.core.base.module.support.sample_programs import PATH
+from tests.stories.engine.module.support.sample_programs import PATH
 from tests.stories.core.support.fixtures import MainEnvironment
 
 SHIPPED_TABLE = Path(__file__).resolve().parents[5] / "tools" / "journal-hook" / "programs" / "programs.json"

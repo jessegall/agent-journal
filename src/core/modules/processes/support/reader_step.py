@@ -1,6 +1,6 @@
 from dataclasses import replace
 
-from core.base.module.performance_tools import PerformanceTools
+from engine.module.performance_tools import PerformanceTools
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output

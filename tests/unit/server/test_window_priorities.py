@@ -1,5 +1,5 @@
 from core.base.viewer.window_priority import WindowPriority
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_extension import WindowExtension
 from core.base.viewer.window_key import WindowKey

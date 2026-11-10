@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.module.driver_entries import DRIVERS_MODULE
+from engine.module.driver_entries import DRIVERS_MODULE
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples

@@ -9,8 +9,8 @@ from engine.database.migration import Migration
 from engine.listener.commit_listener import CommitListener
 from engine.listener.save_listener import SaveListener
 from engine.model.model import Model
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from engine.errors.refusal import Refusal
 from engine.repository.repository import Repository
 from core.modules.tasks.models.task import Task

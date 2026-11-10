@@ -4,7 +4,7 @@ from engine.driver.command_category import CommandCategory
 from engine.log.exception_sink import CLOCK_TICK_SOURCE
 from engine.query.queries import Queries
 from core.modules.chat.models.journal_exception import JournalException
-from core.base.module.performance_tools import PerformanceTools
+from engine.module.performance_tools import PerformanceTools
 from engine.time.timing import Timing
 from core.modules.drivers.support.hook_cost_tool import HOOK_LIMIT_POINTS
 from core.modules.developer.support.slow_tick_tool import SlowTickTool

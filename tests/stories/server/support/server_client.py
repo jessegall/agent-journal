@@ -32,8 +32,8 @@ from core.testing.line_outcome import LineOutcome
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.models.agent_skill import AgentSkill
-from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.module.module_finder import ModuleFinder
+from engine.module.code_fingerprint import CodeFingerprint
+from engine.module.module_finder import ModuleFinder
 from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.journal_door import JournalDoor

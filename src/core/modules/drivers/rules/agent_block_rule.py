@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from engine.enums.role_group import RoleGroup
 from engine.container.container import Container
 from engine.driver.agent_hook import AgentHook
-from core.base.module.block_conditions import BlockConditions
+from engine.module.block_conditions import BlockConditions
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.nudge import Nudge

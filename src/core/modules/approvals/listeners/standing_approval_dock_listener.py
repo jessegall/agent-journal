@@ -2,7 +2,7 @@ from engine.change.changed import Changed
 from engine.change.logged_event import LoggedEvent
 from engine.command.bus import Bus
 from engine.listener.commit_listener import CommitListener
-from core.base.module.module_actors import ModuleActors
+from engine.module.module_actors import ModuleActors
 from engine.scope.actor_scope import ActorScope
 from engine.scope.environment_scope import EnvironmentScope
 from core.modules.approvals.models.approval_request import ApprovalRequest

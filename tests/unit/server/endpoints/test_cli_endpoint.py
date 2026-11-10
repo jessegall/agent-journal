@@ -11,7 +11,7 @@ from engine.container.journal_container import synced_container
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit_listener_runner import CommitListenerRunner
 from engine.time.timing import Timing
-from tests.unit.core.base.module.test_module_sync import ITEMS
+from tests.unit.engine.module.test_module_sync import ITEMS
 
 from server.endpoints.cli_endpoint import CliEndpoint
 from server.endpoints.chunk_stream import ChunkStream

@@ -1,5 +1,5 @@
 from engine.driver.suite import Suite
-from core.base.module.module import Module
+from engine.module.module import Module
 
 PATH = "tests.stories.core.modules.drivers.support.extended_suites"
 

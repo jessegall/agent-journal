@@ -2,8 +2,8 @@ from core.modules.pins.rules.agent_text_pin_rule import AgentTextPinRule
 from core.modules.pins.rules.link_pin_rule import LinkPinRule
 from core.modules.pins.rules.automatic_link_pin_rule import AutomaticLinkPinRule
 from core.modules.pins.support.pin_nudges import PIN_NUDGES
-from core.base.module.model_declaration import ModelDeclaration
-from core.base.module.module import Module
+from engine.module.model_declaration import ModelDeclaration
+from engine.module.module import Module
 from core.modules.pins.commands.close_pin.close_pin_handler import ClosePinHandler
 from core.modules.pins.commands.close_pin.close_pin_subcommand import ClosePinSubcommand
 from core.modules.pins.commands.make_pin.make_pin_handler import MakePinHandler

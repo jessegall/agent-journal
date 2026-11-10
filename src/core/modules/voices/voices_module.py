@@ -1,4 +1,4 @@
-from core.base.module.module import Module
+from engine.module.module import Module
 from core.modules.voices.commands.set_voice_address.set_voice_address_handler import SetVoiceAddressHandler
 from core.modules.voices.commands.set_voice_address.set_voice_address_subcommand import SetVoiceAddressSubcommand
 from core.modules.voices.commands.choose_voice.choose_voice_subcommand import ChooseVoiceSubcommand
