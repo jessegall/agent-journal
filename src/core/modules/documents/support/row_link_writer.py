@@ -39,14 +39,14 @@ class RowLinkWriter:
         target_ids: dict[tuple[str, int], list[int]] = {}
         for link in links:
             target_ids.setdefault((link.source_model, link.source_id), []).append(link.target_id)
-        links_of_keys: dict[tuple[str, int, str, int, str], Link] = {}
+        stored_links: dict[tuple[str, int, str, int, str], Link] = {}
         for (source_model, source_id), ids in target_ids.items():
             distinct = sorted(set(ids))
             for first in range(0, len(distinct), STORED_LINK_TARGETS):
                 targets = Among("target_id", distinct[first:first + STORED_LINK_TARGETS])
                 rows = self.queries.query(Link).filter(source_model=source_model, source_id=source_id).matching(targets).all_rows()
-                links_of_keys.update({self.key(row): row for row in rows})
-        return links_of_keys
+                stored_links.update({self.key(row): row for row in rows})
+        return stored_links
 
     @staticmethod
     def key(link: Link) -> tuple[str, int, str, int, str]:
