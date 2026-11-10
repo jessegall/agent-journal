@@ -7,7 +7,7 @@ from core.base.provider.providers import Providers
 from core.base.query.conditions.contains_some import ContainsSome
 from core.base.query.conditions.minimum import Minimum
 from core.base.query.queries import Queries
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.base.driver.hook_event_name import HookEventName
 from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL

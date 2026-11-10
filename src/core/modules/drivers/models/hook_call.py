@@ -11,7 +11,7 @@ from core.base.type_guards import is_list, is_text_mapping
 from core.base.model.model import Model
 from core.base.module.driver_entries import DRIVERS_MODULE
 from core.base.type_guards import is_list, is_mapping
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 
 
 COMPACTION = "compact"

@@ -10,7 +10,7 @@ from tests.stories.core.modules.developer.support.hook_recording_fixture import 
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.support.story_checks import expect_value
 from core.modules.developer.support.hook_request_log import HookRequestLog
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from server.request_log import SETTINGS_REFRESH_SECONDS
 
 

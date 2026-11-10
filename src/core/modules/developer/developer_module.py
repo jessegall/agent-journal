@@ -4,7 +4,6 @@ from core.modules.developer.listeners.private_data_mark_listener import PrivateD
 from core.modules.developer.migrations.m002_private_data_marks import PrivateDataFlagsMigration
 from core.modules.developer.models.private_data_mark import PrivateDataMark
 from core.modules.developer.commands.request_queue.request_queue_subcommand import RequestQueueSubcommand
-from core.modules.developer.commands.send_exception_line.send_exception_line_handler import SendExceptionLineHandler
 from core.modules.developer.support.developer_nudges import DEVELOPER_NUDGES
 from core.modules.developer.listeners.exception_line_listener import ExceptionLineListener
 from core.modules.developer.support.reader_time_tool import ReaderTimeTool
@@ -50,7 +49,7 @@ class DeveloperModule(Module):
     migrations = [HookRequestsMigration, PrivateDataFlagsMigration]
     views = [HookRequest]
     tick_handlers = [TickHandler(TickInterval(seconds=60), PrivateDataTick(), "private data scan")]
-    handlers = [RecordPrivateDataFindingHandler, ResetHookNumbersHandler, RecordMarkMotionHandler, SendExceptionLineHandler]
+    handlers = [RecordPrivateDataFindingHandler, ResetHookNumbersHandler, RecordMarkMotionHandler]
     listeners = [ExceptionLineListener, PrivateDataMarkListener]
     nudges = DEVELOPER_NUDGES
     bindings = {RouteCostTool: DeveloperRouteCostTool, RequestWatch: ReportingRequestWatch}

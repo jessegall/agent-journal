@@ -1,7 +1,7 @@
 from core.base.driver.hook_event_name import HookEventName
 from core.base.query.conditions.contains_some import ContainsSome
 from core.base.query.queries import Queries
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
 FREE_PLACE_TEXT = "can go to a worker and a place is free"

@@ -8,7 +8,7 @@ from core.modules.drivers.commands.report_safeguards_stop.report_safeguards_stop
 from core.modules.drivers.commands.wake_safeguards_stopped_agent.wake_safeguards_stopped_agent import WakeSafeguardsStoppedAgent
 from core.modules.drivers.commands.wake_safeguards_stopped_agent.wake_safeguards_stopped_agent_handler import WAKE_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.drivers.support.safeguards_stop import SafeguardsStop
 

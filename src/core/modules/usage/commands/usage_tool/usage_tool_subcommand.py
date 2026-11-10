@@ -13,7 +13,7 @@ from core.base.query.queries import Queries
 from core.base.scope.actor_scope import ActorScope
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.support.monitored_runs import MONITOR_LIFE_SECONDS, MONITOR_TOOL
 from core.modules.processes.models.enums.part_state import PartState
