@@ -1,3 +1,4 @@
+from core.modules.agents.models.agent import Agent
 import json
 import pytest
 
@@ -232,10 +233,10 @@ def test_a_plan_hands_out_only_its_tasks_that_no_worker_was_given(new_story):
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "First" --goal "It counts"', actor=story.agent)
     story.expect_success(f"phase place 2 --phase {phase_id}", actor=story.agent)
     plans = story.container.get(NextPlanTasks)
-    expect_following_plans_2(plans, plan_id, None)
+    expect_ready_plan_tasks(story, plans, plan_id, [])
     free_id = story.new_row_id('task make "Fix the till" --environment main', actor=story.agent)
     story.expect_success(f"phase place {free_id} --phase {phase_id}", actor=story.agent)
-    expect_following_plans(plans, plan_id, free_id)
+    expect_ready_plan_tasks(story, plans, plan_id, [free_id])
 
 
 def test_the_assigner_leaves_a_delegated_task_alone(new_story):
@@ -308,14 +309,10 @@ def expect_next_open_tasks(tasks, number, text, expected) -> None:
     assert actual is expected, actual
 
 
-def expect_following_plans(plans, plan_id, expected) -> None:
-    actual = plans.following(plan_id)
+def expect_ready_plan_tasks(story, plans, plan_id, expected) -> None:
+    agent = story.container.get(Queries).query(Agent).find(story.agent.id)
+    actual = [place.task_id for place in plans.ready(plan_id, agent)]
     assert actual == expected, actual
-
-
-def expect_following_plans_2(plans, plan_id, expected) -> None:
-    actual = plans.following(plan_id)
-    assert actual is expected, actual
 
 
 def expect_id_next_delegated(next_task, worker, expected) -> None:

@@ -14,6 +14,8 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_next_task import WorkerNextTask
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
+from engine.scope.scopes import Scopes
+from suites.coding.modules.workers.commands.start_next_worker_task.start_next_worker_task_handler import StartNextWorkerTaskHandler
 from suites.coding.modules.workers.commands.support.worker_step_check import DELIVERY_EVENTS, WorkerStepCheck
 
 
@@ -26,7 +28,8 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
     name = "next"
     outward = True
 
-    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, next_task: WorkerNextTask, guidance: WorkerGuidance, run_answer: WorkerRunAnswer) -> None:
+    def __init__(self, worktrees: WorktreeQuery, step_check: WorkerStepCheck, phases: WorkerPhases, requests: WorkerCommandRequest, next_task: WorkerNextTask, guidance: WorkerGuidance, run_answer: WorkerRunAnswer, scopes: Scopes) -> None:
+        self.scopes = scopes
         self.run_answer = run_answer
         self.guidance = guidance
         self.requests, self.next_task = requests, next_task
@@ -38,9 +41,10 @@ class StartNextWorkerTaskSubcommand(Subcommand[Command[object], Task]):
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         differences = required_differences(arguments)
-        worktree = self.worktrees.worker_worktree(caller.actor.id)
-        if worktree is not None and not self.phases.continues_with(worktree, self.next_task.following(caller.actor.id)):
-            self.step_check.check(worktree, DELIVERY_EVENTS, "fix each of these in your worktree, then run journal worker next again")
+        with self.scopes.opened(caller.read_actor_id, caller.environment_id, StartNextWorkerTaskHandler.disabled_scopes):
+            worktree = self.worktrees.worker_worktree(caller.actor.id)
+            if worktree is not None and not self.phases.continues_with(worktree, self.next_task.following(caller.actor.id)):
+                self.step_check.check(worktree, DELIVERY_EVENTS, "fix each of these in your worktree, then run journal worker next again")
         return self.requests.command(StartNextWorkerTask(differences), caller.actor.id,
                                      ["worker", "next", "--differences", differences], arguments, caller)
 
