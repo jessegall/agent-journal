@@ -18,6 +18,8 @@ WAIT_ENDED_SOURCE = "tasks.wait-ended"
 
 TASK_TARGET_PREFIX = "tasks:"
 
+KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a listener that ends waits for many targets reads no row per target."
+
 
 class TaskWaits:
     """Ends a blocked task's waits, and opens the task when the last of them has ended."""
@@ -55,7 +57,7 @@ class TaskWaits:
         return tuple(wait for wait in self.pending_rows() if wait.target == target)
 
     def pending_rows(self) -> tuple[TaskWait, ...]:
-        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().all_rows()),
+        return self.kept.read("task_waits", lambda: tuple(self.queries.query(TaskWait).matching(IsNull("ended_at")).oldest().full_table(KEPT_WAITS_REASON).all_rows()),
                               "ended_at IS NULL", name="tasks.pending_waits")
 
     def remember(self, wait: TaskWait) -> None:

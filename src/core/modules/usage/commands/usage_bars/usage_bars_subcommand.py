@@ -1,8 +1,6 @@
 from argparse import Namespace
-
 from engine.enums.agent_role import AgentRole
 from core.base.caller.caller import Caller
-from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -15,17 +13,15 @@ from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
 from core.modules.schedules.models.scheduled_job import ScheduledJob
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.usage.support.bar_facts import BarFacts
 from core.modules.agents.queries.agent_query import AgentQuery
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from core.modules.usage.conditions.agent_activity_condition import AgentActivityCondition
 from core.modules.usage.conditions.available_agents import AvailableAgents
+from core.modules.tasks.conditions.unfinished_task_holder import UnfinishedTaskHolder
 
 PAGE_ROWS = 1
-UNFINISHED_WORK_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.TESTING)
-
 
 class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
     """`journal usage bars [--environment <name>]`: the counts and the current task the viewer's
@@ -54,8 +50,7 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
                         plans[0].plan_id if plans else None)
 
     def ended_delegates(self, activity: AgentActivityCondition) -> int:
-        holders = {task.delegated_to for task in self.tasks.unclosed().all_rows() if task.state in UNFINISHED_WORK_STATES and task.delegated_to is not None}
-        return self.queries.query(Agent).matching(Among("id", sorted(holders))).matching(AvailableAgents(activity)).count()
+        return self.queries.query(Agent).matching(UnfinishedTaskHolder()).matching(AvailableAgents(activity)).count()
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, BarFacts):

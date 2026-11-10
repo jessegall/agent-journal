@@ -7,6 +7,9 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
+from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.excluding import Excluding
+from core.modules.agents.conditions.active_agent_rows import ActiveAgentRows
 from core.modules.agents.models.agent import Agent
 from core.modules.messages.queries.message_query import MessageQuery
 from core.base.driver.interval import Interval
@@ -17,13 +20,16 @@ from core.modules.messages.support.message_replies import MessageReplies
 from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL, UNANSWERED_TOOL_USES
 from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 
+NEWEST_AGENT_MESSAGES = 50
+
 
 class UnansweredMessageRule(DriverRule):
     """A message an agent has read and not answered, whoever sent it but the journal, is named before each tool call,
     and after ten calls tool calls wait for the answer; a journal message line and the task a message asks for always go through,
     since they are the answer; a prompt typed in the terminal is answered in the terminal. Only messages read since
     the agent's session began or since its last message wait on it: earlier agents handled the older ones. A
-    message from an agent that has ended waits on no reply."""
+    message from an agent that has ended waits on no reply, and of the messages from running agents only the newest
+    50 are checked: an unanswered one holds the agent after ten tool calls, so older ones were answered."""
 
     name = "messages.unanswered"
     hook = HookEventName.PRE_TOOL_USE
@@ -46,17 +52,12 @@ class UnansweredMessageRule(DriverRule):
     def unanswered(self, agent_id: int) -> tuple[Message, ...]:
         newest_agent_message = self.messages.addressed(agent_id).filter(type=MessageType.AGENT, creator_id=agent_id).newest().first()
         session_start = self.queries.query(Agent).find(agent_id).creation_timestamp().text
-        waiting_since = max(session_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else session_start
-        read_people = self.read_since(agent_id, PERSON_MESSAGE_TYPES, waiting_since)
-        read_agents = self.from_running_agents(tuple(message for message in self.read_since(agent_id, (MessageType.AGENT,), session_start) if message.creator_id != agent_id))
+        wait_start = max(session_start, newest_agent_message.creation_timestamp().text) if newest_agent_message is not None else session_start
+        read_people = self.read_after(agent_id, PERSON_MESSAGE_TYPES, wait_start).all_rows()
+        read_agents = self.read_after(agent_id, tuple([MessageType.AGENT]), session_start).matching(ActiveAgentRows("creator_id")).matching(Excluding(Equal("creator_id", agent_id))).newest().limited(NEWEST_AGENT_MESSAGES)
         candidates = tuple(sorted((*read_people, *read_agents), key=lambda message: message.id))
         answered = self.replies.answered_ids(agent_id, candidates)
         return tuple(message for message in candidates if message.id not in answered)
 
-    def from_running_agents(self, messages: tuple[Message, ...]) -> tuple[Message, ...]:
-        writers = self.queries.query(Agent).matching(Among("id", tuple(dict.fromkeys(message.creator_id for message in messages)))).all_rows()
-        running_ids = {writer.id for writer in writers if writer.ended_at is None and writer.retired_at is None}
-        return tuple(message for message in messages if message.creator_id in running_ids)
-
-    def read_since(self, agent_id: int, types: tuple[MessageType, ...], since: str) -> tuple[Message, ...]:
-        return tuple(self.messages.addressed(agent_id).filter(peer_key="").matching(Among("type", types)).matching(Greater("read_at", since)).all_rows())
+    def read_after(self, agent_id: int, types: tuple[MessageType, ...], timestamp: str) -> MessageQuery:
+        return self.messages.addressed(agent_id).filter(peer_key="").matching(Among("type", types)).matching(Greater("read_at", timestamp))
