@@ -1,6 +1,6 @@
 from collections.abc import Mapping
 
-from engine.driver.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_error import HookEventError
 from engine.types.type_guards import is_list, is_mapping, is_text_list
 
 Fields = Mapping[str, object] | Mapping[object, object]

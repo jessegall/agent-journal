@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.driver.classification import Classification
-from engine.driver.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_error import HookEventError
 from engine.driver.hook_fields import mapping, nested_texts, text, texts
 
 

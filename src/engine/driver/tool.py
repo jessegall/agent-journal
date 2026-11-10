@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 from engine.driver.command_category import CommandCategory
 from engine.driver.diff_count import DiffCount
-from engine.driver.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_error import HookEventError
 from engine.driver.hook_fields import mapping, mappings, text, texts
 from engine.driver.shell_line import ShellLine
 from engine.driver.tool_type import ToolType

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from engine.driver.hook_event import HOOK_EVENT_VERSION, HookEvent
-from engine.driver.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_error import HookEventError
 from engine.driver.hook_event_name import HookEventName
 
 SCHEMA = Path(__file__).parents[4] / "tools" / "journal-hook" / "event" / "hook_event.schema.json"

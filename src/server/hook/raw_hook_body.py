@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from engine.types.type_guards import is_mapping
 from engine.driver.hook_event import HookEvent
-from engine.driver.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_error import HookEventError
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.hook_fields import mapping, text
 from engine.driver.tool import Tool

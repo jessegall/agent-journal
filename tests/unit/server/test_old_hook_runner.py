@@ -4,7 +4,7 @@ from unittest.mock import ANY, Mock
 
 import pytest
 
-from engine.driver.old_hook_runner_error import OldHookRunnerError
+from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
 from server.endpoints.hook_endpoint import HookEndpoint
 from server.hook.queue_priority import QueuePriority
 

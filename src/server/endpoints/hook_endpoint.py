@@ -9,7 +9,7 @@ from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
 from engine.container.container import Container
 from engine.driver.hook_event import HookEvent
-from engine.driver.old_hook_runner_error import OldHookRunnerError
+from engine.driver.errors.old_hook_runner_error import OldHookRunnerError
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.provider.providers import Providers

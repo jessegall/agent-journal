@@ -19,15 +19,6 @@
                 "testCode": true
             },
             {
-                "file": "src/engine/driver/hook_event_error.py"
-            },
-            {
-                "file": "src/engine/driver/hook_event_version_error.py"
-            },
-            {
-                "file": "src/engine/driver/old_hook_runner_error.py"
-            },
-            {
                 "file": "src/engine/guard/guard_refusal.py"
             },
             {

@@ -1,4 +1,4 @@
-from engine.driver.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_error import HookEventError
 
 
 class HookEventVersionError(HookEventError):

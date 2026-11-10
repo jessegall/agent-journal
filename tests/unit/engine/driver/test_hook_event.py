@@ -4,8 +4,8 @@ from pathlib import Path
 import pytest
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.hook_event_error import HookEventError
-from engine.driver.hook_event_version_error import HookEventVersionError
+from engine.driver.errors.hook_event_error import HookEventError
+from engine.driver.errors.hook_event_version_error import HookEventVersionError
 
 HOOK_FOLDER = Path(__file__).resolve().parents[4] / "tools" / "journal-hook"
 SCHEMA_EXAMPLES = sorted((HOOK_FOLDER / "event" / "testdata" / "schema").glob("*.json"))
