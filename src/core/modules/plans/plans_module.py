@@ -87,6 +87,7 @@ from core.modules.plans.support.block_conditions.plan_finished import PlanFinish
 from core.modules.plans.support.skeletons import PLANS_PLANS_SKELETON
 from engine.plan.plan_authors import PlanAuthors
 from core.modules.plans.bindings.plan_row_authors import PlanRowAuthors
+from core.modules.plans.commands.focus_plan.focus_plan_subcommand import FocusPlanSubcommand
 
 PLAN_COMMANDS = (ApprovePlan, BlockPlan, CancelPlan, ClosePlan, ReturnPlan, StartPlan)
 
@@ -111,7 +112,7 @@ class PlansModule(Module):
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration, PlanDocumentMigration, AllEnvironmentsPlanStateIndexMigration, PhaseTestCommandMigration, PlanContextReadsMigration, PlanWaitsMigration]
     handlers = [WaitPlanHandler, AssignPlanHandler, MakePhaseHandler, MakePlannedTaskHandler, MovePhaseHandler, PlacePhaseHandler]
     moves = [PlansMove]
-    subcommands = [WaitPlanSubcommand, AssignPlanSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = [WaitPlanSubcommand, AssignPlanSubcommand, FocusPlanSubcommand, PlanTimelineSubcommand, PlanBoardSubcommand, PlanPlacesSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand, MakeTaskSubcommand]
     views = [PlanTask, PlanProgress, PlanCard, PlanOutlineTask, PlanEventRow]
     guards = [PhasePositionGuard, PlanCloseGuard, OneTaskPhaseGuard, UnorderedTasksGuard]
