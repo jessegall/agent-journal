@@ -27,17 +27,11 @@ def two_started_plans_and_a_worker(new_story) -> tuple[Story, Actor, int]:
     return story, worker, agent_numbers(story)[worker.id]
 
 
-def test_w1_the_default_focus_of_a_worker_is_the_oldest_started_plan_with_a_task_assigned_to_it(new_story):
-    story, worker, number = two_started_plans_and_a_worker(new_story)
-    story.expect_success(f"plan assign 2 --to {number}", actor=story.agent)
-    story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", "plan 1: has no task you can take", actor=worker)
-    story.expect_success(PLAN_FOCUS, f"plan 1 is your focus: {DEFAULT_FOCUS}", "plan 2: has no task you can take", actor=story.agent)
-
-
-def test_w14_a_phase_a_person_assigns_to_a_worker_becomes_its_default_focus_and_is_not_handed_to_the_main_agent(new_story):
+def test_w1_w14_a_phase_assigned_to_a_worker_is_its_default_focus_and_the_main_agent_keeps_its_own(new_story):
     story, worker, number = two_started_plans_and_a_worker(new_story)
     story.expect_success(f"plan assign 2 --phase {DEPOT_PHASES['Build']} --to {number} --environment main", actor=story.user)
-    story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", actor=worker)
+    story.expect_success(PLAN_FOCUS, f"plan 2 is your focus: {DEFAULT_FOCUS}", "plan 1: has no task you can take", actor=worker)
+    story.expect_success(PLAN_FOCUS, f"plan 1 is your focus: {DEFAULT_FOCUS}", actor=story.agent)
     for task_id in (1, 2, 3, 4):
         story.run(f"task start {task_id}", actor=story.agent)
         story.run(f'task close {task_id} --outcome "done"', actor=story.agent)
