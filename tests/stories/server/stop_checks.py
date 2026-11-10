@@ -41,9 +41,9 @@ def test_a_refused_stop_keeps_later_checks_without_applying_their_commands(stop_
     checks = {check["rule"]: check for check in record["stop_checks"]}
     story.expect_rows(record["answer"] == "refused", "task:1 is in hand" in checks["tasks.carry-on-at-stop"]["reason"],
                       not checks["coding.main-stop"]["applied"],
-                      checks["coding.main-stop"]["reason"] == "no task can be handed to the main agent or sent to a worker")
+                      "tasks 1 are yours and unfinished" in checks["coding.main-stop"]["reason"])
     lines = [line for line in story.system_log_text().splitlines() if "stop " in line and "refused" in line]
-    story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" not in lines[0], detail=str(lines))
+    story.expect_rows(len(lines) == 1, len(lines[0]) < 300, "tasks.carry-on-at-stop" in lines[0], "coding.main-stop" in lines[0], detail=str(lines))
 
 
 @pytest.mark.parametrize("places,answer", [(0, "allowed"), (1, "refused")])
