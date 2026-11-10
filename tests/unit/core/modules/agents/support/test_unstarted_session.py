@@ -28,3 +28,11 @@ def test_a_launch_changes_no_start_a_session_already_has_and_no_older_row():
 def test_an_agent_with_no_history_is_not_unstarted():
     sessions, store = sessions_with_store()
     assert not sessions.unstarted(SimpleNamespace(id=9))
+
+
+def test_an_unstarted_session_that_is_replaced_ends_as_never_started():
+    sessions, store = sessions_with_store()
+    sessions.started(agent("s-1"), CONTEXT)
+    sessions.replaced(agent("s-2"), CACHE_PASSED, CONTEXT)
+    sessions.replaced(agent("s-3"), CACHE_PASSED, CONTEXT)
+    assert [(row.session, row.end_reason) for row in store.rows] == [("s-1", "cache_passed"), ("s-2", "never_started"), ("s-3", "")]

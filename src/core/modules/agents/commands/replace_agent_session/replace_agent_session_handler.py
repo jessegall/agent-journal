@@ -10,8 +10,8 @@ from core.modules.agents.support.agent_sessions import AgentSessions
 
 
 class ReplaceAgentSessionHandler(Handler[ReplaceAgentSession, Agent]):
-    """Saves a new session id on an agent and writes the change in its session history; its memories, tasks
-    and number stay with the row."""
+    """Saves a new session id on an agent, with the program and model when the command names a program, and
+    writes the change in its session history; its memories, tasks and number stay with the row."""
 
     command = ReplaceAgentSession
 
@@ -19,6 +19,7 @@ class ReplaceAgentSessionHandler(Handler[ReplaceAgentSession, Agent]):
         self.agents, self.repository, self.sessions = agents, repository, sessions
 
     def handle(self, command: ReplaceAgentSession, context: Context) -> Agent:
-        agent = self.repository.update(self.agents.find(command.row_id), context, session=str(uuid4()))
+        program = {"program": command.program, "program_model": command.program_model} if command.program else {}
+        agent = self.repository.update(self.agents.find(command.row_id), context, session=str(uuid4()), **program)
         self.sessions.replaced(agent, command.reason, context)
         return agent
