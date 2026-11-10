@@ -36,10 +36,6 @@ def test_a_worker_judging_the_whole_project_is_refused(judge_story):
     story = judge_story
     story.expect_hook_refusal(story.worker_session, judging(), "plugin:")
     story.expect_text(f"agent-line list --agent {story.worker.id}", f"[plugin judge-scope] {REASON}", actor=story.worker)
-
-
-def test_a_worker_judging_its_changes_is_let_through(judge_story):
-    story = judge_story
     story.expect_hook_allowed(story.worker_session, judging("--changes"))
 
 
