@@ -11,10 +11,10 @@ vi.stubGlobal("ResizeObserver", class {
     unobserve() {}
 });
 
-const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], fallback_programs: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", program_models: {claude: "sonnet", codex: "gpt-6.1-sol"}, body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
-const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", independent: false, mcp_tools: [], fallback_programs: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
+const RESEARCHER = {name: "journal-researcher", description: "Researches a question and reports what it found", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], module: "journal.suites.coding", notes: [], problem: "", module_text_changed: false, model: "sonnet", codex_model: "gpt-6.1-sol", program_models: {claude: "sonnet", codex: "gpt-6.1-sol"}, body: "You research.", shipped: true, uses: 3, last_used: Date.now() / 1000 - 600};
+const BUILDER = {name: "builder", description: "Writes a bounded change", agent_type: "worker", access: "writing", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], module: "", notes: [], problem: "", module_text_changed: false, model: "", codex_model: "gpt-6-luna", program_models: {claude: "", codex: "gpt-6-luna"}, body: "You build.", shipped: false, uses: 0, last_used: 0};
 const ROUTED = {...BUILDER, name: "routed", description: "Reads on one program, then another", program: "claude", preferred_program: true, fallback_programs: ["codex"]};
-const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: ""}, {key: "worker", label: "Worker", access: "writing", extends: "helper"}];
+const TYPES = [{key: "helper", label: "Helper", access: "read-only", extends: "", declares_occupant: true}, {key: "worker", label: "Worker", access: "writing", extends: "helper", declares_occupant: false}];
 const SKILLS = {ok: true, value: {profile: "journal-researcher", rows: [
     {key: "journal", description: "Find your way in the journal", state: "on", own: false, required: false, locked: true},
     {key: "journal-helpers", description: "Start a helper for a bounded read", state: "on", own: true, required: true, locked: false},
@@ -111,8 +111,32 @@ test("Save waits until something changed, and an edit with a new model is saved 
     expect(panel().querySelector("[data-drop-head]").textContent.trim()).toBe("opus");
     save.click();
     await settle();
-    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--fallback-programs", "", "--tier", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--no-independent", "--body", "You research."]);
+    expect(lines).toContainEqual(["profile", "save", "journal-researcher", "--description", "Researches a question in the code", "--type", "helper", "--access", "read-only", "--program", "", "--no-program-if-possible", "--fallback-programs", "", "--tier", "", "--model", "opus", "--codex-model", "gpt-6.1-sol", "--mcp-tools", "", "--occupant", "when-cold", "--body", "You research."]);
     expect(host.querySelector("[data-profile-notice]").textContent).toBe("journal-researcher saved. The agent will use it the next time it starts a helper with this profile.");
+});
+
+test("the panel shows the stored conversation choice of a helper profile, and picking New for each job saves it as each-launch", async () => {
+    const lines = await drawn();
+    await open("journal-researcher");
+    const picked = () => panel().querySelector('[data-profile-occupant] [aria-checked="true"]').textContent.trim();
+    expect(picked()).toBe("Start over after a long pause");
+    [...panel().querySelectorAll("[data-profile-occupant] button")].find((button) => button.textContent.trim() === "New for each job").click();
+    await settle();
+    expect(picked()).toBe("New for each job");
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    const saved = lines.find((line) => line[1] === "save");
+    expect(saved.slice(saved.indexOf("--occupant"), saved.indexOf("--occupant") + 2)).toEqual(["--occupant", "each-launch"]);
+});
+
+test("a worker profile shows no conversation choice and its save names no occupant", async () => {
+    const lines = await drawn();
+    await open("builder");
+    expect(panel().querySelector("[data-profile-occupant]")).toBeNull();
+    await type(panel().querySelector("#profile-description"), "Writes one bounded change");
+    document.querySelector("[data-profile-save]").click();
+    await settle();
+    expect(lines.find((line) => line[1] === "save")).not.toContain("--occupant");
 });
 
 test("a profile names the programs to try instead, in the order typed, and saves them as one list", async () => {

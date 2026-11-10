@@ -13,7 +13,7 @@ const NAME_PATTERN = /^[a-z0-9_-]+$/i;
 const TABS = [{key: "about", label: "About"}, {key: "model", label: "Model"}, {key: "instructions", label: "Instructions"}, {key: "tools", label: "Tools"}, {key: "skills", label: "Skills", count_field: "skills"}];
 const programChoices = computed(() => [{key: "", label: "The parent program"}, ...props.programs.map((program) => ({key: program.name, label: program.title}))]);
 const choices = computed(() => props.types.map((type) => ({key: type.key, label: type.label})));
-const FIELDS = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "independent", "mcp_tools", "program_models", "tier", "body"];
+const FIELDS = ["title", "description", "agent_type", "access", "program", "preferred_program", "fallback_programs", "occupant", "mcp_tools", "program_models", "tier", "body"];
 
 const draft = ref({});
 const tab = ref(TABS[0]);

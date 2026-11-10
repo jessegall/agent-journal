@@ -40,4 +40,4 @@ class ProfileListSubcommand(ReadSubcommand[Sequence[AgentProfile | ProfileProble
         listed = [row for row in value if isinstance(row, (AgentProfile, ProfileProblem))] if is_tuple(value) else []
         lines = [f"{row.name}  {row.agent_type}  {row.model or '-'}  used {row.uses}  {row.occupant.value}" if isinstance(row, AgentProfile) and not row.problem else f"{row.name}  {row.problem}" for row in listed]
         output.write("\n".join(lines), {"rows": [{**output.values(row), "shipped": isinstance(row, AgentProfile) and row.is_builtin} for row in listed],
-                                       "types": [{"key": entry.key, "label": entry.label, "access": entry.access.value, "extends": entry.extends} for entry in self.types.startable()]})
+                                       "types": [{"key": entry.key, "label": entry.label, "access": entry.access.value, "extends": entry.extends, "declares_occupant": not entry.start_line} for entry in self.types.startable()]})

@@ -1,5 +1,7 @@
 <script setup>
-import {FormField, Segmented, Switch, TextArea, TextInput} from "@journal/window-kit";
+import {FormField, Segmented, TextArea, TextInput} from "@journal/window-kit";
+
+const OCCUPANTS = [{key: "continue", label: "Resume it"}, {key: "when-cold", label: "Start over after a long pause"}, {key: "each-launch", label: "New for each job"}];
 
 // the About tab of the profile panel: what the profile is called, when it is used and what kind of agent runs it; the fields are the panel's draft
 const draft = defineModel("draft", {type: Object, required: true});
@@ -36,10 +38,11 @@ defineProps({profile: {type: Object, required: true}, choices: {type: Array, req
         <FormField label="Access" for="profile-access" help="Whether it may change files.">
             <Segmented data-profile-access :options="accesses" :value="draft.access" @pick="draft.access = $event" />
         </FormField>
-        <div class="profile-panel-switch">
-            <Switch :on="draft.independent" title="Must judge fresh" data-profile-independent @change="draft.independent = $event" />
-            <span>Must judge fresh</span>
-        </div>
+        <template v-if="pickedType?.declares_occupant">
+            <FormField label="Conversation" for="profile-occupant" help="What the agent does with its conversation when it gets its next job. The agent itself is kept in each case.">
+                <Segmented data-profile-occupant :options="OCCUPANTS" :value="draft.occupant" @pick="draft.occupant = $event" />
+            </FormField>
+        </template>
     </div>
 </template>
 
@@ -54,12 +57,5 @@ defineProps({profile: {type: Object, required: true}, choices: {type: Array, req
     margin: 0;
     color: var(--text-3);
     font-size: 12px;
-}
-
-.profile-panel-switch {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    font-size: 13px;
 }
 </style>

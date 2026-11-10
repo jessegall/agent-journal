@@ -4,7 +4,7 @@ import {ago, Btn, EmptyState, ListRow, SearchBar, matchesSearch, useWindow} from
 import HelperStartForm from "./HelperStartForm.vue";
 import ProfilePanel from "./ProfilePanel.vue";
 
-const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", independent: false, mcp_tools: [], fallback_programs: [], changed: [], notes: [], problem: "", program_models: {}, tier: null, body: "", shipped: false, uses: 0};
+const NEW_PROFILE = {name: "", title: "", description: "", agent_type: "helper", access: "read-only", program: "", occupant: "when-cold", mcp_tools: [], fallback_programs: [], changed: [], notes: [], problem: "", program_models: {}, tier: null, body: "", shipped: false, uses: 0};
 const ACCESS_WORDS = {"read-only": "Read-only", writing: "Writing"};
 
 const context = useWindow();
@@ -51,7 +51,7 @@ async function reset(profile) {
 async function save(profile, fields) {
     notice.value = "";
     const name = profile.name || fields.name;
-    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", fields.fallback_programs, "--tier", fields.tier || "", ...programs.value.flatMap((program) => [program.model_option, fields.program_models[program.name] || ""]), "--mcp-tools", fields.mcp_tools, fields.independent ? "--independent" : "--no-independent", "--body", fields.body, ...(fields.skills ? ["--skills", fields.skills.join(",")] : []), ...(fields.required_skills ? ["--required-skills", fields.required_skills.join(",")] : [])]);
+    const result = await act(["profile", "save", name, ...(fields.title ? ["--title", fields.title] : []), "--description", fields.description, "--type", fields.agent_type, "--access", fields.access, "--program", fields.program, fields.preferred_program ? "--program-if-possible" : "--no-program-if-possible", "--fallback-programs", fields.fallback_programs, "--tier", fields.tier || "", ...programs.value.flatMap((program) => [program.model_option, fields.program_models[program.name] || ""]), "--mcp-tools", fields.mcp_tools, ...(types.value.find((type) => type.key === fields.agent_type)?.declares_occupant ? ["--occupant", fields.occupant] : []), "--body", fields.body, ...(fields.skills ? ["--skills", fields.skills.join(",")] : []), ...(fields.required_skills ? ["--required-skills", fields.required_skills.join(",")] : [])]);
     if (!result.ok) return;
     making.value = false;
     opened.value = name;
