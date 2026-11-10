@@ -3,7 +3,7 @@ from dataclasses import replace
 
 from core.base.driver.driver_rule import DriverRule
 from core.base.module.module import Module
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.overlay_entry import OverlayEntry

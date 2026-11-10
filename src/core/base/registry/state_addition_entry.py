@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.model.added_state import AddedState, StateValue
 from core.base.model.model import Model
 from core.base.model.model_error import ModelError

@@ -4,7 +4,7 @@ from typing import Any
 
 from engine.enums.access import Access
 from engine.helper_type.helper_type import HelperType
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 
 
 @dataclass(frozen=True)

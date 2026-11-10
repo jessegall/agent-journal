@@ -3,10 +3,10 @@ from engine.file.file_version import FileVersion
 import json
 import sys
 
-from core.base.dotted_path.dotted_path_error import DottedPathError
+from engine.dotted_path.dotted_path_error import DottedPathError
 
 from engine.journal.journal_home import JournalHome
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement

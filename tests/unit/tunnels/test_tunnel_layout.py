@@ -2,7 +2,7 @@ import inspect
 from pathlib import Path
 
 from core.base.module.module_finder import DEFAULT_MODULE_LISTS
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from tunnels import DEFAULT_TUNNELS
 
 TUNNELS_FOLDER = Path(__file__).resolve().parents[3] / "src" / "tunnels"

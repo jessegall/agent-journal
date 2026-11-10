@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.change.event_pattern import EventPattern
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 
 
 @dataclass(frozen=True)

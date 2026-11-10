@@ -5,7 +5,7 @@ from engine.enums.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from engine.errors.refusal import Refusal
 from engine.log.refusal_log import RefusalLog

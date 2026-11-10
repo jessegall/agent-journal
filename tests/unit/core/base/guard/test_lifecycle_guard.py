@@ -20,7 +20,7 @@ from core.base.model.unknown_state_error import UnknownStateError
 from core.base.guard.guard_refusal import GuardRefusal
 from engine.row.metadata import Metadata
 from core.base.model.model import Model
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
 from engine.time.timestamp import Timestamp

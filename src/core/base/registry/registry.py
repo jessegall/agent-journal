@@ -18,7 +18,7 @@ from core.base.database.database import Database
 from engine.container.container import Container
 from core.base.database.registry_table import RegistryTable
 from core.base.database.registry_version import RegistryVersion
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.event_key_entry import EventKeyEntry

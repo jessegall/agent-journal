@@ -11,8 +11,8 @@ from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from engine.journal.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.dotted_path.dotted_path import DottedPath
-from core.base.dotted_path.dotted_path_error import DottedPathError
+from engine.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path_error import DottedPathError
 from core.base.database.registry_table import RegistryTable
 from core.base.model.event_form import EventForm
 from core.base.registry.event_key_entry import EventKeyEntry

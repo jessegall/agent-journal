@@ -6,7 +6,7 @@ from core.base.cli.list_subcommand import ListSubcommand
 from core.base.cli.move_subcommand import MoveSubcommand
 from core.base.cli.subcommand_lookup import SubcommandLookup
 from core.base.cli.usage_error import UsageError
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from tests.unit.core.base.sample_container import sample_container

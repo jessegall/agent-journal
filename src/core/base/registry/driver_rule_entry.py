@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from engine.enums.agent_role import AgentRole
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.driver_patterns import DriverPatterns
 from engine.enums.role_group import RoleGroup
 

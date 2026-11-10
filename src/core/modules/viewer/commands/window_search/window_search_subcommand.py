@@ -5,7 +5,7 @@ from engine.container.container import Container
 from core.base.model.model import Model
 from engine.row.page import Page
 from engine.errors.refusal import Refusal
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.window_searcher import WindowSearcher

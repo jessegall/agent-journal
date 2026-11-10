@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, fields, replace
 from typing import Any
 
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 from core.base.viewer.button_declaration import ButtonDeclaration

@@ -6,7 +6,7 @@ from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.model.state_book import StateBook
 from core.base.model.table import Table
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.model.tables import Tables
 from engine.query.queries import Queries
 from core.base.cli.make_subcommand import MakeSubcommand

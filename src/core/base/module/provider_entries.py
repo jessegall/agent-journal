@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.module.module import Module
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.provider_entry import ProviderEntry
 
 

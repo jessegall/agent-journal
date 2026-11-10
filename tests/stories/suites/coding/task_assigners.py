@@ -1,7 +1,7 @@
 from core.base.scope.scopes import Scopes
 from dataclasses import replace
 
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.tasks.models.task import Task

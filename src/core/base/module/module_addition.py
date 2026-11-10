@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from core.base.database.schema_mismatch_error import SchemaMismatchError
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from engine.journal.journal_home import JournalHome
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError

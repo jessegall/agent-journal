@@ -6,7 +6,7 @@ from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
 from core.base.model.state_book import StateBook
 from core.base.model.tables import Tables
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.module_states import modules_book

@@ -11,7 +11,7 @@ from core.base.database.schema import Schema
 from core.base.database.table_statements import TableStatements
 from engine.journal.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_error import ModuleError

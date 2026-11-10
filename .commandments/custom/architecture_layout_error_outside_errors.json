@@ -67,10 +67,10 @@
                 "file": "src/core/base/database/schema_mismatch_error.py"
             },
             {
-                "file": "src/core/base/dotted_path/dotted_path_error.py"
+                "file": "src/engine/dotted_path/dotted_path_error.py"
             },
             {
-                "file": "src/core/base/dotted_path/wrong_base_error.py"
+                "file": "src/engine/dotted_path/wrong_base_error.py"
             },
             {
                 "file": "src/core/base/driver/hook_event_error.py"

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.dotted_path import DottedPath
 from core.base.viewer.window_search_entry import WindowSearchEntry
 from core.base.viewer.menu_item import MenuItem
 from core.base.viewer.search_button import SearchButton

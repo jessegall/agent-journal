@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.dotted_path.dotted_path import DottedPath
-from core.base.dotted_path.wrong_base_error import WrongBaseError
+from engine.dotted_path.dotted_path import DottedPath
+from engine.dotted_path.wrong_base_error import WrongBaseError
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 
