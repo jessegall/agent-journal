@@ -1935,6 +1935,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
+      "title",
       "tool_key"
     ]
   },
@@ -1965,6 +1966,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
+      "title",
       "tool_key"
     ]
   },
@@ -1995,6 +1997,7 @@
       "source_unavailable",
       "source_version",
       "started_at",
+      "title",
       "tool_key"
     ]
   },
