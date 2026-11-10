@@ -29,7 +29,7 @@ def test_the_registry_names_only_the_events_the_listener_handles(new_story, name
 def test_an_event_no_sequence_names_reads_no_sequence_or_run_rows(open_plan_sequence, listener_type):
     story = open_plan_sequence
     story.expect_success('message send "Unrelated" --environment main', actor=story.user)
-    logged = next(event for event in story.container.get(EventLog).events_after(0) if event.event == "message.create")
+    logged = story.container.get(EventLog).latest_event("message.create")
     listener = story.container.get(listener_type)
     listener.handle(Touched(), logged)
     database = story.container.get(Database)
