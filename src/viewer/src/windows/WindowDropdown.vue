@@ -9,6 +9,8 @@ const SMALLEST_WIDTH_PIXELS = 240;
 const MOST_WIDTH_PIXELS = 480;
 const GROUPED_WIDTH_PIXELS = 360;
 const GAP_PIXELS = 6;
+// the dropdowns whose contents have one width however far they have loaded, so they open at it
+const FIXED_WIDTH_PIXELS = {"usage.usage": 320, "usage.context": 320};
 const EDGE_PIXELS = 8;
 const props = defineProps({
     groups: {type: Array, required: true},
@@ -63,7 +65,8 @@ const grouped = computed(() => props.groups.length > 1);
 const placed = computed(() => {
     const smallest = grouped.value ? GROUPED_WIDTH_PIXELS : SMALLEST_WIDTH_PIXELS;
     const box = props.anchor?.getBoundingClientRect();
-    const size = {minWidth: `${smallest}px`, maxWidth: `min(${MOST_WIDTH_PIXELS}px, calc(100vw - ${2 * EDGE_PIXELS}px))`};
+    const fixed = FIXED_WIDTH_PIXELS[props.groups[0]?.name];
+    const size = {minWidth: `${smallest}px`, maxWidth: `min(${MOST_WIDTH_PIXELS}px, calc(100vw - ${2 * EDGE_PIXELS}px))`, ...(!grouped.value && fixed ? {width: `${fixed}px`} : {})};
     if (!box) return size;
     const left = Math.max(EDGE_PIXELS, Math.min(box.left, window.innerWidth - panelWidth.value - EDGE_PIXELS));
     return {...size, top: `${box.bottom + GAP_PIXELS}px`, left: `${left}px`};
