@@ -41,11 +41,11 @@ def test_a_claude_helper_is_found_by_the_session_it_was_given(started_main_agent
     story.expect_rows(helper.id == helper_id)
 
 
-def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_launch_row(resumed_main):
+def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_on_its_own_row(resumed_main):
     story, old, resumed, launch_row_id = resumed_main
-    story.expect_rows(resumed.id == old.id)
+    story.expect_rows(resumed.id == old.id, launch_row_id == old.id)
     story.expect_text(f"agent show {agent_number(story, old.id)}", "session: s-1")
-    story.expect_text(f"agent show {agent_number(story, launch_row_id)}", "ended_at")
+    story.expect_absent(f"agent show {agent_number(story, old.id)}", "ended_at")
 
 
 def test_a_resumed_main_is_stopped_through_the_launcher_under_the_row_its_launch_started(resumed_main):

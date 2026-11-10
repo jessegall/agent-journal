@@ -36,16 +36,13 @@ def test_the_replaced_sessions_next_tool_is_refused_with_no_record(replaced_stor
     story.expect_rows(story.run(f"hook-call list --agent {old.id}").output_text == recorded_hook_rows)
 
 
-def test_two_launches_at_once_end_with_one_main_and_the_first_is_stopped(new_story):
+def test_two_launches_at_once_are_one_main_agent_on_the_session_of_the_last(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     first_id = story.new_row_id("agent start launch-a claude main --environment main")
-    launcher = FakeLauncher.listening(story.home.socket("launcher"), answer=b"stopped\n")
     second_id = story.new_row_id("agent start launch-b claude main --environment main")
-    story.expect_text(f"agent show {agent_number(story, first_id)}", "ended_at: 20")
+    story.expect_rows(first_id == second_id)
+    story.expect_text(f"agent show {agent_number(story, second_id)}", "session: launch-b")
     story.expect_absent(f"agent show {agent_number(story, second_id)}", "ended_at: 20")
-    story.run_listeners()
-    launcher.drain_requests()
-    story.expect_rows(launcher.requests == [{"agent_id": first_id, "stop": True}])
 
 
 def test_a_worker_that_starts_ends_no_main(replaced_story):

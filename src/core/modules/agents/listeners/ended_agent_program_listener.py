@@ -8,6 +8,7 @@ from core.modules.agents.events.agent_ended import AgentEnded
 from core.modules.agents.models.agent import AGENTS_TABLE, PID_FIELD, Agent
 
 SESSION_FIELD = "session"
+PROGRAM_FIELD = "program"
 from core.modules.agents.support.agent_launch_guard import AgentLaunchGuard
 from core.modules.agents.support.agent_program import AgentProgram
 
@@ -32,17 +33,19 @@ class EndedAgentProgramListener(CommitListener[AgentEnded]):
             return
         with self.sessions.lock(event.row.session) as available:
             if available:
-                self.stop_program(event.row, self.changed_fields(event.row, logged))
+                self.stop_program(event.row, [later for later in self.log.row_events(AGENTS_TABLE, event.row.id) if later.id > logged.id])
 
     @staticmethod
     def needs_stop(agent: Agent, logged: LoggedEvent) -> bool:
-        return logged.actor_id != agent.id and agent.ended_at is not None and logged.command != StopAgent.label()
+        return logged.actor_id != agent.id and logged.command != StopAgent.label()
 
-    def stop_program(self, agent: Agent, changed_fields: set[str]) -> None:
-        if SESSION_FIELD in changed_fields:
-            self.program.stop_process(agent)
-        elif PID_FIELD not in changed_fields:
+    def stop_program(self, agent: Agent, later_events: list[LoggedEvent]) -> None:
+        new_session = next((later for later in later_events if SESSION_FIELD in later.data), None)
+        if new_session is not None:
+            self.program.stop_process(self.earlier_value(new_session, PID_FIELD, agent.pid), self.earlier_value(new_session, PROGRAM_FIELD, agent.program))
+        elif agent.ended_at is not None and not any(PID_FIELD in later.data for later in later_events):
             self.program.stop(agent)
 
-    def changed_fields(self, agent: Agent, logged: LoggedEvent) -> set[str]:
-        return {name for event in self.log.row_events(AGENTS_TABLE, agent.id) if event.id > logged.id for name in event.data}
+    @staticmethod
+    def earlier_value(changed: LoggedEvent, field: str, unchanged_value):
+        return changed.data[field][0] if field in changed.data else unchanged_value

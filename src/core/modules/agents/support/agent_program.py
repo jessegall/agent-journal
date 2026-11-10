@@ -22,8 +22,8 @@ class AgentProgram:
             return False
         return self.stop_tree(agent.pid, self.providers.executable(agent.program))
 
-    def stop_process(self, agent: Agent) -> bool:
-        return agent.pid is None or self.stop_tree(agent.pid, self.providers.executable(agent.program))
+    def stop_process(self, pid: int | None, program: str) -> bool:
+        return pid is None or self.stop_tree(pid, self.providers.executable(program))
 
     def request_stop(self, agent: Agent) -> None:
         self.launcher.request_stop(agent.terminal_id)
