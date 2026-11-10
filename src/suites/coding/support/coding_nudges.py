@@ -1,6 +1,6 @@
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 
 WORKER_TASK_STARTED = NudgeDeclaration("coding.worker_task_started", NudgeType.REFUSAL, 'Not finished: {line}', path_fields=["line"])
 WORKER_TASK_UNSTARTED = NudgeDeclaration("coding.worker_task_not_started", NudgeType.REFUSAL, 'your task has not started yet: only reading and journal commands run until it does')

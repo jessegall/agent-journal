@@ -3,7 +3,7 @@ import pytest
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DELIVERY, FIRST_PROOF, dispatched_worker, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with

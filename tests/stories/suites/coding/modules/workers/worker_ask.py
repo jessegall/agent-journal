@@ -12,7 +12,7 @@ from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.testing.hook_samples import HookSamples
 from core.testing.line_outcome import LineOutcome
 from core.testing.story import Story
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.support.coding_helper_role import CodingHelperRole
 from tests.stories.core.modules.processes.support.process_samples import start_process

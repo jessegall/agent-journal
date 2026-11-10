@@ -12,7 +12,7 @@ from core.base.query.queries import Queries
 from core.modules.messages.models.message import Message
 from core.testing.story import Story
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal import RecordWorkerRefusal
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator

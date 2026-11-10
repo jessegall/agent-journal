@@ -1,7 +1,7 @@
 import pytest
 
 from core.testing.hook_samples import HookSamples
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from tests.stories.core.modules.processes.support.process_samples import start_process
 from core.base.driver.command_category import CommandCategory
 from tests.stories.suites.coding.modules.workers.report import MergerOffOrchestrator

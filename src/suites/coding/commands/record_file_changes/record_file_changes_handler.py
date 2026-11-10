@@ -14,7 +14,7 @@ from core.modules.processes.models.process import Process
 from suites.coding.commands.record_file_changes.record_file_changes import RecordFileChanges
 from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
 from suites.coding.support.file_change_report import FileChangeReport
-from suites.coding.modules.workers.support.journal_managed_files import JournalManagedFiles
+from suites.coding.support.managed_files import ManagedFiles
 
 
 class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
@@ -23,7 +23,7 @@ class RecordFileChangesHandler(Handler[RecordFileChanges, None]):
 
     command = RecordFileChanges
 
-    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes, agents: AgentRows, managed_files: JournalManagedFiles) -> None:
+    def __init__(self, queries: Queries, bus: Bus, files: FileAccess, scopes: Scopes, agents: AgentRows, managed_files: ManagedFiles) -> None:
         self.queries, self.bus, self.files, self.scopes, self.agents, self.managed_files = queries, bus, files, scopes, agents, managed_files
 
     def handle(self, command: RecordFileChanges, context: Context) -> None:

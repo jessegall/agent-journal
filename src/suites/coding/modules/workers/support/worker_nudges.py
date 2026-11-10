@@ -1,6 +1,6 @@
 from suites.coding.modules.workers.models.enums.worker_operation_name import (WORKER_OPERATION_NEXT, WORKER_OPERATION_TESTS, WORKER_OPERATION_CONFLICT, WORKER_OPERATION_MERGED, WORKER_OPERATION_JOB, WORKER_OPERATION_PAUSED, WORKER_OPERATION_DELIVERED)
 from dataclasses import replace
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.commands.send_unfinished_tasks_line.send_unfinished_tasks_line import WORKER_UNFINISHED_TASKS
 from suites.coding.modules.workers.commands.report_worker_program_recovery.report_worker_program_recovery import WORKER_PROGRAM_UNAVAILABLE, WORKER_PROGRAM_RESUMED
 from core.base.driver.interval import Interval

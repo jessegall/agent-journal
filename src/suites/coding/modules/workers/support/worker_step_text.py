@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from suites.coding.modules.workers.support.worker_step_facts import WorkerStepFacts
 

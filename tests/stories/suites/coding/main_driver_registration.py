@@ -1,4 +1,4 @@
-from suites.coding.drivers.main.rules.main_file_write_rule import MainFileWriteRule
+from suites.coding.modules.workers.rules.main_file_write_rule import MainFileWriteRule
 from suites.coding.modules.workers.rules.approved_plan_stop_rule import ApprovedPlanStopRule
 from suites.coding.modules.workers.rules.delivered_work_stop_rule import DeliveredWorkStopRule
 from suites.coding.modules.workers.rules.dispatch_allowance_rule import DispatchAllowanceRule

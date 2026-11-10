@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from core.base.subcommand.subcommand import Subcommand
-from suites.coding.commands.apply_work_settings.apply_work_settings import ApplyWorkSettings
+from suites.coding.modules.workers.commands.apply_work_settings.apply_work_settings import ApplyWorkSettings
 from suites.coding.support.work_settings import WorkSettings
 
 

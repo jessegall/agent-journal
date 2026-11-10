@@ -30,7 +30,7 @@ class TunlerModule(Module):
 
     name = "journal.tunnels.tunler"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.tunnel"]
+    dependencies = ["journal.core.tunnel", "journal.core.settings", "journal.core.agents"]
     settings = [SettingValue("subdomain", "Subdomain", "The name in front of the tunler server's address that reaches this journal.",
                              SettingType.TEXT, default="", scope=SettingScope.PROJECT)]
     tunnels = [TunlerTunnel]

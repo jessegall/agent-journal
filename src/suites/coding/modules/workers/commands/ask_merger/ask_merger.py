@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 
 
 @dataclass(frozen=True)

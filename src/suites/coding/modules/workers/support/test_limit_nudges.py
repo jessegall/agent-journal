@@ -1,6 +1,6 @@
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 
 WORKER_TEST_LIMIT_SOURCE = "processes.worker-test-limit"
 TEST_LIMIT_STOP = NudgeDeclaration("processes.run_over_test_limit", NudgeType.STEERING, "output {output} stopped: {count} tests, limit {limit}. Run only what proves your change; proofs run at hand-in", wakes_agent=True)

@@ -5,6 +5,7 @@ from core.base.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
 from core.base.setting.list_rule import ListRule
 from core.base.setting.number_rule import NumberRule
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 
 MODULE_KEY = "journal.suites.coding.workers"
 DISPATCHES_WORKERS_SETTING = f"{MODULE_KEY}.main-dispatches-workers"
@@ -28,7 +29,6 @@ WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
 PHASE_TESTS_ENABLED = f"{MODULE_KEY}.test-at-phase-end"
 TEST_BATCH_SIZE = f"{MODULE_KEY}.test-batch-size"
 WORKER_PHASE_TEST_RUNS = f"{MODULE_KEY}.worker-phase-test-runs"
-WORKER_TEST_LIMIT = f"{MODULE_KEY}.worker-run-most-tests"
 WORKER_RUN_WAIT = f"{MODULE_KEY}.worker-run-wait-seconds"
 MOST_RUN_WAIT_SECONDS = 100
 MERGER_ENABLED = f"{MODULE_KEY}.merger-on"

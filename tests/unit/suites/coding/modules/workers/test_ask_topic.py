@@ -1,6 +1,6 @@
 import pytest
 
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 
 
 def test_the_topics_are_the_six_a_worker_can_name():

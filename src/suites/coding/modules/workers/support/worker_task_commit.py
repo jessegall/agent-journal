@@ -6,7 +6,7 @@ from engine.errors.refusal import Refusal
 from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.record_worktree_base.record_worktree_base import RecordWorktreeBase
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.proof_query import ProofQuery

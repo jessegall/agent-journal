@@ -8,7 +8,7 @@ from core.base.command.bus import Bus
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from engine.errors.refusal import Refusal
 from core.modules.plugins.support.plugin_step_check import PluginStepCheck
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_refusal import RecordWorkerRefusal
 from suites.coding.modules.workers.commands.clear_worker_refusals.clear_worker_refusals import ClearWorkerRefusals

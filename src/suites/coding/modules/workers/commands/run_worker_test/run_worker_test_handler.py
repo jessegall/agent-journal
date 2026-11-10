@@ -9,7 +9,7 @@ from core.base.scope.actor_scope import ActorScope
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.run_worker_test.run_worker_test import RunWorkerTest
 from suites.coding.modules.workers.support.worker_test_run import WorkerTestRun
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_test_arguments import WorkerTestArguments
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames

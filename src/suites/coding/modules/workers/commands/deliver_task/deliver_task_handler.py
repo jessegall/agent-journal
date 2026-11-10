@@ -19,7 +19,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_phases import WorkerPhases
 from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
 from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.worker_step import WorkerStep
 from suites.coding.modules.workers.support.worker_free_task import WorkerFreeTask
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance

@@ -46,20 +46,12 @@ from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand imp
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
 from suites.coding.commands.file_edit_file.file_edit_file_subcommand import FileEditFileSubcommand
-from suites.coding.commands.show_work_settings.show_work_settings_subcommand import ShowWorkSettingsSubcommand
-from suites.coding.commands.apply_work_settings.apply_work_settings_handler import ApplyWorkSettingsHandler
-from suites.coding.commands.apply_work_settings.apply_work_settings_subcommand import ApplyWorkSettingsSubcommand
-from suites.coding.commands.apply_work_preset.apply_work_preset_handler import ApplyWorkPresetHandler
-from suites.coding.commands.apply_work_preset.apply_work_preset_subcommand import ApplyWorkPresetSubcommand
 from suites.coding.rules.introduction_rule import IntroductionRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.helper.helper_driver import HelperDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.drivers.main.main_driver import MainDriver
 from suites.coding.support.coding_settings import CODING_SETTINGS
-from suites.coding.drivers.main.guards.main_reservation_guard import MainReservationGuard
-from suites.coding.drivers.main.guards.main_task_start_guard import MainTaskStartGuard
-from suites.coding.drivers.main.rules.main_file_write_rule import MainFileWriteRule
 from suites.coding.listeners.full_test_run_listener import FullTestRunListener
 from suites.coding.support.test_run_nudges import TESTING_TASKS_FULL_RUN, TESTING_TASKS_FAILED_RUN
 from suites.coding.support.skeletons import CODING_GIT_SKELETON, CODING_FILES_SKELETON, CODING_WORK_MODE_SKELETON, CODING_AGENT_SETTINGS_SKELETON, CODING_FILE_FEED_SKELETON, CODING_FILE_EDITS_SKELETON, CODING_TERMINAL_SKELETON
@@ -89,8 +81,7 @@ class CodingModule(Module):
     requires_core = ">=5,<6"
     settings = CODING_SETTINGS
     moves = [FileEditsMove, ViewerLayoutsMove, CodingSettingsMove]
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins"]
-    guards = [MainTaskStartGuard, MainReservationGuard]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings", "journal.core.setting-requests", "journal.core.viewer", "journal.core.plugins", "journal.core.processes", "journal.core.messages", "journal.core.questions", "journal.core.helpers"]
     suites = [CodingSuite]
     drivers = [MainDriver, HelperDriver, WorkerDriver]
     skills = [SkillDeclaration("journal-plan-dispatch", "Send a functional designer and then a planner to make the plan; read it when the user asks for a plan", keywords=("plan", "roadmap"), types=["main"]),
@@ -99,10 +90,10 @@ class CodingModule(Module):
               SkillDeclaration("journal-work-modes", "Work as the main agent of the coding suite from its work controls; read it when auto mode, the presets, read-only helpers or the worker limit come up", keywords=("builder", "orchestrator", "auto mode", "work mode"), types=["main"])]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [HelperRequestKeysMigration, HelpersKeyMigration, MainStartsHelpersKeyMigration, FileEditSessionMigration, FileEditsTableMigration, FileEditRowsMigration, MainAgentSettingsMigration, MainDriverMigration, PruneFileEditsMigration]
-    handlers = [RecordFileEditHandler, RecordFileChangesHandler, ApplyWorkSettingsHandler, ApplyWorkPresetHandler]
-    driver_rules = [WaitingItemsRule, IntroductionRule, MainFileWriteRule]
+    handlers = [RecordFileEditHandler, RecordFileChangesHandler]
+    driver_rules = [WaitingItemsRule, IntroductionRule]
     listeners = [FullTestRunListener]
-    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand, ShowWorkSettingsSubcommand, ApplyWorkSettingsSubcommand, ApplyWorkPresetSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand, FileEditFileSubcommand, RecordFileChangesSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, skeleton=CODING_GIT_SKELETON, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"],
                                  keys=[WindowKey("branches", "git-overview branches", arguments=["skip", "limit"]),
                                        WindowKey("commits", "git-overview commits", arguments=["skip", "limit"]),

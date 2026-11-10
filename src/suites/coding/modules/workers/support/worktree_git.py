@@ -13,7 +13,7 @@ from pathlib import Path, PurePosixPath
 from core.base.conflict_files import ConflictFiles
 from core.base.instruction_imports import INSTRUCTION_FILES
 from engine.errors.refusal import Refusal
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.worktree import Worktree
 from core.base.file_status import FileStatus
 from suites.coding.modules.workers.support.task_branch_commit import TaskBranchCommit

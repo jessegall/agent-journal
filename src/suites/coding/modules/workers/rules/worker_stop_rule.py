@@ -9,7 +9,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.enums.task_state import TaskState
-from suites.coding.modules.workers.models.enums.ask_topic import AskTopic
+from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK_BLOCKED
 from core.modules.agents.support.agent_rows import AgentRows
@@ -24,6 +24,8 @@ class WorkerStopRule(DriverRule):
 
     name = "workers.stop-once-delivered"
     hook = HookEventName.STOP
+    drivers = ["coding.worker"]
+    roles = [CodingHelperRole.WORKER]
     refuses_one_action = "A worker may stop with no task, at a point of its round that waits, while a run or a helper of its own"
 
     def __init__(self, tasks: TaskQuery, processes: ProcessQuery, requests: ReaderRequestQuery, clock: Clock, agents: AgentRows, compaction: WorkerCompaction, guidance: WorkerGuidance) -> None:

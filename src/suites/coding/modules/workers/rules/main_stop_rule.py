@@ -1,3 +1,4 @@
+from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -19,6 +20,8 @@ class MainStopRule(DriverRule):
 
     name = "coding.main-stop"
     hook = HookEventName.STOP
+    drivers = ["coding.main"]
+    roles = [AgentRole.MAIN]
     refuses_one_action = "A main agent that stops is handed the next task when it may work on it, and is held back while a task can"
 
     def __init__(self, work: AvailableWork, options: CodingMainOptions, notices: StopNotices, unfinished_work: MainAgentWork) -> None:

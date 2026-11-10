@@ -3,7 +3,7 @@ from core.base.agent_role import AgentRole
 from core.base.driver.suite import Suite
 from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import split, tabs
-from suites.coding.modules.workers.support.worker_settings import WORKER_TEST_LIMIT
+from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from suites.coding.support.next_task import NextTask
 from core.base.agent_policy import AgentPolicy
 
