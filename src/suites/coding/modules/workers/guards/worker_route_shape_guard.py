@@ -3,7 +3,7 @@ from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
 from core.base.profile.model_tier import ModelTier
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.tasks.models.task_tag import TAG_WORD
 from suites.coding.modules.workers.models.worker_route import WorkerRoute

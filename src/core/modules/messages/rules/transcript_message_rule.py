@@ -7,10 +7,10 @@ from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from core.base.provider.provider import Provider
-from core.base.provider.providers import Providers
-from core.base.provider.transcript_entry import TranscriptEntry
-from core.base.provider.transcript_entries import TranscriptEntries
+from engine.provider.provider import Provider
+from engine.provider.providers import Providers
+from engine.provider.transcript_entry import TranscriptEntry
+from engine.provider.transcript_entries import TranscriptEntries
 from engine.query.queries import Queries
 from engine.time.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent

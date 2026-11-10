@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hook_history import ManagedHookHistory
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hook_history import ManagedHookHistory
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 from typing import Protocol, runtime_checkable
 
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hook_history import ManagedHookHistory
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hook_history import ManagedHookHistory
 
 
 @runtime_checkable

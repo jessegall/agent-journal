@@ -1,5 +1,5 @@
 from engine.caller.caller import Caller
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_programs import HelperPrograms

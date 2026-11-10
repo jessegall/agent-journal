@@ -4,12 +4,12 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from core.base.git.hook_files_git import HookFilesGit
-from core.base.provider.hook_tool_rule import HookToolRule
-from core.base.provider.hook_effect import HookEffect
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.provider import Provider
+from engine.provider.hook_tool_rule import HookToolRule
+from engine.provider.hook_effect import HookEffect
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.provider import Provider
 from engine.types.type_guards import is_list, is_mapping
 
 

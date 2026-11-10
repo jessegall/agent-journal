@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.base.provider.control_group import ControlGroup
+from engine.provider.control_group import ControlGroup
 
 
 @dataclass(frozen=True)

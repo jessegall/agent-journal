@@ -4,7 +4,7 @@ import tempfile
 import threading
 from pathlib import Path
 
-from core.base.provider.session_line import SessionLine
+from engine.provider.session_line import SessionLine
 from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
 
 

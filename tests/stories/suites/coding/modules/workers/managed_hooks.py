@@ -1,7 +1,7 @@
 import json
 
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH

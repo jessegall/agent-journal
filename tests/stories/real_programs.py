@@ -6,9 +6,9 @@ from uuid import uuid4
 
 import pytest
 
-from core.base.provider.helper_launch import HelperLaunch
-from core.base.provider.providers import Providers
-from core.base.provider.session_start import SessionStart
+from engine.provider.helper_launch import HelperLaunch
+from engine.provider.providers import Providers
+from engine.provider.session_start import SessionStart
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.support.story_checks import expect_value_4
 

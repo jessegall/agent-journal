@@ -2,8 +2,8 @@ from collections.abc import Sequence
 from dataclasses import replace
 
 from engine.enums.agent_role import AgentRole
-from core.base.provider.transcript_author import JOURNAL_AUTHOR, MONITOR_AUTHOR, USER_AUTHOR
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.transcript_author import JOURNAL_AUTHOR, MONITOR_AUTHOR, USER_AUTHOR
+from engine.provider.transcript_row import TranscriptRow
 from core.modules.agents.models.agent import Agent
 
 ASSISTANT_TYPE = "assistant"

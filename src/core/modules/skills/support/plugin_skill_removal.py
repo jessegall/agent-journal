@@ -1,4 +1,4 @@
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.skill.skill_contents import SkillContents
 from engine.skill.skill_declaration import SKILL_FILE
 from core.modules.skills.support.skill_catalogue import PLUGIN_KEY, SkillCatalogue

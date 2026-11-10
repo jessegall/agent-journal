@@ -2,10 +2,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from core.base.provider.session_start import SessionStart
+from engine.provider.session_start import SessionStart
 
 if TYPE_CHECKING:
-    from core.base.provider.provider import Provider
+    from engine.provider.provider import Provider
 
 
 @dataclass(frozen=True)

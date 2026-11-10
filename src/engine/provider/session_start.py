@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from core.base.provider.provider import Provider
+    from engine.provider.provider import Provider
 
 
 @dataclass(frozen=True)

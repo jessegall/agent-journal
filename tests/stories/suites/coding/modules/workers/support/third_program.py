@@ -4,9 +4,9 @@ from collections.abc import Sequence
 from engine.file.file_access import FileAccess
 from engine.module.module import Module
 from core.base.profile.model_tier import ModelTier
-from core.base.provider.program_model import ProgramModel
-from core.base.provider.program_server_file import ProgramServerFile
-from core.base.provider.tool_server import ToolServer
+from engine.provider.program_model import ProgramModel
+from engine.provider.program_server_file import ProgramServerFile
+from engine.provider.tool_server import ToolServer
 from tests.unit.core.base.samples.program_sample import SampleProgram
 
 

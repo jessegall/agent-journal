@@ -3,8 +3,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.providers import Providers
+from engine.provider.hook_trust import HookTrust
+from engine.provider.providers import Providers
 from core.modules.helpers.support.program_states import ProgramStates
 from tests.stories.core.support.coding_fixtures import UserBuilder
 

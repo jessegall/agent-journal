@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import pytest
 
-from core.base.provider.context_window import ContextWindow
+from engine.provider.context_window import ContextWindow
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION
 from core.testing.hook_samples import HookSamples

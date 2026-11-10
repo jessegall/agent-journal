@@ -9,7 +9,7 @@ from engine.driver.rule_answer import RuleAnswer
 from engine.driver.shell_line import ShellLine
 from engine.driver.tool import Tool
 from engine.driver.tool_type import ToolType
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.driver.run_owners import RunOwners
 from engine.registry.registry import Registry

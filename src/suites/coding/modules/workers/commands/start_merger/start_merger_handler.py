@@ -4,7 +4,7 @@ from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.nudge import Nudge
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.errors.refusal import Refusal

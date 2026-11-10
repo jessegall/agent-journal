@@ -1,7 +1,7 @@
 from engine.container.container import Container
 from engine.journal.journal_home import JournalHome
-from core.base.provider.provider import Provider
-from core.base.provider.unknown_program_error import UnknownProgramError
+from engine.provider.provider import Provider
+from engine.provider.unknown_program_error import UnknownProgramError
 from engine.registry.registry import Registry
 from engine.errors.refusal import Refusal
 

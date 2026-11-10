@@ -2,9 +2,9 @@ import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 
-from core.base.provider.managed_state import ManagedState
-from core.base.provider.hook_effect import HookEffect
-from core.base.provider.hook_source import HookSource
+from engine.provider.managed_state import ManagedState
+from engine.provider.hook_effect import HookEffect
+from engine.provider.hook_source import HookSource
 
 DEFAULT_TIMEOUT_SECONDS = 30
 

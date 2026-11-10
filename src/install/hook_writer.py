@@ -3,10 +3,10 @@ import shlex
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.hook_manager import HookManager
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.hook_manager import HookManager
+from engine.provider.program_hooks import ProgramHooks
 from core.modules import DEFAULT_MODULES
 
 

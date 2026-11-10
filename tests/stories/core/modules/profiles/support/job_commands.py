@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.driver.command_category import CommandCategory
 from engine.journal.journal_home import JournalHome
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.text.text_digest import TextDigest
 from engine.registry.registry import Registry
 from core.modules.profiles.support.profile_files import ProfileFiles

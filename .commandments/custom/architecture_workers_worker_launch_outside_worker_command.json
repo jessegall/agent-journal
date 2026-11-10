@@ -11,11 +11,11 @@
                 "any": [
                     {
                         "of": "child:func",
-                        "resolves": "core.base.provider.helper_launch.HelperLaunch"
+                        "resolves": "engine.provider.helper_launch.HelperLaunch"
                     },
                     {
                         "of": "child:func",
-                        "resolves": "core.base.provider.launch_command.LaunchCommand"
+                        "resolves": "engine.provider.launch_command.LaunchCommand"
                     }
                 ]
             }

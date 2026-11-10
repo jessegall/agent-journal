@@ -11,7 +11,7 @@ from engine.enums.agent_role import AgentRole
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport

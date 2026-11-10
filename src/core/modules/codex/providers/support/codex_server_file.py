@@ -5,8 +5,8 @@ import tomllib
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.provider.tool_server import ToolServer
-from core.base.provider.program_server_file import ProgramServerFile
+from engine.provider.tool_server import ToolServer
+from engine.provider.program_server_file import ProgramServerFile
 
 FILE = Path(".codex") / "config.toml"
 BEGIN = "# agent-journal mcp servers: written by the journal, changed with journal mcp"

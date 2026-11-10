@@ -3,7 +3,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders

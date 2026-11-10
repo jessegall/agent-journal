@@ -83,16 +83,16 @@
                 "file": "src/core/base/profile/model_tier.py"
             },
             {
-                "file": "src/core/base/provider/hook_decoder.py"
+                "file": "src/engine/provider/hook_decoder.py"
             },
             {
-                "file": "src/core/base/provider/hook_effect.py"
+                "file": "src/engine/provider/hook_effect.py"
             },
             {
-                "file": "src/core/base/provider/hook_trust.py"
+                "file": "src/engine/provider/hook_trust.py"
             },
             {
-                "file": "src/core/base/provider/managed_state.py"
+                "file": "src/engine/provider/managed_state.py"
             },
             {
                 "file": "src/engine/registry/button_window.py"

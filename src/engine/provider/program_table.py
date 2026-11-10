@@ -3,8 +3,8 @@ from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 
 from engine.driver.hook_event_name import HookEventName
-from core.base.provider.program_row import ProgramRow
-from core.base.provider.provider import Provider
+from engine.provider.program_row import ProgramRow
+from engine.provider.provider import Provider
 
 
 @dataclass(frozen=True)

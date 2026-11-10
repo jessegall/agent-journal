@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 
-from core.base.provider.managed_hook import ManagedHook
+from engine.provider.managed_hook import ManagedHook
 from core.modules.settings.support.journal_hook import JournalHook
 from core.modules.settings.support.managed_hook_item import ManagedHookItem
 from core.modules.settings.support.unmanaged_hook import UnmanagedHook

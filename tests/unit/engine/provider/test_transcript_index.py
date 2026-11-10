@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from core.base.provider.program_folders import ProgramFolders
-from core.base.provider.transcript_index import TranscriptIndex
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.program_folders import ProgramFolders
+from engine.provider.transcript_index import TranscriptIndex
+from engine.provider.transcript_row import TranscriptRow
 from tests.unit.core.base.samples.program_sample import SampleProgram
 
 

@@ -8,7 +8,7 @@ from engine.command.bus import Bus
 from engine.file.file_access import FileAccess
 from engine.journal.journal_home import JournalHome
 from engine.process.leftover_process import LeftoverProcess
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.listener.event_rows import EventRows
 from core.modules.agents.models.agent import Agent

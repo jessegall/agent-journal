@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.provider.peer_note import PeerNote
-from core.base.provider.provider import Provider
-from core.base.provider.transcript_growth import TranscriptGrowth
-from core.base.provider.transcript_entry import TranscriptEntry
+from engine.provider.peer_note import PeerNote
+from engine.provider.provider import Provider
+from engine.provider.transcript_growth import TranscriptGrowth
+from engine.provider.transcript_entry import TranscriptEntry
 from engine.time.timestamp import Timestamp
 
 

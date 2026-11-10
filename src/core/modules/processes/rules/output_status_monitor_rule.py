@@ -7,7 +7,7 @@ from engine.driver.hook_event_name import HookEventName
 from engine.driver.part import Part
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool_type import ToolType
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.processes.support.background_commands import JOURNAL
 
 OUTPUT_STATUS_COMMAND = ["output", "status"]

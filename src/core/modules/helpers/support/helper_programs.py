@@ -2,10 +2,10 @@ import shutil
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.providers import Providers
+from engine.provider.hook_trust import HookTrust
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 
 HOOK_RUNNER = "bin/journal-hook"

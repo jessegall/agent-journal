@@ -3,7 +3,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool_type import ToolType
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.processes.support.process_nudges import HAND_MADE_MONITOR, MONITOR_TOOL_REQUIRED
 
 OUTPUT_LINE = "journal output "

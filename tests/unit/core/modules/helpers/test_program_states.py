@@ -6,8 +6,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.unknown_program_error import UnknownProgramError
+from engine.provider.hook_trust import HookTrust
+from engine.provider.unknown_program_error import UnknownProgramError
 from engine.errors.refusal import Refusal
 from engine.time.timestamp import Timestamp
 from core.modules.helpers.support.program_states import ProgramStates

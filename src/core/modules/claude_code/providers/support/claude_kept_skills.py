@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 from pathlib import Path
 
-from core.base.provider.transcript_tail import TranscriptTail
+from engine.provider.transcript_tail import TranscriptTail
 from engine.skill.skill_digest import SkillDigest
 from engine.types.type_guards import is_list, is_mapping, is_text_mapping
 

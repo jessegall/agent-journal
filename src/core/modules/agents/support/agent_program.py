@@ -2,7 +2,7 @@ import time
 
 from engine.caller.process_table import ProcessTable
 from engine.process.leftover_process import POLL_SECONDS, LeftoverProcess
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import LauncherLink
 

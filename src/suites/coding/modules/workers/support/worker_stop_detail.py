@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment

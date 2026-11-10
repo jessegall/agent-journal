@@ -1,7 +1,7 @@
 import json
 
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
 from core.testing.hook_samples import HookSamples
 from tests.stories.engine.driver.support.fixtures import LeadStarted
 from tests.stories.engine.driver.support.samples import SAMPLES

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.provider.program_model import ProgramModel
+from engine.provider.program_model import ProgramModel
 
 
 @dataclass(frozen=True)

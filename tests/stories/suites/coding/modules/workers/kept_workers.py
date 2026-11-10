@@ -1,5 +1,5 @@
 import pytest
-from core.base.provider.context_window import ContextWindow
+from engine.provider.context_window import ContextWindow
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 from core.modules.drivers.support.nudger import Nudger
 from engine.command.context import Context

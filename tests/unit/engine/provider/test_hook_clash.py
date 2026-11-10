@@ -6,8 +6,8 @@ from engine.driver.hook_event_name import HookEventName
 from engine.driver.refusal_style import RefusalStyle
 from engine.driver.driver_rule import DriverRule
 from engine.driver.tool_type import ToolType
-from core.base.provider.hook_effect import HookEffect
-from core.base.provider.managed_hook import ManagedHook
+from engine.provider.hook_effect import HookEffect
+from engine.provider.managed_hook import ManagedHook
 
 
 @pytest.mark.parametrize("event,matcher,expected", [

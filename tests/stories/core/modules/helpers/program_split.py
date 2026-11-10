@@ -9,7 +9,7 @@ from core.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.start_helper import START, started
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, START as FILE_START, helper_agent
 from core.modules.helpers.support.helper_programs import HelperPrograms
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.program_hooks import ProgramHooks
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.claude_code.providers.claude_code_provider import ClaudeCodeProvider
 from tests.stories.core.support.coding_fixtures import UserBuilder

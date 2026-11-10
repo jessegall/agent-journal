@@ -5,7 +5,7 @@ from engine.driver.driver_rule import DriverRule
 from engine.driver.foreign_answer import ForeignAnswer
 from engine.driver.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall

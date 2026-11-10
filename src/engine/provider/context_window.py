@@ -1,5 +1,5 @@
 from engine.file.file_access import FileAccess
-from core.base.provider.status_file_fields import StatusFileFields
+from engine.provider.status_file_fields import StatusFileFields
 from engine.time.timestamp import Timestamp
 from engine.types.type_guards import is_mapping
 from dataclasses import dataclass

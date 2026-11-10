@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src")]
 
-from core.base.provider.program_table import ProgramTable  # noqa: E402
+from engine.provider.program_table import ProgramTable  # noqa: E402
 from core.modules import DEFAULT_MODULES  # noqa: E402
 
 SHIPPED_TABLE = ROOT / "tools" / "journal-hook" / "programs" / "programs.json"

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.provider.launch import Launch
+from engine.provider.launch import Launch
 
 
 @dataclass(frozen=True)

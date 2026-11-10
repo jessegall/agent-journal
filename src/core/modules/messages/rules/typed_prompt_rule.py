@@ -3,7 +3,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.rule_answer import RuleAnswer
-from core.base.provider.transcript_author import USER_AUTHOR, TranscriptAuthor
+from engine.provider.transcript_author import USER_AUTHOR, TranscriptAuthor
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from core.modules.messages.commands.record_typed_prompt.record_typed_prompt import RecordTypedPrompt

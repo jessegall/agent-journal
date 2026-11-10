@@ -1,4 +1,4 @@
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_folders import AgentFolders
 

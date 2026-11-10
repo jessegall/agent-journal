@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.provider.launch_command import LaunchCommand
+from engine.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.worktree import Worktree
 

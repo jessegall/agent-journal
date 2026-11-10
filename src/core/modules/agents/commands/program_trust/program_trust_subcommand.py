@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from engine.caller.caller import Caller
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.providers import Providers
+from engine.provider.hook_trust import HookTrust
+from engine.provider.providers import Providers
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 

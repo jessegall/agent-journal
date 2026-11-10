@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from core.base.profile.agent_profile import AgentProfile
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.support.environment_rows import EnvironmentRows

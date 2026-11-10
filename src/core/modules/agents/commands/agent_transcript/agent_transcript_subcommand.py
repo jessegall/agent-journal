@@ -4,9 +4,9 @@ from pathlib import Path
 
 from engine.caller.caller import Caller
 from engine.row.page import Page
-from core.base.provider.providers import Providers
-from core.base.provider.transcript_index import TranscriptIndex
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.providers import Providers
+from engine.provider.transcript_index import TranscriptIndex
+from engine.provider.transcript_row import TranscriptRow
 from engine.query.queries import Queries
 from engine.subcommand.page_arguments import page_arguments
 from engine.subcommand.read_subcommand import ReadSubcommand

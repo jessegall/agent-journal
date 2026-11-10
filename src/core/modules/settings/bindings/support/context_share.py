@@ -1,6 +1,6 @@
 from engine.journal.journal_home import JournalHome
-from core.base.provider.context_window import ContextWindow
-from core.base.provider.providers import Providers
+from engine.provider.context_window import ContextWindow
+from engine.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.settings.support.context_reading import ContextReading
 

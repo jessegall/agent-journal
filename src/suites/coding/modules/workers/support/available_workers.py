@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from core.modules.settings.bindings.support.context_share import ContextShare
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.helpers.support.kept_helpers import FULL_SESSION_PERCENT
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

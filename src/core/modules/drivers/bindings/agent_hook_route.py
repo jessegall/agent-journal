@@ -15,7 +15,7 @@ from engine.driver.lockdown import Lockdown
 from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.commands.halt_agent.halt_agent import HaltAgent
 from core.modules.drivers.rules.panic_file_rule import PanicFileRule
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from engine.enums.agent_role import AgentRole

@@ -1,7 +1,7 @@
 import subprocess
 
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_program_hooks, expect_startswith_listed, expect_value_3
 

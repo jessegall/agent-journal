@@ -3,7 +3,7 @@ import re
 from engine.driver.block_check import BlockCheck
 from engine.driver.block_condition import BlockCondition
 from engine.driver.tool_type import ToolType
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries

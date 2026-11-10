@@ -2,7 +2,7 @@ from engine.change.event_log import EventLog
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_hooks import ManagedHooks
 from core.modules.settings.commands.scan_managed_hooks.scan_managed_hooks import ScanManagedHooks
 from core.modules.tools.commands.install_tool.install_tool import InstallTool
 from core.modules.tools.support.tool_card import ToolCard

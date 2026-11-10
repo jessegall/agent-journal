@@ -1,7 +1,7 @@
 from os import SEEK_END
 from pathlib import Path
 
-from core.base.provider.transcript_tail import TAIL_BYTES
+from engine.provider.transcript_tail import TAIL_BYTES
 from core.modules.codex.providers.support.codex_turn_effort import CodexTurnEffort
 
 

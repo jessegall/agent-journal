@@ -7,7 +7,7 @@ from pathlib import Path
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from engine.driver.agent_hook import AgentHook
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.registry.skill_entry import SkillEntry
 from engine.skill.skill_declaration import SKILL_FILE
 from engine.skill.skill_digest import SkillDigest

@@ -4,10 +4,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from engine.json.json_settings import JsonSettings
-from core.base.provider.hook_partition import HookPartition
-from core.base.provider.hook_block_partition import HookBlockPartition
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.provider import Provider
+from engine.provider.hook_partition import HookPartition
+from engine.provider.hook_block_partition import HookBlockPartition
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.provider import Provider
 from engine.types.type_guards import is_list, is_mapping
 
 JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")

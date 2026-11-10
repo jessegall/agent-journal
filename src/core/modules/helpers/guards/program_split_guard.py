@@ -4,7 +4,7 @@ from engine.change.created import Created
 from engine.change.updated import Updated
 from engine.command.context import Context
 from engine.guard.guard import Guard
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_settings import PROGRAM_SPLIT
 from core.modules.helpers.support.program_share import ProgramShare

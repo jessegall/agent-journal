@@ -3,8 +3,8 @@ from pathlib import Path
 
 from core.modules.messages.support.recent_conversation import SHOWN_CHARACTERS
 from engine.caller.caller import Caller
-from core.base.provider.providers import Providers
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.providers import Providers
+from engine.provider.transcript_row import TranscriptRow
 from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand

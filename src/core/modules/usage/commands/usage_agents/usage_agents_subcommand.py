@@ -14,8 +14,8 @@ from engine.time.clock import Clock
 from engine.query.conditions.excluding import Excluding
 from core.modules.usage.conditions.agent_activity import AgentActivity
 from engine.journal.journal_home import JournalHome
-from core.base.provider.context_window import ContextWindow
-from core.base.provider.providers import Providers
+from engine.provider.context_window import ContextWindow
+from engine.provider.providers import Providers
 from engine.query.conditions.greater import Greater
 from engine.query.queries import Queries
 from engine.subcommand.output import Output

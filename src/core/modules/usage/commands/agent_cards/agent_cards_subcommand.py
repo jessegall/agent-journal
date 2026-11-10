@@ -8,7 +8,7 @@ from core.modules.profiles.support.profile_files import ProfileFiles
 from engine.enums.agent_role import AgentRole
 from engine.enums.helper_role import HelperRole
 from engine.caller.caller import Caller
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.registry.registry import Registry
 from core.modules.agents.models.agent import Agent, UPGRADE_RETIREMENT_REASON
 from core.modules.agents.support.agent_folders import AgentFolders

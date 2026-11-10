@@ -5,7 +5,7 @@ from tests.stories.core.support.coding_fixtures import UserBuilder
 import shlex
 import subprocess
 from engine.journal.journal_home import LAUNCHER_SOCKET
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.program_hooks import ProgramHooks
 from engine.query.queries import Queries
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.codex.providers.support.codex_trust import CodexTrust
@@ -25,8 +25,8 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.driver.command_category import CommandCategory
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.providers import Providers
+from engine.provider.hook_trust import HookTrust
+from engine.provider.providers import Providers
 from core.testing.fake_launcher import FakeLauncher
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart

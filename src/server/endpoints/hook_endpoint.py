@@ -12,8 +12,8 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.old_hook_runner_error import OldHookRunnerError
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
-from core.base.provider.providers import Providers
-from core.base.provider.transcript_entries import TranscriptEntries
+from engine.provider.providers import Providers
+from engine.provider.transcript_entries import TranscriptEntries
 from engine.container.journal_container import synced_database_container
 from engine.module.code_fingerprint import CodeFingerprint
 from engine.module.module_finder import ModuleFinder

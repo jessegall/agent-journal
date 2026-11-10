@@ -1,6 +1,6 @@
 from core.base.profile.agent_profile import AgentProfile
-from core.base.provider.provider import Provider
-from core.base.provider.providers import Providers
+from engine.provider.provider import Provider
+from engine.provider.providers import Providers
 
 PROFILE = AgentProfile("sample", "A sample", "Do the work.", model="sonnet", codex_model="gpt-6.1-terra")
 

@@ -4,8 +4,8 @@ from pathlib import Path
 from engine.query.queries import Queries
 from engine.database.kept_rows import KeptRows
 from engine.journal.journal_home import JournalHome
-from core.base.provider.providers import Providers
-from core.base.provider.program_server_file import ProgramServerFile
+from engine.provider.providers import Providers
+from engine.provider.program_server_file import ProgramServerFile
 from core.modules.mcp.models.mcp_server import McpServer
 
 

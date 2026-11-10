@@ -1,4 +1,4 @@
-from core.base.provider.context_window import ContextWindow
+from engine.provider.context_window import ContextWindow
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS, ContextShare
 
 USED_TOKENS = 126000

@@ -1,8 +1,8 @@
 from engine.change.event_log import EventLog
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
 from core.modules.settings.commands.set_managed_hook.set_managed_hook import SetManagedHook
 
 

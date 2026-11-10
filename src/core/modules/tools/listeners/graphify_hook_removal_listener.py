@@ -1,6 +1,6 @@
 from engine.change.logged_event import LoggedEvent
 from engine.listener.commit_listener import CommitListener
-from core.base.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_hooks import ManagedHooks
 from core.modules.drivers.events.session_started import SessionStarted
 
 GRAPHIFY_SEARCH_HOOKS = ("graphify hook-guard", "graphify hook-check")

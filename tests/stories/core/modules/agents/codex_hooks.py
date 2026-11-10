@@ -3,8 +3,8 @@ from typing import NamedTuple
 
 import pytest
 
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.providers import Providers
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.providers import Providers
 from core.testing.story import Story
 from core.testing.fake_launcher import FakeLauncher
 from core.modules.codex.providers.codex_provider import CodexProvider

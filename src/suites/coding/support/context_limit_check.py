@@ -1,6 +1,6 @@
 from engine.journal.journal_home import JournalHome
 from engine.time.timestamp import Timestamp
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.helpers.support.helper_settings import CONTEXT_LIMIT_ACTION, CONTEXT_LIMIT_FINISH_TASK, CONTEXT_LIMIT_HARD_TOKENS, CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_TOKENS
 from core.modules.settings.bindings.support.setting_values import SettingValues

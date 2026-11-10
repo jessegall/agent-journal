@@ -7,7 +7,7 @@ from engine.command.bus import Bus
 from engine.driver.block_until import BlockUntil
 from engine.driver.tool_type import ToolType
 from engine.listener.save_listener import SaveListener
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent

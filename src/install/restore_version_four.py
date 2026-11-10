@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.hook_manager import HookManager
-from core.base.provider.managed_hooks import ManagedHooks
+from engine.provider.hook_manager import HookManager
+from engine.provider.managed_hooks import ManagedHooks
 from install.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
 from install.upgrade_outcome import UpgradeOutcome

@@ -2,7 +2,7 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.driver.program_lockdown import ProgramLockdown
 from engine.errors.refusal import Refusal
-from core.base.provider.launch_command import LaunchCommand
+from engine.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_link import ANSWER_BYTES, LauncherLink
 from core.modules.environments.models.environment import Environment

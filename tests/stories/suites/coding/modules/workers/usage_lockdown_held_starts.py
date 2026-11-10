@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from engine.actor.actor import Actor
-from core.base.provider.launch_command import LaunchCommand
+from engine.provider.launch_command import LaunchCommand
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_launcher import AgentLauncher

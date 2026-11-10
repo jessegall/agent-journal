@@ -67,7 +67,7 @@ from engine.module.module_order import ModuleOrder
 from engine.module.sync_notes import SyncNotes
 from engine.module.sync_report import SyncReport
 from engine.journal.journal_home import JournalHome
-from core.base.provider.program_table import ProgramTable
+from engine.provider.program_table import ProgramTable
 from engine.registry.setting_tree import SettingTree
 from engine.registry.tunnel_entry import TunnelEntry
 

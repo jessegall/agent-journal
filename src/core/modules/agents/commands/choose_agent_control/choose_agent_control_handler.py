@@ -1,6 +1,6 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from core.modules.agents.commands.choose_agent_control.choose_agent_control import ChooseAgentControl

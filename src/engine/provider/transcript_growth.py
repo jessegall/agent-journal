@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from core.base.provider.transcript_tail import TAIL_BYTES, TranscriptTail
+from engine.provider.transcript_tail import TAIL_BYTES, TranscriptTail
 
 
 class TranscriptGrowth:

@@ -1,6 +1,6 @@
 import json
 
-from core.base.provider.program_table import ProgramTable
+from engine.provider.program_table import ProgramTable
 from tests.unit.core.base.samples.program_sample import SampleProgram
 
 

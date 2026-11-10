@@ -6,9 +6,9 @@ from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.hook_wildcard import HookWildcard
 from engine.driver.rule_answer import RuleAnswer
-from core.base.provider.peer_note import PeerNote
-from core.base.provider.providers import Providers
-from core.base.provider.transcript_entries import TranscriptEntries
+from engine.provider.peer_note import PeerNote
+from engine.provider.providers import Providers
+from engine.provider.transcript_entries import TranscriptEntries
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from core.modules.messages.commands.record_peer_message.record_peer_message import RecordPeerMessage

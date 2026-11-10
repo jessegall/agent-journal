@@ -18,7 +18,7 @@ from pathlib import Path
 
 from engine.caller.caller import Caller
 from engine.journal.journal_home import JournalHome
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.row_list import RowList
 from core.modules.environments.support.environment_rows import EnvironmentRows

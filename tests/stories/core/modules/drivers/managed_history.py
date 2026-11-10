@@ -1,6 +1,6 @@
 from engine.database.database import Database
 from engine.database.statement import Statement
-from core.base.provider.managed_hook import ManagedHook
+from engine.provider.managed_hook import ManagedHook
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
 from engine.driver.foreign_outcome import ForeignOutcome
 from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery

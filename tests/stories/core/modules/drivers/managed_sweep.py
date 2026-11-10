@@ -1,8 +1,8 @@
 import pytest
 
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.hook_effect import HookEffect
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.hook_effect import HookEffect
+from engine.provider.program_hooks import ProgramHooks
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_absent_exists_managed_hooks, expect_answers, expect_command_hooks, expect_program_hooks, expect_program_hooks_2, expect_value_3

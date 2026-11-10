@@ -7,11 +7,11 @@ import pytest
 from engine.journal.journal_home import JournalHome
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.refusal_style import RefusalStyle
-from core.base.provider.hook_effect import HookEffect
-from core.base.provider.hook_manager import HookManager
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.managed_state import ManagedState
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.hook_effect import HookEffect
+from engine.provider.hook_manager import HookManager
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_state import ManagedState
+from engine.provider.program_hooks import ProgramHooks
 from tests.unit.core.base.samples.program_sample import HOOK_FILE, SampleProgram
 
 JOURNAL_ENTRY = {"type": "command", "command": "/p/.journal/bin/journal-hook sample /p"}

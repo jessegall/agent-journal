@@ -5,7 +5,7 @@ from engine.caller.caller import Caller
 from engine.time.clock import Clock
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.project_paths import ProjectPaths
-from core.base.provider.transcript_author import MONITOR_OPENINGS
+from engine.provider.transcript_author import MONITOR_OPENINGS
 from engine.query.conditions.among import Among
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.conditions.minimum import Minimum

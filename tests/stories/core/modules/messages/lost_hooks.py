@@ -6,7 +6,7 @@ from threading import Event
 
 import pytest
 
-from core.base.provider.transcript_entries import TranscriptEntries
+from engine.provider.transcript_entries import TranscriptEntries
 from engine.database.database import BUSY_TIMEOUT_SECONDS, Database
 from core.modules.messages.support.message_nudges import CLOSING_LINE_HIDDEN
 from core.testing.hook_samples import HookSamples

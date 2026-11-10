@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.provider.transcript_entries import TranscriptEntries
+from engine.provider.transcript_entries import TranscriptEntries
 from engine.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.testing.hook_samples import HookSamples

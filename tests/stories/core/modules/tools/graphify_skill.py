@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
 from core.testing.hook_samples import HookSamples
 from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.tools.graphify_searches import graphify_enabled

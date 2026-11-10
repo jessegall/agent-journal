@@ -3,7 +3,7 @@ from dataclasses import replace
 
 from engine.database.kept_rows import KeptRows
 from core.base.profile.model_tier import ModelTier
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.conditions.among import Among
 from engine.query.conditions.minimum import Minimum
 from engine.query.queries import Queries

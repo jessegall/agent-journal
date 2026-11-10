@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.managed_hook import ManagedHook
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hook import ManagedHook
 from tests.unit.core.base.samples.program_sample import HOOK_FILE, SampleProgram
 
 

@@ -5,9 +5,9 @@ from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.driver.driver_rule import DriverRule
 from engine.journal.journal_home import JournalHome
-from core.base.provider.hook_manager import HookManager
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.providers import Providers
+from engine.provider.hook_manager import HookManager
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.providers import Providers
 from core.modules.agents.commands.manage_program.manage_program import ManageProgram
 
 

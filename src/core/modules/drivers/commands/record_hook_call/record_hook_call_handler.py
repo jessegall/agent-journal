@@ -19,7 +19,7 @@ from engine.driver.refusal_line import RefusalLine
 from engine.driver.rule_answers import RuleAnswers
 from engine.errors.refusal import Refusal
 from engine.row.metadata import Metadata
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from engine.time.timing import Timing

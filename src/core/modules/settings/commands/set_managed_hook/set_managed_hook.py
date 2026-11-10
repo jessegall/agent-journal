@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
 from engine.command.command import Command
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_state import ManagedState
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_state import ManagedState
 
 
 @dataclass(frozen=True)

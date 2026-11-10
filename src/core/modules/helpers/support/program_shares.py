@@ -1,6 +1,6 @@
 from collections.abc import Mapping, Sequence
 
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.scope.scopes import Scopes
 from engine.time.timestamp import Timestamp
 from core.modules.helpers.support.helper_settings import PROGRAM_SPLIT

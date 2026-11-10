@@ -2,7 +2,7 @@ from engine.driver.agent_hook import AgentHook
 from engine.driver.rule_answer import RuleAnswer
 from engine.driver.tool import Tool
 from engine.driver.tool_type import ToolType
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.agents.support.launcher_link import LauncherLink
 from core.modules.drivers.rules.denied_tools_rule import DeniedToolsRule
 from core.modules.drivers.support.access_nudges import NATIVE_SUBAGENT, NATIVE_SUBAGENT_WITHOUT_LAUNCH

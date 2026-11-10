@@ -3,8 +3,8 @@ import shutil
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.providers import Providers
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.providers import Providers
 from engine.errors.refusal import Refusal
 from core.modules.helpers.support.helper_programs import HelperPrograms
 from tests.stories.core.support.coding_fixtures import BuilderStarted

@@ -24,7 +24,7 @@ from engine.listener.save_listener import SaveListener
 from engine.model.state_addition import StateAddition
 from engine.model.view_model import ViewModel
 from engine.module.model_declaration import ModelDeclaration
-from core.base.provider.provider import Provider
+from engine.provider.provider import Provider
 from engine.skill.skill_declaration import SkillDeclaration
 from engine.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration

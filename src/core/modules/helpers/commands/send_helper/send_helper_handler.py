@@ -1,5 +1,5 @@
 from engine.enums.actor_type import ActorType
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.command.context import Context
 from dataclasses import replace
 from engine.command.handler import Handler

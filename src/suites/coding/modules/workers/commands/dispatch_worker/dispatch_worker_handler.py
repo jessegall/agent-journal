@@ -6,7 +6,7 @@ from engine.enums.actor_type import ActorType
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.queries import Queries
 from engine.listener.event_rows import EventRows
 from engine.helper_type.helper_type_book import HelperTypeBook

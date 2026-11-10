@@ -1,7 +1,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from core.base.provider.provider import Provider
+from engine.provider.provider import Provider
 
 
 @dataclass(frozen=True)

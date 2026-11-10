@@ -82,7 +82,7 @@ from core.modules.drivers.rules.long_output_rule import LongOutputRule
 from core.modules.drivers.rules.repeated_file_read_rule import RepeatedFileReadRule
 from core.modules.drivers.rules.foreign_hooks_rule import ForeignHooksRule
 from core.modules.drivers.listeners.manage_hooks_listener import ManageHooksListener
-from core.base.provider.managed_hook_history_reader import ManagedHookHistoryReader
+from engine.provider.managed_hook_history_reader import ManagedHookHistoryReader
 from core.modules.drivers.queries.managed_hook_history_query import ManagedHookHistoryQuery
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
 from core.modules.drivers.listeners.bypass_log_listener import BypassLogListener

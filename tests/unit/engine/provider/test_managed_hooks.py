@@ -6,9 +6,9 @@ from unittest.mock import patch
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.managed_state import ManagedState
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_state import ManagedState
 
 
 def sample_hook(command: str = "check") -> ManagedHook:
@@ -41,7 +41,7 @@ def test_a_failed_write_leaves_the_old_file_whole(tmp_path: Path):
     store = ManagedHooks(home)
     store.added([sample_hook()])
     previous_bytes = store.path.read_bytes()
-    with patch("core.base.provider.managed_hooks.os.replace", side_effect=OSError("write failed")):
+    with patch("engine.provider.managed_hooks.os.replace", side_effect=OSError("write failed")):
         with pytest.raises(OSError, match="write failed"):
             store.added([sample_hook("additional_hook")])
     assert store.path.read_bytes() == previous_bytes

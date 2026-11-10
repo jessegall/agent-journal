@@ -3,7 +3,7 @@ from collections.abc import Sequence
 
 from engine.driver.hook_event_name import HookEventName
 from engine.module.module import Module
-from core.base.provider.provider import Provider
+from engine.provider.provider import Provider
 
 PROGRAM_NAME = re.compile(r"[a-z][a-z0-9_-]*")
 REQUIRED_EVENTS = (HookEventName.SESSION_START, HookEventName.STOP, HookEventName.PRE_TOOL_USE)

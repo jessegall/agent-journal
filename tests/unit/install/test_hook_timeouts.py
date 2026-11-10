@@ -2,9 +2,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
 from install.hook_switch import HookSwitch
 from install.hook_writer import HookWriter
 

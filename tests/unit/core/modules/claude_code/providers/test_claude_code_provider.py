@@ -3,14 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from core.base.provider.session_line import SessionLine
+from engine.provider.session_line import SessionLine
 from engine.driver.hook_event import HookEvent
-from core.base.provider.helper_launch import HelperLaunch
-from core.base.provider.launch import Launch
+from engine.provider.helper_launch import HelperLaunch
+from engine.provider.launch import Launch
 from engine.journal.journal_home import JournalHome
-from core.base.provider.program_folders import ProgramFolders
-from core.base.provider.resumed_session import ResumedSession
-from core.base.provider.session_start import SessionStart
+from engine.provider.program_folders import ProgramFolders
+from engine.provider.resumed_session import ResumedSession
+from engine.provider.session_start import SessionStart
 from engine.private.private_folder import PrivateFolder
 from engine.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.claude_code_provider import CONFIG_VARIABLE, ClaudeCodeProvider

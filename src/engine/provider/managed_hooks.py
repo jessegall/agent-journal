@@ -10,10 +10,10 @@ from dataclasses import asdict, replace
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.hook_source import HookSource
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_state import ManagedState
-from core.base.provider.hook_effect import HookEffect
+from engine.provider.hook_source import HookSource
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_state import ManagedState
+from engine.provider.hook_effect import HookEffect
 from engine.errors.refusal import Refusal
 
 

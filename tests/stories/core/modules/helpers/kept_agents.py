@@ -20,7 +20,7 @@ from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper as ReportedHelper
 from tests.stories.server.support.server_client import server_story, viewer_answer
 from tests.stories.server.support.browser_story import expect_browser
-from core.base.provider.context_window import ContextWindow
+from engine.provider.context_window import ContextWindow
 from core.modules.helpers.support.profile_model import ProfileModel
 import json
 

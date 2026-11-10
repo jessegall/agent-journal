@@ -1,4 +1,4 @@
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.transcript_row import TranscriptRow
 
 TRANSCRIPT_AUTHORS = ("user", "assistant")
 

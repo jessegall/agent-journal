@@ -15,7 +15,7 @@ from engine.text.text_digest import TextDigest
 from core.modules.profiles.support.profile_format import ProfileFormat
 from core.modules.profiles.support.profile_fields import ProfileFields
 from core.modules.profiles.support.profile_problem import ProfileProblem
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 CLAUDE_FOLDER, CODEX_FOLDER = ".claude/agents", ".codex/agents"

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.base.provider.context_window import ContextWindow
+from engine.provider.context_window import ContextWindow
 from engine.types.type_guards import is_mapping
 from core.modules.usage.support.plan_window import PlanWindow
 

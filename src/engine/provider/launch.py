@@ -2,7 +2,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from core.base.provider.session_start import SessionStart
+from engine.provider.session_start import SessionStart
 
 
 @dataclass(frozen=True)

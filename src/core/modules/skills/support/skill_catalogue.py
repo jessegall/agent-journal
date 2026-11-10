@@ -4,7 +4,7 @@ from engine.file.file_version import FileVersion
 from functools import lru_cache
 from pathlib import Path
 from engine.journal.journal_home import JournalHome
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.registry.registry import Registry
 from engine.registry.skill_entry import SkillEntry
 from engine.request.request_values import RequestValues

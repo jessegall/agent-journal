@@ -3,7 +3,7 @@ import json
 import socket
 from pathlib import Path
 
-from core.base.provider.session_line import SessionLine
+from engine.provider.session_line import SessionLine
 from engine.types.type_guards import is_mapping
 from core.modules.claude_code.providers.support.claude_session_entry import ClaudeSessionEntry
 

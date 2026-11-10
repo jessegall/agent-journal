@@ -1,7 +1,7 @@
 import importlib
 import importlib.util
 from unittest.mock import Mock
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 
 STATES_MODULE = 'core.modules.helpers.support.program_states'
 STATE_MODULE = 'core.modules.helpers.support.program_state'

@@ -2,7 +2,7 @@ from os.path import join, normpath
 from pathlib import Path
 
 from suites.coding.support.coding_helper_role import CodingHelperRole
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.driver.agent_hook import AgentHook
 from engine.driver.driver_rule import DriverRule
 from engine.driver.hook_event_name import HookEventName

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from pathlib import Path
 
-from core.base.provider.tool_server import ToolServer
+from engine.provider.tool_server import ToolServer
 
 
 class ProgramServerFile(ABC):

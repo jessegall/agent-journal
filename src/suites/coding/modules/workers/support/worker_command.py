@@ -2,10 +2,10 @@ from suites.coding.support.worker_test_rule import WORKER_TEST_RULE
 from pathlib import Path
 
 from engine.helper_type.helper_type_book import HelperTypeBook
-from core.base.provider.launch_command import LaunchCommand
-from core.base.provider.providers import Providers
-from core.base.provider.resumed_session import ResumedSession
-from core.base.provider.session_start import SessionStart
+from engine.provider.launch_command import LaunchCommand
+from engine.provider.providers import Providers
+from engine.provider.resumed_session import ResumedSession
+from engine.provider.session_start import SessionStart
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
 from core.modules.helpers.support.helper_command import HelperCommand

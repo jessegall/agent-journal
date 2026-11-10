@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.base.provider.control_choice import ControlChoice
+from engine.provider.control_choice import ControlChoice
 
 
 @dataclass(frozen=True)

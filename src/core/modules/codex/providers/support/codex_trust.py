@@ -7,8 +7,8 @@ import tomllib
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.hook_trust import HookTrust
+from engine.provider.program_hooks import ProgramHooks
 from engine.types.type_guards import is_list, is_mapping, is_text_mapping
 from core.modules.codex.providers.support.codex_hook_definition import CodexHookDefinition
 from core.modules.codex.providers.support.codex_hook_event import CodexHookEvent

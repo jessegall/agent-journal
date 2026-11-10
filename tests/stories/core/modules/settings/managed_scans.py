@@ -1,8 +1,8 @@
 import pytest
 
 from engine.change.event_log import EventLog
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.support.story_checks import expect_answers, expect_program_hooks_3, expect_value_3, expect_version_four_map_limit
 

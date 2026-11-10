@@ -2,9 +2,9 @@ from pathlib import Path
 from typing import BinaryIO
 
 from engine.row.page import Page
-from core.base.provider.indexed_transcript import IndexedTranscript
-from core.base.provider.provider import Provider
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.indexed_transcript import IndexedTranscript
+from engine.provider.provider import Provider
+from engine.provider.transcript_row import TranscriptRow
 
 
 class TranscriptIndex:

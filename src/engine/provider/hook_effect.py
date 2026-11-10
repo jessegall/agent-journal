@@ -4,12 +4,12 @@ from enum import StrEnum
 from typing import TYPE_CHECKING
 
 from engine.driver.hook_event_name import HookEventName
-from core.base.provider.hook_tool_rule import HookToolRule
+from engine.provider.hook_tool_rule import HookToolRule
 from engine.driver.hook_wildcard import HookWildcard
-from core.base.provider.provider import Provider
+from engine.provider.provider import Provider
 
 if TYPE_CHECKING:
-    from core.base.provider.managed_hook import ManagedHook
+    from engine.provider.managed_hook import ManagedHook
 
 
 class HookEffect(StrEnum):

@@ -3,8 +3,8 @@ from pathlib import Path
 
 from engine.json.json_settings import JsonSettings
 from engine.types.type_guards import is_mapping
-from core.base.provider.tool_server import ToolServer
-from core.base.provider.program_server_file import ProgramServerFile
+from engine.provider.tool_server import ToolServer
+from engine.provider.program_server_file import ProgramServerFile
 
 FILE = Path(".mcp.json")
 SERVERS = "mcpServers"

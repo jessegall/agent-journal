@@ -1,8 +1,8 @@
-from core.base.provider.program_server_file import ProgramServerFile
+from engine.provider.program_server_file import ProgramServerFile
 from core.modules.claude_code.providers.support.claude_server_file import ClaudeServerFile
 from dataclasses import replace
 from core.base.profile.agent_profile import AgentProfile
-from core.base.provider.context_window import ContextWindow
+from engine.provider.context_window import ContextWindow
 import json
 import os
 import re
@@ -12,27 +12,27 @@ from pathlib import Path
 from engine.driver.hook_event_name import HookEventName
 from engine.driver.tool_type import ToolType
 from engine.journal.journal_home import JournalHome
-from core.base.provider.helper_launch import HelperLaunch
-from core.base.provider.helper_outcome import HelperOutcome
-from core.base.provider.hook_file import HookFile
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.launch import Launch
-from core.base.provider.launch_command import LaunchCommand
+from engine.provider.helper_launch import HelperLaunch
+from engine.provider.helper_outcome import HelperOutcome
+from engine.provider.hook_file import HookFile
+from engine.provider.hook_trust import HookTrust
+from engine.provider.launch import Launch
+from engine.provider.launch_command import LaunchCommand
 from core.base.profile.model_tier import ModelTier
-from core.base.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.program_folders import ProgramFolders
-from core.base.provider.program_model import ProgramModel
-from core.base.provider.control_choice import ControlChoice
-from core.base.provider.control_group import ControlGroup
-from core.base.provider.provider import Provider
+from engine.provider.transcript_author import AGENT_AUTHOR, TRANSCRIPT_AUTHORS, USER_AUTHOR, TranscriptAuthor
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.program_folders import ProgramFolders
+from engine.provider.program_model import ProgramModel
+from engine.provider.control_choice import ControlChoice
+from engine.provider.control_group import ControlGroup
+from engine.provider.provider import Provider
 from engine.enums.halt_style import HaltStyle
 from engine.driver.refusal_style import RefusalStyle
-from core.base.provider.session_line import SessionLine
-from core.base.provider.peer_note import PeerNote
-from core.base.provider.transcript_row import TranscriptRow
+from engine.provider.session_line import SessionLine
+from engine.provider.peer_note import PeerNote
+from engine.provider.transcript_row import TranscriptRow
 from engine.file.file_access import FileAccess
-from core.base.provider.status_file_fields import StatusFileFields
+from engine.provider.status_file_fields import StatusFileFields
 from engine.types.type_guards import is_list, is_mapping
 from engine.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName

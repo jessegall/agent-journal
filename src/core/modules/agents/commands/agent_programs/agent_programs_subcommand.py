@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
 from engine.subcommand.output import Output
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.support.agent_program_list import AgentProgramList
 from core.modules.agents.support.agent_program_choice import AgentProgramChoice

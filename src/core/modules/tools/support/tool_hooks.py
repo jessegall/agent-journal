@@ -1,8 +1,8 @@
 from engine.driver.hook_event_name import HookEventName
 from engine.journal.journal_home import JournalHome
-from core.base.provider.managed_hook import ManagedHook
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.providers import Providers
+from engine.provider.managed_hook import ManagedHook
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.providers import Providers
 from core.modules.tools.support.tool_definition import ToolDefinition
 
 HOOK_TIMEOUT_SECONDS = 20

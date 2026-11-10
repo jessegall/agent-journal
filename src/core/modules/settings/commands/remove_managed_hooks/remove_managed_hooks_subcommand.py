@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
-from core.base.provider.managed_hook import ManagedHook
+from engine.provider.managed_hook import ManagedHook
 from engine.subcommand.output import Output
 from engine.subcommand.subcommand import Subcommand
 from engine.types.type_guards import is_list

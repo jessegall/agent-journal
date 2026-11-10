@@ -1294,8 +1294,8 @@
         "src/core/modules/processes/support/output_folder.py"
     ],
     "file_reads_transcripts_seek_large_logs": [
-        "src/core/base/provider/transcript_index.py",
-        "src/core/base/provider/transcript_tail.py",
+        "src/engine/provider/transcript_index.py",
+        "src/engine/provider/transcript_tail.py",
         "src/core/modules/codex/providers/support/codex_session_effort.py",
         "src/core/modules/claude_code/providers/support/claude_peer_notes.py"
     ],

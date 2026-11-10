@@ -1,6 +1,6 @@
 import json
 
-from core.base.provider.managed_hooks import ManagedHooks
+from engine.provider.managed_hooks import ManagedHooks
 from core.modules.tools.support.tools import Tools
 from tests.stories.core.modules.tools.support.graphify_repo import COMMAND_SETTING, INSTALL_SETTING, GraphifyRepo
 from tests.stories.core.modules.viewer.support.window_story import WindowStory

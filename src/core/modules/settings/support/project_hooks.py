@@ -2,12 +2,12 @@ from pathlib import Path
 
 from engine.driver.driver_rule import DriverRule
 from engine.journal.journal_home import JournalHome
-from core.base.provider.hook_manager import HookManager
-from core.base.provider.managed_hook_history_reader import ManagedHookHistoryReader
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.provider import Provider
-from core.base.provider.providers import Providers
+from engine.provider.hook_manager import HookManager
+from engine.provider.managed_hook_history_reader import ManagedHookHistoryReader
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.provider import Provider
+from engine.provider.providers import Providers
 from engine.types.type_guards import is_list, is_mapping
 from core.modules.settings.support.journal_hook import JournalHook
 from core.modules.settings.support.managed_hook_item import ManagedHookItem

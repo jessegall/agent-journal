@@ -3,9 +3,9 @@ from engine.driver.foreign_outcome import ForeignOutcome
 from engine.database.database import Database
 from engine.model.tables import Tables
 from engine.query.query import Query
-from core.base.provider.managed_hook import ManagedHook
+from engine.provider.managed_hook import ManagedHook
 from core.modules.drivers.conditions.foreign_hook import ForeignHook
-from core.base.provider.managed_hook_history import ManagedHookHistory
+from engine.provider.managed_hook_history import ManagedHookHistory
 from core.modules.drivers.models.hook_call import HookCall
 
 HISTORY_RUNS = 100

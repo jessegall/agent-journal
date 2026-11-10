@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.managed_state import ManagedState
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_hooks import ProgramHooks
+from engine.provider.managed_state import ManagedState
 from install.hook_switch import HookSwitch
 from install.hook_writer import HookWriter
 from install.restore_version_four import RestoreVersionFour

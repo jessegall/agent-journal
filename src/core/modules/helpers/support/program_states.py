@@ -3,9 +3,9 @@ from pathlib import Path
 
 from engine.time.clock import Clock
 from engine.database.kept_rows import KeptRows
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.providers import Providers
-from core.base.provider.unknown_program_error import UnknownProgramError
+from engine.provider.hook_trust import HookTrust
+from engine.provider.providers import Providers
+from engine.provider.unknown_program_error import UnknownProgramError
 from engine.query.queries import Queries
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes

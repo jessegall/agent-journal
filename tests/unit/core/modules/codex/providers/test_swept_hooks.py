@@ -1,12 +1,12 @@
 from engine.journal.journal_home import JournalHome
 from engine.private.private_folder import PrivateFolder
 from engine.private.server_keys import ServerKeys
-from core.base.provider.hook_manager import HookManager
-from core.base.provider.hook_trust import HookTrust
-from core.base.provider.hook_effect import HookEffect
-from core.base.provider.managed_hooks import ManagedHooks
-from core.base.provider.program_folders import ProgramFolders
-from core.base.provider.program_hooks import ProgramHooks
+from engine.provider.hook_manager import HookManager
+from engine.provider.hook_trust import HookTrust
+from engine.provider.hook_effect import HookEffect
+from engine.provider.managed_hooks import ManagedHooks
+from engine.provider.program_folders import ProgramFolders
+from engine.provider.program_hooks import ProgramHooks
 from core.modules.codex.providers.codex_provider import CodexProvider
 from core.modules.codex.providers.support.codex_trust import CAPITAL, CodexTrust
 

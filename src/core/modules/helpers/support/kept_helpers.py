@@ -2,7 +2,7 @@ from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.settings.bindings.support.context_share import ContextShare
 from engine.enums.helper_role import HelperRole
 from engine.database.kept_rows import KeptRows
-from core.base.provider.providers import Providers
+from engine.provider.providers import Providers
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal

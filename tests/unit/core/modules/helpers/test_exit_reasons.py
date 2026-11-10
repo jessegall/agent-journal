@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from core.base.provider.helper_outcome import HelperOutcome
+from engine.provider.helper_outcome import HelperOutcome
 from core.modules.helpers.support.exit_reasons import ExitReasons
 
 

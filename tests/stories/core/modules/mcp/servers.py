@@ -3,9 +3,9 @@ import stat
 import tomllib
 from pathlib import Path
 
-from core.base.provider.launch import Launch
-from core.base.provider.providers import Providers
-from core.base.provider.session_start import SessionStart
+from engine.provider.launch import Launch
+from engine.provider.providers import Providers
+from engine.provider.session_start import SessionStart
 from tests.stories.core.modules.secrets.support.private_home import private_folder
 from tests.stories.core.modules.secrets.support.secret_fixtures import ServersInstalled
 from tests.stories.core.support.fixtures import UserJoined
