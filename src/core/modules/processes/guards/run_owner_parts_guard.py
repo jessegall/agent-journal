@@ -22,4 +22,4 @@ class RunOwnerPartsGuard(Guard[Changed[ProcessPart]]):
             return
         process = self.rows.required(Process, part.process_id)
         if context.actor.id != process.session_agent_id:
-            raise Refusal(f"process {process.id} is agent {process.session_agent_id}'s run, and agent {context.actor.id} cannot report its parts", "only the agent that ran a line reports on it")
+            raise Refusal(f"process {process.id} is another agent's run, so its parts are not yours to report", "only the agent that ran a line reports on it")

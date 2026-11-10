@@ -13,6 +13,8 @@ from core.modules.drivers.commands.record_agent_nudge.record_agent_nudge import 
 from core.modules.drivers.models.enums.permission_state import PermissionState
 from core.modules.drivers.models.permission_request import PermissionRequest
 from core.modules.drivers.support.driver_nudges import PERMISSION_REQUESTED
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.models.agent import Agent
 
 SOURCE = "drivers.permission"
 
@@ -34,7 +36,7 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return open_request
         request = self.repository.save(PermissionRequest(asker_id=context.actor.id, action=command.action, reason=command.reason, needs_person=command.needs_person), context)
         if command.needs_person:
-            question = f"Allow agent {context.actor.id} to do this once: {command.action}?"
+            question = f"Allow {AgentLabel.from_agent(self.queries.query(Agent).find(context.actor.id)).text} to do this once: {command.action}?"
             self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), why=command.reason), (), context.actor.id), context)
             return request
         main = MainAgentFinder.newest(self.queries)

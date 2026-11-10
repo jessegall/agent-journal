@@ -6,6 +6,7 @@ from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class AgentMainSubcommand(ReadSubcommand[Agent | None]):
@@ -23,5 +24,7 @@ class AgentMainSubcommand(ReadSubcommand[Agent | None]):
         return running[0] if running else None
 
     def write_output(self, value: object, output: Output) -> None:
-        running_id = value.id if isinstance(value, Agent) else None
-        output.write(f"agent {running_id}" if running_id is not None else "no main agent is running", {"id": running_id})
+        if isinstance(value, Agent):
+            output.write(f"{AgentLabel.from_agent(value).text}, session {value.session}", {"id": value.id})
+            return
+        output.write("no main agent is running", {"id": None})

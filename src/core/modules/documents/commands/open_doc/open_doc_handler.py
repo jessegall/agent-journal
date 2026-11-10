@@ -8,6 +8,7 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.open_document import OpenDocument
 from core.modules.agents.models.agent import Agent
 from core.modules.actors.models.actor_record import ActorRecord
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class OpenDocHandler(Handler[OpenDoc, OpenDocument]):
@@ -28,5 +29,6 @@ class OpenDocHandler(Handler[OpenDoc, OpenDocument]):
             agent = self.queries.query(Agent).filter(id=opened.author_id).first()
             author = self.queries.query(ActorRecord).find(opened.author_id)
             name = agent.given_name if agent is not None and agent.given_name else author.name
-            raise Refusal(f"doc {command.doc_id} is open by agent {opened.author_id} ({name}); wait for its author to close it")
+            opener = f"{AgentLabel.from_agent(agent).text} ({name})" if agent is not None else name
+            raise Refusal(f"doc {command.doc_id} is open by {opener}; wait for its author to close it")
         return self.repository.save(OpenDocument(doc_id=command.doc_id, author_id=context.actor.id), context)

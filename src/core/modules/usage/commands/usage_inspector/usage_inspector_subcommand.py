@@ -16,6 +16,7 @@ from core.modules.usage.commands.usage_agents.usage_agents_subcommand import Usa
 from core.modules.usage.commands.usage_tool.usage_tool_subcommand import UsageToolSubcommand
 from core.modules.usage.support.agent_inspector_answer import AgentInspectorAnswer
 from core.modules.usage.support.tool_facts import ToolFacts
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
@@ -42,6 +43,6 @@ class UsageInspectorSubcommand(ReadSubcommand[AgentInspectorAnswer]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentInspectorAnswer):
-            output.write(f"agent {value.agent.id}, {value.helpers} helpers, {value.skills} skills loaded", {
+            output.write(f"{AgentLabel.from_agent(value.agent).text}, {value.helpers} helpers, {value.skills} skills loaded", {
                 "agent": {**output.values(value.agent), **output.properties(value.agent)}, "facts": value.facts.json() if value.facts else None, "inspection": value.inspection.json(),
                 "tool": asdict(value.tool), "helpers": value.helpers, "skills": value.skills, "points": list(value.points), "programs": value.programs.json()["rows"]})

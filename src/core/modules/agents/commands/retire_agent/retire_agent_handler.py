@@ -50,7 +50,12 @@ class RetireAgentHandler(Handler[RetireAgent, Agent]):
             return
         caller = self.queries.query(Agent).find(actor.id)
         if caller.id != agent.parent_id and (caller.role != AgentRole.MAIN or caller.environment_id != agent.environment_id):
-            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}, which belongs to agent {agent.parent_id}?", command=command)
+            raise UserApprovalRefusal(f"Retire {AgentLabel.from_agent(agent).text}{self.parent_text(agent)}?", command=command)
+
+    def parent_text(self, agent: Agent) -> str:
+        if agent.parent_id is None:
+            return ""
+        return f", which belongs to {AgentLabel.from_agent(self.queries.query(Agent).find(agent.parent_id)).text}"
 
     def check_state(self, agent: Agent, reason: str) -> None:
         if not reason.strip():

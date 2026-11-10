@@ -8,6 +8,8 @@ from core.modules.documents.models.open_document import OpenDocument
 from core.modules.documents.commands.keep_revision.keep_revision import KeepRevision
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.support.doc_revisions import DocRevisions
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.models.agent import Agent
 
 
 class KeepRevisionHandler(Handler[KeepRevision, DocRevision]):
@@ -22,7 +24,8 @@ class KeepRevisionHandler(Handler[KeepRevision, DocRevision]):
         opened = self.queries.query(OpenDocument).filter(doc_id=command.doc_id).first()
         if opened is not None:
             if context.actor.type is ActorType.AGENT and opened.author_id != context.actor.id:
-                raise Refusal(f"doc {command.doc_id} is open by agent {opened.author_id}")
+                author = self.queries.query(Agent).filter(id=opened.author_id).first()
+                raise Refusal(f"doc {command.doc_id} is open by {AgentLabel.from_agent(author).text if author is not None else 'a person'}")
             latest = self.queries.query(DocRevision).find(opened.revision_id) if opened.revision_id is not None else self.revisions.latest(command.doc_id)
             if latest is None:
                 raise Refusal(f"doc {command.doc_id} has no saved text")

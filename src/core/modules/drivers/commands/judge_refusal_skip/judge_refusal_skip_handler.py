@@ -9,6 +9,7 @@ from core.modules.drivers.commands.skip_refusal.skip_refusal_handler import SKIP
 from core.modules.drivers.models.refusal_skip import RefusalSkip
 from core.modules.drivers.support.access_nudges import SKIP_APPROVED, SKIP_DECLINED
 from engine.driver.nudger import Nudger
+from core.modules.agents.support.agent_label import AgentLabel
 
 
 class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
@@ -27,7 +28,7 @@ class JudgeRefusalSkipHandler(Handler[JudgeRefusalSkip, RefusalSkip]):
             raise Refusal(f"skip {skip.id} waits for no approval", "journal refusal show prints its state")
         agent = self.queries.query(Agent).find(skip.session_agent_id)
         if agent.is_child_of_another_agent(context.actor):
-            raise Refusal(f"skip {skip.id} is for agent {agent.parent_id} to answer", "only the agent's parent or a person answers it")
+            raise Refusal(f"skip {skip.id} is for {AgentLabel.from_agent(self.queries.query(Agent).find(agent.parent_id)).text} to answer", "only the agent's parent or a person answers it")
         if command.is_approved:
             answered = self.repository.update(skip, context, needs_approval=False, approved_at=context.timestamp)
             self.nudger.send(agent.id, SKIP_APPROVED, SKIP_SOURCE, context, refusal=skip.id)

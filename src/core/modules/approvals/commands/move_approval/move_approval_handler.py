@@ -8,6 +8,8 @@ from core.modules.approvals.commands.move_approval.move_approval import MoveAppr
 from core.modules.approvals.models.approval_request import ApprovalRequest
 from core.modules.approvals.models.lifecycles.approval_lifecycle import ApprovalLifecycle
 from core.modules.approvals.support.approval_restarts import ApprovalRestarts
+from core.modules.agents.support.agent_label import AgentLabel
+from core.modules.agents.models.agent import Agent
 
 
 class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
@@ -21,7 +23,7 @@ class MoveApprovalHandler(Handler[MoveApproval, ApprovalRequest]):
             raise Refusal("an agent cannot decide an approval request")
         request = self.queries.query(ApprovalRequest).find(command.row_id)
         if request.recipient_agent_id is not None:
-            raise Refusal(f"this approval is addressed to agent {request.recipient_agent_id}")
+            raise Refusal(f"this approval is addressed to {AgentLabel.from_agent(self.queries.query(Agent).find(request.recipient_agent_id)).text}")
         if request.required_person_id is not None and request.required_person_id != context.actor.id:
             raise Refusal("this approval belongs to another person")
         if command.move is ApprovalLifecycle.begin and self.restarts.interrupted(request):

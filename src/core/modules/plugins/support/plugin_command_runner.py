@@ -23,6 +23,7 @@ from core.modules.processes.commands.start_process.start_process import StartPro
 from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
+from core.modules.agents.support.agent_label import AgentLabel
 
 RUN_LIMIT_SECONDS = 3600
 RUN_KEY = "plugin run"
@@ -37,7 +38,7 @@ class PluginCommandRunner:
     def run(self, agent_id: int, line: str, is_readonly: bool, plugin: str, context: Context) -> PluginCommandRun:
         checkout = self.checkouts.checkout(agent_id)
         if not checkout.exists:
-            raise Refusal(f"the checkout of agent {agent_id} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
+            raise Refusal(f"the checkout of {AgentLabel.from_agent(self.queries.query(Agent).find(agent_id)).text} was removed, so nothing can run in it", "read its files with journal plugin file --from base")
         if not self.runner.is_installed():
             raise Refusal(f"the journal has no runner at {self.runner.path}", "install it again")
         start = StartProcess.single_part(agent_id, line, str(checkout.root), CommandCategory.UNKNOWN, RUN_LIMIT_SECONDS, plugin)

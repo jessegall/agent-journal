@@ -5,6 +5,7 @@ from engine.query.queries import Queries
 from engine.enums.agent_role import AgentRole
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
+from core.modules.agents.support.agent_label import AgentLabel
 
 TARGET_TABLES = {"task": "tasks", "question": "questions", "plan": "plans"}
 FINISHED_STATES = ("completed", "cancelled", "answered", "closed")
@@ -41,8 +42,8 @@ class TaskWaitTargets:
     def helper_target(self, row_id: int) -> str:
         helper = self.queries.query(Agent).find(row_id)
         if helper.role == AgentRole.MAIN:
-            raise Refusal(f"agent {row_id} is a main agent, not a helper", "name a helper")
+            raise Refusal("the main agent is no helper", "name a helper")
         job = self.queries.query(HelperJob).filter(helper_id=row_id).newest().first()
         if job is None or job.ended_at is not None:
-            raise Refusal(f"helper {row_id} has no open job", "nothing waits on it; carry on with the task")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} has no open job", "nothing waits on it; carry on with the task")
         return f"helpers:{helper.id}:{job.id}"

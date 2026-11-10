@@ -22,14 +22,14 @@ class HelperReach:
     def checked_helper(self, helper_id: int, actor: Actor, command: Command[object]) -> Agent:
         helper = self.agents.find(helper_id)
         if helper.role == AgentRole.MAIN:
-            raise Refusal(f"agent {helper_id} is no helper", "journal agent cards lists the helpers")
+            raise Refusal(f"the {AgentLabel.from_agent(helper).text} is no helper", "journal agent cards lists the helpers")
         job_command = self.helper_types.find(helper.role).job_command
         if job_command and job_command != HELPER_JOB_COMMAND:
-            raise Refusal(f"agent {helper_id} is a {self.helper_types.label(helper.role)}: it takes its work with journal {' '.join(job_command)}")
+            raise Refusal(f"{AgentLabel.from_agent(helper).text} is a {self.helper_types.label(helper.role)}: it takes its work with journal {' '.join(job_command)}")
         if helper.retired_at is not None:
             raise Refusal(f"{AgentLabel.from_agent(helper).text} is retired, for good", "journal helper start starts a new one")
         if actor.type is ActorType.AGENT and not self.may_reach(helper, actor.id):
-            raise UserApprovalRefusal(f"Allow this action on {AgentLabel.from_agent(helper).text}, which belongs to agent {helper.parent_id}?", command=command)
+            raise UserApprovalRefusal(f"Allow this action on {AgentLabel.from_agent(helper).text}, which belongs to {AgentLabel.from_agent(self.agents.find(helper.parent_id)).text}?", command=command)
         return helper
 
     def new_parent(self, helper: Agent, actor: Actor) -> int | None:
