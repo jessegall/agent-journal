@@ -5,9 +5,8 @@ from engine.guard.guard import Guard
 from engine.errors.refusal import Refusal
 from engine.errors.user_approval_refusal import UserApprovalRefusal
 from core.modules.environments.models.environment import Environment
-from core.modules.agents.support.agent_label import AgentLabel
-from core.modules.agents.models.agent import Agent
-from engine.query.queries import Queries
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
 
 PERSONS = (ActorType.USER, ActorType.CORE)
 
@@ -20,8 +19,8 @@ class TestGrantGuard(Guard[Changed[Environment]]):
     name = "environments.test-grant-by-person"
     is_safety = True
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, numbers: RowNumbers) -> None:
+        self.numbers = numbers
 
     def check(self, event: Changed[Environment], context: Context) -> None:
         environment, old = event.row, event.old_row
@@ -32,4 +31,4 @@ class TestGrantGuard(Guard[Changed[Environment]]):
             return
         if environment.test_agent_id is None:
             raise UserApprovalRefusal(f"Mark {environment.name} as a test environment?")
-        raise UserApprovalRefusal(f"Let {AgentLabel.from_agent(self.queries.query(Agent).find(environment.test_agent_id)).text} work in test environment {environment.name}?")
+        raise UserApprovalRefusal(f"Let agent {self.numbers.number(AGENT_MODEL_NAME, environment.test_agent_id)} work in test environment {environment.name}?")

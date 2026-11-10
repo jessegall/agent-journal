@@ -1,3 +1,5 @@
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
 from engine.event.moved import Moved
 from engine.command.bus import Bus
 from engine.command.context import Context
@@ -19,13 +21,15 @@ class WorkerMergeBlockListener(SaveListener[Moved[Worktree]]):
     moves = (WorktreeLifecycle.merge, WorktreeLifecycle.rework, WorktreeLifecycle.abandon)
     disabled_scopes = [ActorScope]
 
-    def __init__(self, queries: Queries, bus: Bus) -> None:
-        self.queries, self.bus = queries, bus
+    def __init__(self, queries: Queries, bus: Bus, numbers: RowNumbers) -> None:
+        self.queries, self.bus, self.numbers = queries, bus, numbers
 
     def handle(self, event: Moved[Worktree], context: Context) -> None:
-        worker_id = event.row.session_agent_id
-        command = f"journal worker merge {worker_id}"
+        command = self.merge_command(event.row)
         key = f"{REQUIRED_COMMAND_REFUSAL.key}:{command}"
         blocks = self.queries.query(AgentBlock).filter(nudge_key=key, condition_text=command).matching(IsNull("closed_at")).all_rows()
         for block in blocks:
             self.bus.dispatch(CloseAgentBlock(block.id), context)
+
+    def merge_command(self, worktree: Worktree) -> str:
+        return f"journal worker merge {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"

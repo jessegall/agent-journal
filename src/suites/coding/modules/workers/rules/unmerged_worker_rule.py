@@ -1,5 +1,8 @@
 from dataclasses import replace
 
+from engine.cli.agent_number import AGENT_MODEL_NAME
+from engine.cli.row_numbers import RowNumbers
+
 from engine.driver.nudge import Nudge
 from engine.query.conditions.is_null import IsNull
 from engine.query.queries import Queries
@@ -37,9 +40,13 @@ class UnmergedWorkerRule(DriverRule):
     drivers = ["coding.main"]
     roles = [AgentRole.MAIN]
 
-    def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: NudgeRecords, settings: SettingValues, queries: Queries, spans: SpanQueries) -> None:
+    def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: NudgeRecords, settings: SettingValues, queries: Queries, spans: SpanQueries, numbers: RowNumbers) -> None:
+        self.numbers = numbers
         self.settings, self.queries, self.spans = settings, queries, spans
         self.delivered, self.tasks, self.proofs, self.records = delivered, tasks, proofs, records
+
+    def merge_command(self, worktree: Worktree) -> str:
+        return f"journal worker merge {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         nudges: list[Nudge] = []
@@ -48,13 +55,13 @@ class UnmergedWorkerRule(DriverRule):
             if self.is_with_merger(worktree, hook):
                 continue
             proofs = tuple(self.proofs.waiting_proofs(worktree.id).oldest().all_rows())
-            action = f"journal worker merge {worktree.session_agent_id}, or journal worker release {worktree.session_agent_id}"
+            action = f"{self.merge_command(worktree)}, or journal worker release {self.numbers.number(AGENT_MODEL_NAME, worktree.session_agent_id)}"
             if proofs:
                 action = f"journal proof check {', '.join(str(proof.id) for proof in proofs)}"
             key = f"{WORKER_UNMERGED.key}.{worktree.session_agent_id}"
             declaration = WORKER_UNMERGED_DUE if self.delivered_reminder_count(hook.agent_id, key) >= BLOCKING_REMINDER_COUNT - 1 else WORKER_UNMERGED
             nudges.append(replace(declaration.nudge(worker=worktree.session_agent_id, tasks=self.task_names(worktree.session_agent_id), action=action), key=key))
-        commands = {f"journal worker merge {worktree.session_agent_id}" for worktree in delivered}
+        commands = {self.merge_command(worktree) for worktree in delivered}
         prefix = f"{REQUIRED_COMMAND_REFUSAL.key}:journal worker merge "
         blocks = self.queries.query(AgentBlock).filter(session_agent_id=hook.agent_id).matching(IsNull("closed_at")).full_table(OPEN_BLOCKS_REASON).all_rows()
         stale = [CloseAgentBlock(block.id) for block in blocks if block.nudge_key.startswith(prefix) and block.condition_text not in commands]

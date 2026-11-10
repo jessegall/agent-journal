@@ -15,6 +15,7 @@ from engine.log.refusal_log import RefusalLog
 from engine.registry.registry import Registry
 from engine.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
@@ -54,7 +55,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         if last is not None and last.streak >= MOST_SKIP_COUNT and last.restored_at is None:
             agent = self.queries.query(Agent).find(actor.id)
             if agent.role == AgentRole.MAIN or agent.parent_id is None:
-                raise self.restoration_approval(actor.id)
+                raise self.restoration_approval(agent)
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
@@ -98,13 +99,12 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
     def raised(self, agent_id: int, context: Context) -> None:
         agent = self.queries.query(Agent).find(agent_id)
         if agent.role == AgentRole.MAIN or agent.parent_id is None:
-            arguments = ("refusal", "restore", str(agent_id))
-            approval = self.restoration_approval(agent_id)
-            self.bus.dispatch(RequestUserApproval(approval, arguments, agent_id), context)
+            approval = self.restoration_approval(agent)
+            self.bus.dispatch(RequestUserApproval(approval, approval.arguments, agent_id), context)
             return
         self.nudger.send(agent.parent_id, SKIPS_SPENT, SKIP_SOURCE, context, agent=agent_id, count=MOST_SKIP_COUNT)
 
     @staticmethod
-    def restoration_approval(agent_id: int) -> UserApprovalRefusal:
-        return UserApprovalRefusal(f"Agent {agent_id} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
-                            ("refusal", "restore", str(agent_id)), why=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")
+    def restoration_approval(agent: Agent) -> UserApprovalRefusal:
+        return UserApprovalRefusal(f"{AgentLabel.from_agent(agent).text.capitalize()} skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip. Restore its skip?",
+                            ("refusal", "restore", str(agent.number)), why=f"It went on past {MOST_SKIP_COUNT} refusals in a row by skipping them, so the journal took the skip from it.")

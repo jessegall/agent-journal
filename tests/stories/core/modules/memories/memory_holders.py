@@ -121,6 +121,7 @@ def test_agents_are_listed_for_one_environment_or_for_all(new_story):
     story.run('memory make "Staging has no queue" --environment staging', actor=staging)
     story.expect_rows(names(story, "--environment staging") == [f"Worker {staging.id}"])
     story.expect_rows(names(story, "--environment main") == [f"Worker {read_agent(story, 's-9').id}"])
+    story.use_fixture_environment(None)
     story.expect_rows(len(names(story)) == 2)
 
 
