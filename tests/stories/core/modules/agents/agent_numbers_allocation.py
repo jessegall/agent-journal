@@ -25,11 +25,11 @@ def test_two_starts_that_read_the_same_highest_number_get_different_numbers_and_
     read_numbers = []
     next_number = AgentNumbers.next_number
 
-    def number_another_start_took(numbers, environment_id, role):
+    def stale_number_first(numbers, environment_id, role):
         read_numbers.append(number_of(story, first) if not read_numbers else next_number(numbers, environment_id, role))
         return read_numbers[-1]
 
-    monkeypatch.setattr(AgentNumbers, "next_number", number_another_start_took)
+    monkeypatch.setattr(AgentNumbers, "next_number", stale_number_first)
     second = started_worker(story, "s-3", "main", story.agent.id)
     story.expect_rows(number_of(story, first) == 2, number_of(story, second) == 3, read_numbers == [2, 3], detail=str(read_numbers))
 
