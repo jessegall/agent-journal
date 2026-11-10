@@ -18,9 +18,9 @@ class WorkerLaunch:
     def __init__(self, locked_down: bool = False, program_ready: bool = True) -> None:
         self.replaced: list[str] = []
         self.handed: list[SimpleNamespace] = []
-        found = SimpleNamespace(find=lambda row_id: SimpleNamespace(id=row_id, folder="/work/project"))
+        stored_rows = SimpleNamespace(find=lambda row_id: SimpleNamespace(id=row_id, folder="/work/project"))
         self.resume = WorkerResume(
-            launcher=SimpleNamespace(hand=self.hand), queries=SimpleNamespace(query=lambda model: found), worktrees=SimpleNamespace(), worker_command=SimpleNamespace(restarted=self.restarted),
+            launcher=SimpleNamespace(hand=self.hand), queries=SimpleNamespace(query=lambda model: stored_rows), worktrees=SimpleNamespace(), worker_command=SimpleNamespace(restarted=self.restarted),
             bus=SimpleNamespace(), clock=SimpleNamespace(), requirement=SimpleNamespace(), places=SimpleNamespace(can_resume=lambda worker: True), program=SimpleNamespace(),
             states=SimpleNamespace(outage_state=lambda program: SimpleNamespace(is_ready=program_ready)), shares=SimpleNamespace(is_configured=False), environments=SimpleNamespace(),
             scopes=SimpleNamespace(row_scope=lambda row: nullcontext()), reports=SimpleNamespace(), routes=SimpleNamespace(listed=lambda: []), rows=SimpleNamespace(),
