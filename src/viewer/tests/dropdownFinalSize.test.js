@@ -15,11 +15,12 @@ globalThis.ResizeObserver ??= class {
 };
 
 const ROOT = resolve(__dirname, "../../..");
-const WIDTH = "320px";
+const WIDTHS = {"usage.usage": "460px", "usage.context": "320px"};
 const declared = JSON.parse(execFileSync(resolve(ROOT, ".venv/bin/python"), ["-c", `
 import json
 from core.modules.usage.support.skeletons import USAGE_USAGE_SKELETON, USAGE_CONTEXT_SKELETON
-print(json.dumps({"usage.usage": [part.listed() for part in USAGE_USAGE_SKELETON], "usage.context": [part.listed() for part in USAGE_CONTEXT_SKELETON]}))
+from core.modules.schedules.support.skeletons import SCHEDULES_JOBS_SKELETON
+print(json.dumps({"usage.usage": [part.listed() for part in USAGE_USAGE_SKELETON], "usage.context": [part.listed() for part in USAGE_CONTEXT_SKELETON], "schedules.jobs": [part.listed() for part in SCHEDULES_JOBS_SKELETON]}))
 `], {cwd: ROOT, env: {...process.env, PYTHONPATH: resolve(ROOT, "src")}, encoding: "utf8"}));
 const WINDOW = {title: "7 days", used_percent: 17, reset_epoch_seconds: 1794085200};
 const USAGE = {windows: [{...WINDOW, title: "5 hours", used_percent: 30}, WINDOW], agents: [{id: 1, role: "main", program: "claude", context_percent: 40}]};
@@ -48,6 +49,16 @@ test.each(["usage.usage", "usage.context"])("the %s dropdown has the same fixed 
     loaded.value = true;
     await nextTick();
     expect(element.querySelector("[data-window-skeleton]")).toBeNull();
-    expect(loading).toBe(WIDTH);
-    expect(element.querySelector("[data-dropdown]").style.width).toBe(WIDTH);
+    expect(loading).toBe(WIDTHS[name]);
+    expect(element.querySelector("[data-dropdown]").style.width).toBe(WIDTHS[name]);
+});
+
+test("the scheduled jobs dropdown opens at a fixed width and never shorter than its minimum height", async () => {
+    const catalogue = {dropdown: () => null, window: () => null, skeleton: () => declared["schedules.jobs"], loaded: shallowRef(false)};
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp(() => h(WindowDropdown, {groups: [{name: "schedules.jobs", title: "Scheduled jobs", count: 1}], catalogue, subscriptions: {}, environment: "main"})).mount(element);
+    await nextTick();
+    const style = element.querySelector("[data-dropdown]").style;
+    expect([style.width, style.minHeight]).toEqual(["360px", "140px"]);
 });

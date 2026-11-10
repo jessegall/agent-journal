@@ -840,7 +840,7 @@ const ot = {
         type: "button",
         class: "skills-back",
         onClick: i[0] || (i[0] = (s) => a("back"))
-      }, "Back to skills")) : S("", !0),
+      }, "Back")) : S("", !0),
       t("h3", hl, p(e.skill ? e.skill.folder : ""), 1),
       t("div", vl, [
         j(u(ie), {
@@ -850,7 +850,7 @@ const ot = {
       ])
     ]));
   }
-}, pl = /* @__PURE__ */ N(yl, [["__scopeId", "data-v-d6cfa5ab"]]), fl = { class: "page-head" }, bl = { "aria-label": "Skills views" }, $l = ["aria-pressed"], wl = ["aria-pressed"], ql = {
+}, pl = /* @__PURE__ */ N(yl, [["__scopeId", "data-v-96af8725"]]), fl = { class: "page-head" }, bl = { "aria-label": "Skills views" }, $l = ["aria-pressed"], wl = ["aria-pressed"], ql = {
   key: 0,
   class: "warning",
   role: "status"
@@ -945,7 +945,7 @@ const ot = {
                   type: "button",
                   class: "phone-back",
                   onClick: h[3] || (h[3] = (T) => u(C)(""))
-                }, "Back to skills"),
+                }, "Back"),
                 u(m) ? (l(), n("div", Rl, [
                   h[9] || (h[9] = t("strong", null, "Could not read this skill", -1)),
                   t("p", null, p(u(m)), 1),
@@ -1020,7 +1020,7 @@ const ot = {
       _: 1
     }));
   }
-}, Fl = /* @__PURE__ */ N(Vl, [["__scopeId", "data-v-d59c26e6"]]);
+}, Fl = /* @__PURE__ */ N(Vl, [["__scopeId", "data-v-8350c978"]]);
 export {
   Fl as S
 };

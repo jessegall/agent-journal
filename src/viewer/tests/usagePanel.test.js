@@ -44,3 +44,9 @@ test("the allowance menu sets a limit and lists and removes the limits that are 
     await pickButton(element, "Remove");
     expect(lines).toEqual(["usage-limit set claude hour budget 20", "usage-limit delete 4"]);
 });
+
+test("the number field of the own limit is the kit's text input inside the form's width", async () => {
+    const windowContext = context({"usage show": {ok: true, value: {windows: [], agents: [{program: "claude"}], cost_dollars: 1}}, "usage-limit list": {ok: true, value: {rows: [], page: 1, size: 50, total: 0}}});
+    const field = (await mounted(UsagePanel, windowContext)).querySelector("[data-usage-limit-form] input");
+    expect([field.classList.contains("text-input"), field.classList.contains("percent"), field.value]).toEqual([true, true, "50"]);
+});

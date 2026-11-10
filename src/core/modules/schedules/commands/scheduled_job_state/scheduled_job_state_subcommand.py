@@ -9,6 +9,7 @@ from engine.query.queries import Queries
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.subcommand.row_list import RowList
+from core.modules.agents.models.agent import Agent
 from core.modules.schedules.models.scheduled_job import ScheduledJob
 
 
@@ -17,7 +18,8 @@ RECURRING_LIFETIME_DAYS = 7
 
 class ScheduledJobStateSubcommand(ReadSubcommand[RowList]):
     """`journal scheduled-job running --agent <number>`: the jobs an agent has scheduled that still run; a
-    repeating job lapses seven days after it was made."""
+    repeating job lapses seven days after it was made, and an agent that has ended holds none until its
+    program resumes the session."""
 
     cli_name = "scheduled-job"
     name = "running"
@@ -29,6 +31,8 @@ class ScheduledJobStateSubcommand(ReadSubcommand[RowList]):
         parser.add_argument("--agent", type=AgentNumber, required=True)
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
+        if self.queries.query(Agent).find(arguments.agent).ended_at is not None:
+            return RowList([])
         oldest = self.clock.timestamp().value - timedelta(days=RECURRING_LIFETIME_DAYS)
         jobs = self.queries.query(ScheduledJob).filter(session_agent_id=arguments.agent).matching(IsNull("ended_at")).oldest().all_rows()
         return RowList([{"id": job.id, "job_id": job.job_id, "cron": job.cron, "prompt": job.prompt, "is_recurring": job.is_recurring, "stop_requested_at": job.stop_requested_at.text if job.stop_requested_at else None}

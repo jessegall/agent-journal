@@ -16,8 +16,7 @@ class EndScheduledJobHandler(Handler[EndScheduledJob, int]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: EndScheduledJob, context: Context) -> int:
-        jobs = list(self.queries.query(ScheduledJob).filter(session_agent_id=command.agent_id).matching(IsNull("ended_at")).all_rows())
-        ended = [job for job in jobs if command.job_id is None or job.job_id == command.job_id]
-        for job in ended:
+        jobs = list(self.queries.query(ScheduledJob).filter(session_agent_id=command.agent_id, job_id=command.job_id).matching(IsNull("ended_at")).all_rows())
+        for job in jobs:
             self.repository.save(job.changed(ended_at=context.timestamp), context)
-        return len(ended)
+        return len(jobs)

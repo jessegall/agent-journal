@@ -58,7 +58,7 @@ const statusSeen = computed(() => seenWords(props.facts?.last_activity, now.valu
 <template>
     <div :class="['agent-card', {open}]" :data-agent-open="row.id" :aria-expanded="open" :role="open ? undefined : 'button'" :tabindex="open ? undefined : 0" @click="!open && emit('toggle')" @keydown.enter.self.prevent="!open && emit('toggle')" @keydown.space.self.prevent="!open && emit('toggle')">
         <AgentTip :agent-id="row.id" :label="title" class="agent-head">
-            <template v-if="open"><button type="button" class="agent-back" title="Back to the list" aria-label="Back to the list" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
+            <template v-if="open"><button type="button" class="agent-back" title="Back" aria-label="Back" @click.stop="emit('toggle')"><Icon name="chevronRight" facing="left" :size="14" /></button></template>
             <span class="agent-title" data-agent-title data-agent-motion>{{ title }}</span>
             <span class="agent-name" data-agent-name data-agent-motion>{{ facts?.given_name || row.id }}</span>
             <template v-if="!open"><Icon class="agent-chevron" name="chevronRight" :size="12" /></template>

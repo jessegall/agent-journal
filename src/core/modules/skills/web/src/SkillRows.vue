@@ -28,7 +28,7 @@ const switchTab = (value) => {tab.value = value; draft.value = null;};
                     <div class="panes">
                         <SkillsList :skills="skills" :opened="opened" :busy="busy" @open="open" @require="requireRow" />
                         <article class="skill-pane">
-                            <button type="button" class="phone-back" @click="open('')">Back to skills</button>
+                            <button type="button" class="phone-back" @click="open('')">Back</button>
                             <template v-if="openFailure"><div class="empty"><strong>Could not read this skill</strong><p>{{ openFailure }}</p><button type="button" @click="open(opened, false)">Try again</button></div></template>
                             <template v-else-if="selected"><SkillDetails :skill="selected" :text="text" :triggers="selectedTriggers" :skills="skills" :agent="mainAgent" :draft="draft" :busy="busy.includes(opened)" @require="(agents, again) => requireSkill(opened, agents, again)" @read="readNow" @add="add" @edit="edit" @run="run" @saved="saved" @cancel="draft = null" /></template>
                             <template v-else><div class="empty centre"><strong>Choose a skill to read what it says</strong><p>Switch on Required to make the agent read a skill at the start. Open a skill to add words that make the agent read it later.</p></div></template>
